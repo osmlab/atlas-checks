@@ -1,0 +1,8 @@
+{
+  "name": "TEST_CHALLENGE",
+  "description": "DESCRIPTION",
+  "blurb": "BLURB",
+  "instruction": "INSTRUCTION",
+  "difficulty": "NORMAL",
+  "defaultPriority": "NONE"
+}

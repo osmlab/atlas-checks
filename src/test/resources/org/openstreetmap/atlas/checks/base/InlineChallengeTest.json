@@ -1,0 +1,20 @@
+{
+  "BaseTestCheck": {
+    "enabled":true,
+    "challenge": {
+      "description": "description",
+      "blurb": "blurb",
+      "instruction": "instruction",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  }
+}

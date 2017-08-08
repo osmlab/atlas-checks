@@ -1,0 +1,63 @@
+{
+  "description": "DESCRIPTION",
+  "blurb": "BLURB",
+  "instruction": "INSTRUCTION",
+  "difficulty": "NORMAL",
+  "defaultPriority": "LOW",
+  "highPriorityRule": {
+    "condition":"OR",
+    "rules":[{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.motorway"
+    },{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.motorway_link"
+    },{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.trunk"
+    },{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.trunk_link"
+    }]
+  },
+  "mediumPriorityRule": {
+    "condition":"OR",
+    "rules":[{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.primary"
+    },{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.primary_link"
+    },{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.secondary"
+    },{
+      "id":"tag",
+      "field":"tag",
+      "type":"string",
+      "operator":"equal",
+      "value":"Highway.secondary_link"
+    }]
+  }
+}

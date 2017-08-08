@@ -1,0 +1,12 @@
+project.ext.versions = [
+    checkstyle: '7.6.1',
+    atlas: '5.0.0',
+    commons:'2.6',
+    atlas_generator: '4.0.0',
+]
+
+project.ext.packages = [
+    atlas: "org.openstreetmap.atlas:atlas:${versions.atlas}",
+    commons: "commons-lang:commons-lang:${versions.commons}",
+    atlas_generator: "org.openstreetmap.atlas:atlas-generator:${versions.atlas_generator}",
+]

@@ -1,0 +1,160 @@
+{
+  "CheckResourceLoader": {
+    "scanUrls": [
+      "org.openstreetmap.atlas.checks.validation"
+    ],
+    "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
+    "enabled.value.default": true
+  },
+  "PoolSizeCheck": {
+    "surface": {
+      "maximum": 1000.0,
+      "minimum": 50.0
+    }
+  },
+  "OrphanNodeCheck": {
+
+  },
+  "BuildingRoadIntersectionCheck": {
+    "challenge": {
+      "description": "Tasks contain buildings which intersect with surrounding roads",
+      "blurb": "Intersecting Buildings and Roads",
+      "instruction": "Open your favorite editor and edit the buildings or roads to remove the intersection.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  },
+  "DuplicateNodeCheck": {
+    "challenge": {
+      "description": "Tasks contain node locations that have duplicate nodes found.",
+      "blurb": "Duplicate Nodes",
+      "instruction": "Open your favorite editor and remove one or more of the duplicate nodes until only one remains.",
+      "difficulty": "EASY"
+    }
+  },
+  "FloatingEdgeCheck": {
+    "length": {
+      "maximum.kilometers": 100.0,
+      "minimum.meters": 100.0
+    },
+    "challenge": {
+      "description": "Tasks contain ways that are disconnected from the road network.",
+      "blurb": "Connected Edges",
+      "instruction": "Open your favorite editor and remove disconnected edges.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  },
+  "InvalidTurnRestrictionCheck": {
+    "challenge": {
+      "description": "Tasks containing invalid turn restrictions",
+      "blurb": "Invalid Turn Restrictions",
+      "instruction": "Correct the displayed invalid turn restriction",
+      "difficulty": "HARD"
+    }
+  },
+  "RoundaboutClosedLoopCheck": {
+    "challenge": {
+      "description": "A roundabout should be formed by one-way edges with no dead-end nodes.",
+      "blurb": "Modify roundabouts such that they are well formed.",
+      "instruction": "Open your favorite editor and fix the issue with the roundabout.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  },
+  "SelfIntersectingPolylineCheck": {
+    "tags.filter": "highway->*|waterway->*|building->*",
+    "challenge": {
+      "description": "Verify that the same Polyline does not intersect itself at any point.",
+      "blurb": "Modify Polylines such that they do not self intersect.",
+      "instruction": "Open your favorite editor and move the polylines such that they are not self intersecting anymore.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  },
+  "SharpAngleCheck": {
+    "threshold.degrees": 149.0,
+    "challenge": {
+      "description": "Each task has edges that have an angle that is too sharp within their polyline. Rendering fails once this threshold is exceeded. There may be other factors in play here such as number of intersections, type of highway, etc. But the main breaking point is any angles that are greater than 149.",
+      "blurb": "Modify angles that are too acute for rendering.",
+      "instruction": "Modify angles between two edges in polylines that are greater than 149 degrees to be less than 149 degrees.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  },
+  "SinkIslandCheck": {
+    "tree.size": 50,
+    "challenge": {
+      "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
+      "blurb": "Identify islands of roads.",
+      "instruction": "Open your favorite editor and apply tags (if need to change one way roads), or update roads to remove any islands of roads",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  },
+  "SnakeRoadCheck": {
+    "challenge": {
+      "description": "Tasks will include ways that are drawn as a single way, when in reality they should be two or more distinct ways",
+      "blurb": "Snake Roads",
+      "instruction": "Open your favorite editor and split the snake road into two or more distinct ways. You can do this by splitting or separating the existing way at an intersection or where you think a road should end. This check also flags roundabouts that aren’t properly tagged. If you see that’s the case - add a junction=roundabout tag when needed.",
+      "difficulty": "MEDIUM",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+      },
+      "mediumPriorityRule": {
+        "condition":"OR",
+        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+      }
+    }
+  }
+}

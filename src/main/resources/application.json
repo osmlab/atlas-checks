@@ -1,0 +1,7 @@
+{
+  "AtlasFilePathResolver": {
+    "schema.path.templates": {
+      "default": "%s"
+    }
+  }
+}
