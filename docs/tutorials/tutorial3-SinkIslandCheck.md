@@ -4,7 +4,7 @@
 For reference around general development see [The Development Document](../dev.md), for this tutorial it is assumed
 that you have read through that document.
 
-For reference on complete source code see [SinkIslandCheck](../../src/main/java/org/openstreetmap/altas/checks/validation/linear/edges/SinkIslandCheck.java)
+For reference on complete source code see [SinkIslandCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/SinkIslandCheck.java)
 
 #### What is a SinkIsland
 

@@ -4,7 +4,7 @@
 For reference around general development see [The Development Document](../dev.md), for this tutorial it is assumed
 that you have read through that document.
 
-For reference on complete source code see [OrphanNodeCheck](../../src/main/java/org/openstreetmap/altas/checks/validation/points/OrphanNodeCheck.java)
+For reference on complete source code see [OrphanNodeCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/points/OrphanNodeCheck.java)
 
 ###### *NOTE
 

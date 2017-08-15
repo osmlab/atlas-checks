@@ -40,7 +40,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
 
     /**
      * Default constructor defined by the {@link BaseCheck} required to instantiate the Check within
-     * the Altas Checks framework
+     * the Atlas Checks framework
      *
      * @param configuration
      *            the configuration supplied by the framework containing custom properties for the
