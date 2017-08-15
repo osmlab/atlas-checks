@@ -4,7 +4,7 @@
 For reference around general development see [The Development Document](../dev.md), for this tutorial it is assumed
 that you have read through that document.
 
-For reference on complete source code see [PoolSizeCheck](../../src/main/java/org/openstreetmap/altas/checks/validation/areas/PoolSizeCheck.java)
+For reference on complete source code see [PoolSizeCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/areas/PoolSizeCheck.java)
  
 #### Initializing our PoolSizeCheck
 The first thing we need to do for our PoolSizeCheck is to initialize it. This will involve building out the
