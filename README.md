@@ -1,4 +1,4 @@
-# Altas Checks
+# Atlas Checks
 
 [![Build Status](https://travis-ci.org/osmlab/atlas-checks.svg?branch=master)](https://travis-ci.org/osmlab/atlas-checks)
 
