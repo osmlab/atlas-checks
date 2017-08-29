@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,13 +44,13 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
     private static final long serialVersionUID = -1287808902452203852L;
     private final String identifier;
-    private Optional<String> challengeName = Optional.empty();
+    private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
     private final Set<FlaggedObject> flaggedObjects = new HashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
-     * 
+     *
      * @param identifier
      *            the identifying value to flag
      */
@@ -99,7 +100,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     /**
      * Adds any instructions that may help communicate why the {@link AtlasObject}(s) were flagged
-     * 
+     *
      * @param instruction
      *            a free form instruction
      */
@@ -114,7 +115,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     /**
      * Adds a list of instructions that may help communicate why the {@link AtlasObject}(s) were
      * flagged. This can be useful if multiple rules were violated
-     * 
+     *
      * @param instructions
      *            a list of free form instruction
      */
@@ -202,7 +203,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     /**
      * Flags a list of {@code point} {@link Location}s
-     * 
+     *
      * @param points
      *            the {@code point} {@link Location}s to flag
      */
@@ -220,8 +221,21 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     @Override
     public boolean equals(final Object other)
     {
-        return other instanceof CheckFlag
-                && StringUtils.equals(this.identifier, ((CheckFlag) other).getIdentifier());
+        if (this == other)
+        {
+            return true;
+        }
+
+        if (!(other instanceof CheckFlag))
+        {
+            return false;
+        }
+
+        final CheckFlag otherFlag = (CheckFlag) other;
+        return Objects.equals(this.identifier, otherFlag.identifier)
+                && Objects.equals(this.challengeName, otherFlag.challengeName)
+                && Objects.equals(this.instructions, otherFlag.instructions)
+                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects);
     }
 
     /**
@@ -229,7 +243,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public Optional<String> getChallengeName()
     {
-        return challengeName;
+        return Optional.ofNullable(this.challengeName);
     }
 
     /**
@@ -369,7 +383,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     @Override
     public int hashCode()
     {
-        return this.flaggedObjects.hashCode() + this.identifier.hashCode();
+        return Objects.hash(this.identifier, this.challengeName, this.instructions,
+                this.flaggedObjects);
     }
 
     @Override
@@ -399,13 +414,13 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     /**
      * Sets a Challenge name for this Flag
-     * 
+     *
      * @param challengeName
      *            a Challenge name
      */
     public void setChallengeName(final String challengeName)
     {
-        this.challengeName = Optional.ofNullable(challengeName);
+        this.challengeName = challengeName;
     }
 
     @Override
