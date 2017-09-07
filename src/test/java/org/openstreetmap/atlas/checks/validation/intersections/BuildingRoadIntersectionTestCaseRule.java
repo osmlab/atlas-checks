@@ -53,7 +53,7 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
                             @Loc(value = TEST_6) }, tags = { "highway=pedestrian",
-                            "building=house" }),
+                                    "building=house" }),
                     // Another variation of a Pedestrian Area - not flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),

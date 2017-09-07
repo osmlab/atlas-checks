@@ -104,7 +104,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck
     {
         final Area building = (Area) object;
         final Iterable<Edge> intersectingEdges = Iterables.filter(building.getAtlas()
-                        .edgesIntersecting(building.bounds(), intersectsCoreWayInvalidly(building)),
+                .edgesIntersecting(building.bounds(), intersectsCoreWayInvalidly(building)),
                 ignoreTags());
         final CheckFlag flag = new CheckFlag(getTaskIdentifier(building));
         flag.addObject(building);
