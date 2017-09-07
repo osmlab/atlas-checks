@@ -24,6 +24,7 @@ import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.streaming.resource.http.GetResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
+import org.openstreetmap.atlas.utilities.runtime.Retry;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.openstreetmap.atlas.utilities.threads.Pool;
 import org.openstreetmap.atlas.utilities.time.Time;
@@ -46,6 +47,9 @@ public class SparkFileHelper implements Serializable
     private static final long serialVersionUID = -5716285735225965942L;
     private static final Logger logger = LoggerFactory.getLogger(SparkFileHelper.class);
     private static final Duration MAX_DURATION_FOR_IO = Duration.hours(3);
+    private static final int IO_RETRY_COUNT = 5;
+    private static final Duration WAIT_DURATION_BEFORE_IO_RETRY = Duration.seconds(5);
+    private static Retry IO_RETRY = new Retry(IO_RETRY_COUNT, WAIT_DURATION_BEFORE_IO_RETRY);
 
     // Spark context useful for read/write from/to different file systems
     private final Map<String, String> sparkContext;
@@ -264,8 +268,8 @@ public class SparkFileHelper implements Serializable
      * @param directory
      *            a location of the Atlas datasource
      * @param recursive
-     *            {@code true}, to search the given directory and all sub-directories.
-     *            {@code false}, to only search the root directory
+     *            {@code true}, to search the given directory and all sub-directories. {@code false}
+     *            , to only search the root directory
      * @param filters
      *            {@link PathFilter}s used to find datasource types
      * @return an Atlas {@link Resource}
@@ -361,17 +365,6 @@ public class SparkFileHelper implements Serializable
      * @param outputs
      *            {@link SparkFileOutput}s to execute
      */
-    public void save(final SparkFileOutput... outputs)
-    {
-        save(Arrays.asList(outputs));
-    }
-
-    /**
-     * Executes {@code SparkFileOutput#getSaveFunc()} for given {@link SparkFileOutput}s
-     *
-     * @param outputs
-     *            {@link SparkFileOutput}s to execute
-     */
     public void save(final List<SparkFileOutput> outputs)
     {
         // Write results
@@ -381,14 +374,17 @@ public class SparkFileHelper implements Serializable
             {
                 writePool.queue(() ->
                 {
-                    logger.debug("Writing {}: {}.", output.getOperationName(),
-                            output.getPath().getTemporaryPath());
+                    IO_RETRY.run(() ->
+                    {
+                        logger.debug("Writing {}: {}.", output.getOperationName(),
+                                output.getPath().getTemporaryPath());
 
-                    final Time timer = Time.now();
-                    output.getSaveFunction().accept(FileSystemHelper.writableResource(
-                            output.getPath().getTemporaryPath(), this.sparkContext));
-                    logger.debug("{} write took {} ms.", output.getOperationName(),
-                            timer.elapsedSince().asMilliseconds());
+                        final Time timer = Time.now();
+                        output.getSaveFunction().accept(FileSystemHelper.writableResource(
+                                output.getPath().getTemporaryPath(), this.sparkContext));
+                        logger.debug("{} write took {} ms.", output.getOperationName(),
+                                timer.elapsedSince().asMilliseconds());
+                    });
                 });
             }
         }
@@ -396,6 +392,17 @@ public class SparkFileHelper implements Serializable
         {
             logger.error("Failed save files.", e);
         }
+    }
+
+    /**
+     * Executes {@code SparkFileOutput#getSaveFunc()} for given {@link SparkFileOutput}s
+     *
+     * @param outputs
+     *            {@link SparkFileOutput}s to execute
+     */
+    public void save(final SparkFileOutput... outputs)
+    {
+        save(Arrays.asList(outputs));
     }
 
     /**
