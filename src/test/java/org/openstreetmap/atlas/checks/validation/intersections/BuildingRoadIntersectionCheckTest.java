@@ -43,4 +43,16 @@ public class BuildingRoadIntersectionCheckTest
         this.verifier.actual(this.setup.getCoveredAtlas(), check);
         this.verifier.verifyExpectedSize(0);
     }
+
+    /**
+     * Unit Test to make sure that the tunnel = building passage tag is not being counted as an
+     * intersection edge. This test also checks to make sure valid single point intersections are
+     * not flagged.
+     */
+    @Test
+    public void testTunnel()
+    {
+        this.verifier.actual(this.setup.getTunnelBuildingIntersect(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
 }

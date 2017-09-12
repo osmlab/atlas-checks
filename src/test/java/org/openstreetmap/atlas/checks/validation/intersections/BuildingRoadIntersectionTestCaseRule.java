@@ -17,11 +17,18 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
 {
     private static final String TEST_1 = "37.335310,-122.009566";
     private static final String TEST_2 = "37.3314171,-122.0304871";
+    private static final String TEST_2_0 = "10.12352901009, -80.76485349564";
+    private static final String TEST_2_1 = "10.12309410805, -80.7054341158";
+    private static final String TEST_2_2 = "10.04451299889, -80.70602752863";
+    private static final String TEST_2_3 = "10.04494800701, -80.76544690847";
+    private static final String TEST_2_4 = "10.09373688925, -80.76507849106";
+    private static final String TEST_2_5 = "10.0750348474, -80.70579705713";
+    private static final String TEST_2_6 = "10.10700231854, -80.82073863728";
+    private static final String TEST_2_7 = "10.05567718163, -80.65485033146";
     private static final String TEST_3 = "37.325440,-122.033948";
     private static final String TEST_4 = "37.332451,-122.028932";
     private static final String TEST_5 = "37.317585,-122.052138";
     private static final String TEST_6 = "37.390535,-122.031007";
-
     @TestAtlas(
 
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
@@ -52,9 +59,35 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
                             @Loc(value = TEST_6) }, tags = { "highway=pedestrian", "area=yes" }) })
     private Atlas atlas;
-
     @TestAtlas(loadFromTextResource = "covered.atlas")
     private Atlas coveredAtlas;
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_2_5)),
+            @Node(coordinates = @Loc(value = TEST_2_4)),
+            @Node(coordinates = @Loc(value = TEST_2_3)),
+            @Node(coordinates = @Loc(value = TEST_2_2)),
+            @Node(coordinates = @Loc(value = TEST_2_1)),
+            @Node(coordinates = @Loc(value = TEST_2_0)),
+            @Node(coordinates = @Loc(value = TEST_2_7)),
+            @Node(coordinates = @Loc(value = TEST_2_6)) },
+
+            edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_2_4), @Loc(value = TEST_2_5) }, tags = {
+                            "tunnel=building_passage", "highway=service" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2_5), @Loc(value = TEST_2_4) }, tags = {
+                            "tunnel=building_passage", "highway=service" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2_6), @Loc(value = TEST_2_4) }, tags = {
+                            "highway=service" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2_4), @Loc(value = TEST_2_6) }, tags = {
+                            "highway=service" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2_7), @Loc(value = TEST_2_5) }, tags = {
+                            "highway=service" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2_5), @Loc(value = TEST_2_7) }, tags = {
+                            "highway=service" }) },
+
+            areas = { @Area(coordinates = { @Loc(value = TEST_2_0), @Loc(value = TEST_2_1),
+                    @Loc(value = TEST_2_5), @Loc(value = TEST_2_2), @Loc(value = TEST_2_3),
+                    @Loc(value = TEST_2_4), @Loc(value = TEST_2_0) }, tags = { "building=yes" }) })
+    private Atlas tunnelBuildingIntersect;
 
     public Atlas getAtlas()
     {
@@ -64,5 +97,10 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
     public Atlas getCoveredAtlas()
     {
         return this.coveredAtlas;
+    }
+
+    public Atlas getTunnelBuildingIntersect()
+    {
+        return this.tunnelBuildingIntersect;
     }
 }
