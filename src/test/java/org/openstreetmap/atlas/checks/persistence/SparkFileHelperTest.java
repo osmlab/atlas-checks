@@ -9,6 +9,7 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.openstreetmap.atlas.streaming.resource.Resource;
 
 import com.google.common.base.Objects;
@@ -41,7 +42,7 @@ public class SparkFileHelperTest
     public void testIsDirectory() throws IOException
     {
         // Test a file
-        final File tempFile = File.createTempFile("test", ".tmp");
+        final File tempFile = File.createTempFile("test", FileSuffix.TEMPORARY.toString());
         tempFile.deleteOnExit();
         Assert.assertFalse(TEST_HELPER.isDirectory(tempFile.getAbsolutePath()));
 
@@ -60,7 +61,8 @@ public class SparkFileHelperTest
         Assert.assertTrue(TEST_HELPER.list(tempFolder.getAbsolutePath()).isEmpty());
 
         // Add a file and then delete
-        final File tempFile1 = File.createTempFile("test1", ".tmp", tempFolder);
+        final File tempFile1 = File.createTempFile("test1", FileSuffix.TEMPORARY.toString(),
+                tempFolder);
         Assert.assertEquals(1, TEST_HELPER.list(tempFolder.getAbsolutePath()).size());
         tempFile1.delete();
         Assert.assertTrue(TEST_HELPER.list(tempFolder.getAbsolutePath()).isEmpty());
@@ -70,7 +72,8 @@ public class SparkFileHelperTest
         final File[] randomFiles = new File[randomFileCount];
         for (int index = 0; index < randomFileCount; index++)
         {
-            randomFiles[index] = File.createTempFile("test" + index, ".tmp", tempFolder);
+            randomFiles[index] = File.createTempFile("test" + index,
+                    FileSuffix.TEMPORARY.toString(), tempFolder);
             Assert.assertEquals(index + 1, TEST_HELPER.list(tempFolder.getAbsolutePath()).size());
         }
 
@@ -114,11 +117,11 @@ public class SparkFileHelperTest
     {
         // Create temporary files
         // Delete one and rename one to another
-        final File tempFile = File.createTempFile("test", ".tmp");
+        final File tempFile = File.createTempFile("test", FileSuffix.TEMPORARY.toString());
         tempFile.deleteOnExit();
         Assert.assertTrue(tempFile.exists());
 
-        final File tempFile2 = File.createTempFile("test-another", ".tmp");
+        final File tempFile2 = File.createTempFile("test-another", FileSuffix.TEMPORARY.toString());
         tempFile2.delete();
         Assert.assertFalse(tempFile2.exists());
 
