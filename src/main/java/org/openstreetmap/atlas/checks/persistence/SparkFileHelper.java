@@ -12,10 +12,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.openstreetmap.atlas.checks.atlas.CountrySpecificAtlasFilePathFilter;
 import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemCreator;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.streaming.resource.InputStreamResource;
@@ -327,6 +329,35 @@ public class SparkFileHelper implements Serializable
             }
         }
         return true;
+    }
+
+    /**
+     * @param path
+     *            Path to check if it is a directory or not
+     * @return true if given path is directory, otherwise false.
+     */
+    public boolean isDirectory(final String path)
+    {
+        try
+        {
+            final FileSystem fileSystem = new FileSystemCreator().get(path, this.sparkContext);
+            return fileSystem.isDirectory(new Path(path));
+        }
+        catch (final Exception e)
+        {
+            throw new CoreException("Unable to check if given path {} is a directory or not.", path,
+                    e);
+        }
+    }
+
+    /**
+     * @param path
+     *            Path to directory to list {@link Resource}s under.
+     * @return List of {@link Resource}s under given path.
+     */
+    public List<Resource> list(final String path)
+    {
+        return FileSystemHelper.resources(path, this.sparkContext);
     }
 
     /**
