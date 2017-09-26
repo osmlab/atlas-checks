@@ -40,6 +40,14 @@
       "difficulty": "EASY"
     }
   },
+  "EdgeCrossingEdgeCheck": {
+    "challenge": {
+      "description": "Tasks contain ways that do not have shared nodes but cross each other.",
+      "blurb": "Crossing Ways",
+      "instruction": "Open your favorite editor and connect the ways at the point of intersection.",
+      "difficulty": "EASY"
+    }
+  },
   "FloatingEdgeCheck": {
     "length": {
       "maximum.kilometers": 100.0,
