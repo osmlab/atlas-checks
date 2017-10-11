@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.tags.ManMadeTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
@@ -288,6 +289,34 @@ public abstract class BaseCheck<T> implements Check, Serializable
     protected void markAsFlagged(final T identifier)
     {
         this.flaggedIdentifiers.add(identifier);
+    }
+
+    /**
+     * Generates a unique identifier given an {@link AtlasEntity}. OSM/Atlas objects with different
+     * types can share the identifier (way 12345 - node 12345). This method makes sure we generate a
+     * truly unique identifier, based on the OSM identifier, among different types for an
+     * {@link AtlasEntity}.
+     *
+     * @param entity
+     *            {@link AtlasEntity} to generate unique identifier for
+     * @return unique object identifier among different types
+     */
+    protected String getUniqueOSMIdentifier(final AtlasEntity entity)
+    {
+        return String.format("%s%s", entity.getType().toShortString(), entity.getOsmIdentifier());
+    }
+
+    /**
+     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasEntity)} except instead of using the
+     * OSM identifier we use the Atlas identifier
+     *
+     * @param entity
+     *            {@link AtlasEntity} to generate unique identifier for
+     * @return unique object identifier among different types
+     */
+    protected String getUniqueObjectIdentifier(final AtlasEntity entity)
+    {
+        return String.format("%s%s", entity.getType().toShortString(), entity.getIdentifier());
     }
 
     private String formatKey(final String name, final String key)

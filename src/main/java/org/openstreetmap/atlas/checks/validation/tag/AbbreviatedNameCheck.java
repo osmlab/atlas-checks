@@ -44,20 +44,6 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     private final Locale locale;
 
     /**
-     * Generates a unique identifier given an {@link AtlasEntity}. OSM/Atlas objects with different
-     * types can share the identifier (way 12345 - node 12345). This method makes sure we generate a
-     * truly unique identifier among different types for an {@link AtlasEntity}.
-     *
-     * @param entity
-     *            {@link AtlasEntity} to generate unique identifier for
-     * @return unique object identifier among different types
-     */
-    private static String getUniqueObjectIdentifier(final AtlasEntity entity)
-    {
-        return String.format("%s%s", entity.getType().toShortString(), entity.getOsmIdentifier());
-    }
-
-    /**
      * Default constructor
      *
      * @param configuration
@@ -67,7 +53,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     {
         super(configuration);
         this.locale = this.configurationValue(configuration, LOCALE_KEY,
-                Locale.getDefault().getLanguage(), locale -> new Locale(locale));
+                Locale.getDefault().getLanguage(), Locale::new);
         this.abbreviations = this
                 .configurationValue(configuration, ABBREVIATION_KEY, new ArrayList<String>(),
                         Sets::newHashSet)
@@ -79,7 +65,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof AtlasEntity
-                && !this.isFlagged(getUniqueObjectIdentifier((AtlasEntity) object));
+                && !this.isFlagged(this.getUniqueOSMIdentifier((AtlasEntity) object));
     }
 
     /**
@@ -89,7 +75,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // Mark OSM identifier as we are processing it
-        this.markAsFlagged(getUniqueObjectIdentifier((AtlasEntity) object));
+        this.markAsFlagged(this.getUniqueOSMIdentifier((AtlasEntity) object));
 
         // Fetch the name
         final Optional<String> optionalName = NameTag.getNameOf(object);
