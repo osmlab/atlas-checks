@@ -16,10 +16,10 @@ import org.openstreetmap.atlas.utilities.scalars.Angle;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
- * Flags edges that have an angle that is too sharp within their {@link PolyLine}. Rendering fails
- * once this threshold is exceeded. There may be other factors in play here, such as number of
- * intersections, type of highway, etc. But the main breaking point is any angles that are greater
- * than 149 degrees.
+ * Flags edges that have an angle that is too sharp within their {@link PolyLine}. Sharp angles may
+ * indicate inaccurate digitization once this threshold is exceeded. There may be other factors in
+ * play here, such as number of intersections, type of highway, etc. But the main breaking point is
+ * any angles that are less than 31 degrees.
  *
  * @author mgostintsev
  */
@@ -61,7 +61,7 @@ public class SharpAngleCheck extends BaseCheck<Long>
         }
 
         final List<Tuple<Angle, Location>> offendingAngles = edge.asPolyLine()
-                .anglesGreaterThanOrEqualTo(getAngleThreshold(edge));
+                .anglesGreaterThanOrEqualTo(this.threshold);
         if (!offendingAngles.isEmpty() && !hasBeenFlagged(edge))
         {
             flagEdge(edge);
@@ -87,25 +87,10 @@ public class SharpAngleCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
-    /**
-     * This function determines the "too sharp" threshold.
-     *
-     * @param edge
-     *            the {@link Edge} being checked.
-     * @return the {@link Angle} threshold to use for the check
-     */
-    protected Angle getAngleThreshold(final Edge edge)
-    {
-        return threshold;
-    }
-
     private List<Location> buildLocationList(final List<Tuple<Angle, Location>> angleTuples)
     {
         final List<Location> resultList = new ArrayList<>();
-        angleTuples.forEach(tuple ->
-        {
-            resultList.add(tuple.getSecond());
-        });
+        angleTuples.forEach(tuple -> resultList.add(tuple.getSecond()));
 
         return resultList;
     }
