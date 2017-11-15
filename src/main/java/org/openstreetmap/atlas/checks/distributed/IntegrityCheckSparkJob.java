@@ -200,6 +200,7 @@ public class IntegrityCheckSparkJob extends SparkJob
         final Set<BaseCheck> checksToExecute = checkLoader.loadChecks();
         if (!isValidInput(countries, checksToExecute))
         {
+            logger.error("No countries supplied or checks enabled, exiting!");
             return;
         }
 
@@ -350,20 +351,9 @@ public class IntegrityCheckSparkJob extends SparkJob
         {
             final String country = countryPathPair._1();
             final Set<SparkFilePath> paths = countryPathPair._2();
-            logger.info("[{}] Renaming outputs: {}", country, paths);
+            logger.info("[{}] Committing outputs: {}", country, paths);
 
-            paths.forEach(path ->
-            {
-                try
-                {
-                    logger.debug("Renaming {}.", path);
-                    fileHelper.rename(path.getTemporaryPath(), path.getTargetPath());
-                }
-                catch (final Exception e)
-                {
-                    logger.warn("Renaming {} failed!", path, e);
-                }
-            });
+            paths.forEach(fileHelper::commit);
         });
 
         try
@@ -417,7 +407,6 @@ public class IntegrityCheckSparkJob extends SparkJob
     {
         if (countries.size() == 0 || checksToExecute.size() == 0)
         {
-            logger.debug("No countries supplied or checks enabled, exiting!");
             return false;
         }
         return true;
