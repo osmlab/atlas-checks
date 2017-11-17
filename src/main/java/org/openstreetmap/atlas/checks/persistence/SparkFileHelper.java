@@ -288,6 +288,50 @@ public class SparkFileHelper implements Serializable
     }
 
     /**
+     * Renames the {@link SparkFilePath#temporaryPath} to the {@link SparkFilePath#targetPath},
+     * taking care to avoid producing nested directories.
+     *
+     * @param path
+     *            {@link SparkFilePath} to commit
+     */
+    public void commit(final SparkFilePath path)
+    {
+        try
+        {
+            if (this.isDirectory(path.getTemporaryPath()))
+            {
+                logger.debug("Path {} is a directory. Renaming all the files under.", path);
+                if (!this.exists(path.getTargetPath()))
+                {
+                    logger.debug("Creating {}.", path.getTargetPath());
+                    this.mkdir(path.getTargetPath());
+                }
+                if (!this.isDirectory(path.getTargetPath()))
+                {
+                    throw new CoreException("{} not a directory.", path.getTargetPath());
+                }
+                this.list(path.getTemporaryPath()).forEach(resource ->
+                {
+                    logger.debug("Renaming {} in {} into {}.", resource.getName(),
+                            path.getTemporaryPath(), path.getTargetPath());
+                    this.rename(
+                            SparkFileHelper.combine(path.getTemporaryPath(), resource.getName()),
+                            SparkFileHelper.combine(path.getTargetPath(), resource.getName()));
+                });
+            }
+            else
+            {
+                logger.debug("Renaming {} to {}.", path.getTemporaryPath(), path.getTargetPath());
+                this.rename(path.getTemporaryPath(), path.getTargetPath());
+            }
+        }
+        catch (final Exception e)
+        {
+            logger.warn("Renaming {} failed!", path, e);
+        }
+    }
+
+    /**
      * Deletes given directory and all it's child items
      *
      * @param path
@@ -329,6 +373,25 @@ public class SparkFileHelper implements Serializable
             }
         }
         return true;
+    }
+
+    /**
+     * @param path
+     *            Path to check if it exists or not
+     * @return true if given path exists, otherwise false
+     */
+    public boolean exists(final String path)
+    {
+        try
+        {
+            final FileSystem fileSystem = new FileSystemCreator().get(path, this.sparkContext);
+            return fileSystem.exists(new Path(path));
+        }
+        catch (final Exception e)
+        {
+            throw new CoreException("Unable to check if given path {} is a directory or not.", path,
+                    e);
+        }
     }
 
     /**

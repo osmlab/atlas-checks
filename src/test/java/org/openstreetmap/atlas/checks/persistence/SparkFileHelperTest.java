@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.openstreetmap.atlas.streaming.resource.Resource;
@@ -25,6 +27,9 @@ public class SparkFileHelperTest
     // A helper without any specific configuration
     // Empty configuration targets local filesystem
     private static final SparkFileHelper TEST_HELPER = new SparkFileHelper(Collections.emptyMap());
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test(expected = CoreException.class)
     public void testDeleteNonExistingDirectory()
@@ -129,5 +134,57 @@ public class SparkFileHelperTest
         TEST_HELPER.rename(tempFile.getAbsolutePath(), tempFile2.getAbsolutePath());
         Assert.assertFalse(tempFile.exists());
         Assert.assertTrue(tempFile2.exists());
+    }
+
+    @Test
+    public void testCommitFile() throws IOException
+    {
+        // Create temporary files
+        // Delete one and rename one to another
+        final File tempFile = File.createTempFile("test", FileSuffix.TEMPORARY.toString());
+        tempFile.deleteOnExit();
+        Assert.assertTrue(tempFile.exists());
+
+        final File tempFile2 = File.createTempFile("test-another", FileSuffix.TEMPORARY.toString());
+        tempFile2.delete();
+        Assert.assertFalse(tempFile2.exists());
+
+        // Rename test to test-another
+        TEST_HELPER
+                .commit(new SparkFilePath(tempFile.getAbsolutePath(), tempFile2.getAbsolutePath()));
+        Assert.assertFalse(tempFile.exists());
+        Assert.assertTrue(tempFile2.exists());
+    }
+
+    @Test
+    public void testCommitDirectory() throws IOException
+    {
+        // Create temporary files
+        // Delete one and rename one to another
+        final File tempFolder = temporaryFolder.newFolder();
+        final File targetFolder = temporaryFolder.newFolder();
+
+        targetFolder.delete();
+
+        final File tempFile = File.createTempFile("test", FileSuffix.TEMPORARY.toString(),
+                tempFolder);
+        final File tempFile2 = File.createTempFile("test-another", FileSuffix.TEMPORARY.toString(),
+                tempFolder);
+
+        TEST_HELPER.commit(
+                new SparkFilePath(tempFolder.getAbsolutePath(), targetFolder.getAbsolutePath()));
+
+        Assert.assertFalse(tempFile.exists());
+        Assert.assertFalse(tempFile2.exists());
+
+        final String[] targetFile = targetFolder
+                .list((dir, name) -> name.equals(tempFile.getName()));
+        Assert.assertNotNull(targetFile);
+        Assert.assertEquals(1, targetFile.length);
+
+        final String[] targetFile2 = targetFolder
+                .list((dir, name) -> name.equals(tempFile.getName()));
+        Assert.assertNotNull(targetFile2);
+        Assert.assertEquals(1, targetFile2.length);
     }
 }

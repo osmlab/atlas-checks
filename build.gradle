@@ -128,7 +128,7 @@ configurations
     integrationTestRuntime.extendsFrom testRuntime
 }
 
-dependencies 
+dependencies
 {
     compile packages.commons
     compile packages.atlas
@@ -296,7 +296,7 @@ task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the
     // add log4j config to the classpath
     classpath('./config/log4j')
 
-    // uncomment to change jvm args 
+    // uncomment to change jvm args
     // jvmArgs(["-Xmx8g","-Xms8g"])
 
     // uncomment to enable jvm debugging

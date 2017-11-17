@@ -1,6 +1,11 @@
 package org.openstreetmap.atlas.checks.event;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Optional;
+
 import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
+import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,24 +24,35 @@ public final class MetricFileGenerator extends FileProcessor<MetricEvent>
 {
     private static final Logger logger = LoggerFactory.getLogger(MetricFileGenerator.class);
 
-    // Filename for the metric file
-    private final String filename;
+    private final String label;
+    private final FileSuffix suffix;
 
     /**
      * Default constructor
      *
-     * @param filename
-     *            filename for the metric file
+     * @param label
+     *            label for the metric file
      * @param fileHelper
      *            {@link SparkFileHelper} for I/O operations
      * @param outputFolder
      *            output folder path to write files to
      */
-    public MetricFileGenerator(final String filename, final SparkFileHelper fileHelper,
+    public MetricFileGenerator(final String label, final SparkFileHelper fileHelper,
             final String outputFolder)
     {
         super(fileHelper, outputFolder);
-        this.filename = filename;
+        final Optional<FileSuffix> knownSuffix = Arrays.stream(FileSuffix.values())
+                .filter(suffix -> label.endsWith(suffix.toString())).findFirst();
+        if (knownSuffix.isPresent())
+        {
+            this.label = label.substring(0, label.lastIndexOf(String.valueOf(knownSuffix.get())));
+            this.suffix = knownSuffix.get();
+        }
+        else
+        {
+            this.label = label;
+            this.suffix = FileSuffix.CSV;
+        }
 
         // This will make sure we have a header for the csv file
         this.process(MetricEvent.header());
@@ -67,6 +83,6 @@ public final class MetricFileGenerator extends FileProcessor<MetricEvent>
     @Override
     protected String getFilename()
     {
-        return this.filename;
+        return String.format("%s-%s%s", label, new Date().getTime(), suffix);
     }
 }

@@ -292,31 +292,48 @@ public abstract class BaseCheck<T> implements Check, Serializable
     }
 
     /**
-     * Generates a unique identifier given an {@link AtlasEntity}. OSM/Atlas objects with different
+     * Generates a unique identifier given an {@link AtlasObject}. OSM/Atlas objects with different
      * types can share the identifier (way 12345 - node 12345). This method makes sure we generate a
      * truly unique identifier, based on the OSM identifier, among different types for an
-     * {@link AtlasEntity}.
+     * {@link AtlasObject}. If the AtlasObject is an instanceof AtlasEntity then it will simply use
+     * the type for the first part of the identifier, otherwise it will use the simple class name.
      *
-     * @param entity
-     *            {@link AtlasEntity} to generate unique identifier for
+     * @param object
+     *            {@link AtlasObject} to generate unique identifier for
      * @return unique object identifier among different types
      */
-    protected String getUniqueOSMIdentifier(final AtlasEntity entity)
+    protected String getUniqueOSMIdentifier(final AtlasObject object)
     {
-        return String.format("%s%s", entity.getType().toShortString(), entity.getOsmIdentifier());
+        if (object instanceof AtlasEntity)
+        {
+            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
+                    object.getOsmIdentifier());
+        }
+        else
+        {
+            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
+        }
     }
 
     /**
-     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasEntity)} except instead of using the
+     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasObject)} except instead of using the
      * OSM identifier we use the Atlas identifier
      *
-     * @param entity
-     *            {@link AtlasEntity} to generate unique identifier for
+     * @param object
+     *            {@link AtlasObject} to generate unique identifier for
      * @return unique object identifier among different types
      */
-    protected String getUniqueObjectIdentifier(final AtlasEntity entity)
+    protected String getUniqueObjectIdentifier(final AtlasObject object)
     {
-        return String.format("%s%s", entity.getType().toShortString(), entity.getIdentifier());
+        if (object instanceof AtlasEntity)
+        {
+            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
+                    object.getIdentifier());
+        }
+        else
+        {
+            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
+        }
     }
 
     private String formatKey(final String name, final String key)
