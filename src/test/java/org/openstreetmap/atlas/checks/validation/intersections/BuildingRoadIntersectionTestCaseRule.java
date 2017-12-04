@@ -100,11 +100,9 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                             @Loc(value = TEST_3) }, tags = { "highway=primary", "layer=-1" }) },
 
             areas = {
-                    // Regular building - flagged
                     @Area(coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
                             @Loc(value = TEST_6) }, tags = { "building=yes" }),
-                    // Non-Pedestrian Area - flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
                             @Loc(value = TEST_6) }, tags = { "highway=primary",
