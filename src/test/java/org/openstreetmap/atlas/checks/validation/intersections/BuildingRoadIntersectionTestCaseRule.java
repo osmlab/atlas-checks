@@ -88,6 +88,26 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                     @Loc(value = TEST_2_5), @Loc(value = TEST_2_2), @Loc(value = TEST_2_3),
                     @Loc(value = TEST_2_4), @Loc(value = TEST_2_0) }, tags = { "building=yes" }) })
     private Atlas tunnelBuildingIntersect;
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+
+            edges = {
+
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=primary", "layer=-1" }) },
+
+            areas = {
+                    @Area(coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }),
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
+                                    "building=house" }) })
+    private Atlas layered;
 
     public Atlas getAtlas()
     {
@@ -102,5 +122,10 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
     public Atlas getTunnelBuildingIntersect()
     {
         return this.tunnelBuildingIntersect;
+    }
+
+    public Atlas getLayeredAtlas()
+    {
+        return this.layered;
     }
 }

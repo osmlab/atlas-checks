@@ -55,4 +55,16 @@ public class BuildingRoadIntersectionCheckTest
         this.verifier.actual(this.setup.getTunnelBuildingIntersect(), check);
         this.verifier.verifyExpectedSize(0);
     }
+
+    /**
+     * Unit test to make sure that when layer tag is used on highways that they are handled
+     * properly. And so if highway layer tag = -1 then it does not intersect with the building. As
+     * in this particular case it goes under it.
+     */
+    @Test
+    public void testLayered()
+    {
+        this.verifier.actual(this.setup.getLayeredAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
 }

@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -40,6 +41,8 @@ public class BuildingRoadIntersectionCheck extends BaseCheck
     {
         return edge -> HighwayTag.isCoreWay(edge)
                 && edge.asPolyLine().intersects(building.asPolygon())
+                && LayerTag.getTaggedValue(edge).orElse(0L)
+                        .equals(LayerTag.getTaggedValue(building).orElse(0L))
                 && !isValidIntersection(building, edge);
     }
 
