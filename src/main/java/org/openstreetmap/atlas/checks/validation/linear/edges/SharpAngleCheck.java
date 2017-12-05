@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,8 +27,11 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
 public class SharpAngleCheck extends BaseCheck<Long>
 {
     private static final double THRESHOLD_DEGREES_DEFAULT = 149.0;
+    private static final String TOO_SHARP_INSTRUCTION_1 = "Highway {0} has too sharp an angle at {1}";
+    private static final String TOO_SHARP_INSTRUCTION_2 = "Highway {0} has {1} angles that are too sharp";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TOO_SHARP_INSTRUCTION_1,
+            TOO_SHARP_INSTRUCTION_2);
     private static final long serialVersionUID = 285618700794811828L;
-
     private final Angle threshold;
 
     /**
@@ -70,14 +74,14 @@ public class SharpAngleCheck extends BaseCheck<Long>
             if (offendingAngles.size() == 1)
             {
                 // Single offending angle - output the location.
-                checkMessage = String.format("Highway %s has too sharp an angle at %s",
-                        object.getOsmIdentifier(), offendingAngles.get(0).getSecond());
+                checkMessage = this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                        offendingAngles.get(0).getSecond());
             }
             else
             {
                 // Multiple such angles - output the total count.
-                checkMessage = String.format("Highway %s has %s angles that are too sharp",
-                        object.getOsmIdentifier(), offendingAngles.size());
+                checkMessage = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
+                        offendingAngles.size());
             }
 
             final List<Location> offendingLocations = buildLocationList(offendingAngles);
@@ -85,6 +89,12 @@ public class SharpAngleCheck extends BaseCheck<Long>
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     private List<Location> buildLocationList(final List<Tuple<Angle, Location>> angleTuples)

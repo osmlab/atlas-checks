@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -14,8 +16,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author cuthbertm
  */
-public class OrphanNodeCheck extends BaseCheck
+public class OrphanNodeCheck extends BaseCheck<Long>
 {
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList("Node with OSM ID {0} is an orphan, no tags and not connected to any ways.");
     private static final long serialVersionUID = 7621363218174632277L;
 
     /**
@@ -59,8 +63,12 @@ public class OrphanNodeCheck extends BaseCheck
     {
 
         return Optional.of(this.createFlag(object,
-                String.format(
-                        "Node with OSM ID %s is an orphan, no tags and not connected to any ways.",
-                        object.getOsmIdentifier())));
+                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

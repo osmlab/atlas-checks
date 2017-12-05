@@ -1,8 +1,10 @@
 package org.openstreetmap.atlas.checks.base;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,23 +43,26 @@ import com.google.gson.GsonBuilder;
 public abstract class BaseCheck<T> implements Check, Serializable
 {
     public static final String PARAMETER_ACCEPT_PIERS = "accept.piers";
-    public static final String PARAMETER_WHITELIST_COUNTRIES = "countries.whitelist";
     public static final String PARAMETER_BLACKLIST_COUNTRIES = "countries.blacklist";
-    public static final String PARAMETER_WHITELIST_TAGS = "tags.filter";
     public static final String PARAMETER_CHALLENGE = "challenge";
+    public static final String PARAMETER_FLAG = "flags";
+    public static final String PARAMETER_WHITELIST_COUNTRIES = "countries.whitelist";
+    public static final String PARAMETER_WHITELIST_TAGS = "tags.filter";
+    private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
+    private static final String PARAMETER_LOCALE_KEY = "locale";
     private static final Logger logger = LoggerFactory.getLogger(BaseCheck.class);
     private static final long serialVersionUID = 4427673331949586822L;
-
     private final boolean acceptPiers;
-    private final List<String> countries;
     private final List<String> blacklistCountries;
-    private TaggableFilter tagFilter = null;
     private final Challenge challenge;
-
-    private final String name = this.getClass().getSimpleName();
-
+    private final List<String> countries;
+    private final Map<String, List<String>> flagLanguageMap;
     // OSM Identifiers are used to keep track of flagged features
     private final Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
+    private final Locale locale;
+
+    private final String name = this.getClass().getSimpleName();
+    private TaggableFilter tagFilter = null;
 
     /**
      * Default constructor
@@ -77,6 +82,10 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 configurationValue(configuration, PARAMETER_WHITELIST_TAGS, ""));
         final Map<String, String> challengeMap = configurationValue(configuration,
                 PARAMETER_CHALLENGE, Collections.EMPTY_MAP);
+        this.flagLanguageMap = configurationValue(configuration, PARAMETER_FLAG,
+                Collections.EMPTY_MAP);
+        this.locale = configurationValue(configuration, PARAMETER_LOCALE_KEY,
+                DEFAULT_LOCALE.getLanguage(), Locale::new);
         if (challengeMap.isEmpty())
         {
             this.challenge = new Challenge(this.getClass().getSimpleName(), "", "", "",
@@ -153,6 +162,45 @@ public abstract class BaseCheck<T> implements Check, Serializable
     public List<String> getCountries()
     {
         return this.countries;
+    }
+
+    public Locale getLocale()
+    {
+        return this.locale;
+    }
+
+    /**
+     * Uses the default of configured locale to grab the localized instruction format from the
+     * configuration. If the localized version does not contain the given index instruction then it
+     * will be grabbed from the FallBack Instructions. A {@link IndexOutOfBoundsException} will be
+     * thrown if the instruction index is out of the Fallback Instructions. The instruction format
+     * will then be formatted using the provided objects and returned.
+     *
+     * @param index
+     *            The index of the desired instruction format.
+     * @param objects
+     *            The objects to be used in constructing the instruction
+     * @return String of the localized instruction, or the {@link BaseCheck#DEFAULT_LOCALE} language
+     *         instruction, or the fallback instruction. In that order if the previous isn't present
+     *         in the configuration.
+     */
+    public final String getLocalizedInstruction(final int index, final Object... objects)
+    {
+        String instructionFormat;
+        try
+        {
+            instructionFormat = this.flagLanguageMap.containsKey(this.getLocale().getLanguage())
+                    ? this.flagLanguageMap.get(this.getLocale().getLanguage()).get(index)
+                    : this.flagLanguageMap.containsKey(DEFAULT_LOCALE.getLanguage())
+                            ? this.flagLanguageMap.get(DEFAULT_LOCALE.getLanguage()).get(index)
+                            : this.getFallbackInstructions().get(index);
+
+        }
+        catch (final IndexOutOfBoundsException exception)
+        {
+            instructionFormat = this.getFallbackInstructions().get(index);
+        }
+        return this.formatInstruction(instructionFormat, objects);
     }
 
     @Override
@@ -259,6 +307,14 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected abstract Optional<CheckFlag> flag(AtlasObject object);
 
+    /**
+     * Method to implement for inheriting checks to return the default set of instruction formats
+     * that will be the last resort in {@link BaseCheck#getLocalizedInstruction(int, Object[])}
+     *
+     * @return The set of instructions to fall back to if configuration results in none.
+     */
+    protected abstract List<String> getFallbackInstructions();
+
     protected Set<T> getFlaggedIdentifiers()
     {
         return this.flaggedIdentifiers;
@@ -279,16 +335,6 @@ public abstract class BaseCheck<T> implements Check, Serializable
     protected String getTaskIdentifier(final Set<AtlasObject> objects)
     {
         return new TaskIdentifier(objects).toString();
-    }
-
-    protected boolean isFlagged(final T identifier)
-    {
-        return this.flaggedIdentifiers.contains(identifier);
-    }
-
-    protected void markAsFlagged(final T identifier)
-    {
-        this.flaggedIdentifiers.add(identifier);
     }
 
     /**
@@ -334,6 +380,35 @@ public abstract class BaseCheck<T> implements Check, Serializable
         {
             return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
         }
+    }
+
+    protected final boolean isFlagged(final T identifier)
+    {
+        return this.flaggedIdentifiers.contains(identifier);
+    }
+
+    protected final void markAsFlagged(final T identifier)
+    {
+        this.flaggedIdentifiers.add(identifier);
+    }
+
+    /**
+     * Utility method to concisely construct a instruction from a {@link MessageFormat} style string
+     * and a varying number of objects.
+     *
+     * @param format
+     *            A string embedded with {@link MessageFormat} styled formats.
+     * @param objects
+     *            The objects to be printed used the embedded formats.
+     * @return The fully formatted Instruction.
+     */
+    private String formatInstruction(final String format, final Object... objects)
+    {
+        if (objects == null || objects.length == 0)
+        {
+            return format;
+        }
+        return new MessageFormat(format).format(objects);
     }
 
     private String formatKey(final String name, final String key)

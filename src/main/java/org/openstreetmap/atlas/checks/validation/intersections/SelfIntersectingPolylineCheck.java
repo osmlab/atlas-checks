@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,13 +28,13 @@ import org.slf4j.LoggerFactory;
  */
 public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 {
-    private static final long serialVersionUID = 2722288442633787006L;
-
-    private static final String INSTRUCTION_SHORT = "Self-intersecting polyline for feature %s";
-    private static final String INSTRUCTION_LONG = INSTRUCTION_SHORT + " at %s";
-
+    private static final String INSTRUCTION_SHORT = "Self-intersecting polyline for feature {0}";
+    private static final String INSTRUCTION_LONG = INSTRUCTION_SHORT + " at {1}";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_SHORT,
+            INSTRUCTION_LONG);
     private static final Logger logger = LoggerFactory
             .getLogger(SelfIntersectingPolylineCheck.class);
+    private static final long serialVersionUID = 2722288442633787006L;
 
     /**
      * Default constructor
@@ -93,7 +95,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         {
             final CheckFlag flag = new CheckFlag(Long.toString(object.getIdentifier()));
             flag.addObject(object);
-            flag.addInstruction(String.format(INSTRUCTION_LONG, object.getOsmIdentifier(),
+            flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier(),
                     selfIntersections.toString()));
             selfIntersections.forEach(flag::addPoint);
             response = Optional.of(flag);
@@ -126,7 +128,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             if (!isJtsValid)
             {
                 response = Optional.of(createFlag(object,
-                        String.format(INSTRUCTION_SHORT, object.getOsmIdentifier())));
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier())));
             }
             else
             {
@@ -135,5 +137,11 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         }
 
         return response;
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

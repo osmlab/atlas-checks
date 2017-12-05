@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.base.checks;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -48,6 +50,12 @@ public class BaseTestCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        return Optional.of(this.createFlag(object, "Default Instruction"));
+        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return Arrays.asList("Default Instruction");
     }
 }

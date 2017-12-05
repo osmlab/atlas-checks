@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -15,6 +16,9 @@ public class BuildingRoadIntersectionCheckTest
 
     private static final BuildingRoadIntersectionCheck check = new BuildingRoadIntersectionCheck(
             ConfigurationResolver.emptyConfiguration());
+    private static final BuildingRoadIntersectionCheck spanishCheck = new BuildingRoadIntersectionCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"CheckResourceLoader\": {\"scanUrls\": [\"org.openstreetmap.atlas.checks\"]},\"BuildingRoadIntersectionCheck\":{\"enabled\":true,\"locale\":\"es\",\"flags\":{\"en\":[\"Building (id-{0}) intersects road (id-{1})\"],\"es\":[\"Edificio(id-{0}) cruza calle(id-{0})\"]}}}"));
 
     @Rule
     public BuildingRoadIntersectionTestCaseRule setup = new BuildingRoadIntersectionTestCaseRule();
@@ -42,6 +46,21 @@ public class BuildingRoadIntersectionCheckTest
     {
         this.verifier.actual(this.setup.getCoveredAtlas(), check);
         this.verifier.verifyExpectedSize(0);
+    }
+
+    /**
+     * Test to confirm the locality functionality of the check. Changing the instruction to spanish.
+     */
+    @Test
+    public void testSpanishCheck()
+    {
+        this.verifier.actual(this.setup.getAtlas(), spanishCheck);
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions().contains("Edificio(id-0) cruza calle(id-0)"));
+        });
+        this.verifier.verifyExpectedSize(2);
+
     }
 
     /**

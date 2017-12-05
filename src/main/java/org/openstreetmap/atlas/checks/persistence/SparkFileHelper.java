@@ -511,17 +511,20 @@ public class SparkFileHelper implements Serializable
      */
     public void write(final String directory, final String filename, final String content)
     {
-        final WritableResource resource = FileSystemHelper
-                .writableResource(combine(directory, filename), this.sparkContext);
-        try (BufferedWriter out = new BufferedWriter(
-                new OutputStreamWriter(resource.write(), StandardCharsets.UTF_8)))
+        IO_RETRY.run(() ->
         {
-            out.write(content);
-        }
-        catch (final Exception e)
-        {
-            throw new CoreException(String.format("Could not save into %s.", resource.getName()),
-                    e);
-        }
+            final WritableResource resource = FileSystemHelper
+                    .writableResource(combine(directory, filename), this.sparkContext);
+            try (BufferedWriter out = new BufferedWriter(
+                    new OutputStreamWriter(resource.write(), StandardCharsets.UTF_8)))
+            {
+                out.write(content);
+            }
+            catch (final Exception e)
+            {
+                throw new CoreException(
+                        String.format("Could not save into %s.", resource.getName()), e);
+            }
+        });
     }
 }

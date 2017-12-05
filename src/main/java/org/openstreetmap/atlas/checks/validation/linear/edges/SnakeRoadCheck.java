@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
@@ -35,12 +37,12 @@ import org.openstreetmap.atlas.utilities.scalars.Angle;
  */
 public class SnakeRoadCheck extends BaseCheck<Long>
 {
+    private static final Angle EDGE_HEADING_DIFFERENCE_THRESHOLD = Angle.degrees(60);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "The way with id {0} is a snake road. Consider spliting it into two or more separate ways.");
     private static final long MINIMUM_EDGES_TO_QUALIFY_AS_SNAKE_ROAD = 3;
     private static final long MINIMUM_VALENCE_TO_QUALIFY_AS_SNAKE_ROAD = 4;
-    private static final Angle EDGE_HEADING_DIFFERENCE_THRESHOLD = Angle.degrees(60);
-
     private static final long serialVersionUID = 6040648590412505891L;
-    private static final String FLAG_INSTRUCTION = "The way with id %s is a snake road. Consider spliting it into two or more separate ways.";
 
     /**
      * Validates whether a given {@link Edge} should be considered as a candidate to be part of a
@@ -107,11 +109,17 @@ public class SnakeRoadCheck extends BaseCheck<Long>
             if (networkWalkQualifiesAsSnakeRoad(walk))
             {
                 return Optional.of(createFlag(walk.getVisitedEdges(),
-                        String.format(FLAG_INSTRUCTION, object.getOsmIdentifier())));
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier())));
             }
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.base.checks;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -50,6 +51,12 @@ public class CheckResourceLoaderTestCheck extends BaseCheck<Long>
      */
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
+    {
+        return null;
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
     {
         return null;
     }

@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -24,16 +26,17 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
 {
     // Instructions
     public static final String ONE_WAY_INSTRUCTION = "This roundabout edge is not one-way.";
-    private static final long serialVersionUID = -3648610800112828238L;
+    // Highway tags referring roundabouts
+    private static final EnumSet<HighwayTag> HIGHWAY_TAGS_FOR_ROUNDABOUTS = EnumSet
+            .of(HighwayTag.MINI_ROUNDABOUT, HighwayTag.TURNING_CIRCLE, HighwayTag.TURNING_LOOP);
     // Minimum valence for a node to not to flag
     private static final int MINIMUM_VALENCE = 2;
     public static final String MINIMUM_VALENCE_INSTRUCTION = String.format(
             "This roundabout edge has an end node that has less than %d connections.",
             MINIMUM_VALENCE);
-
-    // Highway tags referring roundabouts
-    private static final EnumSet<HighwayTag> HIGHWAY_TAGS_FOR_ROUNDABOUTS = EnumSet
-            .of(HighwayTag.MINI_ROUNDABOUT, HighwayTag.TURNING_CIRCLE, HighwayTag.TURNING_LOOP);
+    public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(ONE_WAY_INSTRUCTION,
+            MINIMUM_VALENCE_INSTRUCTION);
+    private static final long serialVersionUID = -3648610800112828238L;
 
     private static boolean aConnectedNodeHasValenceLessThan(final Edge edge, final int valence)
     {
@@ -59,6 +62,12 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
         final Optional<HighwayTag> highwayTag = Validators.from(HighwayTag.class, object);
         return JunctionTag.isRoundabout(object) || (highwayTag.isPresent()
                 && HIGHWAY_TAGS_FOR_ROUNDABOUTS.contains(highwayTag.get()));
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -102,7 +111,7 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
         if (!edge.isMasterEdge() || OneWayTag.isExplicitlyTwoWay(edge))
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(object, ONE_WAY_INSTRUCTION));
+            return Optional.of(createFlag(object, this.getLocalizedInstruction(0)));
         }
 
         // Rule: a roundabout edge should never originate/terminate at a valence-1 node
@@ -110,7 +119,7 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
         if (aConnectedNodeHasValenceLessThan(edge, MINIMUM_VALENCE))
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(object, MINIMUM_VALENCE_INSTRUCTION));
+            return Optional.of(createFlag(object, this.getLocalizedInstruction(1)));
         }
 
         return Optional.empty();

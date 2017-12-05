@@ -1,7 +1,9 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -29,12 +31,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class SinkIslandCheck extends BaseCheck<Long>
 {
-    public static final long TREE_SIZE_DEFAULT = 50;
     public static final float LOAD_FACTOR = 0.8f;
+    public static final long TREE_SIZE_DEFAULT = 50;
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList("Road is impossible to get out of.");
     private static final long serialVersionUID = -1432150496331502258L;
-
-    private final int treeSize;
     private final int storeSize;
+    private final int treeSize;
 
     /**
      * Default constructor
@@ -145,7 +148,13 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
         // Create the flag if and only if the empty flag value is not set to false
         return emptyFlag ? Optional.empty()
-                : Optional.of(createFlag(explored, "Road is impossible to get out of."));
+                : Optional.of(createFlag(explored, this.getLocalizedInstruction(0)));
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**

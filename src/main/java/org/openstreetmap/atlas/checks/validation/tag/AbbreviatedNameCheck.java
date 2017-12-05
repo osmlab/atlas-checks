@@ -1,7 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,20 +29,15 @@ import com.google.common.collect.Sets;
  */
 public class AbbreviatedNameCheck extends BaseCheck<String>
 {
-    private static final long serialVersionUID = -3648610800112828238L;
-
     // Abbreviation config
     private static final String ABBREVIATION_KEY = "abbreviations";
-
-    // Config to create Locale object
-    private static final String LOCALE_KEY = "locale";
-
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "OSM feature with id {0}'s name tag (`name` = **{1}**) has an abbreviation. Please update the `name` tag to not use abbreviation.");
     // Splitter to parse name
     private static final Splitter NAME_SPLITTER = Splitter
             .on(CharMatcher.JAVA_LETTER_OR_DIGIT.negate()).omitEmptyStrings();
-
+    private static final long serialVersionUID = -3648610800112828238L;
     private final Set<String> abbreviations;
-    private final Locale locale;
 
     /**
      * Default constructor
@@ -52,12 +48,10 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     public AbbreviatedNameCheck(final Configuration configuration)
     {
         super(configuration);
-        this.locale = this.configurationValue(configuration, LOCALE_KEY,
-                Locale.getDefault().getLanguage(), Locale::new);
         this.abbreviations = this
                 .configurationValue(configuration, ABBREVIATION_KEY, new ArrayList<String>(),
                         Sets::newHashSet)
-                .stream().map(abbreviation -> abbreviation.toLowerCase(this.locale))
+                .stream().map(abbreviation -> abbreviation.toLowerCase(this.getLocale()))
                 .collect(Collectors.toSet());
     }
 
@@ -86,19 +80,23 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
 
         // Lowercase name and parse it into tokens
         final String name = optionalName.get();
-        final String lowercaseName = name.toLowerCase(this.locale);
+        final String lowercaseName = name.toLowerCase(this.getLocale());
         final Set<String> tokens = Sets.newHashSet(NAME_SPLITTER.split(lowercaseName));
 
         // Flag if it has any abbreviations
         if (tokens.stream().anyMatch(this.abbreviations::contains))
         {
             final CheckFlag flag = this.createFlag(object,
-                    String.format(
-                            "OSM feature with id %s's name tag (`name` = **%s**) has an abbreviation. Please update the `name` tag to not use abbreviation.",
-                            object.getOsmIdentifier(), name));
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier(), name));
             return Optional.of(flag);
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

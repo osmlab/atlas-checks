@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -19,7 +21,15 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class DuplicateNodeCheck extends BaseCheck<Location>
 {
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList("Duplicate Node {0} at {1}");
     private static final long serialVersionUID = 1055616456230649593L;
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
 
     /**
      * Default constructor
@@ -51,7 +61,7 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
                         && dupe.getLocation().equals(node.getLocation()))
                 {
                     this.markAsFlagged(node.getLocation());
-                    return Optional.of(createFlag(object, String.format("Duplicate Node %s at %s",
+                    return Optional.of(createFlag(object, this.getLocalizedInstruction(0,
                             object.getOsmIdentifier(), node.getLocation())));
                 }
             }

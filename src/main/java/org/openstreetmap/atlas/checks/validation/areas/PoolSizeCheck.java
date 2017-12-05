@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -15,7 +17,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author mcuthbert
  */
-public class PoolSizeCheck extends BaseCheck
+public class PoolSizeCheck extends BaseCheck<Long>
 {
     // The worlds largest swimming pool is at the San Alfonso del Mar resort in Algarrobo and
     // measures 1,013 meters in length, which is 4,856,227.71 square meters. So we can use a even
@@ -25,6 +27,9 @@ public class PoolSizeCheck extends BaseCheck
     public static final double MAXIMUM_SIZE_DEFAULT = 5000000;
     // A 5 meter squared pool if a circle would only be roughly 2 meters in diameter.
     public static final double MINIMUM_SIZE_DEFAULT = 5;
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "The swimming pool with OSM ID {0} with a surface area of {1,number,#.##} meters squared is greater than the expected maximum of {2} meters squared.",
+            "The swimming pool with OSM ID {0} with a surface area of {1,number,#.##} meters squared is smaller than the expected minimum of {2} meters squared.");
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
     // Create maximum and minimum size variables to be used later in our flag function.
@@ -81,19 +86,21 @@ public class PoolSizeCheck extends BaseCheck
             // we are purposefully separating our if statements to have more specific instructions
             if (surfaceArea > this.maximumSize)
             {
-                return Optional.of(this.createFlag(object,
-                        String.format(
-                                "The swimming pool with OSM ID %s with a surface area of %.2f meters squared is greater than the expected maximum of %s meters squared.",
-                                object.getOsmIdentifier(), surfaceArea, this.maximumSize)));
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                        object.getOsmIdentifier(), surfaceArea, this.maximumSize)));
             }
             else if (surfaceArea < this.minimumSize)
             {
-                return Optional.of(this.createFlag(object,
-                        String.format(
-                                "The swimming pool with OSM ID %s with a surface area of %.2f meters squared is smaller than the expected minimum of %s meters squared.",
-                                object.getOsmIdentifier(), surfaceArea, this.minimumSize)));
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1,
+                        object.getOsmIdentifier(), surfaceArea, this.minimumSize)));
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }
