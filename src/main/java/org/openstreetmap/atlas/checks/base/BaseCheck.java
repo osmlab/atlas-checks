@@ -313,7 +313,10 @@ public abstract class BaseCheck<T> implements Check, Serializable
      *
      * @return The set of instructions to fall back to if configuration results in none.
      */
-    protected abstract List<String> getFallbackInstructions();
+    protected List<String> getFallbackInstructions()
+    {
+        return Collections.emptyList();
+    }
 
     protected Set<T> getFlaggedIdentifiers()
     {
