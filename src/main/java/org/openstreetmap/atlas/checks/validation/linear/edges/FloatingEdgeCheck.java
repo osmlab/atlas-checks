@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
@@ -32,6 +34,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // road, anything smaller will be ignored. This can be updated through configuration and set
     // prior to runtime with a custom value.
     public static final double DISTANCE_MINIMUM_METERS_DEFAULT = 100;
+    // create a simple instruction stating the Edge with the supplied OSM Identifier is floating.
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList("Way '{0}' is floating. Ie. has no incoming or outgoing ways.");
     private static final long serialVersionUID = -6867668561001117411L;
     // class variable to store the maximum distance for the floating road
     private final Distance maximumDistance;
@@ -103,13 +108,18 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
                 && edge.length().isLessThanOrEqualTo(this.maximumDistance)
                 && this.hasNoConnectedEdges(edge) && this.isNotOnSyntheticBoundary(edge))
         {
-            // create a simple instruction stating the Edge with the supplied OSM Identifier is
-            // floating.
-            final String instruction = "Way '" + object.getOsmIdentifier()
-                    + "' is floating. Ie. has no incoming or outgoing ways.";
-            return Optional.of(this.createFlag(edge, instruction));
+            // return a flag created using the object and the flag that was either defined in the
+            // configuration or above.
+            return Optional.of(this.createFlag(edge,
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**

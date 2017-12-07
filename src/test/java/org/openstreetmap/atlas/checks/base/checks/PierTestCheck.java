@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.base.checks;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,6 +59,12 @@ public class PierTestCheck extends BaseCheck<Long>
     {
         final Map<String, String> tags = object.getTags();
         tags.computeIfPresent(HighwayTag.KEY, (key, value) -> "primary");
-        return Optional.of(this.createFlag(object, "test"));
+        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return Arrays.asList("test");
     }
 }

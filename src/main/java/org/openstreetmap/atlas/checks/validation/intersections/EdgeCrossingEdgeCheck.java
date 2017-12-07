@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -29,12 +30,14 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class EdgeCrossingEdgeCheck extends BaseCheck<String>
 {
-    private static final long serialVersionUID = 2146863485833228593L;
-    private static final String INSTRUCTION_FORMAT = "The road with id %s has invalid crossings."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge %s is crossing invalidly.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
+            INVALID_EDGE_FORMAT);
+    private static final long serialVersionUID = 2146863485833228593L;
 
     /**
      * Checks whether given {@link PolyLine}s can cross each other.
@@ -169,18 +172,24 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
         {
             final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
             newFlag.addObject(object);
-            newFlag.addInstruction(String.format(INSTRUCTION_FORMAT, object.getOsmIdentifier()));
+            newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
 
             invalidEdges.forEach(invalidEdge ->
             {
                 newFlag.addObject(invalidEdge);
                 newFlag.addInstruction(
-                        String.format(INVALID_EDGE_FORMAT, invalidEdge.getOsmIdentifier()));
+                        this.getLocalizedInstruction(1, invalidEdge.getOsmIdentifier()));
             });
 
             return Optional.of(newFlag);
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

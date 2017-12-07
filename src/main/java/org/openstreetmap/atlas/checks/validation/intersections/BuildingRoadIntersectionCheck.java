@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -27,8 +29,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author mgostintsev
  */
-public class BuildingRoadIntersectionCheck extends BaseCheck
+public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList("Building (id-{0}) intersects road (id-{1})");
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
@@ -121,6 +125,12 @@ public class BuildingRoadIntersectionCheck extends BaseCheck
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
     /**
      * Loops through all intersecting {@link Edge}s, and keeps track of reverse and already seen
      * intersections
@@ -140,8 +150,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck
         {
             if (!knownIntersections.contains(edge))
             {
-                flag.addObject(edge, "Building (id " + building.getOsmIdentifier()
-                        + ") intersects road (id " + edge.getOsmIdentifier() + ")");
+                flag.addObject(edge, this.getLocalizedInstruction(0, building.getOsmIdentifier(),
+                        edge.getOsmIdentifier()));
+
                 knownIntersections.add(edge);
                 if (edge.hasReverseEdge())
                 {
