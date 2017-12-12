@@ -31,9 +31,6 @@ Atlas Checks have been developed to take advantage of distributed computing by r
 ## Developing your own Atlas Checks
 See [Development docs](docs/dev.md) for more information about developing and best practices for new Atlas Checks.
 
-## Docker Sandbox
-We have also built a docker sandbox that you can use to execute the current checks. For more information click [here](docs/sandbox.md)
-
 ## Currently Available Checks
 
 - [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
