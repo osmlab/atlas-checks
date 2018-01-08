@@ -22,7 +22,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class DuplicateNodeCheck extends BaseCheck<Location>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Duplicate Node {0} at {1}");
+            .asList("Duplicate Node {0,number,#} at {1}");
     private static final long serialVersionUID = 1055616456230649593L;
 
     @Override

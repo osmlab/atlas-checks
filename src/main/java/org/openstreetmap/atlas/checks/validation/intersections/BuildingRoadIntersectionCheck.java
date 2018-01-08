@@ -32,7 +32,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Building (id-{0}) intersects road (id-{1})");
+            .asList("Building (id-{0,number,#}) intersects road (id-{1,number,#})");
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
