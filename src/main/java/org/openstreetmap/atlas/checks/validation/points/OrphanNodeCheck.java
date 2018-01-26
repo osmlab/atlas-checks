@@ -18,8 +18,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class OrphanNodeCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Node with OSM ID {0} is an orphan, no tags and not connected to any ways.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "Node with OSM ID {0,number,#} is an orphan, no tags and not connected to any ways.");
     private static final long serialVersionUID = 7621363218174632277L;
 
     /**

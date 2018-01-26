@@ -28,8 +28,8 @@ public class PoolSizeCheck extends BaseCheck<Long>
     // A 5 meter squared pool if a circle would only be roughly 2 meters in diameter.
     public static final double MINIMUM_SIZE_DEFAULT = 5;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "The swimming pool with OSM ID {0} with a surface area of {1,number,#.##} meters squared is greater than the expected maximum of {2} meters squared.",
-            "The swimming pool with OSM ID {0} with a surface area of {1,number,#.##} meters squared is smaller than the expected minimum of {2} meters squared.");
+            "The swimming pool with OSM ID {0,number,#} with a surface area of {1,number,#.##} meters squared is greater than the expected maximum of {2} meters squared.",
+            "The swimming pool with OSM ID {0,number,#} with a surface area of {1,number,#.##} meters squared is smaller than the expected minimum of {2} meters squared.");
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
     // Create maximum and minimum size variables to be used later in our flag function.

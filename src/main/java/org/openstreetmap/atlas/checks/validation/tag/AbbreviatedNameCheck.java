@@ -32,7 +32,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     // Abbreviation config
     private static final String ABBREVIATION_KEY = "abbreviations";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "OSM feature with id {0}'s name tag (`name` = **{1}**) has an abbreviation. Please update the `name` tag to not use abbreviation.");
+            "OSM feature with id {0,number,#}'s name tag (`name` = **{1}**) has an abbreviation. Please update the `name` tag to not use abbreviation.");
     // Splitter to parse name
     private static final Splitter NAME_SPLITTER = Splitter
             .on(CharMatcher.JAVA_LETTER_OR_DIGIT.negate()).omitEmptyStrings();

@@ -23,7 +23,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "Relation ID: {0} is marked as turn restriction, but it is not a well-formed relation (i.e. it is missing required members)");
+            "Relation ID: {0,number,#} is marked as turn restriction, but it is not a well-formed relation (i.e. it is missing required members)");
     private static final long serialVersionUID = -983698716949386657L;
 
     /**

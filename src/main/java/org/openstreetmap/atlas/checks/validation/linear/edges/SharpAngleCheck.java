@@ -27,8 +27,8 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
 public class SharpAngleCheck extends BaseCheck<Long>
 {
     private static final double THRESHOLD_DEGREES_DEFAULT = 149.0;
-    private static final String TOO_SHARP_INSTRUCTION_1 = "Highway {0} has too sharp an angle at {1}";
-    private static final String TOO_SHARP_INSTRUCTION_2 = "Highway {0} has {1} angles that are too sharp";
+    private static final String TOO_SHARP_INSTRUCTION_1 = "Highway {0,number,#} has too sharp an angle at {1}";
+    private static final String TOO_SHARP_INSTRUCTION_2 = "Highway {0,number,#} has {1} angles that are too sharp";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TOO_SHARP_INSTRUCTION_1,
             TOO_SHARP_INSTRUCTION_2);
     private static final long serialVersionUID = 285618700794811828L;
