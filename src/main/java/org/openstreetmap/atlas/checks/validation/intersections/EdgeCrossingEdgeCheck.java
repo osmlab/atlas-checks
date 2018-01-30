@@ -30,11 +30,11 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class EdgeCrossingEdgeCheck extends BaseCheck<String>
 {
-    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final long serialVersionUID = 2146863485833228593L;

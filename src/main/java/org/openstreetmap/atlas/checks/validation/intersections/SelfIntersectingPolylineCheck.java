@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 {
-    private static final String INSTRUCTION_SHORT = "Self-intersecting polyline for feature {0}";
+    private static final String INSTRUCTION_SHORT = "Self-intersecting polyline for feature {0,number,#}";
     private static final String INSTRUCTION_LONG = INSTRUCTION_SHORT + " at {1}";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_SHORT,
             INSTRUCTION_LONG);
