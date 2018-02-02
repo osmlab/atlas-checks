@@ -239,3 +239,8 @@ The properties of each flag will contain the following items:
 - [InvalidTurnRestrictionCheck](checks/invalidTurnRestrictionCheck.md)
 
 ** For Best Practices around writing Atlas Checks, please view our [best practices document](bestpractices.md). **
+
+### Debugging and Unit Tests
+
+For information on debugging Atlas Checks please see [Debugging Altas Checks](debugging.md)
+For information around writing unit tests for Atlas Checks see [Writing Unit Tests](unit_tests.md) 

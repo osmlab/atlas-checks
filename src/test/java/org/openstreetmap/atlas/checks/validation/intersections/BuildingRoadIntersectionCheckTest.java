@@ -18,7 +18,7 @@ public class BuildingRoadIntersectionCheckTest
             ConfigurationResolver.emptyConfiguration());
     private static final BuildingRoadIntersectionCheck spanishCheck = new BuildingRoadIntersectionCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"CheckResourceLoader\": {\"scanUrls\": [\"org.openstreetmap.atlas.checks\"]},\"BuildingRoadIntersectionCheck\":{\"enabled\":true,\"locale\":\"es\",\"flags\":{\"en\":[\"Building (id-{0}) intersects road (id-{1})\"],\"es\":[\"Edificio(id-{0}) cruza calle(id-{0})\"]}}}"));
+                    "{\"CheckResourceLoader\": {\"scanUrls\": [\"org.openstreetmap.atlas.checks\"]},\"BuildingRoadIntersectionCheck\":{\"enabled\":true,\"locale\":\"es\",\"flags\":{\"en\":[\"Building (id-{0,number,#}) intersects road (id-{1,number,#})\"],\"es\":[\"Edificio(id-{0,number,#}) cruza calle(id-{1,number,#})\"]}}}"));
 
     @Rule
     public BuildingRoadIntersectionTestCaseRule setup = new BuildingRoadIntersectionTestCaseRule();
@@ -57,7 +57,8 @@ public class BuildingRoadIntersectionCheckTest
         this.verifier.actual(this.setup.getAtlas(), spanishCheck);
         this.verifier.verify(flag ->
         {
-            Assert.assertTrue(flag.getInstructions().contains("Edificio(id-0) cruza calle(id-0)"));
+            Assert.assertTrue(
+                    flag.getInstructions().contains("Edificio(id-323232) cruza calle(id-292929)"));
         });
         this.verifier.verifyExpectedSize(2);
 

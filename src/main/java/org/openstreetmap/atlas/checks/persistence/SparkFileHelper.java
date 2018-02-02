@@ -306,10 +306,7 @@ public class SparkFileHelper implements Serializable
                     logger.debug("Creating {}.", path.getTargetPath());
                     this.mkdir(path.getTargetPath());
                 }
-                if (!this.isDirectory(path.getTargetPath()))
-                {
-                    throw new CoreException("{} not a directory.", path.getTargetPath());
-                }
+
                 this.list(path.getTemporaryPath()).forEach(resource ->
                 {
                     logger.debug("Renaming {} in {} into {}.", resource.getName(),
