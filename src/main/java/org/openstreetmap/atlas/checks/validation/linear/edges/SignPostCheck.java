@@ -77,7 +77,7 @@ public class SignPostCheck extends BaseCheck<String>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return TypePredicates.IS_EDGE.test(object) && Validators.isOfType(object, HighwayTag.class,
-                HighwayTag.MOTORWAY, HighwayTag.TRUNK);
+                HighwayTag.MOTORWAY, HighwayTag.TRUNK, HighwayTag.PRIMARY, HighwayTag.PRIMARY_LINK);
     }
 
     /**

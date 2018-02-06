@@ -250,6 +250,24 @@ public class SignPostCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(coordinates = { @Loc(value = HIGHWAY_1), @Loc(value = HIGHWAY_2),
+                            @Loc(value = HIGHWAY_3) }, tags = { "highway=primary_link" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_4),
+                            @Loc(value = HIGHWAY_5) }, tags = { "highway=primary_link" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = LINK_1),
+                            @Loc(value = LINK_2), @Loc(value = LINK_3),
+                            @Loc(value = LINK_4) }, tags = { "highway=trunk_link" }) })
+    private Atlas primaryLinkTrunkLinkMissingJunctionAndDestinationAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(id = JUNCTION_NODE_ID, coordinates = @Loc(value = HIGHWAY_3)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_5)),
+                    @Node(coordinates = @Loc(value = LINK_1)),
+                    @Node(coordinates = @Loc(value = LINK_4)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_1), @Loc(value = HIGHWAY_2),
                             @Loc(value = HIGHWAY_3) }, tags = { "highway=primary" }),
                     @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_4),
                             @Loc(value = HIGHWAY_5) }, tags = { "highway=primary" }),
@@ -257,6 +275,24 @@ public class SignPostCheckTestRule extends CoreTestRule
                             @Loc(value = LINK_2), @Loc(value = LINK_3),
                             @Loc(value = LINK_4) }, tags = { "highway=motorway_link" }) })
     private Atlas primaryMotorwayLinkMissingJunctionAndDestinationAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(id = JUNCTION_NODE_ID, coordinates = @Loc(value = HIGHWAY_3)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_5)),
+                    @Node(coordinates = @Loc(value = LINK_1)),
+                    @Node(coordinates = @Loc(value = LINK_4)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_1), @Loc(value = HIGHWAY_2),
+                            @Loc(value = HIGHWAY_3) }, tags = { "highway=primary_link" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_4),
+                            @Loc(value = HIGHWAY_5) }, tags = { "highway=primary_link" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = LINK_1),
+                            @Loc(value = LINK_2), @Loc(value = LINK_3),
+                            @Loc(value = LINK_4) }, tags = { "highway=motorway_link" }) })
+    private Atlas primaryLinkMotorwayLinkMissingJunctionAndDestinationAtlas;
 
     @TestAtlas(
             // nodes
@@ -356,6 +392,16 @@ public class SignPostCheckTestRule extends CoreTestRule
         return this.motorwayTrunkLinkWithDestinationAtlas;
     }
 
+    public Atlas primaryLinkMotorwayLinkMissingJunctionAndDestinationAtlas()
+    {
+        return this.primaryLinkMotorwayLinkMissingJunctionAndDestinationAtlas;
+    }
+
+    public Atlas primaryLinkTrunkLinkMissingJunctionAndDestinationAtlas()
+    {
+        return this.primaryLinkTrunkLinkMissingJunctionAndDestinationAtlas;
+    }
+
     public Atlas primaryMotorwayLinkMissingJunctionAndDestinationAtlas()
     {
         return this.primaryMotorwayLinkMissingJunctionAndDestinationAtlas;
@@ -395,5 +441,4 @@ public class SignPostCheckTestRule extends CoreTestRule
     {
         return this.trunkTrunkLinkMissingJunctionAndDestinationAtlas;
     }
-
 }

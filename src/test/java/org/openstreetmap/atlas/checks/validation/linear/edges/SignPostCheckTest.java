@@ -110,11 +110,30 @@ public class SignPostCheckTest
     }
 
     @Test
-    public void primaryMotorwayLinkAtlas()
+    public void primaryLinkMotorwayLinkMissingJunctionAndDestinationAtlas()
+    {
+        this.verifier.actual(this.setup.primaryLinkMotorwayLinkMissingJunctionAndDestinationAtlas(),
+                CHECK);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verify(flag, true, true));
+    }
+
+    @Test
+    public void primaryLinkTrunkLinkMissingJunctionAndDestinationAtlas()
+    {
+        this.verifier.actual(this.setup.primaryLinkTrunkLinkMissingJunctionAndDestinationAtlas(),
+                CHECK);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verify(flag, true, true));
+    }
+
+    @Test
+    public void primaryMotorwayLinkMissingJunctionAndDestinationAtlas()
     {
         this.verifier.actual(this.setup.primaryMotorwayLinkMissingJunctionAndDestinationAtlas(),
                 CHECK);
-        this.verifier.verifyEmpty();
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verify(flag, true, true));
     }
 
     @Test
@@ -122,7 +141,8 @@ public class SignPostCheckTest
     {
         this.verifier.actual(this.setup.primaryTrunkLinkMissingJunctionAndDestinationAtlas(),
                 CHECK);
-        this.verifier.verifyEmpty();
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verify(flag, true, true));
     }
 
     @Test
