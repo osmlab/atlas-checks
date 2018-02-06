@@ -41,15 +41,9 @@ public class MyUnitTest {
 ```
 
 A basic Atlas-Checks unit test contains 3 things:
-<<<<<<< HEAD
-1. A TestRule class that is essentially and atlas or multiple atlas to test against.
-2. A `ConsumerBasedExpectedCheckVerifier` instance that will execute the check you are testing against the test atlas.
-3. A series of units test using the JUnit framework.
-=======
 1. A TestRule class that is essentially an atlas or multiple atlas to test against.
 2. A `ConsumerBasedExpectedCheckVerifier` instance that will execute the check you are testing against the test atlas.
 3. A series of unit tests using the JUnit framework.
->>>>>>> internal/apple
 
 ### The `ConsumerBasedExpectedCheckVerifier`
 
@@ -91,11 +85,7 @@ The ConsumerBasedExpectedCheckVerifier is a class that will run your check again
     - Use classpath of module: atlas-checks_main
 3. Run new AtlasTestGenerator configuration in Intellij.
 
-<<<<<<< HEAD
-This will produce a text atlas file in the location provided. You can then move the resultant file to the resources directory, much like the [poolsize.atlas](../src/test/resources/org/openstreetmap/atlas/checks/validation/areas/poolsize.atlas). Or you could set the output location to the resources directory to begin with. Once you have the text atlas file you can insert it into your test rule with the following code.
-=======
 This will produce a text atlas file in the location provided. You can then move the resultant file to the resources directory, much like the [poolsize.atlas](../src/test/resources/org/openstreetmap/atlas/checks/validation/areas/poolsize.atlas), Or you could set the output location to the resources directory to begin with. It is important to note that these files should be small as they would be checked into the repository as part of the code. There are options in the Atlas-Generator to zip up the results, but generally it is preferable to be able to see the contents of the atlas file. Once you have the text atlas file you can insert it into your test rule with the following code.
->>>>>>> internal/apple
 ```java
 @TestAtlas(loadFromTextResource = "test.atlas")
 private Atlas testAtlas;

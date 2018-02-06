@@ -15,11 +15,7 @@ The first thing required is to import the project into Intellij. Intellij suppor
 5. In the final screen check the box "Use auto-import" and make sure that "Use default gradle wrapper (recommended)" is selected.
 6. Click Finish and wait for gradle tasks to complete.
 
-<<<<<<< HEAD
-This will create a new Atlas-Checks project that you can start developing in Intellij. Most other full fledged IDE's should following a similar path. Smaller lightweight IDEs will simply have you point to a directory.
-=======
 This will create a new Atlas-Checks project that you can start developing in Intellij. Most other full fledged IDEs should following a similar path. Smaller lightweight IDEs will simply have you point to a directory.
->>>>>>> internal/apple
 
 ### Creating Configuration
 
