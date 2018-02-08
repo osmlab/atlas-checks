@@ -5,12 +5,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.openstreetmap.atlas.utilities.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +44,20 @@ import com.google.common.reflect.ClassPath;
  * </pre>
  *
  * @author brian_l_davis
+ * @author jklamer
  */
 public class CheckResourceLoader
 {
     private static final String DEFAULT_ENABLED_KEY_TEMPLATE = "%s.enabled";
-    private static final Logger logger = LoggerFactory.getLogger(CheckResourceLoader.class);
     private static final String DEFAULT_PACKAGE = "org.openstreetmap.atlas.checks";
     private static final String DEFAULT_TYPE = Check.class.getName();
-
-    private final Configuration configuration;
+    private static final Logger logger = LoggerFactory.getLogger(CheckResourceLoader.class);
     private final Class<?> checkType;
-    private final Set<String> packages;
+    private final Configuration configuration;
+    private final MultiMap<String, String> countryGroups = new MultiMap<>();
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
+    private final Set<String> packages;
 
     /**
      * Default constructor
@@ -64,6 +71,12 @@ public class CheckResourceLoader
         this.packages = Collections.unmodifiableSet(Iterables.asSet((Iterable<String>) configuration
                 .get("CheckResourceLoader.scanUrls", Collections.singletonList(DEFAULT_PACKAGE))
                 .value()));
+        final Map<String, List<String>> groupCountries = configuration
+                .get("groups", Collections.emptyMap()).value();
+        groupCountries.keySet().forEach(group ->
+        {
+            groupCountries.get(group).forEach(country -> this.countryGroups.add(country, group));
+        });
 
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try
@@ -83,16 +96,42 @@ public class CheckResourceLoader
         this.configuration = configuration;
     }
 
-    /**
-     * Loads checks that are enabled by configuration
-     *
-     * @param <T>
-     *            check type
-     * @return a {@link Set} of checks
-     */
-    public <T extends Check> Set<T> loadChecks()
+    public Configuration getConfiguration()
     {
-        return loadChecks(this::isEnabledByConfiguration);
+        return this.configuration;
+    }
+
+    /**
+     * Get configuration for a specific country, overriding for country specific overrides and group
+     * specific overrides
+     *
+     * @param country
+     *            country string
+     * @return {@link Configuration}
+     */
+    public Configuration getConfigurationForCountry(final String country)
+    {
+        Configuration specializedConfiguration = this.configuration
+                .configurationForKeyword(country);
+
+        if (this.countryGroups.containsKey(country))
+        {
+            for (final String group : this.countryGroups.get(country))
+            {
+                specializedConfiguration = specializedConfiguration.configurationForKeyword(group);
+            }
+        }
+        return specializedConfiguration;
+    }
+
+    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled)
+    {
+        return loadChecks(isEnabled, this.configuration);
+    }
+
+    public <T extends Check> Set<T> loadChecks(final Configuration configuration)
+    {
+        return loadChecks(this::isEnabledByConfiguration, configuration);
     }
 
     /**
@@ -100,12 +139,16 @@ public class CheckResourceLoader
      *
      * @param isEnabled
      *            {@link Predicate} used to determine if a check is enabled
+     * @param specificConfiguration
+     *            {@link Configuration} used to loadChecks if not the one used to initialize
+     *            {@link CheckResourceLoader}
      * @param <T>
      *            check type
      * @return a {@link Set} of checks
      */
     @SuppressWarnings("unchecked")
-    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled)
+    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled,
+            final Configuration specificConfiguration)
     {
         final Set<T> checks = new HashSet<>();
         final Time time = Time.now();
@@ -127,7 +170,7 @@ public class CheckResourceLoader
                                 try
                                 {
                                     check = checkClass.getConstructor(Configuration.class)
-                                            .newInstance(configuration);
+                                            .newInstance(specificConfiguration);
                                 }
                                 catch (final InvocationTargetException oops)
                                 {
@@ -163,6 +206,32 @@ public class CheckResourceLoader
         logger.info("Loaded {} {} in {}", checks.size(), checkType.getSimpleName(),
                 time.elapsedSince());
         return checks;
+    }
+
+    /**
+     * Loads checks that are enabled by configuration
+     *
+     * @param <T>
+     *            check type
+     * @return a {@link Set} of checks
+     */
+    public <T extends Check> Set<T> loadChecks()
+    {
+        return loadChecks(this::isEnabledByConfiguration, this.configuration);
+    }
+
+    public <T extends Check> Map<String, Set<T>> loadChecksForCountries(
+            final Predicate<Class> isEnabled, final Iterable<String> countries)
+    {
+        return StreamSupport.stream(countries.spliterator(), false).collect(Collectors.toMap(
+                Function.identity(),
+                country -> loadChecks(isEnabled, this.getConfigurationForCountry(country))));
+    }
+
+    public <T extends Check> Map<String, Set<T>> loadChecksForCountries(
+            final Iterable<String> countries)
+    {
+        return loadChecksForCountries(this::isEnabledByConfiguration, countries);
     }
 
     private boolean isEnabledByConfiguration(final Class checkClass)

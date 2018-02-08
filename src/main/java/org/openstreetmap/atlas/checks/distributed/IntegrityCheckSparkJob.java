@@ -1,7 +1,7 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,39 +70,35 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<String> COUNTRIES = new Switch<>("countries",
             "Comma-separated list of country ISO3 codes to be processed", StringConverter.IDENTITY,
             Optionality.REQUIRED);
+    // Indicator key for ignored countries
+    private static final String IGNORED_KEY = "Ignored";
+    private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
+            + FileSuffix.GZIP.toString();
     private static final Switch<MapRouletteConfiguration> MAP_ROULETTE = new Switch<>("maproulette",
             "Map roulette server information, format <Host>:<Port>:<ProjectName>:<ApiKey>, projectName is optional.",
             MapRouletteConfiguration::parse, Optionality.OPTIONAL);
-    private static final Switch<Rectangle> PBF_BOUNDING_BOX = new Switch<>("pbfBoundingBox",
-            "OSM protobuf data will be loaded only in this bounding box", Rectangle::forString,
-            Optionality.OPTIONAL);
-    private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
-            "Saves intermediate atlas files created when processing OSM protobuf data.",
-            Boolean::valueOf, Optionality.OPTIONAL, "false");
+    private static final String METRICS_FILENAME = "check-run-time.csv";
+    private static final String OUTPUT_ATLAS_FOLDER = "atlas";
+    // Outputs
+    private static final String OUTPUT_FLAG_FOLDER = "flag";
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
             String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
             Optionality.OPTIONAL, "flags,metrics");
-
-    // Indicator key for ignored countries
-    private static final String IGNORED_KEY = "Ignored";
-
-    // Outputs
-    private static final String OUTPUT_FLAG_FOLDER = "flag";
     private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
-    private static final String OUTPUT_ATLAS_FOLDER = "atlas";
-    private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
-            + FileSuffix.GZIP.toString();
     private static final String OUTPUT_METRIC_FOLDER = "metric";
-    private static final String METRICS_FILENAME = "check-run-time.csv";
-
-    private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
-    private static final long serialVersionUID = 2990087219645942330L;
-
+    private static final Switch<Rectangle> PBF_BOUNDING_BOX = new Switch<>("pbfBoundingBox",
+            "OSM protobuf data will be loaded only in this bounding box", Rectangle::forString,
+            Optionality.OPTIONAL);
+    private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
+            "Saves intermediate atlas files created when processing OSM protobuf data.",
+            Boolean::valueOf, Optionality.OPTIONAL, "false");
     // Thread pool settings
     private static final Duration POOL_DURATION_BEFORE_KILL = Duration.minutes(300);
+    private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
+    private static final long serialVersionUID = 2990087219645942330L;
 
     /**
      * Main entry point for the Spark job
@@ -197,7 +193,8 @@ public class IntegrityCheckSparkJob extends SparkJob
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
         // Load checks
-        final Set<BaseCheck> checksToExecute = checkLoader.loadChecks();
+        final Map<String, Set<BaseCheck>> checksToExecute = checkLoader
+                .loadChecksForCountries(countries);
         if (!isValidInput(countries, checksToExecute))
         {
             logger.error("No countries supplied or checks enabled, exiting!");
@@ -206,24 +203,24 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         // Read priority countries from the configuration
         final List<String> priorityCountries = checksConfiguration
-                .get("priority.countries", Arrays.asList("BLR", "CHN", "CHL", "DNK", "UKR"))
-                .value();
+                .get("priority.countries", Collections.EMPTY_LIST).value();
 
         // Create a list of Country to Check tuples
         // Add priority countries first if they are supplied by parameter
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
-        countries.stream().filter(priorityCountries::contains)
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country, checksToExecute)));
+        countries.stream().filter(priorityCountries::contains).forEach(country -> countryCheckTuples
+                .add(new Tuple2<>(country, checksToExecute.get(country))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country, checksToExecute)));
+                .forEach(country -> countryCheckTuples
+                        .add(new Tuple2<>(country, checksToExecute.get(country))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
                 .collect(Collectors.joining(",")));
-        logger.info("Initialized checks: {}", checksToExecute.stream().map(BaseCheck::getCheckName)
-                .collect(Collectors.joining(",")));
+        logger.info("Initialized checks: {}", checksToExecute.values().stream().flatMap(Set::stream)
+                .map(BaseCheck::getCheckName).distinct().collect(Collectors.joining(",")));
 
         // Parallelize on the countries
         final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = getContext()
@@ -403,9 +400,11 @@ public class IntegrityCheckSparkJob extends SparkJob
      *            set of {@link BaseCheck}s to execute
      * @return {@code true} if sanity check passes, {@code false} otherwise
      */
-    private boolean isValidInput(final StringList countries, final Set<BaseCheck> checksToExecute)
+    private boolean isValidInput(final StringList countries,
+            final Map<String, Set<BaseCheck>> checksToExecute)
     {
-        if (countries.size() == 0 || checksToExecute.size() == 0)
+        if (countries.size() == 0
+                || checksToExecute.values().stream().anyMatch(checks -> checks.size() == 0))
         {
             return false;
         }
