@@ -70,35 +70,39 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<String> COUNTRIES = new Switch<>("countries",
             "Comma-separated list of country ISO3 codes to be processed", StringConverter.IDENTITY,
             Optionality.REQUIRED);
-    // Indicator key for ignored countries
-    private static final String IGNORED_KEY = "Ignored";
-    private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
-            + FileSuffix.GZIP.toString();
     private static final Switch<MapRouletteConfiguration> MAP_ROULETTE = new Switch<>("maproulette",
             "Map roulette server information, format <Host>:<Port>:<ProjectName>:<ApiKey>, projectName is optional.",
             MapRouletteConfiguration::parse, Optionality.OPTIONAL);
-    private static final String METRICS_FILENAME = "check-run-time.csv";
-    private static final String OUTPUT_ATLAS_FOLDER = "atlas";
-    // Outputs
-    private static final String OUTPUT_FLAG_FOLDER = "flag";
-    private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
-            csv_formats -> Stream.of(csv_formats.split(","))
-                    .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
-                    .collect(Collectors.toSet()),
-            Optionality.OPTIONAL, "flags,metrics");
-    private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
-    private static final String OUTPUT_METRIC_FOLDER = "metric";
     private static final Switch<Rectangle> PBF_BOUNDING_BOX = new Switch<>("pbfBoundingBox",
             "OSM protobuf data will be loaded only in this bounding box", Rectangle::forString,
             Optionality.OPTIONAL);
     private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
-    // Thread pool settings
-    private static final Duration POOL_DURATION_BEFORE_KILL = Duration.minutes(300);
+    private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
+            String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
+            csv_formats -> Stream.of(csv_formats.split(","))
+                    .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
+                    .collect(Collectors.toSet()),
+            Optionality.OPTIONAL, "flags,metrics");
+
+    // Indicator key for ignored countries
+    private static final String IGNORED_KEY = "Ignored";
+
+    // Outputs
+    private static final String OUTPUT_FLAG_FOLDER = "flag";
+    private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
+    private static final String OUTPUT_ATLAS_FOLDER = "atlas";
+    private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
+            + FileSuffix.GZIP.toString();
+    private static final String OUTPUT_METRIC_FOLDER = "metric";
+    private static final String METRICS_FILENAME = "check-run-time.csv";
+
     private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
     private static final long serialVersionUID = 2990087219645942330L;
+
+    // Thread pool settings
+    private static final Duration POOL_DURATION_BEFORE_KILL = Duration.minutes(300);
 
     /**
      * Main entry point for the Spark job
