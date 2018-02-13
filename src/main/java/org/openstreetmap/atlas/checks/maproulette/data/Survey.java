@@ -37,9 +37,9 @@ public class Survey extends Challenge
 
     public Survey(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty,
-            final List<String> answers)
+            final List<String> answers, final String tags)
     {
-        super(name, description, blurb, instruction, difficulty);
+        super(name, description, blurb, instruction, difficulty, tags);
         this.answers = answers;
     }
 

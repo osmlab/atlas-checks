@@ -60,7 +60,8 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
                 this.getStringValue(challengeObject, KEY_INSTRUCTION, ""), difficulty, priority,
                 this.getValue(challengeObject, Challenge.KEY_HIGH_PRIORITY, null),
                 this.getValue(challengeObject, Challenge.KEY_MEDIUM_PRIORITY, null),
-                this.getValue(challengeObject, Challenge.KEY_LOW_PRIORITY, null));
+                this.getValue(challengeObject, Challenge.KEY_LOW_PRIORITY, null),
+                this.getStringValue(challengeObject, Challenge.KEY_TAGS, ""));
     }
 
     private String getStringValue(final JsonObject object, final String key,

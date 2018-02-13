@@ -37,13 +37,14 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
 
             edges = {
 
-                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "highway=primary" }) },
 
             areas = {
                     // Regular building - flagged
-                    @Area(coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_2),
-                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
                             @Loc(value = TEST_6) }, tags = { "building=yes" }),
                     // Non-Pedestrian Area - flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),

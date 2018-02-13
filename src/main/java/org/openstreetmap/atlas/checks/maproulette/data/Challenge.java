@@ -34,6 +34,7 @@ public class Challenge implements Serializable
     public static final String KEY_RULE_OPERATOR = "operator";
     public static final String VALUE_RULE_OPERATOR = "equal";
     public static final String KEY_RULE_VALUE = "value";
+    public static final String KEY_TAGS = "tags";
 
     private static final long serialVersionUID = -8034692909431083341L;
     private static final Gson CHALLENGE_GSON = new GsonBuilder().disableHtmlEscaping()
@@ -48,22 +49,23 @@ public class Challenge implements Serializable
     private final ChallengeDifficulty difficulty;
     private final String instruction;
     private String name;
+    private final String tags;
     private final ChallengePriority defaultPriority;
     private final String highPriorityRule;
     private final String mediumPriorityRule;
     private final String lowPriorityRule;
 
     public Challenge(final String name, final String description, final String blurb,
-            final String instruction, final ChallengeDifficulty difficulty)
+            final String instruction, final ChallengeDifficulty difficulty, final String tags)
     {
         this(name, description, blurb, instruction, difficulty, ChallengePriority.NONE, null, null,
-                null);
+                null, tags);
     }
 
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty,
             final ChallengePriority defaultPriority, final String highPriorityRule,
-            final String mediumPriorityRule, final String lowPriorityRule)
+            final String mediumPriorityRule, final String lowPriorityRule, final String tags)
     {
         this.name = name;
         this.description = description;
@@ -74,6 +76,7 @@ public class Challenge implements Serializable
         this.highPriorityRule = highPriorityRule;
         this.mediumPriorityRule = mediumPriorityRule;
         this.lowPriorityRule = lowPriorityRule;
+        this.tags = tags;
     }
 
     public long getId()
@@ -144,6 +147,11 @@ public class Challenge implements Serializable
     public void setName(final String name)
     {
         this.name = name;
+    }
+
+    public String getTags()
+    {
+        return tags;
     }
 
     public JsonObject toJson(final String challengeName)
