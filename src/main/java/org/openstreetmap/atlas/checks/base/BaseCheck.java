@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.base;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
@@ -25,6 +27,7 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.OptionalIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.filters.AtlasEntityPolygonsFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +63,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
     // OSM Identifiers are used to keep track of flagged features
     private final Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
     private final Locale locale;
-
     private final String name = this.getClass().getSimpleName();
+    private final AtlasEntityPolygonsFilter polygonFilter;
     private TaggableFilter tagFilter = null;
 
     /**
@@ -97,6 +100,11 @@ public abstract class BaseCheck<T> implements Check, Serializable
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             this.challenge = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
         }
+        this.polygonFilter = new AtlasEntityPolygonsFilter(
+                configurationValue(configuration, AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY,
+                        new HashMap<>()),
+                configurationValue(configuration, AtlasEntityPolygonsFilter.EXCLUDED_POLYGONS_KEY,
+                        new HashMap<>()));
     }
 
     @Override
@@ -104,8 +112,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
     {
         try
         {
-            if (this.validCheckForObject(object) && this.tagFilter.test(object)
-                    && (this.acceptPier() || !ManMadeTag.isPier(object)))
+            if (this.checkObjectFilter().test(object))
             {
                 return this.flag(object);
             }
@@ -117,6 +124,14 @@ public abstract class BaseCheck<T> implements Check, Serializable
         }
 
         return Optional.empty();
+    }
+
+    public final Predicate<AtlasObject> checkObjectFilter()
+    {
+        return object -> this.validCheckForObject(object) && this.tagFilter.test(object)
+                && (!(object instanceof AtlasEntity)
+                        || this.polygonFilter.test((AtlasEntity) object))
+                && (this.acceptPier() || !ManMadeTag.isPier(object));
     }
 
     /**
