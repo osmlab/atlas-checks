@@ -21,13 +21,18 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
 {
     public static final String VALID_EDGE_ID = "101740465";
     public static final String VALID_LINE_ID = "102740465";
+    public static final String VALID_LINE_ID_2 = "10283065";
+    public static final String VALID_LINE_ID_3 = "10284065";
     public static final String VALID_AREA_ID = "103740465";
     public static final String INVALID_EDGE_ID_1 = "104740465";
     public static final String INVALID_EDGE_ID_2 = "105540465";
+    public static final String INVALID_EDGE_ID_3 = "105640465";
+    public static final String INVALID_EDGE_ID_4 = "105740465";
     public static final String INVALID_LINE_ID_1 = "106740465";
     public static final String INVALID_LINE_ID_2 = "107740465";
     public static final String INVALID_AREA_ID_1 = "108740465";
     public static final String INVALID_AREA_ID_2 = "109740465";
+    public static final String INVALID_AREA_ID_3 = "109840465";
     private static final String ONE = "-0.8385242, -80.4892702";
     private static final String TWO = "-0.8385546, -80.4891487";
     private static final String THREE = "-0.8386005, -80.4892233";
@@ -53,7 +58,15 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
                     // Invalid Line with a shape-point self-intersection
                     @Line(id = INVALID_LINE_ID_2, coordinates = { @Loc(value = ONE),
                             @Loc(value = FIVE), @Loc(value = TWO), @Loc(value = THREE),
-                            @Loc(value = FIVE), @Loc(value = FOUR) }) },
+                            @Loc(value = FIVE), @Loc(value = FOUR) }),
+                    // Invalid Line geometry with Waterway tag
+                    @Line(id = VALID_LINE_ID_2, coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO), @Loc(value = THREE),
+                            @Loc(value = FOUR) }, tags = { "waterway=river" }),
+                    // Invalid Line geometry with highway=path tag
+                    @Line(id = VALID_LINE_ID_3, coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO), @Loc(value = THREE),
+                            @Loc(value = FOUR) }, tags = { "highway=footway" }) },
 
             edges = {
                     // Valid Edge with no self-intersections
@@ -66,24 +79,35 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
                     // Invalid Edge with a shape-point self-intersection
                     @Edge(id = INVALID_EDGE_ID_2, coordinates = { @Loc(value = ONE),
                             @Loc(value = FIVE), @Loc(value = TWO), @Loc(value = THREE),
-                            @Loc(value = FIVE), @Loc(value = FOUR) }, tags = { "highway=trunk" }) },
+                            @Loc(value = FIVE), @Loc(value = FOUR) }, tags = { "highway=trunk" }),
+                    // Invalid Edge geometry with highway=primary tag
+                    @Edge(id = INVALID_EDGE_ID_3, coordinates = { @Loc(value = ONE),
+                            @Loc(value = FIVE), @Loc(value = TWO), @Loc(value = THREE),
+                            @Loc(value = FIVE), @Loc(value = FOUR) }, tags = { "highway=primary" }),
+                    // Invalid Edge geometry with Building tag
+                    @Edge(id = INVALID_EDGE_ID_4, coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO), @Loc(value = THREE),
+                            @Loc(value = FOUR) }, tags = { "building=yes" }), },
 
             areas = {
-                    // Valid Area with no self-intersections
-                    @Area(id = VALID_AREA_ID, coordinates = { @Loc(value = ONE),
-                            @Loc(value = THREE), @Loc(value = TWO), @Loc(value = FOUR),
-                            @Loc(value = ONE) }, tags = { "leisure=park" }),
-                    // Invalid Area with a non shape-point self-intersection
-                    @Area(id = INVALID_AREA_ID_1, coordinates = { @Loc(value = ONE),
+                    // // Valid Area with no self-intersections
+                    // @Area(id = VALID_AREA_ID, coordinates = { @Loc(value = ONE),
+                    // @Loc(value = THREE), @Loc(value = TWO), @Loc(value = FOUR),
+                    // @Loc(value = ONE) }, tags = { "leisure=park" }),
+                    // // Invalid Area with a non shape-point self-intersection
+                    // @Area(id = INVALID_AREA_ID_1, coordinates = { @Loc(value = ONE),
+                    // @Loc(value = TWO), @Loc(value = THREE), @Loc(value = FOUR),
+                    // @Loc(value = ONE) }, tags = { "leisure=park" }),
+
+                    // Duplicate Edge Area Building
+                    @Area(id = INVALID_AREA_ID_3, coordinates = { @Loc(value = ONE),
                             @Loc(value = TWO), @Loc(value = THREE), @Loc(value = FOUR),
-                            @Loc(value = ONE) }, tags = { "leisure=park" }),
-                    // Invalid Area with a shape point self-intersection
-                    @Area(id = INVALID_AREA_ID_2, coordinates = { @Loc(value = ONE),
-                            @Loc(value = FIVE), @Loc(value = TWO), @Loc(value = THREE),
-                            @Loc(value = FIVE), @Loc(value = FOUR),
-                            @Loc(value = ONE) }, tags = { "leisure=park" }) })
+                            @Loc(value = THREE), @Loc(value = FOUR),
+                            @Loc(value = ONE) }, tags = { "building=yes" }) })
 
     private Atlas atlas;
+
+    // TODO create invalid Edge with building=yes
 
     public Atlas getAtlas()
     {
@@ -97,6 +121,8 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
         invalidIdentifiers.add(INVALID_LINE_ID_2);
         invalidIdentifiers.add(INVALID_EDGE_ID_1);
         invalidIdentifiers.add(INVALID_EDGE_ID_2);
+        invalidIdentifiers.add(INVALID_EDGE_ID_3);
+        invalidIdentifiers.add(INVALID_EDGE_ID_4);
         invalidIdentifiers.add(INVALID_AREA_ID_1);
         invalidIdentifiers.add(INVALID_AREA_ID_2);
         return invalidIdentifiers;
@@ -108,6 +134,8 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
         validIdentifiers.add(VALID_EDGE_ID);
         validIdentifiers.add(VALID_LINE_ID);
         validIdentifiers.add(VALID_AREA_ID);
+        validIdentifiers.add(VALID_LINE_ID_2);
+        validIdentifiers.add(VALID_LINE_ID_3);
         return validIdentifiers;
     }
 
