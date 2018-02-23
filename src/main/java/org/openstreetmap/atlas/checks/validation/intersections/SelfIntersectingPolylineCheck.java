@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,26 +36,24 @@ import org.slf4j.LoggerFactory;
  */
 public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 {
-    private static final String INSTRUCTION_SHORT = "Self-intersecting polyline for feature {0,number,#}";
-    private static final String INSTRUCTION_LONG = INSTRUCTION_SHORT + " at {1}";
     private static final String AREA_INSTRUCTION = "Feature {0,number,#} has invalid geometry at {1}";
-    private static final String AREA_BUILDING_INSTRUCTION = "Feature {0,number,#} is an incomplete "
+    private static final String AREA_BUILDING_INSTRUCTION = "Feature {0,number,#} is a incomplete "
             + "building at {1}";
-    public static final String DUPLICATE_EDGE_INSTRUCTION = "Feature {0,number,#} has duplicate Edges";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_SHORT,
-            INSTRUCTION_LONG, AREA_INSTRUCTION, AREA_BUILDING_INSTRUCTION,
-            DUPLICATE_EDGE_INSTRUCTION);
-    private static final Logger logger = LoggerFactory
-            .getLogger(SelfIntersectingPolylineCheck.class);
+
+    private static final String DUPLICATE_EDGE_INSTRUCTION = "Feature {0,number,#} has a duplicate "
+            + "Edge at {1}";
+    private static final String POLYLINE_INSTRUCTION = "Self-intersecting polyline for feature "
+            + "{0,number,#} at {1}";
     // Excluded Highway tags
     private static final Predicate<Taggable> INELIGIBLE_HIGHWAY_TAGS = object -> Validators
             .isOfType(object, HighwayTag.class, HighwayTag.PROPOSED)
             || Validators.isOfType(object, HighwayTag.class, HighwayTag.CONSTRUCTION)
             || Validators.isOfType(object, HighwayTag.class, HighwayTag.FOOTWAY)
             || Validators.isOfType(object, HighwayTag.class, HighwayTag.PATH);
-    // Excluded Waterway tags
-    private static final Predicate<Taggable> WATERWAY_TAGS = object -> Validators
-            .hasValuesFor(object, WaterwayTag.class);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(POLYLINE_INSTRUCTION,
+            AREA_INSTRUCTION, AREA_BUILDING_INSTRUCTION, DUPLICATE_EDGE_INSTRUCTION);
+    private static final Logger logger = LoggerFactory
+            .getLogger(SelfIntersectingPolylineCheck.class);
     public static final Integer THREE = 3;
     private static final long serialVersionUID = 2722288442633787006L;
 
@@ -83,15 +82,15 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // Master edges with eligible highway tags
+        // Master edges excluding ineligible highway tags
         return ((object instanceof Edge && ((Edge) object).isMasterEdge()
                 && !INELIGIBLE_HIGHWAY_TAGS.test(object))
                 // Areas
                 || (object instanceof Area)
-                // Lines with eligible highway tags
+                // Lines excluding ineligible highway tags
                 || (object instanceof Line && !INELIGIBLE_HIGHWAY_TAGS.test(object)))
-                // No waterway tags
-                && !WATERWAY_TAGS.test(object);
+                // Exclude waterway tags
+                && !Validators.hasValuesFor(object, WaterwayTag.class);
     }
 
     @Override
@@ -104,19 +103,20 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         if (object instanceof Edge)
         {
             polyline = ((Edge) object).asPolyLine();
-            localizedInstructionIndex = (TagPredicates.IS_BUILDING.test(object)) ? THREE : 0;
+            // Send building instructions if building tag exists
+            localizedInstructionIndex = (TagPredicates.IS_BUILDING.test(object)) ? 2 : 0;
         }
         else if (object instanceof Line)
         {
             polyline = ((Line) object).asPolyLine();
-            // If Line has a Building tag, send special instructions
-            localizedInstructionIndex = (TagPredicates.IS_BUILDING.test(object)) ? THREE : 0;
+            // Send building instructions if building tag exists
+            localizedInstructionIndex = (TagPredicates.IS_BUILDING.test(object)) ? 2 : 0;
         }
         else if (object instanceof Area)
         {
             polyline = ((Area) object).asPolygon();
-            // If polyline contains duplicate edges, return specific instructions
-            localizedInstructionIndex = hasDuplicateEdges(polyline) ? 4 : 2;
+            // Send duplicate Edge instructions if duplicate Edges exist
+            localizedInstructionIndex = hasDuplicateEdges(polyline) ? THREE : 1;
 
         }
         else
@@ -182,13 +182,13 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     }
 
     /**
-     * Returns true if Polyline has Duplicate edges
-     * 
+     * Returns true if adjacent Edges have identical lat,lng sequences
+     *
      * @param polyline
-     *            Atlas object
-     * @return boolean
+     *            the geometry being examined
+     * @return true if the any set of adjacent edges have identical geometries
      */
-    private boolean hasDuplicateEdges(PolyLine polyline)
+    private boolean hasDuplicateEdges(final PolyLine polyline)
     {
         final List<Segment> segments = polyline.segments();
         final List<Segment> duplicates = new ArrayList<>();
@@ -197,19 +197,17 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         for (int i = 0; i < segments.size(); i++)
         {
             final Segment segment = segments.get(i);
-            final int adjacentEdges = i + 2;
+            final int adjacentEdge = i + 2;
 
-            // Check if segment exists in List
+            // Check if segment exists elsewhere in List
             if (segments.indexOf(segment) != segments.lastIndexOf(segment))
             {
-                // If adjacent segment is the same value as our current, add to
-                if (adjacentEdges < segments.size() && segment.equals(segments.get(adjacentEdges)))
+                // If adjacent segment is the same value as our current, duplicate exists
+                if (adjacentEdge < segments.size() && segment.equals(segments.get(adjacentEdge)))
                 {
                     duplicates.add(segment);
                 }
-
             }
-
         }
 
         return duplicates.size() > 0;

@@ -90,16 +90,20 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
                             @Loc(value = FOUR) }, tags = { "building=yes" }), },
 
             areas = {
-                    // // Valid Area with no self-intersections
-                    // @Area(id = VALID_AREA_ID, coordinates = { @Loc(value = ONE),
-                    // @Loc(value = THREE), @Loc(value = TWO), @Loc(value = FOUR),
-                    // @Loc(value = ONE) }, tags = { "leisure=park" }),
-                    // // Invalid Area with a non shape-point self-intersection
-                    // @Area(id = INVALID_AREA_ID_1, coordinates = { @Loc(value = ONE),
-                    // @Loc(value = TWO), @Loc(value = THREE), @Loc(value = FOUR),
-                    // @Loc(value = ONE) }, tags = { "leisure=park" }),
-
-                    // Duplicate Edge Area Building
+                    // Valid Area with no self-intersections
+                    @Area(id = VALID_AREA_ID, coordinates = { @Loc(value = ONE),
+                            @Loc(value = THREE), @Loc(value = TWO), @Loc(value = FOUR),
+                            @Loc(value = ONE) }, tags = { "leisure=park" }),
+                    // Invalid Area with a non shape-point self-intersection
+                    @Area(id = INVALID_AREA_ID_1, coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO), @Loc(value = THREE), @Loc(value = FOUR),
+                            @Loc(value = ONE) }, tags = { "leisure=park" }),
+                    // Invalid Area with a shape point self-intersection
+                    @Area(id = INVALID_AREA_ID_2, coordinates = { @Loc(value = ONE),
+                            @Loc(value = FIVE), @Loc(value = TWO), @Loc(value = THREE),
+                            @Loc(value = FIVE), @Loc(value = FOUR),
+                            @Loc(value = ONE) }, tags = { "leisure=park" }),
+                    // Invalid Duplicate Edge Area Building
                     @Area(id = INVALID_AREA_ID_3, coordinates = { @Loc(value = ONE),
                             @Loc(value = TWO), @Loc(value = THREE), @Loc(value = FOUR),
                             @Loc(value = THREE), @Loc(value = FOUR),
@@ -125,6 +129,7 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
         invalidIdentifiers.add(INVALID_EDGE_ID_4);
         invalidIdentifiers.add(INVALID_AREA_ID_1);
         invalidIdentifiers.add(INVALID_AREA_ID_2);
+        invalidIdentifiers.add(INVALID_AREA_ID_3);
         return invalidIdentifiers;
     }
 

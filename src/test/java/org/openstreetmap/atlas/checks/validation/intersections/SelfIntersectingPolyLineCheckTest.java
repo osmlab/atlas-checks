@@ -26,7 +26,7 @@ public class SelfIntersectingPolyLineCheckTest
     public void testCheck()
     {
         this.verifier.actual(this.setup.getAtlas(), check);
-        this.verifier.verifyExpectedSize(6);
+        this.verifier.verifyExpectedSize(9);
         this.verifier.verify(flag ->
         {
             Assert.assertTrue(
