@@ -10,8 +10,8 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.Resource;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
 
@@ -26,30 +26,30 @@ public class MetricFileGeneratorTest
     private static final int BATCH_SIZE = FileProcessor.BATCH_SIZE;
     private static final MetricEvent SAMPLE_EVENT;
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
     static
     {
         SAMPLE_EVENT = new MetricEvent("a-metric-name", Duration.ONE_MINUTE);
     }
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
     @Test
-    public void testFileName() throws IOException
+    public void testFileLabelWithKnownSuffix() throws IOException
     {
-        final File tempDirectory = tempFolder.newFolder();
-        final MetricFileGenerator generator = new MetricFileGenerator("some-metrics-log.csv",
+        final File tempDirectory = this.tempFolder.newFolder();
+        final MetricFileGenerator generator = new MetricFileGenerator("some.metrics.txt",
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), tempDirectory.getAbsolutePath());
 
         final String filename = generator.getFilename();
 
-        Assert.assertTrue(filename.matches("^some-metrics-log-\\d+.csv$"));
+        Assert.assertTrue(filename.matches("^some\\.metrics-\\d+\\.txt$"));
     }
 
     @Test
     public void testFileLabelWithUnknownSuffix() throws IOException
     {
-        final File tempDirectory = tempFolder.newFolder();
+        final File tempDirectory = this.tempFolder.newFolder();
         final MetricFileGenerator generator = new MetricFileGenerator("some.metrics.out",
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), tempDirectory.getAbsolutePath());
 
@@ -59,15 +59,15 @@ public class MetricFileGeneratorTest
     }
 
     @Test
-    public void testFileLabelWithKnownSuffix() throws IOException
+    public void testFileName() throws IOException
     {
-        final File tempDirectory = tempFolder.newFolder();
-        final MetricFileGenerator generator = new MetricFileGenerator("some.metrics.txt",
+        final File tempDirectory = this.tempFolder.newFolder();
+        final MetricFileGenerator generator = new MetricFileGenerator("some-metrics-log.csv",
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), tempDirectory.getAbsolutePath());
 
         final String filename = generator.getFilename();
 
-        Assert.assertTrue(filename.matches("^some\\.metrics-\\d+\\.txt$"));
+        Assert.assertTrue(filename.matches("^some-metrics-log-\\d+.csv$"));
     }
 
     @Test
@@ -103,7 +103,7 @@ public class MetricFileGeneratorTest
     private void processCompleteAndValidate(final int eventCount) throws IOException
     {
         // Generate
-        final File tempDirectory = tempFolder.newFolder();
+        final File tempDirectory = this.tempFolder.newFolder();
         final MetricFileGenerator processor = new MetricFileGenerator("some-file-name.csv",
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), tempDirectory.getAbsolutePath());
         for (int index = 0; index < eventCount; index++)

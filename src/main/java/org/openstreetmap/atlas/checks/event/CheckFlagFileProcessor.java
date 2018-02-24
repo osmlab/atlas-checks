@@ -1,6 +1,6 @@
 package org.openstreetmap.atlas.checks.event;
 
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

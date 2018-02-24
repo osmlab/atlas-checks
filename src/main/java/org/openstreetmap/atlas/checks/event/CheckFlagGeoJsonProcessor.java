@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +71,9 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
         final String challenge = event.getCheckFlag().getChallengeName()
                 .orElse(event.getCheckName());
 
-        final Vector<JsonObject> featureBucket = featureBuckets.computeIfAbsent(challenge,
+        final Vector<JsonObject> featureBucket = this.featureBuckets.computeIfAbsent(challenge,
                 key -> new Vector<>(BUCKET_CAPACITY, BUCKET_INCREMENT));
-        final ReadWriteLock bucketLock = bucketLocks.computeIfAbsent(challenge,
+        final ReadWriteLock bucketLock = this.bucketLocks.computeIfAbsent(challenge,
                 key -> new ReentrantReadWriteLock());
 
         bucketLock.readLock().lock();

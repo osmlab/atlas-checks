@@ -24,11 +24,11 @@ import org.openstreetmap.atlas.checks.event.EventService;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
-import org.openstreetmap.atlas.checks.persistence.SparkFileOutput;
-import org.openstreetmap.atlas.checks.persistence.SparkFilePath;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileOutput;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFilePath;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
@@ -57,6 +57,16 @@ import scala.Tuple2;
  */
 public class IntegrityCheckSparkJob extends SparkJob
 {
+    /**
+     * @author brian_l_davis
+     */
+    private enum OutputFormats
+    {
+        FLAGS,
+        GEOJSON,
+        METRICS
+    }
+
     @Deprecated
     protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
             "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
@@ -79,6 +89,7 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
+
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
             String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
             csv_formats -> Stream.of(csv_formats.split(","))
@@ -88,7 +99,6 @@ public class IntegrityCheckSparkJob extends SparkJob
 
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
-
     // Outputs
     private static final String OUTPUT_FLAG_FOLDER = "flag";
     private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
@@ -96,9 +106,10 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
             + FileSuffix.GZIP.toString();
     private static final String OUTPUT_METRIC_FOLDER = "metric";
-    private static final String METRICS_FILENAME = "check-run-time.csv";
 
+    private static final String METRICS_FILENAME = "check-run-time.csv";
     private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
+
     private static final long serialVersionUID = 2990087219645942330L;
 
     // Thread pool settings
@@ -410,15 +421,5 @@ public class IntegrityCheckSparkJob extends SparkJob
             return false;
         }
         return true;
-    }
-
-    /**
-     * @author brian_l_davis
-     */
-    private enum OutputFormats
-    {
-        FLAGS,
-        GEOJSON,
-        METRICS
     }
 }
