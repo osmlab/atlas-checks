@@ -33,11 +33,12 @@ import org.slf4j.LoggerFactory;
  * {@link Edge}s and {@link Line}s. Both shape point and non-shape point intersections are flagged.
  *
  * @author mgostintsev
+ * @author dbaah
  */
 public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 {
     private static final String AREA_INSTRUCTION = "Feature {0,number,#} has invalid geometry at {1}";
-    private static final String AREA_BUILDING_INSTRUCTION = "Feature {0,number,#} is a incomplete "
+    private static final String POLYLINE_BUILDING_INSTRUCTION = "Feature {0,number,#} is a incomplete "
             + "building at {1}";
 
     private static final String DUPLICATE_EDGE_INSTRUCTION = "Feature {0,number,#} has a duplicate "
@@ -51,7 +52,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             || Validators.isOfType(object, HighwayTag.class, HighwayTag.FOOTWAY)
             || Validators.isOfType(object, HighwayTag.class, HighwayTag.PATH);
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(POLYLINE_INSTRUCTION,
-            AREA_INSTRUCTION, AREA_BUILDING_INSTRUCTION, DUPLICATE_EDGE_INSTRUCTION);
+            AREA_INSTRUCTION, POLYLINE_BUILDING_INSTRUCTION, DUPLICATE_EDGE_INSTRUCTION);
     private static final Logger logger = LoggerFactory
             .getLogger(SelfIntersectingPolylineCheck.class);
     public static final Integer THREE = 3;
@@ -182,11 +183,11 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     }
 
     /**
-     * Returns true if adjacent Edges have identical lat,lng sequences
+     * Returns true if adjacent {@link Edge} have identical lat,lng sequences
      *
      * @param polyline
-     *            the geometry being examined
-     * @return true if the any set of adjacent edges have identical geometries
+     *            the {@link PolyLine} being examined
+     * @return {@code true} if the any set of adjacent edges have identical geometries
      */
     private boolean hasDuplicateEdges(final PolyLine polyline)
     {
