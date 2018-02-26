@@ -118,7 +118,6 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             polyline = ((Area) object).asPolygon();
             // Send duplicate Edge instructions if duplicate Edges exist
             localizedInstructionIndex = hasDuplicateEdges(polyline) ? THREE : 1;
-
         }
         else
         {
@@ -183,7 +182,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     }
 
     /**
-     * Returns true if adjacent {@link Edge} have identical lat,lng sequences
+     * Returns true if adjacent {@link Edge} has identical lat,lng sequences
      *
      * @param polyline
      *            the {@link PolyLine} being examined
