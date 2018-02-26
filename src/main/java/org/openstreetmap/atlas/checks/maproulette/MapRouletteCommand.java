@@ -34,8 +34,8 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     protected synchronized void addTask(final String challengeName, final Task task)
             throws UnsupportedEncodingException, URISyntaxException
     {
-        this.mapRouletteClient
-                .addTask(new Challenge(challengeName, "", "", "", ChallengeDifficulty.EASY), task);
+        this.mapRouletteClient.addTask(
+                new Challenge(challengeName, "", "", "", ChallengeDifficulty.EASY, ""), task);
     }
 
     protected synchronized void addTask(final Challenge challenge, final Task task)

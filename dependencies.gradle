@@ -2,7 +2,7 @@ project.ext.versions = [
     checkstyle: '7.6.1',
     atlas: '5.0.8',
     commons:'2.6',
-    atlas_generator: '4.0.0',
+    atlas_generator: '4.0.1',
 ]
 
 project.ext.packages = [

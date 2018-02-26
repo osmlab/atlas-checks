@@ -89,7 +89,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
         if (challengeMap.isEmpty())
         {
             this.challenge = new Challenge(this.getClass().getSimpleName(), "", "", "",
-                    ChallengeDifficulty.EASY);
+                    ChallengeDifficulty.EASY, "");
         }
         else
         {
@@ -341,6 +341,27 @@ public abstract class BaseCheck<T> implements Check, Serializable
     }
 
     /**
+     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasObject)} except instead of using the
+     * OSM identifier we use the Atlas identifier
+     *
+     * @param object
+     *            {@link AtlasObject} to generate unique identifier for
+     * @return unique object identifier among different types
+     */
+    protected String getUniqueObjectIdentifier(final AtlasObject object)
+    {
+        if (object instanceof AtlasEntity)
+        {
+            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
+                    object.getIdentifier());
+        }
+        else
+        {
+            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
+        }
+    }
+
+    /**
      * Generates a unique identifier given an {@link AtlasObject}. OSM/Atlas objects with different
      * types can share the identifier (way 12345 - node 12345). This method makes sure we generate a
      * truly unique identifier, based on the OSM identifier, among different types for an
@@ -357,27 +378,6 @@ public abstract class BaseCheck<T> implements Check, Serializable
         {
             return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
                     object.getOsmIdentifier());
-        }
-        else
-        {
-            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
-        }
-    }
-
-    /**
-     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasObject)} except instead of using the
-     * OSM identifier we use the Atlas identifier
-     *
-     * @param object
-     *            {@link AtlasObject} to generate unique identifier for
-     * @return unique object identifier among different types
-     */
-    protected String getUniqueObjectIdentifier(final AtlasObject object)
-    {
-        if (object instanceof AtlasEntity)
-        {
-            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
-                    object.getIdentifier());
         }
         else
         {
