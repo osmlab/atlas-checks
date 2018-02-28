@@ -100,11 +100,15 @@ public abstract class BaseCheck<T> implements Check, Serializable
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             this.challenge = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
         }
-        this.polygonFilter = new AtlasEntityPolygonsFilter(
+        this.polygonFilter = AtlasEntityPolygonsFilter.forConfigurationValues(
                 configurationValue(configuration, AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY,
                         new HashMap<>()),
+                configurationValue(configuration,
+                        AtlasEntityPolygonsFilter.INCLUDED_MULTIPOLYGONS_KEY, new HashMap<>()),
                 configurationValue(configuration, AtlasEntityPolygonsFilter.EXCLUDED_POLYGONS_KEY,
-                        new HashMap<>()));
+                        new HashMap<>()),
+                configurationValue(configuration,
+                        AtlasEntityPolygonsFilter.EXCLUDED_MULTIPOLYGONS_KEY, new HashMap<>()));
     }
 
     @Override
