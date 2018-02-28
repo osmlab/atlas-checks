@@ -21,57 +21,61 @@ public class RoundaboutValenceCheckTest
 
 
     @Test
-    public void masterRoundaboutEdgesWithTurningCircleTagAtlas()
+    public void roundaboutWithValenceZero()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithTurningCircleTagAtlas(),
+        this.verifier.actual(this.setup.roundaboutWithValenceZero(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
 
-    @Test
-    public void masterRoundaboutEdgesWithTurningLoopTagAtlas()
-    {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithTurningLoopTagAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void masterRoundaboutEdgeWithValence1NodesAtlas()
-    {
-        this.verifier.actual(this.setup.masterRoundaboutEdgeWithValence1NodesAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotNull();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
                 .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
-
     @Test
-    public void testMasterRoundaboutEdgesWithDeadEndNodesAtlas()
+    public void roundaboutWithValenceOne()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithDeadEndNodesAtlas(),
+        this.verifier.actual(this.setup.roundaboutWithValenceOne(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
                 .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
     @Test
-    public void testMasterRoundaboutEdgesWithOneMissingOneWayTagAtlas()
+    public void roundaboutWithValenceTwo()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithOneMissingOneWayTagAtlas(),
-                new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.setup.roundaboutWithValenceTwo(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+
+    @Test
+    public void roundaboutWithValenceFour()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceFour(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMasterRoundaboutEdgesWithValence2NodesAtlas()
+    public void roundaboutWithValenceTen()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithValence2NodesAtlas(),
-                new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.roundaboutWithValenceTen(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
+    }
+
+    @Test
+    public void roundaboutWithValenceEleven()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceEleven(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
 }
