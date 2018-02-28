@@ -90,6 +90,13 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             while (iterator.hasNext())
             {
+
+                pair = (Map.Entry) iterator.next();
+                roundaboutEdge = (Edge) pair.getValue();
+
+                connectedRoundaboutEdgeCount = countConnectedRoundaboutEdges(roundaboutEdge);
+                connectedEdgeCount = roundaboutEdge.connectedEdges().size();
+
                 if (connectedEdgeCount - connectedRoundaboutEdgeCount > 2)
                 {
                     totalRoundaboutValence += connectedEdgeCount - connectedRoundaboutEdgeCount;
@@ -104,6 +111,8 @@ public class RoundaboutValenceCheck extends BaseCheck
             {
                 roundaboutToFlag.add(roundaboutEdges.get(key));
             }
+            System.out.println(roundaboutToFlag);
+            this.markAsFlagged(object.getIdentifier());
             return Optional.of(this.createFlag(roundaboutToFlag,
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
@@ -129,24 +138,32 @@ public class RoundaboutValenceCheck extends BaseCheck
 
     private void getAllRoundaboutEdges(Edge edge, Map<Long, Edge> roundaboutEdges)
     {
+        Queue<Edge> queue = new LinkedList<>();
 
-        // Get the edges connected to the current edge as an iterator
-        final Iterator<Edge> connectedEdges = edge.connectedEdges().iterator();
+        // Mark the current node as visited and enqueue it
+        this.markAsFlagged(edge.getIdentifier());
+        queue.add(edge);
 
-        while (connectedEdges.hasNext())
+        while (queue.size() != 0)
         {
-            final Edge current_edge = connectedEdges.next();
-            final Long id = current_edge.getIdentifier();
+            // Dequeue an edge and add it to the roundaboutEdges
+            Edge e = queue.poll();
+            roundaboutEdges.put(e.getIdentifier(), e);
 
-            if (JunctionTag.isRoundabout(current_edge))
+            // Get the edges connected to the edge e as an iterator
+            final Iterator<Edge> iterator = e.connectedEdges().iterator();
+            while (iterator.hasNext())
             {
-                if (!roundaboutEdges.containsKey(id) && id != edge.getIdentifier()
-                        && !this.isFlagged(id))
-                {
-                    this.markAsFlagged(id);
-                    roundaboutEdges.put(id, current_edge);
-                    getAllRoundaboutEdges(edge, roundaboutEdges);
+                Edge connectedEdge = iterator.next();
+                final Long id = connectedEdge.getIdentifier();
 
+                if (JunctionTag.isRoundabout(connectedEdge))
+                {
+                    if (!this.isFlagged(id))
+                    {
+                        this.markAsFlagged(id);
+                        queue.add(connectedEdge);
+                    }
                 }
             }
         }
