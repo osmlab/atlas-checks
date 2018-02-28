@@ -62,58 +62,36 @@ public class RoundaboutValenceCheck extends BaseCheck
         final Edge edge = (Edge) object;
         final Map<Long, Edge> roundaboutEdges = new HashMap<>();
 
+        // get all edges in the roundabout
         getAllRoundaboutEdges(edge, roundaboutEdges);
+        int totalRoundaboutValence = 0;
+        Set<Edge> connectedRoundaboutEdges = new HashSet<>();
+        Set<Edge> connectedEdges = new HashSet<>();
 
         Iterator iterator = roundaboutEdges.entrySet().iterator();
-        int totalRoundaboutValence = 0;
 
         if (!iterator.hasNext())
         {
             return Optional.empty();
         }
 
-        Map.Entry pair = (Map.Entry) iterator.next();
-        Edge roundaboutEdge = (Edge) pair.getValue();
-
-        List<Long> keys = new ArrayList<>(roundaboutEdges.keySet());
-
-        int connectedRoundaboutEdgeCount = countConnectedRoundaboutEdges(roundaboutEdge);
-        int connectedEdgeCount = roundaboutEdge.connectedEdges().size();
-
-        if (roundaboutEdges.size() == 1
-                || isSingleFeature(Long.toString(edge.getOsmIdentifier()), keys))
-        {
-            totalRoundaboutValence = connectedEdgeCount - connectedRoundaboutEdgeCount;
-
-        }
-        else
-        {
             while (iterator.hasNext())
             {
 
-                pair = (Map.Entry) iterator.next();
-                roundaboutEdge = (Edge) pair.getValue();
+                Map.Entry pair = (Map.Entry) iterator.next();
+                Edge roundaboutEdge = (Edge) pair.getValue();
 
-                connectedRoundaboutEdgeCount = countConnectedRoundaboutEdges(roundaboutEdge);
-                connectedEdgeCount = roundaboutEdge.connectedEdges().size();
+                connectedRoundaboutEdges.addAll(connectedRoundaboutEdges(roundaboutEdge));
+                connectedEdges.addAll(roundaboutEdge.connectedEdges());
 
-                if (connectedEdgeCount - connectedRoundaboutEdgeCount > 2)
-                {
-                    totalRoundaboutValence += connectedEdgeCount - connectedRoundaboutEdgeCount;
-                }
             }
-        }
 
-        if (totalRoundaboutValence < 2 || totalRoundaboutValence > 10)
+        totalRoundaboutValence = connectedEdges.size() - connectedRoundaboutEdges.size();
+
+        if (totalRoundaboutValence < 2 || totalRoundaboutValence >= 10)
         {
-            Set<Edge> roundaboutToFlag = new HashSet<>();
-            for (Long key : roundaboutEdges.keySet())
-            {
-                roundaboutToFlag.add(roundaboutEdges.get(key));
-            }
-            System.out.println(roundaboutToFlag);
             this.markAsFlagged(object.getIdentifier());
-            return Optional.of(this.createFlag(roundaboutToFlag,
+            return Optional.of(this.createFlag(connectedRoundaboutEdges,
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
         else
@@ -122,18 +100,10 @@ public class RoundaboutValenceCheck extends BaseCheck
         }
     }
 
-    private int countConnectedRoundaboutEdges(Edge edge)
+    private Set<Edge> connectedRoundaboutEdges(Edge edge)
     {
-        Set<Edge> connectedEdges = edge.connectedEdges();
-        int numberOfEdges = 0;
-        for (Edge e : connectedEdges)
-        {
-            if (JunctionTag.isRoundabout(e))
-            {
-                numberOfEdges++;
-            }
-        }
-        return numberOfEdges;
+        return edge.connectedEdges().stream().filter(e ->
+            JunctionTag.isRoundabout(e)).collect(Collectors.toSet());
     }
 
     private void getAllRoundaboutEdges(Edge edge, Map<Long, Edge> roundaboutEdges)
