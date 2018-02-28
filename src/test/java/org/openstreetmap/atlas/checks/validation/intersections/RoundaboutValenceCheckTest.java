@@ -19,7 +19,6 @@ public class RoundaboutValenceCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-
     @Test
     public void roundaboutWithValenceZero()
     {
@@ -44,7 +43,6 @@ public class RoundaboutValenceCheckTest
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
-
 
     @Test
     public void roundaboutWithValenceFour()
