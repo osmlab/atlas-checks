@@ -27,8 +27,6 @@ public class RoundaboutValenceCheckTest
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
     @Test
@@ -37,8 +35,6 @@ public class RoundaboutValenceCheckTest
         this.verifier.actual(this.setup.roundaboutWithValenceOne(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
     @Test
@@ -64,8 +60,6 @@ public class RoundaboutValenceCheckTest
         this.verifier.actual(this.setup.roundaboutWithValenceTen(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
     @Test
@@ -74,8 +68,6 @@ public class RoundaboutValenceCheckTest
         this.verifier.actual(this.setup.roundaboutWithValenceEleven(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains(RoundaboutValenceCheck.WRONG_VALENCE_INSTRUCTIONS)));
     }
 
 }
