@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +83,6 @@ public final class MetricFileGenerator extends FileProcessor<MetricEvent>
     @Override
     protected String getFilename()
     {
-        return String.format("%s-%s%s", label, new Date().getTime(), suffix);
+        return String.format("%s-%s%s", this.label, new Date().getTime(), this.suffix);
     }
 }

@@ -9,8 +9,8 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.Resource;
 
 import com.google.common.io.Files;
