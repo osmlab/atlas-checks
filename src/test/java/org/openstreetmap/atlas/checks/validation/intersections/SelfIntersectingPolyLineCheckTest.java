@@ -13,8 +13,9 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class SelfIntersectingPolyLineCheckTest
 {
-    private static final SelfIntersectingPolylineCheck check = new SelfIntersectingPolylineCheck(
-            ConfigurationResolver.emptyConfiguration());
+    private final SelfIntersectingPolylineCheck check = new SelfIntersectingPolylineCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"SelfIntersectingPolylineCheck\":{\"tags.filter\":\"highway->!proposed&highway->!construction&highway->!footway&highway->!path\"}}"));
 
     @Rule
     public SelfIntersectingPolylineTestCaseRule setup = new SelfIntersectingPolylineTestCaseRule();

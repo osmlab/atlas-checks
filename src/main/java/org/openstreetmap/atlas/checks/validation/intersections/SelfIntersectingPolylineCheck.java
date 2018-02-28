@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -20,8 +19,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
-import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.WaterwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -45,12 +42,6 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             + "Edge at {1}";
     private static final String POLYLINE_INSTRUCTION = "Self-intersecting polyline for feature "
             + "{0,number,#} at {1}";
-    // Excluded Highway tags
-    private static final Predicate<Taggable> INELIGIBLE_HIGHWAY_TAGS = object -> Validators
-            .isOfType(object, HighwayTag.class, HighwayTag.PROPOSED)
-            || Validators.isOfType(object, HighwayTag.class, HighwayTag.CONSTRUCTION)
-            || Validators.isOfType(object, HighwayTag.class, HighwayTag.FOOTWAY)
-            || Validators.isOfType(object, HighwayTag.class, HighwayTag.PATH);
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(POLYLINE_INSTRUCTION,
             AREA_INSTRUCTION, POLYLINE_BUILDING_INSTRUCTION, DUPLICATE_EDGE_INSTRUCTION);
     private static final Logger logger = LoggerFactory
@@ -84,14 +75,13 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         // Master edges excluding ineligible highway tags
-        return ((object instanceof Edge && ((Edge) object).isMasterEdge()
-                && !INELIGIBLE_HIGHWAY_TAGS.test(object))
+        return object instanceof Edge && ((Edge) object).isMasterEdge()
                 // Areas
-                || (object instanceof Area)
+                || object instanceof Area
                 // Lines excluding ineligible highway tags
-                || (object instanceof Line && !INELIGIBLE_HIGHWAY_TAGS.test(object)))
-                // Exclude waterway tags
-                && !Validators.hasValuesFor(object, WaterwayTag.class);
+                || object instanceof Line
+                        // Exclude waterway tags
+                        && !Validators.hasValuesFor(object, WaterwayTag.class);
     }
 
     @Override
