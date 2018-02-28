@@ -1,6 +1,7 @@
-package org.openstreetmap.atlas.checks.validation;
+package org.openstreetmap.atlas.checks.validation.intersections;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -22,11 +23,12 @@ public class RoundaboutValenceCheck extends BaseCheck
     private static final long serialVersionUID = 1L;
     public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0}, has the "
             + "wrong valence";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            WRONG_VALENCE_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList(WRONG_VALENCE_INSTRUCTIONS);
 
     @Override
-    protected  List<String> getFallbackInstructions() {
+    protected List<String> getFallbackInstructions()
+    {
         return FALLBACK_INSTRUCTIONS;
     }
 
@@ -35,7 +37,6 @@ public class RoundaboutValenceCheck extends BaseCheck
         super(configuration);
 
     }
-
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
@@ -59,8 +60,6 @@ public class RoundaboutValenceCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-
-        // All roundabout edges
         final Map<Long, Edge> roundaboutEdges = new HashMap<>();
 
         getAllRoundaboutEdges(edge, roundaboutEdges);
@@ -68,31 +67,36 @@ public class RoundaboutValenceCheck extends BaseCheck
         Iterator iterator = roundaboutEdges.entrySet().iterator();
         int totalRoundaboutValence = 0;
 
-        // if the roundabout is already a single features (i.e. it isn't composed of a collection
-        // of edges), then we just need to do a basic check for its connections to get the valence
-        if (roundaboutEdges.size() == 1) {
-            Map.Entry pair = (Map.Entry) iterator.next();
-            Edge roundaboutEdge = (Edge) pair.getValue();
-            totalRoundaboutValence = roundaboutEdge.connectedEdges().size();
+        if (!iterator.hasNext())
+        {
+            return Optional.empty();
+        }
 
-        } else {
-            //add if for single feature handling (just connected edges) else do the while loop
+        Map.Entry pair = (Map.Entry) iterator.next();
+        Edge roundaboutEdge = (Edge) pair.getValue();
+
+        List<Long> keys = new ArrayList<>(roundaboutEdges.keySet());
+
+        int connectedRoundaboutEdgeCount = countConnectedRoundaboutEdges(roundaboutEdge);
+        int connectedEdgeCount = roundaboutEdge.connectedEdges().size();
+
+        if (roundaboutEdges.size() == 1
+                || isSingleFeature(Long.toString(edge.getOsmIdentifier()), keys))
+        {
+            totalRoundaboutValence = connectedEdgeCount - connectedRoundaboutEdgeCount;
+
+        }
+        else
+        {
             while (iterator.hasNext())
             {
-                Map.Entry pair = (Map.Entry) iterator.next();
-                Edge roundaboutEdge = (Edge) pair.getValue();
-
-                System.out.println(roundaboutEdge.connectedEdges().size());
-
-                if (roundaboutEdge.connectedEdges().size() > 2)
+                if (connectedEdgeCount - connectedRoundaboutEdgeCount > 2)
                 {
-                    totalRoundaboutValence++;
+                    totalRoundaboutValence += connectedEdgeCount - connectedRoundaboutEdgeCount;
                 }
             }
         }
 
-        // if the roundabout's valence is less than 2 or greater than 10, then we want to flag it
-        // for further inspection
         if (totalRoundaboutValence < 2 || totalRoundaboutValence > 10)
         {
             Set<Edge> roundaboutToFlag = new HashSet<>();
@@ -107,6 +111,20 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             return Optional.empty();
         }
+    }
+
+    private int countConnectedRoundaboutEdges(Edge edge)
+    {
+        Set<Edge> connectedEdges = edge.connectedEdges();
+        int numberOfEdges = 0;
+        for (Edge e : connectedEdges)
+        {
+            if (JunctionTag.isRoundabout(e))
+            {
+                numberOfEdges++;
+            }
+        }
+        return numberOfEdges;
     }
 
     private void getAllRoundaboutEdges(Edge edge, Map<Long, Edge> roundaboutEdges)
@@ -132,5 +150,15 @@ public class RoundaboutValenceCheck extends BaseCheck
                 }
             }
         }
+    }
+
+    private boolean isSingleFeature(final String osmId, final List<Long> edgeIds)
+    {
+        final List matches = edgeIds.stream()
+                // returns true is roundabout Id contains full osmId value
+                .filter(id -> Long.toString(id).contains(osmId)).collect(Collectors.toList());
+
+        // if each value passes our test, this roundabout is a single feature
+        return matches.size() == edgeIds.size();
     }
 }
