@@ -22,8 +22,13 @@ public class RoundaboutValenceCheck extends BaseCheck
     private static final long serialVersionUID = 1L;
     public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0}, has the "
             + "wrong valence";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(WRONG_VALENCE_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            WRONG_VALENCE_INSTRUCTIONS);
+
+    @Override
+    protected  List<String> getFallbackInstructions() {
+        return FALLBACK_INSTRUCTIONS;
+    }
 
     public RoundaboutValenceCheck(final Configuration configuration)
     {
@@ -31,13 +36,7 @@ public class RoundaboutValenceCheck extends BaseCheck
 
     }
 
-    /**
-     * This function will validate if the supplied atlas object is valid for the check.
-     *
-     * @param object
-     *            the atlas object supplied by the Atlas-Checks framework for evaluation
-     * @return {@code true} if this object should be checked
-     */
+
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
@@ -69,18 +68,31 @@ public class RoundaboutValenceCheck extends BaseCheck
         Iterator iterator = roundaboutEdges.entrySet().iterator();
         int totalRoundaboutValence = 0;
 
-        while (iterator.hasNext())
-        {
+        // if the roundabout is already a single features (i.e. it isn't composed of a collection
+        // of edges), then we just need to do a basic check for its connections to get the valence
+        if (roundaboutEdges.size() == 1) {
             Map.Entry pair = (Map.Entry) iterator.next();
             Edge roundaboutEdge = (Edge) pair.getValue();
+            totalRoundaboutValence = roundaboutEdge.connectedEdges().size();
 
-            if (roundaboutEdge.connectedEdges().size() > 2)
+        } else {
+            //add if for single feature handling (just connected edges) else do the while loop
+            while (iterator.hasNext())
             {
-                totalRoundaboutValence++;
+                Map.Entry pair = (Map.Entry) iterator.next();
+                Edge roundaboutEdge = (Edge) pair.getValue();
+
+                System.out.println(roundaboutEdge.connectedEdges().size());
+
+                if (roundaboutEdge.connectedEdges().size() > 2)
+                {
+                    totalRoundaboutValence++;
+                }
             }
         }
 
-        // flagged roundabout as no dice
+        // if the roundabout's valence is less than 2 or greater than 10, then we want to flag it
+        // for further inspection
         if (totalRoundaboutValence < 2 || totalRoundaboutValence > 10)
         {
             Set<Edge> roundaboutToFlag = new HashSet<>();
