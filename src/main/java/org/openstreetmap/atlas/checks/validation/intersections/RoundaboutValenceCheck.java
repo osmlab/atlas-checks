@@ -92,7 +92,8 @@ public class RoundaboutValenceCheck extends BaseCheck
             final Edge roundaboutEdge = (Edge) pair.getValue();
 
             connectedRoundaboutEdges.addAll(getConnectedRoundaboutEdges(roundaboutEdge));
-            connectedEdges.addAll(roundaboutEdge.connectedEdges());
+            connectedEdges.addAll(roundaboutEdge.connectedEdges().stream().map(e ->
+                e.getMasterEdge()).collect(Collectors.toSet()));
         }
 
         totalRoundaboutValence = connectedEdges.size() - connectedRoundaboutEdges.size();
