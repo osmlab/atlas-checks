@@ -91,7 +91,7 @@ public class RoundaboutValenceCheck extends BaseCheck
             final Map.Entry pair = (Map.Entry) iterator.next();
             final Edge roundaboutEdge = (Edge) pair.getValue();
 
-            connectedRoundaboutEdges.addAll(connectedRoundaboutEdges(roundaboutEdge));
+            connectedRoundaboutEdges.addAll(getConnectedRoundaboutEdges(roundaboutEdge));
             connectedEdges.addAll(roundaboutEdge.connectedEdges());
         }
 
@@ -110,7 +110,7 @@ public class RoundaboutValenceCheck extends BaseCheck
         }
     }
 
-    private Set<Edge> connectedRoundaboutEdges(final Edge edge)
+    private Set<Edge> getConnectedRoundaboutEdges(final Edge edge)
     {
         return edge.connectedEdges().stream().filter(e -> JunctionTag.isRoundabout(e))
                 .collect(Collectors.toSet());
