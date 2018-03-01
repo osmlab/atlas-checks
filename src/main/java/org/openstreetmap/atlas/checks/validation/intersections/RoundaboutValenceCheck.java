@@ -141,8 +141,7 @@ public class RoundaboutValenceCheck extends BaseCheck
 
                 if (JunctionTag.isRoundabout(connectedEdge))
                 {
-                    if (!roundaboutEdges.containsKey(edgeId) && edgeId != edge.getIdentifier()
-                            && !this.isFlagged(edgeId))
+                    if (!roundaboutEdges.containsKey(edgeId))
 
                     {
                         this.markAsFlagged(edgeId);
