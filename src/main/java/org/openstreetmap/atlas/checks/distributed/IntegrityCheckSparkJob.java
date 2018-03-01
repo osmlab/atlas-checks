@@ -196,14 +196,17 @@ public class IntegrityCheckSparkJob extends SparkJob
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
-        // Load checks
-        final Map<String, Set<BaseCheck>> checksToExecute = checkLoader
-                .loadChecksForCountries(countries);
-        if (!isValidInput(countries, checksToExecute))
+        // check configuration and country list
+        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadChecks();
+        if (!isValidInput(countries, preOverriddenChecks))
         {
             logger.error("No countries supplied or checks enabled, exiting!");
             return;
         }
+
+        // Load checks
+        final Map<String, Set<BaseCheck>> checksToExecutePerCountry = checkLoader
+                .loadChecksForCountries(countries);
 
         // Read priority countries from the configuration
         final List<String> priorityCountries = checksConfiguration
@@ -213,18 +216,18 @@ public class IntegrityCheckSparkJob extends SparkJob
         // Add priority countries first if they are supplied by parameter
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
         countries.stream().filter(priorityCountries::contains).forEach(country -> countryCheckTuples
-                .add(new Tuple2<>(country, checksToExecute.get(country))));
+                .add(new Tuple2<>(country, checksToExecutePerCountry.get(country))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
                 .forEach(country -> countryCheckTuples
-                        .add(new Tuple2<>(country, checksToExecute.get(country))));
+                        .add(new Tuple2<>(country, checksToExecutePerCountry.get(country))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
                 .collect(Collectors.joining(",")));
-        logger.info("Initialized checks: {}", checksToExecute.values().stream().flatMap(Set::stream)
-                .map(BaseCheck::getCheckName).distinct().collect(Collectors.joining(",")));
+        logger.info("Initialized checks: {}", preOverriddenChecks.stream()
+                .map(BaseCheck::getCheckName).collect(Collectors.joining(",")));
 
         // Parallelize on the countries
         final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = getContext()
@@ -254,6 +257,9 @@ public class IntegrityCheckSparkJob extends SparkJob
 
             final String country = tuple._1();
             final Set<BaseCheck> checks = tuple._2();
+
+            logger.info("Initialized checks for {}: {}", country,
+                    checks.stream().map(BaseCheck::getCheckName).collect(Collectors.joining(",")));
 
             final Set<SparkFilePath> resultingFiles = new HashSet<>();
 
@@ -404,11 +410,9 @@ public class IntegrityCheckSparkJob extends SparkJob
      *            set of {@link BaseCheck}s to execute
      * @return {@code true} if sanity check passes, {@code false} otherwise
      */
-    private boolean isValidInput(final StringList countries,
-            final Map<String, Set<BaseCheck>> checksToExecute)
+    private boolean isValidInput(final StringList countries, final Set<BaseCheck> checksToExecute)
     {
-        if (countries.size() == 0
-                || checksToExecute.values().stream().anyMatch(checks -> checks.size() == 0))
+        if (countries.size() == 0 || checksToExecute.size() == 0)
         {
             return false;
         }

@@ -71,11 +71,11 @@ public class CheckResourceLoader
         this.packages = Collections.unmodifiableSet(Iterables.asSet((Iterable<String>) configuration
                 .get("CheckResourceLoader.scanUrls", Collections.singletonList(DEFAULT_PACKAGE))
                 .value()));
-        final Map<String, List<String>> groupCountries = configuration
-                .get("groups", Collections.emptyMap()).value();
-        groupCountries.keySet().forEach(group ->
+        final Map<String, List<String>> groups = configuration.get("groups", Collections.emptyMap())
+                .value();
+        groups.keySet().forEach(group ->
         {
-            groupCountries.get(group).forEach(country -> this.countryGroups.add(country, group));
+            groups.get(group).forEach(country -> this.countryGroups.add(country, group));
         });
 
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
