@@ -13,6 +13,10 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class RoundaboutValenceCheckTest
 {
+
+    private final RoundaboutValenceCheck check =
+            new RoundaboutValenceCheck(ConfigurationResolver.inlineConfiguration(
+                    "{\"RoundaboutValenceCheck\":{\"connections.minimum\":2.0,\"connections.maximum\":10.0}}"));
     @Rule
     public RoundaboutValenceCheckTestRule setup = new RoundaboutValenceCheckTestRule();
 
