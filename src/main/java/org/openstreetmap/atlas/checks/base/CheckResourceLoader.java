@@ -8,10 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -114,9 +111,10 @@ public class CheckResourceLoader
         Configuration specializedConfiguration = this.configuration
                 .configurationForKeyword(country);
 
-        if (this.countryGroups.containsKey(country))
+        final List<String> groups = this.countryGroups.get(country);
+        if (groups != null)
         {
-            for (final String group : this.countryGroups.get(country))
+            for (final String group : groups)
             {
                 specializedConfiguration = specializedConfiguration.configurationForKeyword(group);
             }
@@ -139,16 +137,15 @@ public class CheckResourceLoader
      *
      * @param isEnabled
      *            {@link Predicate} used to determine if a check is enabled
-     * @param specificConfiguration
-     *            {@link Configuration} used to loadChecks if not the one used to initialize
-     *            {@link CheckResourceLoader}
+     * @param configuration
+     *            {@link Configuration} used to loadChecks {@link CheckResourceLoader}
      * @param <T>
      *            check type
      * @return a {@link Set} of checks
      */
     @SuppressWarnings("unchecked")
     public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled,
-            final Configuration specificConfiguration)
+            final Configuration configuration)
     {
         final Set<T> checks = new HashSet<>();
         final Time time = Time.now();
@@ -170,7 +167,7 @@ public class CheckResourceLoader
                                 try
                                 {
                                     check = checkClass.getConstructor(Configuration.class)
-                                            .newInstance(specificConfiguration);
+                                            .newInstance(configuration);
                                 }
                                 catch (final InvocationTargetException oops)
                                 {
@@ -220,18 +217,15 @@ public class CheckResourceLoader
         return loadChecks(this::isEnabledByConfiguration, this.configuration);
     }
 
-    public <T extends Check> Map<String, Set<T>> loadChecksForCountries(
-            final Predicate<Class> isEnabled, final Iterable<String> countries)
+    public <T extends Check> Set<T> loadChecksForCountry(final Predicate<Class> isEnabled,
+            final String country)
     {
-        return StreamSupport.stream(countries.spliterator(), false).collect(Collectors.toMap(
-                Function.identity(),
-                country -> loadChecks(isEnabled, this.getConfigurationForCountry(country))));
+        return loadChecks(isEnabled, this.getConfigurationForCountry(country));
     }
 
-    public <T extends Check> Map<String, Set<T>> loadChecksForCountries(
-            final Iterable<String> countries)
+    public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
-        return loadChecksForCountries(this::isEnabledByConfiguration, countries);
+        return loadChecksForCountry(this::isEnabledByConfiguration, country);
     }
 
     private boolean isEnabledByConfiguration(final Class checkClass)

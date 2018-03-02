@@ -204,10 +204,6 @@ public class IntegrityCheckSparkJob extends SparkJob
             return;
         }
 
-        // Load checks
-        final Map<String, Set<BaseCheck>> checksToExecutePerCountry = checkLoader
-                .loadChecksForCountries(countries);
-
         // Read priority countries from the configuration
         final List<String> priorityCountries = checksConfiguration
                 .get("priority.countries", Collections.EMPTY_LIST).value();
@@ -216,12 +212,12 @@ public class IntegrityCheckSparkJob extends SparkJob
         // Add priority countries first if they are supplied by parameter
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
         countries.stream().filter(priorityCountries::contains).forEach(country -> countryCheckTuples
-                .add(new Tuple2<>(country, checksToExecutePerCountry.get(country))));
+                .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
                 .forEach(country -> countryCheckTuples
-                        .add(new Tuple2<>(country, checksToExecutePerCountry.get(country))));
+                        .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)

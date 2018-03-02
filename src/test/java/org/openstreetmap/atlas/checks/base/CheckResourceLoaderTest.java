@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.base;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -32,15 +31,15 @@ public class CheckResourceLoaderTest
         final List<String> countries = Arrays.asList(country1, country2);
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-        final Map<String, Set<Check>> loaded = checkResourceLoader
-                .loadChecksForCountries(countries);
+        final Set<Check> loadedCountry1Checks = checkResourceLoader.loadChecksForCountry(country1);
+        final Set<Check> loadedCountry2Checks = checkResourceLoader.loadChecksForCountry(country2);
 
         // assert both countries loaded with different check sets
-        Assert.assertNotNull(loaded.get(country1));
-        Assert.assertNotNull(loaded.get(country2));
-        Assert.assertEquals(1, loaded.get(country1).size());
-        Assert.assertEquals(1, loaded.get(country2).size());
-        Assert.assertFalse(Iterables.equals(loaded.get(country1), loaded.get(country2)));
+        Assert.assertNotNull(loadedCountry1Checks);
+        Assert.assertNotNull(loadedCountry2Checks);
+        Assert.assertEquals(1, loadedCountry1Checks.size());
+        Assert.assertEquals(1, loadedCountry2Checks.size());
+        Assert.assertFalse(Iterables.equals(loadedCountry1Checks, loadedCountry2Checks));
 
         // assert both configurations overrode properly and thus initialized properly
         final long country1Var1 = checkResourceLoader.getConfigurationForCountry(country1)
