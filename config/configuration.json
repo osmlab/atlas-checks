@@ -98,6 +98,10 @@
       "tags":"highway"
     }
   },
+  "RoundaboutValenceCheck": {
+    "connections.minimum":2.0,
+    "connection.maximum":10.0
+  },
   "SelfIntersectingPolylineCheck": {
     "tags.filter": "highway->*|waterway->*|building->*",
     "challenge": {

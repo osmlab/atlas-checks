@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
+
 /**
  * This check ensures that roundabouts with unreasonable valences are flagged. In reference to OSM
  * Wiki, each roundabout should have greater than 1 connection as 1 connection should be tagged as a
@@ -30,12 +32,18 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0}, has the "
-            + "wrong valence. It has a valence of {1}.";
+    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0, number, integer}, "
+                    + "has the wrong valence. It has a valence of {1, number, integer}.";
+    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number, integer},"
+                    + " should not be labelled as a roundabout. "
+                    + "The junction should be a turning loop.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(WRONG_VALENCE_INSTRUCTIONS);
-    private static final int LOWER_VALENCE_THRESHOLD = 2;
-    private static final int UPPER_VALENCE_THRESHOLD = 10;
+            .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS);
+
+    private static final double LOWER_VALENCE_THRESHOLD = 2.0;
+    private static final double UPPER_VALENCE_THRESHOLD = 10.0;
+    private final double minimumValence;
+    private final double maximumValence;
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -47,6 +55,10 @@ public class RoundaboutValenceCheck extends BaseCheck
     {
         super(configuration);
 
+        this.minimumValence = (double) configurationValue(configuration, "connections.minimum",
+                LOWER_VALENCE_THRESHOLD);
+        this.maximumValence = (double) configurationValue(configuration, "connections.maximum",
+                UPPER_VALENCE_THRESHOLD);
     }
 
     @Override
@@ -54,9 +66,9 @@ public class RoundaboutValenceCheck extends BaseCheck
     {
         // We check that the object is an instance of Edge
         return object instanceof Edge
-                // and that the Edge has not already been marked as flagged
+                // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
-                // make sure that the edges are instances of roundabout
+                // Make sure that the edges are instances of roundabout
                 && JunctionTag.isRoundabout(object);
     }
 
@@ -73,7 +85,7 @@ public class RoundaboutValenceCheck extends BaseCheck
         final Edge edge = (Edge) object;
         final Map<Long, Edge> roundaboutEdges = new HashMap<>();
 
-        // get all edges in the roundabout
+        // Get all edges in the roundabout
         getAllRoundaboutEdges(edge, roundaboutEdges);
         int totalRoundaboutValence = 0;
         final Set<Edge> connectedRoundaboutEdges = new HashSet<>();
@@ -98,13 +110,22 @@ public class RoundaboutValenceCheck extends BaseCheck
 
         totalRoundaboutValence = connectedEdges.size() - connectedRoundaboutEdges.size();
 
-        if (totalRoundaboutValence < LOWER_VALENCE_THRESHOLD
-                || totalRoundaboutValence >= UPPER_VALENCE_THRESHOLD)
+        // If the totalRoundaboutValence is less than 2 or greater than or equal to 10
+        if (totalRoundaboutValence < this.minimumValence
+                || totalRoundaboutValence >= this.maximumValence)
         {
             this.markAsFlagged(object.getIdentifier());
+
+            // If the roundabout valence is 1, this should be labelled as a turning loop instead
+            if (totalRoundaboutValence == 1) {
+                return Optional.of(this.createFlag(connectedEdges, this.getLocalizedInstruction(1,
+                        edge.getOsmIdentifier())));
+            }
+            // Otherwise, we want to flag and given information about identifier and valence
             return Optional.of(this.createFlag(connectedEdges, this.getLocalizedInstruction(0,
                     edge.getOsmIdentifier(), totalRoundaboutValence)));
         }
+        // If the totalRoundaboutValence is not unusual, we don't flag the object
         else
         {
             return Optional.empty();
@@ -117,6 +138,14 @@ public class RoundaboutValenceCheck extends BaseCheck
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * This method gets all edges in a roundabout given one edge in that roundabout
+     * @param edge
+     *            An Edge object known to be a roundabout edge
+     * @param roundaboutEdges
+     *            A map that contains key, value pairs of Edge identifiers and all associated Edge
+     *            data
+     */
     private void getAllRoundaboutEdges(final Edge edge, final Map<Long, Edge> roundaboutEdges)
     {
         // Initialize a queue to add yet to be processed connected edges to
