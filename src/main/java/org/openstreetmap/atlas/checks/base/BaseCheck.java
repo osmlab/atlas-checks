@@ -104,11 +104,13 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 configurationValue(configuration, AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY,
                         new HashMap<>()),
                 configurationValue(configuration,
-                        AtlasEntityPolygonsFilter.INCLUDED_MULTIPOLYGONS_KEY, new HashMap<>()),
+                        AtlasEntityPolygonsFilter.INCLUDED_MULTIPOLYGONS_KEY,
+                        Collections.emptyMap()),
                 configurationValue(configuration, AtlasEntityPolygonsFilter.EXCLUDED_POLYGONS_KEY,
                         new HashMap<>()),
                 configurationValue(configuration,
-                        AtlasEntityPolygonsFilter.EXCLUDED_MULTIPOLYGONS_KEY, new HashMap<>()));
+                        AtlasEntityPolygonsFilter.EXCLUDED_MULTIPOLYGONS_KEY,
+                        Collections.emptyMap()));
     }
 
     @Override
