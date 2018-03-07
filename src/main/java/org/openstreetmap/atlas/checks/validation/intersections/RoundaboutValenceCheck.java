@@ -31,11 +31,12 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0, number, integer}, "
-                    + "has the wrong valence. It has a valence of {1, number, integer}.";
-    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number, integer},"
+    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
+                    + "has the wrong valence. It has a valence of {1, number, integer}. It has"
+            + "{2, number, integer} roundabout edges and {3, number, integer} global edges";
+    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
                     + " should not be labelled as a roundabout. "
-                    + "The junction should be a turning loop.";
+                    + "The junction should be a turning loop or turning circle.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS);
 
@@ -86,8 +87,8 @@ public class RoundaboutValenceCheck extends BaseCheck
 
         // Get all edges in the roundabout
         getAllRoundaboutEdges(edge, roundaboutEdges);
-        int totalRoundaboutValence = 0;
-        final Set<Edge> connectedRoundaboutEdges = new HashSet<>();
+        int totalRoundaboutValence;
+        final int roundaboutEdgeCount = roundaboutEdges.size();
         final Set<Edge> connectedEdges = new HashSet<>();
 
         final Iterator iterator = roundaboutEdges.entrySet().iterator();
@@ -102,12 +103,11 @@ public class RoundaboutValenceCheck extends BaseCheck
             final Map.Entry pair = (Map.Entry) iterator.next();
             final Edge roundaboutEdge = (Edge) pair.getValue();
 
-            connectedRoundaboutEdges.addAll(getConnectedRoundaboutEdges(roundaboutEdge));
             connectedEdges.addAll(roundaboutEdge.connectedEdges().stream().map(e ->
                 e.getMasterEdge()).collect(Collectors.toSet()));
         }
 
-        totalRoundaboutValence = connectedEdges.size() - connectedRoundaboutEdges.size();
+        totalRoundaboutValence = connectedEdges.size() - roundaboutEdgeCount;
 
         // If the totalRoundaboutValence is less than 2 or greater than or equal to 10
         if (totalRoundaboutValence < this.minimumValence
@@ -122,7 +122,7 @@ public class RoundaboutValenceCheck extends BaseCheck
             }
             // Otherwise, we want to flag and given information about identifier and valence
             return Optional.of(this.createFlag(connectedEdges, this.getLocalizedInstruction(0,
-                    edge.getOsmIdentifier(), totalRoundaboutValence)));
+                    edge.getOsmIdentifier(), totalRoundaboutValence, roundaboutEdgeCount, connectedEdges.size())));
         }
         // If the totalRoundaboutValence is not unusual, we don't flag the object
         else
@@ -131,11 +131,6 @@ public class RoundaboutValenceCheck extends BaseCheck
         }
     }
 
-    private Set<Edge> getConnectedRoundaboutEdges(final Edge edge)
-    {
-        return edge.connectedEdges().stream().filter(e -> JunctionTag.isRoundabout(e))
-                .collect(Collectors.toSet());
-    }
 
     /**
      * This method gets all edges in a roundabout given one edge in that roundabout
@@ -159,6 +154,9 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             // Dequeue a connected edge and add it to the roundaboutEdges
             final Edge e = queue.poll();
+            if (e.getIdentifier() < 0) {
+                continue;
+            }
             roundaboutEdges.put(e.getIdentifier(), e);
 
             // Get the edges connected to the edge e as an iterator
