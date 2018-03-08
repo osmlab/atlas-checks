@@ -32,7 +32,7 @@ public class RoundaboutValenceCheck extends BaseCheck
 
     private static final long serialVersionUID = 1L;
     public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
-                    + "has the wrong valence. It has a valence of {1, number, integer}. It has"
+                    + "has the wrong valence. It has a valence of {1, number, integer}. It has "
             + "{2, number, integer} roundabout edges and {3, number, integer} global edges";
     public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
                     + " should not be labelled as a roundabout. "
@@ -97,6 +97,7 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             return Optional.empty();
         }
+
 
         while (iterator.hasNext())
         {
