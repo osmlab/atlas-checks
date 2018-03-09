@@ -31,17 +31,16 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
-            + "has the wrong valence. It has a valence of {1, number, integer}. It has "
-            + "{2, number, integer} roundabout edges and {3, number, integer} global edges";
+    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0, number, #}, "
+            + "has the wrong valence. It has a valence of {1, number, integer}.";
     public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
             + " should not be labelled as a roundabout. "
-            + "The junction should be a turning loop or turning circle.";
+            + "This feature should be a turning loop or turning circle.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS);
 
-    private static final double LOWER_VALENCE_THRESHOLD = 2.0;
-    private static final double UPPER_VALENCE_THRESHOLD = 10.0;
+    private static final double LOWER_VALENCE_THRESHOLD_DEFAULT = 2.0;
+    private static final double UPPER_VALENCE_THRESHOLD_DEFAULT = 14.0;
     private final double minimumValence;
     private final double maximumValence;
 
@@ -56,9 +55,9 @@ public class RoundaboutValenceCheck extends BaseCheck
         super(configuration);
 
         this.minimumValence = (double) configurationValue(configuration, "connections.minimum",
-                LOWER_VALENCE_THRESHOLD);
+                LOWER_VALENCE_THRESHOLD_DEFAULT);
         this.maximumValence = (double) configurationValue(configuration, "connections.maximum",
-                UPPER_VALENCE_THRESHOLD);
+                UPPER_VALENCE_THRESHOLD_DEFAULT);
     }
 
     @Override
