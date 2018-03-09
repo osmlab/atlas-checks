@@ -3,10 +3,17 @@
 #### Description
 
 This check identifies roundabouts that have an unusual valence. The goal of this check is to flag 
-each roundabout with a valence less than 2 or greater than or equal to 10 for further editor inspection.
+each roundabout with a valence less than 2 or greater than or equal to 10 for further editor 
+inspection.
 
 #### Live Example
-TODO
+The following examples illustrate two cases where the roundabout valence has been deemed unusual.
+1) This roundabout [id:5794760](https://www.openstreetmap.org/way/30886531) has been incorrectly
+tagged as a roundabout. Because the valence of this roundabout is 1, it should be either labelled
+as a turning circle or turning loop depending on the traversability of the center.
+2) This roundabout [id:530638487](https://www.openstreetmap.org/way/530638487) has a valence of 11
+connected edges, which in this case is sensible but should be verified.
+
 #### Code Review
 
 In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, 
@@ -16,6 +23,7 @@ the `junction=roundabout` tag. We’ll use this information to filter our potent
 
 Our first goal is to validate the incoming Atlas Object. We know two things about roundabouts:
 * Must be a valid Edge
+* Must have not already been flagged
 * Must have `junction=roundabout` tag
 
 ```java
@@ -82,6 +90,12 @@ marked as flagged, or added to our roundAboutEdges Set.
         }
 ```
 
+Once we have retrieved and stored all edges in the roundabout, we iterate over each one to get
+each Edge's connected non-roundabout edges. These connected non-roundabout Edges must also be 
+car navigable to avoid counting pedestrian walkways as part of the valence. Once the unique connected
+edges have been stored, the total valence is calculated by subtracting the number of roundabout
+edges from the number of total connected edges (the non-roundabout connected edges and the 
+roundabout edges). If that value is < 2 or <= 10, we throw a flag.
 
 
 To learn more about the code, please look at the comments in the source code for the check.
