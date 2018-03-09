@@ -20,7 +20,6 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-
 /**
  * This check ensures that roundabouts with unreasonable valences are flagged. In reference to OSM
  * Wiki, each roundabout should have greater than 1 connection as 1 connection should be tagged as a
@@ -33,11 +32,11 @@ public class RoundaboutValenceCheck extends BaseCheck
 
     private static final long serialVersionUID = 1L;
     public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
-                    + "has the wrong valence. It has a valence of {1, number, integer}. It has "
+            + "has the wrong valence. It has a valence of {1, number, integer}. It has "
             + "{2, number, integer} roundabout edges and {3, number, integer} global edges";
     public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
-                    + " should not be labelled as a roundabout. "
-                    + "The junction should be a turning loop or turning circle.";
+            + " should not be labelled as a roundabout. "
+            + "The junction should be a turning loop or turning circle.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS);
 
@@ -88,7 +87,7 @@ public class RoundaboutValenceCheck extends BaseCheck
 
         // Get all edges in the roundabout
         getAllRoundaboutEdges(edge, roundaboutEdges);
-        int totalRoundaboutValence;
+        final int totalRoundaboutValence;
         final int roundaboutEdgeCount = roundaboutEdges.size();
         final Set<Edge> connectedEdges = new HashSet<>();
 
@@ -104,9 +103,12 @@ public class RoundaboutValenceCheck extends BaseCheck
             final Map.Entry pair = (Map.Entry) iterator.next();
             final Edge roundaboutEdge = (Edge) pair.getValue();
 
-            connectedEdges.addAll(
-                    roundaboutEdge.connectedEdges().stream().map(Edge::getMasterEdge).filter(
-                            HighwayTag::isCarNavigableHighway).collect(Collectors.toSet()));
+            // Adds only car navigable master edges that are connected to the roundabout toward
+            // the connectedEdges set
+            connectedEdges.addAll(roundaboutEdge.connectedEdges().stream()
+                    .map(e -> e.getMasterEdge())
+                    .filter(e -> HighwayTag.isCarNavigableHighway(e) || JunctionTag.isRoundabout(e))
+                    .collect(Collectors.toSet()));
         }
 
         totalRoundaboutValence = connectedEdges.size() - roundaboutEdgeCount;
@@ -118,13 +120,15 @@ public class RoundaboutValenceCheck extends BaseCheck
             this.markAsFlagged(object.getIdentifier());
 
             // If the roundabout valence is 1, this should be labelled as a turning loop instead
-            if (totalRoundaboutValence == 1) {
-                return Optional.of(this.createFlag(connectedEdges, this.getLocalizedInstruction(1,
-                        edge.getOsmIdentifier())));
+            if (totalRoundaboutValence == 1)
+            {
+                return Optional.of(this.createFlag(connectedEdges,
+                        this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
             }
             // Otherwise, we want to flag and given information about identifier and valence
-            return Optional.of(this.createFlag(connectedEdges, this.getLocalizedInstruction(0,
-                    edge.getOsmIdentifier(), totalRoundaboutValence, roundaboutEdgeCount, connectedEdges.size())));
+            return Optional.of(this.createFlag(connectedEdges,
+                    this.getLocalizedInstruction(0, edge.getOsmIdentifier(), totalRoundaboutValence,
+                            roundaboutEdgeCount, connectedEdges.size())));
         }
         // If the totalRoundaboutValence is not unusual, we don't flag the object
         else
@@ -135,6 +139,7 @@ public class RoundaboutValenceCheck extends BaseCheck
 
     /**
      * This method gets all edges in a roundabout given one edge in that roundabout
+     * 
      * @param edge
      *            An Edge object known to be a roundabout edge
      * @param roundaboutEdges
@@ -155,7 +160,8 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             // Dequeue a connected edge and add it to the roundaboutEdges
             final Edge e = queue.poll();
-            if (e.getIdentifier() < 0) {
+            if (e.getIdentifier() < 0)
+            {
                 continue;
             }
             roundaboutEdges.put(e.getIdentifier(), e);
