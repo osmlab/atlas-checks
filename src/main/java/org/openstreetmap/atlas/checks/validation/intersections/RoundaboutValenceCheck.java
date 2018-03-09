@@ -99,7 +99,6 @@ public class RoundaboutValenceCheck extends BaseCheck
             return Optional.empty();
         }
 
-
         while (iterator.hasNext())
         {
             final Map.Entry pair = (Map.Entry) iterator.next();
@@ -133,7 +132,6 @@ public class RoundaboutValenceCheck extends BaseCheck
             return Optional.empty();
         }
     }
-
 
     /**
      * This method gets all edges in a roundabout given one edge in that roundabout
