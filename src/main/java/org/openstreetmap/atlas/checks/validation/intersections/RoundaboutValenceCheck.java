@@ -106,7 +106,7 @@ public class RoundaboutValenceCheck extends BaseCheck
             // Adds only car navigable master edges that are connected to the roundabout toward
             // the connectedEdges set
             connectedEdges.addAll(roundaboutEdge.connectedEdges().stream()
-                    .map(e -> e.getMasterEdge())
+                    .map(Edge::getMasterEdge)
                     .filter(e -> HighwayTag.isCarNavigableHighway(e) || JunctionTag.isRoundabout(e))
                     .collect(Collectors.toSet()));
         }
