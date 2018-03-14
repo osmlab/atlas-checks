@@ -40,7 +40,7 @@ public class RoundaboutValenceCheck extends BaseCheck
             .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS);
 
     private static final double LOWER_VALENCE_THRESHOLD_DEFAULT = 2.0;
-    private static final double UPPER_VALENCE_THRESHOLD_DEFAULT = 14.0;
+    private static final double UPPER_VALENCE_THRESHOLD_DEFAULT = 10.0;
     private final double minimumValence;
     private final double maximumValence;
 
