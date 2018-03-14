@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.intersections;
+package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -104,8 +104,7 @@ public class RoundaboutValenceCheck extends BaseCheck
 
             // Adds only car navigable master edges that are connected to the roundabout toward
             // the connectedEdges set
-            connectedEdges.addAll(roundaboutEdge.connectedEdges().stream()
-                    .map(Edge::getMasterEdge)
+            connectedEdges.addAll(roundaboutEdge.connectedEdges().stream().map(Edge::getMasterEdge)
                     .filter(e -> HighwayTag.isCarNavigableHighway(e) || JunctionTag.isRoundabout(e))
                     .collect(Collectors.toSet()));
         }

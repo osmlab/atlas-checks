@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.intersections;
+package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -16,7 +16,7 @@ public class RoundaboutValenceCheckTest
 
     private final RoundaboutValenceCheck check = new RoundaboutValenceCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"RoundaboutValenceCheck\":{\"connections.minimum\":2.0,\"connections.maximum\":10.0}}"));
+                    "{\"RoundaboutValenceCheck\":{\"connections.minimum\":2.0,\"connections.maximum\":14.0}}"));
     @Rule
     public RoundaboutValenceCheckTestRule setup = new RoundaboutValenceCheckTestRule();
 
@@ -68,6 +68,22 @@ public class RoundaboutValenceCheckTest
     public void roundaboutWithValenceEleven()
     {
         this.verifier.actual(this.setup.roundaboutWithValenceEleven(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void roundaboutWithValenceFourteen()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceFourteen(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void roundaboutWithValenceFifteen()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceFifteen(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
