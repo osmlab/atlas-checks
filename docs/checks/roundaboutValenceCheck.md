@@ -2,9 +2,9 @@
 
 #### Description
 
-This check identifies roundabouts that have an unusual valence. The goal of this check is to flag 
-each roundabout with a valence less than 2 or greater than or equal to 10 for further editor 
-inspection.
+This check identifies roundabouts that have an unusual valence. By default, unusual valence is
+defined as less than 2 or greater than 14. However, these values are configurable, and can be
+adjusted by setting the connections.minimum and connections.maximum in the configuration file.
 
 #### Live Example
 The following examples illustrate two cases where the roundabout valence has been deemed unusual.
@@ -95,7 +95,8 @@ each Edge's connected non-roundabout edges. These connected non-roundabout Edges
 car navigable to avoid counting pedestrian walkways as part of the valence. Once the unique connected
 edges have been stored, the total valence is calculated by subtracting the number of roundabout
 edges from the number of total connected edges (the non-roundabout connected edges and the 
-roundabout edges). If that value is < 2 or <= 10, we throw a flag.
+roundabout edges). If that value is less than the minimum number of connections or greater
+than or equal to the maximum number of connections specified in the configuration, we throw a flag.
 
 
 To learn more about the code, please look at the comments in the source code for the check.
