@@ -112,7 +112,8 @@ public class RoundaboutValenceCheck extends BaseCheck
 
         totalRoundaboutValence = connectedEdges.size() - roundaboutEdgeCount;
 
-        // If the totalRoundaboutValence is less than 2 or greater than or equal to 10
+        // If the totalRoundaboutValence is less than the minimum configured number of connections
+        // or greater than or equal to the maximum configured number of connections
         if (totalRoundaboutValence < this.minimumValence
                 || totalRoundaboutValence >= this.maximumValence)
         {
