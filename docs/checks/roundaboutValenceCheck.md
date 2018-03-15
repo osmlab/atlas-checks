@@ -105,4 +105,4 @@ than or equal to the maximum number of connections specified in the configuratio
 
 
 To learn more about the code, please look at the comments in the source code for the check.
-[RoundaboutValenceCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/ultiFeatureRoundaboutCheck.jMava)
+[RoundaboutValenceCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/RoundaboutValenceCheck.java)
