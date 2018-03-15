@@ -101,7 +101,7 @@ public class RoundaboutValenceCheck extends BaseCheck
             // If the roundabout valence is 1, this should be labelled as a turning loop instead
             if (totalRoundaboutValence == 1)
             {
-                return Optional.of(this.createFlag(connectedEdges,
+                return Optional.of(this.createFlag(roundaboutEdges,
                         this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
             }
             // Otherwise, we want to flag and given information about identifier and valence
