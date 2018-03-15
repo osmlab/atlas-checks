@@ -48,7 +48,7 @@ function, we can recursively loop through each Edge's connected Edges until each
 marked as flagged, or added to our roundAboutEdges Set.
 
 * *Edge edge* - current edge being analyzed
-* *Map<Long, Edge> roundaboutEdges* - Map of Edge ID and associated Edge data
+* *Set<Edge> roundaboutEdges* - a Set of Edges in the roundabout
 
 ```java
     private Set<Edge> getAllRoundaboutEdges(final Edge edge)
