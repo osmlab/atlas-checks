@@ -33,6 +33,13 @@ public class RoundaboutValenceCheckTest
     }
 
     @Test
+    public void roundaboutWithValenceZeroFourteenMaxConnections()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceZero(), check);
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void roundaboutWithValenceOne()
     {
         this.verifier.actual(this.setup.roundaboutWithValenceOne(),
@@ -45,6 +52,13 @@ public class RoundaboutValenceCheckTest
     {
         this.verifier.actual(this.setup.roundaboutWithValenceTwo(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void roundaboutWithValenceTwoFourteenMaxConnections()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceTwo(), check);
         this.verifier.verifyEmpty();
     }
 
@@ -62,6 +76,14 @@ public class RoundaboutValenceCheckTest
         this.verifier.actual(this.setup.roundaboutWithValenceTen(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void roundaboutWithValenceTenFourteenMaxConnections()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceTen(), check);
+        this.verifier.verifyEmpty();
+
     }
 
     @Test

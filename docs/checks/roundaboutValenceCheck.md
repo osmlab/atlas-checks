@@ -51,8 +51,9 @@ marked as flagged, or added to our roundAboutEdges Set.
 * *Map<Long, Edge> roundaboutEdges* - Map of Edge ID and associated Edge data
 
 ```java
-     private void getAllRoundaboutEdges(final Edge edge, final Map<Long, Edge> roundaboutEdges)
+    private Set<Edge> getAllRoundaboutEdges(final Edge edge)
         {
+            final Set<Edge> roundaboutEdges = new HashSet<>();
             // Initialize a queue to add yet to be processed connected edges to
             final Queue<Edge> queue = new LinkedList<>();
     
@@ -65,7 +66,14 @@ marked as flagged, or added to our roundAboutEdges Set.
             {
                 // Dequeue a connected edge and add it to the roundaboutEdges
                 final Edge e = queue.poll();
-                roundaboutEdges.put(e.getIdentifier(), e);
+    
+                // Check to make sure that we are only adding master edges into the set
+                if (!e.isMasterEdge())
+                {
+                    continue;
+                }
+    
+                roundaboutEdges.add(e);
     
                 // Get the edges connected to the edge e as an iterator
                 final Iterator<Edge> iterator = e.connectedEdges().iterator();
@@ -74,19 +82,16 @@ marked as flagged, or added to our roundAboutEdges Set.
                     final Edge connectedEdge = iterator.next();
                     final Long edgeId = connectedEdge.getIdentifier();
     
-                    if (JunctionTag.isRoundabout(connectedEdge))
-                    {
-                        if (!roundaboutEdges.containsKey(edgeId)
-                            && edgeId != edge.getIdentifier()
-                            && !this.isFlagged(edgeId))
+                    if (JunctionTag.isRoundabout(connectedEdge)
+                            && !roundaboutEdges.contains(connectedEdge))
     
-                        {
-                            this.markAsFlagged(edgeId);
-                            queue.add(connectedEdge);
-                        }
+                    {
+                        this.markAsFlagged(edgeId);
+                        queue.add(connectedEdge);
                     }
                 }
             }
+            return roundaboutEdges;
         }
 ```
 

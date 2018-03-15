@@ -1,12 +1,10 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -31,8 +29,8 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0, number, #}, "
-            + "has the wrong valence. It has a valence of {1, number, integer}.";
+    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
+            + "has the wrong valence. It has a valence of {1,number,#}.";
     public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
             + " should not be labelled as a roundabout. "
             + "This feature should be a turning loop or turning circle.";
@@ -82,34 +80,16 @@ public class RoundaboutValenceCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Map<Long, Edge> roundaboutEdges = new HashMap<>();
 
         // Get all edges in the roundabout
-        getAllRoundaboutEdges(edge, roundaboutEdges);
-        final int totalRoundaboutValence;
-        final int roundaboutEdgeCount = roundaboutEdges.size();
-        final Set<Edge> connectedEdges = new HashSet<>();
+        final Set<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
 
-        final Iterator iterator = roundaboutEdges.entrySet().iterator();
-
-        if (!iterator.hasNext())
-        {
-            return Optional.empty();
-        }
-
-        while (iterator.hasNext())
-        {
-            final Map.Entry pair = (Map.Entry) iterator.next();
-            final Edge roundaboutEdge = (Edge) pair.getValue();
-
-            // Adds only car navigable master edges that are connected to the roundabout toward
-            // the connectedEdges set
-            connectedEdges.addAll(roundaboutEdge.connectedEdges().stream().map(Edge::getMasterEdge)
-                    .filter(e -> HighwayTag.isCarNavigableHighway(e) || JunctionTag.isRoundabout(e))
-                    .collect(Collectors.toSet()));
-        }
-
-        totalRoundaboutValence = connectedEdges.size() - roundaboutEdgeCount;
+        final Set<Edge> connectedEdges = roundaboutEdges.stream()
+                .flatMap(roundaboutEdge -> roundaboutEdge.connectedEdges().stream())
+                .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
+                .filter(e -> !JunctionTag.isRoundabout(e)).filter(e -> !roundaboutEdges.contains(e))
+                .collect(Collectors.toSet());
+        final int totalRoundaboutValence = connectedEdges.size();
 
         // If the totalRoundaboutValence is less than the minimum configured number of connections
         // or greater than or equal to the maximum configured number of connections
@@ -125,9 +105,8 @@ public class RoundaboutValenceCheck extends BaseCheck
                         this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
             }
             // Otherwise, we want to flag and given information about identifier and valence
-            return Optional.of(this.createFlag(connectedEdges,
-                    this.getLocalizedInstruction(0, edge.getOsmIdentifier(), totalRoundaboutValence,
-                            roundaboutEdgeCount, connectedEdges.size())));
+            return Optional.of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(0,
+                    edge.getOsmIdentifier(), totalRoundaboutValence)));
         }
         // If the totalRoundaboutValence is not unusual, we don't flag the object
         else
@@ -141,12 +120,11 @@ public class RoundaboutValenceCheck extends BaseCheck
      * 
      * @param edge
      *            An Edge object known to be a roundabout edge
-     * @param roundaboutEdges
-     *            A map that contains key, value pairs of Edge identifiers and all associated Edge
-     *            data
+     * @return A set of edges in the roundabout
      */
-    private void getAllRoundaboutEdges(final Edge edge, final Map<Long, Edge> roundaboutEdges)
+    private Set<Edge> getAllRoundaboutEdges(final Edge edge)
     {
+        final Set<Edge> roundaboutEdges = new HashSet<>();
         // Initialize a queue to add yet to be processed connected edges to
         final Queue<Edge> queue = new LinkedList<>();
 
@@ -159,11 +137,14 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             // Dequeue a connected edge and add it to the roundaboutEdges
             final Edge e = queue.poll();
-            if (e.getIdentifier() < 0)
+
+            // Check to make sure that we are only adding master edges into the set
+            if (!e.isMasterEdge())
             {
                 continue;
             }
-            roundaboutEdges.put(e.getIdentifier(), e);
+
+            roundaboutEdges.add(e);
 
             // Get the edges connected to the edge e as an iterator
             final Iterator<Edge> iterator = e.connectedEdges().iterator();
@@ -172,16 +153,15 @@ public class RoundaboutValenceCheck extends BaseCheck
                 final Edge connectedEdge = iterator.next();
                 final Long edgeId = connectedEdge.getIdentifier();
 
-                if (JunctionTag.isRoundabout(connectedEdge))
-                {
-                    if (!roundaboutEdges.containsKey(edgeId))
+                if (JunctionTag.isRoundabout(connectedEdge)
+                        && !roundaboutEdges.contains(connectedEdge))
 
-                    {
-                        this.markAsFlagged(edgeId);
-                        queue.add(connectedEdge);
-                    }
+                {
+                    this.markAsFlagged(edgeId);
+                    queue.add(connectedEdge);
                 }
             }
         }
+        return roundaboutEdges;
     }
 }
