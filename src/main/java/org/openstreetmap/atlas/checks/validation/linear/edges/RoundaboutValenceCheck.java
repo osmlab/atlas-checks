@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -89,7 +88,8 @@ public class RoundaboutValenceCheck extends BaseCheck
         final Set<Edge> connectedEdges = roundaboutEdges.stream()
                 .flatMap(roundaboutEdge -> roundaboutEdge.connectedEdges().stream())
                 .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
-                .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge)).filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
+                .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge))
+                .filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
                 .collect(Collectors.toSet());
         final int totalRoundaboutValence = connectedEdges.size();
 
@@ -146,7 +146,8 @@ public class RoundaboutValenceCheck extends BaseCheck
             // Get the edges connected to the edge e as an iterator
             final Set<Edge> connectedEdges = currentEdge.connectedEdges();
 
-            for(Edge connectedEdge: connectedEdges) {
+            for (final Edge connectedEdge : connectedEdges)
+            {
                 final Long edgeId = connectedEdge.getIdentifier();
 
                 if (JunctionTag.isRoundabout(connectedEdge)
