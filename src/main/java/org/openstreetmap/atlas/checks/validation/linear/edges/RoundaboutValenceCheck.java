@@ -63,10 +63,12 @@ public class RoundaboutValenceCheck extends BaseCheck
     {
         // We check that the object is an instance of Edge
         return object instanceof Edge
+                // Make sure that the edges are instances of roundabout
+                && JunctionTag.isRoundabout(object)
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
-                // Make sure that the edges are instances of roundabout
-                && JunctionTag.isRoundabout(object);
+                // Make sure that we are only looking at master edges
+                && ((Edge) object).isMasterEdge();
     }
 
     /**
@@ -87,14 +89,14 @@ public class RoundaboutValenceCheck extends BaseCheck
         final Set<Edge> connectedEdges = roundaboutEdges.stream()
                 .flatMap(roundaboutEdge -> roundaboutEdge.connectedEdges().stream())
                 .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
-                .filter(e -> !JunctionTag.isRoundabout(e)).filter(e -> !roundaboutEdges.contains(e))
+                .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge)).filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
                 .collect(Collectors.toSet());
         final int totalRoundaboutValence = connectedEdges.size();
 
         // If the totalRoundaboutValence is less than the minimum configured number of connections
         // or greater than or equal to the maximum configured number of connections
         if (totalRoundaboutValence < this.minimumValence
-                || totalRoundaboutValence >= this.maximumValence)
+                || totalRoundaboutValence > this.maximumValence)
         {
             this.markAsFlagged(object.getIdentifier());
 
@@ -125,32 +127,26 @@ public class RoundaboutValenceCheck extends BaseCheck
     private Set<Edge> getAllRoundaboutEdges(final Edge edge)
     {
         final Set<Edge> roundaboutEdges = new HashSet<>();
+
         // Initialize a queue to add yet to be processed connected edges to
         final Queue<Edge> queue = new LinkedList<>();
 
-        // Mark the current node as visited and enqueue it
+        // Mark the current Edge as visited and enqueue it
         this.markAsFlagged(edge.getIdentifier());
         queue.add(edge);
 
         // As long as the queue is not empty
-        while (queue.size() != 0)
+        while (!queue.isEmpty())
         {
             // Dequeue a connected edge and add it to the roundaboutEdges
-            final Edge e = queue.poll();
+            final Edge currentEdge = queue.poll();
 
-            // Check to make sure that we are only adding master edges into the set
-            if (!e.isMasterEdge())
-            {
-                continue;
-            }
-
-            roundaboutEdges.add(e);
+            roundaboutEdges.add(currentEdge);
 
             // Get the edges connected to the edge e as an iterator
-            final Iterator<Edge> iterator = e.connectedEdges().iterator();
-            while (iterator.hasNext())
-            {
-                final Edge connectedEdge = iterator.next();
+            final Set<Edge> connectedEdges = currentEdge.connectedEdges();
+
+            for(Edge connectedEdge: connectedEdges) {
                 final Long edgeId = connectedEdge.getIdentifier();
 
                 if (JunctionTag.isRoundabout(connectedEdge)

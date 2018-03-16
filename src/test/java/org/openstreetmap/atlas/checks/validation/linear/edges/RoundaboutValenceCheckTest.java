@@ -75,7 +75,7 @@ public class RoundaboutValenceCheckTest
     {
         this.verifier.actual(this.setup.roundaboutWithValenceTen(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
