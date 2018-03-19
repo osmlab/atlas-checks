@@ -98,6 +98,16 @@
       "tags":"highway"
     }
   },
+  "RoundaboutValenceCheck": {
+    "connections.minimum": 2.0,
+    "connections.maximum": 14.0,
+    "challenge": {
+      "description": "Verify that the valence of the roundabout is sensible.",
+      "blurb": "Modify Polyline intersections with the roundabout edges",
+      "instruction": "Open your favorite editor and move modify polyline intersections with the roundabout.",
+      "difficulty": "NORMAL"
+    }
+  },
   "SelfIntersectingPolylineCheck": {
     "tags.filter": "highway->*|waterway->*|building->*",
     "challenge": {
