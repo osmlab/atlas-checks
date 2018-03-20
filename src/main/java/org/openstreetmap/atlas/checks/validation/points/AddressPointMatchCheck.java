@@ -5,6 +5,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
@@ -13,6 +14,8 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class AddressPointMatchCheck extends BaseCheck
 {
@@ -55,36 +58,36 @@ public class AddressPointMatchCheck extends BaseCheck
     {
         final Node node = (Node) object;
         final Rectangle box = node.getLocation().boxAround(Distance.meters(this.boundsDistance));
-        Node closestNode;
-        Edge closestEdge;
+               Map<Node, Double> nodeDistances;
+        Map<Edge, Double> edgeDistances;
+        double shortestDistance;
 
         if (!Iterables.isEmpty(node.getAtlas().nodesWithin(box))) {
-            closestNode = getClosestNode(node, box);
+            nodeDistances = getClosestNode(node, box);
+        } else if (!Iterables.isEmpty(node.getAtlas().edgesIntersecting(box))) {
+            edgeDistances = getClosestEdge(node, box);
         }
 
-        if (!Iterables.isEmpty(node.getAtlas().edgesIntersecting(box))) {
-            closestEdge = getClosestEdge(node, box);
-        }
+        // get the shortest distance from nodeDistances and store key,value
+        //get shortest distance from edgeDistances, compare to key,value and replace if less
 
-
-
+        //return the street address of node or edge which is closest
 
     }
 
-    protected String getStreetName(Node node)
+    protected Optional<String> getStreetName(AtlasObject closestFeature)
     {
-
+        return closestFeature.getTag(ADDRESS_STREET_KEY);
     }
 
-    protected Node getClosestNode(Node node, Rectangle bounds)
+    protected Map<Node, Double> nodeDistances (Node node, Rectangle bounds)
     {
         final Map<Node, Double> nodeDistances = new HashMap<>();
 
         // Gets all nodes within the bounds
         final Iterable<Node> interiorNodes = node.getAtlas().nodesWithin(bounds);
 
-        //
-        if (Iterables.isEmpty(interiorNodes))
+        if (!Iterables.isEmpty(interiorNodes))
         {
             for (Node interiorNode : interiorNodes)
             {
@@ -97,11 +100,11 @@ public class AddressPointMatchCheck extends BaseCheck
                 nodeDistances.put(interiorNode, distance);
             }
         }
+        return nodeDistances;
 
-        // return the key with minimum value in map
     }
 
-    protected Edge getClosestEdge(Node node, Rectangle bounds) {
+    protected Map<Edge, Double> getClosestEdge(Node node, Rectangle bounds) {
 
     }
 }
