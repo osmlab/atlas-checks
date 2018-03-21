@@ -27,9 +27,9 @@ public class AddressPointMatchCheck extends BaseCheck
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(WRONG_STREET_NAME_INSTRUCTIONS, NO_STREET_NAME_INSTRUCTIONS);
     private static final String ADDRESS_STREET_KEY = "addr:street";
-    private static final int BOUNDS_DISTANCE_DEFAULT = 5;
+    private static final double BOUNDS_SIZE_DEFAULT = 25.0;
 
-    private final double boundsDistance;
+    private final Distance boundsSize;
 
     @Override protected List<String> getFallbackInstructions()
     {
@@ -39,8 +39,8 @@ public class AddressPointMatchCheck extends BaseCheck
     public AddressPointMatchCheck(final Configuration configuration)
     {
         super(configuration);
-        this.boundsDistance = (double) configurationValue(configuration, "bounds.distance",
-                BOUNDS_DISTANCE_DEFAULT);
+        this.boundsSize = Distance.meters((Double) configurationValue(configuration, "bounds.size",
+                BOUNDS_SIZE_DEFAULT));
     }
 
     @Override public boolean validCheckForObject(final AtlasObject object)
@@ -57,22 +57,42 @@ public class AddressPointMatchCheck extends BaseCheck
     @Override protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Node node = (Node) object;
-        final Rectangle box = node.getLocation().boxAround(Distance.meters(this.boundsDistance));
-               Map<Node, Double> nodeDistances;
-        Map<Edge, Double> edgeDistances;
-        double shortestDistance;
+        // Get a bounding box around the Node of interest
+        final Rectangle box = node.getLocation().boxAround(boundsSize);
+        double closestNodeDistance = Integer.MAX_VALUE;
+        Node closestNode = null;
 
-        if (!Iterables.isEmpty(node.getAtlas().nodesWithin(box))) {
-            nodeDistances = getClosestNode(node, box);
-        } else if (!Iterables.isEmpty(node.getAtlas().edgesIntersecting(box))) {
-            edgeDistances = getClosestEdge(node, box);
+        final Iterable<Node> interiorNodes = node.getAtlas().nodesWithin(box);
+
+        // If there are nodes within the bounding box (aside from the Node of interest
+        if (!Iterables.isEmpty(interiorNodes))
+        {
+            // For each node in the bounding box
+            for (Node interiorNode : interiorNodes)
+            {
+                // If node in the bounding box has a street name
+                if (interiorNode.getTags().containsKey(ADDRESS_STREET_KEY))
+                {
+                    PolyLine nodesAsPolyline = new PolyLine(node.getLocation(),
+                            interiorNode.getLocation());
+                    double betweenNodeDistance = nodesAsPolyline.length().asMeters();
+
+                    // If a interior Node has not yet been compared to the Node of interest
+                    // Or if the interior Node to the Node of interest distance is shorter
+                    // Than the closestNodeDistance
+                    if (closestNode == null || closestNodeDistance > betweenNodeDistance)
+                    {
+                        closestNode = interiorNode;
+                        closestNodeDistance = betweenNodeDistance;
+
+                    }
+                }
+            }
         }
+        if (closestNode == null)
+        {
 
-        // get the shortest distance from nodeDistances and store key,value
-        //get shortest distance from edgeDistances, compare to key,value and replace if less
-
-        //return the street address of node or edge which is closest
-
+        }
     }
 
     protected Optional<String> getStreetName(AtlasObject closestFeature)
@@ -80,31 +100,4 @@ public class AddressPointMatchCheck extends BaseCheck
         return closestFeature.getTag(ADDRESS_STREET_KEY);
     }
 
-    protected Map<Node, Double> nodeDistances (Node node, Rectangle bounds)
-    {
-        final Map<Node, Double> nodeDistances = new HashMap<>();
-
-        // Gets all nodes within the bounds
-        final Iterable<Node> interiorNodes = node.getAtlas().nodesWithin(bounds);
-
-        if (!Iterables.isEmpty(interiorNodes))
-        {
-            for (Node interiorNode : interiorNodes)
-            {
-                if (!interiorNode.getTags().containsKey(ADDRESS_STREET_KEY)) {
-                    continue;
-                }
-                PolyLine nodesAsPoly = new PolyLine(node.getLocation(), interiorNode.getLocation());
-                double distance = nodesAsPoly.length().asMeters();
-
-                nodeDistances.put(interiorNode, distance);
-            }
-        }
-        return nodeDistances;
-
-    }
-
-    protected Map<Edge, Double> getClosestEdge(Node node, Rectangle bounds) {
-
-    }
 }

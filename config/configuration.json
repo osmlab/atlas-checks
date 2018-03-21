@@ -16,7 +16,7 @@
 
   },
   "AddressPointMatchCheck": {
-    "bounds.distance": 5,
+    "bounds.size": 25.0,
     "challenge": {
       "description": "Tasks contain nodes which either have no street name or incorrect street names",
       "blurb": "Nodes without street names, or with incorrect street names",
