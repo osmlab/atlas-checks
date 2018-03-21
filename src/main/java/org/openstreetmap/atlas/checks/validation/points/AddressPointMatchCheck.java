@@ -62,7 +62,32 @@ public class AddressPointMatchCheck extends BaseCheck
         double closestNodeDistance = Integer.MAX_VALUE;
         Node closestNode = null;
 
-        final Iterable<Node> interiorNodes = node.getAtlas().nodesWithin(box);
+        // Try and find the closest Node to the Node of interest
+        getClosestNode(node, box, closestNode, closestNodeDistance);
+
+
+
+
+        // If we have found the closest Node to the Node of interest (so it exists)
+        if (closestNode != null)
+        {
+            // Flag the node with the proper street name in the MapRoulette instructions
+            return Optional.of(this.createFlag(node, this.getLocalizedInstruction(0,
+                    node.getOsmIdentifier(), closestNode.getTag(ADDRESS_STREET_KEY))));
+        }
+        // If we haven't found a closest Node, then we need to check for streets that intersect
+        // With our bounding box
+
+
+        // If we haven't found an any Edges (or any Nodes), then flag the Node but state that we
+        // are not certain of the proper street name for that Node. The proper street name should
+        // be decided at the discretion of the editor
+        return Optional.of(this.createFlag(node, this.getLocalizedInstruction(1,
+                node.getOsmIdentifier())));
+    }
+
+    private Node getClosestNode(Node node, Rectangle boundingBox, Node closestNodeObj, double closestNodeDistanceVal) {
+        final Iterable<Node> interiorNodes = node.getAtlas().nodesWithin(boundingBox);
 
         // If there are nodes within the bounding box (aside from the Node of interest
         if (!Iterables.isEmpty(interiorNodes))
@@ -80,24 +105,15 @@ public class AddressPointMatchCheck extends BaseCheck
                     // If a interior Node has not yet been compared to the Node of interest
                     // Or if the interior Node to the Node of interest distance is shorter
                     // Than the closestNodeDistance
-                    if (closestNode == null || closestNodeDistance > betweenNodeDistance)
+                    if (closestNodeObj == null || closestNodeDistanceVal > betweenNodeDistance)
                     {
-                        closestNode = interiorNode;
-                        closestNodeDistance = betweenNodeDistance;
+                        closestNodeObj = interiorNode;
+                        closestNodeDistanceVal = betweenNodeDistance;
 
                     }
                 }
             }
         }
-        if (closestNode == null)
-        {
-
-        }
-    }
-
-    protected Optional<String> getStreetName(AtlasObject closestFeature)
-    {
-        return closestFeature.getTag(ADDRESS_STREET_KEY);
     }
 
 }
