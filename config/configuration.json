@@ -16,13 +16,13 @@
 
   },
   "AddressPointMatchCheck": {
-    "bounds.size": 25.0,
+    "bounds.size": 250.0,
     "challenge": {
       "description": "Tasks contain nodes which either have no street name or incorrect street names",
       "blurb": "Nodes without street names, or with incorrect street names",
       "instruction": "Open your favorite editor and edit the node street names",
       "difficulty": "EASY",
-      "defaultPriority": "LOW",
+      "defaultPriority": "LOW"
     }
   },
   "BuildingRoadIntersectionCheck": {
@@ -109,8 +109,6 @@
     }
   },
   "RoundaboutValenceCheck": {
-    "connections.minimum": 2.0,
-    "connections.maximum": 14.0,
     "challenge": {
       "description": "Verify that the valence of the roundabout is sensible.",
       "blurb": "Modify Polyline intersections with the roundabout edges",
