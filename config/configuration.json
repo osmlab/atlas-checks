@@ -109,6 +109,8 @@
     }
   },
   "RoundaboutValenceCheck": {
+    "connections.minimum": 2.0,
+    "connections.maximum": 14.0,
     "challenge": {
       "description": "Verify that the valence of the roundabout is sensible.",
       "blurb": "Modify Polyline intersections with the roundabout edges",
