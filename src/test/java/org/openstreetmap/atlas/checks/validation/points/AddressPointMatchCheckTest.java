@@ -15,7 +15,7 @@ public class AddressPointMatchCheckTest
 {
 
     private static final String JONES_STREET_NAME = "Jones";
-    private static final CharSequence JOHN_STREET_NAME = "John";
+    private static final String JOHN_STREET_NAME = "John";
     @Rule
     public AddressPointMatchCheckTestRule setup = new AddressPointMatchCheckTestRule();
 
