@@ -30,7 +30,7 @@ public class AddressPointMatchCheck extends BaseCheck
     private static final String ADDRESS_STREET_NUMBER_KEY = "addr:housenumber";
     private static final String POINT_STREET_NAME_KEY = "addr:street";
     private static final String EDGE_STREET_NAME_KEY ="name";
-    private static final double BOUNDS_SIZE_DEFAULT = 25.0;
+    private static final double BOUNDS_SIZE_DEFAULT = 150.0;
 
     private final Distance boundsSize;
 
@@ -54,7 +54,9 @@ public class AddressPointMatchCheck extends BaseCheck
         return object instanceof Point
                 // And has a street number specified
                 && object.getTag(ADDRESS_STREET_NUMBER_KEY).isPresent()
+                // And if the street name key has a value of null
                 && (!object.getTag(POINT_STREET_NAME_KEY).isPresent()
+                    // Or if the street name key is not present
                     || !object.getTags().containsKey(POINT_STREET_NAME_KEY));
     }
 
@@ -104,7 +106,7 @@ public class AddressPointMatchCheck extends BaseCheck
         {
             // Add all interior Point street names to the list of candidate street names
             points.forEach(interiorPoint -> streetNameList
-                    .add((interiorPoint.getTags().get(POINT_STREET_NAME_KEY))));
+                    .add(interiorPoint.getTags().get(POINT_STREET_NAME_KEY)));
 
         }
         // If there are Edges intersecting or contained by the bounding box
@@ -112,7 +114,7 @@ public class AddressPointMatchCheck extends BaseCheck
         {
             // Add all interior Edge street names to the list of candidate street names
             edges.forEach(interiorEdge -> streetNameList
-                    .add((interiorEdge.getTags().get(EDGE_STREET_NAME_KEY))));
+                    .add(interiorEdge.getTags().get(EDGE_STREET_NAME_KEY)));
         }
 
         return Optional.of(this.createFlag(point,
