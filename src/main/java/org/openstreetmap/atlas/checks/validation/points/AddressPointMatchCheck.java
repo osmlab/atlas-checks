@@ -17,6 +17,12 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 import com.google.common.collect.Iterables;
 
+/**
+ * Tests for {@link AddressPointMatchCheck}
+ *
+ * @author savannahostrowski
+ */
+
 public class AddressPointMatchCheck extends BaseCheck
 {
     private static final long serialVersionUID = 1L;

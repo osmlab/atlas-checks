@@ -1,7 +1,11 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
+import org.junit.Assert;
 import org.junit.Rule;
+import org.junit.Test;
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * Tests for {@link AddressPointMatchCheck}
@@ -10,10 +14,68 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class AddressPointMatchCheckTest
 {
+    private final AddressPointMatchCheck check = new AddressPointMatchCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"AddressPointMatchCheck\":{\"bounds.size\":100.0"));
     @Rule
     public AddressPointMatchCheckTestRule setup = new AddressPointMatchCheckTestRule();
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void pointWithStreetNameStreetNumber()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameStreetNumber(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberNoCandidates()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberNoCandidates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberPointCandidatesDuplicateNames()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberPointCandidatesDuplicateNames(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberNodeCandidatesBoxConfig()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberNodeCandidatesBoxConfig(), check);
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
 
 }
