@@ -182,10 +182,8 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         final List<Segment> segments = polyline.segments();
 
         // Loop through Polyline Segments
-        for (int index = 0; index < segments.size(); index++)
+        for (Segment segment : segments)
         {
-            final Segment segment = segments.get(index);
-
             // Check if segment exists elsewhere in List
             if (segments.indexOf(segment) != segments.lastIndexOf(segment))
             {
