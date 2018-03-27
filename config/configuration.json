@@ -51,6 +51,14 @@
       "difficulty": "EASY"
     }
   },
+  "DuplicateWaysCheck": {
+    "challenge": {
+      "description": "Tasks contain Ways which have been partially or completely duplicated.",
+      "blurb": "Duplicate Ways",
+      "instruction": "Open your favorite editor and remove the duplicated edges in the OSM way.",
+      "difficulty": "EASY"
+    }
+  },
   "EdgeCrossingEdgeCheck": {
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
