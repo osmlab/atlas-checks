@@ -36,6 +36,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.Finder;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -147,8 +148,9 @@ public class IntegrityCheckSparkJob extends SparkJob
                 POOL_DURATION_BEFORE_KILL);
         checksToRun.stream().filter(check -> check.validCheckForCountry(country))
                 .forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
-                        new MultiIterable<>(atlas.items(), atlas.relations()), MapRouletteClient
-                                .instance(configuration))));
+                        new MultiIterable<>(atlas.items(), atlas.relations(),
+                                findComplexEntities(check, atlas)),
+                        MapRouletteClient.instance(configuration))));
         checkExecutionPool.close();
     }
 
@@ -424,5 +426,25 @@ public class IntegrityCheckSparkJob extends SparkJob
             return false;
         }
         return true;
+    }
+
+    /**
+     * Gets complex entities
+     *
+     * @param check
+     *            A {@link BaseCheck} object
+     * @param atlas
+     *            An {@link Atlas} object
+     * @return An {@link Iterable} of {@link ComplexEntity}s
+     */
+    private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
+            final Atlas atlas)
+    {
+        if (check.finder().isPresent())
+        {
+            return Iterables.stream(check.finder().get().find(atlas));
+        }
+
+        return Collections.emptyList();
     }
 }
