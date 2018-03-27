@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +65,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
      * been flagged by the check algorithm, and if the check has already looked at a specific
      * feature it can skip it here. This is useful if you are walking the graph in your check
      * algorithm and then can flag each feature that you visit while walking the graph.
-     * 
+     *
      * @param object
      *            the {@link AtlasObject} you are checking
      * @return {@code true} if object should be checked
@@ -107,7 +106,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         {
             polyline = ((Area) object).asPolygon();
             // Send duplicate Edge instructions if duplicate Edges exist
-            localizedInstructionIndex = hasDuplicateEdges(polyline) ? THREE : 1;
+            localizedInstructionIndex = hasDuplicateSegments(polyline) ? THREE : 1;
         }
         else
         {
@@ -172,34 +171,26 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     }
 
     /**
-     * Returns true if adjacent {@link Edge} has identical lat,lng sequences
+     * Returns true if adjacent {@link Segment} has identical lat,lng sequences
      *
      * @param polyline
      *            the {@link PolyLine} being examined
-     * @return {@code true} if the any set of adjacent edges have identical geometries
+     * @return {@code true} if the any set of adjacent segments have identical geometries
      */
-    private boolean hasDuplicateEdges(final PolyLine polyline)
+    private boolean hasDuplicateSegments(final PolyLine polyline)
     {
         final List<Segment> segments = polyline.segments();
-        final List<Segment> duplicates = new ArrayList<>();
 
         // Loop through Polyline Segments
-        for (int i = 0; i < segments.size(); i++)
+        for (final Segment segment : segments)
         {
-            final Segment segment = segments.get(i);
-            final int adjacentEdge = i + 2;
-
             // Check if segment exists elsewhere in List
             if (segments.indexOf(segment) != segments.lastIndexOf(segment))
             {
-                // If adjacent segment is the same value as our current, duplicate exists
-                if (adjacentEdge < segments.size() && segment.equals(segments.get(adjacentEdge)))
-                {
-                    duplicates.add(segment);
-                }
+                return true;
             }
         }
 
-        return duplicates.size() > 0;
+        return false;
     }
 }
