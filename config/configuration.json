@@ -15,6 +15,16 @@
   "OrphanNodeCheck": {
 
   },
+  "AreasWithHighwayTagCheck":{
+    "tag.filters":"highway->!pedestrian&area->!yes",
+    "challenge":{
+      "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
+      "blurb":"Highways should not be tagged as Areas.",
+      "instruction":"Remove highway tag from feature with area tag.",
+      "difficulty":"EASY",
+      "tags":"highway,landuse"
+    }
+  },
   "BuildingRoadIntersectionCheck": {
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
