@@ -1,7 +1,7 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +24,11 @@ import org.openstreetmap.atlas.checks.event.EventService;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
-import org.openstreetmap.atlas.checks.persistence.SparkFileOutput;
-import org.openstreetmap.atlas.checks.persistence.SparkFilePath;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileOutput;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFilePath;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
@@ -36,6 +36,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.Finder;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -57,6 +58,16 @@ import scala.Tuple2;
  */
 public class IntegrityCheckSparkJob extends SparkJob
 {
+    /**
+     * @author brian_l_davis
+     */
+    private enum OutputFormats
+    {
+        FLAGS,
+        GEOJSON,
+        METRICS
+    }
+
     @Deprecated
     protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
             "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
@@ -79,6 +90,7 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
+
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
             String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
             csv_formats -> Stream.of(csv_formats.split(","))
@@ -88,7 +100,6 @@ public class IntegrityCheckSparkJob extends SparkJob
 
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
-
     // Outputs
     private static final String OUTPUT_FLAG_FOLDER = "flag";
     private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
@@ -96,9 +107,10 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
             + FileSuffix.GZIP.toString();
     private static final String OUTPUT_METRIC_FOLDER = "metric";
-    private static final String METRICS_FILENAME = "check-run-time.csv";
 
+    private static final String METRICS_FILENAME = "check-run-time.csv";
     private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
+
     private static final long serialVersionUID = 2990087219645942330L;
 
     // Thread pool settings
@@ -136,8 +148,9 @@ public class IntegrityCheckSparkJob extends SparkJob
                 POOL_DURATION_BEFORE_KILL);
         checksToRun.stream().filter(check -> check.validCheckForCountry(country))
                 .forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
-                        new MultiIterable<>(atlas.items(), atlas.relations()), MapRouletteClient
-                                .instance(configuration))));
+                        new MultiIterable<>(atlas.items(), atlas.relations(),
+                                findComplexEntities(check, atlas)),
+                        MapRouletteClient.instance(configuration))));
         checkExecutionPool.close();
     }
 
@@ -196,9 +209,9 @@ public class IntegrityCheckSparkJob extends SparkJob
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
-        // Load checks
-        final Set<BaseCheck> checksToExecute = checkLoader.loadChecks();
-        if (!isValidInput(countries, checksToExecute))
+        // check configuration and country list
+        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadChecks();
+        if (!isValidInput(countries, preOverriddenChecks))
         {
             logger.error("No countries supplied or checks enabled, exiting!");
             return;
@@ -206,24 +219,24 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         // Read priority countries from the configuration
         final List<String> priorityCountries = checksConfiguration
-                .get("priority.countries", Arrays.asList("BLR", "CHN", "CHL", "DNK", "UKR"))
-                .value();
+                .get("priority.countries", Collections.EMPTY_LIST).value();
 
         // Create a list of Country to Check tuples
         // Add priority countries first if they are supplied by parameter
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
-        countries.stream().filter(priorityCountries::contains)
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country, checksToExecute)));
+        countries.stream().filter(priorityCountries::contains).forEach(country -> countryCheckTuples
+                .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country, checksToExecute)));
+                .forEach(country -> countryCheckTuples
+                        .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
                 .collect(Collectors.joining(",")));
-        logger.info("Initialized checks: {}", checksToExecute.stream().map(BaseCheck::getCheckName)
-                .collect(Collectors.joining(",")));
+        logger.info("Initialized checks: {}", preOverriddenChecks.stream()
+                .map(BaseCheck::getCheckName).collect(Collectors.joining(",")));
 
         // Parallelize on the countries
         final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = getContext()
@@ -253,6 +266,9 @@ public class IntegrityCheckSparkJob extends SparkJob
 
             final String country = tuple._1();
             final Set<BaseCheck> checks = tuple._2();
+
+            logger.info("Initialized checks for {}: {}", country,
+                    checks.stream().map(BaseCheck::getCheckName).collect(Collectors.joining(",")));
 
             final Set<SparkFilePath> resultingFiles = new HashSet<>();
 
@@ -413,12 +429,22 @@ public class IntegrityCheckSparkJob extends SparkJob
     }
 
     /**
-     * @author brian_l_davis
+     * Gets complex entities
+     *
+     * @param check
+     *            A {@link BaseCheck} object
+     * @param atlas
+     *            An {@link Atlas} object
+     * @return An {@link Iterable} of {@link ComplexEntity}s
      */
-    private enum OutputFormats
+    private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
+            final Atlas atlas)
     {
-        FLAGS,
-        GEOJSON,
-        METRICS
+        if (check.finder().isPresent())
+        {
+            return Iterables.stream(check.finder().get().find(atlas));
+        }
+
+        return Collections.emptyList();
     }
 }

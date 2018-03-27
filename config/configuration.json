@@ -15,6 +15,16 @@
   "OrphanNodeCheck": {
 
   },
+  "AreasWithHighwayTagCheck":{
+    "tag.filters":"highway->!pedestrian&area->!yes",
+    "challenge":{
+      "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
+      "blurb":"Highways should not be tagged as Areas.",
+      "instruction":"Remove highway tag from feature with area tag.",
+      "difficulty":"EASY",
+      "tags":"highway,landuse"
+    }
+  },
   "BuildingRoadIntersectionCheck": {
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
@@ -98,8 +108,18 @@
       "tags":"highway"
     }
   },
+  "RoundaboutValenceCheck": {
+    "connections.minimum": 2.0,
+    "connections.maximum": 14.0,
+    "challenge": {
+      "description": "Verify that the valence of the roundabout is sensible.",
+      "blurb": "Modify Polyline intersections with the roundabout edges",
+      "instruction": "Open your favorite editor and move modify polyline intersections with the roundabout.",
+      "difficulty": "NORMAL"
+    }
+  },
   "SelfIntersectingPolylineCheck": {
-    "tags.filter": "highway->*|waterway->*|building->*",
+    "tags.filter":"highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
     "challenge": {
       "description": "Verify that the same Polyline does not intersect itself at any point.",
       "blurb": "Modify Polylines such that they do not self intersect.",

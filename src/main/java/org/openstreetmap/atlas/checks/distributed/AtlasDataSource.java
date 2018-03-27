@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.PathFilter;
 import org.openstreetmap.atlas.checks.atlas.CountrySpecificAtlasFilePathFilter;
 import org.openstreetmap.atlas.checks.atlas.OsmPbfFilePathFilter;
-import org.openstreetmap.atlas.checks.persistence.SparkFileHelper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
@@ -56,23 +56,6 @@ public class AtlasDataSource implements Serializable
     }
 
     /**
-     * Constructs an {@link AtlasDataSource} with bounding box. Only {@link Atlas} data within the
-     * bounding box will be loaded
-     *
-     * @param sparkContext
-     *            spark context as key-value pairs to use as context
-     * @param configuration
-     *            the {@link Configuration}
-     * @param boundingBox
-     *            a {@link Rectangle} boundary
-     */
-    public AtlasDataSource(final Map<String, String> sparkContext,
-            final Configuration configuration, final Rectangle boundingBox)
-    {
-        this(sparkContext, configuration, MultiPolygon.forPolygon(boundingBox));
-    }
-
-    /**
      * Constructs an {@link AtlasDataSource} with a {@link MultiPolygon} boundary. Only
      * {@link Atlas} data within the boundary will be loaded
      *
@@ -89,6 +72,23 @@ public class AtlasDataSource implements Serializable
         this.loadHelper = new SparkFileHelper(sparkContext);
         this.pathResolver = new AtlasFilePathResolver(configuration);
         this.polygon = polygon;
+    }
+
+    /**
+     * Constructs an {@link AtlasDataSource} with bounding box. Only {@link Atlas} data within the
+     * bounding box will be loaded
+     *
+     * @param sparkContext
+     *            spark context as key-value pairs to use as context
+     * @param configuration
+     *            the {@link Configuration}
+     * @param boundingBox
+     *            a {@link Rectangle} boundary
+     */
+    public AtlasDataSource(final Map<String, String> sparkContext,
+            final Configuration configuration, final Rectangle boundingBox)
+    {
+        this(sparkContext, configuration, MultiPolygon.forPolygon(boundingBox));
     }
 
     /**
@@ -126,7 +126,7 @@ public class AtlasDataSource implements Serializable
         final PathFilter pbfFilter = new OsmPbfFilePathFilter();
         final PathFilter atlasFilter = new CountrySpecificAtlasFilePathFilter(country);
 
-        final Optional<Resource> resource = loadHelper.collectSourceFile(input, pbfFilter,
+        final Optional<Resource> resource = this.loadHelper.collectSourceFile(input, pbfFilter,
                 atlasFilter);
         if (resource.isPresent())
         {
@@ -137,7 +137,7 @@ public class AtlasDataSource implements Serializable
             }
             else if (FileSuffix.resourceFilter(FileSuffix.PBF).test(dataSource))
             {
-                logger.info("Loading Atlas from OSM protobuf {}", input);
+                this.logger.info("Loading Atlas from OSM protobuf {}", input);
                 final Atlas atlas = this.loadPbf(dataSource, country);
                 intermediateAtlasHandler.accept(atlas);
                 return atlas;
@@ -145,21 +145,21 @@ public class AtlasDataSource implements Serializable
         }
         else
         {
-            final String directory = pathResolver.resolvePath(input, country);
-            final List<Resource> atlasResources = loadHelper.collectSourceFiles(directory, true,
-                    atlasFilter);
+            final String directory = this.pathResolver.resolvePath(input, country);
+            final List<Resource> atlasResources = this.loadHelper.collectSourceFiles(directory,
+                    true, atlasFilter);
             if (atlasResources.size() > 0)
             {
                 return new AtlasResourceLoader().load(atlasResources);
             }
             else
             {
-                final List<Resource> pbfResources = loadHelper.collectSourceFiles(directory, true,
-                        pbfFilter);
+                final List<Resource> pbfResources = this.loadHelper.collectSourceFiles(directory,
+                        true, pbfFilter);
                 final int pbfCount = pbfResources.size();
                 if (pbfCount > 0)
                 {
-                    logger.info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
+                    this.logger.info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
                             input);
                     final List<Atlas> atlases = pbfResources.parallelStream()
                             .map(dataSource -> this.loadPbf(dataSource, country))
@@ -175,8 +175,8 @@ public class AtlasDataSource implements Serializable
     {
         // Setting the CountryBoundaryMap to the polygon boundary
         final CountryBoundaryMap map = new CountryBoundaryMap(
-                Collections.singletonMap(country, polygon));
+                Collections.singletonMap(country, this.polygon));
         final AtlasLoadingOption option = AtlasLoadingOption.createOptionWithAllEnabled(map);
-        return new OsmPbfLoader(input, polygon, option).read();
+        return new OsmPbfLoader(input, this.polygon, option).read();
     }
 }
