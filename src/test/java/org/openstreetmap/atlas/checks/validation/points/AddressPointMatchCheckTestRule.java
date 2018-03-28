@@ -66,6 +66,50 @@ public class AddressPointMatchCheckTestRule extends CoreTestRule
                             "name=Jones" }) })
     private Atlas pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames;
 
+    @TestAtlas(points = {
+            @Point(coordinates = @Loc(value = TEST_1), tags = { "addr:housenumber=20",
+                    "addr:street=" }) })
+    private Atlas pointWithEmptyStreetNameNoCandidates;
+
+    @TestAtlas(points = {
+            @Point(coordinates = @Loc(value = TEST_1), tags = { "addr:housenumber=20",
+                    "addr:street="}),
+            @Point(coordinates = @Loc(value = TEST_2), tags = { "addr:housenumber=25",
+                    "addr:street=Smith" }) })
+    private Atlas pointWithEmptyStreetNamePointCandidatesNoDuplicates;
+
+    @TestAtlas(points = {
+            @Point(coordinates = @Loc(value = TEST_1), tags = { "addr:housenumber=20",
+                    "addr:street="}),
+
+    }, nodes = { @Node(coordinates = @Loc(value = TEST_2)),
+            @Node(coordinates = @Loc(value = TEST_3)) }, edges = { @Edge(coordinates = {
+            @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "name=Smith" }), })
+    private Atlas pointWithEmptyStreetNameEdgeCandidatesNoDuplicates;
+
+    @TestAtlas(points = {
+            @Point(coordinates = @Loc(value = TEST_1), tags = { "addr:housenumber=20",
+                    "addr:street="}),
+            @Point(coordinates = @Loc(value = TEST_2), tags = { "addr:housenumber=20",
+                    "addr:street=Jones" }),
+            @Point(coordinates = @Loc(value = TEST_3), tags = { "addr:housenumber=20",
+                    "addr:street=Jones" }),
+            @Point(coordinates = @Loc(value = TEST_4), tags = { "addr:housenumber=20",
+                    "addr:street=John" }) })
+    private Atlas pointWithEmptyStreetNamePointCandidatesDuplicateNames;
+
+    @TestAtlas(points = { @Point(id = "1234", coordinates = @Loc(value = TEST_1), tags = {
+            "addr:housenumber=20", "addr:street=" }),
+
+    }, nodes = { @Node(coordinates = @Loc(value = TEST_2)),
+            @Node(coordinates = @Loc(value = TEST_3)), @Node(coordinates = @Loc(value = TEST_4)),
+            @Node(coordinates = @Loc(value = TEST_5)), }, edges = {
+            @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
+                    "name=Jones" }),
+            @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                    "name=Jones" }) })
+    private Atlas pointWithEmptyStreetNameEdgeCandidatesDuplicateNames;
+
     public Atlas pointWithStreetNameStreetNumber()
     {
         return pointWithStreetNameStreetNumber;
@@ -95,4 +139,27 @@ public class AddressPointMatchCheckTestRule extends CoreTestRule
     {
         return pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames;
     }
+
+    public Atlas pointWithEmptyStreetNameNoStreetNumberNoCandidates() {
+        return pointWithEmptyStreetNameNoCandidates;
+    }
+
+    public Atlas pointWithEmptyStreetNamePointCandidatesNoDuplicates() {
+        return pointWithEmptyStreetNamePointCandidatesNoDuplicates;
+    }
+
+    public Atlas pointWithEmptyStreetNameEdgeCandidatesNoDuplicates() {
+        return pointWithEmptyStreetNameEdgeCandidatesNoDuplicates;
+    }
+
+    public Atlas pointWithEmptyStreetNamePointCandidatesDuplicateNames(){
+        return pointWithEmptyStreetNamePointCandidatesDuplicateNames;
+    }
+
+    public Atlas pointWithEmptyStreetNameEdgeCandidatesDuplicateNames() {
+        return pointWithEmptyStreetNameEdgeCandidatesDuplicateNames;
+    }
+
+
+
 }

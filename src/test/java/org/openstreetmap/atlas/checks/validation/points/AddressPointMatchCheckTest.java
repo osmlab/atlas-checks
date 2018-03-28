@@ -79,4 +79,46 @@ public class AddressPointMatchCheckTest
                 flag -> Assert.assertTrue(flag.getInstructions().contains(JONES_STREET_NAME)));
     }
 
+    @Test
+    public void pointWithEmptyStreetNameNoStreetNumberNoCandidates() {
+        this.verifier.actual(this.setup.pointWithEmptyStreetNameNoStreetNumberNoCandidates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNamePointCandidatesNoDuplicates()
+    {
+        this.verifier.actual(
+                this.setup.pointWithEmptyStreetNamePointCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNameEdgeCandidatesNoDuplicates()
+    {
+        this.verifier.actual(
+                this.setup.pointWithEmptyStreetNameEdgeCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNamePointCandidatesDuplicateNames()
+    {
+        this.verifier.actual(
+                this.setup.pointWithEmptyStreetNamePointCandidatesDuplicateNames(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNameEdgeCandidatesDuplicateNames()
+    {
+        this.verifier.actual(
+                this.setup.pointWithEmptyStreetNameEdgeCandidatesDuplicateNames(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
 }
