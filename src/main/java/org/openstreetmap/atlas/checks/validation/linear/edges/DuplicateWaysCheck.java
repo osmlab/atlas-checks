@@ -61,11 +61,12 @@ public class DuplicateWaysCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Set<PolyLine> allEdgePolyLines = new HashSet<>();
+        final Set<Segment> allEdgeSegments = new HashSet<>();
         final Edge edge = (Edge) object;
 
         final Rectangle bounds = edge.asPolyLine().bounds();
         final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds);
+        edgesInBounds.forEach(edgeInBounds -> edgeInBounds.getMasterEdge());
 
         for (final Edge edgeInBounds : edgesInBounds)
         {
@@ -74,33 +75,33 @@ public class DuplicateWaysCheck extends BaseCheck
             // Flag area Edges or duplicate Nodes
             if (edgeInBounds.getTags().containsKey(AREA_KEY)
                     || edgeInBounds.asPolyLine().length().equals(Distance.meters(ZERO_LENGTH))
-                    || this.isFlagged(edgeInBounds))
+                    || this.isFlagged(edgeInBounds.getMasterEdgeIdentifier()))
             {
                 continue;
             }
 
             // If the Set of Edges does not contain the Edge found in the bounds
-            if (!allEdgePolyLines.contains(edgeInBounds.asPolyLine()))
+            if (!allEdgeSegments.containsAll(edgeInBounds.asPolyLine().segments()))
             {
                 final List<Segment> edgeInBoundsSegments = edgeInBounds.asPolyLine().segments();
 
                 for (final Segment segment : edgeInBoundsSegments)
                 {
-                    for (final PolyLine polyLine : allEdgePolyLines)
+                    // If a Segment in the Edge is found (check for partial duplication)
+                    if (allEdgeSegments.contains(segment))
                     {
-                        if (polyLine.contains(segment))
-                        {
-                            this.markAsFlagged(edgeInBounds);
-                            return Optional.of(this.createFlag(edgeInBounds, this
-                                    .getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
-                        }
+                        this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
+                        return Optional.of(this.createFlag(edgeInBounds,
+                                this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
                     }
                 }
-                allEdgePolyLines.add(edgeInBounds.asPolyLine());
+                // Add all Segments flattened to the Set of Segments
+                allEdgeSegments.addAll(edgeInBounds.asPolyLine().segments());
             }
+            // A full duplicate Edge was found in the Set of allEdgePolyLines
             else
             {
-                this.markAsFlagged(edgeInBounds);
+                this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
                 return Optional.of(this.createFlag(edgeInBounds,
                         this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
             }
