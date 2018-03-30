@@ -21,83 +21,84 @@ We’ll use this information to filter our potential flag candidates.
 
 Our first goal is to validate the incoming Atlas Object. We know two things about roundabouts:
 * Must be a valid Edge
+* Must be a master Edge
 * Must be car-navigable
 * Must not be part of an area
 * Must have not already been flagged
 
 
 ```java
-   public boolean validCheckForObject(final AtlasObject object)
+   @Override
+       public boolean validCheckForObject(final AtlasObject object)
        {
            return object instanceof Edge
+                   && ((Edge) object).isMasterEdge()
                    // Check to see that the edge is car navigable
                    && HighwayTag.isCarNavigableHighway(object)
                    // The edge is not part of an area
                    && !object.getTags().containsKey(AREA_KEY)
                    // The edge has not already been seen
-                   && !this.isFlagged(object.getIdentifier());
+                   && !this.isFlagged(((Edge) object).getMasterEdgeIdentifier());
        }
-
 ```
 
 After the preliminary filtering of features, we take each Edge and use a series of conditional
 statements to validate whether we do in fact want to flag the feature for inspection.
 
 ```java
-     @Override
-        protected Optional<CheckFlag> flag(final AtlasObject object)
-        {
-            // Get current edge object
-            final Edge edge = (Edge) object;
-    
-            // Get the edge identifier
-            final long identifier = edge.getIdentifier();
-    
-            // Get all Segments in Edge
-            final List<Segment> edgeSegments = edge.asPolyLine().segments();
-    
-            // For each Segment in the Edge
-            for (final Segment segment : edgeSegments)
-            {
-                // Make sure that we aren't flagging duplicate nodes
-                if (!segment.length().isGreaterThan(Distance.meters(ZERO_LENGTH))) {
-                    continue;
-                }
-    
-                // Check if the Segment is in globalSegments
-                if (globalSegments.containsKey(segment))
-                {
-                    // add identifier to the list of identifiers with that segment
-                    globalSegments.get(segment).add(identifier);
-    
-                    if (!this.isFlagged(edge.getMasterEdgeIdentifier()))
-                    {
-                        this.markAsFlagged(edge.getMasterEdgeIdentifier());
-                        return Optional.of(this.createFlag(edge, this.getLocalizedInstruction(0,
-                                edge.getOsmIdentifier())));
-                    }
-                }
-                else
-                {
-                    // if it doesn't already exist, then add the segment and list with one identifier
-                    final Set<Long> identifiers = new HashSet<>();
-                    identifiers.add(identifier);
-                    globalSegments.put(segment, identifiers);
-                }
-            }
-    
-            return Optional.empty();
-        }
+    @Override
+       protected Optional<CheckFlag> flag(final AtlasObject object)
+       {
+           final Set<Segment> allEdgeSegments = new HashSet<>();
+           final Edge edge = (Edge) object;
+   
+           final Rectangle bounds = edge.asPolyLine().bounds();
+           // Get Edges which are contained by or intersect the bounds, and then filter
+           // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
+           final Iterable<Edge> edgesInBounds = Iterables.stream(edge.getAtlas().edgesIntersecting(bounds))
+                   .filter(Edge::isMasterEdge);
+   
+           for (final Edge edgeInBounds : edgesInBounds)
+           {
+               // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
+               // Or if the Edge has already been flagged before then continue because we don't want to
+               // Flag area Edges or duplicate Nodes
+               if (edgeInBounds.getTags().containsKey(AREA_KEY)
+                       || edgeInBounds.asPolyLine().length().equals(Distance.meters(ZERO_LENGTH))
+                       || this.isFlagged(edgeInBounds.getMasterEdgeIdentifier()))
+               {
+                   continue;
+               }
+   
+               // If the Set of Edges does not contain the Edge found in the bounds
+               if (!allEdgeSegments.containsAll(edgeInBounds.asPolyLine().segments()))
+               {
+                   final List<Segment> edgeInBoundsSegments = edgeInBounds.asPolyLine().segments();
+   
+                   for (final Segment segment : edgeInBoundsSegments)
+                   {
+                       // If a Segment in the Edge is found (check for partial duplication)
+                       if (allEdgeSegments.contains(segment))
+                       {
+                           this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
+                           return Optional.of(this.createFlag(edgeInBounds,
+                                   this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
+                       }
+                   }
+                   // Add all Segments flattened to the Set of Segments
+                   allEdgeSegments.addAll(edgeInBounds.asPolyLine().segments());
+               }
+               // A full duplicate Edge was found in the Set of allEdgePolyLines
+               else
+               {
+                   this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
+                   return Optional.of(this.createFlag(edgeInBounds,
+                           this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
+               }
+           }
+           return Optional.empty();
+       }
 ```
-
-Within the check body, we first check that the Segment is greater than zero meters in length to
-ensure that we are not just looking at a duplicated node. Next, we get all Segments in each Edge,
-store each unique Segment as a key in a HashMap, and store each Edge which contains that Segment as 
-the value. If that Segment already exists in the HashMap (so the list of Edges is greater than 1) 
-and the Edge identifier has not already been flagged, we flag the Edge. If that Segment does not 
-already contain that key, we add the Segment, Edge identifier key value pair into the HashMap.
-
-
 
 To learn more about the code, please look at the comments in the source code for the check.
 [DuplicateWaysCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/DuplicateWaysCheck.java)

@@ -8,13 +8,13 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -28,7 +28,7 @@ public class DuplicateWaysCheck extends BaseCheck
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
     public static final String DUPLICATE_EDGE_INSTRUCTIONS = "This way, {0,number,#}, "
-            + "has at least one duplicate segment. ";
+            + "has at least one duplicate segment.";
 
     public static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(DUPLICATE_EDGE_INSTRUCTIONS);
@@ -50,12 +50,14 @@ public class DuplicateWaysCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge
+                // Check to see that the Edge is a master Edge
+                && ((Edge) object).isMasterEdge()
+                // Check to see that the edge has not already been seen
+                && !this.isFlagged(((Edge) object).getMasterEdgeIdentifier())
                 // Check to see that the edge is car navigable
                 && HighwayTag.isCarNavigableHighway(object)
                 // The edge is not part of an area
-                && !object.getTags().containsKey(AREA_KEY)
-                // The edge has not already been seen
-                && !this.isFlagged(((Edge) object).getMasterEdgeIdentifier());
+                && !object.getTags().containsKey(AREA_KEY);
     }
 
     @Override
@@ -65,8 +67,10 @@ public class DuplicateWaysCheck extends BaseCheck
         final Edge edge = (Edge) object;
 
         final Rectangle bounds = edge.asPolyLine().bounds();
-        final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds);
-        edgesInBounds.forEach(edgeInBounds -> edgeInBounds.getMasterEdge());
+        // Get Edges which are contained by or intersect the bounds, and then filter
+        // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
+        final Iterable<Edge> edgesInBounds = Iterables
+                .stream(edge.getAtlas().edgesIntersecting(bounds)).filter(Edge::isMasterEdge);
 
         for (final Edge edgeInBounds : edgesInBounds)
         {
