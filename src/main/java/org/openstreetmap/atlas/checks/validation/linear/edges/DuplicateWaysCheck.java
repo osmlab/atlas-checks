@@ -1,15 +1,15 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.PolyLine;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -34,9 +34,6 @@ public class DuplicateWaysCheck extends BaseCheck
             .asList(DUPLICATE_EDGE_INSTRUCTIONS);
     public static final int ZERO_LENGTH = 0;
     public static final String AREA_KEY = AreaTag.KEY;
-
-    // A map of segments and list of Edge identifiers
-    private final Map<Segment, Set<Long>> globalSegments = new HashMap<>();
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -64,44 +61,48 @@ public class DuplicateWaysCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-
-        // Get current edge object
+        final Set<PolyLine> allEdgePolyLines = new HashSet<>();
         final Edge edge = (Edge) object;
 
-        // Get the edge identifier
-        final long identifier = edge.getIdentifier();
+        final Rectangle bounds = edge.asPolyLine().bounds();
+        final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds);
 
-        // Get all Segments in Edge
-        final List<Segment> edgeSegments = edge.asPolyLine().segments();
-
-        // For each Segment in the Edge
-        for (final Segment segment : edgeSegments)
+        for (final Edge edgeInBounds : edgesInBounds)
         {
-            // Make sure that we aren't flagging duplicate nodes
-            if (!segment.length().isGreaterThan(Distance.meters(ZERO_LENGTH)))
+            // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
+            // Or if the Edge has already been flagged before then continue because we don't want to
+            // Flag area Edges or duplicate Nodes
+            if (edgeInBounds.getTags().containsKey(AREA_KEY)
+                    || edgeInBounds.asPolyLine().length().equals(Distance.meters(ZERO_LENGTH))
+                    || this.isFlagged(edgeInBounds))
             {
                 continue;
             }
 
-            // Check if the Segment is in globalSegments
-            if (globalSegments.containsKey(segment))
+            // If the Set of Edges does not contain the Edge found in the bounds
+            if (!allEdgePolyLines.contains(edgeInBounds.asPolyLine()))
             {
-                // Add identifier to the list of identifiers with that segment
-                globalSegments.get(segment).add(identifier);
+                final List<Segment> edgeInBoundsSegments = edgeInBounds.asPolyLine().segments();
 
-                if (!this.isFlagged(edge.getMasterEdgeIdentifier()))
+                for (final Segment segment : edgeInBoundsSegments)
                 {
-                    this.markAsFlagged(edge.getMasterEdgeIdentifier());
-                    return Optional.of(this.createFlag(edge,
-                            this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
+                    for (final PolyLine polyLine : allEdgePolyLines)
+                    {
+                        if (polyLine.contains(segment))
+                        {
+                            this.markAsFlagged(edgeInBounds);
+                            return Optional.of(this.createFlag(edgeInBounds, this
+                                    .getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
+                        }
+                    }
                 }
+                allEdgePolyLines.add(edgeInBounds.asPolyLine());
             }
             else
             {
-                // If it doesn't already exist, then add the segment and list with one identifier
-                final Set<Long> identifiers = new HashSet<>();
-                identifiers.add(identifier);
-                globalSegments.put(segment, identifiers);
+                this.markAsFlagged(edgeInBounds);
+                return Optional.of(this.createFlag(edgeInBounds,
+                        this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
             }
         }
         return Optional.empty();
