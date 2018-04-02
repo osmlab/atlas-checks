@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.base;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -102,12 +101,12 @@ public abstract class BaseCheck<T> implements Check, Serializable
         }
         this.polygonFilter = AtlasEntityPolygonsFilter.forConfigurationValues(
                 configurationValue(configuration, AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY,
-                        new HashMap<>()),
+                        Collections.emptyMap()),
                 configurationValue(configuration,
                         AtlasEntityPolygonsFilter.INCLUDED_MULTIPOLYGONS_KEY,
                         Collections.emptyMap()),
                 configurationValue(configuration, AtlasEntityPolygonsFilter.EXCLUDED_POLYGONS_KEY,
-                        new HashMap<>()),
+                        Collections.emptyMap()),
                 configurationValue(configuration,
                         AtlasEntityPolygonsFilter.EXCLUDED_MULTIPOLYGONS_KEY,
                         Collections.emptyMap()));
