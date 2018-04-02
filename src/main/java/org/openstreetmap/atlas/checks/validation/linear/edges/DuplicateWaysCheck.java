@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -27,13 +28,12 @@ public class DuplicateWaysCheck extends BaseCheck
 {
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
-    public static final String DUPLICATE_EDGE_INSTRUCTIONS = "This way, {0,number,#}, "
+    private static final String DUPLICATE_EDGE_INSTRUCTIONS = "This way, {0,number,#}, "
             + "has at least one duplicate segment.";
 
-    public static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(DUPLICATE_EDGE_INSTRUCTIONS);
-    public static final int ZERO_LENGTH = 0;
-    public static final String AREA_KEY = AreaTag.KEY;
+    private static final Distance ZERO_LENGTH = Distance.ZERO;
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -51,61 +51,42 @@ public class DuplicateWaysCheck extends BaseCheck
     {
         return object instanceof Edge
                 // Check to see that the Edge is a master Edge
-                && ((Edge) object).isMasterEdge()
+                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 // Check to see that the edge has not already been seen
-                && !this.isFlagged(((Edge) object).getMasterEdgeIdentifier())
+                && !this.isFlagged(object.getIdentifier())
                 // Check to see that the edge is car navigable
                 && HighwayTag.isCarNavigableHighway(object)
                 // The edge is not part of an area
-                && !object.getTags().containsKey(AREA_KEY);
+                && !object.getTags().containsKey(AreaTag.KEY);
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Set<Segment> allEdgeSegments = new HashSet<>();
         final Edge edge = (Edge) object;
+        final PolyLine edgePoly = edge.asPolyLine();
 
         final Rectangle bounds = edge.asPolyLine().bounds();
         // Get Edges which are contained by or intersect the bounds, and then filter
         // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
-        final Iterable<Edge> edgesInBounds = Iterables
-                .stream(edge.getAtlas().edgesIntersecting(bounds)).filter(Edge::isMasterEdge);
+        final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds, Edge::isMasterEdge);
 
         for (final Edge edgeInBounds : edgesInBounds)
         {
             // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
             // Or if the Edge has already been flagged before then continue because we don't want to
             // Flag area Edges or duplicate Nodes
-            if (edgeInBounds.getTags().containsKey(AREA_KEY)
-                    || edgeInBounds.asPolyLine().length().equals(Distance.meters(ZERO_LENGTH))
-                    || this.isFlagged(edgeInBounds.getMasterEdgeIdentifier()))
+            if (edgeInBounds.getTag(AreaTag.KEY).isPresent()
+                    || edgeInBounds.asPolyLine().length().equals(ZERO_LENGTH)
+                    || this.isFlagged(edgeInBounds.getIdentifier()))
             {
                 continue;
             }
 
-            // If the Set of Edges does not contain the Edge found in the bounds
-            if (!allEdgeSegments.containsAll(edgeInBounds.asPolyLine().segments()))
-            {
-                final List<Segment> edgeInBoundsSegments = edgeInBounds.asPolyLine().segments();
+            PolyLine edgeInBoundsPoly = edgeInBounds.asPolyLine();
 
-                for (final Segment segment : edgeInBoundsSegments)
-                {
-                    // If a Segment in the Edge is found (check for partial duplication)
-                    if (allEdgeSegments.contains(segment))
-                    {
-                        this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
-                        return Optional.of(this.createFlag(edgeInBounds,
-                                this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
-                    }
-                }
-                // Add all Segments flattened to the Set of Segments
-                allEdgeSegments.addAll(edgeInBounds.asPolyLine().segments());
-            }
-            // A full duplicate Edge was found in the Set of allEdgePolyLines
-            else
-            {
-                this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
+            if(edgeInBoundsPoly.intersects(edgePoly)) {
+                this.markAsFlagged(edgeInBounds.getIdentifier());
                 return Optional.of(this.createFlag(edgeInBounds,
                         this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
             }
