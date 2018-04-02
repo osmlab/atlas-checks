@@ -134,7 +134,14 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     {
         if (object instanceof AtlasItem)
         {
-            this.flaggedObjects.add(new FlaggedPolyline(object));
+            if (object instanceof LocationItem)
+            {
+                this.flaggedObjects.add(new FlaggedPoint(((LocationItem) object).getLocation()));
+            }
+            else
+            {
+                this.flaggedObjects.add(new FlaggedPolyline(object));
+            }
         }
     }
 
@@ -168,8 +175,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public void addObject(final AtlasObject object, final String instruction)
     {
-        addObject(object);
-        addInstruction(instruction);
+        this.addObject(object);
+        this.addInstruction(instruction);
     }
 
     /**
@@ -180,14 +187,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public void addObjects(final Iterable<AtlasObject> objects)
     {
-        Iterables.stream(objects).filter(object -> object instanceof AtlasItem).map(item ->
-        {
-            if (item instanceof LocationItem)
-            {
-                return new FlaggedPoint(((LocationItem) item).getLocation());
-            }
-            return new FlaggedPolyline(item);
-        }).forEach(this.flaggedObjects::add);
+        Iterables.stream(objects).forEach(this::addObject);
     }
 
     /**
