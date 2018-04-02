@@ -22,6 +22,33 @@ public class AddressPointMatchCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    // Has street name, number and is part of associated street relation
+    @Test
+    public void pointWithStreetNameStreetNumberAndAssociatedStreet()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameStreetNumberAndAssociatedStreet(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    // Has no street name, has street number and has associated street relation
+    @Test
+    public void pointWithNoStreetNameStreetNumberAndAssociatedStreet()
+    {
+        this.verifier.actual(this.setup.pointWithNoStreetNameStreetNumberAndAssociatedStreet(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    // Has no street name, has street number, and has no associated street relation
+    @Test
+    public void pointWithNoStreetNameStreetNumberAndNoAssociatedStreet()
+    {
+        this.verifier.actual(this.setup.pointWithNoStreetNameStreetNumberAndNoAssociatedStreet(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
     @Test
     public void pointWithStreetNameStreetNumber()
     {
@@ -80,7 +107,8 @@ public class AddressPointMatchCheckTest
     }
 
     @Test
-    public void pointWithEmptyStreetNameNoStreetNumberNoCandidates() {
+    public void pointWithEmptyStreetNameNoStreetNumberNoCandidates()
+    {
         this.verifier.actual(this.setup.pointWithEmptyStreetNameNoStreetNumberNoCandidates(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
@@ -89,8 +117,7 @@ public class AddressPointMatchCheckTest
     @Test
     public void pointWithEmptyStreetNamePointCandidatesNoDuplicates()
     {
-        this.verifier.actual(
-                this.setup.pointWithEmptyStreetNamePointCandidatesNoDuplicates(),
+        this.verifier.actual(this.setup.pointWithEmptyStreetNamePointCandidatesNoDuplicates(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -98,8 +125,7 @@ public class AddressPointMatchCheckTest
     @Test
     public void pointWithEmptyStreetNameEdgeCandidatesNoDuplicates()
     {
-        this.verifier.actual(
-                this.setup.pointWithEmptyStreetNameEdgeCandidatesNoDuplicates(),
+        this.verifier.actual(this.setup.pointWithEmptyStreetNameEdgeCandidatesNoDuplicates(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -107,8 +133,7 @@ public class AddressPointMatchCheckTest
     @Test
     public void pointWithEmptyStreetNamePointCandidatesDuplicateNames()
     {
-        this.verifier.actual(
-                this.setup.pointWithEmptyStreetNamePointCandidatesDuplicateNames(),
+        this.verifier.actual(this.setup.pointWithEmptyStreetNamePointCandidatesDuplicateNames(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -116,8 +141,7 @@ public class AddressPointMatchCheckTest
     @Test
     public void pointWithEmptyStreetNameEdgeCandidatesDuplicateNames()
     {
-        this.verifier.actual(
-                this.setup.pointWithEmptyStreetNameEdgeCandidatesDuplicateNames(),
+        this.verifier.actual(this.setup.pointWithEmptyStreetNameEdgeCandidatesDuplicateNames(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }

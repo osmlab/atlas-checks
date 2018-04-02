@@ -21,6 +21,7 @@ with specified street numbers but no street name.
 Our first goal is to validate the incoming Atlas object. Valid features for this check will satisfy
 the following conditions:
 * Must be a valid Point object
+* Must not be part of an associated street Relation
 * Must have a street number tag not equal to null
 * Must have a street name tag equal to null OR not have the street name key present at all
 
@@ -30,9 +31,12 @@ the following conditions:
      {
          // Object is an instance of Point
          return object instanceof Point
+                 // And does not have an Associated Street Relation
+                 && !hasAssociatedStreetRelation(object)
                  // And has a street number specified
                  && object.getTag(ADDRESS_STREET_NUMBER_KEY).isPresent()
-                 // And if the street name key has a value of null or if the street name key is not present
+                 // And if the street name key has a value of null or if the street name key is not
+                 // present
                  && Strings.isEmpty(object.tag(POINT_STREET_NAME_KEY));
      }
 ```
