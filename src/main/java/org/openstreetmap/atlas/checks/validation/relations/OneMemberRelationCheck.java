@@ -20,8 +20,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class OneMemberRelationCheck extends BaseCheck
 {
-    public static final String OMR_INSTRUCTIONS = "This {0} is the only member "
-            + " in a relation.";
+    public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
+            + "one member.";
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             OMR_INSTRUCTIONS);
