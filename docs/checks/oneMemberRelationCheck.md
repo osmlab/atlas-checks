@@ -1,11 +1,10 @@
-# Roundabout Valence Check
+# One Member Relation Check
 
 #### Description
 
-This check identifies relations that only contain one member. 
-
-//// TO DO  - add information about why we know that one member relations should be flagged
-as designated by OSM ////
+This check identifies relations that only contain one member. In OSM, a [Relation](https://wiki.openstreetmap.org/wiki/Elements#Relation)
+is a multi-purpose data structure that documents a relationship between two or more data elements 
+(nodes, ways, and/or other relations).
 
 #### Live Example
 The following examples illustrate two cases where a Relation contains only one member.
