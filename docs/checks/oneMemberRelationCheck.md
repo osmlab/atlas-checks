@@ -27,19 +27,16 @@ Relation objects. Therefore, we use:
         }
 ```
 
-After the preliminary filtering of features, we get the members of that relation, get the member
-entity type, and then collect them into a Set. Using this Set, we can check how many members it contains.
-If the Set is of size = 1, then we flag this relation.
+After the preliminary filtering of features, we get the members of that relation.
+If the members is of size = 1, then we flag this relation.
 
 
 ```java
-    @Override
+     @Override
         protected Optional<CheckFlag> flag(final AtlasObject object) {
             Relation relation = (Relation) object;
-            Set<AtlasObject> members = relation.members().stream()
-                    .map(RelationMember::getEntity).collect(Collectors.toSet());
-            if (members.size() == 1) {
-                return Optional.of(createFlag(members,
+            if (relation.members().size() == 1) {
+                return Optional.of(createFlag(relation,
                         this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
             }
             return Optional.empty();

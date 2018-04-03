@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
+import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -45,10 +46,8 @@ public class OneMemberRelationCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object) {
         Relation relation = (Relation) object;
-        Set<AtlasObject> members = relation.members().stream()
-                .map(RelationMember::getEntity).collect(Collectors.toSet());
-        if (members.size() == 1) {
-            return Optional.of(createFlag(members,
+        if (relation.members().size() == 1) {
+            return Optional.of(createFlag(relation,
                     this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
         }
         return Optional.empty();
