@@ -1,21 +1,17 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
-import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -69,23 +65,30 @@ public class DuplicateWaysCheck extends BaseCheck
         final Rectangle bounds = edge.asPolyLine().bounds();
         // Get Edges which are contained by or intersect the bounds, and then filter
         // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
-        final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds, Edge::isMasterEdge);
+        final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds,
+                Edge::isMasterEdge);
 
         for (final Edge edgeInBounds : edgesInBounds)
         {
             // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
-            // Or if the Edge has already been flagged before then continue because we don't want to
-            // Flag area Edges or duplicate Nodes
+            // Or if the Edge has already been flagged before or if the Edge in bounds is the
+            // Edge that the bounds was drawn with then continue because we don't want to
+            // Flag area Edges, duplicate Nodes, already flagged Edges, or the Edge of interest
             if (edgeInBounds.getTag(AreaTag.KEY).isPresent()
                     || edgeInBounds.asPolyLine().length().equals(ZERO_LENGTH)
-                    || this.isFlagged(edgeInBounds.getIdentifier()))
+                    || this.isFlagged(edgeInBounds.getIdentifier())
+                    || edge.getIdentifier() == edgeInBounds.getIdentifier())
             {
                 continue;
             }
 
-            PolyLine edgeInBoundsPoly = edgeInBounds.asPolyLine();
+            final PolyLine edgeInBoundsPoly = edgeInBounds.asPolyLine();
 
-            if(edgeInBoundsPoly.intersects(edgePoly)) {
+            // Checks that either the edgeInBounds PolyLine overlaps the edgePoly or
+            // That the edgePoly overlaps the edgeInBoundsPoly
+            if (edgeInBoundsPoly.overlapsShapeOf(edgePoly)
+                    || edgePoly.overlapsShapeOf(edgeInBoundsPoly))
+            {
                 this.markAsFlagged(edgeInBounds.getIdentifier());
                 return Optional.of(this.createFlag(edgeInBounds,
                         this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));

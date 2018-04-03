@@ -81,7 +81,7 @@ public class DuplicateWaysCheckTest
     {
         this.verifier.actual(this.setup.duplicateEdgeNoCoverageTwoEdges(),
                 new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
 
     }
 }
