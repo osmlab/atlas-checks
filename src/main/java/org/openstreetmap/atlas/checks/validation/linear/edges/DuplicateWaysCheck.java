@@ -29,7 +29,7 @@ public class DuplicateWaysCheck extends BaseCheck
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(DUPLICATE_EDGE_INSTRUCTIONS);
-    private static final Distance ZERO_LENGTH = Distance.ZERO;
+    private static final Distance ZERO_DISTANCE = Distance.ZERO;
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -53,7 +53,7 @@ public class DuplicateWaysCheck extends BaseCheck
                 // Check to see that the edge is car navigable
                 && HighwayTag.isCarNavigableHighway(object)
                 // The edge is not part of an area
-                && !object.getTags().containsKey(AreaTag.KEY);
+                && !object.getTag(AreaTag.KEY).isPresent();
     }
 
     @Override
@@ -68,6 +68,7 @@ public class DuplicateWaysCheck extends BaseCheck
         final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds,
                 Edge::isMasterEdge);
 
+
         for (final Edge edgeInBounds : edgesInBounds)
         {
             // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
@@ -75,7 +76,7 @@ public class DuplicateWaysCheck extends BaseCheck
             // Edge that the bounds was drawn with then continue because we don't want to
             // Flag area Edges, duplicate Nodes, already flagged Edges, or the Edge of interest
             if (edgeInBounds.getTag(AreaTag.KEY).isPresent()
-                    || edgeInBounds.asPolyLine().length().equals(ZERO_LENGTH)
+                    || edgeInBounds.asPolyLine().length().equals(ZERO_DISTANCE)
                     || this.isFlagged(edgeInBounds.getIdentifier())
                     || edge.getIdentifier() == edgeInBounds.getIdentifier())
             {
@@ -84,10 +85,16 @@ public class DuplicateWaysCheck extends BaseCheck
 
             final PolyLine edgeInBoundsPoly = edgeInBounds.asPolyLine();
 
+            // Getting the longerEdge and subsetEdge are necessary as .overlapShapeOf() checks that
+            // the longerEdge is at least the same shape as the subsetEdge. If we were to call this
+            // method on the subsetEdge with the longerEdge as the parameter, it would return False.
+            PolyLine longerEdge = (edgePoly.length().isGreaterThan(edgeInBoundsPoly.length())) ?
+                    edgePoly : edgeInBoundsPoly;
+            PolyLine subsetEdge = (longerEdge == edgePoly) ? edgeInBoundsPoly : edgePoly;
+
             // Checks that either the edgeInBounds PolyLine overlaps the edgePoly or
             // That the edgePoly overlaps the edgeInBoundsPoly
-            if (edgeInBoundsPoly.overlapsShapeOf(edgePoly)
-                    || edgePoly.overlapsShapeOf(edgeInBoundsPoly))
+            if (longerEdge.overlapsShapeOf(subsetEdge))
             {
                 this.markAsFlagged(edgeInBounds.getIdentifier());
                 return Optional.of(this.createFlag(edgeInBounds,
