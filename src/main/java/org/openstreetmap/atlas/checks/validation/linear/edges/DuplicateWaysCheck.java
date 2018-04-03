@@ -68,7 +68,6 @@ public class DuplicateWaysCheck extends BaseCheck
         final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds,
                 Edge::isMasterEdge);
 
-
         for (final Edge edgeInBounds : edgesInBounds)
         {
             // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
@@ -88,8 +87,8 @@ public class DuplicateWaysCheck extends BaseCheck
             // Getting the longerEdge and subsetEdge are necessary as .overlapShapeOf() checks that
             // the longerEdge is at least the same shape as the subsetEdge. If we were to call this
             // method on the subsetEdge with the longerEdge as the parameter, it would return False.
-            PolyLine longerEdge = (edgePoly.length().isGreaterThan(edgeInBoundsPoly.length())) ?
-                    edgePoly : edgeInBoundsPoly;
+            PolyLine longerEdge = (edgePoly.length().isGreaterThan(edgeInBoundsPoly.length()))
+                    ? edgePoly : edgeInBoundsPoly;
             PolyLine subsetEdge = (longerEdge == edgePoly) ? edgeInBoundsPoly : edgePoly;
 
             // Checks that either the edgeInBounds PolyLine overlaps the edgePoly or

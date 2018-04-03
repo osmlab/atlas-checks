@@ -28,17 +28,18 @@ Our first goal is to validate the incoming Atlas Object. We know two things abou
 
 
 ```java
-   @Override
+    @Override
        public boolean validCheckForObject(final AtlasObject object)
        {
            return object instanceof Edge
-                   && ((Edge) object).isMasterEdge()
+                   // Check to see that the Edge is a master Edge
+                   && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                   // Check to see that the edge has not already been seen
+                   && !this.isFlagged(object.getIdentifier())
                    // Check to see that the edge is car navigable
                    && HighwayTag.isCarNavigableHighway(object)
                    // The edge is not part of an area
-                   && !object.getTags().containsKey(AREA_KEY)
-                   // The edge has not already been seen
-                   && !this.isFlagged(((Edge) object).getMasterEdgeIdentifier());
+                   && !object.getTag(AreaTag.KEY).isPresent();
        }
 ```
 
@@ -47,57 +48,51 @@ statements to validate whether we do in fact want to flag the feature for inspec
 
 ```java
     @Override
-       protected Optional<CheckFlag> flag(final AtlasObject object)
-       {
-           final Set<Segment> allEdgeSegments = new HashSet<>();
-           final Edge edge = (Edge) object;
-   
-           final Rectangle bounds = edge.asPolyLine().bounds();
-           // Get Edges which are contained by or intersect the bounds, and then filter
-           // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
-           final Iterable<Edge> edgesInBounds = Iterables.stream(edge.getAtlas().edgesIntersecting(bounds))
-                   .filter(Edge::isMasterEdge);
-   
-           for (final Edge edgeInBounds : edgesInBounds)
-           {
-               // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
-               // Or if the Edge has already been flagged before then continue because we don't want to
-               // Flag area Edges or duplicate Nodes
-               if (edgeInBounds.getTags().containsKey(AREA_KEY)
-                       || edgeInBounds.asPolyLine().length().equals(Distance.meters(ZERO_LENGTH))
-                       || this.isFlagged(edgeInBounds.getMasterEdgeIdentifier()))
-               {
-                   continue;
-               }
-   
-               // If the Set of Edges does not contain the Edge found in the bounds
-               if (!allEdgeSegments.containsAll(edgeInBounds.asPolyLine().segments()))
-               {
-                   final List<Segment> edgeInBoundsSegments = edgeInBounds.asPolyLine().segments();
-   
-                   for (final Segment segment : edgeInBoundsSegments)
-                   {
-                       // If a Segment in the Edge is found (check for partial duplication)
-                       if (allEdgeSegments.contains(segment))
-                       {
-                           this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
-                           return Optional.of(this.createFlag(edgeInBounds,
-                                   this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
-                       }
-                   }
-                   // Add all Segments flattened to the Set of Segments
-                   allEdgeSegments.addAll(edgeInBounds.asPolyLine().segments());
-               }
-               // A full duplicate Edge was found in the Set of allEdgePolyLines
-               else
-               {
-                   this.markAsFlagged(edgeInBounds.getMasterEdgeIdentifier());
-                   return Optional.of(this.createFlag(edgeInBounds,
-                           this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
-               }
-           }
-           return Optional.empty();
-       }
+        protected Optional<CheckFlag> flag(final AtlasObject object)
+        {
+            final Edge edge = (Edge) object;
+            final PolyLine edgePoly = edge.asPolyLine();
+    
+            final Rectangle bounds = edge.asPolyLine().bounds();
+            // Get Edges which are contained by or intersect the bounds, and then filter
+            // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
+            final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds,
+                    Edge::isMasterEdge);
+    
+            for (final Edge edgeInBounds : edgesInBounds)
+            {
+                // If the Edge found in the bounds has an area tag or if the Edge has a length of 0
+                // Or if the Edge has already been flagged before or if the Edge in bounds is the
+                // Edge that the bounds was drawn with then continue because we don't want to
+                // Flag area Edges, duplicate Nodes, already flagged Edges, or the Edge of interest
+                if (edgeInBounds.getTag(AreaTag.KEY).isPresent()
+                        || edgeInBounds.asPolyLine().length().equals(ZERO_DISTANCE)
+                        || this.isFlagged(edgeInBounds.getIdentifier())
+                        || edge.getIdentifier() == edgeInBounds.getIdentifier())
+                {
+                    continue;
+                }
+    
+                final PolyLine edgeInBoundsPoly = edgeInBounds.asPolyLine();
+    
+                // Getting the longerEdge and subsetEdge are necessary as .overlapShapeOf() checks that
+                // the longerEdge is at least the same shape as the subsetEdge. If we were to call this
+                // method on the subsetEdge with the longerEdge as the parameter, it would return False.
+                PolyLine longerEdge = (edgePoly.length().isGreaterThan(edgeInBoundsPoly.length())) ?
+                        edgePoly : edgeInBoundsPoly;
+                PolyLine subsetEdge = (longerEdge == edgePoly) ? edgeInBoundsPoly : edgePoly;
+    
+                // Checks that either the edgeInBounds PolyLine overlaps the edgePoly or
+                // That the edgePoly overlaps the edgeInBoundsPoly
+                if (longerEdge.overlapsShapeOf(subsetEdge))
+                {
+                    this.markAsFlagged(edgeInBounds.getIdentifier());
+                    return Optional.of(this.createFlag(edgeInBounds,
+                            this.getLocalizedInstruction(0, edgeInBounds.getOsmIdentifier())));
+                }
+            }
+            return Optional.empty();
+        }
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.
