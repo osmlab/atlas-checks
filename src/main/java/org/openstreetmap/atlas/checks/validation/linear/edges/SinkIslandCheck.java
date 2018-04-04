@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.AerowayTag;
@@ -109,8 +110,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
             if (outEdges.isEmpty())
             {
+
                 // Sink edge. Don't mark the edge explored until we know how big the tree is
                 terminal.add(candidate);
+
             }
             else
             {
@@ -131,6 +134,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
                     emptyFlag = true;
                     break;
                 }
+            }
+
+            if(candidates.peek() == null && hasAmenityTypeToExclude(candidate)) {
+                emptyFlag = true;
             }
 
             // Get the next candidate
@@ -178,7 +185,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore any airport taxiways and runways, as these often create a sink island
                 && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
                         AerowayTag.RUNWAY)
-                && !hasAmenityTagToExclude(object)
                 // Ignore edges that have been way sectioned at the border, as has high probability
                 // of creating a false positive due to the sectioning of the way
                 && !(SyntheticBoundaryNodeTag.isBoundaryNode(((Edge) object).end())
@@ -189,7 +195,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 && !TagPredicates.IS_AREA.test(object);
     }
 
-    private boolean hasAmenityTagToExclude(final AtlasObject object) {
-        return amenityTypesToExclude.contains(((Edge) object).end().getTag(AmenityTag.KEY).get().toUpperCase());
+    private boolean hasAmenityTypeToExclude(AtlasObject object) {
+        if (((Edge) object).end().getTag(AmenityTag.KEY).isPresent()) {
+            String tagValue = ((Edge) object).end().tag(AmenityTag.KEY);
+            return amenityTypesToExclude.contains(tagValue.toUpperCase());
+        }
+        return false;
     }
 }
