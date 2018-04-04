@@ -87,9 +87,9 @@ public class DuplicateWaysCheck extends BaseCheck
             // Getting the longerEdge and subsetEdge are necessary as .overlapShapeOf() checks that
             // the longerEdge is at least the same shape as the subsetEdge. If we were to call this
             // method on the subsetEdge with the longerEdge as the parameter, it would return False.
-            PolyLine longerEdge = (edgePoly.length().isGreaterThan(edgeInBoundsPoly.length()))
+            final PolyLine longerEdge = (edgePoly.length().isGreaterThan(edgeInBoundsPoly.length()))
                     ? edgePoly : edgeInBoundsPoly;
-            PolyLine subsetEdge = (longerEdge == edgePoly) ? edgeInBoundsPoly : edgePoly;
+            final PolyLine subsetEdge = (longerEdge == edgePoly) ? edgeInBoundsPoly : edgePoly;
 
             // Checks that either the edgeInBounds PolyLine overlaps the edgePoly or
             // That the edgePoly overlaps the edgeInBoundsPoly
