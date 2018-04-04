@@ -2,25 +2,24 @@ package org.openstreetmap.atlas.checks.validation.points;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.apache.directory.api.util.Strings;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
-import org.openstreetmap.atlas.geography.atlas.items.Relation;
-import org.openstreetmap.atlas.tags.AddressHousenumberTag;
 import org.openstreetmap.atlas.tags.AddressStreetTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+
+import com.google.common.base.Strings;
 
 /**
  * This check identifies Point objects in OSM that have a specified street number (addr:housenumber)
@@ -33,25 +32,22 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 public class AddressPointMatchCheck extends BaseCheck
 {
-    private static final long serialVersionUID = 1L;
-    public static final String NO_STREET_NAME_POINT_INSTRUCTIONS = "This node, {0,number,#}, has "
+    private static final long serialVersionUID = -756695185133616997L;
+    public static final String NO_STREET_NAME_POINT_INSTRUCTIONS = "This Node, {0,number,#}, has "
             + "no street name specified in the address. The street name should likely "
-            + "be one of {1}. These names were derived from nearby nodes.";
-    public static final String NO_STREET_NAME_EDGE_INSTRUCTIONS = "This node, {0,number,#}, has "
+            + "be one of {1}. These names were derived from nearby Nodes.";
+    public static final String NO_STREET_NAME_EDGE_INSTRUCTIONS = "This Node, {0,number,#}, has "
             + "no street name specified in the address. The street name should likely "
-            + "be one of {1}. These names were derived from nearby ways.";
+            + "be one of {1}. These names were derived from nearby Ways.";
     public static final String NO_SUGGESTED_NAMES_INSTRUCTIONS = "This node, {0,number,#}, has "
-            + "no street name specified in the address. No suggestions names were found as there were no"
-            + "nearby nodes or ways with street name key tags.";
+            + "no street name specified in the address. No suggestions names were found as there were no "
+            + "nearby Nodes or Ways with street name key tags.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             NO_STREET_NAME_POINT_INSTRUCTIONS, NO_STREET_NAME_EDGE_INSTRUCTIONS,
             NO_SUGGESTED_NAMES_INSTRUCTIONS);
-    private static final String ADDRESS_STREET_NUMBER_KEY = AddressHousenumberTag.KEY;
-    private static final String POINT_STREET_NAME_KEY = AddressStreetTag.KEY;
-    private static final String EDGE_STREET_NAME_KEY = NameTag.KEY;
     private static final String STREET_RELATION_ROLE = "street";
     private static final String ASSOCIATED_STREET_RELATION = "associatedStreet";
-    private static final double BOUNDS_SIZE_DEFAULT = 150.0;
+    private static final double BOUNDS_SIZE_DEFAULT = 75.0;
 
     private final Distance boundsSize;
 
@@ -75,11 +71,9 @@ public class AddressPointMatchCheck extends BaseCheck
         return object instanceof Point
                 // And does not have an Associated Street Relation
                 && !hasAssociatedStreetRelation(object)
-                // And has a street number specified
-                && object.getTag(ADDRESS_STREET_NUMBER_KEY).isPresent()
-                // And if the street name key has a value of null or if the street name key is not
-                // present
-                && Strings.isEmpty(object.tag(POINT_STREET_NAME_KEY));
+                // And either doesn't have the addr:street tag, has the tag but has a null value,
+                // or has the tag but has no value
+                && Strings.isNullOrEmpty(object.tag(AddressStreetTag.KEY));
     }
 
     /**
@@ -101,15 +95,15 @@ public class AddressPointMatchCheck extends BaseCheck
         // street name or do not have the street name key tag, and get a set of candidate street
         // names
         final Set<String> points = Iterables.stream(point.getAtlas().pointsWithin(box))
-                .filter(nearbyPoint -> nearbyPoint.getTag(POINT_STREET_NAME_KEY).isPresent())
-                .map(nearbyPoint -> nearbyPoint.tag(POINT_STREET_NAME_KEY)).collectToSet();
+                .map(nearbyPoint -> nearbyPoint.tag(AddressStreetTag.KEY)).filter(Objects::nonNull)
+                .collectToSet();
 
         // Get all Edges intersecting the bounding box, remove Edges that have null as their
         // street name or do not have the street name key tag, and get a set of candidate street
         // names
         final Set<String> edges = Iterables.stream(point.getAtlas().edgesIntersecting(box))
-                .filter(nearbyEdge -> nearbyEdge.getTag(EDGE_STREET_NAME_KEY).isPresent())
-                .map(nearbyEdge -> nearbyEdge.tag(EDGE_STREET_NAME_KEY)).collectToSet();
+                .map(nearbyEdge -> nearbyEdge.tag(NameTag.KEY)).filter(Objects::nonNull)
+                .collectToSet();
 
         // If there are no Points or Edges in the bounding box
         if (points.isEmpty() && edges.isEmpty())
@@ -135,32 +129,12 @@ public class AddressPointMatchCheck extends BaseCheck
 
     private boolean hasAssociatedStreetRelation(final AtlasObject object)
     {
-        // Initialize the rolePresent flag to false as we have not yet determined whether it is
-        // Part of the AssociatedStreet relation
-        boolean rolePresent = false;
         final Point point = (Point) object;
 
-        // Get all relations that the Point is associated with, filter to keep only relations
-        // Where type=associatedStreet
-        final Set<Relation> relations = point.relations().stream().filter(
+        return point.relations().stream().filter(
                 relation -> relation.tag(RelationTypeTag.KEY).equals(ASSOCIATED_STREET_RELATION))
-                .collect(Collectors.toSet());
-
-        // For each relation found in the Set of Relations
-        for (final Relation relation : relations)
-        {
-            if (rolePresent)
-            {
-                break;
-            }
-            // Get all members of that Relation, filter to keep only members where role:street
-            // And where the member is an Edge. Apply ! as having a non-empty Set here would
-            // indicate that the Relation with its correct member is present
-            rolePresent = !relation.members().stream()
-                    .filter(member -> member.getRole().equals(STREET_RELATION_ROLE)
-                            && member.getEntity().getType().equals(ItemType.EDGE))
-                    .collect(Collectors.toSet()).isEmpty();
-        }
-        return rolePresent;
+                .anyMatch(relation -> relation.members().stream()
+                        .anyMatch(member -> member.getRole().equals(STREET_RELATION_ROLE)
+                                && member.getEntity().getType().equals(ItemType.EDGE)));
     }
 }
