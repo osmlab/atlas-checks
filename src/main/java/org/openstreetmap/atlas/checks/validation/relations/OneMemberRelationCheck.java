@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
+import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -46,7 +47,24 @@ public class OneMemberRelationCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object) {
         Relation relation = (Relation) object;
-        if (relation.members().size() == 1) {
+        boolean flag = false;
+        // If the relation is a multipolygon
+        if (relation.isMultiPolygon()) {
+            // If there are members with the role:inner
+            final boolean isInner = relation.members().stream()
+                    .anyMatch(member ->
+                            member.getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER));
+
+            // If the only member of the relation has the role:inner
+            if ( isInner && relation.members().size() == 1) {
+                flag = true;
+            }
+        // If the relation has only one member
+        } else if (relation.members().size() == 1) {
+            flag = true;
+        }
+
+        if (flag) {
             return Optional.of(createFlag(relation,
                     this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
         }
