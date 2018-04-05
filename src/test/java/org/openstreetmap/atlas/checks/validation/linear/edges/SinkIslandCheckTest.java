@@ -33,4 +33,13 @@ public class SinkIslandCheckTest
                 ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
+
+    @Test
+    public void testSingleEdgeWithAmenity()
+    {
+        this.verifier.actual(this.setup.getSingleEdgeWithAmenityAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
 }
