@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,8 +26,8 @@ public class OneMemberRelationCheck extends BaseCheck
     public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
             + "one member.";
 
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            OMR_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList(OMR_INSTRUCTIONS);
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -47,19 +48,21 @@ public class OneMemberRelationCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object) {
         Relation relation = (Relation) object;
+        // Initialize a flag that will be flipped if the relation is found to be problematic
         boolean flag = false;
+
         // If the relation is a multipolygon
         if (relation.isMultiPolygon()) {
-            // If there are members with the role:inner
+            // Determine if there are members with the role:inner
             final boolean isInner = relation.members().stream()
                     .anyMatch(member ->
                             member.getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER));
 
-            // If the only member of the relation has the role:inner
-            if ( isInner && relation.members().size() == 1) {
+            // If the only member of the relation has the role:inner then we want to flag the relation
+            if (isInner && relation.members().size() == 1) {
                 flag = true;
             }
-        // If the relation has only one member
+        // If the relation has only one member and is not a multi-polygon
         } else if (relation.members().size() == 1) {
             flag = true;
         }
