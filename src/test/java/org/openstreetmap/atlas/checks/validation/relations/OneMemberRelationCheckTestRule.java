@@ -56,11 +56,75 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
                     tags = { "restriction=no_u_turn" }) })
     private Atlas oneMemberRelation;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            // edges
+            edges = {
+                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO) }, tags = { "highway=road" }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER)},
+                    tags = { "restriction=no_u_turn", "type=multipolygon" }) })
+    private Atlas oneMemberRelationMultipolygonInner;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            // edges
+            edges = {
+                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO) }, tags = { "highway=road" }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER)},
+                    tags = { "restriction=no_u_turn", "type=multipolygon" }) })
+    private Atlas oneMemberRelationMultipolygonOuter;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO) }, tags = { "highway=road" }),
+                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }, tags = { "highway=road" }),
+                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }, tags = { "highway=road" }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER),
+                    @Member(id = "2", type = "node", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER),
+                    @Member(id = "23", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) },
+                    tags = { "restriction=no_u_turn", "type=multipolygon" }) })
+    private Atlas validRelationMultipolygon;
+
     public Atlas getValidRelation() {
         return this.validRelation;
     }
 
     public Atlas getOneMemberRelation() {
         return this.oneMemberRelation;
+    }
+
+    public Atlas getOneMemberRelationMultipolygonInner()
+    {
+        return oneMemberRelationMultipolygonInner;
+    }
+
+    public Atlas getOneMemberRelationMultipolygonOuter()
+    {
+        return oneMemberRelationMultipolygonOuter;
+    }
+
+    public Atlas getValidRelationMultipolygon()
+    {
+        return validRelationMultipolygon;
     }
 }
