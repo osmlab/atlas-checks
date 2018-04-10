@@ -96,21 +96,17 @@ public class SnakeRoadCheck extends BaseCheck<Long>
         // of whether it's a snake road or not
         this.markAsFlagged(object.getOsmIdentifier());
 
-        // Check the base case - edge must have connected edges
-        if (!edge.connectedEdges().isEmpty())
+        // Instantiate the network walk with the starting edge
+        SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
+
+        // Walk the road
+        walk = walkNetwork(edge, walk);
+
+        // If we've found a snake road, create a flag
+        if (networkWalkQualifiesAsSnakeRoad(walk))
         {
-            // Instantiate the network walk with the starting edge
-            SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
-
-            // Walk the road
-            walk = walkNetwork(edge, walk);
-
-            // If we've found a snake road, create a flag
-            if (networkWalkQualifiesAsSnakeRoad(walk))
-            {
-                return Optional.of(createFlag(walk.getVisitedEdges(),
-                        this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-            }
+            return Optional.of(createFlag(walk.getVisitedEdges(),
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
 
         return Optional.empty();
