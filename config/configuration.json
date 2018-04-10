@@ -59,7 +59,8 @@
       "blurb": "Duplicate Nodes",
       "instruction": "Open your favorite editor and remove one or more of the duplicate nodes until only one remains.",
       "difficulty": "EASY"
-    },
+    }
+  },
    "DuplicatePointCheck": {
      "challenge": {
        "description": "Tasks contain node locations where duplicate points of interest are found.",
