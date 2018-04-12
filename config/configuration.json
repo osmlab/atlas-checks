@@ -65,7 +65,7 @@
      "challenge": {
        "description": "Tasks contain node locations where duplicate points of interest are found.",
        "blurb": "Duplicate Points",
-       "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains."
+       "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains.",
        "difficulty": "EASY"
      }
    },
