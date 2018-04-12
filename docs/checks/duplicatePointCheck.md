@@ -1,7 +1,10 @@
 # Duplicate Point Check
 
 #### Description
-This check flags Points when there are two or more in the exact same location.
+The Duplicate Point check flags Points in OSM that share the same location. Whether it's a street
+light, viewpoint, or tree, a Point represents something that exists at that location, therefore, we
+do not want points on top of each other. Also, as per the [One feature, one OSM element principle](https://wiki.openstreetmap.org/wiki/One_feature,_one_OSM_element), 
+we don't want instances of duplicate Points that represent the same feature. 
 
 #### Live Example
 The following examples illustrate two cases where there are two or more Points in the exact same location.
