@@ -133,8 +133,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
      */
     private boolean hasNoConnectedEdges(final Edge edge)
     {
-        // loop through all edges that are connected to the edge you are looking at
-        for (final Edge connectedEdge : edge.connectedEdges())
+        // Loop through all edges that are connected to the edge you are looking at
+        final Iterable<Edge> connectedEdges = edge.connectedEdges();
+        for (final Edge connectedEdge : connectedEdges)
         {
             // if edge is not null (ie. valid) and not the reverse edge then immediately return
             // false, and it can safely assumed that this particular edge is not a floating edge
