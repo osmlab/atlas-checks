@@ -15,23 +15,23 @@ public class DuplicatePointCheckTestRule extends CoreTestRule
 {
     private static final String TEST_1 = "37.3314171,-122.0304871";
 
-
     @TestAtlas(
             // points
-            points = {
-                    @Point(id = "1", coordinates = @Loc(value = TEST_1)) })
+            points = { @Point(id = "1", coordinates = @Loc(value = TEST_1)) })
     private Atlas singlePointAtlas;
     @TestAtlas(
             // points
-            points = {
-                    @Point(id = "2", coordinates = @Loc(value = TEST_1)),
-                    @Point(id="3", coordinates = @Loc(value = TEST_1)) })
+            points = { @Point(id = "2", coordinates = @Loc(value = TEST_1)),
+                    @Point(id = "3", coordinates = @Loc(value = TEST_1)) })
     private Atlas duplicatePointAtlas;
 
-    public Atlas singlePointAtlas() {
+    public Atlas singlePointAtlas()
+    {
         return this.singlePointAtlas;
     }
-    public Atlas duplicatePointAtlas() {
+
+    public Atlas duplicatePointAtlas()
+    {
         return this.duplicatePointAtlas;
     }
 
