@@ -1,18 +1,14 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
-import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
-import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -41,34 +37,44 @@ public class OneMemberRelationCheck extends BaseCheck
     }
 
     @Override
-    public boolean validCheckForObject(final AtlasObject object) {
-        return object instanceof Relation;
+    public boolean validCheckForObject(final AtlasObject object)
+    {
+        return object instanceof Relation && !this.isFlagged(object.getOsmIdentifier());
     }
 
     @Override
-    protected Optional<CheckFlag> flag(final AtlasObject object) {
-        Relation relation = (Relation) object;
+    protected Optional<CheckFlag> flag(final AtlasObject object)
+    {
+        final Relation relation = (Relation) object;
         // Initialize a flag that will be flipped if the relation is found to be problematic
         boolean flag = false;
 
         // If the relation is a multipolygon
-        if (relation.isMultiPolygon()) {
+        if (relation.isMultiPolygon())
+        {
             // Determine if there are members with the role:inner
-            final boolean isInner = relation.members().stream()
-                    .anyMatch(member ->
-                            member.getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER));
+            final boolean isInner = relation.members().stream().anyMatch(member -> member.getRole()
+                    .equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER));
 
-            // If the only member of the relation has the role:inner then we want to flag the relation
-            if (isInner && relation.members().size() == 1) {
+            // If the only member of the relation has the role:inner then we want to flag the
+            // relation
+            if (isInner && relation.members().size() == 1)
+            {
                 flag = true;
             }
-        // If the relation has only one member and is not a multi-polygon
-        } else if (relation.members().size() == 1) {
+            // If the relation has only one member and is not a multi-polygon
+        }
+        else if (relation.members().size() == 1)
+        {
             flag = true;
         }
 
-        if (flag) {
-            return Optional.of(createFlag(relation,
+        if (flag)
+        {
+            this.markAsFlagged(relation.getOsmIdentifier());
+            return Optional.of(createFlag(
+                    relation.members().stream().map(member -> member.getEntity())
+                            .collect(Collectors.toSet()),
                     this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
         }
         return Optional.empty();

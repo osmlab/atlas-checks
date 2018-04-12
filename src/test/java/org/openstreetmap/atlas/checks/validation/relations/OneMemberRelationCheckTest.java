@@ -57,5 +57,4 @@ public class OneMemberRelationCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
-
 }
