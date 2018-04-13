@@ -3,13 +3,16 @@ package org.openstreetmap.atlas.checks.validation.points;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -21,7 +24,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class DuplicatePointCheck extends BaseCheck<Location>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Duplicate Node {0,number,#} at {1}");
+            .asList("Nodes {0} are duplicates at {1}");
     private static final Distance ZERO_DISTANCE = Distance.ZERO;
     private static final long serialVersionUID = 8624313405718452123L;
 
@@ -52,20 +55,18 @@ public class DuplicatePointCheck extends BaseCheck<Location>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Point point = (Point) object;
-        if (!this.isFlagged(point.getLocation()))
+        this.markAsFlagged(point.getLocation());
+
+        final List<Point> duplicates = Iterables
+                .asList(object.getAtlas().pointsAt(point.getLocation()));
+        if (duplicates.size() > 1)
         {
-            final Rectangle box = point.getLocation().boxAround(ZERO_DISTANCE);
-            for (final Point dupe : object.getAtlas().pointsWithin(box))
-            {
-                if (object.getIdentifier() != dupe.getIdentifier()
-                        && dupe.getLocation().equals(point.getLocation()))
-                {
-                    this.markAsFlagged(point.getLocation());
-                    return Optional.of(createFlag(object, this.getLocalizedInstruction(0,
-                            object.getOsmIdentifier(), point.getLocation())));
-                }
-            }
+            final List<Long> duplicateIdentifiers = duplicates.stream()
+                    .map(duplicate -> duplicate.getOsmIdentifier()).collect(Collectors.toList());
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(0, duplicateIdentifiers, point.getLocation())));
         }
+
         return Optional.empty();
     }
 }
