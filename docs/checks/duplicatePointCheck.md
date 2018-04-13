@@ -21,41 +21,40 @@ In OpenStreetMap, the concept of Points does not exist, and are referred to as [
 
 Our first goal in the Duplicate Point check is to validate the incoming Atlas Object. The object:
 * Must be a valid Point
+* Location of the Point object must not have been seen before
 
 ```java
 @Override
-public boolean validCheckForObject(final AtlasObject object)
-{
-    return object instanceof Point;
-}
+    public boolean validCheckForObject(final AtlasObject object)
+    {
+        return object instanceof Point && !this.isFlagged(((Point) object).getLocation());
+    }
+
 ```
 
-Next, we check that a given Point object has not already been flagged. If this is the case, then
-we draw a bounds around the point and get all the points within the bounds. For each point found, we
-check that the Point of interest and the Point found in the box do not have the same identifier and
-that they have the same location. If this is true, we want to flag the Point of interest.
+Next, we get all Points at that Point's location. If there is more than 1 Point object found to be
+at that location, we mark the Points as flagged, get all the duplicate Point identifiers at
+that location, and flag them. Otherwise, we do not flag the Point.
 
 ```java
-@Override
-    protected Optional<CheckFlag> flag(final AtlasObject object)
-    {
-        final Point point = (Point) object;
-        if (!this.isFlagged(point.getLocation()))
-        {
-            final Rectangle box = point.getLocation().boxAround(Distance.meters(0));
-            for (final Point dupe : object.getAtlas().pointsWithin(box))
-            {
-                if (object.getIdentifier() != dupe.getIdentifier()
-                        && dupe.getLocation().equals(point.getLocation()))
-                {
-                    this.markAsFlagged(point.getLocation());
-                    return Optional.of(createFlag(object, this.getLocalizedInstruction(0,
-                            object.getOsmIdentifier(), point.getLocation())));
-                }
-            }
-        }
-        return Optional.empty();
-    }
+ @Override
+     protected Optional<CheckFlag> flag(final AtlasObject object)
+     {
+         final Point point = (Point) object;
+ 
+         final List<Point> duplicates = Iterables
+                 .asList(object.getAtlas().pointsAt(point.getLocation()));
+         if (duplicates.size() > 1)
+         {
+             duplicates.forEach(duplicate -> this.markAsFlagged(point.getLocation()));
+             final List<Long> duplicateIdentifiers = duplicates.stream()
+                     .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
+             return Optional.of(this.createFlag(object,
+                     this.getLocalizedInstruction(0, duplicateIdentifiers, point.getLocation())));
+         }
+ 
+         return Optional.empty();
+     }
 ```
 To learn more about the code, please look at the comments in the source code for the check.
 [DuplicatePointCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/points/DuplicatePointCheck.java)

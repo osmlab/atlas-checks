@@ -8,13 +8,12 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.scalars.Distance;
+
 
 /**
  * This check looks for two or more {@link Point}s that are in the exact same location.
@@ -25,7 +24,6 @@ public class DuplicatePointCheck extends BaseCheck<Location>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Nodes {0} are duplicates at {1}");
-    private static final Distance ZERO_DISTANCE = Distance.ZERO;
     private static final long serialVersionUID = 8624313405718452123L;
 
     @Override
@@ -48,21 +46,22 @@ public class DuplicatePointCheck extends BaseCheck<Location>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Point;
+
+        return object instanceof Point && !this.isFlagged(((Point) object).getLocation());
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Point point = (Point) object;
-        this.markAsFlagged(point.getLocation());
 
         final List<Point> duplicates = Iterables
                 .asList(object.getAtlas().pointsAt(point.getLocation()));
         if (duplicates.size() > 1)
         {
+            duplicates.forEach(duplicate -> this.markAsFlagged(point.getLocation()));
             final List<Long> duplicateIdentifiers = duplicates.stream()
-                    .map(duplicate -> duplicate.getOsmIdentifier()).collect(Collectors.toList());
+                    .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, duplicateIdentifiers, point.getLocation())));
         }
