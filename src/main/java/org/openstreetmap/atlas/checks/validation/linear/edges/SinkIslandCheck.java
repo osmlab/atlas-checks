@@ -157,7 +157,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         // We want to filter out any Edges whose end Node has an amenity tag equal to one of the
         // amenityValuesToExclude
         final Set<AtlasObject> filteredExploredEdges = explored.stream()
-                .filter(edge -> !endNodeHasAmenityTypeToExclude(edge)).collect(Collectors.toSet());
+                .filter(edge -> validEdge(edge)).collect(Collectors.toSet());
 
         if (!filteredExploredEdges.isEmpty())
         {
@@ -189,6 +189,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore any airport taxiways and runways, as these often create a sink island
                 && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
                         AerowayTag.RUNWAY)
+                // Ignore edges that have an amenity tag equal to one of the amenityValuesToExclude
+                && !endNodeHasAmenityTypeToExclude(object)
                 // Ignore edges that have been way sectioned at the border, as has high probability
                 // of creating a false positive due to the sectioning of the way
                 && !(SyntheticBoundaryNodeTag.isBoundaryNode(((Edge) object).end())
@@ -214,6 +216,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         final Optional<String> tagValue = edge.end().getTag(AmenityTag.KEY);
 
         return tagValue.isPresent()
-                && amenityValuesToExclude.contains(tagValue.get().toUpperCase());
+                && Validators.isOfType(edge, AmenityTag.class, AmenityTag.PARKING,
+                AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING, AmenityTag.PARKING_ENTRANCE);
     }
 }
