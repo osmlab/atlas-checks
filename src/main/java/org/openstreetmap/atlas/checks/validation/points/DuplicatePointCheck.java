@@ -58,7 +58,7 @@ public class DuplicatePointCheck extends BaseCheck<Location>
                 .asList(object.getAtlas().pointsAt(point.getLocation()));
         if (duplicates.size() > 1)
         {
-            duplicates.forEach(duplicate -> this.markAsFlagged(point.getLocation()));
+            this.markAsFlagged(point.getLocation());
             final List<Long> duplicateIdentifiers = duplicates.stream()
                     .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
             return Optional.of(this.createFlag(object,
