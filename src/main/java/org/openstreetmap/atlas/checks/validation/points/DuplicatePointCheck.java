@@ -14,7 +14,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-
 /**
  * This check looks for two or more {@link Point}s that are in the exact same location.
  *

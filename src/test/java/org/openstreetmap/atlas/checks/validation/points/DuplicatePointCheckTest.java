@@ -32,7 +32,7 @@ public class DuplicatePointCheckTest
     {
         this.verifier.actual(this.setup.duplicatePointAtlas(),
                 new DuplicatePointCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
 }
