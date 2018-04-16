@@ -37,6 +37,14 @@ public class WrongWayRoundaboutCheckTest
     }
 
     @Test
+    public void testClockwiseRoundaboutWithConnectionsRightDriving()
+    {
+        this.verifier.actual(this.setup.clockwiseRoundaboutWithConnectionsRightDriving(), check);
+
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testCounterClockwiseRoundaboutLeftDrivingAtlas()
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutLeftDrivingAtlas(), check);

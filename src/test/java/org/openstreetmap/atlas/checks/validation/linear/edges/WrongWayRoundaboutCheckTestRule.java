@@ -20,6 +20,8 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
     private static final String TEST_2 = "37.32544,-122.033948";
     private static final String TEST_3 = "37.33531,-122.009566";
     private static final String TEST_4 = "37.390535,-122.031007";
+    private static final String TEST_5 = "37.331460, -122.032579";
+    private static final String TEST_6 = "37.322020, -122.038963";
 
     // Clockwise roundabout, left driving country
     @TestAtlas(
@@ -67,6 +69,37 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
                             "iso_country_code=USA"}) })
     private Atlas clockwiseRoundaboutRightDrivingAtlas;
 
+    // Clockwise roundabout with valence of 2 (connected to nodes in roundabout)
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)) },
+            // edges
+            edges = {
+                    @Edge(id = "3456", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA"}),
+                    @Edge(id = "3457", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA"}),
+                    @Edge(id = "3458", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA"}),
+                    @Edge(id = "3459", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_1) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA"}),
+                    @Edge(id = "3460", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway",
+                            "iso_country_code=USA"}),
+                    @Edge(id = "3461", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_6) }, tags = { "highway=motorway",
+                            "iso_country_code=USA"}) })
+    private Atlas clockwiseRoundaboutWithConnectionsRightDriving;
+
     // Counterclockwise roundabout, left driving country
     @TestAtlas(
             // nodes
@@ -113,11 +146,15 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
                             "iso_country_code=USA" }) })
     private Atlas counterClockwiseRoundaboutRightDrivingAtlas;
 
+
     public Atlas clockwiseRoundaboutLeftDrivingAtlas() {
         return this.clockwiseRoundaboutLeftDrivingAtlas;
     }
     public Atlas clockwiseRoundaboutRightDrivingAtlas() {
         return this.clockwiseRoundaboutRightDrivingAtlas;
+    }
+    public Atlas clockwiseRoundaboutWithConnectionsRightDriving() {
+        return this.clockwiseRoundaboutWithConnectionsRightDriving;
     }
     public Atlas counterClockwiseRoundaboutLeftDrivingAtlas() {
         return this.counterClockwiseRoundaboutLeftDrivingAtlas;

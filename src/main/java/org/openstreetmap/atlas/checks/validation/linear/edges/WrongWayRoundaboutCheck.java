@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import org.apache.avro.generic.GenericData;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -20,8 +22,10 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
+import scala.Enumeration;
 
 /**
  * This check flags roundabouts where the directionality is opposite to what it should be.
@@ -86,10 +90,16 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         final Edge lastEdge = sortedRoundaboutEdges.get(sortedRoundaboutEdges.size() - 1);
         final String isoCountryCode = firstEdge.tag(ISOCountryTag.KEY).toUpperCase();
 
+        // Filter out all inEdges that do not have the junction=roundabout tag
+        final List<Edge> filteredInEdges = startNode.inEdges().stream()
+                .filter(inEdge ->
+                        Validators.isOfType(inEdge, JunctionTag.class, JunctionTag.ROUNDABOUT))
+                .collect(Collectors.toList());
+
         // Flag if the start Node of the first edge in the roundabout has the last Edge in the
         // roundabout as an incoming Edge (which means that the roundabout traffic is moving
         // Clockwise), and the ISO country code of the feature is not a left-driving country
-        if (startNode.inEdges().first().getIdentifier() == lastEdge.getIdentifier()
+        if (filteredInEdges.get(0).getIdentifier() == lastEdge.getIdentifier()
                 && !LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)) {
             return Optional.of(this.createFlag(roundaboutEdges,
                         this.getLocalizedInstruction(0, firstEdge.getOsmIdentifier())));
@@ -97,7 +107,7 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         // Flag if the start Node of the first edge in the roundabout does not have the last Edge
         // In the roundabout as an incoming Edge (which means that the roundabout traffic is moving
         // Counterclockwise), and the ISO country code of the feature is a left-driving country
-        else if (startNode.inEdges().first().getIdentifier() != lastEdge.getIdentifier()
+        else if (filteredInEdges.get(0).getIdentifier() != lastEdge.getIdentifier()
                 && LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)) {
             return Optional.of(this.createFlag(roundaboutEdges,
                     this.getLocalizedInstruction(0, firstEdge.getOsmIdentifier())));
