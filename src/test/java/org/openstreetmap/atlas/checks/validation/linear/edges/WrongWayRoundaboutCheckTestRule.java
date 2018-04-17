@@ -20,8 +20,6 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
     private static final String TEST_2 = "37.32544,-122.033948";
     private static final String TEST_3 = "37.33531,-122.009566";
     private static final String TEST_4 = "37.390535,-122.031007";
-    private static final String TEST_5 = "37.331460, -122.032579";
-    private static final String TEST_6 = "37.322020, -122.038963";
 
     // Clockwise roundabout, left driving country
     @TestAtlas(
@@ -68,7 +66,7 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
                                     "iso_country_code=USA" }) })
     private Atlas clockwiseRoundaboutRightDrivingAtlas;
-    
+
 
     // Counterclockwise roundabout, left driving country
     @TestAtlas(
@@ -124,11 +122,6 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
     public Atlas clockwiseRoundaboutRightDrivingAtlas()
     {
         return this.clockwiseRoundaboutRightDrivingAtlas;
-    }
-
-    public Atlas clockwiseRoundaboutWithConnectionsRightDriving()
-    {
-        return this.clockwiseRoundaboutWithConnectionsRightDriving;
     }
 
     public Atlas counterClockwiseRoundaboutLeftDrivingAtlas()
