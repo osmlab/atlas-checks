@@ -77,8 +77,7 @@ public class WrongWayRoundaboutCheck extends BaseCheck
 
         final Edge firstEdge = roundaboutEdges.get(0);
         final String isoCountryCode = firstEdge.tag(ISOCountryTag.KEY).toUpperCase();
-        final boolean isCounterClockwise = isCounterClockwise(firstEdge.start(),
-                firstEdge.end());
+        final boolean isCounterClockwise = isCounterClockwise(firstEdge.start(), firstEdge.end());
 
         if ((!isCounterClockwise && !LEFT_DRIVING_COUNTRIES.contains(isoCountryCode))
                 || (isCounterClockwise && LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)))
@@ -138,10 +137,10 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     }
 
     /**
-     * This method returns a boolean indicating whether on not the cross-product of two nodes
-     * in an Edge contained by a roundabout is greater than 0. If the cross-product in two-dimensions
-     * is greater than 0, this means that the roundabout is moving counter-clockwise. Otherwise,
-     * the roundabout is moving clockwise.
+     * This method returns a boolean indicating whether on not the cross-product of two nodes in an
+     * Edge contained by a roundabout is greater than 0. If the cross-product in two-dimensions is
+     * greater than 0, this means that the roundabout is moving counter-clockwise. Otherwise, the
+     * roundabout is moving clockwise.
      *
      * @param node1
      * @param node2

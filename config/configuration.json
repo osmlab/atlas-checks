@@ -240,5 +240,13 @@
       "defaultPriority": "MEDIUM"
     },
     "tags":"highway"
+  },
+  "WrongWayRoundaboutCheck" : {
+    "challenge": {
+      "description": "Tasks contain roundabouts that have traffic moving the wrong direction.",
+      "blurb": "Wrong way roundabouts",
+      "instruction": "Open your favorite editor and draw the roundabout in the opposite direction",
+      "difficulty": "EASY"
+    }
   }
 }
