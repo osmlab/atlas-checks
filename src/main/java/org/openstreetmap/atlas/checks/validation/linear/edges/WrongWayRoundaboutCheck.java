@@ -76,11 +76,15 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         final List<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
 
         final Edge firstEdge = roundaboutEdges.get(0);
+        final Edge secondEdge = roundaboutEdges.get(1);
+        final double firstEdgeHeading = firstEdge.overallHeading().get().asDegrees();
+        final double secondEdgeHeading = secondEdge.overallHeading().get().asDegrees();
         final String isoCountryCode = firstEdge.tag(ISOCountryTag.KEY).toUpperCase();
-        final boolean isCounterClockwise = isCounterClockwise(firstEdge.start(), firstEdge.end());
+        final boolean isCounterClockwise = firstEdgeHeading > secondEdgeHeading || (firstEdgeHeading <= 90 && secondEdgeHeading >= 270);
+        final boolean isLeftDrivingCountry = LEFT_DRIVING_COUNTRIES.contains(isoCountryCode);
 
-        if ((!isCounterClockwise && !LEFT_DRIVING_COUNTRIES.contains(isoCountryCode))
-                || (isCounterClockwise && LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)))
+        if ((!isCounterClockwise && !isLeftDrivingCountry)
+                || (isCounterClockwise && isLeftDrivingCountry))
         {
             return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
                     this.getLocalizedInstruction(0, firstEdge.getOsmIdentifier())));
@@ -134,26 +138,5 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         }
         roundaboutEdges.sort(Edge::compareTo);
         return roundaboutEdges;
-    }
-
-    /**
-     * This method returns a boolean indicating whether on not the cross-product of two nodes in an
-     * Edge contained by a roundabout is greater than 0. If the cross-product in two-dimensions is
-     * greater than 0, this means that the roundabout is moving counter-clockwise. Otherwise, the
-     * roundabout is moving clockwise.
-     *
-     * @param node1
-     * @param node2
-     * @return True if the roundabout is counterclockwise, and False if clockwise.
-     */
-    private static boolean isCounterClockwise(final Node node1, final Node node2)
-    {
-        final double node1Y = node1.getLocation().getLatitude().asDegrees();
-        final double node1X = node1.getLocation().getLongitude().asDegrees();
-
-        final double node2Y = node2.getLocation().getLatitude().asDegrees();
-        final double node2X = node2.getLocation().getLongitude().asDegrees();
-
-        return (node1X * node2Y) - (node1Y - node2X) > 0;
     }
 }
