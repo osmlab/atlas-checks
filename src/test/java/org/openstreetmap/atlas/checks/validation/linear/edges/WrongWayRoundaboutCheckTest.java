@@ -16,9 +16,11 @@ public class WrongWayRoundaboutCheckTest
 
     private final WrongWayRoundaboutCheck check = new WrongWayRoundaboutCheck(
             ConfigurationResolver.emptyConfiguration());
-    @Rule public WrongWayRoundaboutCheckTestRule setup = new WrongWayRoundaboutCheckTestRule();
+    @Rule
+    public WrongWayRoundaboutCheckTestRule setup = new WrongWayRoundaboutCheckTestRule();
 
-    @Rule public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+    @Rule
+    public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
     public void testClockwiseRoundaboutLeftDrivingAtlas()

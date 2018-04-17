@@ -3,35 +3,26 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.stream.Collectors;
 
-import org.apache.avro.generic.GenericData;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.scalars.Angle;
-import scala.Enumeration;
 
 /**
  * This check flags roundabouts where the directionality is opposite to what it should be.
  *
  * @author savannahostrowski
- *
  */
 
 public class WrongWayRoundaboutCheck extends BaseCheck
@@ -39,13 +30,14 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     private static final long serialVersionUID = -3018101860747289836L;
     public static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},"
             + " is going the wrong direction.";
-    public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(Arrays.asList("AIA", "ATG",
-            "AUS", "BHS", "BGD", "BRB", "BMU", "BTN", "BWA", "BRN", "CYM", "CXR", "CCK", "COK", "CYP",
-            "DMA", "FLK", "FJI", "GRD", "GGY", "GUY", "HKG", "IND", "IDN", "IRL", "IMN", "JAM", "JPN",
-            "JEY", "KEN", "KIR", "LSO", "MAC", "MWI", "MYS", "MDV", "MLT", "MUS", "MSR", "MOZ", "NAM",
-            "NRU", "NPL", "NZL", "NIU", "NFK", "PAK", "PNG", "PCN", "SHN", "KNA", "LCA", "VCT", "WSM",
-            "SYC", "SGP", "SLB", "ZAF", "SGS", "LKA", "SUR", "SWZ", "TZA", "THA", "TKL", "TON", "TTO",
-            "TCA", "TUV", "UGA", "GBR", "VGB", "VIR", "ZMB", "ZWE"));
+    public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(
+            Arrays.asList("AIA", "ATG", "AUS", "BHS", "BGD", "BRB", "BMU", "BTN", "BWA", "BRN",
+                    "CYM", "CXR", "CCK", "COK", "CYP", "DMA", "FLK", "FJI", "GRD", "GGY", "GUY",
+                    "HKG", "IND", "IDN", "IRL", "IMN", "JAM", "JPN", "JEY", "KEN", "KIR", "LSO",
+                    "MAC", "MWI", "MYS", "MDV", "MLT", "MUS", "MSR", "MOZ", "NAM", "NRU", "NPL",
+                    "NZL", "NIU", "NFK", "PAK", "PNG", "PCN", "SHN", "KNA", "LCA", "VCT", "WSM",
+                    "SYC", "SGP", "SLB", "ZAF", "SGS", "LKA", "SUR", "SWZ", "TZA", "THA", "TKL",
+                    "TON", "TTO", "TCA", "TUV", "UGA", "GBR", "VGB", "VIR", "ZMB", "ZWE"));
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(WRONG_WAY_INSTRUCTIONS);
 
@@ -62,11 +54,10 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     }
 
     @Override
-    public boolean validCheckForObject(final AtlasObject object) {
-        return object instanceof Edge
-                && JunctionTag.isRoundabout(object)
-                && !this.isFlagged(object.getIdentifier())
-                && ((Edge) object).isMasterEdge();
+    public boolean validCheckForObject(final AtlasObject object)
+    {
+        return object instanceof Edge && JunctionTag.isRoundabout(object)
+                && !this.isFlagged(object.getIdentifier()) && ((Edge) object).isMasterEdge();
     }
 
     /**
@@ -77,44 +68,27 @@ public class WrongWayRoundaboutCheck extends BaseCheck
      * @return an optional {@link CheckFlag} object that
      */
     @Override
-    protected Optional<CheckFlag> flag(final AtlasObject object) {
+    protected Optional<CheckFlag> flag(final AtlasObject object)
+    {
         final Edge edge = (Edge) object;
 
         // Get all edges in the roundabout
-        final Set<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
-        final List<Edge> sortedRoundaboutEdges = new ArrayList<>(roundaboutEdges);
-        sortedRoundaboutEdges.sort(Edge::compareTo);
+        final List<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
 
-        final Edge firstEdge = sortedRoundaboutEdges.get(0);
-        final Node startNode = firstEdge.start();
-        final Edge lastEdge = sortedRoundaboutEdges.get(sortedRoundaboutEdges.size() - 1);
+        final Edge firstEdge = roundaboutEdges.get(0);
         final String isoCountryCode = firstEdge.tag(ISOCountryTag.KEY).toUpperCase();
+        final boolean isCounterClockwise = isCounterClockwise(firstEdge.start(),
+                firstEdge.end());
 
-        // Filter out all inEdges that do not have the junction=roundabout tag
-        final List<Edge> filteredInEdges = startNode.inEdges().stream()
-                .filter(inEdge ->
-                        Validators.isOfType(inEdge, JunctionTag.class, JunctionTag.ROUNDABOUT))
-                .collect(Collectors.toList());
-
-        // Flag if the start Node of the first edge in the roundabout has the last Edge in the
-        // roundabout as an incoming Edge (which means that the roundabout traffic is moving
-        // Clockwise), and the ISO country code of the feature is not a left-driving country
-        if (filteredInEdges.get(0).getIdentifier() == lastEdge.getIdentifier()
-                && !LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)) {
-            return Optional.of(this.createFlag(roundaboutEdges,
-                        this.getLocalizedInstruction(0, firstEdge.getOsmIdentifier())));
-        }
-        // Flag if the start Node of the first edge in the roundabout does not have the last Edge
-        // In the roundabout as an incoming Edge (which means that the roundabout traffic is moving
-        // Counterclockwise), and the ISO country code of the feature is a left-driving country
-        else if (filteredInEdges.get(0).getIdentifier() != lastEdge.getIdentifier()
-                && LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)) {
-            return Optional.of(this.createFlag(roundaboutEdges,
+        if ((!isCounterClockwise && !LEFT_DRIVING_COUNTRIES.contains(isoCountryCode))
+                || (isCounterClockwise && LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)))
+        {
+            return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
                     this.getLocalizedInstruction(0, firstEdge.getOsmIdentifier())));
         }
+
         return Optional.empty();
     }
-
 
     /**
      * This method gets all edges in a roundabout given one edge in that roundabout, in ascending
@@ -122,11 +96,11 @@ public class WrongWayRoundaboutCheck extends BaseCheck
      *
      * @param edge
      *            An Edge object known to be a roundabout edge
-     * @return A set of edges in the roundabout
+     * @return A list of edges in the roundabout
      */
-    private Set<Edge> getAllRoundaboutEdges(final Edge edge)
+    private List<Edge> getAllRoundaboutEdges(final Edge edge)
     {
-        final Set<Edge> roundaboutEdges = new HashSet<>();
+        final List<Edge> roundaboutEdges = new ArrayList<>();
 
         // Initialize a queue to add yet to be processed connected edges to
         final Queue<Edge> queue = new LinkedList<>();
@@ -159,6 +133,28 @@ public class WrongWayRoundaboutCheck extends BaseCheck
                 }
             }
         }
+        roundaboutEdges.sort(Edge::compareTo);
         return roundaboutEdges;
+    }
+
+    /**
+     * This method returns a boolean indicating whether on not the cross-product of two nodes
+     * in an Edge contained by a roundabout is greater than 0. If the cross-product in two-dimensions
+     * is greater than 0, this means that the roundabout is moving counter-clockwise. Otherwise,
+     * the roundabout is moving clockwise.
+     *
+     * @param node1
+     * @param node2
+     * @return True if the roundabout is counterclockwise, and False if clockwise.
+     */
+    private static boolean isCounterClockwise(final Node node1, final Node node2)
+    {
+        final double node1Y = node1.getLocation().getLatitude().asDegrees();
+        final double node1X = node1.getLocation().getLongitude().asDegrees();
+
+        final double node2Y = node2.getLocation().getLatitude().asDegrees();
+        final double node2X = node2.getLocation().getLongitude().asDegrees();
+
+        return (node1X * node2Y) - (node1Y - node2X) > 0;
     }
 }

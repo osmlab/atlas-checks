@@ -109,16 +109,16 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_4)) },
             // edges
             edges = {
-                    @Edge(id = "1237", coordinates = { @Loc(value = TEST_1),
-                            @Loc(value = TEST_2) }, tags = { "junction=roundabout",
+                    @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_4) }, tags = { "junction=roundabout",
                             "iso_country_code=SGP" }),
-                    @Edge(id = "1236", coordinates = { @Loc(value = TEST_2),
+                    @Edge(id = "1235", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
                             "iso_country_code=SGP"}),
-                    @Edge(id = "1235", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "junction=roundabout",
+                    @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout",
                             "iso_country_code=SGP"}),
-                    @Edge(id = "1234", coordinates = { @Loc(value = TEST_4),
+                    @Edge(id = "1237", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
                             "iso_country_code=SGP"}) })
     private Atlas counterClockwiseRoundaboutLeftDrivingAtlas;
