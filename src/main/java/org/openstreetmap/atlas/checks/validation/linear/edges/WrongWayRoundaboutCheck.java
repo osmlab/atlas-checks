@@ -71,23 +71,21 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
+        final String isoCountryCode = edge.tag(ISOCountryTag.KEY).toUpperCase();
+
 
         // Get all edges in the roundabout
         final List<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
+        final boolean isClockwise = isClockwise(roundaboutEdges);
 
-        final Edge firstEdge = roundaboutEdges.get(0);
-        final Edge secondEdge = roundaboutEdges.get(1);
-        final String isoCountryCode = firstEdge.tag(ISOCountryTag.KEY).toUpperCase();
-        final boolean isClockwise = isClockwise(firstEdge.start(), firstEdge.end(),
-                secondEdge.end());
-
+        // If the roundabout traffic is clockwise in a right-driving country, or
+        // If the roundabout traffic is counterclockwise in a left-driving country
         if ((isClockwise && !LEFT_DRIVING_COUNTRIES.contains(isoCountryCode))
                 || (!isClockwise && LEFT_DRIVING_COUNTRIES.contains(isoCountryCode)))
         {
             return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
-                    this.getLocalizedInstruction(0, firstEdge.getOsmIdentifier())));
+                    this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
-
         return Optional.empty();
     }
 
@@ -139,32 +137,41 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     }
 
     /**
-     * This method returns a boolean indicating whether on not the cross-product of two nodes in an
-     * Edge contained by a roundabout is greater than 0. If the cross-product in two-dimensions is
-     * greater than 0, this means that the roundabout is moving counter-clockwise. Otherwise, the
-     * roundabout is moving clockwise.
+     * This method returns a boolean indicating whether or not a roundabout is moving in a
+     * clockwise direction.
      *
-     * @param node1
-     * @param node2
-     * @return True if the roundabout is counterclockwise, and False if clockwise.
+     * @param roundaboutEdges
+     *          A list of Edges in a roundabout
+     * @return True if the roundabout is clockwise, and False if counterclockwise.
      */
-    private static boolean isClockwise(final Node node1, final Node node2, final Node node3)
+    private static boolean isClockwise(final List<Edge> roundaboutEdges)
     {
-        final double node1Y = node1.getLocation().getLatitude().asDegrees();
-        final double node1X = node1.getLocation().getLongitude().asDegrees();
+        double crossProduct = 0;
+        int firstEdgeIndex = 0;
 
-        final double node2Y = node2.getLocation().getLatitude().asDegrees();
-        final double node2X = node2.getLocation().getLongitude().asDegrees();
+       while (crossProduct == 0)
+       {
+           Edge edge1 = roundaboutEdges.get(firstEdgeIndex);
+           Edge edge2 = roundaboutEdges.get(firstEdgeIndex + 1);
+           final double node1Y = edge1.start().getLocation().getLatitude().asDegrees();
+           final double node1X = edge1.start().getLocation().getLongitude().asDegrees();
 
-        final double node3Y = node3.getLocation().getLatitude().asDegrees();
-        final double node3X = node3.getLocation().getLongitude().asDegrees();
+           final double node2Y = edge1.end().getLocation().getLatitude().asDegrees();
+           final double node2X = edge1.end().getLocation().getLongitude().asDegrees();
 
-        final double vector1X = node2X - node1X;
-        final double vector1Y = node2Y - node1Y;
+           final double node3Y = edge2.end().getLocation().getLatitude().asDegrees();
+           final double node3X = edge2.end().getLocation().getLongitude().asDegrees();
 
-        final double vector2X = node2X - node3X;
-        final double vector2Y = node2Y - node3Y;
+           final double vector1X = node2X - node1X;
+           final double vector1Y = node2Y - node1Y;
 
-        return (vector1X * vector2Y) - (vector1Y * vector2X) > 0;
+           final double vector2X = node2X - node3X;
+           final double vector2Y = node2Y - node3Y;
+
+           crossProduct = (vector1X * vector2Y) - (vector1Y * vector2X);
+
+           firstEdgeIndex += 1;
+       }
+       return  crossProduct > 0;
     }
 }
