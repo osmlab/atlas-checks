@@ -40,6 +40,14 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(WRONG_WAY_INSTRUCTIONS);
 
+    // An enum to list out all the possibilities for roundabout direction
+    public enum roundaboutDirection
+    {
+        UNKNOWN,
+        CLOCKWISE,
+        COUNTERCLOCKWISE
+    }
+
     @Override
     protected List<String> getFallbackInstructions()
     {
@@ -73,7 +81,11 @@ public class WrongWayRoundaboutCheck extends BaseCheck
 
         // Get all edges in the roundabout
         final List<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
-        final roundaboutDirection direction = isClockwise(roundaboutEdges);
+
+        // Get the direction of the roundabout
+        final roundaboutDirection direction = findRoundaboutDirection(roundaboutEdges);
+
+        // Determine if the roundabout is in a left or right driving country
         final boolean isLeftDriving = LEFT_DRIVING_COUNTRIES.contains(isoCountryCode);
 
         // If the roundabout traffic is clockwise in a right-driving country, or
@@ -135,16 +147,17 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     }
 
     /**
-     * This method returns a boolean indicating whether or not a roundabout is moving in a clockwise
-     * direction.
+     * This method returns an roundaboutDirection enum which indicates direction of the flow of
+     * traffic based on the cross product of two adjacent edges.
      *
      * @see "https://en.wikipedia.org/wiki/Cross_product"
      * @see "https://en.wikipedia.org/wiki/Right-hand_rule"
      * @param roundaboutEdges
      *            A list of Edges in a roundabout
-     * @return True if the roundabout is clockwise, and False if counterclockwise.
+     * @return CLOCKWISE if cross product > 0, COUNTERCLOCKWISE if cross product < 0, and
+     *          UNKNOWN if cross product = 0
      */
-    private static roundaboutDirection isClockwise(final List<Edge> roundaboutEdges)
+    private static roundaboutDirection findRoundaboutDirection (final List<Edge> roundaboutEdges)
     {
         double crossProduct = 0;
         int firstEdgeIndex = 0;
@@ -175,6 +188,7 @@ public class WrongWayRoundaboutCheck extends BaseCheck
 
             firstEdgeIndex += 1;
         }
+
         if (crossProduct < 0)
         {
             return roundaboutDirection.COUNTERCLOCKWISE;
@@ -187,12 +201,5 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         {
             return roundaboutDirection.UNKNOWN;
         }
-    }
-
-    public enum roundaboutDirection
-    {
-        UNKNOWN,
-        CLOCKWISE,
-        COUNTERCLOCKWISE
     }
 }
