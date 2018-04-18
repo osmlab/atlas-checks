@@ -62,8 +62,14 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && JunctionTag.isRoundabout(object)
-                && !this.isFlagged(object.getIdentifier()) && ((Edge) object).isMasterEdge();
+        // We check that the object is an instance of Edge
+        return object instanceof Edge
+                // Make sure that the edges are instances of roundabout
+                && JunctionTag.isRoundabout(object)
+                // And that the Edge has not already been marked as flagged
+                && !this.isFlagged(object.getIdentifier())
+                // Make sure that we are only looking at master edges
+                && ((Edge) object).isMasterEdge();
     }
 
     /**
