@@ -189,17 +189,7 @@ public class WrongWayRoundaboutCheck extends BaseCheck
             firstEdgeIndex += 1;
         }
 
-        if (crossProduct < 0)
-        {
-            return roundaboutDirection.COUNTERCLOCKWISE;
-        }
-        else if (crossProduct > 0)
-        {
-            return roundaboutDirection.CLOCKWISE;
-        }
-        else
-        {
-            return roundaboutDirection.UNKNOWN;
-        }
+        return crossProduct < 0 ? roundaboutDirection.COUNTERCLOCKWISE :
+                (crossProduct < 0) ? roundaboutDirection.CLOCKWISE : roundaboutDirection.UNKNOWN;
     }
 }
