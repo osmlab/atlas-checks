@@ -190,6 +190,6 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         }
 
         return crossProduct < 0 ? roundaboutDirection.COUNTERCLOCKWISE :
-                (crossProduct < 0) ? roundaboutDirection.CLOCKWISE : roundaboutDirection.UNKNOWN;
+                (crossProduct > 0) ? roundaboutDirection.CLOCKWISE : roundaboutDirection.UNKNOWN;
     }
 }
