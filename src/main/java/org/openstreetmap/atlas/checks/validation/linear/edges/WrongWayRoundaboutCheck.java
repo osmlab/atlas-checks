@@ -16,6 +16,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.OneWayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -66,6 +67,8 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         return object instanceof Edge
                 // Make sure that the edges are instances of roundabout
                 && JunctionTag.isRoundabout(object)
+                // Is not two-way
+                && !OneWayTag.isExplicitlyTwoWay(object)
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
                 // Make sure that we are only looking at master edges
