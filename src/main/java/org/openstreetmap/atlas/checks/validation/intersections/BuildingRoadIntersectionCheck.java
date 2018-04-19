@@ -14,6 +14,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.tags.AmenityTag;
+import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
@@ -33,6 +35,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Building (id-{0,number,#}) intersects road (id-{1,number,#})");
+    private static final String ENTRANCE_KEY = "entrance";
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
@@ -43,15 +46,24 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
     {
+        // An invalid intersection is determined by checking that the highway is a core way
         return edge -> HighwayTag.isCoreWay(edge)
+                // And that the edge is not labelled as area=yes
+                && !Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
+                // And that no connected nodes have an entrance tag
+                && edge.connectedNodes().stream()
+                    .noneMatch(node -> node.getTag(ENTRANCE_KEY).isPresent())
+                // And if the edge intersects the building polygon
                 && edge.asPolyLine().intersects(building.asPolygon())
+                // And if the layers have the same layer value
                 && LayerTag.getTaggedValue(edge).orElse(0L)
                         .equals(LayerTag.getTaggedValue(building).orElse(0L))
+                // And if the building/edge intersection is not valid
                 && !isValidIntersection(building, edge);
     }
 
     /**
-     * An edge intersecting with a building that doesn't have the proper tags is only valid iff it
+     * An edge intersecting with a building that doesn't have the proper tags is only valid if it
      * intersects at one single node and that node is shared with an edge that has the proper tags
      * and it is not enclosed in the building
      *
@@ -70,12 +82,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 && !building.asPolygon().fullyGeometricallyEncloses(edge.asPolyLine()))
         {
             if (intersections.contains(edgeStart.getLocation())
-                    && edge.inEdges().stream().anyMatch(ignoreTags().negate()))
-            {
-                return true;
-            }
-            if (intersections.contains(edgeEnd.getLocation())
-                    && edge.outEdges().stream().anyMatch(ignoreTags().negate()))
+                    || intersections.contains(edgeEnd.getLocation()))
             {
                 return true;
             }
@@ -103,6 +110,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         // smallest of the three sets - buildings (for most countries). This may change over time.
         return object instanceof Area && BuildingTag.isBuilding(object)
                 && !HighwayTag.isHighwayArea(object)
+                && !Validators.isOfType(object, AmenityTag.class, AmenityTag.PARKING)
                 && !Validators.isOfType(object, BuildingTag.class, BuildingTag.ROOF);
     }
 
