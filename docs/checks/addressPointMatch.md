@@ -22,20 +22,23 @@ Our first goal is to validate the incoming Atlas object. Valid features for this
 the following conditions:
 * Must be a valid Point object
 * Must not be part of an associated street Relation
+* Must have an address house number tag
 * Must not have the addr:street tag, have the tag but with a null value, or have the tag but with no value
 
 ```java
- @Override
-     public boolean validCheckForObject(final AtlasObject object)
-     {
-         // Object is an instance of Point
-         return object instanceof Point
-                 // And does not have an Associated Street Relation
-                 && !hasAssociatedStreetRelation(object)
-                 // And either doesn't have the addr:street tag, has the tag but has a null value,
-                 // or has the tag but has no value
-                 && Strings.isNullOrEmpty(object.tag(AddressStreetTag.KEY));
-     }
+    @Override
+        public boolean validCheckForObject(final AtlasObject object)
+        {
+            // Object is an instance of Point
+            return object instanceof Point
+                    // And does not have an Associated Street Relation
+                    && !hasAssociatedStreetRelation(object)
+                    // And has an AddressHouseNumberTag
+                    && object.getTag(AddressHousenumberTag.KEY).isPresent()
+                    // And either doesn't have the addr:street tag, has the tag but has a null value,
+                    // or has the tag but has no value
+                    && Strings.isNullOrEmpty(object.tag(AddressStreetTag.KEY));
+        }
 ```
 
 After the preliminary filtering of features, we need to find candidates for populating each feature's

@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.tags.AddressHousenumberTag;
 import org.openstreetmap.atlas.tags.AddressStreetTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -71,6 +72,8 @@ public class AddressPointMatchCheck extends BaseCheck
         return object instanceof Point
                 // And does not have an Associated Street Relation
                 && !hasAssociatedStreetRelation(object)
+                // And has an AddressHouseNumberTag
+                && object.getTag(AddressHousenumberTag.KEY).isPresent()
                 // And either doesn't have the addr:street tag, has the tag but has a null value,
                 // or has the tag but has no value
                 && Strings.isNullOrEmpty(object.tag(AddressStreetTag.KEY));
@@ -127,6 +130,13 @@ public class AddressPointMatchCheck extends BaseCheck
         }
     }
 
+    /**
+     * This check determines whether an entity is part of an associated street relation.
+     *
+     * @param object
+     *            An Atlas entity
+     * @return True if the point is part of an associated street relation, false otherwise.
+     */
     private boolean hasAssociatedStreetRelation(final AtlasObject object)
     {
         final Point point = (Point) object;
