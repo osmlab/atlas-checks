@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.AddressStreetTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -131,8 +132,9 @@ public class AddressPointMatchCheck extends BaseCheck
     {
         final Point point = (Point) object;
 
-        return point.relations().stream().filter(
-                relation -> relation.tag(RelationTypeTag.KEY).equals(ASSOCIATED_STREET_RELATION))
+        return point.relations().stream()
+                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
+                        RelationTypeTag.ASSOCIATEDSTREET))
                 .anyMatch(relation -> relation.members().stream()
                         .anyMatch(member -> member.getRole().equals(STREET_RELATION_ROLE)
                                 && member.getEntity().getType().equals(ItemType.EDGE)));
