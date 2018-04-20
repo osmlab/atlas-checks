@@ -36,23 +36,28 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Building (id-{0,number,#}) intersects road (id-{1,number,#})");
     private static final String ENTRANCE_KEY = "entrance";
+    private static final String INDOOR_KEY = "indoor";
+    private static final String YES_VALUE = "yes";
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
     {
         return edge -> !(Validators.isOfType(edge, CoveredTag.class, CoveredTag.YES)
-                || Validators.isOfType(edge, TunnelTag.class, TunnelTag.BUILDING_PASSAGE));
+                || Validators.isOfType(edge, TunnelTag.class, TunnelTag.BUILDING_PASSAGE,
+                        TunnelTag.YES)
+                || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
+                || Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                || (edge.getTag(INDOOR_KEY).isPresent()
+                        && edge.getTag(INDOOR_KEY).equals(YES_VALUE))
+                || Validators.isOfType(edge, BuildingTag.class, BuildingTag.APARTMENTS)
+                || edge.connectedNodes().stream()
+                        .anyMatch(node -> node.getTag(ENTRANCE_KEY).isPresent()));
     }
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
     {
         // An invalid intersection is determined by checking that the highway is a core way
         return edge -> HighwayTag.isCoreWay(edge)
-                // And that the edge is not labelled as area=yes
-                && !Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
-                // And that no connected nodes have an entrance tag
-                && edge.connectedNodes().stream()
-                    .noneMatch(node -> node.getTag(ENTRANCE_KEY).isPresent())
                 // And if the edge intersects the building polygon
                 && edge.asPolyLine().intersects(building.asPolygon())
                 // And if the layers have the same layer value
