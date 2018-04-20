@@ -47,7 +47,6 @@ public class AddressPointMatchCheck extends BaseCheck
             NO_STREET_NAME_POINT_INSTRUCTIONS, NO_STREET_NAME_EDGE_INSTRUCTIONS,
             NO_SUGGESTED_NAMES_INSTRUCTIONS);
     private static final String STREET_RELATION_ROLE = "street";
-    private static final String ASSOCIATED_STREET_RELATION = "associatedStreet";
     private static final double BOUNDS_SIZE_DEFAULT = 75.0;
 
     private final Distance boundsSize;
