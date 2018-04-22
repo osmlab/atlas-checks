@@ -53,4 +53,12 @@ public class WrongWayRoundaboutCheckTest
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
+
+    @Test
+    public void testMultiDirectionalRoundaboutAtlas()
+    {
+        this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(), check);
+
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
 }

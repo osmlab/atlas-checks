@@ -135,6 +135,33 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
                                     "iso_country_code=USA" }) })
     private Atlas counterClockwiseRoundaboutRightDrivingAtlas;
 
+    // Multi-directional Atlas
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_3)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
+                            "iso_country_code=USA" }) })
+    private Atlas multiDirectionalRoundaboutAtlas;
+
     public Atlas clockwiseRoundaboutLeftDrivingAtlas()
     {
         return this.clockwiseRoundaboutLeftDrivingAtlas;
@@ -153,6 +180,11 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
     public Atlas counterClockwiseRoundaboutRightDrivingAtlas()
     {
         return this.counterClockwiseRoundaboutRightDrivingAtlas;
+    }
+
+    public Atlas multiDirectionalRoundaboutAtlas()
+    {
+        return this.multiDirectionalRoundaboutAtlas;
     }
 
 }
