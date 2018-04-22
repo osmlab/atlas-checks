@@ -30,6 +30,8 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     private static final long serialVersionUID = -3018101860747289836L;
     public static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},"
             + " is going the wrong direction.";
+    public static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#},"
+            + " is going the wrong direction.";
     public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(
             Arrays.asList("AIA", "ATG", "AUS", "BHS", "BGD", "BRB", "BMU", "BTN", "BWA", "BRN",
                     "CYM", "CXR", "CCK", "COK", "CYP", "DMA", "FLK", "FJI", "GRD", "GGY", "GUY",
@@ -38,15 +40,16 @@ public class WrongWayRoundaboutCheck extends BaseCheck
                     "NZL", "NIU", "NFK", "PAK", "PNG", "PCN", "SHN", "KNA", "LCA", "VCT", "WSM",
                     "SYC", "SGP", "SLB", "ZAF", "SGS", "LKA", "SUR", "SWZ", "TZA", "THA", "TKL",
                     "TON", "TTO", "TCA", "TUV", "UGA", "GBR", "VGB", "VIR", "ZMB", "ZWE"));
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
-            .singletonList(WRONG_WAY_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            WRONG_WAY_INSTRUCTIONS, MULTIDIRECTIONAL_INSTRUCTIONS);
 
     // An enum to list out all the possibilities for roundabout direction
-    public enum roundaboutDirection
+    public enum RoundaboutDirection
     {
-        UNKNOWN,
         CLOCKWISE,
-        COUNTERCLOCKWISE
+        COUNTERCLOCKWISE,
+        MULTIDIRECTIONAL,
+        UNKNOWN
     }
 
     @Override
@@ -92,15 +95,15 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         final List<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
 
         // Get the direction of the roundabout
-        final roundaboutDirection direction = findRoundaboutDirection(roundaboutEdges);
+        final RoundaboutDirection direction = findRoundaboutDirection(roundaboutEdges);
 
         // Determine if the roundabout is in a left or right driving country
         final boolean isLeftDriving = LEFT_DRIVING_COUNTRIES.contains(isoCountryCode);
 
         // If the roundabout traffic is clockwise in a right-driving country, or
         // If the roundabout traffic is counterclockwise in a left-driving country
-        if (direction.equals(roundaboutDirection.CLOCKWISE) && !isLeftDriving
-                || direction.equals(roundaboutDirection.COUNTERCLOCKWISE) && isLeftDriving)
+        if (direction.equals(RoundaboutDirection.CLOCKWISE) && !isLeftDriving
+                || direction.equals(RoundaboutDirection.COUNTERCLOCKWISE) && isLeftDriving)
         {
             return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
@@ -166,39 +169,51 @@ public class WrongWayRoundaboutCheck extends BaseCheck
      * @return CLOCKWISE if cross product > 0, COUNTERCLOCKWISE if cross product < 0, and
      *          UNKNOWN if cross product = 0
      */
-    private static roundaboutDirection findRoundaboutDirection (final List<Edge> roundaboutEdges)
+    private static RoundaboutDirection findRoundaboutDirection (final List<Edge> roundaboutEdges)
     {
-        double crossProduct = 0;
-        int firstEdgeIndex = 0;
+        RoundaboutDirection directionSoFar = RoundaboutDirection.UNKNOWN;
 
-        while (crossProduct == 0 && firstEdgeIndex + 1 < roundaboutEdges.size())
-        {
+        for (int i = 0; i < roundaboutEdges.size(); i++) {
             // Get the Edges to use in the cross product
-            final Edge edge1 = roundaboutEdges.get(firstEdgeIndex);
-            final Edge edge2 = roundaboutEdges.get(firstEdgeIndex + 1);
+            final Edge edge1 = roundaboutEdges.get(i);
+            final Edge edge2 = roundaboutEdges.get((i + 1) % roundaboutEdges.size());
 
-            // Get the nodes' latitudes and longitudes to use in deriving the vectors
-            final double node1Y = edge1.start().getLocation().getLatitude().asDegrees();
-            final double node1X = edge1.start().getLocation().getLongitude().asDegrees();
-            final double node2Y = edge1.end().getLocation().getLatitude().asDegrees();
-            final double node2X = edge1.end().getLocation().getLongitude().asDegrees();
-            final double node3Y = edge2.end().getLocation().getLatitude().asDegrees();
-            final double node3X = edge2.end().getLocation().getLongitude().asDegrees();
+            double crossProduct = getCrossProduct(edge1, edge2);
+            RoundaboutDirection direction = crossProduct < 0 ? RoundaboutDirection.COUNTERCLOCKWISE :
+                    (crossProduct > 0) ? RoundaboutDirection.CLOCKWISE : RoundaboutDirection.UNKNOWN;
 
-            // Get the vectors from node 2 to 1, and node 2 to 3
-            final double vector1X = node2X - node1X;
-            final double vector1Y = node2Y - node1Y;
-            final double vector2X = node2X - node3X;
-            final double vector2Y = node2Y - node3Y;
+            if(direction.equals(RoundaboutDirection.UNKNOWN)) {
+                continue;
+            }
 
-            // The cross product tells us the direction of the orthogonal vector, which is
-            // Directly related to the direction of rotation/traffic
-            crossProduct = (vector1X * vector2Y) - (vector1Y * vector2X);
-
-            firstEdgeIndex += 1;
+            if (directionSoFar.equals(RoundaboutDirection.UNKNOWN)) {
+                directionSoFar = direction;
+            }
+            else if (!directionSoFar.equals(direction)){
+                return RoundaboutDirection.MULTIDIRECTIONAL;
+            }
         }
+        return directionSoFar;
+    }
 
-        return crossProduct < 0 ? roundaboutDirection.COUNTERCLOCKWISE :
-                (crossProduct > 0) ? roundaboutDirection.CLOCKWISE : roundaboutDirection.UNKNOWN;
+    private static Double getCrossProduct(Edge edge1, Edge edge2) {
+
+        // Get the nodes' latitudes and longitudes to use in deriving the vectors
+        final double node1Y = edge1.start().getLocation().getLatitude().asDegrees();
+        final double node1X = edge1.start().getLocation().getLongitude().asDegrees();
+        final double node2Y = edge1.end().getLocation().getLatitude().asDegrees();
+        final double node2X = edge1.end().getLocation().getLongitude().asDegrees();
+        final double node3Y = edge2.end().getLocation().getLatitude().asDegrees();
+        final double node3X = edge2.end().getLocation().getLongitude().asDegrees();
+
+        // Get the vectors from node 2 to 1, and node 2 to 3
+        final double vector1X = node2X - node1X;
+        final double vector1Y = node2Y - node1Y;
+        final double vector2X = node2X - node3X;
+        final double vector2Y = node2Y - node3Y;
+
+        // The cross product tells us the direction of the orthogonal vector, which is
+        // Directly related to the direction of rotation/traffic
+        return (vector1X * vector2Y) - (vector1Y * vector2X);
     }
 }
