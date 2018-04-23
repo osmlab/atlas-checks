@@ -20,6 +20,7 @@ import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -46,9 +47,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || Validators.isOfType(edge, TunnelTag.class, TunnelTag.BUILDING_PASSAGE,
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
-                || Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                 || (edge.getTag(INDOOR_KEY).isPresent()
-                        && edge.getTag(INDOOR_KEY).equals(YES_VALUE))
+                        && edge.tag(INDOOR_KEY).equals(YES_VALUE))
+                || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                        && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY))
                 || Validators.isOfType(edge, BuildingTag.class, BuildingTag.APARTMENTS)
                 || edge.connectedNodes().stream()
                         .anyMatch(node -> node.getTag(ENTRANCE_KEY).isPresent()));
@@ -60,6 +62,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         return edge -> HighwayTag.isCoreWay(edge)
                 // And if the edge intersects the building polygon
                 && edge.asPolyLine().intersects(building.asPolygon())
+                // And ignore intersections where edge has highway=service and building has
+                // Amenity=fuel
+                && !(Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                        && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
                 // And if the layers have the same layer value
                 && LayerTag.getTaggedValue(edge).orElse(0L)
                         .equals(LayerTag.getTaggedValue(building).orElse(0L))
