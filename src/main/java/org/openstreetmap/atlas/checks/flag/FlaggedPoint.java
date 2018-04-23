@@ -7,6 +7,8 @@ import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A flag for a {@code point} {@link Location} P*
@@ -15,10 +17,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Point;
  */
 public class FlaggedPoint extends FlaggedObject
 {
-    private static final String NODE_TAG = "Node";
-    private static final String OSM_IDENTIFIER_TAG = "osmid";
-    private static final String POINT_TAG = "Point";
     private static final long serialVersionUID = -5912453173756416690L;
+    private static final Logger logger = LoggerFactory.getLogger(FlaggedPoint.class);
     private final Location point;
     private final Map<String, String> properties;
 
@@ -26,7 +26,7 @@ public class FlaggedPoint extends FlaggedObject
      * Default constructor
      * 
      * @param locationItem
-     *            the {@code locationItem} {@link Location} to flag
+     *            the {@link LocationItem} to flag
      */
     public FlaggedPoint(final LocationItem locationItem)
     {
@@ -57,24 +57,21 @@ public class FlaggedPoint extends FlaggedObject
     @SuppressWarnings("unchecked")
     private Map<String, String> initProperties(final LocationItem locationItem)
     {
-        try
+        final Map<String, String> tags = locationItem.getTags();
+        tags.put(ITEM_IDENTIFIER_TAG, locationItem.getIdentifier() + "");
+        tags.put(OSM_IDENTIFIER_TAG, locationItem.getOsmIdentifier() + "");
+        if (locationItem instanceof Node)
         {
-            final Map<String, String> tags = locationItem.getTags();
-            tags.put(ITEM_IDENTIFIER_TAG, locationItem.getIdentifier() + "");
-            tags.put(OSM_IDENTIFIER_TAG, locationItem.getOsmIdentifier() + "");
-            if (locationItem instanceof Node)
-            {
-                tags.put(ITEM_TYPE_TAG, NODE_TAG);
-            }
-            else if (locationItem instanceof Point)
-            {
-                tags.put(ITEM_TYPE_TAG, POINT_TAG);
-            }
-            return tags;
+            tags.put(ITEM_TYPE_TAG, NODE_TAG);
         }
-        catch (final Exception exception)
+        else if (locationItem instanceof Point)
         {
-            return Collections.EMPTY_MAP;
+            tags.put(ITEM_TYPE_TAG, POINT_TAG);
         }
+        else
+        {
+            logger.warn("Flagged LocationItem with unknown item type {}", locationItem);
+        }
+        return tags;
     }
 }
