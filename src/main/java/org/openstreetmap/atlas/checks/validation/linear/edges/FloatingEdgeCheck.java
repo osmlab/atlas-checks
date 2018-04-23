@@ -36,7 +36,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     public static final double DISTANCE_MINIMUM_METERS_DEFAULT = 100;
     // create a simple instruction stating the Edge with the supplied OSM Identifier is floating.
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Way '{0,number,#}' is floating. Ie. has no incoming or outgoing ways.");
+            .asList("Way {0,number,#} is floating. It has no incoming or outgoing ways.");
     private static final long serialVersionUID = -6867668561001117411L;
     // class variable to store the maximum distance for the floating road
     private final Distance maximumDistance;
@@ -133,8 +133,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
      */
     private boolean hasNoConnectedEdges(final Edge edge)
     {
-        // loop through all edges that are connected to the edge you are looking at
-        for (final Edge connectedEdge : edge.connectedEdges())
+        // Loop through all edges that are connected to the edge you are looking at
+        final Iterable<Edge> connectedEdges = edge.connectedEdges();
+        for (final Edge connectedEdge : connectedEdges)
         {
             // if edge is not null (ie. valid) and not the reverse edge then immediately return
             // false, and it can safely assumed that this particular edge is not a floating edge
