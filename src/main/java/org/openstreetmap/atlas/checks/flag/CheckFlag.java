@@ -136,7 +136,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         {
             if (object instanceof LocationItem)
             {
-                this.flaggedObjects.add(new FlaggedPoint(((LocationItem) object).getLocation()));
+                this.flaggedObjects.add(new FlaggedPoint((LocationItem) object));
             }
             else
             {
