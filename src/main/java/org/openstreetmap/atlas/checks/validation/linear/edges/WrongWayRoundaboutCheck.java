@@ -28,10 +28,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class WrongWayRoundaboutCheck extends BaseCheck
 {
     private static final long serialVersionUID = -3018101860747289836L;
-    public static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},"
-            + " is going the wrong direction.";
-    public static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#},"
-            + " is multi-directional.";
+    public static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},is going the"
+            + " wrong direction, or has been improperly tagged as a roundabout.";
+    public static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
+            + " multi-directional, or the roundabout has improper angle geometry." ;
     public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(
             Arrays.asList("AIA", "ATG", "AUS", "BHS", "BGD", "BRB", "BMU", "BTN", "BWA", "BRN",
                     "CYM", "CXR", "CCK", "COK", "CYP", "DMA", "FLK", "FJI", "GRD", "GGY", "GUY",
