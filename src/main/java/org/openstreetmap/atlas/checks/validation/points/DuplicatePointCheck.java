@@ -8,22 +8,28 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check looks for two or more {@link Node}s that are in the exact same location.
+ * This check looks for two or more {@link Point}s that are in the exact same location.
  *
- * @author cuthbertm
- * @author mgostintsev
+ * @author savannahostrowski
  */
-public class DuplicateNodeCheck extends BaseCheck<Location>
+public class DuplicatePointCheck extends BaseCheck<Location>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Nodes {0} are duplicates at {1}.");
-    private static final long serialVersionUID = 1055616456230649593L;
+            .asList("Nodes {0} are duplicates at {1}");
+    private static final long serialVersionUID = 8624313405718452123L;
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
 
     /**
      * Default constructor
@@ -31,7 +37,7 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
      * @param configuration
      *            the JSON configuration for this check
      */
-    public DuplicateNodeCheck(final Configuration configuration)
+    public DuplicatePointCheck(final Configuration configuration)
     {
         super(configuration);
     }
@@ -39,31 +45,26 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Node && !this.isFlagged(((Node) object).getLocation());
+
+        return object instanceof Point && !this.isFlagged(((Point) object).getLocation());
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Node node = (Node) object;
-        this.markAsFlagged(node.getLocation());
+        final Point point = (Point) object;
 
-        final List<Node> duplicates = Iterables
-                .asList(object.getAtlas().nodesAt(node.getLocation()));
+        final List<Point> duplicates = Iterables
+                .asList(object.getAtlas().pointsAt(point.getLocation()));
         if (duplicates.size() > 1)
         {
+            this.markAsFlagged(point.getLocation());
             final List<Long> duplicateIdentifiers = duplicates.stream()
-                    .map(duplicate -> duplicate.getOsmIdentifier()).collect(Collectors.toList());
+                    .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
             return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, duplicateIdentifiers, node.getLocation())));
+                    this.getLocalizedInstruction(0, duplicateIdentifiers, point.getLocation())));
         }
 
         return Optional.empty();
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 }
