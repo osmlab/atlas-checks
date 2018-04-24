@@ -5,8 +5,8 @@ This check flags roundabouts (Edges with tag junction=ROUNDABOUT) where the flow
 the wrong direction. These roundabouts can cause issues by directing vehicles into oncoming traffic.
 
 #### Live Example
-1) This roundabout [id:242413354](https://www.openstreetmap.org/way/242413354) has half of its
-edges going clockwise. This is incorrect in a right-driving country, and thus should be flagged.
+1) This roundabout [id:242413354](https://www.openstreetmap.org/way/242413354) is multi-directional and
+has some segment going the wrong way. This is incorrect and should be flagged.
 
 #### Code Review
 
