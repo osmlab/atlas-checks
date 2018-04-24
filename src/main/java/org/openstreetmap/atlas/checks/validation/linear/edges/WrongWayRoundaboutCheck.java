@@ -33,13 +33,13 @@ public class WrongWayRoundaboutCheck extends BaseCheck
     public static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
             + " multi-directional, or the roundabout has improper angle geometry." ;
     public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(
-            Arrays.asList("AIA", "ATG", "AUS", "BHS", "BGD", "BRB", "BMU", "BTN", "BWA", "BRN",
-                    "CYM", "CXR", "CCK", "COK", "CYP", "DMA", "FLK", "FJI", "GRD", "GGY", "GUY",
-                    "HKG", "IND", "IDN", "IRL", "IMN", "JAM", "JPN", "JEY", "KEN", "KIR", "LSO",
-                    "MAC", "MWI", "MYS", "MDV", "MLT", "MUS", "MSR", "MOZ", "NAM", "NRU", "NPL",
-                    "NZL", "NIU", "NFK", "PAK", "PNG", "PCN", "SHN", "KNA", "LCA", "VCT", "WSM",
-                    "SYC", "SGP", "SLB", "ZAF", "SGS", "LKA", "SUR", "SWZ", "TZA", "THA", "TKL",
-                    "TON", "TTO", "TCA", "TUV", "UGA", "GBR", "VGB", "VIR", "ZMB", "ZWE"));
+            Arrays.asList("AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
+                    "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
+                    "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM", "JEY", "JPN", "KEN", "KIR",
+                    "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ", "MSR", "MUS", "MWI",
+                    "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN", "PNG", "SGP",
+                    "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS", "TON",
+                    "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE"));
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             WRONG_WAY_INSTRUCTIONS, MULTIDIRECTIONAL_INSTRUCTIONS);
 
