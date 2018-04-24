@@ -47,13 +47,13 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || Validators.isOfType(edge, TunnelTag.class, TunnelTag.BUILDING_PASSAGE,
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
-                || (edge.getTag(INDOOR_KEY).isPresent()
-                        && edge.tag(INDOOR_KEY).equals(YES_VALUE))
+                || (edge.getTag(INDOOR_KEY).isPresent() && edge.tag(INDOOR_KEY).equals(YES_VALUE))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY))
                 || Validators.isOfType(edge, BuildingTag.class, BuildingTag.APARTMENTS)
                 || edge.connectedNodes().stream()
-                        .anyMatch(node -> node.getTag(ENTRANCE_KEY).isPresent()));
+                        .anyMatch(node -> node.getTag(ENTRANCE_KEY).isPresent() || Validators
+                                .isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE)));
     }
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
