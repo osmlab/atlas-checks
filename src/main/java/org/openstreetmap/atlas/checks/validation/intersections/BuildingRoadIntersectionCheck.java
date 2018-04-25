@@ -36,7 +36,6 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Building (id-{0,number,#}) intersects road (id-{1,number,#})");
-    private static final String ENTRANCE_KEY = "entrance";
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
     private static final long serialVersionUID = 5986017212661374165L;
@@ -51,9 +50,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY))
                 || Validators.isOfType(edge, BuildingTag.class, BuildingTag.APARTMENTS)
-                || edge.connectedNodes().stream()
-                        .anyMatch(node -> node.getTag(ENTRANCE_KEY).isPresent() || Validators
-                                .isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE)));
+                || edge.connectedNodes().stream().anyMatch(
+                        node -> Validators.isOfType(node, EntranceTag.class, EntranceTag.YES)
+                                || Validators.isOfType(node, AmenityTag.class,
+                                        AmenityTag.PARKING_ENTRANCE)));
     }
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
