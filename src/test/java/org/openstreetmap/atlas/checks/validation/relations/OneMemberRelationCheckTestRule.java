@@ -114,16 +114,16 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
 
     public Atlas getOneMemberRelationMultipolygonInner()
     {
-        return oneMemberRelationMultipolygonInner;
+        return this.oneMemberRelationMultipolygonInner;
     }
 
     public Atlas getOneMemberRelationMultipolygonOuter()
     {
-        return oneMemberRelationMultipolygonOuter;
+        return this.oneMemberRelationMultipolygonOuter;
     }
 
     public Atlas getValidRelationMultipolygon()
     {
-        return validRelationMultipolygon;
+        return this.validRelationMultipolygon;
     }
 }

@@ -9,7 +9,7 @@ is a multi-purpose data structure that documents a relationship between two or m
 #### Live Example
 The following examples illustrate two cases where a Relation contains only one member.
 1) This relation [id:4646212](https://www.openstreetmap.org/relation/4646212) has only one member.
-2) This relation [id:7691824](ttps://www.openstreetmap.org/relation/7691824) has only one member.
+2) This relation [id:7691824](https://www.openstreetmap.org/relation/7691824) has only one member.
 
 #### Code Review
 
