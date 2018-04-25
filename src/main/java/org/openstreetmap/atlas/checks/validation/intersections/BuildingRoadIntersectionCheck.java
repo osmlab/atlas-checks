@@ -49,7 +49,6 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || (edge.getTag(INDOOR_KEY).isPresent() && edge.tag(INDOOR_KEY).equals(YES_VALUE))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY))
-                || Validators.isOfType(edge, BuildingTag.class, BuildingTag.APARTMENTS)
                 || edge.connectedNodes().stream().anyMatch(
                         node -> Validators.isOfType(node, EntranceTag.class, EntranceTag.YES)
                                 || Validators.isOfType(node, AmenityTag.class,
