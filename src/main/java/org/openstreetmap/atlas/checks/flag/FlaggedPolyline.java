@@ -23,14 +23,6 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 public class FlaggedPolyline extends FlaggedObject
 {
     private static final long serialVersionUID = -1184306312148054279L;
-    private static final String AREA_TAG = "Area";
-    private static final String EDGE_TAG = "Edge";
-    private static final String OSM_IDENTIFIER_TAG = "osmid";
-    private static final String ITEM_IDENTIFIER_TAG = "ItemId";
-    private static final String ITEM_TYPE_TAG = "ItemType";
-    private static final String LINE_TAG = "Line";
-    private static final String NODE_TAG = "Node";
-    private static final String POINT_TAG = "Point";
 
     private final String country;
     private final PolyLine polyLine;
