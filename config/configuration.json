@@ -15,6 +15,16 @@
   "OrphanNodeCheck": {
 
   },
+  "AddressPointMatchCheck": {
+    "bounds.size": 150.0,
+    "challenge": {
+      "description": "Tasks contain nodes which either have no street name or incorrect street names",
+      "blurb": "Nodes without street names, or with incorrect street names",
+      "instruction": "Open your favorite editor and edit the node street names",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
+  },
   "AreasWithHighwayTagCheck":{
     "tag.filters":"highway->!pedestrian&area->!yes",
     "challenge":{
@@ -48,6 +58,22 @@
       "description": "Tasks contain node locations that have duplicate nodes found.",
       "blurb": "Duplicate Nodes",
       "instruction": "Open your favorite editor and remove one or more of the duplicate nodes until only one remains.",
+      "difficulty": "EASY"
+    }
+  },
+   "DuplicatePointCheck": {
+     "challenge": {
+       "description": "Tasks contain node locations where duplicate points of interest are found.",
+       "blurb": "Duplicate Points",
+       "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains.",
+       "difficulty": "EASY"
+     }
+   },
+  "DuplicateWaysCheck": {
+    "challenge": {
+      "description": "Tasks contain Ways which have been partially or completely duplicated.",
+      "blurb": "Duplicate Ways",
+      "instruction": "Open your favorite editor and remove the duplicated edges in the OSM way.",
       "difficulty": "EASY"
     }
   },
