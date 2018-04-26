@@ -116,6 +116,14 @@
       "tags":"highway"
     }
   },
+  "MalformedRoundaboutCheck" : {
+    "challenge": {
+      "description": "Tasks contain roundabouts that are malformed.",
+      "blurb": "Malformed roundabouts",
+      "instruction": "Open your favorite editor and fix the roundabout's geometry.",
+      "difficulty": "MEDIUM"
+    }
+  },
   "OneMemberRelationCheck": {
     "challenge": {
       "description": "Tasks containing relations with only one member.",
@@ -240,13 +248,5 @@
       "defaultPriority": "MEDIUM"
     },
     "tags":"highway"
-  },
-  "MalformedRoundaboutCheck" : {
-    "challenge": {
-      "description": "Tasks contain roundabouts that have traffic moving the wrong direction.",
-      "blurb": "Wrong way roundabouts",
-      "instruction": "Open your favorite editor and draw the roundabout in the opposite direction",
-      "difficulty": "EASY"
-    }
   }
 }
