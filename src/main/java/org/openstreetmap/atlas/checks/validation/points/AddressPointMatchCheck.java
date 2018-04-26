@@ -12,8 +12,10 @@ import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.tags.AddressHousenumberTag;
 import org.openstreetmap.atlas.tags.AddressStreetTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -46,7 +48,6 @@ public class AddressPointMatchCheck extends BaseCheck
             NO_STREET_NAME_POINT_INSTRUCTIONS, NO_STREET_NAME_EDGE_INSTRUCTIONS,
             NO_SUGGESTED_NAMES_INSTRUCTIONS);
     private static final String STREET_RELATION_ROLE = "street";
-    private static final String ASSOCIATED_STREET_RELATION = "associatedStreet";
     private static final double BOUNDS_SIZE_DEFAULT = 75.0;
 
     private final Distance boundsSize;
@@ -71,6 +72,8 @@ public class AddressPointMatchCheck extends BaseCheck
         return object instanceof Point
                 // And does not have an Associated Street Relation
                 && !hasAssociatedStreetRelation(object)
+                // And has an AddressHouseNumberTag
+                && object.getTag(AddressHousenumberTag.KEY).isPresent()
                 // And either doesn't have the addr:street tag, has the tag but has a null value,
                 // or has the tag but has no value
                 && Strings.isNullOrEmpty(object.tag(AddressStreetTag.KEY));
@@ -127,12 +130,20 @@ public class AddressPointMatchCheck extends BaseCheck
         }
     }
 
+    /**
+     * This check determines whether an entity is part of an associated street relation.
+     *
+     * @param object
+     *            An Atlas entity
+     * @return True if the point is part of an associated street relation, false otherwise.
+     */
     private boolean hasAssociatedStreetRelation(final AtlasObject object)
     {
         final Point point = (Point) object;
 
-        return point.relations().stream().filter(
-                relation -> relation.tag(RelationTypeTag.KEY).equals(ASSOCIATED_STREET_RELATION))
+        return point.relations().stream()
+                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
+                        RelationTypeTag.ASSOCIATEDSTREET))
                 .anyMatch(relation -> relation.members().stream()
                         .anyMatch(member -> member.getRole().equals(STREET_RELATION_ROLE)
                                 && member.getEntity().getType().equals(ItemType.EDGE)));
