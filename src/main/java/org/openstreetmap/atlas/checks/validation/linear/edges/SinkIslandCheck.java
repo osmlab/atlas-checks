@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
@@ -213,10 +214,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private boolean endNodeHasAmenityTypeToExclude(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Optional<String> tagValue = edge.end().getTag(AmenityTag.KEY);
+        final Node endNode = edge.end();
 
-        return tagValue.isPresent()
-                && Validators.isOfType(edge, AmenityTag.class, AmenityTag.PARKING,
-                AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING, AmenityTag.PARKING_ENTRANCE);
+        return Validators.isOfType(endNode, AmenityTag.class, AmenityTag.PARKING,
+                AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING,
+                AmenityTag.PARKING_ENTRANCE);
     }
 }
