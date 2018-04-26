@@ -7,17 +7,17 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
- * Tests for {@link WrongWayRoundaboutCheck}
+ * Tests for {@link MalformedRoundaboutCheck}
  *
  * @author savannahostrowski
  */
-public class WrongWayRoundaboutCheckTest
+public class MalformedRoundaboutCheckTest
 {
 
-    private final WrongWayRoundaboutCheck check = new WrongWayRoundaboutCheck(
+    private final MalformedRoundaboutCheck check = new MalformedRoundaboutCheck(
             ConfigurationResolver.emptyConfiguration());
     @Rule
-    public WrongWayRoundaboutCheckTestRule setup = new WrongWayRoundaboutCheckTestRule();
+    public MalformedRoundaboutCheckTestRule setup = new MalformedRoundaboutCheckTestRule();
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();

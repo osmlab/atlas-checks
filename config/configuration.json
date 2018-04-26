@@ -241,7 +241,7 @@
     },
     "tags":"highway"
   },
-  "WrongWayRoundaboutCheck" : {
+  "MalformedRoundaboutCheck" : {
     "challenge": {
       "description": "Tasks contain roundabouts that have traffic moving the wrong direction.",
       "blurb": "Wrong way roundabouts",

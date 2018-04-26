@@ -1,8 +1,8 @@
-# Wrong Way Roundabout Check
+# Malformed Roundabout Check
 
 #### Description
-This check flags roundabouts (Edges with tag junction=ROUNDABOUT) where the flow of traffic is in 
-the wrong direction. These roundabouts can cause issues by directing vehicles into oncoming traffic.
+This check flags roundabouts where the directionality is opposite to what it should be (for example, a counterclockwise roundabout in a right-driving country), where
+the roundabout is multi-directional, or where the roundabout has incorrect geometry (concave).
 
 #### Live Example
 1) This roundabout [id:242413354](https://www.openstreetmap.org/way/242413354) is multi-directional and
@@ -189,4 +189,4 @@ as well.
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.
-[WrongWayRoundaboutCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/WrongWayRoundaboutCheck.java)
+[MalformedRoundaboutCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/MalformedRoundaboutCheck.java)

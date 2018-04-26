@@ -8,12 +8,12 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
 /**
- * {@link WrongWayRoundaboutCheckTest} data generator
+ * {@link MalformedRoundaboutCheckTest} data generator
  *
  * @author savannahostrowski
  */
 
-public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
+public class MalformedRoundaboutCheckTestRule extends CoreTestRule
 {
     private static final String CLOCKWISE_1 = "38.905336130818505,-77.03197002410889";
     private static final String CLOCKWISE_2 = "38.90558660084624,-77.03158378601074";
@@ -147,19 +147,19 @@ public class WrongWayRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
-                            "iso_country_code=USA" }),
+                                    "iso_country_code=USA" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
                             @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
-                            "iso_country_code=USA" }),
+                                    "iso_country_code=USA" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
                             @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
-                            "iso_country_code=USA" }),
+                                    "iso_country_code=USA" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_2),
                             @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
-                            "iso_country_code=USA" }),
+                                    "iso_country_code=USA" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
-                            "iso_country_code=USA" }) })
+                                    "iso_country_code=USA" }) })
     private Atlas multiDirectionalRoundaboutAtlas;
 
     public Atlas clockwiseRoundaboutLeftDrivingAtlas()

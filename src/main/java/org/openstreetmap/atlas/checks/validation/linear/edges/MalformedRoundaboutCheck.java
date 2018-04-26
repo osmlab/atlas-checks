@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,18 +19,19 @@ import org.openstreetmap.atlas.tags.OneWayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check flags roundabouts where the directionality is opposite to what it should be.
+ * This check flags roundabouts where the directionality is opposite to what it should be, where the
+ * roundabout is multi-directional, or where the roundabout has incorrect geometry (concave).
  *
  * @author savannahostrowski
  */
 
-public class WrongWayRoundaboutCheck extends BaseCheck
+public class MalformedRoundaboutCheck extends BaseCheck
 {
     private static final long serialVersionUID = -3018101860747289836L;
     public static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
     public static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
-            + " multi-directional, or the roundabout has improper angle geometry." ;
+            + " multi-directional, or the roundabout has improper angle geometry.";
     public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(
             Arrays.asList("AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
                     "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
@@ -40,8 +40,8 @@ public class WrongWayRoundaboutCheck extends BaseCheck
                     "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN", "PNG", "SGP",
                     "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS", "TON",
                     "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE"));
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            WRONG_WAY_INSTRUCTIONS, MULTIDIRECTIONAL_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
+            MULTIDIRECTIONAL_INSTRUCTIONS);
 
     /**
      * An enum of RoundaboutDirections
@@ -60,7 +60,7 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         return FALLBACK_INSTRUCTIONS;
     }
 
-    public WrongWayRoundaboutCheck(final Configuration configuration)
+    public MalformedRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
     }
@@ -103,7 +103,8 @@ public class WrongWayRoundaboutCheck extends BaseCheck
         final boolean isLeftDriving = LEFT_DRIVING_COUNTRIES.contains(isoCountryCode);
 
         // If the roundabout is found to be going in multiple directions
-        if (direction.equals(RoundaboutDirection.MULTIDIRECTIONAL)) {
+        if (direction.equals(RoundaboutDirection.MULTIDIRECTIONAL))
+        {
             return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
                     this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
         }
@@ -172,19 +173,19 @@ public class WrongWayRoundaboutCheck extends BaseCheck
      * right-hand rule as it relates to the directionality of two vectors.
      *
      * @see "https://en.wikipedia.org/wiki/Right-hand_rule"
-     *
      * @param roundaboutEdges
      *            A list of Edges in a roundabout
      * @return CLOCKWISE or COUNTERCLOCKWISE if all the edges have positive or negative cross
-     *          products respectively, MULTIDIRECTIONAL if multiple directions are found in the same
-     *          roundabout, and UNKNOWN if all edge cross products are 0
+     *         products respectively, MULTIDIRECTIONAL if multiple directions are found in the same
+     *         roundabout, and UNKNOWN if all edge cross products are 0
      */
-    private static RoundaboutDirection findRoundaboutDirection (final List<Edge> roundaboutEdges)
+    private static RoundaboutDirection findRoundaboutDirection(final List<Edge> roundaboutEdges)
     {
         // Initialize the directionSoFar to UNKNOWN as we have no directional information yet
         RoundaboutDirection directionSoFar = RoundaboutDirection.UNKNOWN;
 
-        for (int i = 0; i < roundaboutEdges.size(); i++) {
+        for (int i = 0; i < roundaboutEdges.size(); i++)
+        {
             // Get the Edges to use in the cross product
             final Edge edge1 = roundaboutEdges.get(i);
             // We mod the roundabout edges here so that we can get the last pair of edges in the
@@ -193,23 +194,27 @@ public class WrongWayRoundaboutCheck extends BaseCheck
 
             // Get the cross product and then the direction of the roundabout
             double crossProduct = getCrossProduct(edge1, edge2);
-            RoundaboutDirection direction = crossProduct < 0 ? RoundaboutDirection.COUNTERCLOCKWISE :
-                    (crossProduct > 0) ? RoundaboutDirection.CLOCKWISE : RoundaboutDirection.UNKNOWN;
+            RoundaboutDirection direction = crossProduct < 0 ? RoundaboutDirection.COUNTERCLOCKWISE
+                    : (crossProduct > 0) ? RoundaboutDirection.CLOCKWISE
+                            : RoundaboutDirection.UNKNOWN;
 
             // If the direction is UNKNOWN then we continue to the next iteration because we do not
             // Have any new information about the roundabout's direction
-            if(direction.equals(RoundaboutDirection.UNKNOWN)) {
+            if (direction.equals(RoundaboutDirection.UNKNOWN))
+            {
                 continue;
             }
 
             // If the directionSoFar is UNKNOWN, and the direction derived from the current pair
             // Of edges is not UNKNOWN, make the directionSoFar equal to the current pair direction
-            if (directionSoFar.equals(RoundaboutDirection.UNKNOWN)) {
+            if (directionSoFar.equals(RoundaboutDirection.UNKNOWN))
+            {
                 directionSoFar = direction;
             }
             // Otherwise, if the directionSoFar and the direction are not equal, we know that the
             // Roundabout has segments going in different directions
-            else if (!directionSoFar.equals(direction)){
+            else if (!directionSoFar.equals(direction))
+            {
                 return RoundaboutDirection.MULTIDIRECTIONAL;
             }
         }
@@ -220,15 +225,14 @@ public class WrongWayRoundaboutCheck extends BaseCheck
      * This method returns the cross product between two adjacent edges.
      *
      * @see "https://en.wikipedia.org/wiki/Cross_product"
-     *
      * @param edge1
-     *          An Edge entity in the roundabout
+     *            An Edge entity in the roundabout
      * @param edge2
-     *          An Edge entity in the roundabout adjacent to edge1
-     * @return
-     *      A double corresponding to the cross product between two edges
+     *            An Edge entity in the roundabout adjacent to edge1
+     * @return A double corresponding to the cross product between two edges
      */
-    private static Double getCrossProduct(Edge edge1, Edge edge2) {
+    private static Double getCrossProduct(Edge edge1, Edge edge2)
+    {
 
         // Get the nodes' latitudes and longitudes to use in deriving the vectors
         final double node1Y = edge1.start().getLocation().getLatitude().asDegrees();
