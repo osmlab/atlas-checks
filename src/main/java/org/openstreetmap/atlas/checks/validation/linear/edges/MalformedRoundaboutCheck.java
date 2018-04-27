@@ -193,8 +193,9 @@ public class MalformedRoundaboutCheck extends BaseCheck
             final Edge edge2 = roundaboutEdges.get((i + 1) % roundaboutEdges.size());
 
             // Get the cross product and then the direction of the roundabout
-            double crossProduct = getCrossProduct(edge1, edge2);
-            RoundaboutDirection direction = crossProduct < 0 ? RoundaboutDirection.COUNTERCLOCKWISE
+            final double crossProduct = getCrossProduct(edge1, edge2);
+            final RoundaboutDirection direction = crossProduct < 0
+                    ? RoundaboutDirection.COUNTERCLOCKWISE
                     : (crossProduct > 0) ? RoundaboutDirection.CLOCKWISE
                             : RoundaboutDirection.UNKNOWN;
 
@@ -231,7 +232,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
      *            An Edge entity in the roundabout adjacent to edge1
      * @return A double corresponding to the cross product between two edges
      */
-    private static Double getCrossProduct(Edge edge1, Edge edge2)
+    private static Double getCrossProduct(final Edge edge1, final Edge edge2)
     {
 
         // Get the nodes' latitudes and longitudes to use in deriving the vectors
