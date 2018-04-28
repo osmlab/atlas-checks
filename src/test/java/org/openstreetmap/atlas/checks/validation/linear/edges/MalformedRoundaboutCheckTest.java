@@ -27,7 +27,7 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingAtlas(), check);
 
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -51,7 +51,7 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(), check);
 
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test

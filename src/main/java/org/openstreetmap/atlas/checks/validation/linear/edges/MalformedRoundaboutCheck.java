@@ -28,20 +28,21 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class MalformedRoundaboutCheck extends BaseCheck
 {
     private static final long serialVersionUID = -3018101860747289836L;
-    public static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},is going the"
+    private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
-    public static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
+    private static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
             + " multi-directional, or the roundabout has improper angle geometry.";
-    public static final Set<String> LEFT_DRIVING_COUNTRIES = new HashSet<>(
-            Arrays.asList("AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
-                    "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
-                    "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM", "JEY", "JPN", "KEN", "KIR",
-                    "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ", "MSR", "MUS", "MWI",
-                    "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN", "PNG", "SGP",
-                    "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS", "TON",
-                    "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE"));
+    private static final String[] LEFT_DRIVING_COUNTRIES_DEFAULT = { "AIA", "ATG", "AUS", "BGD",
+            "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM", "CYP", "DMA",
+            "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM",
+            "JEY", "JPN", "KEN", "KIR", "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ",
+            "MSR", "MUS", "MWI", "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN",
+            "PNG", "SGP", "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS",
+            "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE" };
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
             MULTIDIRECTIONAL_INSTRUCTIONS);
+
+    private Set<String> leftDrivingCountries;
 
     /**
      * An enum of RoundaboutDirections
@@ -50,7 +51,10 @@ public class MalformedRoundaboutCheck extends BaseCheck
     {
         CLOCKWISE,
         COUNTERCLOCKWISE,
+        // Handles the case where multiple directions were found in the roundabout
         MULTIDIRECTIONAL,
+        // Handles the case where we were unable to get any information about the roundabout's
+        // Direction or if the roundabout's geometry was malformed (concave).
         UNKNOWN
     }
 
@@ -63,6 +67,9 @@ public class MalformedRoundaboutCheck extends BaseCheck
     public MalformedRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
+        this.leftDrivingCountries = new HashSet<>(
+                Arrays.asList((String[]) configurationValue(configuration, "left.driving.countries",
+                        LEFT_DRIVING_COUNTRIES_DEFAULT)));
     }
 
     @Override
@@ -70,6 +77,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
     {
         // We check that the object is an instance of Edge
         return object instanceof Edge
+                // Make sure that the object has an iso_country_code
+                && object.getTag(ISOCountryTag.KEY).isPresent()
                 // Make sure that the edges are instances of roundabout
                 && JunctionTag.isRoundabout(object)
                 // Is not two-way
@@ -100,7 +109,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
         final RoundaboutDirection direction = findRoundaboutDirection(roundaboutEdges);
 
         // Determine if the roundabout is in a left or right driving country
-        final boolean isLeftDriving = LEFT_DRIVING_COUNTRIES.contains(isoCountryCode);
+        final boolean isLeftDriving = leftDrivingCountries.contains(isoCountryCode);
 
         // If the roundabout is found to be going in multiple directions
         if (direction.equals(RoundaboutDirection.MULTIDIRECTIONAL))
@@ -147,7 +156,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
 
             roundaboutEdges.add(currentEdge);
 
-            // Get the edges connected to the edge e as an iterator
+            // Get the edges connected to the edge as an iterator
             final Set<Edge> connectedEdges = currentEdge.connectedEdges();
 
             for (final Edge connectedEdge : connectedEdges)
@@ -177,7 +186,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
      *            A list of Edges in a roundabout
      * @return CLOCKWISE or COUNTERCLOCKWISE if all the edges have positive or negative cross
      *         products respectively, MULTIDIRECTIONAL if multiple directions are found in the same
-     *         roundabout, and UNKNOWN if all edge cross products are 0
+     *         roundabout, and UNKNOWN if all edge cross products are 0 or if the roundabout's
+     *         geometry is malformed
      */
     private static RoundaboutDirection findRoundaboutDirection(final List<Edge> roundaboutEdges)
     {
@@ -191,7 +201,6 @@ public class MalformedRoundaboutCheck extends BaseCheck
             // We mod the roundabout edges here so that we can get the last pair of edges in the
             // Roundabout correctly
             final Edge edge2 = roundaboutEdges.get((i + 1) % roundaboutEdges.size());
-
             // Get the cross product and then the direction of the roundabout
             final double crossProduct = getCrossProduct(edge1, edge2);
             final RoundaboutDirection direction = crossProduct < 0

@@ -117,6 +117,13 @@
     }
   },
   "MalformedRoundaboutCheck" : {
+    "left.driving.countries":["AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
+      "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
+      "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM", "JEY", "JPN", "KEN", "KIR",
+      "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ", "MSR", "MUS", "MWI",
+      "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN", "PNG", "SGP",
+      "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS", "TON",
+      "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE"],
     "challenge": {
       "description": "Tasks contain roundabouts that are malformed.",
       "blurb": "Malformed roundabouts",
