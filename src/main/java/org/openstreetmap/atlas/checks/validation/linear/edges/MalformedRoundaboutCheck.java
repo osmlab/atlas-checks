@@ -68,7 +68,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     {
         super(configuration);
         this.leftDrivingCountries = new HashSet<>(
-                Arrays.asList((String[]) configurationValue(configuration, "left.driving.countries",
+                Arrays.asList((String[]) configurationValue(configuration, "traffic.countries.left",
                         LEFT_DRIVING_COUNTRIES_DEFAULT)));
     }
 
