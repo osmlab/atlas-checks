@@ -155,19 +155,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
         // process all those edges
         explored.forEach(marked -> this.markAsFlagged(marked.getIdentifier()));
 
-        // We want to filter out any Edges whose end Node has an amenity tag equal to one of the
-        // amenityValuesToExclude
-        final Set<AtlasObject> filteredExploredEdges = explored.stream()
-                .filter(edge -> validEdge(edge)).collect(Collectors.toSet());
-
-        if (!filteredExploredEdges.isEmpty())
-        {
-            // Create the flag if and only if the empty flag value is not set to false
-            return emptyFlag ? Optional.empty()
-                    : Optional
-                            .of(createFlag(filteredExploredEdges, this.getLocalizedInstruction(0)));
-        }
-        return Optional.empty();
+        // Create the flag if and only if the empty flag value is not set to false
+        return emptyFlag ? Optional.empty()
+                : Optional.of(createFlag(explored, this.getLocalizedInstruction(0)));
     }
 
     @Override
