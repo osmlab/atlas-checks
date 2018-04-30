@@ -19,17 +19,20 @@ the `junction=roundabout` tag. We’ll use this information to filter our potent
 
 Our first goal is to validate the incoming Atlas Object. We know two things about roundabouts:
 * Must be a valid Edge
+* Must have an `iso_country_code` tag
 * Must have not already been flagged
 * Must have `junction=roundabout` tag
 * Must not be two way
 * Must be master edge
 
 ```java
-     @Override
+      @Override
          public boolean validCheckForObject(final AtlasObject object)
          {
              // We check that the object is an instance of Edge
              return object instanceof Edge
+                     // Make sure that the object has an iso_country_code
+                     && object.getTag(ISOCountryTag.KEY).isPresent()
                      // Make sure that the edges are instances of roundabout
                      && JunctionTag.isRoundabout(object)
                      // Is not two-way
