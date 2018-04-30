@@ -30,27 +30,34 @@ Relation objects. Therefore, we use:
 ```
 
 After the preliminary filtering of features, we get the members of that relation. If the number of
-members in the relation is 1, and the relation is either not a Multipolygon relation or the sole 
-member is role:inner, then we flag the relation as problematic.
+members in the relation is 1, then we flag the relation as problematic. One thing to note is that 
+multi-polygon relations with one member are flagged with a more specific instruction than the
+regular one member relation.
 
 ```java
       @Override
-         protected Optional<CheckFlag> flag(final AtlasObject object)
-         {
-             final Relation relation = (Relation) object;
-             final RelationMemberList members = relation.members();
-             
-             if (members.size() == 1 && (!relation.isMultiPolygon()
-                     || members.iterator().next()
-                             .getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER))) {
-                 
-                 return Optional.of(createFlag(
-                         relation.members().stream().map(RelationMember::getEntity)
-                                 .collect(Collectors.toSet()),
-                         this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
-             }
-             return Optional.empty();
-         }
+          protected Optional<CheckFlag> flag(final AtlasObject object)
+          {
+              final Relation relation = (Relation) object;
+              final RelationMemberList members = relation.members();
+      
+              // If the number of members in the relation is 1
+              if (members.size() == 1)
+              {
+                  // If the relation is a multi-polygon,
+                  if (relation.isMultiPolygon()) {
+                      return Optional.of(createFlag(
+                              relation.members().stream().map(RelationMember::getEntity)
+                                      .collect(Collectors.toSet()),
+                              this.getLocalizedInstruction(1, relation.getOsmIdentifier())));
+                  }
+                  return Optional.of(createFlag(
+                          relation.members().stream().map(RelationMember::getEntity)
+                                  .collect(Collectors.toSet()),
+                          this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
+              }
+              return Optional.empty();
+          }
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.

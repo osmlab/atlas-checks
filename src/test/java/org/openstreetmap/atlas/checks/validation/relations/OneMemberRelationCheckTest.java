@@ -47,7 +47,7 @@ public class OneMemberRelationCheckTest
     public void testOneMemberRelationMultipolygonOuter()
     {
         this.verifier.actual(this.setup.getOneMemberRelationMultipolygonOuter(), check);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
