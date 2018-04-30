@@ -25,7 +25,7 @@ Relation objects. Therefore, we use:
     @Override
         public boolean validCheckForObject(final AtlasObject object)
         {
-            return object instanceof Relation && !this.isFlagged(object);
+            return object instanceof Relation;
         }
 ```
 
@@ -43,8 +43,7 @@ member is role:inner, then we flag the relation as problematic.
              if (members.size() == 1 && (!relation.isMultiPolygon()
                      || members.iterator().next()
                              .getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER))) {
-     
-                 this.markAsFlagged(relation);
+                 
                  return Optional.of(createFlag(
                          relation.members().stream().map(RelationMember::getEntity)
                                  .collect(Collectors.toSet()),

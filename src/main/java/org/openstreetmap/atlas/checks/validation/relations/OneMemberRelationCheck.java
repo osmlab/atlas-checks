@@ -41,7 +41,7 @@ public class OneMemberRelationCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Relation && !this.isFlagged(object);
+        return object instanceof Relation;
     }
 
     @Override
@@ -55,8 +55,7 @@ public class OneMemberRelationCheck extends BaseCheck
         if (members.size() == 1 && (!relation.isMultiPolygon() || members.iterator().next()
                 .getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER)))
         {
-
-            this.markAsFlagged(relation);
+            
             return Optional.of(createFlag(
                     relation.members().stream().map(RelationMember::getEntity)
                             .collect(Collectors.toSet()),
