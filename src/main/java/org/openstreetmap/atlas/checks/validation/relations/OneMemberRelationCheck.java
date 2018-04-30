@@ -10,6 +10,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
+import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -40,39 +41,22 @@ public class OneMemberRelationCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Relation && !this.isFlagged(object.getOsmIdentifier());
+        return object instanceof Relation && !this.isFlagged(object);
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Relation relation = (Relation) object;
-        // Initialize a flag that will be flipped if the relation is found to be problematic
-        boolean flag = false;
+        final RelationMemberList members = relation.members();
 
-        // If the relation is a multipolygon
-        if (relation.isMultiPolygon())
+        // If the number of members in the relation is 1, and the relation is either not a
+        // Multipolygon relation or the sole member is role:inner
+        if (members.size() == 1 && (!relation.isMultiPolygon() || members.iterator().next()
+                .getRole().equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER)))
         {
-            // Determine if there are members with the role:inner
-            final boolean isInner = relation.members().stream().anyMatch(member -> member.getRole()
-                    .equalsIgnoreCase(RelationTypeTag.MULTIPOLYGON_ROLE_INNER));
 
-            // If the only member of the relation has the role:inner then we want to flag the
-            // relation
-            if (isInner && relation.members().size() == 1)
-            {
-                flag = true;
-            }
-            // If the relation has only one member and is not a multi-polygon
-        }
-        else if (relation.members().size() == 1)
-        {
-            flag = true;
-        }
-
-        if (flag)
-        {
-            this.markAsFlagged(relation.getOsmIdentifier());
+            this.markAsFlagged(relation);
             return Optional.of(createFlag(
                     relation.members().stream().map(RelationMember::getEntity)
                             .collect(Collectors.toSet()),
