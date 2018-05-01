@@ -46,7 +46,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || Validators.isOfType(edge, TunnelTag.class, TunnelTag.BUILDING_PASSAGE,
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
-                || (edge.getTag(INDOOR_KEY).isPresent() && edge.tag(INDOOR_KEY).equals(YES_VALUE))
+                || YES_VALUE.equals(edge.tag(INDOOR_KEY))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY))
                 || edge.connectedNodes().stream().anyMatch(
@@ -88,17 +88,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         final Node edgeStart = edge.start();
         final Node edgeEnd = edge.end();
         final Set<Location> intersections = building.asPolygon().intersections(edge.asPolyLine());
-        if (intersections.size() == 1
-                && !building.asPolygon().fullyGeometricallyEncloses(edge.asPolyLine()))
-        {
-            if (intersections.contains(edgeStart.getLocation())
-                    || intersections.contains(edgeEnd.getLocation()))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return intersections.size() == 1
+                && !building.asPolygon().fullyGeometricallyEncloses(edge.asPolyLine())
+                && (intersections.contains(edgeStart.getLocation())
+                        || intersections.contains(edgeEnd.getLocation()));
     }
 
     /**
