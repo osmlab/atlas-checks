@@ -232,5 +232,15 @@
       "defaultPriority": "MEDIUM"
     },
     "tags":"highway"
+  },
+  "WaterbodiesAndIslandSizeCheck": {
+    "enabled": true,
+    "area":{
+      "waterbody.minimum.meters": 10.0,
+      "waterbody.maximum.kilometers": 370000.0,
+      "island.minimum.meters": 10.0 ,
+      "island.maximum.kilometers": 2130800.0,
+      "islet.maximum.kilometers": 1.0
+    }
   }
 }
