@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +15,9 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.AerowayTag;
+import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RouteTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
@@ -28,13 +31,19 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author matthieun
  * @author cuthbertm
  * @author gpogulsky
+ * @author savannahostrowski
  */
 public class SinkIslandCheck extends BaseCheck<Long>
 {
-    public static final float LOAD_FACTOR = 0.8f;
-    public static final long TREE_SIZE_DEFAULT = 50;
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Road is impossible to get out of.");
+    private static final float LOAD_FACTOR = 0.8f;
+    private static final long TREE_SIZE_DEFAULT = 50;
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList("Road is impossible to get out of.");
+    private static final String MOTORCYCLE_PARKING_AMENITY = "MOTORCYCLE_PARKING";
+    private static final String PARKING_ENTRANCE_AMENITY = "PARKING_ENTRANCE";
+    private static final List<String> amenityValuesToExclude = Arrays.asList(
+            AmenityTag.PARKING.toString(), AmenityTag.PARKING_SPACE.toString(),
+            MOTORCYCLE_PARKING_AMENITY, PARKING_ENTRANCE_AMENITY);
     private static final long serialVersionUID = -1432150496331502258L;
     private final int storeSize;
     private final int treeSize;
@@ -171,6 +180,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore any airport taxiways and runways, as these often create a sink island
                 && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
                         AerowayTag.RUNWAY)
+                // Ignore edges that have an amenity tag equal to one of the amenityValuesToExclude
+                && !endNodeHasAmenityTypeToExclude(object)
                 // Ignore edges that have been way sectioned at the border, as has high probability
                 // of creating a false positive due to the sectioning of the way
                 && !(SyntheticBoundaryNodeTag.isBoundaryNode(((Edge) object).end())
@@ -179,5 +190,24 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
+    }
+
+    /**
+     * This function checks to see if the end node of an Edge AtlasObject has an amenity tag with
+     * one of the amenityValuesToExclude.
+     * 
+     * @param object
+     *            An AtlasObject (known to be an Edge)
+     * @return {@code true} if the end node of the end has one of the amenityValuesToExclude, and
+     *         {@code false} otherwise
+     */
+    private boolean endNodeHasAmenityTypeToExclude(final AtlasObject object)
+    {
+        final Edge edge = (Edge) object;
+        final Node endNode = edge.end();
+
+        return Validators.isOfType(endNode, AmenityTag.class, AmenityTag.PARKING,
+                AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING,
+                AmenityTag.PARKING_ENTRANCE);
     }
 }
