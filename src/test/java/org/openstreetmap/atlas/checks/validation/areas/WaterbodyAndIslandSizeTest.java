@@ -43,6 +43,20 @@ public class WaterbodyAndIslandSizeTest
     }
 
     @Test
+    public void smallWaterbodyTest()
+    {
+        this.verifier.actual(this.setup.getSmallWaterbodyAtlas(), this.check);
+        this.verifier.verifyNotEmpty();
+    }
+
+    @Test
+    public void smallIsletAtlas()
+    {
+        this.verifier.actual(this.setup.getSmallIsletAtlas(), this.check);
+        this.verifier.verifyNotEmpty();
+    }
+
+    @Test
     public void smallMultiPolygonIslandTest()
     {
         this.verifier.actual(this.setup.getSmallMultiPolygonIslandAtlas(), this.check);
@@ -69,5 +83,12 @@ public class WaterbodyAndIslandSizeTest
         this.verifier.actual(this.setup.getInvalidMultiPolygonNoNaturalWaterTagRelationAtlas(),
                 this.check);
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void smallMultiPolygonWaterbodyMemberTest()
+    {
+        this.verifier.actual(this.setup.getSmallMultiPolygonWaterbodyMemberAtlas(), this.check);
+        this.verifier.verifyNotEmpty();
     }
 }

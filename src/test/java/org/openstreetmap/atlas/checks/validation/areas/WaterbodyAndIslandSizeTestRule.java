@@ -53,6 +53,24 @@ public class WaterbodyAndIslandSizeTestRule extends CoreTestRule
                     @Loc(value = SMALL_AREA_TEST_1) }, tags = { "place=archipelago" }) })
     private Atlas smallArchipelagoAtlas;
 
+    // Waterbody with surface area smaller than default 10 m^2
+    @TestAtlas(
+            // Area
+            areas = { @Area(id = "127001", coordinates = { @Loc(value = SMALL_AREA_TEST_1),
+                    @Loc(value = SMALL_AREA_TEST_2), @Loc(value = SMALL_AREA_TEST_3),
+                    @Loc(value = SMALL_AREA_TEST_4),
+                    @Loc(value = SMALL_AREA_TEST_1) }, tags = { "natural=water" }) })
+    private Atlas smallWaterbodyAtlas;
+
+    // Islet with surface area smaller than default 10 m^2
+    @TestAtlas(
+            // Area
+            areas = { @Area(id = "127001", coordinates = { @Loc(value = SMALL_AREA_TEST_1),
+                    @Loc(value = SMALL_AREA_TEST_2), @Loc(value = SMALL_AREA_TEST_3),
+                    @Loc(value = SMALL_AREA_TEST_4),
+                    @Loc(value = SMALL_AREA_TEST_1) }, tags = { "place=islet" }) })
+    private Atlas smallIsletAtlas;
+
     // MultiPolygon Relation island with surface area smaller than 10 m^2 minimum
     @TestAtlas(
             // Areas
@@ -123,6 +141,23 @@ public class WaterbodyAndIslandSizeTestRule extends CoreTestRule
                             "type=multipolygon", "natural=water" }) })
     private Atlas smallIslandMultiPolygonDuplicateAtlas;
 
+    // MultiPolygon Relation with outer waterbody member smaller than 10 m^2 miminum
+    @TestAtlas(
+            // Areas
+            areas = {
+                    @Area(id = "127001", coordinates = { @Loc(value = SMALL_AREA_TEST_1),
+                            @Loc(value = SMALL_AREA_TEST_2), @Loc(value = SMALL_AREA_TEST_3),
+                            @Loc(value = SMALL_AREA_TEST_4), @Loc(value = SMALL_AREA_TEST_1) }),
+                    @Area(id = "127002", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_3), @Loc(value = TEST_4), @Loc(value = TEST_5),
+                            @Loc(value = TEST_1) }) },
+            // Relation
+            relations = { @Relation(id = "1001", members = {
+                    @Member(id = "127002", type = "area", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER),
+                    @Member(id = "127001", type = "area", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) }, tags = {
+                            "type=multipolygon", "natural=water" }) })
+    private Atlas smallMultiPolygonWaterbodyMemberAtlas;
+
     public Atlas getLargeIsletAtlas()
     {
         return largeIsletAtlas;
@@ -137,6 +172,16 @@ public class WaterbodyAndIslandSizeTestRule extends CoreTestRule
     public Atlas getSmallArchipelagoAtlas()
     {
         return smallArchipelagoAtlas;
+    }
+
+    public Atlas getSmallWaterbodyAtlas()
+    {
+        return smallWaterbodyAtlas;
+    }
+
+    public Atlas getSmallIsletAtlas()
+    {
+        return smallIsletAtlas;
     }
 
     public Atlas getSmallMultiPolygonIslandAtlas()
@@ -157,5 +202,10 @@ public class WaterbodyAndIslandSizeTestRule extends CoreTestRule
     public Atlas getInvalidMultiPolygonNoNaturalWaterTagRelationAtlas()
     {
         return invalidMultiPolygonNoNaturalWaterTagRelationAtlas;
+    }
+
+    public Atlas getSmallMultiPolygonWaterbodyMemberAtlas()
+    {
+        return smallMultiPolygonWaterbodyMemberAtlas;
     }
 }

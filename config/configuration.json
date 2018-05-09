@@ -234,7 +234,7 @@
     "tags":"highway"
   },
   "WaterbodyAndIslandSizeCheck": {
-    "area":{
+    "surface":{
       "waterbody.minimum.meters": 10.0,
       "waterbody.maximum.kilometers": 370000.0,
       "island.minimum.meters": 10.0,
