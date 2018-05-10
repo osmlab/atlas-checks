@@ -107,11 +107,6 @@
       "tags":"highway"
     }
   },
-  "HighwayAccessTagCheck": {
-    "highwayPriority":{
-      "minimum": "SERVICE"
-    }
-  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",

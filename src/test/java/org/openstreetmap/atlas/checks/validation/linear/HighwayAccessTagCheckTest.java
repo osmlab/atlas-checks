@@ -111,7 +111,7 @@ public class HighwayAccessTagCheckTest
     {
         this.verifier.actual(this.setup.accessPrivateGateInHighwayEdges(),
                 new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
@@ -119,6 +119,6 @@ public class HighwayAccessTagCheckTest
     {
         this.verifier.actual(this.setup.accessPrivateGateInHighwayLines(),
                 new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

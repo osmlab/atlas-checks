@@ -308,22 +308,22 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
 
     public Atlas accessPrivateInHighwayEdges()
     {
-        return this.accessNoInHighwayEdges;
+        return this.accessPrivateInHighwayEdges;
     }
 
     public Atlas accessPrivateInHighwayLines()
     {
-        return this.accessNoInHighwayLines;
+        return this.accessPrivateInHighwayLines;
     }
 
     public Atlas accessPrivateGateInHighwayEdges()
     {
-        return this.accessNoInHighwayEdges;
+        return this.accessPrivateGateInHighwayEdges;
     }
 
     public Atlas accessPrivateGateInHighwayLines()
     {
-        return this.accessNoInHighwayLines;
+        return this.accessPrivateGateInHighwayLines;
     }
 
 }

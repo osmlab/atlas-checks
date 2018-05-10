@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.linear;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
@@ -101,8 +103,7 @@ public class HighwayAccessTagCheck extends BaseCheck
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         else if (AccessTag.isPrivate(object) && connectedLineItems.get("first").size() > 0
-                && connectedLineItems.get("last").size() > 0
-                && !object.getOsmTags().containsValue("Gate"))
+                && connectedLineItems.get("last").size() > 0 && !hasGate((LineItem) object))
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
@@ -144,6 +145,31 @@ public class HighwayAccessTagCheck extends BaseCheck
         }
 
         return connectedLineItems;
+    }
+
+    private boolean hasGate(final LineItem object)
+    {
+        for (final Node node : getLineItemNodes(object))
+        {
+            if (node.getOsmTags().containsValue("gate"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ArrayList<Node> getLineItemNodes(final LineItem object)
+    {
+        final ArrayList<Node> lineItemNodes = new ArrayList<>();
+
+        for (final Object location : object.asPolyLine().toArray())
+        {
+            lineItemNodes.addAll(
+                    (Collection<? extends Node>) object.getAtlas().nodesAt((Location) location));
+        }
+
+        return lineItemNodes;
     }
 
     @Override
