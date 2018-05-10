@@ -19,7 +19,7 @@ To start working with Checks follow the steps below:
 1. Clone Atlas Checks project using following command `git clone https://github.com/osmlab/atlas-checks.git`
 2. Switch to newly created directory: `cd atlas-checks`
 3. Download an OSM PBF file and place it in the `/data/` directory.
-3. Execute `gradle run`
+3. Execute `./gradlew run`
 
 This command will build and run Atlas Checks with all the default options against OSM PBF that you put in the data directory.. GeoJSON output will be be produced that contains all the results found from the run. Those outputs will be found in `/build/geojson/`. For more information on running Atlas Checks as a standalone application click [here](docs/standalone.md).
 
