@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,8 +25,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 /**
  * This check identifies waterbodies and islands that are either too small, or too large in size.
  * Minimum surface area values are measured in meters squared; while maximum values are measured in
- * kilometers squared. An island can either be tagged as place=island, place=islet,
- * place=archipelago, or a MultiPolygon Relation with the type=multipolygon and natural=water tags.
+ * kilometers squared. We use two units of conversion to avoid very small/large values. For example,
+ * 10 meters squared is .00001 kilometers, and 2,000,000 kilometers squared is 2,000,000,000 meters
+ * squared. An island can either be tagged as place=island, place=islet, place=archipelago, or a
+ * MultiPolygon Relation with the type=multipolygon and natural=water tags.
  *
  * @author danielbaah
  */
@@ -40,13 +43,12 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
     private static String ISLET_MIN_INSTRUCTION = "Islet with OSM ID {0,number,#}, has an surface area of {1,number,#.##} meters squared which is smaller than the expected minimum of {2} meters squared.";
     private static String ISLET_MAX_INSTRUCTION = "Islet with OSM ID {0,number,#}, has an surface area of {1,number,#.##} kilometers squared which is greater than the expected maximum of {2} kilometers squared. This islet should likely be tagged as place=ISLAND.";
     private static final double WATERBODY_MIN_AREA_DEFAULT = 10;
-    // Waterbody maximum is based on the Caspian Sea surface area, which is the largest island
-    // waterbody in OSM that is tagged with natural=water.
+    // Waterbody maximum is based on the Caspian Sea surface area, the largest island waterbody in
+    // OSM that is tagged with natural=water.
     private static final double WATERBODY_MAX_AREA_DEFAULT = 337000;
     private static final double ISLAND_MIN_AREA_DEFAULT = 10;
-    // Island maximum is based on Greenland surface area, which is the largest island in OSM tagged
-    // as place=island. The next largest landmass is Australia which is a continent and not an
-    // island.
+    // Island maximum is based on Greenland surface area, the largest island in OSM tagged as
+    // place=island. The next largest landmass is Australia which is a continent and not an island.
     private static final double ISLAND_MAX_AREA_DEFAULT = 2170000;
     private static final double ISLET_MIN_AREA_DEFAULT = 10;
     // Islet maximum is specified by OSM Wiki (https://wiki.openstreetmap.org/wiki/Tag:place=islet)
@@ -58,7 +60,7 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
             PlaceTag.class, PlaceTag.ISLET);
     private static final Predicate<AtlasObject> IS_ISLAND = object -> Validators.isOfType(object,
             PlaceTag.class, PlaceTag.ISLAND, PlaceTag.ARCHIPELAGO);
-    // Multipolygon Relations and natural=water OR water=*
+    // Multipolygon Relation must have type=multipolygon and natural=water tags
     private static final Predicate<AtlasObject> IS_MULTIPOLYGON_WATER_RELATION = object -> Validators
             .isOfType(object, RelationTypeTag.class, RelationTypeTag.MULTIPOLYGON)
             && (Validators.isOfType(object, NaturalTag.class, NaturalTag.WATER));
@@ -116,7 +118,7 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
         // Object must be either a MultiPolygon Relation with at least one member, or an Area with
         // a place=islet, place=island, place=archipelago, or natural=water tag
         return (object instanceof Relation && IS_MULTIPOLYGON_WATER_RELATION.test(object)
-                && !((Relation) object).members().isEmpty())
+                && ((Relation) object).members().size() >= 2)
                 || (object instanceof Area
                         && (TagPredicates.IS_WATER_BODY.test(object) || IS_ISLET.test(object)
                                 || IS_ISLAND.test(object))
@@ -190,39 +192,39 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
             }
         }
         // There are two Relations to examine:
-        // 1. Islands included as members of a MultiPolygon
-        // 2. Water bodies included as members of a Multipolygon
+        // 1. Islands included as members of a MultiPolygon (not otherwise tagged as place=island or
+        // place=islet)
+        // 2. Water bodies included as members of a Multipolygon (not otherwise tagged as
+        // natural=water)
         // Each Relation will have n numbers of instructions, dependent on the amount of members
         // that fail the size check
         else if (object instanceof Relation)
         {
             final Relation relation = (Relation) object;
-            // Remove non-Area members && entities that have already been examined
+            // Get Relation members that are an Area, have either an inner or outer member,
+            // and have yet to be examined
             final Set<RelationMember> relationMembers = relation.members().stream()
-                    .filter(member -> member.getEntity() instanceof Area
-                            && !this.isFlagged(member.getEntity().getIdentifier()))
-                    .collect(Collectors.toSet());
+                    .filter(member -> member.getEntity() instanceof Area)
+                    .filter(member -> !this.isFlagged(member.getEntity().getIdentifier()))
+                    .filter(this::isInnerOrOuterMember).collect(Collectors.toSet());
 
             if (!relationMembers.isEmpty())
             {
-                // Get valid members that fail the surface area size check
-                final Set<RelationMember> invalidPolygonMembers = this
-                        .filterMultiPolygonMembers(relationMembers);
+                final List<String> flagInstructions = new ArrayList<>();
+                final Set<RelationMember> invalidRelationMembers = new HashSet<>();
 
-                if (!invalidPolygonMembers.isEmpty())
+                // Append member and given instruction for Relation members that fail the surface
+                // area size test.
+                this.getMemberInstructions(relationMembers, invalidRelationMembers,
+                        flagInstructions);
+
+                if (!flagInstructions.isEmpty())
                 {
-                    // Get instructions for each member
-                    final List<String> instructions = this
-                            .getMemberInstructions(invalidPolygonMembers);
-
-                    if (!instructions.isEmpty())
-                    {
-                        // Create a single flag with each member entity and its given instruction
-                        return Optional.of(instructions).map(instruction -> new CheckFlag(
-                                this.getTaskIdentifier(relation), invalidPolygonMembers.stream()
-                                        .map(RelationMember::getEntity).collect(Collectors.toSet()),
-                                instruction));
-                    }
+                    // Create a single flag with each member entity and its given instruction
+                    return Optional.of(flagInstructions).map(instruction -> new CheckFlag(
+                            this.getTaskIdentifier(relation), invalidRelationMembers.stream()
+                                    .map(RelationMember::getEntity).collect(Collectors.toSet()),
+                            instruction));
                 }
             }
         }
@@ -231,98 +233,77 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
     }
 
     /**
-     * Helper function that filters multipolygon members.
+     * Helper function for filtering invalid Relation members. Each Relation member have either an
+     * inner or outer role, and the inner role must not contain the natural=rock tag.
      *
-     * @param relationPolygonMembers
-     *            - relation members
-     * @return - a Set of Relation Members
+     * @param member
+     *            - RelationMember
+     * @return true if member is valid
      */
-    private Set<RelationMember> filterMultiPolygonMembers(
-            final Set<RelationMember> relationPolygonMembers)
+    private boolean isInnerOrOuterMember(final RelationMember member)
     {
-        return relationPolygonMembers.stream().filter(member ->
-        // Each member must have an inter or outer role
-        (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) || (member.getRole()
+        return member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) || (member.getRole()
                 .equals(RelationTypeTag.MULTIPOLYGON_ROLE_INNER)
-                // Inner member cannot have natural=rock tag
-                && !Validators.isOfType(member.getEntity(), NaturalTag.class, NaturalTag.ROCK)))
-                // Member surface area be larger or smaller than minimum/maximum constants
-                && this.failsAreaTest(member)).collect(Collectors.toSet());
+                && !Validators.isOfType(member.getEntity(), NaturalTag.class, NaturalTag.ROCK));
     }
 
     /**
-     * Returns a list of instructions for inner and outer MultiPolygons that fail the size check
+     * This function calculates the surface area of an individual Relation Member & generates an
+     * instruction of it fails the surface area test.
      *
      * @param relationMembers
-     *            - Members of a Relations
-     * @return List of instructions
+     *            - Set of valid RelationMembers
+     * @param invalidRelationMembers
+     *            - New Set of RelationMembers that fail surface area test
+     * @param instructions
+     *            - Flag Instructions for RelationMembers that fail surface area test
      */
-    private List<String> getMemberInstructions(final Set<RelationMember> relationMembers)
+    private void getMemberInstructions(final Set<RelationMember> relationMembers,
+            final Set<RelationMember> invalidRelationMembers, final List<String> instructions)
     {
 
-        final List<String> instructions = new ArrayList<>();
-
-        relationMembers.forEach(member ->
+        for (final RelationMember member : relationMembers)
         {
             final double areaInMeters = ((Area) member.getEntity()).asPolygon().surface()
                     .asMeterSquared();
             final double areaInKilometers = ((Area) member.getEntity()).asPolygon().surface()
                     .asKilometerSquared();
             final long memberOsmId = member.getEntity().getOsmIdentifier();
-            this.markAsFlagged(member.getEntity().getIdentifier());
 
             // Multipolygon Island Relations
             if (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_INNER))
             {
-
                 if (areaInMeters < this.islandMinimumArea)
                 {
-                    instructions.add(this.getLocalizedInstruction(2, memberOsmId, areaInMeters));
+                    instructions.add(this.getLocalizedInstruction(2, memberOsmId, areaInMeters,
+                            this.islandMinimumArea));
+                    invalidRelationMembers.add(member);
                 }
                 else if (areaInKilometers > this.islandMaximumArea)
                 {
-                    instructions.add(
-                            this.getLocalizedInstruction(THREE, memberOsmId, areaInKilometers));
+                    instructions.add(this.getLocalizedInstruction(THREE, memberOsmId,
+                            areaInKilometers, this.islandMaximumArea));
+                    invalidRelationMembers.add(member);
                 }
             }
 
             // Multipolygon water body Relations
             if (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER))
             {
-
                 if (areaInMeters < this.waterbodyMinimumArea)
                 {
-                    instructions.add(this.getLocalizedInstruction(0, memberOsmId, areaInMeters));
+                    instructions.add(this.getLocalizedInstruction(0, memberOsmId, areaInMeters,
+                            this.waterbodyMinimumArea));
+                    invalidRelationMembers.add(member);
                 }
                 else if (areaInKilometers > this.waterbodyMaximumArea)
                 {
-                    instructions
-                            .add(this.getLocalizedInstruction(1, memberOsmId, areaInKilometers));
+                    instructions.add(this.getLocalizedInstruction(1, memberOsmId, areaInKilometers,
+                            this.waterbodyMaximumArea));
+                    invalidRelationMembers.add(member);
                 }
             }
+        }
 
-        });
-
-        return instructions;
-
-    }
-
-    /**
-     * Helper function used when filtering MultiPolygon island or waterbody members.
-     * 
-     * @param member
-     *            - relation member
-     * @return true if MultiPolygon member is too large or too small
-     */
-    private boolean failsAreaTest(final RelationMember member)
-    {
-        final double areaInMeters = ((Area) member.getEntity()).asPolygon().surface()
-                .asMeterSquared();
-        final double areaInKilometers = ((Area) member.getEntity()).asPolygon().surface()
-                .asKilometerSquared();
-
-        return areaInMeters < this.islandMinimumArea || areaInMeters < this.waterbodyMinimumArea
-                || areaInKilometers > this.islandMaximumArea
-                || areaInKilometers > this.waterbodyMaximumArea;
     }
 }
