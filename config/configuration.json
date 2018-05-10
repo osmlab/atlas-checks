@@ -107,6 +107,8 @@
       "tags":"highway"
     }
   },
+  "HighwayAccessTagCheck":{
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
