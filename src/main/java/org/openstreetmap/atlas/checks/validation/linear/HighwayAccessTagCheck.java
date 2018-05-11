@@ -29,7 +29,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayAccessTagCheck extends BaseCheck
 {
 
-    private static final HighwayTag MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.SERVICES;
+    private static final HighwayTag MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.SERVICE;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Check if the access tag of way {0,number,#} needs to be removed.");
 
@@ -67,18 +67,9 @@ public class HighwayAccessTagCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if ((object instanceof Edge) || (object instanceof Line))
+        if ((object instanceof Edge) || (object instanceof Line) && this.isMinimumHighway(object) && (AccessTag.isNo(object)) || (AccessTag.isPrivate(object)))
         {
-            final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
-            if (result.isPresent())
-            {
-                return result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayPriority)
-                        && ((AccessTag.isNo(object)) || (AccessTag.isPrivate(object)));
-            }
-            else
-            {
-                return false;
-            }
+                return true;
         }
         return false;
     }
@@ -94,16 +85,16 @@ public class HighwayAccessTagCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final LineItem lineItem = (LineItem) object;
-        final HashMap<String, ArrayList<LineItem>> connectedLineItems = this
-                .getConnectedLineItems(lineItem);
-        if (AccessTag.isNo(object) && connectedLineItems.get("first").size() > 0
-                && connectedLineItems.get("last").size() > 0)
+        final HashMap<String, ArrayList<LineItem>> connectedHighways = this
+                .getConnectedHighways(lineItem);
+        if (AccessTag.isNo(object) && connectedHighways.get("first").size() > 0
+                && connectedHighways.get("last").size() > 0)
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
-        else if (AccessTag.isPrivate(object) && connectedLineItems.get("first").size() > 0
-                && connectedLineItems.get("last").size() > 0 && !hasGate((LineItem) object))
+        else if (AccessTag.isPrivate(object) && connectedHighways.get("first").size() > 0
+                && connectedHighways.get("last").size() > 0 && !hasGate((LineItem) object))
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
@@ -111,7 +102,7 @@ public class HighwayAccessTagCheck extends BaseCheck
         return Optional.empty();
     }
 
-    private HashMap<String, ArrayList<LineItem>> getConnectedLineItems(final LineItem object)
+    private HashMap<String, ArrayList<LineItem>> getConnectedHighways(final LineItem object)
     {
         final Location first = object.asPolyLine().first();
         final Location last = object.asPolyLine().last();
@@ -132,7 +123,7 @@ public class HighwayAccessTagCheck extends BaseCheck
 
         for (final LineItem lineItem : lineItemArrays)
         {
-            if (!lineItem.equals(object) && (lineItem.asPolyLine().first().equals(first)
+            if (!lineItem.equals(object) && this.isMinimumHighway(lineItem) && (lineItem.asPolyLine().first().equals(first)
                     || lineItem.asPolyLine().last().equals(first)))
             {
                 connectedLineItems.get("first").add(lineItem);
@@ -170,6 +161,19 @@ public class HighwayAccessTagCheck extends BaseCheck
         }
 
         return lineItemNodes;
+    }
+
+    private boolean isMinimumHighway(final AtlasObject object)
+    {
+        final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
+        if (result.isPresent())
+        {
+            return result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayPriority);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     @Override

@@ -55,6 +55,14 @@ public class HighwayAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
+    @Test
+    public void accessNoInHighwayEdgesTrack()
+    {
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesTrack(),
+                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
     // Start Highway Tests
     @Test
     public void accessStartInHighwayEdges()
@@ -84,6 +92,14 @@ public class HighwayAccessTagCheckTest
     public void accessNoStartHighwayLineEdgeLine()
     {
         this.verifier.actual(this.setup.accessNoStartHighwayLineEdgeLine(),
+                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void accessNoInHighwayEdgesNonHighwayConnected()
+    {
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesNonHighwayConnected(),
                 new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
