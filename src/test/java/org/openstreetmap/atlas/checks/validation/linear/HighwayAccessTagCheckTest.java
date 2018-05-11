@@ -63,6 +63,30 @@ public class HighwayAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
+    @Test
+    public void accessNoInHighwayEdgesPublicTransportYes()
+    {
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesPublicTransportYes(),
+                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void accessNoInHighwayEdgesSameFeature()
+    {
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesSameFeature(),
+                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void accessNoInHighwayEdgesSameFeatureSquare()
+    {
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesSameFeatureSquare(),
+                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
     // Start Highway Tests
     @Test
     public void accessStartInHighwayEdges()
@@ -104,6 +128,13 @@ public class HighwayAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
+    /*
+     * @Test public void accessNoStartHighwayEdgesSameFeature() {
+     * this.verifier.actual(this.setup.accessNoStartHighwayEdgesSameFeature(), new
+     * HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+     * this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size())); }
+     */
+
     // private In Highway Tests
     @Test
     public void accessPrivateInHighwayEdges()
@@ -114,7 +145,7 @@ public class HighwayAccessTagCheckTest
     }
 
     @Test
-    public void accessprivateInHighwayLines()
+    public void accessPrivateInHighwayLines()
     {
         this.verifier.actual(this.setup.accessPrivateInHighwayLines(),
                 new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));

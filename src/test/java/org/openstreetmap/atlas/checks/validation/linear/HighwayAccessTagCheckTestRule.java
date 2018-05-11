@@ -23,6 +23,9 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
     private static final String TEST_5 = "0.0,0.4";
     private static final String TEST_6 = "-0.1,0.5";
     private static final String TEST_7 = "0.0,0.6";
+    private static final String TEST_8 = "0.0,0.7";
+    private static final String TEST_9 = "0.1,0.8";
+    private static final String TEST_10 = "0.0,0.9";
 
     // In Highway Tests
     @TestAtlas(
@@ -35,12 +38,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
-            edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessNoInHighwayEdges;
 
@@ -54,12 +58,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
-            lines = {
-                    @Line(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Line(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+            lines = { @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Line(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
-                    @Line(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Line(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessNoInHighwayLines;
 
@@ -73,13 +78,14 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
-            edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // lines
-            lines = { @Line(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+            lines = { @Line(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                    @Loc(value = TEST_4),
                     @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }) })
     private Atlas accessNoInHighwayEdgeLineEdge;
 
@@ -93,13 +99,14 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
-            lines = {
-                    @Line(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Line(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+            lines = { @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Line(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // edges
-            edges = { @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+            edges = { @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                    @Loc(value = TEST_4),
                     @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }) })
     private Atlas accessNoInHighwayLineEdgeLine;
 
@@ -113,14 +120,86 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
-            edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=track" }),
-                    @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=track" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=track", "access=no" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=track" }) })
     private Atlas accessNoInHighwayEdgesTrack;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)) },
+            // edges
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                                    "highway=motorway", "access=no", "public_transport=yes" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
+    private Atlas accessNoInHighwayEdgesPublicTransportYes;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)),
+                    @Node(coordinates = @Loc(value = TEST_8)),
+                    @Node(coordinates = @Loc(value = TEST_9)),
+                    @Node(coordinates = @Loc(value = TEST_10)) },
+            // edges
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1001000002", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_8),
+                            @Loc(value = TEST_9),
+                            @Loc(value = TEST_10) }, tags = { "highway=motorway" }) })
+    private Atlas accessNoInHighwayEdgesSameFeature;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)),
+                    @Node(coordinates = @Loc(value = TEST_8)),
+                    @Node(coordinates = @Loc(value = TEST_9)) },
+            // edges
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1001000002", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_8),
+                            @Loc(value = TEST_9),
+                            @Loc(value = TEST_1) }, tags = { "highway=motorway" }) })
+    private Atlas accessNoInHighwayEdgesSameFeatureSquare;
 
     // Start Highway Tests
     @TestAtlas(
@@ -134,11 +213,14 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "highway=motorway", "access=no" }),
-                    @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessNoStartHighwayEdges;
 
@@ -153,11 +235,14 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
             lines = {
-                    @Line(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "highway=motorway", "access=no" }),
-                    @Line(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+                    @Line(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway" }),
-                    @Line(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Line(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessNoStartHighwayLines;
 
@@ -172,13 +257,15 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
             edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "highway=motorway", "access=no" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // lines
-            lines = { @Line(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
-                    @Loc(value = TEST_5) }, tags = { "highway=motorway" }) })
+            lines = { @Line(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                    @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = { "highway=motorway" }) })
     private Atlas accessNoStartHighwayEdgeLineEdge;
 
     @TestAtlas(
@@ -192,13 +279,15 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
             lines = {
-                    @Line(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "highway=motorway", "access=no" }),
-                    @Line(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Line(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // edges
-            edges = { @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
-                    @Loc(value = TEST_5) }, tags = { "highway=motorway" }) })
+            edges = { @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                    @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = { "highway=motorway" }) })
     private Atlas accessNoStartHighwayLineEdgeLine;
 
     @TestAtlas(
@@ -212,11 +301,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }),
-                    @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_3) }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessNoInHighwayEdgesNonHighwayConnected;
 
@@ -231,13 +322,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
-            edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway",
-                                    "access=private" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                                    "highway=motorway", "access=private" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessPrivateInHighwayEdges;
 
@@ -251,15 +342,43 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
-            lines = {
-                    @Line(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Line(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway",
-                                    "access=private" }),
-                    @Line(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+            lines = { @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Line(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                                    "highway=motorway", "access=private" }),
+                    @Line(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessPrivateInHighwayLines;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)),
+                    @Node(coordinates = @Loc(value = TEST_8)),
+                    @Node(coordinates = @Loc(value = TEST_9)),
+                    @Node(coordinates = @Loc(value = TEST_10)) },
+            // edges
+            edges = {
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_8),
+                            @Loc(value = TEST_9),
+                            @Loc(value = TEST_10) }, tags = { "highway=motorway" }) })
+    private Atlas accessNoStartHighwayEdgesSameFeature;
 
     // Private in Highway With Gates Tests
     @TestAtlas(
@@ -272,13 +391,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
-            edges = {
-                    @Edge(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway",
-                                    "access=private" }),
-                    @Edge(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                                    "highway=motorway", "access=private" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessPrivateGateInHighwayEdges;
 
@@ -292,13 +411,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
-            lines = {
-                    @Line(id = "1000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
-                    @Line(id = "1001", coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway",
-                                    "access=private" }),
-                    @Line(id = "1002", coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+            lines = { @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Line(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                                    "highway=motorway", "access=private" }),
+                    @Line(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessPrivateGateInHighwayLines;
 
@@ -328,6 +447,21 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
         return this.accessNoInHighwayEdgesTrack;
     }
 
+    public Atlas accessNoInHighwayEdgesPublicTransportYes()
+    {
+        return this.accessNoInHighwayEdgesPublicTransportYes;
+    }
+
+    public Atlas accessNoInHighwayEdgesSameFeature()
+    {
+        return this.accessNoInHighwayEdgesSameFeature;
+    }
+
+    public Atlas accessNoInHighwayEdgesSameFeatureSquare()
+    {
+        return this.accessNoInHighwayEdgesSameFeatureSquare;
+    }
+
     // Start Highway Tests
     public Atlas accessNoStartHighwayEdges()
     {
@@ -352,6 +486,11 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
     public Atlas accessNoInHighwayEdgesNonHighwayConnected()
     {
         return this.accessNoInHighwayEdgesNonHighwayConnected;
+    }
+
+    public Atlas accessNoStartHighwayEdgesSameFeature()
+    {
+        return this.accessNoStartHighwayEdgesSameFeature;
     }
 
     // Private in Highway Tests

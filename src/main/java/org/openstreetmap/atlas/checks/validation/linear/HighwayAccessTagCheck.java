@@ -35,6 +35,9 @@ public class HighwayAccessTagCheck extends BaseCheck
 
     private final HighwayTag minimumHighwayPriority;
 
+    private final String first = "first";
+    private final String last = "last";
+
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
 
@@ -52,7 +55,7 @@ public class HighwayAccessTagCheck extends BaseCheck
         // any internal variables can be set here from configuration
         // eg. MAX_LENGTH could be defined as "public static final double MAX_LENGTH = 100;"
         // this.maxLength = configurationValue(configuration, "length.max", MAX_LENGTH,
-        // Distance::meters);
+        // Distance::meters);gradle
         final String highwayType = (String) this.configurationValue(configuration,
                 "minimum.highway.type", MINIMUM_HIGHWAY_PRIORITY_DEFAULT);
         this.minimumHighwayPriority = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
@@ -68,10 +71,15 @@ public class HighwayAccessTagCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if ((object instanceof Edge) || (object instanceof Line) && this.isMinimumHighway(object)
-                && (AccessTag.isNo(object)) || (AccessTag.isPrivate(object)))
+        if (((object instanceof Edge) || (object instanceof Line))
+                && !this.isFlagged(object.getOsmIdentifier())
+                && (AccessTag.isNo(object) || (AccessTag.isPrivate(object))))
         {
-            return true;
+            if (this.isMinimumHighway(object))
+            {
+                return true;
+            }
+            return false;
         }
         return false;
     }
@@ -87,17 +95,25 @@ public class HighwayAccessTagCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final LineItem lineItem = (LineItem) object;
-        final HashMap<String, ArrayList<LineItem>> connectedHighways = this
-                .getConnectedHighways(lineItem);
-        if (AccessTag.isNo(object) && connectedHighways.get("first").size() > 0
-                && connectedHighways.get("last").size() > 0)
+        final HashMap<String, ArrayList<LineItem>> connectedHighways = getConnectedHighways(
+                lineItem);
+        if (AccessTag.isNo(object)
+                && !object.getOsmTags().getOrDefault("public_transport", "no").toUpperCase()
+                        .equals("YES")
+                && connectedHighways.get(this.first).size() > 0
+                && connectedHighways.get(this.last).size() > 0)
         {
+            this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
-        else if (AccessTag.isPrivate(object) && connectedHighways.get("first").size() > 0
-                && connectedHighways.get("last").size() > 0 && !hasGate((LineItem) object))
+        else if (AccessTag.isPrivate(object)
+                && !object.getOsmTags().getOrDefault("public_transport", "no").toUpperCase()
+                        .equals("YES")
+                && connectedHighways.get(this.first).size() > 0
+                && connectedHighways.get(this.last).size() > 0 && !hasGate((LineItem) object))
         {
+            this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
@@ -109,32 +125,94 @@ public class HighwayAccessTagCheck extends BaseCheck
         final Location first = object.asPolyLine().first();
         final Location last = object.asPolyLine().last();
 
-        /*
-         * final HashMap<String, Iterable<LineItem>> lineItemArrays = new HashMap<>();
-         * lineItemArrays.put("first", object.getAtlas().lineItemsContaining(first));
-         * lineItemArrays.put("last", object.getAtlas().lineItemsContaining(last));
-         */
+        final Iterable<LineItem> lineItemArrays = new MultiIterable<>(
+                object.getAtlas().lineItemsContaining(first),
+                object.getAtlas().lineItemsContaining(last));
+
+        final HashMap<String, ArrayList<LineItem>> connectedLineItems = new HashMap<>();
+        connectedLineItems.put(this.first, new ArrayList<>());
+        connectedLineItems.put(this.last, new ArrayList<>());
+
+        for (final LineItem lineItem : lineItemArrays)
+        {
+            if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+                    && this.isMinimumHighway(lineItem)
+                    && (lineItem.asPolyLine().first().equals(first)
+                            || lineItem.asPolyLine().last().equals(first)))
+            {
+                if (getOsmId(lineItem.getIdentifier()) == getOsmId(object.getIdentifier()))
+                {
+                    final ArrayList<LineItem> haveRunList = new ArrayList<>();
+                    haveRunList.add(object);
+                    connectedLineItems.get(this.first)
+                            .addAll(getConnectedHighways(lineItem, haveRunList).get(this.first)
+                                    .contains(lineItem)
+                                            ? getConnectedHighways(lineItem, haveRunList)
+                                                    .get(this.last)
+                                            : getConnectedHighways(lineItem, haveRunList)
+                                                    .get(this.first));
+                }
+                else
+                {
+                    connectedLineItems.get(this.first).add(lineItem);
+                }
+            }
+            else if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+                    && this.isMinimumHighway(lineItem)
+                    && (lineItem.asPolyLine().first().equals(last)
+                            || lineItem.asPolyLine().last().equals(last)))
+            {
+                connectedLineItems.get(this.last).add(lineItem);
+            }
+        }
+
+        return connectedLineItems;
+    }
+
+    private HashMap<String, ArrayList<LineItem>> getConnectedHighways(final LineItem object,
+            final ArrayList<LineItem> haveRunList)
+    {
+        final Location first = object.asPolyLine().first();
+        final Location last = object.asPolyLine().last();
 
         final Iterable<LineItem> lineItemArrays = new MultiIterable<>(
                 object.getAtlas().lineItemsContaining(first),
                 object.getAtlas().lineItemsContaining(last));
 
         final HashMap<String, ArrayList<LineItem>> connectedLineItems = new HashMap<>();
-        connectedLineItems.put("first", new ArrayList<>());
-        connectedLineItems.put("last", new ArrayList<>());
+        connectedLineItems.put(this.first, new ArrayList<>());
+        connectedLineItems.put(this.last, new ArrayList<>());
 
         for (final LineItem lineItem : lineItemArrays)
         {
-            if (!lineItem.equals(object) && this.isMinimumHighway(lineItem)
+            if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+                    && this.isMinimumHighway(lineItem)
                     && (lineItem.asPolyLine().first().equals(first)
                             || lineItem.asPolyLine().last().equals(first)))
             {
-                connectedLineItems.get("first").add(lineItem);
+                if (getOsmId(lineItem.getIdentifier()) == getOsmId(object.getIdentifier())
+                        && !haveRunList.contains(object))
+                {
+                    haveRunList.add(lineItem);
+                    connectedLineItems.get(this.first)
+                            .addAll(getConnectedHighways(lineItem, haveRunList).get(this.first)
+                                    .contains(lineItem)
+                                            ? getConnectedHighways(lineItem, haveRunList)
+                                                    .get(this.last)
+                                            : getConnectedHighways(lineItem, haveRunList)
+                                                    .get(this.first));
+                }
+                else
+                {
+                    connectedLineItems.get(this.first).add(lineItem);
+                }
             }
-            else if (!lineItem.equals(object) && (lineItem.asPolyLine().first().equals(last)
-                    || lineItem.asPolyLine().last().equals(last)))
+            else if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+                    && this.isMinimumHighway(lineItem)
+                    && (lineItem.asPolyLine().first().equals(last)
+                            || lineItem.asPolyLine().last().equals(last)))
             {
-                connectedLineItems.get("last").add(lineItem);
+                connectedLineItems.get(this.last).add(lineItem);
             }
         }
 
@@ -177,6 +255,12 @@ public class HighwayAccessTagCheck extends BaseCheck
         {
             return false;
         }
+    }
+
+    private long getOsmId(final long atlasId)
+    {
+        final long mill = 1000000;
+        return Math.abs(atlasId / mill);
     }
 
     @Override
