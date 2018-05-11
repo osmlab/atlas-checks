@@ -108,6 +108,11 @@
     }
   },
   "HighwayAccessTagCheck":{
+    "minimum":{
+      "highway":{
+        "type": "service"
+      }
+    }
   },
   "InvalidTurnRestrictionCheck": {
     "challenge": {

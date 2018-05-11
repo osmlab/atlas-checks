@@ -364,6 +364,7 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
     {
         return this.accessPrivateInHighwayLines;
     }
+
     // Private in Highway With Gates Tests
     public Atlas accessPrivateGateInHighwayEdges()
     {

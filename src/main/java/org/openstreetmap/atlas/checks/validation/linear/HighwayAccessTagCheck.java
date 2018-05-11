@@ -29,7 +29,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayAccessTagCheck extends BaseCheck
 {
 
-    private static final HighwayTag MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.SERVICE;
+    private static final String MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.SERVICE.toString();
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Check if the access tag of way {0,number,#} needs to be removed.");
 
@@ -53,8 +53,9 @@ public class HighwayAccessTagCheck extends BaseCheck
         // eg. MAX_LENGTH could be defined as "public static final double MAX_LENGTH = 100;"
         // this.maxLength = configurationValue(configuration, "length.max", MAX_LENGTH,
         // Distance::meters);
-        this.minimumHighwayPriority = (HighwayTag) this.configurationValue(configuration,
-                "highwayPriority.minimum", MINIMUM_HIGHWAY_PRIORITY_DEFAULT);
+        final String highwayType = (String) this.configurationValue(configuration,
+                "minimum.highway.type", MINIMUM_HIGHWAY_PRIORITY_DEFAULT);
+        this.minimumHighwayPriority = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
     }
 
     /**
@@ -67,9 +68,10 @@ public class HighwayAccessTagCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if ((object instanceof Edge) || (object instanceof Line) && this.isMinimumHighway(object) && (AccessTag.isNo(object)) || (AccessTag.isPrivate(object)))
+        if ((object instanceof Edge) || (object instanceof Line) && this.isMinimumHighway(object)
+                && (AccessTag.isNo(object)) || (AccessTag.isPrivate(object)))
         {
-                return true;
+            return true;
         }
         return false;
     }
@@ -123,8 +125,9 @@ public class HighwayAccessTagCheck extends BaseCheck
 
         for (final LineItem lineItem : lineItemArrays)
         {
-            if (!lineItem.equals(object) && this.isMinimumHighway(lineItem) && (lineItem.asPolyLine().first().equals(first)
-                    || lineItem.asPolyLine().last().equals(first)))
+            if (!lineItem.equals(object) && this.isMinimumHighway(lineItem)
+                    && (lineItem.asPolyLine().first().equals(first)
+                            || lineItem.asPolyLine().last().equals(first)))
             {
                 connectedLineItems.get("first").add(lineItem);
             }
