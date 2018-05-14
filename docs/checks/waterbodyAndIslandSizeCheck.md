@@ -1,12 +1,12 @@
 # Waterbody and Island Size Check
 
 #### Description
-This check identifies waterbodies that are either to small, or too large in size. Each waterbody and islands' surface area is calculated and compared to minimum and maximum values set in the configuration. Meters suqared is the unit of measurement for minimum values, while kilometers squared used when calculating and comparing maximum values.
+This check identifies waterbodies that are either to small, or too large in size. Each waterbody and islands' surface area is calculated and compared to minimum and maximum values set in the configuration. Meters squared is the unit of measurement for minimum values, while kilometers squared used when calculating and comparing maximum values.
 
 #### Live Example
 1) This [MultiPolygon Water Relation](https://www.openstreetmap.org/relation/2622285#map=14/59.2859/14.6538) is tagged `natural=WATER`. In this case, the inner members are islands, while the outer member is the waterbody. This particular inner members' ([osm id:372647498](https://www.openstreetmap.org/way/372647498)) surface area is less 10 squared meters.
  
-2) This islet ([osm id: 23240011](https://www.openstreetmap.org/way/23240011)) is larger than the confirured maximum surface area. According to OSM, any islet greater than 1 kilometer suqared should be tagged as `place=ISLAND`.
+2) This islet ([osm id: 23240011](https://www.openstreetmap.org/way/23240011)) is larger than the configured maximum surface area. According to OSM, any islet greater than 1 kilometer squared should be tagged as `place=ISLAND`.
 
 #### Code Review
 In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, 
@@ -37,7 +37,7 @@ the following conditions:
                         && !this.isFlagged(object.getIdentifier()));
 ```
 
-After our preliminary filtering, we categorize each object as either an Area or Relation, and go from there. If the object is an Area, we simply calculate the surfac area in meters and kilometers, and check whether the island, waterbody, or islet is larger or smaller than the configured maximums and mimimums. 
+After our preliminary filtering, we categorize each object as either an Area or Relation, and go from there. If the object is an Area, we simply calculate the surface area in meters and kilometers, and check whether the island, waterbody, or islet is larger or smaller than the configured maximums and minimums. 
 
 ```java
         if (object instanceof Area)
@@ -49,7 +49,7 @@ After our preliminary filtering, we categorize each object as either an Area or 
         }
 ```
 
-If the object is a Relation, we must calculate the surfae area of each individual member. Similar to above, upon completion of surface area calculation, we can compare the members value to the configured maximum and minimum waterbody and island sizes.
+If the object is a Relation, we must calculate the surface area of each individual member. Similar to above, upon completion of surface area calculation, we can compare the members value to the configured maximum and minimum waterbody and island sizes.
 
 ```java
    private void getInvalidRelationMembers(final Set<RelationMember> relationMembers,

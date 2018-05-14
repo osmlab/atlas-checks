@@ -299,8 +299,8 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
                 }
                 else if (surfaceAreaKilometers > this.waterbodyMaximumArea)
                 {
-                    instructions.add(this.getLocalizedInstruction(1, memberOsmId, surfaceAreaKilometers,
-                            this.waterbodyMaximumArea));
+                    instructions.add(this.getLocalizedInstruction(1, memberOsmId,
+                            surfaceAreaKilometers, this.waterbodyMaximumArea));
                     invalidRelationMembers.add(member);
                 }
             }
