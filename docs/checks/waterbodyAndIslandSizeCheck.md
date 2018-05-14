@@ -43,8 +43,9 @@ After our preliminary filtering, we categorize each object as either an Area or 
         if (object instanceof Area)
         {
             final Area area = (Area) object;
-            final double surfaceAreaMeters = area.asPolygon().surface().asMeterSquared();
-            final double surfaceAreaKilometers = Distance.kilometers(surfaceAreaMeters).asKilometers();
+            final Surface surfaceArea = area.asPolygon().surface();
+            final double surfaceAreaMeters = surfaceArea.asMeterSquared();
+            final double surfaceAreaKilometers = surfaceArea.asKilometerSquared();
 ...
         }
 ```
@@ -82,4 +83,4 @@ If the object is a Relation, we must calculate the surface area of each individu
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.
-[WaterbodyAndIslandSizeCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/points/WaterbodyAndIslandSizeCheck.java)
+[WaterbodyAndIslandSizeCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/areas/WaterbodyAndIslandSizeCheck.java)
