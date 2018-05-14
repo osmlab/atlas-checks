@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.validation.linear;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +13,6 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
@@ -29,11 +27,17 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayAccessTagCheck extends BaseCheck
 {
 
-    private static final String MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.SERVICE.toString();
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Check if the access tag of way {0,number,#} needs to be removed.");
+    private static final String MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.TERTIARY.toString();
+    private static final List<String> VALUE_NO_KEYS_DEFAULT = Arrays.asList("motor_vehicle",
+            "vehicle", "motorcar");
+    private static final List<String> VALUE_YES_KEYS_DEFAULT = Arrays.asList("public_transport",
+            "psv", "bus", "emergency");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "Make proper adjustments to the access tag of way {0,number,#}, and associated tag combinations.");
 
     private final HighwayTag minimumHighwayPriority;
+    private final List<String> valueNoKeys;
+    private final List<String> valueYesKeys;
 
     private final String first = "first";
     private final String last = "last";
@@ -59,6 +63,12 @@ public class HighwayAccessTagCheck extends BaseCheck
         final String highwayType = (String) this.configurationValue(configuration,
                 "minimum.highway.type", MINIMUM_HIGHWAY_PRIORITY_DEFAULT);
         this.minimumHighwayPriority = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
+
+        this.valueNoKeys = (List<String>) this.configurationValue(configuration,
+                "doNotFlag.value.no.keys", VALUE_NO_KEYS_DEFAULT);
+
+        this.valueYesKeys = (List<String>) this.configurationValue(configuration,
+                "doNotFlag.value.yes.keys", VALUE_YES_KEYS_DEFAULT);
     }
 
     /**
@@ -72,14 +82,24 @@ public class HighwayAccessTagCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         if (((object instanceof Edge) || (object instanceof Line))
-                && !this.isFlagged(object.getOsmIdentifier())
-                && (AccessTag.isNo(object) || (AccessTag.isPrivate(object))))
+                && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
+                && this.isMinimumHighway(object))
         {
-            if (this.isMinimumHighway(object))
+            for (final String value : this.valueNoKeys)
             {
-                return true;
+                if (object.getOsmTags().getOrDefault(value, "yes").toUpperCase().equals("NO"))
+                {
+                    return false;
+                }
             }
-            return false;
+            for (final String value : this.valueYesKeys)
+            {
+                if (object.getOsmTags().getOrDefault(value, "no").toUpperCase().equals("YES"))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }
@@ -97,21 +117,8 @@ public class HighwayAccessTagCheck extends BaseCheck
         final LineItem lineItem = (LineItem) object;
         final HashMap<String, ArrayList<LineItem>> connectedHighways = getConnectedHighways(
                 lineItem);
-        if (AccessTag.isNo(object)
-                && !object.getOsmTags().getOrDefault("public_transport", "no").toUpperCase()
-                        .equals("YES")
-                && connectedHighways.get(this.first).size() > 0
+        if (connectedHighways.get(this.first).size() > 0
                 && connectedHighways.get(this.last).size() > 0)
-        {
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-        }
-        else if (AccessTag.isPrivate(object)
-                && !object.getOsmTags().getOrDefault("public_transport", "no").toUpperCase()
-                        .equals("YES")
-                && connectedHighways.get(this.first).size() > 0
-                && connectedHighways.get(this.last).size() > 0 && !hasGate((LineItem) object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -217,31 +224,6 @@ public class HighwayAccessTagCheck extends BaseCheck
         }
 
         return connectedLineItems;
-    }
-
-    private boolean hasGate(final LineItem object)
-    {
-        for (final Node node : getLineItemNodes(object))
-        {
-            if (node.getOsmTags().containsValue("gate"))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private ArrayList<Node> getLineItemNodes(final LineItem object)
-    {
-        final ArrayList<Node> lineItemNodes = new ArrayList<>();
-
-        for (final Object location : object.asPolyLine().toArray())
-        {
-            lineItemNodes.addAll(
-                    (Collection<? extends Node>) object.getAtlas().nodesAt((Location) location));
-        }
-
-        return lineItemNodes;
     }
 
     private boolean isMinimumHighway(final AtlasObject object)

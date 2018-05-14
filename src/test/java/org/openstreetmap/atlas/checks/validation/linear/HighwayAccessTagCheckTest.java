@@ -64,14 +64,6 @@ public class HighwayAccessTagCheckTest
     }
 
     @Test
-    public void accessNoInHighwayEdgesPublicTransportYes()
-    {
-        this.verifier.actual(this.setup.accessNoInHighwayEdgesPublicTransportYes(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
     public void accessNoInHighwayEdgesSameFeature()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesSameFeature(),
@@ -89,7 +81,7 @@ public class HighwayAccessTagCheckTest
 
     // Start Highway Tests
     @Test
-    public void accessStartInHighwayEdges()
+    public void accessNoStartHighwayEdges()
     {
         this.verifier.actual(this.setup.accessNoStartHighwayEdges(),
                 new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
@@ -128,44 +120,30 @@ public class HighwayAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
-    /*
-     * @Test public void accessNoStartHighwayEdgesSameFeature() {
-     * this.verifier.actual(this.setup.accessNoStartHighwayEdgesSameFeature(), new
-     * HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-     * this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size())); }
-     */
-
-    // private In Highway Tests
     @Test
-    public void accessPrivateInHighwayEdges()
+    public void accessNoStartHighwayEdgesSameFeature()
     {
-        this.verifier.actual(this.setup.accessPrivateInHighwayEdges(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void accessPrivateInHighwayLines()
-    {
-        this.verifier.actual(this.setup.accessPrivateInHighwayLines(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    // Private In Highway With Gates Tests
-    @Test
-    public void accessPrivateGateInHighwayEdges()
-    {
-        this.verifier.actual(this.setup.accessPrivateGateInHighwayEdges(),
+        this.verifier.actual(this.setup.accessNoStartHighwayEdgesSameFeature(),
                 new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
+    // config tests
     @Test
-    public void accessPrivateGateInHighwayLines()
+    public void accessNoInHighwayEdgesVehicleNo()
     {
-        this.verifier.actual(this.setup.accessPrivateGateInHighwayLines(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesVehicleNo(),
+                new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"HighwayAccessTagCheck\":{\"doNotFlag.value\":{\"no\":{\"keys\":[\"vehicle\"]}}}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void accessNoInHighwayEdgesPublicTransportYes()
+    {
+        this.verifier.actual(this.setup.accessNoInHighwayEdgesPublicTransportYes(),
+                new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"HighwayAccessTagCheck\":{\"doNotFlag.value\":{\"yes\":{\"keys\":[\"public_transport\"]}}}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

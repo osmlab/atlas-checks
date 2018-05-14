@@ -110,7 +110,15 @@
   "HighwayAccessTagCheck":{
     "minimum":{
       "highway":{
-        "type": "service"
+        "type": "tertiary"
+      }
+    },
+    "doNotFlag.value":{
+      "no":{
+        "keys":["motor_vehicle","vehicle","motorcar"]
+      },
+      "yes":{
+        "keys":["public_transport","psv","bus","emergency"]
       }
     }
   },
