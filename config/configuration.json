@@ -108,7 +108,7 @@
     }
   },
   "HighwayAccessTagCheck":{
-    "minimum.highway.type":"tertiary",
+    "minimum.highway.type":"residential",
     "do-not-flag.value":{
       "no":{
         "keys":["motor_vehicle","vehicle","motorcar"]

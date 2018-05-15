@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.linear;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -9,12 +10,17 @@ import java.util.Optional;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.LandUseTag;
 import org.openstreetmap.atlas.tags.MotorVehicleTag;
 import org.openstreetmap.atlas.tags.MotorcarTag;
 import org.openstreetmap.atlas.tags.PublicServiceVehiclesTag;
@@ -35,7 +41,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayAccessTagCheck extends BaseCheck
 {
 
-    private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.TERTIARY.toString();
+    private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RESIDENTIAL.toString();
     private static final List<String> DO_NOT_FLAG_IF_NO_DEFAULT = Arrays.asList(MotorVehicleTag.KEY,
             VehicleTag.KEY, MotorcarTag.KEY);
     // change string keys to tag class references once the classes are created
@@ -90,7 +96,7 @@ public class HighwayAccessTagCheck extends BaseCheck
         return ((object instanceof Edge) || (object instanceof Line))
                 && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
-                && isMinimumHighway(object)
+                && isMinimumHighway(object) && !isInMilitaryArea((LineItem) object)
                 && !hasKeyValueMatch(object, this.doNotFlagIfNoKeys, "NO", "yes")
                 && !hasKeyValueMatch(object, this.doNotFlagIfYesKeys, "YES", "no");
     }
@@ -243,6 +249,58 @@ public class HighwayAccessTagCheck extends BaseCheck
         }
 
         return connectedLineItems;
+    }
+
+    /**
+     * Checks if {@link LineItem} is inside an {@link Area} with tag {@code landuse=MILITARY}.
+     *
+     * @param object
+     *            {@link LineItem} to check
+     * @return {@code true} if input {@link LineItem} is in an {@link Area} with tag
+     *         {@code landuse=MILITARY}
+     */
+    private boolean isInMilitaryArea(final LineItem object)
+    {
+        for (final Node node : getLineItemNodes(object))
+        {
+            if (object.getAtlas()
+                    .areasCovering(node.getLocation(),
+                            area -> area.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
+                                    .toUpperCase().equals(LandUseTag.MILITARY.toString()))
+                    .iterator().hasNext())
+            {
+                return true;
+            }
+        }
+        for (final Relation relation : object.getAtlas().relations())
+        {
+            if (relation.intersects(new Polygon(
+                    new MultiIterable<>(object.asPolyLine(), object.asPolyLine().reversed()))))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets all {@link Node}s in a {@link LineItem} as an {@link ArrayList}.
+     *
+     * @param object
+     *            {@link LineItem} to get the nodes from
+     * @return {@link ArrayList} of nodes from the input {@link LineItem}
+     */
+    private ArrayList<Node> getLineItemNodes(final LineItem object)
+    {
+        final ArrayList<Node> lineItemNodes = new ArrayList<>();
+
+        for (final Object location : object.asPolyLine().toArray())
+        {
+            lineItemNodes.addAll(
+                    (Collection<? extends Node>) object.getAtlas().nodesAt((Location) location));
+        }
+
+        return lineItemNodes;
     }
 
     /**
