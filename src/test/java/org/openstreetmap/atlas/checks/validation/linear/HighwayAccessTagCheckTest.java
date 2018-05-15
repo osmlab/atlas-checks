@@ -59,7 +59,8 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesTrack()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesTrack(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"HighwayAccessTagCheck\":{\"minimum.highway.type\":\"residential\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -150,7 +151,7 @@ public class HighwayAccessTagCheckTest
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesVehicleNo(),
                 new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"HighwayAccessTagCheck\":{\"doNotFlag.value\":{\"no\":{\"keys\":[\"vehicle\"]}}}}")));
+                        "{\"HighwayAccessTagCheck\":{\"do-not-flag.value\":{\"no\":{\"keys\":[\"vehicle\"]}}}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -159,7 +160,7 @@ public class HighwayAccessTagCheckTest
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesPublicTransportYes(),
                 new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"HighwayAccessTagCheck\":{\"doNotFlag.value\":{\"yes\":{\"keys\":[\"public_transport\"]}}}}")));
+                        "{\"HighwayAccessTagCheck\":{\"do-not-flag.value\":{\"yes\":{\"keys\":[\"public_transport\"]}}}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }
