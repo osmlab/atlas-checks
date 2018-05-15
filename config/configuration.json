@@ -108,12 +108,8 @@
     }
   },
   "HighwayAccessTagCheck":{
-    "minimum":{
-      "highway":{
-        "type": "tertiary"
-      }
-    },
-    "doNotFlag.value":{
+    "minimum.highway.type":"tertiary",
+    "do-not-flag.value":{
       "no":{
         "keys":["motor_vehicle","vehicle","motorcar"]
       },

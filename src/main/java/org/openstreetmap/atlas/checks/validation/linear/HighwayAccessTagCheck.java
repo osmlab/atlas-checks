@@ -15,11 +15,19 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.MotorVehicleTag;
+import org.openstreetmap.atlas.tags.MotorcarTag;
+import org.openstreetmap.atlas.tags.PublicServiceVehiclesTag;
+import org.openstreetmap.atlas.tags.VehicleTag;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
+ * This check flags {@link Edge}s and {@link Line}s that include the highway tag and an access tag
+ * with a value of no. It checks for locations where this breaks a road network and does not have
+ * supporting tags. Supporting tags declare what is or is not included in {@code access=no}. For
+ * example a supporting tag of {@code public_transport=yes} would mean only public transport
+ * vehicles are allowed.
  *
  * @author bbreithaupt
  */
@@ -27,20 +35,21 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayAccessTagCheck extends BaseCheck
 {
 
-    private static final String MINIMUM_HIGHWAY_PRIORITY_DEFAULT = HighwayTag.TERTIARY.toString();
-    private static final List<String> VALUE_NO_KEYS_DEFAULT = Arrays.asList("motor_vehicle",
-            "vehicle", "motorcar");
-    private static final List<String> VALUE_YES_KEYS_DEFAULT = Arrays.asList("public_transport",
-            "psv", "bus", "emergency");
+    private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.TERTIARY.toString();
+    private static final List<String> DO_NOT_FLAG_IF_NO_DEFAULT = Arrays.asList(MotorVehicleTag.KEY,
+            VehicleTag.KEY, MotorcarTag.KEY);
+    // change string keys to tag class references once the classes are created
+    private static final List<String> DO_NOT_FLAG_IF_YES_DEFAULT = Arrays.asList("public_transport",
+            PublicServiceVehiclesTag.KEY, "bus", "emergency");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "Make proper adjustments to the access tag of way {0,number,#}, and associated tag combinations.");
 
-    private final HighwayTag minimumHighwayPriority;
-    private final List<String> valueNoKeys;
-    private final List<String> valueYesKeys;
+    private final HighwayTag minimumHighwayType;
+    private final List<String> doNotFlagIfNoKeys;
+    private final List<String> doNotFlagIfYesKeys;
 
-    private final String first = "first";
-    private final String last = "last";
+    private final String stringFirst = "first";
+    private final String stringLast = "last";
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
@@ -56,19 +65,16 @@ public class HighwayAccessTagCheck extends BaseCheck
     public HighwayAccessTagCheck(final Configuration configuration)
     {
         super(configuration);
-        // any internal variables can be set here from configuration
-        // eg. MAX_LENGTH could be defined as "public static final double MAX_LENGTH = 100;"
-        // this.maxLength = configurationValue(configuration, "length.max", MAX_LENGTH,
-        // Distance::meters);gradle
+
         final String highwayType = (String) this.configurationValue(configuration,
-                "minimum.highway.type", MINIMUM_HIGHWAY_PRIORITY_DEFAULT);
-        this.minimumHighwayPriority = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
+                "minimum.highway.type", MINIMUM_HIGHWAY_TYPE_DEFAULT);
+        this.minimumHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
 
-        this.valueNoKeys = (List<String>) this.configurationValue(configuration,
-                "doNotFlag.value.no.keys", VALUE_NO_KEYS_DEFAULT);
+        this.doNotFlagIfNoKeys = (List<String>) this.configurationValue(configuration,
+                "do-not-flag.value.no.keys", DO_NOT_FLAG_IF_NO_DEFAULT);
 
-        this.valueYesKeys = (List<String>) this.configurationValue(configuration,
-                "doNotFlag.value.yes.keys", VALUE_YES_KEYS_DEFAULT);
+        this.doNotFlagIfYesKeys = (List<String>) this.configurationValue(configuration,
+                "do-not-flag.value.yes.keys", DO_NOT_FLAG_IF_YES_DEFAULT);
     }
 
     /**
@@ -81,27 +87,12 @@ public class HighwayAccessTagCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if (((object instanceof Edge) || (object instanceof Line))
+        return ((object instanceof Edge) || (object instanceof Line))
+                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
-                && this.isMinimumHighway(object))
-        {
-            for (final String value : this.valueNoKeys)
-            {
-                if (object.getOsmTags().getOrDefault(value, "yes").toUpperCase().equals("NO"))
-                {
-                    return false;
-                }
-            }
-            for (final String value : this.valueYesKeys)
-            {
-                if (object.getOsmTags().getOrDefault(value, "no").toUpperCase().equals("YES"))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+                && isMinimumHighway(object)
+                && !hasKeyValueMatch(object, this.doNotFlagIfNoKeys, "NO", "yes")
+                && !hasKeyValueMatch(object, this.doNotFlagIfYesKeys, "YES", "no");
     }
 
     /**
@@ -117,8 +108,8 @@ public class HighwayAccessTagCheck extends BaseCheck
         final LineItem lineItem = (LineItem) object;
         final HashMap<String, ArrayList<LineItem>> connectedHighways = getConnectedHighways(
                 lineItem);
-        if (connectedHighways.get(this.first).size() > 0
-                && connectedHighways.get(this.last).size() > 0)
+        if (connectedHighways.get(this.stringFirst).size() > 0
+                && connectedHighways.get(this.stringLast).size() > 0)
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -127,6 +118,17 @@ public class HighwayAccessTagCheck extends BaseCheck
         return Optional.empty();
     }
 
+    /**
+     * This finds LineItems with the highway tag, that are connected to the original OSM way of the
+     * input {@link LineItem}. These connected {@link LineItem}s are returned as a {@link HashMap}
+     * that splits them based on which end of the OSM way they are connected to.
+     *
+     * @param object
+     *            a {@link LineItem} for which the connected highways ar to be found
+     * @return a {@link HashMap} containing keys first and last, each containing an
+     *         {@link ArrayList} of LineItems that are the connected highways for the associated
+     *         side of the original {@link LineItem}
+     */
     private HashMap<String, ArrayList<LineItem>> getConnectedHighways(final LineItem object)
     {
         final Location first = object.asPolyLine().first();
@@ -137,12 +139,13 @@ public class HighwayAccessTagCheck extends BaseCheck
                 object.getAtlas().lineItemsContaining(last));
 
         final HashMap<String, ArrayList<LineItem>> connectedLineItems = new HashMap<>();
-        connectedLineItems.put(this.first, new ArrayList<>());
-        connectedLineItems.put(this.last, new ArrayList<>());
+        connectedLineItems.put(this.stringFirst, new ArrayList<>());
+        connectedLineItems.put(this.stringLast, new ArrayList<>());
 
         for (final LineItem lineItem : lineItemArrays)
         {
-            if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+            if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                    && !(lineItem.getIdentifier() == object.getIdentifier())
                     && this.isMinimumHighway(lineItem)
                     && (lineItem.asPolyLine().first().equals(first)
                             || lineItem.asPolyLine().last().equals(first)))
@@ -151,33 +154,49 @@ public class HighwayAccessTagCheck extends BaseCheck
                 {
                     final ArrayList<LineItem> haveRunList = new ArrayList<>();
                     haveRunList.add(object);
-                    connectedLineItems.get(this.first)
-                            .addAll(getConnectedHighways(lineItem, haveRunList).get(this.first)
-                                    .contains(lineItem)
+                    connectedLineItems.get(this.stringFirst)
+                            .addAll(getConnectedHighways(lineItem, haveRunList)
+                                    .get(this.stringFirst).contains(lineItem)
                                             ? getConnectedHighways(lineItem, haveRunList)
-                                                    .get(this.last)
+                                                    .get(this.stringLast)
                                             : getConnectedHighways(lineItem, haveRunList)
-                                                    .get(this.first));
+                                                    .get(this.stringFirst));
                 }
                 else
                 {
-                    connectedLineItems.get(this.first).add(lineItem);
+                    connectedLineItems.get(this.stringFirst).add(lineItem);
                 }
             }
-            else if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+            else if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                    && !(lineItem.getIdentifier() == object.getIdentifier())
                     && this.isMinimumHighway(lineItem)
                     && (lineItem.asPolyLine().first().equals(last)
                             || lineItem.asPolyLine().last().equals(last)))
             {
-                connectedLineItems.get(this.last).add(lineItem);
+                connectedLineItems.get(this.stringLast).add(lineItem);
             }
         }
 
         return connectedLineItems;
     }
 
+    /**
+     * This finds LineItems with the highway tag, that are connected to the original OSM way of the
+     * input {@link LineItem}. These connected {@link LineItem}s are returned as a {@link HashMap}
+     * that splits them based on which end of the OSM way they are connected to. Items in the
+     * {@code ignoreLineItems} {@link ArrayList} are not returned as connections. This is useful for
+     * preventing infinite loops when recursing.
+     *
+     * @param object
+     *            a {@link LineItem} for which the connected highways ar to be found
+     * @param ignoreLineItems
+     *            a list of {@link LineItem}s that are ignored if found.
+     * @return a {@link HashMap} containing keys first and last, each containing an
+     *         {@link ArrayList} of LineItems that are the connected highways for the associated
+     *         side of the original {@link LineItem}
+     */
     private HashMap<String, ArrayList<LineItem>> getConnectedHighways(final LineItem object,
-            final ArrayList<LineItem> haveRunList)
+            final ArrayList<LineItem> ignoreLineItems)
     {
         final Location first = object.asPolyLine().first();
         final Location last = object.asPolyLine().last();
@@ -187,62 +206,100 @@ public class HighwayAccessTagCheck extends BaseCheck
                 object.getAtlas().lineItemsContaining(last));
 
         final HashMap<String, ArrayList<LineItem>> connectedLineItems = new HashMap<>();
-        connectedLineItems.put(this.first, new ArrayList<>());
-        connectedLineItems.put(this.last, new ArrayList<>());
+        connectedLineItems.put(this.stringFirst, new ArrayList<>());
+        connectedLineItems.put(this.stringLast, new ArrayList<>());
 
         for (final LineItem lineItem : lineItemArrays)
         {
-            if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+            if (!(lineItem.getIdentifier() == object.getIdentifier())
                     && this.isMinimumHighway(lineItem)
                     && (lineItem.asPolyLine().first().equals(first)
                             || lineItem.asPolyLine().last().equals(first)))
             {
                 if (getOsmId(lineItem.getIdentifier()) == getOsmId(object.getIdentifier())
-                        && !haveRunList.contains(object))
+                        && !ignoreLineItems.contains(object))
                 {
-                    haveRunList.add(lineItem);
-                    connectedLineItems.get(this.first)
-                            .addAll(getConnectedHighways(lineItem, haveRunList).get(this.first)
-                                    .contains(lineItem)
-                                            ? getConnectedHighways(lineItem, haveRunList)
-                                                    .get(this.last)
-                                            : getConnectedHighways(lineItem, haveRunList)
-                                                    .get(this.first));
+                    ignoreLineItems.add(lineItem);
+                    connectedLineItems.get(this.stringFirst)
+                            .addAll(getConnectedHighways(lineItem, ignoreLineItems)
+                                    .get(this.stringFirst).contains(lineItem)
+                                            ? getConnectedHighways(lineItem, ignoreLineItems)
+                                                    .get(this.stringLast)
+                                            : getConnectedHighways(lineItem, ignoreLineItems)
+                                                    .get(this.stringFirst));
                 }
                 else
                 {
-                    connectedLineItems.get(this.first).add(lineItem);
+                    connectedLineItems.get(this.stringFirst).add(lineItem);
                 }
             }
-            else if (!(Math.abs(lineItem.getIdentifier()) == Math.abs(object.getIdentifier()))
+            else if (!(lineItem.getIdentifier() == object.getIdentifier())
                     && this.isMinimumHighway(lineItem)
                     && (lineItem.asPolyLine().first().equals(last)
                             || lineItem.asPolyLine().last().equals(last)))
             {
-                connectedLineItems.get(this.last).add(lineItem);
+                connectedLineItems.get(this.stringLast).add(lineItem);
             }
         }
 
         return connectedLineItems;
     }
 
+    /**
+     * Checks if an {@link AtlasObject} is of an equal or greater priority than the minimum. The
+     * minimum is supplied as a configuration parameter, the default is {@code "tertiary"}.
+     *
+     * @param object
+     *            an {@link AtlasObject}
+     * @return {@code true} if this object is >= the minimum
+     */
     private boolean isMinimumHighway(final AtlasObject object)
     {
         final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
-        if (result.isPresent())
-        {
-            return result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayPriority);
-        }
-        else
-        {
-            return false;
-        }
+        return result.isPresent()
+                && result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
     }
 
+    /**
+     * Gets the original OSM id from an atlas id.
+     *
+     * @param atlasId
+     *            an atlas id as a {@code long}
+     * @return the original OSM id
+     */
     private long getOsmId(final long atlasId)
     {
         final long mill = 1000000;
-        return Math.abs(atlasId / mill);
+        return atlasId / mill;
+    }
+
+    /**
+     * Checks if any of the keys in the input list have a value that matches the input
+     * {@code matchValue} for the input {@code object}.
+     *
+     * @param object
+     *            the {@link LineItem} to be evaluated
+     * @param keys
+     *            a {@link List} of {@link String} keys to check the values of
+     * @param matchValue
+     *            a {@link String} to check the {@code keys} against
+     * @param defaultValue
+     *            a value to pass if a key does not exist for the input {@code object}, usually the
+     *            inverse of {@code matchValue}
+     * @return {@code true} if any key's value, in {@code keys}, is equal to {@code matchValue}
+     */
+    private boolean hasKeyValueMatch(final AtlasObject object, final List<String> keys,
+            final String matchValue, final String defaultValue)
+    {
+        for (final String key : keys)
+        {
+            if (object.getOsmTags().getOrDefault(key, defaultValue).toUpperCase()
+                    .equals(matchValue))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
