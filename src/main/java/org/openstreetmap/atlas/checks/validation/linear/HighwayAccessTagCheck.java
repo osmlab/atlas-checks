@@ -96,7 +96,7 @@ public class HighwayAccessTagCheck extends BaseCheck
         return ((object instanceof Edge) || (object instanceof Line))
                 && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
-                && isMinimumHighway(object) && !isInMilitaryArea((LineItem) object)
+                && isMinimumHighway(object)
                 && !hasKeyValueMatch(object, this.doNotFlagIfNoKeys, "NO", "yes")
                 && !hasKeyValueMatch(object, this.doNotFlagIfYesKeys, "YES", "no");
     }
@@ -115,7 +115,8 @@ public class HighwayAccessTagCheck extends BaseCheck
         final HashMap<String, ArrayList<LineItem>> connectedHighways = getConnectedHighways(
                 lineItem);
         if (connectedHighways.get(this.stringFirst).size() > 0
-                && connectedHighways.get(this.stringLast).size() > 0)
+                && connectedHighways.get(this.stringLast).size() > 0
+                && !isInMilitaryArea((LineItem) object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
