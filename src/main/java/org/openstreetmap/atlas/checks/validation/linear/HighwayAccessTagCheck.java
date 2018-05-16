@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.linear;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,6 @@ import org.openstreetmap.atlas.tags.MotorVehicleTag;
 import org.openstreetmap.atlas.tags.MotorcarTag;
 import org.openstreetmap.atlas.tags.PublicServiceVehiclesTag;
 import org.openstreetmap.atlas.tags.VehicleTag;
-import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -116,144 +114,9 @@ public class HighwayAccessTagCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final LineItem lineItem = (LineItem) object;
-        final HashMap<String, ArrayList<LineItem>> connectedHighways = getConnectedHighways(
-                lineItem);
-        if (connectedHighways.get(this.stringFirst).size() > 0
-                && connectedHighways.get(this.stringLast).size() > 0)
-        {
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * This finds LineItems with the highway tag, that are connected to the original OSM way of the
-     * input {@link LineItem}. These connected {@link LineItem}s are returned as a {@link HashMap}
-     * that splits them based on which end of the OSM way they are connected to.
-     *
-     * @param object
-     *            a {@link LineItem} for which the connected highways ar to be found
-     * @return a {@link HashMap} containing keys first and last, each containing an
-     *         {@link ArrayList} of LineItems that are the connected highways for the associated
-     *         side of the original {@link LineItem}
-     */
-    private HashMap<String, ArrayList<LineItem>> getConnectedHighways(final LineItem object)
-    {
-        final Location first = object.asPolyLine().first();
-        final Location last = object.asPolyLine().last();
-
-        final Iterable<LineItem> lineItemArrays = new MultiIterable<>(
-                object.getAtlas().lineItemsContaining(first),
-                object.getAtlas().lineItemsContaining(last));
-
-        final HashMap<String, ArrayList<LineItem>> connectedLineItems = new HashMap<>();
-        connectedLineItems.put(this.stringFirst, new ArrayList<>());
-        connectedLineItems.put(this.stringLast, new ArrayList<>());
-
-        for (final LineItem lineItem : lineItemArrays)
-        {
-            if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                    && !(lineItem.getIdentifier() == object.getIdentifier())
-                    && this.isMinimumHighway(lineItem)
-                    && (lineItem.asPolyLine().first().equals(first)
-                            || lineItem.asPolyLine().last().equals(first)))
-            {
-                if (getOsmId(lineItem.getIdentifier()) == getOsmId(object.getIdentifier()))
-                {
-                    final ArrayList<LineItem> haveRunList = new ArrayList<>();
-                    haveRunList.add(object);
-                    connectedLineItems.get(this.stringFirst)
-                            .addAll(getConnectedHighways(lineItem, haveRunList)
-                                    .get(this.stringFirst).contains(lineItem)
-                                            ? getConnectedHighways(lineItem, haveRunList)
-                                                    .get(this.stringLast)
-                                            : getConnectedHighways(lineItem, haveRunList)
-                                                    .get(this.stringFirst));
-                }
-                else
-                {
-                    connectedLineItems.get(this.stringFirst).add(lineItem);
-                }
-            }
-            else if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                    && !(lineItem.getIdentifier() == object.getIdentifier())
-                    && this.isMinimumHighway(lineItem)
-                    && (lineItem.asPolyLine().first().equals(last)
-                            || lineItem.asPolyLine().last().equals(last)))
-            {
-                connectedLineItems.get(this.stringLast).add(lineItem);
-            }
-        }
-
-        return connectedLineItems;
-    }
-
-    /**
-     * This finds LineItems with the highway tag, that are connected to the original OSM way of the
-     * input {@link LineItem}. These connected {@link LineItem}s are returned as a {@link HashMap}
-     * that splits them based on which end of the OSM way they are connected to. Items in the
-     * {@code ignoreLineItems} {@link ArrayList} are not returned as connections. This is useful for
-     * preventing infinite loops when recursing.
-     *
-     * @param object
-     *            a {@link LineItem} for which the connected highways ar to be found
-     * @param ignoreLineItems
-     *            a list of {@link LineItem}s that are ignored if found.
-     * @return a {@link HashMap} containing keys first and last, each containing an
-     *         {@link ArrayList} of LineItems that are the connected highways for the associated
-     *         side of the original {@link LineItem}
-     */
-    private HashMap<String, ArrayList<LineItem>> getConnectedHighways(final LineItem object,
-            final ArrayList<LineItem> ignoreLineItems)
-    {
-        final Location first = object.asPolyLine().first();
-        final Location last = object.asPolyLine().last();
-
-        final Iterable<LineItem> lineItemArrays = new MultiIterable<>(
-                object.getAtlas().lineItemsContaining(first),
-                object.getAtlas().lineItemsContaining(last));
-
-        final HashMap<String, ArrayList<LineItem>> connectedLineItems = new HashMap<>();
-        connectedLineItems.put(this.stringFirst, new ArrayList<>());
-        connectedLineItems.put(this.stringLast, new ArrayList<>());
-
-        for (final LineItem lineItem : lineItemArrays)
-        {
-            if (!(lineItem.getIdentifier() == object.getIdentifier())
-                    && this.isMinimumHighway(lineItem)
-                    && (lineItem.asPolyLine().first().equals(first)
-                            || lineItem.asPolyLine().last().equals(first)))
-            {
-                if (getOsmId(lineItem.getIdentifier()) == getOsmId(object.getIdentifier())
-                        && !ignoreLineItems.contains(object))
-                {
-                    ignoreLineItems.add(lineItem);
-                    connectedLineItems.get(this.stringFirst)
-                            .addAll(getConnectedHighways(lineItem, ignoreLineItems)
-                                    .get(this.stringFirst).contains(lineItem)
-                                            ? getConnectedHighways(lineItem, ignoreLineItems)
-                                                    .get(this.stringLast)
-                                            : getConnectedHighways(lineItem, ignoreLineItems)
-                                                    .get(this.stringFirst));
-                }
-                else
-                {
-                    connectedLineItems.get(this.stringFirst).add(lineItem);
-                }
-            }
-            else if (!(lineItem.getIdentifier() == object.getIdentifier())
-                    && this.isMinimumHighway(lineItem)
-                    && (lineItem.asPolyLine().first().equals(last)
-                            || lineItem.asPolyLine().last().equals(last)))
-            {
-                connectedLineItems.get(this.stringLast).add(lineItem);
-            }
-        }
-
-        return connectedLineItems;
+        this.markAsFlagged(object.getOsmIdentifier());
+        return Optional.of(this.createFlag(object,
+                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
     }
 
     /**

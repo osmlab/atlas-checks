@@ -104,55 +104,6 @@ public class HighwayAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
-    // Start Highway Tests
-    @Test
-    public void accessNoStartHighwayEdges()
-    {
-        this.verifier.actual(this.setup.accessNoStartHighwayEdges(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void accessNoStartHighwayLines()
-    {
-        this.verifier.actual(this.setup.accessNoStartHighwayLines(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void accessNoStartHighwayEdgeLineEdge()
-    {
-        this.verifier.actual(this.setup.accessNoStartHighwayEdgeLineEdge(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void accessNoStartHighwayLineEdgeLine()
-    {
-        this.verifier.actual(this.setup.accessNoStartHighwayLineEdgeLine(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void accessNoInHighwayEdgesNonHighwayConnected()
-    {
-        this.verifier.actual(this.setup.accessNoInHighwayEdgesNonHighwayConnected(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void accessNoStartHighwayEdgesSameFeature()
-    {
-        this.verifier.actual(this.setup.accessNoStartHighwayEdgesSameFeature(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
     // config tests
     @Test
     public void accessNoInHighwayEdgesVehicleNo()
