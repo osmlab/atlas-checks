@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -18,6 +18,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
@@ -277,12 +278,15 @@ public class HighwayAccessTagCheck extends BaseCheck
             }
         }
         for (final Relation relation : object.getAtlas()
-                .relations(relation -> relation.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
+                .relations(relation -> (relation.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
                         .toUpperCase().equals(LandUseTag.MILITARY.toString())
-                        || relation.getOsmTags().containsKey(MilitaryTag.KEY)))
+                        || relation.getOsmTags().containsKey(MilitaryTag.KEY))
+                        && relation.isMultiPolygon()))
         {
-            if (relation.intersects(new Polygon(
-                    new MultiIterable<>(object.asPolyLine(), object.asPolyLine().reversed()))))
+            final MultiPolygon relationPolygon = new RelationOrAreaToMultiPolygonConverter()
+                    .convert(relation);
+            if (object.intersects(relationPolygon)
+                    || relationPolygon.fullyGeometricallyEncloses(object.asPolyLine()))
             {
                 return true;
             }

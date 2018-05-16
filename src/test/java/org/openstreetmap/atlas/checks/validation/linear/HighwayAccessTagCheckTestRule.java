@@ -29,6 +29,10 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
     private static final String TEST_8 = "0.0,0.7";
     private static final String TEST_9 = "0.1,0.8";
     private static final String TEST_10 = "0.0,0.9";
+    private static final String TEST_11 = "0.2,-0.1";
+    private static final String TEST_12 = "-0.2,-0.1";
+    private static final String TEST_13 = "-0.2,1.0";
+    private static final String TEST_14 = "0.2,1.0";
 
     // In Highway Tests
     @TestAtlas(
@@ -226,12 +230,13 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // areas
-            areas = { @Area(id = "1000", coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_9),
-                    @Loc(value = TEST_6), @Loc(value = TEST_2) }) },
+            lines = { @Line(id = "1000", coordinates = { @Loc(value = TEST_11),
+                    @Loc(value = TEST_12), @Loc(value = TEST_13), @Loc(value = TEST_14),
+                    @Loc(value = TEST_11) }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "1000", type = "area", role = "na") }, tags = {
-                            "landuse=military" }) })
+                    @Member(id = "1000", type = "line", role = "outer") }, tags = {
+                            "landuse=military", "type=multipolygon" }) })
     private Atlas accessNoInHighwayEdgesLanduseMilitaryRelation;
 
     @TestAtlas(
@@ -253,8 +258,9 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // areas
-            areas = { @Area(id = "1000", coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_9),
-                    @Loc(value = TEST_6), @Loc(value = TEST_2) }) },
+            areas = { @Area(id = "1000", coordinates = { @Loc(value = TEST_11),
+                    @Loc(value = TEST_12), @Loc(value = TEST_13), @Loc(value = TEST_14),
+                    @Loc(value = TEST_11) }) },
             // relations
             relations = { @Relation(id = "123", members = {
                     @Member(id = "1000", type = "area", role = "na") }) })
