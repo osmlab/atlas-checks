@@ -234,6 +234,32 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
                             "landuse=military" }) })
     private Atlas accessNoInHighwayEdgesLanduseMilitaryRelation;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)) },
+            // edges
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4),
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "access=no" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
+            // areas
+            areas = { @Area(id = "1000", coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_9),
+                    @Loc(value = TEST_6), @Loc(value = TEST_2) }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "1000", type = "area", role = "na") }) })
+    private Atlas accessNoInHighwayEdgesInRelation;
+
     // Start Highway Tests
     @TestAtlas(
             // nodes
@@ -457,6 +483,11 @@ public class HighwayAccessTagCheckTestRule extends CoreTestRule
     public Atlas getAccessNoInHighwayEdgesLanduseMilitaryRelation()
     {
         return this.accessNoInHighwayEdgesLanduseMilitaryRelation;
+    }
+
+    public Atlas getAccessNoInHighwayEdgesInRelation()
+    {
+        return this.accessNoInHighwayEdgesInRelation;
     }
 
     // Start Highway Tests

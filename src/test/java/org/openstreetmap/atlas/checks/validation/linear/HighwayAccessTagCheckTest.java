@@ -96,6 +96,14 @@ public class HighwayAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
+    @Test
+    public void accessNoInHighwayEdgesInRelation()
+    {
+        this.verifier.actual(this.setup.getAccessNoInHighwayEdgesInRelation(),
+                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
     // Start Highway Tests
     @Test
     public void accessNoStartHighwayEdges()

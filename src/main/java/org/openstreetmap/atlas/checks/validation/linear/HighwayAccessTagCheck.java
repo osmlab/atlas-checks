@@ -21,6 +21,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
+import org.openstreetmap.atlas.tags.MilitaryTag;
 import org.openstreetmap.atlas.tags.MotorVehicleTag;
 import org.openstreetmap.atlas.tags.MotorcarTag;
 import org.openstreetmap.atlas.tags.PublicServiceVehiclesTag;
@@ -98,7 +99,8 @@ public class HighwayAccessTagCheck extends BaseCheck
                 && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
                 && isMinimumHighway(object)
                 && !hasKeyValueMatch(object, this.doNotFlagIfNoKeys, "NO", "yes")
-                && !hasKeyValueMatch(object, this.doNotFlagIfYesKeys, "YES", "no");
+                && !hasKeyValueMatch(object, this.doNotFlagIfYesKeys, "YES", "no")
+                && !isInMilitaryArea((LineItem) object);
     }
 
     /**
@@ -115,8 +117,7 @@ public class HighwayAccessTagCheck extends BaseCheck
         final HashMap<String, ArrayList<LineItem>> connectedHighways = getConnectedHighways(
                 lineItem);
         if (connectedHighways.get(this.stringFirst).size() > 0
-                && connectedHighways.get(this.stringLast).size() > 0
-                && !isInMilitaryArea((LineItem) object))
+                && connectedHighways.get(this.stringLast).size() > 0)
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -267,13 +268,17 @@ public class HighwayAccessTagCheck extends BaseCheck
             if (object.getAtlas()
                     .areasCovering(node.getLocation(),
                             area -> area.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
-                                    .toUpperCase().equals(LandUseTag.MILITARY.toString()))
+                                    .toUpperCase().equals(LandUseTag.MILITARY.toString())
+                                    || area.getOsmTags().containsKey(MilitaryTag.KEY))
                     .iterator().hasNext())
             {
                 return true;
             }
         }
-        for (final Relation relation : object.getAtlas().relations())
+        for (final Relation relation : object.getAtlas()
+                .relations(relation -> relation.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
+                        .toUpperCase().equals(LandUseTag.MILITARY.toString())
+                        || relation.getOsmTags().containsKey(MilitaryTag.KEY)))
         {
             if (relation.intersects(new Polygon(
                     new MultiIterable<>(object.asPolyLine(), object.asPolyLine().reversed()))))
