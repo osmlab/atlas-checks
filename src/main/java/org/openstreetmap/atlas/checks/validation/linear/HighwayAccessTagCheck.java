@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.MultiPolygon;
+import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -19,6 +20,7 @@ import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
+import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
@@ -265,14 +267,14 @@ public class HighwayAccessTagCheck extends BaseCheck
      */
     private boolean isInMilitaryArea(final LineItem object)
     {
-        for (final Node node : getLineItemNodes(object))
+        for (final Area area : object.getAtlas()
+                .areas(area -> area.getOsmTags().getOrDefault(LandUseTag.KEY, "na").toUpperCase()
+                        .equals(LandUseTag.MILITARY.toString())
+                        || area.getOsmTags().containsKey(MilitaryTag.KEY)))
         {
-            if (object.getAtlas()
-                    .areasCovering(node.getLocation(),
-                            area -> area.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
-                                    .toUpperCase().equals(LandUseTag.MILITARY.toString())
-                                    || area.getOsmTags().containsKey(MilitaryTag.KEY))
-                    .iterator().hasNext())
+            final Polygon areaPolygon = area.asPolygon();
+            if (object.intersects(areaPolygon)
+                    || areaPolygon.fullyGeometricallyEncloses(object.asPolyLine()))
             {
                 return true;
             }
@@ -283,12 +285,19 @@ public class HighwayAccessTagCheck extends BaseCheck
                         || relation.getOsmTags().containsKey(MilitaryTag.KEY))
                         && relation.isMultiPolygon()))
         {
-            final MultiPolygon relationPolygon = new RelationOrAreaToMultiPolygonConverter()
-                    .convert(relation);
-            if (object.intersects(relationPolygon)
-                    || relationPolygon.fullyGeometricallyEncloses(object.asPolyLine()))
+            try
             {
-                return true;
+                final MultiPolygon relationPolygon = new RelationOrAreaToMultiPolygonConverter()
+                        .convert(relation);
+                if (object.intersects(relationPolygon)
+                        || relationPolygon.fullyGeometricallyEncloses(object.asPolyLine()))
+                {
+                    return true;
+                }
+            }
+            catch (final MultiplePolyLineToPolygonsConverter.OpenPolygonException e)
+            {
+                continue;
             }
         }
         return false;
