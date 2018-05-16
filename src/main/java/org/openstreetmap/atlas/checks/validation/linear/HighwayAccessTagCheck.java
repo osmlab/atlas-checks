@@ -254,12 +254,13 @@ public class HighwayAccessTagCheck extends BaseCheck
     }
 
     /**
-     * Checks if {@link LineItem} is inside an {@link Area} with tag {@code landuse=MILITARY}.
+     * Checks if {@link LineItem} is inside an {@link Area} or {@link Relation} with tag
+     * {@code landuse=MILITARY} or tag key {@code military}.
      *
      * @param object
      *            {@link LineItem} to check
-     * @return {@code true} if input {@link LineItem} is in an {@link Area} with tag
-     *         {@code landuse=MILITARY}
+     * @return {@code true} if input {@link LineItem} is in an {@link Area} or {@link Relation} with
+     *         tag {@code landuse=MILITARY} or tag key {@code military}
      */
     private boolean isInMilitaryArea(final LineItem object)
     {
