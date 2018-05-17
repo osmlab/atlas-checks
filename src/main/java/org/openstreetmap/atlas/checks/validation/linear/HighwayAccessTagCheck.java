@@ -1,14 +1,11 @@
 package org.openstreetmap.atlas.checks.validation.linear;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
@@ -16,7 +13,6 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
 import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
@@ -24,10 +20,6 @@ import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
 import org.openstreetmap.atlas.tags.MilitaryTag;
-import org.openstreetmap.atlas.tags.MotorVehicleTag;
-import org.openstreetmap.atlas.tags.MotorcarTag;
-import org.openstreetmap.atlas.tags.PublicServiceVehiclesTag;
-import org.openstreetmap.atlas.tags.VehicleTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -44,20 +36,10 @@ public class HighwayAccessTagCheck extends BaseCheck
 {
 
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RESIDENTIAL.toString();
-    private static final List<String> DO_NOT_FLAG_IF_NO_DEFAULT = Arrays.asList(MotorVehicleTag.KEY,
-            VehicleTag.KEY, MotorcarTag.KEY);
-    // change string keys to tag class references once the classes are created
-    private static final List<String> DO_NOT_FLAG_IF_YES_DEFAULT = Arrays.asList("public_transport",
-            PublicServiceVehiclesTag.KEY, "bus", "emergency");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "Make proper adjustments to the access tag of way {0,number,#}, and associated tag combinations.");
 
     private final HighwayTag minimumHighwayType;
-    private final List<String> doNotFlagIfNoKeys;
-    private final List<String> doNotFlagIfYesKeys;
-
-    private final String stringFirst = "first";
-    private final String stringLast = "last";
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
@@ -77,12 +59,6 @@ public class HighwayAccessTagCheck extends BaseCheck
         final String highwayType = (String) this.configurationValue(configuration,
                 "minimum.highway.type", MINIMUM_HIGHWAY_TYPE_DEFAULT);
         this.minimumHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-
-        this.doNotFlagIfNoKeys = (List<String>) this.configurationValue(configuration,
-                "do-not-flag.value.no.keys", DO_NOT_FLAG_IF_NO_DEFAULT);
-
-        this.doNotFlagIfYesKeys = (List<String>) this.configurationValue(configuration,
-                "do-not-flag.value.yes.keys", DO_NOT_FLAG_IF_YES_DEFAULT);
     }
 
     /**
@@ -98,10 +74,7 @@ public class HighwayAccessTagCheck extends BaseCheck
         return ((object instanceof Edge) || (object instanceof Line))
                 && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
-                && isMinimumHighway(object)
-                && !hasKeyValueMatch(object, this.doNotFlagIfNoKeys, "NO", "yes")
-                && !hasKeyValueMatch(object, this.doNotFlagIfYesKeys, "YES", "no")
-                && !isInMilitaryArea((LineItem) object);
+                && isMinimumHighway(object) && !isInMilitaryArea((LineItem) object);
     }
 
     /**
@@ -167,26 +140,6 @@ public class HighwayAccessTagCheck extends BaseCheck
     }
 
     /**
-     * Gets all {@link Node}s in a {@link LineItem} as an {@link ArrayList}.
-     *
-     * @param object
-     *            {@link LineItem} to get the nodes from
-     * @return {@link ArrayList} of nodes from the input {@link LineItem}
-     */
-    private ArrayList<Node> getLineItemNodes(final LineItem object)
-    {
-        final ArrayList<Node> lineItemNodes = new ArrayList<>();
-
-        for (final Object location : object.asPolyLine().toArray())
-        {
-            lineItemNodes.addAll(
-                    (Collection<? extends Node>) object.getAtlas().nodesAt((Location) location));
-        }
-
-        return lineItemNodes;
-    }
-
-    /**
      * Checks if an {@link AtlasObject} is of an equal or greater priority than the minimum. The
      * minimum is supplied as a configuration parameter, the default is {@code "tertiary"}.
      *
@@ -199,48 +152,6 @@ public class HighwayAccessTagCheck extends BaseCheck
         final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
         return result.isPresent()
                 && result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
-    }
-
-    /**
-     * Gets the original OSM id from an atlas id.
-     *
-     * @param atlasId
-     *            an atlas id as a {@code long}
-     * @return the original OSM id
-     */
-    private long getOsmId(final long atlasId)
-    {
-        final long mill = 1000000;
-        return atlasId / mill;
-    }
-
-    /**
-     * Checks if any of the keys in the input list have a value that matches the input
-     * {@code matchValue} for the input {@code object}.
-     *
-     * @param object
-     *            the {@link LineItem} to be evaluated
-     * @param keys
-     *            a {@link List} of {@link String} keys to check the values of
-     * @param matchValue
-     *            a {@link String} to check the {@code keys} against
-     * @param defaultValue
-     *            a value to pass if a key does not exist for the input {@code object}, usually the
-     *            inverse of {@code matchValue}
-     * @return {@code true} if any key's value, in {@code keys}, is equal to {@code matchValue}
-     */
-    private boolean hasKeyValueMatch(final AtlasObject object, final List<String> keys,
-            final String matchValue, final String defaultValue)
-    {
-        for (final String key : keys)
-        {
-            if (object.getOsmTags().getOrDefault(key, defaultValue).toUpperCase()
-                    .equals(matchValue))
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
