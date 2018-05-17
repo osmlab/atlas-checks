@@ -15,7 +15,6 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
-import org.openstreetmap.atlas.tags.OneWayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -28,7 +27,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class MalformedRoundaboutCheck extends BaseCheck
 {
     private static final long serialVersionUID = -3018101860747289836L;
-    private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#},is going the"
+    private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#}, is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
     private static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
             + " multi-directional, or the roundabout has improper angle geometry.";
@@ -81,8 +80,6 @@ public class MalformedRoundaboutCheck extends BaseCheck
                 && object.getTag(ISOCountryTag.KEY).isPresent()
                 // Make sure that the edges are instances of roundabout
                 && JunctionTag.isRoundabout(object)
-                // Is not two-way
-                && !OneWayTag.isExplicitlyTwoWay(object)
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
                 // Make sure that we are only looking at master edges
@@ -108,15 +105,16 @@ public class MalformedRoundaboutCheck extends BaseCheck
         // Get the direction of the roundabout
         final RoundaboutDirection direction = findRoundaboutDirection(roundaboutEdges);
 
-        // Determine if the roundabout is in a left or right driving country
-        final boolean isLeftDriving = leftDrivingCountries.contains(isoCountryCode);
-
         // If the roundabout is found to be going in multiple directions
         if (direction.equals(RoundaboutDirection.MULTIDIRECTIONAL))
         {
             return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
                     this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
         }
+
+        // Determine if the roundabout is in a left or right driving country
+        final boolean isLeftDriving = leftDrivingCountries.contains(isoCountryCode);
+
         // If the roundabout traffic is clockwise in a right-driving country, or
         // If the roundabout traffic is counterclockwise in a left-driving country
         if (direction.equals(RoundaboutDirection.CLOCKWISE) && !isLeftDriving
@@ -125,7 +123,6 @@ public class MalformedRoundaboutCheck extends BaseCheck
             return Optional.of(this.createFlag(new HashSet<>(roundaboutEdges),
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
-
         return Optional.empty();
     }
 
@@ -161,13 +158,10 @@ public class MalformedRoundaboutCheck extends BaseCheck
 
             for (final Edge connectedEdge : connectedEdges)
             {
-                final Long edgeId = connectedEdge.getIdentifier();
-
                 if (JunctionTag.isRoundabout(connectedEdge)
                         && !roundaboutEdges.contains(connectedEdge))
-
                 {
-                    this.markAsFlagged(edgeId);
+                    this.markAsFlagged(connectedEdge.getIdentifier());
                     queue.add(connectedEdge);
                 }
             }
@@ -194,13 +188,13 @@ public class MalformedRoundaboutCheck extends BaseCheck
         // Initialize the directionSoFar to UNKNOWN as we have no directional information yet
         RoundaboutDirection directionSoFar = RoundaboutDirection.UNKNOWN;
 
-        for (int i = 0; i < roundaboutEdges.size(); i++)
+        for (int idx = 0; idx < roundaboutEdges.size(); idx++)
         {
             // Get the Edges to use in the cross product
-            final Edge edge1 = roundaboutEdges.get(i);
+            final Edge edge1 = roundaboutEdges.get(idx);
             // We mod the roundabout edges here so that we can get the last pair of edges in the
             // Roundabout correctly
-            final Edge edge2 = roundaboutEdges.get((i + 1) % roundaboutEdges.size());
+            final Edge edge2 = roundaboutEdges.get((idx + 1) % roundaboutEdges.size());
             // Get the cross product and then the direction of the roundabout
             final double crossProduct = getCrossProduct(edge1, edge2);
             final RoundaboutDirection direction = crossProduct < 0
@@ -243,7 +237,6 @@ public class MalformedRoundaboutCheck extends BaseCheck
      */
     private static Double getCrossProduct(final Edge edge1, final Edge edge2)
     {
-
         // Get the nodes' latitudes and longitudes to use in deriving the vectors
         final double node1Y = edge1.start().getLocation().getLatitude().asDegrees();
         final double node1X = edge1.start().getLocation().getLongitude().asDegrees();

@@ -13,9 +13,6 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class MalformedRoundaboutCheckTest
 {
-
-    private final MalformedRoundaboutCheck check = new MalformedRoundaboutCheck(
-            ConfigurationResolver.emptyConfiguration());
     @Rule
     public MalformedRoundaboutCheckTestRule setup = new MalformedRoundaboutCheckTestRule();
 
@@ -25,7 +22,8 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testClockwiseRoundaboutLeftDrivingAtlas()
     {
-        this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingAtlas(), check);
+        this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.verifyEmpty();
     }
@@ -33,7 +31,8 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testClockwiseRoundaboutRightDrivingAtlas()
     {
-        this.verifier.actual(this.setup.clockwiseRoundaboutRightDrivingAtlas(), check);
+        this.verifier.actual(this.setup.clockwiseRoundaboutRightDrivingAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -41,7 +40,8 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testCounterClockwiseRoundaboutLeftDrivingAtlas()
     {
-        this.verifier.actual(this.setup.counterClockwiseRoundaboutLeftDrivingAtlas(), check);
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutLeftDrivingAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -49,7 +49,8 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testCounterClockwiseRoundaboutRightDrivingAtlas()
     {
-        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(), check);
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.verifyEmpty();
     }
@@ -57,7 +58,8 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testMultiDirectionalRoundaboutAtlas()
     {
-        this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(), check);
+        this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
