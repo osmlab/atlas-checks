@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.linear;
+package org.openstreetmap.atlas.checks.validation.tag;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -7,17 +7,17 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
- * Tests for {@link HighwayAccessTagCheck}
+ * Tests for {@link InvalidAccessTagCheck}
  *
  * @author bbreithaupt
  */
 
-public class HighwayAccessTagCheckTest
+public class InvalidAccessTagCheckTest
 {
     // For now we will assume that there is a class called MyUnitTestRule with a test atlas inside
     // called "testAtlas"
     @Rule
-    public HighwayAccessTagCheckTestRule setup = new HighwayAccessTagCheckTestRule();
+    public InvalidAccessTagCheckTestRule setup = new InvalidAccessTagCheckTestRule();
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
@@ -27,7 +27,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdges()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdges(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -35,7 +35,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayLines()
     {
         this.verifier.actual(this.setup.accessNoInHighwayLines(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -43,7 +43,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgeLineEdge()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgeLineEdge(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -51,7 +51,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayLineEdgeLine()
     {
         this.verifier.actual(this.setup.accessNoInHighwayLineEdgeLine(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -59,8 +59,8 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesTrack()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesTrack(),
-                new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"HighwayAccessTagCheck\":{\"minimum.highway.type\":\"residential\"}}")));
+                new InvalidAccessTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidAccessTagCheck\":{\"minimum.highway.type\":\"residential\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -68,7 +68,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesSameFeature()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesSameFeature(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -76,7 +76,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesSameFeatureSquare()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesSameFeatureSquare(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -84,7 +84,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesLanduseMilitary()
     {
         this.verifier.actual(this.setup.getAccessNoInHighwayEdgesLanduseMilitary(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -92,7 +92,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesLanduseMilitaryRelation()
     {
         this.verifier.actual(this.setup.getAccessNoInHighwayEdgesLanduseMilitaryRelation(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -100,7 +100,7 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesInRelation()
     {
         this.verifier.actual(this.setup.getAccessNoInHighwayEdgesInRelation(),
-                new HighwayAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
+                new InvalidAccessTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -109,8 +109,8 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesVehicleNo()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesVehicleNo(),
-                new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"HighwayAccessTagCheck\":{\"tags.filter\":\"vehicle->!no\"}}")));
+                new InvalidAccessTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidAccessTagCheck\":{\"tags.filter\":\"vehicle->!no\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -118,8 +118,8 @@ public class HighwayAccessTagCheckTest
     public void accessNoInHighwayEdgesPublicTransportYes()
     {
         this.verifier.actual(this.setup.accessNoInHighwayEdgesPublicTransportYes(),
-                new HighwayAccessTagCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"HighwayAccessTagCheck\":{\"tags.filter\":\"public_transport->!yes\"}}")));
+                new InvalidAccessTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidAccessTagCheck\":{\"tags.filter\":\"public_transport->!yes\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

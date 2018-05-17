@@ -107,7 +107,7 @@
       "tags":"highway"
     }
   },
-  "HighwayAccessTagCheck":{
+  "InvalidAccessTagCheck":{
     "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
     "minimum.highway.type":"residential",
     "do-not-flag.value":{

@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.linear;
+package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,16 +23,15 @@ import org.openstreetmap.atlas.tags.MilitaryTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check flags {@link Edge}s and {@link Line}s that include the highway tag and an access tag
- * with a value of no. It checks for locations where this breaks a road network and does not have
- * supporting tags. Supporting tags declare what is or is not included in {@code access=no}. For
- * example a supporting tag of {@code public_transport=yes} would mean only public transport
- * vehicles are allowed.
+ * This check flags {@link Edge}s and {@link Line}s that include an access tag with a value of no,
+ * and does not have any supporting tags. Supporting tags declare what is or is not included in
+ * {@code access=no}. For example a supporting tag of {@code public_transport=yes} would mean only
+ * public transport vehicles are allowed.
  *
  * @author bbreithaupt
  */
 
-public class HighwayAccessTagCheck extends BaseCheck
+public class InvalidAccessTagCheck extends BaseCheck
 {
 
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RESIDENTIAL.toString();
@@ -52,7 +51,7 @@ public class HighwayAccessTagCheck extends BaseCheck
      * @param configuration
      *            the JSON configuration for this check
      */
-    public HighwayAccessTagCheck(final Configuration configuration)
+    public InvalidAccessTagCheck(final Configuration configuration)
     {
         super(configuration);
 

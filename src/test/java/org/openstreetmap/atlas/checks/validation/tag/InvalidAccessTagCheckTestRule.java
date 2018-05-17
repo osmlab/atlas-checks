@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.linear;
+package org.openstreetmap.atlas.checks.validation.tag;
 
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
@@ -12,12 +12,12 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
 /**
- * Tests for {@link HighwayAccessTagCheck}
+ * Tests for {@link InvalidAccessTagCheck}
  *
  * @author bbreithaupt
  */
 
-public class HighwayAccessTagCheckTestRule extends CoreTestRule
+public class InvalidAccessTagCheckTestRule extends CoreTestRule
 {
     private static final String TEST_1 = "0.0,0.0";
     private static final String TEST_2 = "0.1,0.1";
