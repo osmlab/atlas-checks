@@ -20,6 +20,7 @@ import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
 import org.openstreetmap.atlas.tags.MilitaryTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -70,10 +71,9 @@ public class InvalidAccessTagCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return ((object instanceof Edge) || (object instanceof Line))
+        return AccessTag.isNo(object) && ((object instanceof Edge) || (object instanceof Line))
                 && Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !this.isFlagged(object.getOsmIdentifier()) && AccessTag.isNo(object)
-                && isMinimumHighway(object) && !isInMilitaryArea((LineItem) object);
+                && !this.isFlagged(object.getOsmIdentifier()) && isMinimumHighway(object);
     }
 
     /**
@@ -86,9 +86,13 @@ public class InvalidAccessTagCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        this.markAsFlagged(object.getOsmIdentifier());
-        return Optional.of(this.createFlag(object,
-                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+        if (!isInMilitaryArea((LineItem) object))
+        {
+            this.markAsFlagged(object.getOsmIdentifier());
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+        }
+        return Optional.empty();
     }
 
     /**
@@ -103,9 +107,8 @@ public class InvalidAccessTagCheck extends BaseCheck
     private boolean isInMilitaryArea(final LineItem object)
     {
         for (final Area area : object.getAtlas()
-                .areas(area -> area.getOsmTags().getOrDefault(LandUseTag.KEY, "na").toUpperCase()
-                        .equals(LandUseTag.MILITARY.toString())
-                        || area.getOsmTags().containsKey(MilitaryTag.KEY)))
+                .areas(area -> Validators.isOfType(area, LandUseTag.class, LandUseTag.MILITARY)
+                        || Validators.hasValuesFor(area, MilitaryTag.class)))
         {
             final Polygon areaPolygon = area.asPolygon();
             if (object.intersects(areaPolygon)
@@ -114,10 +117,9 @@ public class InvalidAccessTagCheck extends BaseCheck
                 return true;
             }
         }
-        for (final Relation relation : object.getAtlas()
-                .relations(relation -> (relation.getOsmTags().getOrDefault(LandUseTag.KEY, "na")
-                        .toUpperCase().equals(LandUseTag.MILITARY.toString())
-                        || relation.getOsmTags().containsKey(MilitaryTag.KEY))
+        for (final Relation relation : object.getAtlas().relations(
+                relation -> (Validators.isOfType(relation, LandUseTag.class, LandUseTag.MILITARY)
+                        || Validators.hasValuesFor(relation, MilitaryTag.class))
                         && relation.isMultiPolygon()))
         {
             try
