@@ -53,9 +53,10 @@ After our preliminary filtering, we categorize each object as either an Area or 
 If the object is a Relation, we must calculate the surface area of each individual member. Similar to above, upon completion of surface area calculation, we can compare the members value to the configured maximum and minimum waterbody and island sizes.
 
 ```java
-   private void getInvalidRelationMembers(final Set<RelationMember> relationMembers,
-            final Set<RelationMember> invalidRelationMembers, final List<String> instructions)
+    private Optional<CheckFlag> getMultiPolygonRelationFlags(final Relation relation,
+            final Set<RelationMember> relationMembers)
     {
+        final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(relation));
 
         for (final RelationMember member : relationMembers)
         {
@@ -67,14 +68,16 @@ If the object is a Relation, we must calculate the surface area of each individu
             // Multipolygon Island Relations
             if (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_INNER))
             {
-                if (surfaceAreaMeters < this.islandMinimumArea)
+                if (surfaceAreaMeters < this.islandMinimumArea 
+                        || surfaceAreaKilometers > this.islandMaximumArea)
 ...
             }
 
             // Multipolygon water body Relations
             if (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER))
             {
-                if (surfaceAreaKilometers > this.waterbodyMaximumArea)
+                if (surfaceAreaMeters < this.waterbodyMinimumArea
+                        || surfaceAreaKilometers > this.waterbodyMaximumArea)
 ...
             }
         }
