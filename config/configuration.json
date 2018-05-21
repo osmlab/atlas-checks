@@ -255,5 +255,22 @@
       "defaultPriority": "MEDIUM"
     },
     "tags":"highway"
+  },
+  "WaterbodyAndIslandSizeCheck": {
+    "surface":{
+      "waterbody.minimum.meters": 10.0,
+      "waterbody.maximum.kilometers": 370000.0,
+      "island.minimum.meters": 10.0,
+      "island.maximum.kilometers": 2170000.0,
+      "islet.minimum.meters": 10.0,
+      "islet.maximum.kilometers": 1.0
+    },
+    "challenge": {
+      "description": "This tasks contains waterboadies and islands which are either too small or too large in size.",
+      "blurb": "Waterbodies and Islands that are too large, or too small",
+      "instruction": "Open your favorite editor and examine if the waterbody or island is correctly tagged and mapped.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "MEDIUM"
+    }
   }
 }
