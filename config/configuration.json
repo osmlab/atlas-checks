@@ -53,6 +53,9 @@
       "tags":"building,highway"
     }
   },
+  "ConflictingAreaTagCombination": {
+    
+  },
   "DuplicateNodeCheck": {
     "challenge": {
       "description": "Tasks contain node locations that have duplicate nodes found.",
