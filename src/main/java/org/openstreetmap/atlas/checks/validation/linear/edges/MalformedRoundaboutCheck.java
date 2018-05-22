@@ -31,17 +31,18 @@ public class MalformedRoundaboutCheck extends BaseCheck
             + " wrong direction, or has been improperly tagged as a roundabout.";
     private static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
             + " multi-directional, or the roundabout has improper angle geometry.";
-    private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG", "AUS", "BGD",
-            "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM", "CYP", "DMA",
-            "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM",
-            "JEY", "JPN", "KEN", "KIR", "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ",
-            "MSR", "MUS", "MWI", "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN",
-            "PNG", "SGP", "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS",
-            "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE");
+    private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
+            "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
+            "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
+            "IRL", "JAM", "JEY", "JPN", "KEN", "KIR", "KNA", "LCA", "LKA", "LSO", "MAC", "MDV",
+            "MLT", "MOZ", "MSR", "MUS", "MWI", "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL",
+            "PAK", "PCN", "PNG", "SGP", "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA",
+            "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
+            "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
             MULTIDIRECTIONAL_INSTRUCTIONS);
 
-    private Set<String> leftDrivingCountries;
+    private List<String> leftDrivingCountries;
 
     /**
      * An enum of RoundaboutDirections
@@ -66,8 +67,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
     public MalformedRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
-        this.leftDrivingCountries = new HashSet<>((List<String>) configurationValue(configuration, "traffic.countries.left",
-                        LEFT_DRIVING_COUNTRIES_DEFAULT));
+        this.leftDrivingCountries = (List<String>) configurationValue(configuration,
+                "traffic.countries.left", LEFT_DRIVING_COUNTRIES_DEFAULT);
     }
 
     @Override
