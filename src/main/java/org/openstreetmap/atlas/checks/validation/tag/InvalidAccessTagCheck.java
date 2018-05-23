@@ -64,6 +64,8 @@ public class InvalidAccessTagCheck extends BaseCheck
     /**
      * This function will validate if the supplied atlas object is valid for the check.
      *
+     * Objects passed to this function have already been filtered by the tags.filter parameter in the configuration file.
+     *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return {@code true} if this object should be checked

@@ -109,7 +109,14 @@
   },
   "InvalidAccessTagCheck":{
     "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
-    "minimum.highway.type":"residential"
+    "minimum.highway.type":"residential",
+    "challenge": {
+      "description": "Tasks containing invalid access tags",
+      "blurb": "Invalid Access Tags",
+      "instruction": "Correct the displayed invalid turn restriction",
+      "difficulty": "NORMAL",
+      "tags":"access"
+    }
   },
   "InvalidTurnRestrictionCheck": {
     "challenge": {

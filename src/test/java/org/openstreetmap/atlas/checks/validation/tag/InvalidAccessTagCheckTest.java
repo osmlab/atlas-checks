@@ -14,8 +14,6 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 
 public class InvalidAccessTagCheckTest
 {
-    // For now we will assume that there is a class called MyUnitTestRule with a test atlas inside
-    // called "testAtlas"
     @Rule
     public InvalidAccessTagCheckTestRule setup = new InvalidAccessTagCheckTestRule();
 
@@ -104,7 +102,7 @@ public class InvalidAccessTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
-    // config tests
+    // Config Tests
     @Test
     public void accessNoInHighwayEdgesVehicleNo()
     {

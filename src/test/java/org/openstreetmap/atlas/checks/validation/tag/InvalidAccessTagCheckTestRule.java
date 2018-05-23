@@ -266,7 +266,7 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
                     @Member(id = "1000", type = "area", role = "na") }) })
     private Atlas accessNoInHighwayEdgesInRelation;
 
-    // config tests
+    // Config Tests
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
@@ -358,7 +358,7 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
         return this.accessNoInHighwayEdgesInRelation;
     }
 
-    // config Tests
+    // Config Tests
     public Atlas accessNoInHighwayEdgesVehicleNo()
     {
         return this.accessNoInHighwayEdgesVehicleNo;
