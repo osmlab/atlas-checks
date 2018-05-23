@@ -50,7 +50,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
 
     // Default values for configurable settings
     private static final double INTERSECTION_LOWER_LIMIT_DEFAULT = 0.01;
-    private static final double OVERLAP_LOWER_LIMIT_DEFAULT = 0.90;
+    private static final double OVERLAP_LOWER_LIMIT_DEFAULT = 1.0;
 
     // Minimum number of points for a polygon
     private static final int MINIMUM_POINT_COUNT_FOR_POLYGON = 3;
