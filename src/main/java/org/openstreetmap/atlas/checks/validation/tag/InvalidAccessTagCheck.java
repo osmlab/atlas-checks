@@ -37,7 +37,7 @@ public class InvalidAccessTagCheck extends BaseCheck
 
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RESIDENTIAL.toString();
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "Make proper adjustments to the access tag of way {0,number,#}, and associated tag combinations.");
+            "This way {0,number,#} has an invalid access tag value, resulting from improper tag combinations. Investigate ground truth and properly correct them.");
 
     private final HighwayTag minimumHighwayType;
 
