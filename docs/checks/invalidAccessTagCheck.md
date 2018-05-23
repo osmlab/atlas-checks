@@ -20,9 +20,12 @@ The following is a filter that is defined in the configuration to do so.
 "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no"
 ```
 
+In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, 
+Nodes & Relations; in our case, we’re working with [Edges]((https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java)) and [Lines]((https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Line.java)).
+
 The next step is to filter in roads, and make sure they have the tag `access=no`.
 
-The following does so by looking for Atlas [Edges]((https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java)) and [Lines]((https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Line.java)) with a `highway` tag containing a value greater than a minimum, and the `access=no` tag.
+The following does so by looking for Edges and Lines with a `highway` tag containing a value greater than a minimum, and the `access=no` tag.
 In [Atlas](https://github.com/osmlab/atlas) roads can only be Edges and Lines, and the minimum value ensures that things like trails and bicycle paths are not included.
 
 ```java
