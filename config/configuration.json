@@ -113,7 +113,7 @@
     "challenge": {
       "description": "Tasks containing invalid access tags",
       "blurb": "Invalid Access Tags",
-      "instruction": "Correct the displayed invalid turn restriction",
+      "instruction": "Correct the displayed invalid access=no tag.",
       "difficulty": "NORMAL",
       "tags":"access,highway"
     }
