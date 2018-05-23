@@ -92,4 +92,4 @@ private boolean isInMilitaryArea(final LineItem object)
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.
-[InvalidAccessTagCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/tags/InvalidAccessTagCheck.java)
+[InvalidAccessTagCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/InvalidAccessTagCheck.java)
