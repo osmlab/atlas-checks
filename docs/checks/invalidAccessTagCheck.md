@@ -1,16 +1,16 @@
 # Invalid Access Tag Check
 
-**Description**
+#### Description
 
 This check flags roads with misused `access=no` tags. 
 
 Misuse is measured by a lack of supporting tags. Tags, such as `public_transport=yes`, can be paired with `access=no` to indicate what does or does not have access. If one or more of these supporting tags are present, `access=no` is valid.
 
-**Live Example**
+#### Live Example
 
 The way [id:440449063](https://www.openstreetmap.org/way/440449063) has an invalid `access=no` tag, as there are no supporting tags.  
 
-**Code Review**
+####Code Review
 
 The first step is to filter out objects that contain tags that could be used to support an `access=no` tag.
 

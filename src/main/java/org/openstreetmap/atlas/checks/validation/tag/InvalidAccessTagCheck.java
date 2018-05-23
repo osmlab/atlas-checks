@@ -41,8 +41,7 @@ public class InvalidAccessTagCheck extends BaseCheck
 
     private final HighwayTag minimumHighwayType;
 
-    // You can use serialver to regenerate the serial UID.
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5197703822744690835L;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the

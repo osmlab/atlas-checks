@@ -115,7 +115,7 @@
       "blurb": "Invalid Access Tags",
       "instruction": "Correct the displayed invalid turn restriction",
       "difficulty": "NORMAL",
-      "tags":"access"
+      "tags":"access,highway"
     }
   },
   "InvalidTurnRestrictionCheck": {
