@@ -45,12 +45,12 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
     // Instructions
     private static final String INTERSECT_INSTRUCTION = "Building (id={0,number,#}) intersects with another building (id={1,number,#}).";
     private static final String OVERLAP_INSTRUCTION = "Building (id={0,number,#}) is overlapped by another building (id={1,number,#}).";
+    private static final String CONTAINS_INSTRUCTION = "Building (id={0,number,#}) contains building (id={1,number,#}).";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(OVERLAP_INSTRUCTION,
-            INTERSECT_INSTRUCTION);
+            INTERSECT_INSTRUCTION, CONTAINS_INSTRUCTION);
 
     // Default values for configurable settings
     private static final double INTERSECTION_LOWER_LIMIT_DEFAULT = 0.01;
-    private static final double OVERLAP_LOWER_LIMIT_DEFAULT = 1.0;
 
     // Minimum number of points for a polygon
     private static final int MINIMUM_POINT_COUNT_FOR_POLYGON = 3;
@@ -58,17 +58,14 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
     // Format to use to generate unique identifier tuples from areas
     private static final String UNIQUE_IDENTIFIER_FORMAT = "%s,%s";
 
+    // Minimum intersection to be contained
+    private static final double overlapLowerLimit = 1.0;
+
     /*
      * If the proportion of intersection compared to area of building is more than 2%, then we have
      * a building intersection
      */
     private final double intersectionLowerLimit;
-
-    /*
-     * In addition to intersections, we have some cases where buildings exactly overlap, due to
-     * inadvertent duplicates. We flag them into a separate category
-     */
-    private final double overlapLowerLimit;
 
     /**
      * Generates a unique identifier tuple as a {@link String} for given {@link Area}s identifiers
@@ -100,8 +97,6 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
 
         this.intersectionLowerLimit = this.configurationValue(configuration,
                 "intersection.lower.limit", INTERSECTION_LOWER_LIMIT_DEFAULT, Double::valueOf);
-        this.overlapLowerLimit = this.configurationValue(configuration, "overlap.lower.limit",
-                OVERLAP_LOWER_LIMIT_DEFAULT, Double::valueOf);
     }
 
     @Override
@@ -159,8 +154,23 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
             // Flag based on intersection type
             if (resultType == IntersectionType.OVERLAP)
             {
-                flag.addObject(otherBuilding, this.getLocalizedInstruction(0,
-                        object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
+                if (((Area) object).asPolygon().surface()
+                        .isLargerThan(otherBuilding.asPolygon().surface()))
+                {
+                    flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
+                            object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
+                }
+                else if (((Area) object).asPolygon().surface()
+                        .isLessThan(otherBuilding.asPolygon().surface()))
+                {
+                    flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
+                            otherBuilding.getOsmIdentifier(), object.getOsmIdentifier()));
+                }
+                else
+                {
+                    flag.addObject(otherBuilding, this.getLocalizedInstruction(0,
+                            object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
+                }
                 this.markAsFlagged(uniqueIdentifier);
                 hadIntersection = true;
             }
