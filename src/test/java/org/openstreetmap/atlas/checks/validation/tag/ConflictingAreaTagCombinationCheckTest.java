@@ -27,6 +27,14 @@ public class ConflictingAreaTagCombinationCheckTest
     }
 
     @Test
+    public void validHighwayServicesAtlasTest()
+    {
+        this.verifier.actual(this.setup.getBuildingHighwayServicesAtlas(),
+                new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void buildingNaturalTagAtlasTest()
     {
         this.verifier.actual(this.setup.getBuildingNaturalTagAtlas(),
@@ -47,15 +55,7 @@ public class ConflictingAreaTagCombinationCheckTest
     {
         this.verifier.actual(this.setup.getNaturalLeisureTagAtlas(),
                 new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
-    }
-
-    @Test
-    public void buildingLandUseTagAtlasTest()
-    {
-        this.verifier.actual(this.setup.getBuildingLandUseTagAtlas(),
-                new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -63,13 +63,37 @@ public class ConflictingAreaTagCombinationCheckTest
     {
         this.verifier.actual(this.setup.getNaturalManMadeTagAtlas(),
                 new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
+        this.verifier.verifyEmpty();
     }
 
     @Test
     public void waterLandUseTagAtlasTest()
     {
         this.verifier.actual(this.setup.getWaterLandUseTagAtlas(),
+                new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyNotEmpty();
+    }
+
+    @Test
+    public void waterLandUseAquacultureAtlasTest()
+    {
+        this.verifier.actual(this.setup.getWaterLandUseAquacultureAtlas(),
+                new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void waterManMadeChimneyAtlasTest()
+    {
+        this.verifier.actual(this.setup.getWaterManMadeChimneyAtlas(),
+                new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyNotEmpty();
+    }
+
+    @Test
+    public void landUseHighwayAtlasTest()
+    {
+        this.verifier.actual(this.setup.getLandUseHighwayAtlas(),
                 new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotEmpty();
     }

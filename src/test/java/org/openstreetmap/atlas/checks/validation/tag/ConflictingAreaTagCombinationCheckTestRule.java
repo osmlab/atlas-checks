@@ -18,13 +18,6 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
     private static final String AREA_LOCATION_TWO = "37.320524859664474, -122.03530669212341";
     private static final String AREA_LOCATION_THREE = "37.32097706357857, -122.03530669212341";
 
-    // building=* and landuse=*
-    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
-            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
-            @Loc(value = AREA_LOCATION_THREE),
-            @Loc(value = AREA_LOCATION_ONE) }, tags = { "building=yes", "landuse=military" }) })
-    private Atlas buildingLandUseTagAtlas;
-
     // building=* and natural=*
     @TestAtlas(areas = {
             @Area(id = INVALID_AREA_ID, coordinates = { @Loc(value = AREA_LOCATION_ONE),
@@ -39,7 +32,14 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
             @Loc(value = AREA_LOCATION_ONE) }, tags = { "building=yes", "highway=pedestrian" }) })
     private Atlas buildingHighwayTagAtlas;
 
-    // natural=* and man_made=*
+    // building=* and highway=*
+    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
+            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
+            @Loc(value = AREA_LOCATION_THREE),
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "building=yes", "highway=services" }) })
+    private Atlas buildingHighwayServicesAtlas;
+
+    // natural=* and man_made=* valid tag combinations
     @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
             @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
             @Loc(value = AREA_LOCATION_THREE), @Loc(value = AREA_LOCATION_ONE) }, tags = {
@@ -53,24 +53,39 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
             @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=water", "highway=primary" }) })
     private Atlas naturalHighwayTagAtlas;
 
-    // natural=* and leisure=*
+    // natural=* and leisure=* valid tag combinations
     @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
             @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
             @Loc(value = AREA_LOCATION_THREE),
             @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=grassland", "leisure=park" }) })
     private Atlas naturalLeisureTagAtlas;
 
-    // water=* and landuse=*
+    // natural=water and landuse=*
     @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
             @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
             @Loc(value = AREA_LOCATION_THREE),
-            @Loc(value = AREA_LOCATION_ONE) }, tags = { "water=lake", "landuse=disused" }) })
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=water", "landuse=disused" }) })
     private Atlas waterLandUseTagAtlas;
 
-    public Atlas getBuildingLandUseTagAtlas()
-    {
-        return buildingLandUseTagAtlas;
-    }
+    // natural=water and landuse=aquaculture
+    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
+            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
+            @Loc(value = AREA_LOCATION_THREE),
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=water", "landuse=aquaculture" }) })
+    private Atlas waterLandUseAquacultureAtlas;
+
+    // natural=water and man_made=
+    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
+            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
+            @Loc(value = AREA_LOCATION_THREE),
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=water", "man_made=chimney" }) })
+    private Atlas waterManMadeChimneyAtlas;
+
+    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
+            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
+            @Loc(value = AREA_LOCATION_THREE),
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "landuse=disused", "highway=primary" }) })
+    private Atlas landUseHighwayAtlas;
 
     public Atlas getBuildingNaturalTagAtlas()
     {
@@ -80,6 +95,11 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
     public Atlas getBuildingHighwayTagAtlas()
     {
         return buildingHighwayTagAtlas;
+    }
+
+    public Atlas getBuildingHighwayServicesAtlas()
+    {
+        return buildingHighwayServicesAtlas;
     }
 
     public Atlas getNaturalManMadeTagAtlas()
@@ -100,5 +120,20 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
     public Atlas getWaterLandUseTagAtlas()
     {
         return waterLandUseTagAtlas;
+    }
+
+    public Atlas getWaterLandUseAquacultureAtlas()
+    {
+        return waterLandUseAquacultureAtlas;
+    }
+
+    public Atlas getWaterManMadeChimneyAtlas()
+    {
+        return waterManMadeChimneyAtlas;
+    }
+
+    public Atlas getLandUseHighwayAtlas()
+    {
+        return landUseHighwayAtlas;
     }
 }

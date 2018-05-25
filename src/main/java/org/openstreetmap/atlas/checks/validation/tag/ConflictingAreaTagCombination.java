@@ -12,11 +12,9 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
-import org.openstreetmap.atlas.tags.LeisureTag;
 import org.openstreetmap.atlas.tags.ManMadeTag;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.Taggable;
-import org.openstreetmap.atlas.tags.WaterTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -29,44 +27,45 @@ public class ConflictingAreaTagCombination extends BaseCheck
 {
 
     private static final String INVALID_COMBINATION_INSTRUCTION = "OSM feature {0,number,#} has invalid tag combinations.";
-    private static final String INVALID_BUILDING_LANDUSE_INSTRUCTION = "Building should not exist with landuse=*.";
-    private static final String INVALID_BUILDING_NATURAL_INSTRUCTION = "Build should not exist with natural=*";
-    private static final String INVALID_BUILDING_HIGHWAY_INSTRUCTION = "Building should not exist with highway=*";
-    private static final String INVALID_NATURAL_MANMADE_INSTRUCTION = "Natural should not exist with manmande=*.";
-    private static final String INVALID_NATURAL_HIGHWAY_INSTRUCTION = "Natural should not exist with highway=*";
-    private static final String INVALID_NATURAL_LESISURE_INSTRUCTION = "Natural should not exist with leisure=*";
-    private static final String INVALID_WATER_LANDUSE_INSTRUCTION = "Water should not exist with landuse=*";
+    private static final String INVALID_BUILDING_NATURAL_INSTRUCTION = "Building tag should not exist with natural tag";
+    private static final String INVALID_BUILDING_HIGHWAY_INSTRUCTION = "Building tag should not exist with highway tag";
+    private static final String INVALID_NATURAL_HIGHWAY_INSTRUCTION = "Natural tag should not exist with highway tag";
+    private static final String INVALID_WATER_LANDUSE_INSTRUCTION = "natural=WATER tag should not exist with any landuse tag other than reservoir, basin, or aquaculture";
+    private static final String INVALID_WATER_MANMADE_INSTRUCTION = "natural=WATER tag should not exist with any man_made tag other than reservoir_covered or wastewater_plant";
+    private static final String INVALID_LANDUSE_HIGHWAY = "Land use tag should not exist with highway tag";
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            INVALID_COMBINATION_INSTRUCTION, INVALID_BUILDING_LANDUSE_INSTRUCTION,
-            INVALID_BUILDING_NATURAL_INSTRUCTION, INVALID_BUILDING_HIGHWAY_INSTRUCTION,
-            INVALID_NATURAL_MANMADE_INSTRUCTION, INVALID_NATURAL_HIGHWAY_INSTRUCTION,
-            INVALID_NATURAL_LESISURE_INSTRUCTION, INVALID_WATER_LANDUSE_INSTRUCTION);
-    private static final Predicate<Taggable> BUILDING_LANDUSE = object -> Validators.hasValuesFor(
-            object, BuildingTag.class) && Validators.hasValuesFor(object, LandUseTag.class);
-    private static final Predicate<Taggable> BUILDING_NATURAL = object -> Validators.hasValuesFor(
-            object, BuildingTag.class) && Validators.hasValuesFor(object, NaturalTag.class);
-    private static final Predicate<Taggable> BUILDING_HIGHWAY = object -> Validators.hasValuesFor(
-            object, BuildingTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
-    private static final Predicate<Taggable> NATURAL_MANMADE = object -> Validators.hasValuesFor(
-            object, NaturalTag.class) && Validators.hasValuesFor(object, ManMadeTag.class);
+            INVALID_COMBINATION_INSTRUCTION, INVALID_BUILDING_NATURAL_INSTRUCTION,
+            INVALID_BUILDING_HIGHWAY_INSTRUCTION, INVALID_NATURAL_HIGHWAY_INSTRUCTION,
+            INVALID_WATER_MANMADE_INSTRUCTION, INVALID_WATER_LANDUSE_INSTRUCTION,
+            INVALID_LANDUSE_HIGHWAY);
+    private static final Predicate<Taggable> BUILDING_NATURAL = object -> Validators
+            .hasValuesFor(object, BuildingTag.class)
+            && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO)
+            && Validators.hasValuesFor(object, NaturalTag.class);
+    private static final Predicate<Taggable> BUILDING_HIGHWAY = object -> Validators
+            .hasValuesFor(object, BuildingTag.class)
+            && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO)
+            && Validators.hasValuesFor(object, HighwayTag.class)
+            && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.SERVICES);
     private static final Predicate<Taggable> NATURAL_HIGHWAY = object -> Validators.hasValuesFor(
             object, NaturalTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
-    private static final Predicate<Taggable> NATURAL_LESISURE = object -> Validators.hasValuesFor(
-            object, NaturalTag.class) && Validators.hasValuesFor(object, LeisureTag.class);
+    private static final Predicate<Taggable> NATURAL_WATER_MANMANDE = object -> Validators
+            .isOfType(object, NaturalTag.class, NaturalTag.WATER)
+            && Validators.hasValuesFor(object, ManMadeTag.class) && Validators.isNotOfType(object,
+                    ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED, ManMadeTag.WASTEWATER_PLANT);
     // TODO add LandUseTag.AQUACULTURE
-    private static final Predicate<Taggable> WATER_LANDUSE = object -> Validators
-            .hasValuesFor(object, WaterTag.class)
-            && Validators.hasValuesFor(object, LandUseTag.class) && !Validators.isOfType(object,
-                    LandUseTag.class, LandUseTag.RESERVOIR, LandUseTag.BASIN);
+    private static final Predicate<Taggable> WATER_LANDUSE = object -> Validators.isOfType(object,
+            NaturalTag.class, NaturalTag.WATER) && Validators.hasValuesFor(object, LandUseTag.class)
+            && !Validators.isOfType(object, LandUseTag.class, LandUseTag.RESERVOIR,
+                    LandUseTag.BASIN);
+    private static final Predicate<Taggable> LANDUSE_HIGHWAY = object -> Validators.hasValuesFor(
+            object, LandUseTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int FIVE = 5;
     private static final int SIX = 6;
-    private static final int SEVEN = 7;
-
-    // You can use serialver to regenerate the serial UID.
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 9167816371258788999L;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -91,7 +90,8 @@ public class ConflictingAreaTagCombination extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area;
+        return object instanceof Area
+                && !Validators.isOfType(object, BuildingTag.class, BuildingTag.NO);
     }
 
     /**
@@ -109,45 +109,41 @@ public class ConflictingAreaTagCombination extends BaseCheck
                 this.getLocalizedInstruction(0, object.getOsmIdentifier()));
         boolean hasConflictingCombinations = false;
 
-        if (BUILDING_LANDUSE.test(object))
+        if (BUILDING_NATURAL.test(object))
         {
             flag.addInstruction(this.getLocalizedInstruction(1));
             hasConflictingCombinations = true;
         }
 
-        if (BUILDING_NATURAL.test(object))
+        if (BUILDING_HIGHWAY.test(object))
         {
             flag.addInstruction(this.getLocalizedInstruction(2));
             hasConflictingCombinations = true;
         }
 
-        if (BUILDING_HIGHWAY.test(object))
+        if (NATURAL_HIGHWAY.test(object))
         {
             flag.addInstruction(this.getLocalizedInstruction(THREE));
             hasConflictingCombinations = true;
         }
 
-        if (NATURAL_MANMADE.test(object))
+        if (NATURAL_WATER_MANMANDE.test(object))
         {
             flag.addInstruction(this.getLocalizedInstruction(FOUR));
             hasConflictingCombinations = true;
         }
 
-        if (NATURAL_HIGHWAY.test(object))
+        if (WATER_LANDUSE.test(object)
+                // TODO aquaculture check is temporary
+                && !object.getTag(LandUseTag.KEY).get().toLowerCase().equals("aquaculture"))
         {
             flag.addInstruction(this.getLocalizedInstruction(FIVE));
             hasConflictingCombinations = true;
         }
 
-        if (NATURAL_LESISURE.test(object))
+        if (LANDUSE_HIGHWAY.test(object))
         {
             flag.addInstruction(this.getLocalizedInstruction(SIX));
-            hasConflictingCombinations = true;
-        }
-
-        if (WATER_LANDUSE.test(object))
-        {
-            flag.addInstruction(this.getLocalizedInstruction(SEVEN));
             hasConflictingCombinations = true;
         }
 
