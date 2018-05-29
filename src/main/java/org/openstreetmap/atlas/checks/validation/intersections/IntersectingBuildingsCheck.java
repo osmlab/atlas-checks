@@ -61,10 +61,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
     // Minimum intersection to be contained
     private static final double overlapLowerLimit = 1.0;
 
-    /*
-     * If the proportion of intersection compared to area of building is more than 2%, then we have
-     * a building intersection
-     */
+    // Overlap below this limit is not considered to be intersecting
     private final double intersectionLowerLimit;
 
     /**
