@@ -396,6 +396,93 @@ public class SignPostCheckTestRule extends CoreTestRule
                                     "destination=somewhere" }) })
     private Atlas motorwayMotorwayLinkWithJunctionAndDestinationAtlas;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_3), tags = {
+                            "highway=motorway_junction" }),
+                    @Node(coordinates = @Loc(value = HIGHWAY_5)),
+                    @Node(coordinates = @Loc(value = LINK_1)),
+                    @Node(coordinates = @Loc(value = LINK_4)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_1), @Loc(value = HIGHWAY_2),
+                            @Loc(value = HIGHWAY_3) }, tags = { "highway=motorway" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_4),
+                            @Loc(value = HIGHWAY_5) }, tags = { "highway=motorway" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = LINK_1),
+                            @Loc(value = LINK_2), @Loc(value = LINK_3),
+                            @Loc(value = LINK_4) }, tags = { "highway=motorway_link",
+                                    "destination:ref=somewhere" }) })
+    private Atlas motorwayMotorwayLinkWithJunctionAndDestinationRefAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_3)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_4)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_5)),
+                    @Node(coordinates = @Loc(value = HIGHWAY2_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY2_2)),
+                    @Node(coordinates = @Loc(value = HIGHWAY2_3)),
+                    @Node(coordinates = @Loc(value = LINK_2)),
+                    @Node(coordinates = @Loc(value = LINK_3)),
+                    @Node(coordinates = @Loc(value = LINK_4)),
+                    @Node(coordinates = @Loc(value = LINK2_1)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_5), @Loc(value = HIGHWAY_4),
+                            @Loc(value = HIGHWAY_3) }, tags = { "highway=motorway" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_2),
+                            @Loc(value = HIGHWAY_1) }, tags = { "highway=motorway" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY2_3), @Loc(value = HIGHWAY2_2),
+                            @Loc(value = LINK_4) }, tags = { "highway=primary" }),
+                    @Edge(coordinates = { @Loc(value = LINK_4), @Loc(value = HIGHWAY2_1) }, tags = {
+                            "highway=primary" }),
+                    @Edge(coordinates = { @Loc(value = LINK_2), @Loc(value = HIGHWAY_3) }, tags = {
+                            "highway=motorway_link" }),
+                    @Edge(coordinates = { @Loc(value = LINK_4), @Loc(value = LINK_3),
+                            @Loc(value = LINK_2) }, tags = { "highway=motorway_link" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY2_2), @Loc(value = LINK2_1),
+                            @Loc(value = LINK_2) }, tags = { "highway=motorway_link" }) })
+    private Atlas motorwayMotorwayLinkBranchMissingDestinationAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_3)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_4)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_5), tags = {
+                            "highway=motorway_junction" }),
+                    @Node(coordinates = @Loc(value = HIGHWAY2_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY2_2)),
+                    @Node(coordinates = @Loc(value = HIGHWAY2_3)),
+                    @Node(coordinates = @Loc(value = LINK_2)),
+                    @Node(coordinates = @Loc(value = LINK_3)),
+                    @Node(coordinates = @Loc(value = LINK_4)),
+                    @Node(coordinates = @Loc(value = LINK2_1)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_5), @Loc(value = HIGHWAY_4),
+                            @Loc(value = HIGHWAY_3) }, tags = { "highway=motorway" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_2),
+                            @Loc(value = HIGHWAY_1) }, tags = { "highway=motorway" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY2_3), @Loc(value = HIGHWAY2_2),
+                            @Loc(value = LINK_4) }, tags = { "highway=primary" }),
+                    @Edge(coordinates = { @Loc(value = LINK_4), @Loc(value = HIGHWAY2_1) }, tags = {
+                            "highway=primary" }),
+                    @Edge(coordinates = { @Loc(value = LINK_3), @Loc(value = LINK_2),
+                            @Loc(value = HIGHWAY_3) }, tags = { "highway=motorway_link" }),
+                    @Edge(coordinates = { @Loc(value = LINK_4), @Loc(value = LINK_3) }, tags = {
+                            "highway=motorway_link" }),
+                    @Edge(coordinates = { @Loc(value = LINK_3), @Loc(value = LINK_4) }, tags = {
+                            "highway=motorway_link" }),
+                    @Edge(coordinates = { @Loc(value = HIGHWAY_5), @Loc(value = LINK_3) }, tags = {
+                            "highway=motorway_link", "destination=somewhere" }) })
+    private Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas;
+
     public Atlas motorroadPrimaryLinkMissingJunctionAndDestinationAtlas()
     {
         return this.motorroadPrimaryLinkMissingJunctionAndDestinationAtlas;
@@ -419,6 +506,11 @@ public class SignPostCheckTestRule extends CoreTestRule
     public Atlas motorwayMotorwayLinkWithJunctionAndDestinationAtlas()
     {
         return this.motorwayMotorwayLinkWithJunctionAndDestinationAtlas;
+    }
+
+    public Atlas motorwayMotorwayLinkWithJunctionAndDestinationRefAtlas()
+    {
+        return this.motorwayMotorwayLinkWithJunctionAndDestinationRefAtlas;
     }
 
     public Atlas motorwayMultipleLinksMissingJunctionAndDestinationAtlas()
@@ -494,5 +586,15 @@ public class SignPostCheckTestRule extends CoreTestRule
     public Atlas unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas()
     {
         return this.unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas;
+    }
+
+    public Atlas motorwayMotorwayLinkBranchMissingDestinationAtlas()
+    {
+        return this.motorwayMotorwayLinkBranchMissingDestinationAtlas;
+    }
+
+    public Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas()
+    {
+        return this.motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas;
     }
 }

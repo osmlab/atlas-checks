@@ -61,14 +61,14 @@
       "difficulty": "EASY"
     }
   },
-   "DuplicatePointCheck": {
-     "challenge": {
-       "description": "Tasks contain node locations where duplicate points of interest are found.",
-       "blurb": "Duplicate Points",
-       "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains.",
-       "difficulty": "EASY"
-     }
-   },
+  "DuplicatePointCheck": {
+    "challenge": {
+      "description": "Tasks contain node locations where duplicate points of interest are found.",
+      "blurb": "Duplicate Points",
+      "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains.",
+      "difficulty": "EASY"
+    }
+  },
   "DuplicateWaysCheck": {
     "challenge": {
       "description": "Tasks contain Ways which have been partially or completely duplicated.",
@@ -243,18 +243,25 @@
     }
   },
   "SignPostCheck": {
-    "enabled": false,
     "linkLength": {
       "minimum.meters": 50.0
     },
+    "ramp":
+    {
+      "max.edges":10,
+      "filter":"highway->motorway_link,trunk_link"
+    },
+    "source.filter":"highway->motorway,trunk",
+    "destination_tag.filter":"destination->*|destination:ref->*|destination:street->*",
+    "arterial.minimum":"RESIDENTIAL",
     "challenge": {
       "description": "Tasks contain nodes where sign post tagging could be missing.  In particular it looks for motorway and trunk ways which have a link edge exiting them.  A task is generated if either the connecting node is missing the motorway_junction tag or the exiting segment is missing the destination tag.",
       "blurb": "Missing sign post tags",
       "instruction": "Either add the missing motorway_junction tag to the identified node and / or the destination tag to the exiting link segment.",
       "difficulty": "NORMAL",
-      "defaultPriority": "MEDIUM"
-    },
-    "tags":"highway"
+      "defaultPriority": "MEDIUM",
+      "tags":"highway"
+    }
   },
   "WaterbodyAndIslandSizeCheck": {
     "surface":{
