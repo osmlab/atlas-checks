@@ -167,7 +167,7 @@ public class Challenge implements Serializable
             challengeJson.add(KEY_NAME, new JsonPrimitive(challengeName));
         }
 
-        if (this.defaultPriority != null && this.defaultPriority != ChallengePriority.NONE)
+        if (this.defaultPriority != null)
         {
             challengeJson.add(KEY_DEFAULT_PRIORITY,
                     new JsonPrimitive(this.defaultPriority.intValue()));
