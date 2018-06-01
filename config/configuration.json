@@ -139,6 +139,10 @@
       "difficulty": "HARD"
     }
   },
+  "OverlappingAOIPolygonCheck":{
+    "aoi.tags.filter": "tourism->zoo|sport->golf|amenity->festival_grounds,grave_yard|boundary->national_park,protected_area|historic->battlefield|landuse->cemetery,forest,recreation_ground,village_green|natural->beach,wood|leisure->recreation_ground,garden,golf_course|leisure->park&name->*",
+    "aoi.tags.duplicates": "landuse->cemetery&amenity->grave_yard|landuse->forest&natural->wood|landuse->recreation_ground&leisure->recreation_ground|leisure->garden&leisure->park|leisure->golf_course&sport->golf|leisure->park&landuse->village_green"
+  },
   "RoundaboutClosedLoopCheck": {
     "challenge": {
       "description": "A roundabout should be formed by one-way edges with no dead-end nodes.",
