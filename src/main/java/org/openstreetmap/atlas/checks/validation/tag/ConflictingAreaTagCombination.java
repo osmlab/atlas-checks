@@ -30,8 +30,8 @@ public class ConflictingAreaTagCombination extends BaseCheck
     private static final String INVALID_BUILDING_NATURAL_INSTRUCTION = "Building tag should not exist with natural tag";
     private static final String INVALID_BUILDING_HIGHWAY_INSTRUCTION = "Building tag should not exist with highway tag";
     private static final String INVALID_NATURAL_HIGHWAY_INSTRUCTION = "Natural tag should not exist with highway tag";
-    private static final String INVALID_WATER_LANDUSE_INSTRUCTION = "natural=WATER tag should not exist with any landuse tag other than reservoir, basin, or aquaculture";
-    private static final String INVALID_WATER_MANMADE_INSTRUCTION = "natural=WATER tag should not exist with any man_made tag other than reservoir_covered or wastewater_plant";
+    private static final String INVALID_WATER_LANDUSE_INSTRUCTION = "natural=WATER tag should not exist with any landuse tag other than RESERVOIR, BASIN, or AQUACULTURE";
+    private static final String INVALID_WATER_MANMADE_INSTRUCTION = "natural=WATER tag should not exist with any MAN_MADE tag other than RESERVOIR_COVERED or WASTEWATER_PLANT";
     private static final String INVALID_LANDUSE_HIGHWAY = "Land use tag should not exist with highway tag";
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
