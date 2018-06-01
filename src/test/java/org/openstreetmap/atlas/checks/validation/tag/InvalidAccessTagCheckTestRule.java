@@ -19,30 +19,27 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
 public class InvalidAccessTagCheckTestRule extends CoreTestRule
 {
-    private static final String TEST_1 = "0.0,0.0";
-    private static final String TEST_2 = "0.1,0.1";
-    private static final String TEST_3 = "0.0,0.2";
-    private static final String TEST_4 = "0.1,0.3";
-    private static final String TEST_5 = "0.0,0.4";
-    private static final String TEST_6 = "-0.1,0.5";
-    private static final String TEST_7 = "0.0,0.6";
-    private static final String TEST_8 = "0.0,0.7";
-    private static final String TEST_9 = "0.1,0.8";
-    private static final String TEST_10 = "0.0,0.9";
-    private static final String TEST_11 = "0.2,-0.1";
-    private static final String TEST_12 = "-0.2,-0.1";
-    private static final String TEST_13 = "-0.2,1.0";
-    private static final String TEST_14 = "0.2,1.0";
+    private static final String TEST_1 = "47.2136626201459,-122.443275382856";
+    private static final String TEST_2 = "47.2138327316739,-122.44258668766";
+    private static final String TEST_3 = "47.2136626201459,-122.441897992465";
+    private static final String TEST_4 = "47.2138114677627,-122.440990166979";
+    private static final String TEST_5 = "47.2136200921786,-122.44001973284";
+    private static final String TEST_6 = "47.2135137721113,-122.439127559518";
+    private static final String TEST_7 = "47.2136200921786,-122.438157125378";
+    private static final String TEST_8 = "47.2136413561665,-122.437468430183";
+    private static final String TEST_9 = "47.2137689399148,-122.436717126333";
+    private static final String TEST_10 = "47.2136413561665,-122.436028431137";
+    private static final String TEST_11 = "47.2141623212065,-122.443729295599";
+    private static final String TEST_12 = "47.2132054427106,-122.44382320858";
+    private static final String TEST_13 = "47.2132267068647,-122.435339735941";
+    private static final String TEST_14 = "47.2142154806167,-122.435355388105";
 
     // In Highway Tests
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -58,11 +55,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
             lines = { @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -78,11 +72,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -99,11 +90,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // lines
             lines = { @Line(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -120,11 +108,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -140,14 +125,10 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)),
                     @Node(coordinates = @Loc(value = TEST_8)),
-                    @Node(coordinates = @Loc(value = TEST_9)),
                     @Node(coordinates = @Loc(value = TEST_10)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -166,14 +147,10 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)),
-                    @Node(coordinates = @Loc(value = TEST_8)),
-                    @Node(coordinates = @Loc(value = TEST_9)) },
+                    @Node(coordinates = @Loc(value = TEST_8)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
@@ -191,11 +168,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -207,18 +181,16 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // areas
-            areas = { @Area(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_9),
-                    @Loc(value = TEST_6), @Loc(value = TEST_2) }, tags = { "landuse=military" }) })
+            areas = { @Area(coordinates = { @Loc(value = TEST_11), @Loc(value = TEST_12),
+                    @Loc(value = TEST_13),
+                    @Loc(value = TEST_14) }, tags = { "landuse=military" }) })
     private Atlas accessNoInHighwayEdgesLanduseMilitary;
 
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -242,11 +214,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -270,11 +239,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
@@ -290,11 +256,8 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
                     @Node(coordinates = @Loc(value = TEST_7)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
