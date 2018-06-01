@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.geography.clipping.Clip;
 import org.openstreetmap.atlas.geography.clipping.Clip.ClipType;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Surface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
     private static final String UNIQUE_IDENTIFIER_FORMAT = "%s,%s";
 
     // Minimum intersection to be contained
-    private static final double overlapLowerLimit = 1.0;
+    private static final double OVERLAP_LOWER_LIMIT = 1.0;
 
     // Overlap below this limit is not considered to be intersecting
     private final double intersectionLowerLimit;
@@ -151,14 +152,13 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
             // Flag based on intersection type
             if (resultType == IntersectionType.OVERLAP)
             {
-                if (((Area) object).asPolygon().surface()
-                        .isLargerThan(otherBuilding.asPolygon().surface()))
+                final Surface objectAsSurface = ((Area) object).asPolygon().surface();
+                if (objectAsSurface.isLargerThan(otherBuilding.asPolygon().surface()))
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
                 }
-                else if (((Area) object).asPolygon().surface()
-                        .isLessThan(otherBuilding.asPolygon().surface()))
+                else if (objectAsSurface.isLessThan(otherBuilding.asPolygon().surface()))
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             otherBuilding.getOsmIdentifier(), object.getOsmIdentifier()));
@@ -203,8 +203,6 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
      *            {@link Polygon} to check for intersection
      * @param otherPolygon
      *            Another {@link Polygon} to check against for intersection
-     * @param areaSizeToCheck
-     *            Area size to decide if intersection area is big enough for overlap
      * @return {@link IntersectionType} between given {@link Polygon}s
      */
     private IntersectionType findIntersectionType(final Polygon polygon, final Polygon otherPolygon)
@@ -247,7 +245,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
         final long baselineArea = Math.min(polygon.surface().asDm7Squared(),
                 otherPolygon.surface().asDm7Squared());
         final double proportion = (double) intersectionArea / baselineArea;
-        if (proportion >= this.overlapLowerLimit)
+        if (proportion >= this.OVERLAP_LOWER_LIMIT)
         {
             return IntersectionType.OVERLAP;
         }
