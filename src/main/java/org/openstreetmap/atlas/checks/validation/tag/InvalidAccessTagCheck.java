@@ -27,7 +27,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * This check flags {@link Edge}s and {@link Line}s that include an access tag with a value of no,
  * and does not have any supporting tags. Supporting tags declare what is or is not included in
  * {@code access=no}. For example a supporting tag of {@code public_transport=yes} would mean only
- * public transport vehicles are allowed.
+ * public transport vehicles are allowed. Items with supporting tags are filtered out through the
+ * use of the {@code tags.filter} configurable.
  *
  * @author bbreithaupt
  */
