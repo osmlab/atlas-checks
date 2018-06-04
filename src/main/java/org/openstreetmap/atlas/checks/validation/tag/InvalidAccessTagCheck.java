@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.MultiPolygon;
-import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -108,16 +108,15 @@ public class InvalidAccessTagCheck extends BaseCheck
      */
     private boolean isInMilitaryArea(final LineItem object)
     {
-        for (final Area area : object.getAtlas()
-                .areas(area -> Validators.isOfType(area, LandUseTag.class, LandUseTag.MILITARY)
-                        || Validators.hasValuesFor(area, MilitaryTag.class)))
+        final PolyLine objectAsPolyLine = object.asPolyLine();
+        if (object.getAtlas().areasIntersecting(object.bounds(),
+                area -> (Validators.isOfType(area, LandUseTag.class, LandUseTag.MILITARY)
+                        || Validators.hasValuesFor(area, MilitaryTag.class))
+                        && (object.intersects(area.asPolygon())
+                                || area.asPolygon().fullyGeometricallyEncloses(objectAsPolyLine)))
+                .iterator().hasNext())
         {
-            final Polygon areaPolygon = area.asPolygon();
-            if (object.intersects(areaPolygon)
-                    || areaPolygon.fullyGeometricallyEncloses(object.asPolyLine()))
-            {
-                return true;
-            }
+            return true;
         }
         for (final Relation relation : object.getAtlas().relations(
                 relation -> (Validators.isOfType(relation, LandUseTag.class, LandUseTag.MILITARY)
