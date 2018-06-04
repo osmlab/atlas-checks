@@ -152,18 +152,19 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
             // Flag based on intersection type
             if (resultType == IntersectionType.OVERLAP)
             {
-                // Get object as a Surface
+                // Get object and otherBuilding as a Surfaces
                 final Surface objectAsSurface = ((Area) object).asPolygon().surface();
+                final Surface otherBuildingAsSurface = otherBuilding.asPolygon().surface();
                 // If object is larger than otherBuilding, the instruction states object contains
                 // otherBuilding
-                if (objectAsSurface.isLargerThan(otherBuilding.asPolygon().surface()))
+                if (objectAsSurface.isLargerThan(otherBuildingAsSurface))
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
                 }
                 // If object is smaller than otherBuilding, the instruction states otherBuilding
                 // contains object
-                else if (objectAsSurface.isLessThan(otherBuilding.asPolygon().surface()))
+                else if (objectAsSurface.isLessThan(otherBuildingAsSurface))
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             otherBuilding.getOsmIdentifier(), object.getOsmIdentifier()));
@@ -251,7 +252,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
         final long baselineArea = Math.min(polygon.surface().asDm7Squared(),
                 otherPolygon.surface().asDm7Squared());
         final double proportion = (double) intersectionArea / baselineArea;
-        if (proportion >= this.OVERLAP_LOWER_LIMIT)
+        if (proportion >= OVERLAP_LOWER_LIMIT)
         {
             return IntersectionType.OVERLAP;
         }
