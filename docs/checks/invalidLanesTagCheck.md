@@ -28,7 +28,7 @@ Our first goal is to validate the incoming Atlas object. Valid features for this
     {
         return Validators.hasValuesFor(object, LanesTag.class)
                 && HighwayTag.highwayTag(object).isPresent() && object instanceof Edge
-                && !this.isFlagged(((Edge) object).getMasterEdgeIdentifier());
+                && !this.isFlagged(((Edge) object).getOsmIdentifier());
     }
 ```
 
@@ -40,7 +40,7 @@ The valid objects are then tested against the list of valid `lanes` tag values, 
     {
         if (!this.lanesFilter.test(object))
         {
-            this.markAsFlagged(((Edge) object).getMasterEdgeIdentifier());
+            this.markAsFlagged(((Edge) object).getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
