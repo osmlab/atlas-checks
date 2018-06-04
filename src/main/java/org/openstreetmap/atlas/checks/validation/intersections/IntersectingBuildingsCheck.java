@@ -152,17 +152,23 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
             // Flag based on intersection type
             if (resultType == IntersectionType.OVERLAP)
             {
+                // Get object as a Surface
                 final Surface objectAsSurface = ((Area) object).asPolygon().surface();
+                // If object is larger than otherBuilding, the instruction states object contains
+                // otherBuilding
                 if (objectAsSurface.isLargerThan(otherBuilding.asPolygon().surface()))
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
                 }
+                // If object is smaller than otherBuilding, the instruction states otherBuilding
+                // contains object
                 else if (objectAsSurface.isLessThan(otherBuilding.asPolygon().surface()))
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             otherBuilding.getOsmIdentifier(), object.getOsmIdentifier()));
                 }
+                // If object and otherBuilding are equal, the instruction states that they overlap
                 else
                 {
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(0,

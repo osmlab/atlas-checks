@@ -103,7 +103,7 @@ public class IntersectingBuildingsCheckTest
     }
 
     @Test
-    public void containsBuildingAtlas()
+    public void testContainsBuildingAtlas()
     {
         this.verifier.actual(this.setup.containsBuildingAtlas(), CHECK);
         this.verifier.verifyNotEmpty();
