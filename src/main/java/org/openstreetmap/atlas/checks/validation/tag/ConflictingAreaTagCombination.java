@@ -43,10 +43,9 @@ public class ConflictingAreaTagCombination extends BaseCheck
             .hasValuesFor(object, BuildingTag.class)
             && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO)
             && Validators.hasValuesFor(object, NaturalTag.class);
-    private static final Predicate<Taggable> BUILDING_HIGHWAY = object -> Validators
-            .hasValuesFor(object, BuildingTag.class)
+    private static final Predicate<Taggable> BUILDING_HIGHWAY = object -> Validators.hasValuesFor(
+            object, BuildingTag.class) && Validators.hasValuesFor(object, HighwayTag.class)
             && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO)
-            && Validators.hasValuesFor(object, HighwayTag.class)
             && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.SERVICES);
     private static final Predicate<Taggable> NATURAL_HIGHWAY = object -> Validators.hasValuesFor(
             object, NaturalTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
@@ -57,7 +56,7 @@ public class ConflictingAreaTagCombination extends BaseCheck
     // TODO add LandUseTag.AQUACULTURE
     private static final Predicate<Taggable> WATER_LANDUSE = object -> Validators.isOfType(object,
             NaturalTag.class, NaturalTag.WATER) && Validators.hasValuesFor(object, LandUseTag.class)
-            && !Validators.isOfType(object, LandUseTag.class, LandUseTag.RESERVOIR,
+            && Validators.isNotOfType(object, LandUseTag.class, LandUseTag.RESERVOIR,
                     LandUseTag.BASIN);
     private static final Predicate<Taggable> LANDUSE_HIGHWAY = object -> Validators.hasValuesFor(
             object, LandUseTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
@@ -91,7 +90,7 @@ public class ConflictingAreaTagCombination extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Area
-                && !Validators.isOfType(object, BuildingTag.class, BuildingTag.NO);
+                && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO);
     }
 
     /**
