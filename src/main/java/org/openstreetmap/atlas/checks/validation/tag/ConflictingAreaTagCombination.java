@@ -39,25 +39,30 @@ public class ConflictingAreaTagCombination extends BaseCheck
             INVALID_BUILDING_HIGHWAY_INSTRUCTION, INVALID_NATURAL_HIGHWAY_INSTRUCTION,
             INVALID_WATER_MANMADE_INSTRUCTION, INVALID_WATER_LANDUSE_INSTRUCTION,
             INVALID_LANDUSE_HIGHWAY);
+    // Building tag should not exist with any natural tags. The only exception is if building=NO.
     private static final Predicate<Taggable> BUILDING_NATURAL = object -> Validators
-            .hasValuesFor(object, BuildingTag.class)
-            && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO)
+            .isNotOfType(object, BuildingTag.class, BuildingTag.NO)
             && Validators.hasValuesFor(object, NaturalTag.class);
-    private static final Predicate<Taggable> BUILDING_HIGHWAY = object -> Validators.hasValuesFor(
-            object, BuildingTag.class) && Validators.hasValuesFor(object, HighwayTag.class)
-            && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO)
+    // Building tag should not exist with any highway tags. The only exception is highway=SERVICES.
+    private static final Predicate<Taggable> BUILDING_HIGHWAY = object -> Validators
+            .isNotOfType(object, BuildingTag.class, BuildingTag.NO)
             && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.SERVICES);
+    // Natural tag should not exist with any highway tags.
     private static final Predicate<Taggable> NATURAL_HIGHWAY = object -> Validators.hasValuesFor(
             object, NaturalTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
+    // The natural=WATER tag should not exist with any man_made tags. The exceptions are
+    // man_made=RESERVOIR_COVERED and man_made=WASTEWATER_PLANT.
     private static final Predicate<Taggable> NATURAL_WATER_MANMANDE = object -> Validators
             .isOfType(object, NaturalTag.class, NaturalTag.WATER)
-            && Validators.hasValuesFor(object, ManMadeTag.class) && Validators.isNotOfType(object,
-                    ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED, ManMadeTag.WASTEWATER_PLANT);
-    // TODO add LandUseTag.AQUACULTURE
+            && Validators.isNotOfType(object, ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED,
+                    ManMadeTag.WASTEWATER_PLANT);
+    // The natural=WATER tag should exist with any landuse tags. The exceptions are landuse=BASIN,
+    // landuse=RESERVOIR, and landuse=AQUACULTURE.
     private static final Predicate<Taggable> WATER_LANDUSE = object -> Validators.isOfType(object,
-            NaturalTag.class, NaturalTag.WATER) && Validators.hasValuesFor(object, LandUseTag.class)
+            NaturalTag.class, NaturalTag.WATER)
             && Validators.isNotOfType(object, LandUseTag.class, LandUseTag.RESERVOIR,
-                    LandUseTag.BASIN);
+                    LandUseTag.BASIN, LandUseTag.AQUACULTURE);
+    // Landuse should not exist with any highway tags.
     private static final Predicate<Taggable> LANDUSE_HIGHWAY = object -> Validators.hasValuesFor(
             object, LandUseTag.class) && Validators.hasValuesFor(object, HighwayTag.class);
     private static final int THREE = 3;
@@ -90,7 +95,7 @@ public class ConflictingAreaTagCombination extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Area
-                && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO);
+                && !Validators.isOfType(object, BuildingTag.class, BuildingTag.NO);
     }
 
     /**
@@ -132,9 +137,7 @@ public class ConflictingAreaTagCombination extends BaseCheck
             hasConflictingCombinations = true;
         }
 
-        if (WATER_LANDUSE.test(object)
-                // TODO aquaculture check is temporary
-                && !object.getTag(LandUseTag.KEY).get().toLowerCase().equals("aquaculture"))
+        if (WATER_LANDUSE.test(object))
         {
             flag.addInstruction(this.getLocalizedInstruction(FIVE));
             hasConflictingCombinations = true;

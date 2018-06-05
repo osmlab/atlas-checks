@@ -26,27 +26,23 @@ public boolean validCheckForObject(final AtlasObject object)
 
 Using the Validators class, we store each conflicting combination into a [Predicate](https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html) variable that can be used to test its truthiness.
 ```java
-private static final Predicate<Taggable> NATURAL_WATER_MANMANDE = object ->  
+private static final Predicate<Taggable> NATURAL_WATER_MANMANDE = object -> 
         Validators.isOfType(object, NaturalTag.class, NaturalTag.WATER)
-        && Validators.hasValuesFor(object, ManMadeTag.class) 
-        && Validators.isNotOfType(object, ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED, ManMadeTag.WASTEWATER_PLANT);
+        && Validators.isNotOfType(object, ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED, ManMadeTag.WASTEWATER_PLANT);;
 ```
 
 For the variable above to be truthy, the following conditions must be true:
 * Area has `natural=WATER` tag
-* Area has a `man_made` tag with any value
-* `man_made` tag does not equal `RESERVOIR_COVERED` OR `WASTEWATER_PLANT`
+* Area has a `man_made` tag AND its' value must not equal `RESERVOIR_COVERED` OR `WASTEWATER_PLANT`
 
 Then, we can easily test each combination using Predicate's `test()` function.
 
 ```java
-...
 if (NATURAL_WATER_MANMANDE.test(object))
 {
     flag.addInstruction(this.getLocalizedInstruction(FOUR));
     hasConflictingCombinations = true;
 }
-...
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.

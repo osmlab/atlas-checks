@@ -64,7 +64,7 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
     @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
             @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
             @Loc(value = AREA_LOCATION_THREE),
-            @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=water", "landuse=disused" }) })
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "natural=water", "landuse=port" }) })
     private Atlas waterLandUseTagAtlas;
 
     // natural=water and landuse=aquaculture
