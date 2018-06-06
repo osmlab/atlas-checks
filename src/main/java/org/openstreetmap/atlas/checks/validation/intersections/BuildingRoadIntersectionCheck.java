@@ -18,6 +18,7 @@ import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
+import org.openstreetmap.atlas.tags.EntranceTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
@@ -47,8 +48,8 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
                 || YES_VALUE.equals(edge.tag(INDOOR_KEY))
-                || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
-                        && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY))
+                || Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                        && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY)
                 || edge.connectedNodes().stream().anyMatch(
                         node -> Validators.isOfType(node, EntranceTag.class, EntranceTag.YES)
                                 || Validators.isOfType(node, AmenityTag.class,
