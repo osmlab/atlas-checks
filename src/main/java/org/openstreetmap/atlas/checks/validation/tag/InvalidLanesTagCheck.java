@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +10,8 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.tags.BarrierTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LanesTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -28,9 +32,12 @@ public class InvalidLanesTagCheck extends BaseCheck
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Way {0,number,#} has an invalid lanes value.");
 
+    // Valid values of the lanes OSM key
     private static final String LANES_FILTER_DEFAULT = "Lanes->1,1.5,2,3,4,5,6,7,8,9,10";
-
     private final TaggableFilter lanesFilter;
+
+    // Edges that can be ignored because they are part of a toll booth
+    private final HashSet<Long> isChecked = new HashSet<>();
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -59,7 +66,8 @@ public class InvalidLanesTagCheck extends BaseCheck
     {
         return Validators.hasValuesFor(object, LanesTag.class)
                 && HighwayTag.highwayTag(object).isPresent() && object instanceof Edge
-                && !this.isFlagged(((Edge) object).getOsmIdentifier());
+                && !this.isFlagged(object.getOsmIdentifier())
+                && !this.isChecked.contains(object.getIdentifier());
     }
 
     /**
@@ -72,7 +80,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!this.lanesFilter.test(object))
+        if (!this.lanesFilter.test(object) && !partOfTollBooth(object))
         {
             this.markAsFlagged(((Edge) object).getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -85,5 +93,58 @@ public class InvalidLanesTagCheck extends BaseCheck
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Checks for a node with {@code barrier=toll_booth} amongst the {@link Edge}s that are
+     * connected to the input {@link Edge} and have an otherwise invalid {@code lanes} tag.
+     *
+     * @param object
+     *            an {@link Edge} with an otherwise invalid {@code lanes} tag, to be checked for
+     *            toll booths
+     * @return a boolean that is true when a toll booth is found
+     */
+    private boolean partOfTollBooth(final AtlasObject object)
+    {
+        // Connected edges with lanes tag values not in the lanesFilter
+        final HashSet<Long> connectedEdges = new HashSet<>();
+        // Que of edges to be processed
+        final ArrayDeque<Edge> toProcess = new ArrayDeque<>();
+        boolean tollBooth = false;
+        Edge polledEdge;
+
+        // Add original edge
+        connectedEdges.add(object.getIdentifier());
+        toProcess.add((Edge) object);
+
+        // Get all connected edges with lanes tag values not in the lanesFilter and check for toll
+        // booths
+        while (!toProcess.isEmpty())
+        {
+            polledEdge = toProcess.poll();
+            for (final Node node : polledEdge.connectedNodes())
+            {
+                if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
+                {
+                    tollBooth = true;
+                }
+            }
+            for (final Edge edge : polledEdge.connectedEdges())
+            {
+                if (!connectedEdges.contains(edge.getIdentifier()) && !lanesFilter.test(edge))
+                {
+                    toProcess.add(edge);
+                    connectedEdges.add(edge.getIdentifier());
+                }
+            }
+        }
+
+        // Add to the global set so we don't process items twice unnecessarily
+        if (tollBooth)
+        {
+            this.isChecked.addAll(connectedEdges);
+        }
+
+        return tollBooth;
     }
 }

@@ -21,7 +21,7 @@ public class InvalidLanesTagCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
-            "{\"InvalidLanesTagCheck\":{\"lanes.filter\":\"lanes->1,1.5,2\"},\"exclude-oneway.minimum\":11}");
+            "{\"InvalidLanesTagCheck\":{\"lanes.filter\":\"lanes->1,1.5,2\"}}");
 
     @Test
     public void validLanesTag()
@@ -37,5 +37,13 @@ public class InvalidLanesTagCheckTest
         this.verifier.actual(this.setup.invalidLanesTag(),
                 new InvalidLanesTagCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void validLanesTagTollBooth()
+    {
+        this.verifier.actual(this.setup.validLanesTagTollBooth(),
+                new InvalidLanesTagCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }
