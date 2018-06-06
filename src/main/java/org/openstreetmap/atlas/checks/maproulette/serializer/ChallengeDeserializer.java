@@ -45,8 +45,9 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
         ChallengePriority priority;
         try
         {
-            priority = ChallengePriority.valueOf(
-                    this.getStringValue(challengeObject, Challenge.KEY_DEFAULT_PRIORITY, ""));
+            priority = ChallengePriority
+                    .valueOf(this.getStringValue(challengeObject, Challenge.KEY_DEFAULT_PRIORITY,
+                            String.valueOf(Challenge.KEY_DEFAULT_PRIORITY_VALUE)));
         }
         catch (final IllegalArgumentException e)
         {

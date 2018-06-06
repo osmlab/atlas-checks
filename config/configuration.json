@@ -116,6 +116,29 @@
       "tags":"highway"
     }
   },
+  "MalformedRoundaboutCheck" : {
+    "traffic.countries.left":["AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
+      "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
+      "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM", "JEY", "JPN", "KEN", "KIR",
+      "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ", "MSR", "MUS", "MWI",
+      "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN", "PNG", "SGP",
+      "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS", "TON",
+      "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE"],
+    "challenge": {
+      "description": "Tasks contain roundabouts that are malformed.",
+      "blurb": "Malformed roundabouts",
+      "instruction": "Open your favorite editor and fix the roundabout's geometry.",
+      "difficulty": "MEDIUM"
+    }
+  },
+  "OneMemberRelationCheck": {
+    "challenge": {
+      "description": "Tasks containing relations with only one member.",
+      "blurb": "One Member Relations",
+      "instruction": "Correct the relation to add necessary members",
+      "difficulty": "HARD"
+    }
+  },
   "RoundaboutClosedLoopCheck": {
     "challenge": {
       "description": "A roundabout should be formed by one-way edges with no dead-end nodes.",
@@ -232,5 +255,22 @@
       "defaultPriority": "MEDIUM"
     },
     "tags":"highway"
+  },
+  "WaterbodyAndIslandSizeCheck": {
+    "surface":{
+      "waterbody.minimum.meters": 10.0,
+      "waterbody.maximum.kilometers": 370000.0,
+      "island.minimum.meters": 10.0,
+      "island.maximum.kilometers": 2170000.0,
+      "islet.minimum.meters": 10.0,
+      "islet.maximum.kilometers": 1.0
+    },
+    "challenge": {
+      "description": "This tasks contains waterboadies and islands which are either too small or too large in size.",
+      "blurb": "Waterbodies and Islands that are too large, or too small",
+      "instruction": "Open your favorite editor and examine if the waterbody or island is correctly tagged and mapped.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "MEDIUM"
+    }
   }
 }

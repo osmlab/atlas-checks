@@ -211,7 +211,7 @@ public class MapRouletteClient implements Serializable
             {
                 // retrieve the already created project and challenge
                 final Project project = this.projects.get(key.getFirst());
-                if (project == null)
+                if (project == null || project.getId() == -1)
                 {
                     logger.warn(
                             "Failed to upload batch to MapRoulette, Project {} has not been created.",
@@ -221,7 +221,7 @@ public class MapRouletteClient implements Serializable
                 {
                     final Challenge challenge = this.challenges.get(project.getId())
                             .get(key.getSecond());
-                    if (challenge == null)
+                    if (challenge == null || challenge.getId() == -1)
                     {
                         logger.warn(
                                 "Failed to upload batch to MapRoulette, Challenge {} has not been created.",

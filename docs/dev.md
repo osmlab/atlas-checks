@@ -20,13 +20,13 @@ There are a couple of requirements for building and running a new Atlas Check. T
 
 ### Building Check Template
 Building a check template is as easy as running a very basic command using gradle:
-`gradle buildCheck -PCheckName=CheckName`
+`./gradlew buildCheck -PCheckName=CheckName`
 
 The value "CheckName" can and should be changed with whatever represents the check that you are planning to 
 write more clearly. So if you are writing a check to make sure that any areas tagged as pools are not larger 
 than a certain maximum or smaller than a certain minimum, then we might call that check "PoolSizeCheck", 
 and would be done like so:
-`gradle buildCheck -PCheckName=PoolSizeCheck`
+`./gradlew buildCheck -PCheckName=PoolSizeCheck`
 
 This command would be required to be run inside the Atlas-Checks root folder, and would provide the following updates:
 - Creates new file src/main/java/org/openstreetmap/atlas/checks/validation/PoolSizeCheck
@@ -142,7 +142,7 @@ all the configuration values for the system and the checks themselves. For more 
 #### Results
 
 To execute our check(s), we simply need to run the following gradle command:
-`gradle run`
+`./gradlew run`
 
 This will execute our flag using the default configuration. For executing with advanced properties see 
 [Atlas Checks Standalone Application](standalone.md).
