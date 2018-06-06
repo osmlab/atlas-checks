@@ -131,7 +131,9 @@ public class InvalidLanesTagCheck extends BaseCheck
             }
             for (final Edge edge : polledEdge.connectedEdges())
             {
-                if (!connectedEdges.contains(edge.getIdentifier()) && !lanesFilter.test(edge))
+                if (!connectedEdges.contains(edge.getIdentifier())
+                        && Validators.hasValuesFor(edge, LanesTag.class)
+                        && !this.lanesFilter.test(edge))
                 {
                     toProcess.add(edge);
                     connectedEdges.add(edge.getIdentifier());

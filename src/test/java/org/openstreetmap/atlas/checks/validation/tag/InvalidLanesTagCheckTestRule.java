@@ -45,7 +45,7 @@ public class InvalidLanesTagCheckTestRule extends CoreTestRule
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_3)),
                     @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_7)) },
+                    @Node(coordinates = @Loc(value = TEST_7), tags = { "barrier=toll_booth" }) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
