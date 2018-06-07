@@ -15,7 +15,8 @@ import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
+ * This check flags {@link Edge}s that are car navigable highways and have a name tag that contains
+ * only integers.
  *
  * @author bbreithaupt
  */
@@ -86,11 +87,12 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
         {
             try
             {
-                Integer.parseInt(object.getOsmTags().getOrDefault(nameKey, "a"));
+                Integer.parseInt(
+                        object.getOsmTags().getOrDefault(nameKey, "a").replaceAll(" ", ""));
             }
             catch (final NumberFormatException e)
             {
-                break;
+                continue;
             }
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -98,5 +100,11 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }
