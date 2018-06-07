@@ -224,6 +224,16 @@
       "tags":"highway"
     }
   },
+  "StreetNameIntegersOnlyCheck": {
+    "name_keys.filter":["name","name:left","name:right"],
+    "challenge": {
+      "description": "Tasks containing name tags with only integers",
+      "blurb": "Street Names Integers Only",
+      "instruction": "Correct the road with only integers for names.",
+      "difficulty": "Medium",
+      "tags":"highway,name"
+    }
+  },
   "SnakeRoadCheck": {
     "challenge": {
       "description": "Tasks will include ways that are drawn as a single way, when in reality they should be two or more distinct ways",
