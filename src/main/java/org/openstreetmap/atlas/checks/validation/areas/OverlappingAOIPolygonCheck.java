@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,22 +26,27 @@ import com.vividsolutions.jts.geom.TopologyException;
 public class OverlappingAOIPolygonCheck extends BaseCheck
 {
 
-    // You can use serialver to regenerate the serial UID.
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -3286838841854959683L;
+
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Area (id={0,number,#}) overlaps area (id={1,number,#}) and has the same AOI tag.","Area (id={0,number,#}) overlaps area (id={1,number,#}) and has similar AOI tags.");
 
     private static final String AOI_FILTER_DEFAULT = "tourism->zoo|sport->golf|"
             + "amenity->festival_grounds,grave_yard|boundary->national_park,protected_area|"
             + "historic->battlefield|landuse->cemetery,forest,recreation_ground,village_green|"
             + "natural->beach,wood|leisure->recreation_ground,garden,golf_course|leisure->park&name->*";
 
-    private static final String AOI_DUPLICATES_DEFAULT = "landuse->cemetery&amenity->grave_yard|"
-            + "landuse->forest&natural->wood|landuse->recreation_ground&leisure->recreation_ground|"
-            + "leisure->garden&leisure->park|leisure->golf&sport->golf|leisure->park&landuse->village_green";
+    private static final List<List<String>> AOI_DUPLICATES_DEFAULT = Arrays.asList(
+            Arrays.asList("landuse->cemetery", "amenity->grave_yard"),
+            Arrays.asList("landuse->forest", "natural->wood"),
+            Arrays.asList("landuse->recreation_ground", "leisure->recreation_ground"),
+            Arrays.asList("leisure->garden", "leisure->park"),
+            Arrays.asList("leisure->golf", "sport->golf"),
+            Arrays.asList("leisure->park", "village_green"));
 
     private static final double MINIMUM_PROPORTION = 0.01;
 
     private final TaggableFilter aoiFilter;
-    private final TaggableFilter aoiDuplicateFilter;
+    private final List<List<TaggableFilter>> aoiDuplicateFilters;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -58,9 +65,9 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         // Distance::meters);
         this.aoiFilter = (TaggableFilter) configurationValue(configuration, "aoi.tags.filter",
                 AOI_FILTER_DEFAULT, value -> new TaggableFilter(value.toString()));
-        this.aoiDuplicateFilter = (TaggableFilter) configurationValue(configuration,
-                "aoi.tags.duplicates", AOI_DUPLICATES_DEFAULT,
-                value -> new TaggableFilter(value.toString()));
+        this.aoiDuplicateFilters = (List<List<TaggableFilter>>) configurationValue(configuration,
+                "aoi.tags.duplicates", AOI_DUPLICATES_DEFAULT, value -> ((List) value).stream()
+                        .map(subValue -> new TaggableFilter(subValue.toString())));
     }
 
     /**
@@ -75,7 +82,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     {
         // by default we will assume all objects as valid
         return object instanceof Area
-                && (this.aoiFilter.test(object) || this.aoiDuplicateFilter.test(object))
+                && (this.aoiFilter.test(object) || aoiDuplicateFiltersTest(object))
                 && !this.isFlagged(object.getIdentifier());
     }
 
@@ -107,9 +114,16 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         {
             if (this.hasMinimumOverlapProportion(aoi.asPolygon(), area.asPolygon()))
             {
-                flag.addObject(area);
-                this.markAsFlagged(area.getIdentifier());
-                hasOverlap = true;
+                if (this.aoiFilter.test(area)){
+                    flag.addObject(area);
+                    this.markAsFlagged(area.getIdentifier());
+                    hasOverlap = true;
+                }
+                if (aoiDuplicateFiltersTest(object,area)){
+                    flag.addObject(area);
+                    this.markAsFlagged(area.getIdentifier());
+                    hasOverlap = true;
+                }
             }
         }
 
@@ -175,6 +189,40 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         final double proportion = (double) intersectionArea / baselineArea;
 
         return proportion >= MINIMUM_PROPORTION;
+    }
+
+    private boolean aoiDuplicateFiltersTest(final AtlasObject object)
+    {
+        for (final List<TaggableFilter> filters : this.aoiDuplicateFilters)
+        {
+            for (final TaggableFilter filter : filters)
+            {
+                if (filter.test(object))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean aoiDuplicateFiltersTest(final AtlasObject object, final Area area){
+        for (final List<TaggableFilter> filters : this.aoiDuplicateFilters)
+        {
+            for (final TaggableFilter filter : filters)
+            {
+                if (filter.test(object))
+                {
+                    List<TaggableFilter> otherFilters = (List<TaggableFilter>) filters.stream().filter(tagFilter -> !tagFilter.equals(filter));
+                    for (TaggableFilter otherFilter : otherFilters) {
+                        if (otherFilter.test(area)){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }
