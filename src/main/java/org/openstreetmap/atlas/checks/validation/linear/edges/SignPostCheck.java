@@ -231,7 +231,8 @@ public class SignPostCheck extends BaseCheck<String>
                         endEdges.add(finalEdge);
                         return endEdges;
                     }
-                    // Recurse through inEdges if not the other split of a way
+                    // Recurse through inEdges if this edge is not the other side of a bidirectional
+                    // way
                     else if (nextEdge.highwayTag().isIdenticalClassification(finalEdge.highwayTag())
                             && !(finalEdge.getMasterEdgeIdentifier() == nextEdge
                                     .getMasterEdgeIdentifier()))
