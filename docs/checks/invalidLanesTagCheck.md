@@ -57,7 +57,7 @@ private boolean partOfTollBooth(final AtlasObject object)
     {
         // Connected edges with lanes tag values not in the lanesFilter
         final HashSet<Long> connectedEdges = new HashSet<>();
-        // Que of edges to be processed
+        // Queue of edges to be processed
         final ArrayDeque<Edge> toProcess = new ArrayDeque<>();
         boolean tollBooth = false;
         Edge polledEdge;
