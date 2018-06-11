@@ -65,7 +65,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         super(configuration);
         this.minimumIntersect = (Double) this.configurationValue(configuration,
                 "intersect.minimum.limit", MINIMUM_PROPORTION_DEFAULT);
-        this.aoiFiltersString = (List<String>) configurationValue(configuration, "aoi.tags.filter",
+        this.aoiFiltersString = (List<String>) configurationValue(configuration, "aoi.tags.filters",
                 AOI_FILTERS_DEFAULT);
         this.aoiFiltersString.stream()
                 .forEach(string -> this.aoiFilters.add(new TaggableFilter(string)));

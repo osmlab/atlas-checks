@@ -21,7 +21,7 @@ public class OverlappingAOIPolygonCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
-            "{\"OverlappingAOIPolygonCheck\":{\"aoi.tags.filter\": [\"amenity->GRAVE_YARD|landuse->CEMETERY\"],\"intersect.minimum.limit\":0.01}}");
+            "{\"OverlappingAOIPolygonCheck\":{\"aoi.tags.filters\": [\"amenity->GRAVE_YARD|landuse->CEMETERY\"],\"intersect.minimum.limit\":0.01}}");
 
     @Test
     public void sameAOIsNoOverlap()
