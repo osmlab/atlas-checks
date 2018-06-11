@@ -140,8 +140,20 @@
     }
   },
   "OverlappingAOIPolygonCheck":{
-    "aoi.tags.filter": "tourism->zoo|sport->golf|amenity->festival_grounds,grave_yard|boundary->national_park,protected_area|historic->battlefield|landuse->cemetery,forest,recreation_ground,village_green|natural->beach,wood|leisure->recreation_ground,garden,golf_course|leisure->park&name->*",
-    "aoi.tags.duplicates": "landuse->cemetery&amenity->grave_yard|landuse->forest&natural->wood|landuse->recreation_ground&leisure->recreation_ground|leisure->garden&leisure->park|leisure->golf_course&sport->golf|leisure->park&landuse->village_green"
+    "aoi.tags.filter": ["amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
+      "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
+      "historic->BATTLEFIELD", "landuse->FOREST|natural->WOOD",
+      "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND,PARK",
+      "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN,PARK",
+      "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
+      "tourism->ZOO"],
+    "intersect.minimum.limit":0.01,
+    "challenge": {
+      "description": "Tasks containing overlapping AOI ways",
+      "blurb": "Overlapping AOI Polygon",
+      "instruction": "Correct the areas as necessary to not have overlapping ways representing the same AOI",
+      "difficulty": "HARD"
+    }
   },
   "RoundaboutClosedLoopCheck": {
     "challenge": {

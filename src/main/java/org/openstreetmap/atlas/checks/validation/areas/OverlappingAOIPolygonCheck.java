@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -41,11 +42,15 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
             "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
             "tourism->ZOO");
 
-    private static final double MINIMUM_PROPORTION = 0.01;
+    private static final double MINIMUM_PROPORTION_DEFAULT = 0.01;
+
+    private final double minimumIntersect;
+
+    private final List<String> aoiFiltersString;
 
     // List of TaggableFilters where each filter represents all tags for AOIs that should not
     // overlap
-    private final List<TaggableFilter> aoiFilters;
+    private final List<TaggableFilter> aoiFilters = new ArrayList<>();
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -58,9 +63,12 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     public OverlappingAOIPolygonCheck(final Configuration configuration)
     {
         super(configuration);
-        this.aoiFilters = (List<TaggableFilter>) configurationValue(configuration,
-                "aoi.tags.filter", AOI_FILTERS_DEFAULT,
-                value -> new TaggableFilter(value.toString()));
+        this.minimumIntersect = (Double) this.configurationValue(configuration,
+                "intersect.minimum.limit", MINIMUM_PROPORTION_DEFAULT);
+        this.aoiFiltersString = (List<String>) configurationValue(configuration, "aoi.tags.filter",
+                AOI_FILTERS_DEFAULT);
+        this.aoiFiltersString.stream()
+                .forEach(string -> this.aoiFilters.add(new TaggableFilter(string)));
     }
 
     /**
@@ -111,8 +119,8 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
                 if (aoiFiltersTest(object, area))
                 {
                     flag.addObject(area);
-                    flag.addInstruction(
-                            this.getLocalizedInstruction(0, object.getOsmIdentifier(), area));
+                    flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                            area.getOsmIdentifier()));
                     this.markAsFlagged(area.getIdentifier());
                     hasOverlap = true;
                 }
@@ -186,7 +194,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
                 otherPolygon.surface().asDm7Squared());
         final double proportion = (double) intersectionArea / baselineArea;
 
-        return proportion >= MINIMUM_PROPORTION;
+        return proportion >= this.minimumIntersect;
     }
 
     /**
