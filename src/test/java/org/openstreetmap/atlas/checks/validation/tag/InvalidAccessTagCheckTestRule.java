@@ -202,9 +202,9 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) },
             // areas
-            lines = { @Line(id = "1000", coordinates = { @Loc(value = TEST_11),
-                    @Loc(value = TEST_12), @Loc(value = TEST_13), @Loc(value = TEST_14),
-                    @Loc(value = TEST_11) }) },
+            lines = {
+                    @Line(id = "1000", coordinates = { @Loc(value = TEST_11), @Loc(value = TEST_12),
+                            @Loc(value = TEST_13), @Loc(value = TEST_5), @Loc(value = TEST_11) }) },
             // relations
             relations = { @Relation(id = "123", members = {
                     @Member(id = "1000", type = "line", role = "outer") }, tags = {

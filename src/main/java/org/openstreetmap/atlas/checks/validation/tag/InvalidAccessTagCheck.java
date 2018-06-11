@@ -118,7 +118,8 @@ public class InvalidAccessTagCheck extends BaseCheck
         {
             return true;
         }
-        for (final Relation relation : object.getAtlas().relations(
+        for (final Relation relation : object.getAtlas().relationsWithEntitiesIntersecting(
+                object.bounds(),
                 relation -> (Validators.isOfType(relation, LandUseTag.class, LandUseTag.MILITARY)
                         || Validators.hasValuesFor(relation, MilitaryTag.class))
                         && relation.isMultiPolygon()))

@@ -67,10 +67,11 @@ private boolean isInMilitaryArea(final LineItem object)
                 return true;
             }
         }
-        for (final Relation relation : object.getAtlas().relations(
-                relation -> (Validators.isOfType(relation, LandUseTag.class, LandUseTag.MILITARY)
-                        || Validators.hasValuesFor(relation, MilitaryTag.class))
-                        && relation.isMultiPolygon()))
+        for (final Relation relation : object.getAtlas().relationsWithEntitiesIntersecting(
+                        object.bounds(),
+                        relation -> (Validators.isOfType(relation, LandUseTag.class, LandUseTag.MILITARY)
+                                || Validators.hasValuesFor(relation, MilitaryTag.class))
+                                && relation.isMultiPolygon()))
         {
             try
             {
