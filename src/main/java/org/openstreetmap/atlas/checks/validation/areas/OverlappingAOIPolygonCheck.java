@@ -19,34 +19,33 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import com.vividsolutions.jts.geom.TopologyException;
 
 /**
- * Auto generated Check template
+ * This check flags {@link Area}s that overlap and represent the same Area of Interest (AOI)
  *
  * @author danielbaah
+ * @author bbreithaupt
  */
 public class OverlappingAOIPolygonCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = -3286838841854959683L;
 
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Area (id={0,number,#}) overlaps area (id={1,number,#}) and has the same AOI tag.","Area (id={0,number,#}) overlaps area (id={1,number,#}) and has similar AOI tags.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "Area (id={0,number,#}) overlaps area (id={1,number,#}) and represent the same AOI.");
 
-    private static final String AOI_FILTER_DEFAULT = "tourism->zoo|sport->golf|"
-            + "amenity->festival_grounds,grave_yard|boundary->national_park,protected_area|"
-            + "historic->battlefield|landuse->cemetery,forest,recreation_ground,village_green|"
-            + "natural->beach,wood|leisure->recreation_ground,garden,golf_course|leisure->park&name->*";
-
-    private static final List<List<String>> AOI_DUPLICATES_DEFAULT = Arrays.asList(
-            Arrays.asList("landuse->cemetery", "amenity->grave_yard"),
-            Arrays.asList("landuse->forest", "natural->wood"),
-            Arrays.asList("landuse->recreation_ground", "leisure->recreation_ground"),
-            Arrays.asList("leisure->garden", "leisure->park"),
-            Arrays.asList("leisure->golf", "sport->golf"),
-            Arrays.asList("leisure->park", "village_green"));
+    private static final List<String> AOI_FILTERS_DEFAULT = Arrays.asList(
+            "amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
+            "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
+            "historic->BATTLEFIELD", "landuse->FOREST|natural->WOOD",
+            "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND,PARK",
+            "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN,PARK",
+            "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
+            "tourism->ZOO");
 
     private static final double MINIMUM_PROPORTION = 0.01;
 
-    private final TaggableFilter aoiFilter;
-    private final List<List<TaggableFilter>> aoiDuplicateFilters;
+    // List of TaggableFilters where each filter represents all tags for AOIs that should not
+    // overlap
+    private final List<TaggableFilter> aoiFilters;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -59,15 +58,9 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     public OverlappingAOIPolygonCheck(final Configuration configuration)
     {
         super(configuration);
-        // any internal variables can be set here from configuration
-        // eg. MAX_LENGTH could be defined as "public static final double MAX_LENGTH = 100;"
-        // this.maxLength = configurationValue(configuration, "length.max", MAX_LENGTH,
-        // Distance::meters);
-        this.aoiFilter = (TaggableFilter) configurationValue(configuration, "aoi.tags.filter",
-                AOI_FILTER_DEFAULT, value -> new TaggableFilter(value.toString()));
-        this.aoiDuplicateFilters = (List<List<TaggableFilter>>) configurationValue(configuration,
-                "aoi.tags.duplicates", AOI_DUPLICATES_DEFAULT, value -> ((List) value).stream()
-                        .map(subValue -> new TaggableFilter(subValue.toString())));
+        this.aoiFilters = (List<TaggableFilter>) configurationValue(configuration,
+                "aoi.tags.filter", AOI_FILTERS_DEFAULT,
+                value -> new TaggableFilter(value.toString()));
     }
 
     /**
@@ -80,9 +73,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // by default we will assume all objects as valid
-        return object instanceof Area
-                && (this.aoiFilter.test(object) || aoiDuplicateFiltersTest(object))
+        return object instanceof Area && (aoiFiltersTest(object))
                 && !this.isFlagged(object.getIdentifier());
     }
 
@@ -101,26 +92,27 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         final Polygon aoiPolygon = aoi.asPolygon();
         boolean hasOverlap = false;
 
+        // Set of overlapping area AOIs
         final Set<Area> overlappingArea = Iterables.stream(object.getAtlas().areasIntersecting(
                 aoiPolygon.bounds(),
                 area -> area.getIdentifier() != aoi.getIdentifier() && area.intersects(aoiPolygon)
-                        && this.aoiFilter.test(area) && !this.isFlagged(area.getIdentifier())))
+                        && aoiFiltersTest(area) && !this.isFlagged(area.getIdentifier())))
                 .collectToSet();
 
         final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
         flag.addObject(object);
 
+        // Test each overlapping AOI to see if it overlaps enough and passes the same AOI filter as
+        // the object
         for (final Area area : overlappingArea)
         {
             if (this.hasMinimumOverlapProportion(aoi.asPolygon(), area.asPolygon()))
             {
-                if (this.aoiFilter.test(area)){
+                if (aoiFiltersTest(object, area))
+                {
                     flag.addObject(area);
-                    this.markAsFlagged(area.getIdentifier());
-                    hasOverlap = true;
-                }
-                if (aoiDuplicateFiltersTest(object,area)){
-                    flag.addObject(area);
+                    flag.addInstruction(
+                            this.getLocalizedInstruction(0, object.getOsmIdentifier(), area));
                     this.markAsFlagged(area.getIdentifier());
                     hasOverlap = true;
                 }
@@ -136,6 +128,12 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
     /**
      * Uses code from findIntersectionType function in BuildingRoadIntersection
      * 
@@ -146,7 +144,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
      * @return true if the polygon to polygon overlap surface area is greater than minimum
      */
 
-    private boolean hasMinimumOverlapProportion(Polygon polygon, Polygon otherPolygon)
+    private boolean hasMinimumOverlapProportion(final Polygon polygon, final Polygon otherPolygon)
     {
 
         Clip clip = null;
@@ -191,35 +189,42 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         return proportion >= MINIMUM_PROPORTION;
     }
 
-    private boolean aoiDuplicateFiltersTest(final AtlasObject object)
+    /**
+     * Tests the input {@link AtlasObject} against the list of {@link TaggableFilter}s.
+     *
+     * @param object
+     *            {@link AtlasObject} to be tested
+     * @return true if any of the filters return true
+     */
+    private boolean aoiFiltersTest(final AtlasObject object)
     {
-        for (final List<TaggableFilter> filters : this.aoiDuplicateFilters)
+        for (final TaggableFilter filter : this.aoiFilters)
         {
-            for (final TaggableFilter filter : filters)
+            if (filter.test(object))
             {
-                if (filter.test(object))
-                {
-                    return true;
-                }
+                return true;
             }
         }
         return false;
     }
 
-    private boolean aoiDuplicateFiltersTest(final AtlasObject object, final Area area){
-        for (final List<TaggableFilter> filters : this.aoiDuplicateFilters)
+    /**
+     * Tests the input {@link AtlasObject} and {@link Area} against the list of
+     * {@link TaggableFilter}s and each other.
+     *
+     * @param object
+     *            {@link AtlasObject} to be tested
+     * @param area
+     *            {@link Area} to be tested against {@code object}
+     * @return true if any of the filters return true for both {@code object} and {@code area}
+     */
+    private boolean aoiFiltersTest(final AtlasObject object, final Area area)
+    {
+        for (final TaggableFilter filter : this.aoiFilters)
         {
-            for (final TaggableFilter filter : filters)
+            if (filter.test(object) && filter.test(area))
             {
-                if (filter.test(object))
-                {
-                    List<TaggableFilter> otherFilters = (List<TaggableFilter>) filters.stream().filter(tagFilter -> !tagFilter.equals(filter));
-                    for (TaggableFilter otherFilter : otherFilters) {
-                        if (otherFilter.test(area)){
-                            return true;
-                        }
-                    }
-                }
+                return true;
             }
         }
         return false;
