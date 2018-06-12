@@ -71,11 +71,15 @@ private boolean partOfTollBooth(final AtlasObject object)
         while (!toProcess.isEmpty())
         {
             polledEdge = toProcess.poll();
-            for (final Node node : polledEdge.connectedNodes())
+            if (!tollBooth)
             {
-                if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
+                for (final Node node : polledEdge.connectedNodes())
                 {
-                    tollBooth = true;
+                    if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
+                    {
+                        tollBooth = true;
+                        break;
+                    }
                 }
             }
             for (final Edge edge : polledEdge.connectedEdges())
