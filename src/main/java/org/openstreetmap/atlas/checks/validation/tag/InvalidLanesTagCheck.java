@@ -26,12 +26,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class InvalidLanesTagCheck extends BaseCheck
 {
-
     private static final long serialVersionUID = -1459761692833694715L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Way {0,number,#} has an invalid lanes value.");
-
     // Valid values of the lanes OSM key
     private static final String LANES_FILTER_DEFAULT = "Lanes->1,1.5,2,3,4,5,6,7,8,9,10";
     private final TaggableFilter lanesFilter;
