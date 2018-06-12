@@ -58,7 +58,11 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                     // Another variation of a Pedestrian Area - not flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
-                            @Loc(value = TEST_6) }, tags = { "highway=pedestrian", "area=yes" }) })
+                            @Loc(value = TEST_6) }, tags = { "highway=pedestrian", "area=yes" }),
+                    // Parking area - not flagged
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "parking=yes" }) })
     private Atlas atlas;
     @TestAtlas(loadFromTextResource = "covered.atlas")
     private Atlas coveredAtlas;
@@ -110,6 +114,62 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                                     "building=house" }) })
     private Atlas layered;
 
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "area=yes" }) },
+
+            areas = {
+                    // Regular building - flagged
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }) })
+    private Atlas edgeAreaYesAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "indoor=yes" }) },
+
+            areas = {
+                    // Regular building - flagged
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }) })
+    private Atlas edgeIndoorYesAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
+                                    "highway=service", "service=driveway" }) },
+
+            areas = {
+                    // Regular building - flagged
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }) })
+    private Atlas edgeHighWayServiceAtlas;
+
     public Atlas getAtlas()
     {
         return this.atlas;
@@ -128,5 +188,20 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
     public Atlas getLayeredAtlas()
     {
         return this.layered;
+    }
+
+    public Atlas getEdgeAreaYesAtlas()
+    {
+        return this.edgeAreaYesAtlas;
+    }
+
+    public Atlas getEdgeIndoorYesAtlas()
+    {
+        return this.edgeIndoorYesAtlas;
+    }
+
+    public Atlas getEdgeHighWayServiceAtlas()
+    {
+        return this.edgeHighWayServiceAtlas;
     }
 }

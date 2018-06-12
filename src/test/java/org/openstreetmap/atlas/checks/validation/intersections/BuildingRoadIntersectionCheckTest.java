@@ -87,4 +87,25 @@ public class BuildingRoadIntersectionCheckTest
         this.verifier.actual(this.setup.getLayeredAtlas(), check);
         this.verifier.verifyExpectedSize(0);
     }
+
+    @Test
+    public void testEdgeAreaYesAtlas()
+    {
+        this.verifier.actual(this.setup.getEdgeAreaYesAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testEdgeIndoorYesAtlas()
+    {
+        this.verifier.actual(this.setup.getEdgeIndoorYesAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testEdgeHighWayServiceAtlas()
+    {
+        this.verifier.actual(this.setup.getEdgeHighWayServiceAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
 }
