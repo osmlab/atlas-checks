@@ -217,18 +217,21 @@ public class CheckResourceLoader
         return loadChecks(this::isEnabledByConfiguration, this.configuration);
     }
 
-    public <T extends Check> Set<T> loadChecksForCountry(final Predicate<Class> isEnabled,
-            final String country)
-    {
-        return loadChecks(isEnabled, this.getConfigurationForCountry(country));
-    }
-
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
-        return loadChecksForCountry(this::isEnabledByConfiguration, country);
+        final Configuration countryConfiguration = this.getConfigurationForCountry(country);
+        return loadChecks(
+                checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass),
+                countryConfiguration);
     }
 
     private boolean isEnabledByConfiguration(final Class checkClass)
+    {
+        return isEnabledByConfiguration(this.configuration, checkClass);
+    }
+
+    private boolean isEnabledByConfiguration(final Configuration configuration,
+            final Class checkClass)
     {
         final String key = String.format(enabledKeyTemplate, checkClass.getSimpleName());
         return configuration.get(key, enabledByDefault).value();
