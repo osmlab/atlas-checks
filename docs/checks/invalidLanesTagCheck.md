@@ -20,7 +20,7 @@ In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edg
 Our first goal is to validate the incoming Atlas object. Valid features for this check will satisfy the following conditions:
 
 * Is an Edge
-* Has a `highway` tag
+* Has a `highway` tag that is car navigable
 * Has a `lanes` tag
 * Does not have a valid `lanes` tag
 
