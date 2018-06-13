@@ -63,8 +63,8 @@ public class InvalidLanesTagCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return Validators.hasValuesFor(object, LanesTag.class)
-                && HighwayTag.highwayTag(object).isPresent() && object instanceof Edge
-                && !this.isFlagged(object.getOsmIdentifier())
+                && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
+                && !this.lanesFilter.test(object) && !this.isFlagged(object.getOsmIdentifier())
                 && !this.isChecked.contains(object.getIdentifier());
     }
 
@@ -78,9 +78,9 @@ public class InvalidLanesTagCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!this.lanesFilter.test(object) && !partOfTollBooth(object))
+        if (!partOfTollBooth(object))
         {
-            this.markAsFlagged(((Edge) object).getOsmIdentifier());
+            this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
@@ -104,51 +104,62 @@ public class InvalidLanesTagCheck extends BaseCheck
      */
     private boolean partOfTollBooth(final AtlasObject object)
     {
+        final HashSet<Edge> connectedInvalidEdges = connectedInvalidLanes(object);
+
+        // check for toll booths
+        for (final Edge edge : connectedInvalidEdges)
+        {
+            for (final Node node : edge.connectedNodes())
+            {
+                if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
+                {
+                    // If there is a toll booth, add the edges to the global set so we don't process
+                    // items twice unnecessarily and return true
+                    connectedInvalidEdges
+                            .forEach(validEdge -> this.isChecked.add(validEdge.getIdentifier()));
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the {@link Edge}s that are connected to the input {@link Edge} and have an otherwise
+     * invalid {@code lanes} tag.
+     *
+     * @param object
+     *            an {@link Edge} with an invalid {@code lanes} tag
+     * @return a {@link HashSet} of connected invalid {@code lanes} tag {@link Edge}s
+     */
+    private HashSet<Edge> connectedInvalidLanes(final AtlasObject object)
+    {
         // Connected edges with lanes tag values not in the lanesFilter
-        final HashSet<Long> connectedEdges = new HashSet<>();
+        final HashSet<Edge> connectedEdges = new HashSet<>();
         // Queue of edges to be processed
         final ArrayDeque<Edge> toProcess = new ArrayDeque<>();
-        boolean tollBooth = false;
         Edge polledEdge;
 
         // Add original edge
-        connectedEdges.add(object.getIdentifier());
+        connectedEdges.add((Edge) object);
         toProcess.add((Edge) object);
 
-        // Get all connected edges with lanes tag values not in the lanesFilter and check for toll
-        // booths
+        // Get all connected edges with lanes tag values not in the lanesFilter
         while (!toProcess.isEmpty())
         {
             polledEdge = toProcess.poll();
-            if (!tollBooth)
-            {
-                for (final Node node : polledEdge.connectedNodes())
-                {
-                    if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
-                    {
-                        tollBooth = true;
-                        break;
-                    }
-                }
-            }
             for (final Edge edge : polledEdge.connectedEdges())
             {
-                if (!connectedEdges.contains(edge.getIdentifier())
-                        && Validators.hasValuesFor(edge, LanesTag.class)
-                        && !this.lanesFilter.test(edge))
+                if (!connectedEdges.contains(edge) && Validators.hasValuesFor(edge, LanesTag.class)
+                        && HighwayTag.isCarNavigableHighway(edge) && !this.lanesFilter.test(edge))
                 {
                     toProcess.add(edge);
-                    connectedEdges.add(edge.getIdentifier());
+                    connectedEdges.add(edge);
                 }
             }
         }
 
-        // Add to the global set so we don't process items twice unnecessarily
-        if (tollBooth)
-        {
-            this.isChecked.addAll(connectedEdges);
-        }
-
-        return tollBooth;
+        return connectedEdges;
     }
 }
