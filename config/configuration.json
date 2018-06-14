@@ -187,7 +187,7 @@
     }
   },
   "SharpAngleCheck": {
-    "threshold.degrees": 149.0,
+    "threshold.degrees": 97.0,
     "challenge": {
       "description": "Each task has edges that have an angle that is too sharp within their polyline. Sharp angles may indicate inaccurate digitization once this threshold is exceeded. There may be other factors in play here such as number of intersections, type of highway, etc. But the main breaking point is any angles that are less than 31.",
       "blurb": "Modify angles that are too acute for possible inaccurate digitization.",
