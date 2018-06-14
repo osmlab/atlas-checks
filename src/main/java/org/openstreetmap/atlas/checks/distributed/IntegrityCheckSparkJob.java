@@ -154,6 +154,26 @@ public class IntegrityCheckSparkJob extends SparkJob
         checkExecutionPool.close();
     }
 
+    /**
+     * Gets complex entities
+     *
+     * @param check
+     *            A {@link BaseCheck} object
+     * @param atlas
+     *            An {@link Atlas} object
+     * @return An {@link Iterable} of {@link ComplexEntity}s
+     */
+    private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
+            final Atlas atlas)
+    {
+        if (check.finder().isPresent())
+        {
+            return Iterables.stream(check.finder().get().find(atlas));
+        }
+
+        return Collections.emptyList();
+    }
+
     private static SparkFilePath initializeOutput(final String output, final TaskContext context,
             final String country, final String temporaryOutputFolder,
             final String targetOutputFolder)
@@ -356,8 +376,8 @@ public class IntegrityCheckSparkJob extends SparkJob
                 logger.error("Exception running integrity checks on {}", country, e);
             }
 
-            logger.trace("Integrity checks took {} ms to execute for {}.",
-                    timer.elapsedSince().asMilliseconds(), country);
+            logger.info("Integrity checks finished in {} to execute for {}.", timer.elapsedSince(),
+                    country);
 
             return new Tuple2<>(IGNORED_KEY, null);
         }).filter(tuple -> !tuple._1().equals(IGNORED_KEY));
@@ -426,25 +446,5 @@ public class IntegrityCheckSparkJob extends SparkJob
             return false;
         }
         return true;
-    }
-
-    /**
-     * Gets complex entities
-     *
-     * @param check
-     *            A {@link BaseCheck} object
-     * @param atlas
-     *            An {@link Atlas} object
-     * @return An {@link Iterable} of {@link ComplexEntity}s
-     */
-    private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
-            final Atlas atlas)
-    {
-        if (check.finder().isPresent())
-        {
-            return Iterables.stream(check.finder().get().find(atlas));
-        }
-
-        return Collections.emptyList();
     }
 }
