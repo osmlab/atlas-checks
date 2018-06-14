@@ -39,18 +39,10 @@ The atlas objects are filter to only include Edges that meet the following condi
 @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if (HighwayTag.isCarNavigableHighway(object) && !this.isFlagged(object.getOsmIdentifier())
-                && object instanceof Edge)
-        {
-            for (final String nameKey : this.nameKeys)
-            {
-                if (object.getOsmTags().containsKey(nameKey))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return HighwayTag.isCarNavigableHighway(object)
+                && !this.isFlagged(object.getOsmIdentifier()) && object instanceof Edge
+                && this.nameKeys.stream()
+                        .anyMatch(nameKey -> object.getOsmTags().containsKey(nameKey));
     }
 ```
 
