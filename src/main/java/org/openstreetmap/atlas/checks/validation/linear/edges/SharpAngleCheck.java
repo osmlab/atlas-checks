@@ -20,7 +20,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * Flags edges that have an angle that is too sharp within their {@link PolyLine}. Sharp angles may
  * indicate inaccurate digitization once this threshold is exceeded. There may be other factors in
  * play here, such as number of intersections, type of highway, etc. But the main breaking point is
- * any angles that are less than 31 degrees.
+ * any angles that are less than 83 degrees.
  *
  * @author mgostintsev
  */
