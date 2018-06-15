@@ -28,7 +28,7 @@ Using the Validators class, we store each conflicting combination into a [Predic
 ```java
 private static final Predicate<Taggable> NATURAL_WATER_MANMANDE = object -> 
         Validators.isOfType(object, NaturalTag.class, NaturalTag.WATER)
-        && Validators.isNotOfType(object, ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED, ManMadeTag.WASTEWATER_PLANT);;
+        && Validators.isNotOfType(object, ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED, ManMadeTag.WASTEWATER_PLANT);
 ```
 
 For the variable above to be truthy, the following conditions must be true:

@@ -57,7 +57,8 @@ public class ConflictingAreaTagCombination extends BaseCheck
             .isOfType(object, NaturalTag.class, NaturalTag.WATER)
             && Validators.isNotOfType(object, ManMadeTag.class, ManMadeTag.RESERVOIR_COVERED,
                     ManMadeTag.WASTEWATER_PLANT);
-    // The natural=WATER tag should exist with any landuse tags. The exceptions are landuse=BASIN,
+    // The natural=WATER tag should not exist with any landuse tags. The exceptions are
+    // landuse=BASIN,
     // landuse=RESERVOIR, and landuse=AQUACULTURE.
     private static final Predicate<Taggable> WATER_LANDUSE = object -> Validators.isOfType(object,
             NaturalTag.class, NaturalTag.WATER)
