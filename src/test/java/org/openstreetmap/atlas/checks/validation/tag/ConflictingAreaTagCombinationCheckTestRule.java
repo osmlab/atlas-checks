@@ -87,6 +87,12 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
             @Loc(value = AREA_LOCATION_ONE) }, tags = { "landuse=disused", "highway=primary" }) })
     private Atlas landUseHighwayAtlas;
 
+    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
+            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
+            @Loc(value = AREA_LOCATION_THREE), @Loc(value = AREA_LOCATION_ONE) }, tags = {
+                    "area=no", "natural=water", "landuse=port" }) })
+    private Atlas areaNoNaturalLandUseTagAtlas;
+
     public Atlas getBuildingNaturalTagAtlas()
     {
         return buildingNaturalTagAtlas;
@@ -135,5 +141,10 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
     public Atlas getLandUseHighwayAtlas()
     {
         return landUseHighwayAtlas;
+    }
+
+    public Atlas getAreaNoNaturalLandUseTagAtlas()
+    {
+        return areaNoNaturalLandUseTagAtlas;
     }
 }

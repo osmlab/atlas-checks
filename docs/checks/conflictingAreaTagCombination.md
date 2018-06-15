@@ -20,7 +20,7 @@ Our first goal is to validate the incoming Atlas object. Valid features for this
 public boolean validCheckForObject(final AtlasObject object)
 {
     return object instanceof Area
-        && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.NO);
+        && Validators.isNotOfType(object, AreaTag.class, AreaTag.NO);
 }
 ```
 

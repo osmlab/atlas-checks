@@ -9,6 +9,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
@@ -94,8 +95,7 @@ public class ConflictingAreaTagCombination extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area
-                && !Validators.isOfType(object, BuildingTag.class, BuildingTag.NO);
+        return object instanceof Area && !Validators.isOfType(object, AreaTag.class, AreaTag.NO);
     }
 
     /**

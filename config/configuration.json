@@ -54,7 +54,12 @@
     }
   },
   "ConflictingAreaTagCombination": {
-    
+    "challenge": {
+      "description": "Task contains Area's with mutually exclusive tag combinations.",
+      "blurb": "Conflicting Area Tag Combination",
+      "instruction": "Open your favorite editor, check the instruction and modify the tags that are considered conflicting",
+      "difficulty": "EASY"
+    }
   },
   "DuplicateNodeCheck": {
     "challenge": {

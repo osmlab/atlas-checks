@@ -97,4 +97,12 @@ public class ConflictingAreaTagCombinationCheckTest
                 new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotEmpty();
     }
+
+    @Test
+    public void areaNoNaturalLandUseTagTest()
+    {
+        this.verifier.actual(this.setup.getAreaNoNaturalLandUseTagAtlas(),
+                new ConflictingAreaTagCombination(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
 }
