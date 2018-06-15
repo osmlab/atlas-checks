@@ -37,8 +37,8 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
             "amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
             "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
             "historic->BATTLEFIELD", "landuse->FOREST|natural->WOOD",
-            "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND,PARK",
-            "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN,PARK",
+            "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND",
+            "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN",
             "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
             "tourism->ZOO");
 

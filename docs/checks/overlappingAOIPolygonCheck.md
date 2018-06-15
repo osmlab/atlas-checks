@@ -11,9 +11,9 @@ The defaults AOI tag filters are:
 * `boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK`
 * `historic->BATTLEFIELD`
 * `landuse->FOREST|natural->WOOD`
-* `landuse->RECREATION_GROUND|leisure->RECREATION_GROUND,PARK`
+* `landuse->RECREATION_GROUND|leisure->RECREATION_GROUND`
 * `landuse->VILLAGE_GREEN|leisure->PARK`
-* `leisure->GARDEN,PARK`
+* `leisure->GARDEN`
 * `leisure->GOLF_COURSE|sport->GOLF`
 * `leisure->PARK&name->*`
 * `natural->BEACH`
