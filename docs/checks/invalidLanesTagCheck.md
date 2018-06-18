@@ -27,28 +27,29 @@ Our first goal is to validate the incoming Atlas object. Valid features for this
 
 ```java
 @Override
-    public boolean validCheckForObject(final AtlasObject object)
-    {
-        return Validators.hasValuesFor(object, LanesTag.class)
-                && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && !this.lanesFilter.test(object) && !this.isFlagged(object.getOsmIdentifier());
-    }
+public boolean validCheckForObject(final AtlasObject object)
+{
+    return Validators.hasValuesFor(object, LanesTag.class)
+            && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
+            && ((Edge) object).isMasterEdge() && !this.lanesFilter.test(object)
+            && !this.isFlagged(object.getOsmIdentifier());
+}
 ```
 
 The valid objects are then checked for toll booths and flagged if none are found
 
 ```java
 @Override
-    protected Optional<CheckFlag> flag(final AtlasObject object)
+protected Optional<CheckFlag> flag(final AtlasObject object)
+{
+    if (this.isChecked.contains(object.getIdentifier()) || !partOfTollBooth(object))
     {
-        if (this.isChecked.contains(object.getIdentifier()) || !partOfTollBooth(object))
-        {
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-        }
-        return Optional.empty();
+        this.markAsFlagged(object.getOsmIdentifier());
+        return Optional.of(this.createFlag(object,
+                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
     }
+    return Optional.empty();
+}
 ```
 
 The test for toll booths checks all connected Edges with invalid `lanes` tag values. This is to ensure the whole toll plaza is properly evaluated.  
@@ -102,7 +103,8 @@ private HashSet<Edge> connectedInvalidLanes(final AtlasObject object)
             polledEdge = toProcess.poll();
             for (final Edge edge : polledEdge.connectedEdges())
             {
-                if (!connectedEdges.contains(edge) && Validators.hasValuesFor(edge, LanesTag.class)
+                if (!connectedEdges.contains(edge) && ((Edge) object).isMasterEdge()
+                        && Validators.hasValuesFor(edge, LanesTag.class)
                         && HighwayTag.isCarNavigableHighway(edge) && !this.lanesFilter.test(edge))
                 {
                     toProcess.add(edge);
