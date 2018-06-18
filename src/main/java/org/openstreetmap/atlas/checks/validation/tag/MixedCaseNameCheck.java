@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -27,6 +29,9 @@ public class MixedCaseNameCheck extends BaseCheck
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
+
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "{0} {1,number,#} has (an) invalid mixed-case value(s) for the following tag(s): {2}.");
 
     private static final HashSet<String> NON_BICAMERAL_LANGUAGE_COUNTRIES = new HashSet<>(Arrays
             .asList("AFG", "DZA", "BHR", "BGD", "BLR", "BTN", "BRN", "KHM", "TCD", "CHN", "COM",
@@ -63,7 +68,7 @@ public class MixedCaseNameCheck extends BaseCheck
                 LOWER_CASE_WORDS_DEFAULT);
         this.specialCharacters = (String) configurationValue(configuration,
                 "characters.capital.prefix", SPECIAL_CHARACTERS_DEFAULT);
-        this.nameAffixes = (String) configurationValue(configuration, "lower_case_words",
+        this.nameAffixes = (String) configurationValue(configuration, "name_affixes",
                 NAME_AFFIXES_DEFAULT, value -> String.join("|", (List<String>) value));
     }
 
@@ -95,18 +100,37 @@ public class MixedCaseNameCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        final List<String> mixedCaseNameTags = new ArrayList<>();
         final Map<String, String> osmTags = object.getOsmTags();
-        if (!NON_BICAMERAL_LANGUAGE_COUNTRIES.contains(object.tag(ISOCountryTag.KEY).toUpperCase()))
-        {
 
+        if (!NON_BICAMERAL_LANGUAGE_COUNTRIES.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+                && isMixedCase(osmTags.get(NameTag.KEY)))
+        {
+            mixedCaseNameTags.add("name");
         }
-        for (String key : languageNameTags)
+        for (final String key : languageNameTags)
         {
             if (osmTags.containsKey(key) && isMixedCase(osmTags.get(key)))
             {
-
+                mixedCaseNameTags.add(key);
             }
 
+        }
+
+        if (!mixedCaseNameTags.isEmpty())
+        {
+            this.markAsFlagged(object.getOsmIdentifier());
+            final String osmType;
+            if (object instanceof LocationItem)
+            {
+                osmType = "Node";
+            }
+            else
+            {
+                osmType = "Way";
+            }
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, osmType,
+                    object.getOsmIdentifier(), String.join(" ", mixedCaseNameTags))));
         }
         return Optional.empty();
     }
@@ -116,7 +140,7 @@ public class MixedCaseNameCheck extends BaseCheck
         // Split into words based on spaces
         final String[] wordArray = value.split(" ");
         // Check each word
-        for (String word : wordArray)
+        for (final String word : wordArray)
         {
             // If there is more than 1 word and the word is not in the lower case list: check that
             // the first letter is a capital

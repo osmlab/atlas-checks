@@ -131,6 +131,18 @@
       "difficulty": "MEDIUM"
     }
   },
+  "MixedCaseNameCheck": {
+    "name.language.keys":["name:en"],
+    "lower_case_words":["and", "to", "of"],
+    "characters.capital.prefix":"-/(&",
+    "name_affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
+    "challenge": {
+      "description": "Tasks containing objects with mixed case names.",
+      "blurb": "Mixed Case Name",
+      "instruction": "Correct the listed names tags so they conform to capitalization standards",
+      "difficulty": "MEDIUM"
+    }
+  },
   "OneMemberRelationCheck": {
     "challenge": {
       "description": "Tasks containing relations with only one member.",
