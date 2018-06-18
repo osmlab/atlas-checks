@@ -34,7 +34,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     private static final String LANES_FILTER_DEFAULT = "Lanes->1,1.5,2,3,4,5,6,7,8,9,10";
     private final TaggableFilter lanesFilter;
 
-    // Edges that can be ignored because they are part of a toll booth
+    // Edges that can skip the toll booth test, because they have already been checked.
     private final HashSet<Long> isChecked = new HashSet<>();
 
     /**
@@ -64,8 +64,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     {
         return Validators.hasValuesFor(object, LanesTag.class)
                 && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && !this.lanesFilter.test(object) && !this.isFlagged(object.getOsmIdentifier())
-                && !this.isChecked.contains(object.getIdentifier());
+                && !this.lanesFilter.test(object) && !this.isFlagged(object.getOsmIdentifier());
     }
 
     /**
@@ -78,7 +77,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!partOfTollBooth(object))
+        if (this.isChecked.contains(object.getIdentifier()) || !partOfTollBooth(object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -113,15 +112,17 @@ public class InvalidLanesTagCheck extends BaseCheck
             {
                 if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
                 {
-                    // If there is a toll booth, add the edges to the global set so we don't process
-                    // items twice unnecessarily and return true
+                    // If there is a toll booth, mark them so we don't process
+                    // items twice unnecessarily, and return true
                     connectedInvalidEdges
-                            .forEach(validEdge -> this.isChecked.add(validEdge.getIdentifier()));
+                            .forEach(validEdge -> this.markAsFlagged(validEdge.getOsmIdentifier()));
                     return true;
                 }
             }
         }
-
+        // If not a toll booth, mark for flagging so they can skip this toll booth check.
+        connectedInvalidEdges
+                .forEach(invalidEdge -> this.isChecked.add(invalidEdge.getIdentifier()));
         return false;
     }
 
