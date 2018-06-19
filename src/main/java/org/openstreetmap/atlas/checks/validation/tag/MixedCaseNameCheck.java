@@ -82,7 +82,7 @@ public class MixedCaseNameCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !(object instanceof Relation) && this.isFlagged(object.getOsmIdentifier())
+        return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
                 && ((!NON_BICAMERAL_LANGUAGE_COUNTRIES
                         .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         && Validators.hasValuesFor(object, NameTag.class))
@@ -104,6 +104,7 @@ public class MixedCaseNameCheck extends BaseCheck
         final Map<String, String> osmTags = object.getOsmTags();
 
         if (!NON_BICAMERAL_LANGUAGE_COUNTRIES.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+                && Validators.hasValuesFor(object, NameTag.class)
                 && isMixedCase(osmTags.get(NameTag.KEY)))
         {
             mixedCaseNameTags.add("name");
@@ -133,6 +134,12 @@ public class MixedCaseNameCheck extends BaseCheck
                     object.getOsmIdentifier(), String.join(" ", mixedCaseNameTags))));
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     private boolean isMixedCase(final String value)
