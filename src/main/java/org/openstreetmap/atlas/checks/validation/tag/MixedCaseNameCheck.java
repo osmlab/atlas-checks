@@ -143,7 +143,7 @@ public class MixedCaseNameCheck extends BaseCheck
                 osmType = "Way";
             }
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, osmType,
-                    object.getOsmIdentifier(), String.join(" ", mixedCaseNameTags))));
+                    object.getOsmIdentifier(), String.join(", ", mixedCaseNameTags))));
         }
         return Optional.empty();
     }
