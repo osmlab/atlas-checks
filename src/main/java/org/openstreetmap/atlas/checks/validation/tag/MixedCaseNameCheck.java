@@ -19,15 +19,14 @@ import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check flags objects with {@code name} tags that improperly use mixed cases.
+ * This check flags objects with name tags that improperly use mixed cases.
  *
  * @author bbreithaupt
  */
 public class MixedCaseNameCheck extends BaseCheck
 {
 
-    // You can use serialver to regenerate the serial UID.
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 7109483897229499466L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "{0} {1,number,#} has (an) invalid mixed-case value(s) for the following tag(s): {2}.");
@@ -45,7 +44,8 @@ public class MixedCaseNameCheck extends BaseCheck
             "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE", "SGP", "SLB", "ZAF", "SWZ", "TZA",
             "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT", "ZMB", "ZWE");
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
-    private static final List<String> LOWER_CASE_WORDS_DEFAULT = Arrays.asList("and", "to", "of", "the");
+    private static final List<String> LOWER_CASE_WORDS_DEFAULT = Arrays.asList("and", "to", "of",
+            "the");
     private static final String SPECIAL_CHARACTERS_DEFAULT = "-/(&";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
             "Mhic", "Mic");
@@ -115,12 +115,14 @@ public class MixedCaseNameCheck extends BaseCheck
         final List<String> mixedCaseNameTags = new ArrayList<>();
         final Map<String, String> osmTags = object.getOsmTags();
 
+        // Check ISO against list of countries for testing name tag
         if (checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                 && Validators.hasValuesFor(object, NameTag.class)
                 && isMixedCase(osmTags.get(NameTag.KEY)))
         {
             mixedCaseNameTags.add("name");
         }
+        // Check all language name tags
         for (final String key : languageNameTags)
         {
             if (osmTags.containsKey(key) && isMixedCase(osmTags.get(key)))
@@ -130,10 +132,12 @@ public class MixedCaseNameCheck extends BaseCheck
 
         }
 
+        // If mix case id detected, flag
         if (!mixedCaseNameTags.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
             final String osmType;
+            // Get OSM type for object
             if (object instanceof LocationItem)
             {
                 osmType = "Node";
@@ -142,6 +146,7 @@ public class MixedCaseNameCheck extends BaseCheck
             {
                 osmType = "Way";
             }
+            // Instruction includes type of OSM object and list of flagged tags
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, osmType,
                     object.getOsmIdentifier(), String.join(", ", mixedCaseNameTags))));
         }
@@ -155,8 +160,11 @@ public class MixedCaseNameCheck extends BaseCheck
     }
 
     /**
+     * Tests each word in a string for proper use of case in a name.
+     *
      * @param value
-     * @return
+     *            String to check
+     * @return true when there is improper case in any of the words
      */
     private boolean isMixedCase(final String value)
     {
