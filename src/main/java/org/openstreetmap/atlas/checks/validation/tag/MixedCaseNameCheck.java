@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,7 +19,7 @@ import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
+ * This check flags objects with {@code name} tags that improperly use mixed cases.
  *
  * @author bbreithaupt
  */
@@ -33,22 +32,33 @@ public class MixedCaseNameCheck extends BaseCheck
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "{0} {1,number,#} has (an) invalid mixed-case value(s) for the following tag(s): {2}.");
 
-    private static final HashSet<String> NON_BICAMERAL_LANGUAGE_COUNTRIES = new HashSet<>(Arrays
-            .asList("AFG", "DZA", "BHR", "BGD", "BLR", "BTN", "BRN", "KHM", "TCD", "CHN", "COM",
-                    "DJI", "EGY", "ERI", "ETH", "GEO", "IND", "IRN", "IRQ", "ISR", "JPN", "JOR",
-                    "KAZ", "KWT", "KGZ", "LAO", "LBN", "LBY", "MKD", "MYS", "MDV", "MRT", "MAR",
-                    "MMR", "NPL", "PRK", "OMN", "PAK", "PSE", "QAT", "SAU", "SGP", "SOM", "KOR",
-                    "LKA", "SDN", "SYR", "TWN", "TZA", "THA", "TUN", "UKR", "ARE", "ESH", "YEM"));
+    // Non Bicameral Language Countries
+    // "AFG", "DZA", "BHR", "BGD", "BLR", "BTN", "BRN", "KHM", "TCD", "CHN", "COM",
+    // "DJI", "EGY", "ERI", "ETH", "GEO", "IND", "IRN", "IRQ", "ISR", "JPN", "JOR",
+    // "KAZ", "KWT", "KGZ", "LAO", "LBN", "LBY", "MKD", "MYS", "MDV", "MRT", "MAR",
+    // "MMR", "NPL", "PRK", "OMN", "PAK", "PSE", "QAT", "SAU", "SGP", "SOM", "KOR",
+    // "LKA", "SDN", "SYR", "TWN", "TZA", "THA", "TUN", "UKR", "ARE", "ESH", "YEM"
 
+    private static final List<String> CHECK_NAME_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
+            "AUT", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB", "CMR", "CAN", "CYM", "DMA", "FJI",
+            "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM", "KEN", "LSO", "MWI", "MLT", "MUS",
+            "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE", "SGP", "SLB", "ZAF", "SWZ", "TZA",
+            "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT", "ZMB", "ZWE");
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
     private static final List<String> LOWER_CASE_WORDS_DEFAULT = Arrays.asList("and", "to", "of");
     private static final String SPECIAL_CHARACTERS_DEFAULT = "-/(&";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
             "Mhic", "Mic");
 
+    // A list of countries where the name tag should be checked
+    private final List<String> checkNameCountries;
+    // A list of language specific name tags to check
     private final List<String> languageNameTags;
+    // A list of words that are normally lower case in names
     private final List<String> lowerCaseWords;
+    // A string of characters that can proceed a capital letter
     private final String specialCharacters;
+    // A list of name affixes that can proceed a capital letter
     private final String nameAffixes;
 
     /**
@@ -62,6 +72,8 @@ public class MixedCaseNameCheck extends BaseCheck
     public MixedCaseNameCheck(final Configuration configuration)
     {
         super(configuration);
+        this.checkNameCountries = (List<String>) configurationValue(configuration,
+                "check_name.countries", CHECK_NAME_COUNTRIES_DEFAULT);
         this.languageNameTags = (List<String>) configurationValue(configuration,
                 "name.language.keys", LANGUAGE_NAME_TAGS_DEFAULT);
         this.lowerCaseWords = (List<String>) configurationValue(configuration, "lower_case_words",
@@ -83,8 +95,8 @@ public class MixedCaseNameCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
-                && ((!NON_BICAMERAL_LANGUAGE_COUNTRIES
-                        .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+                && ((object.getTags().containsKey(ISOCountryTag.KEY)
+                        && checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         && Validators.hasValuesFor(object, NameTag.class))
                         || languageNameTags.stream()
                                 .anyMatch(key -> object.getOsmTags().containsKey(key)));
@@ -103,7 +115,7 @@ public class MixedCaseNameCheck extends BaseCheck
         final List<String> mixedCaseNameTags = new ArrayList<>();
         final Map<String, String> osmTags = object.getOsmTags();
 
-        if (!NON_BICAMERAL_LANGUAGE_COUNTRIES.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+        if (checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                 && Validators.hasValuesFor(object, NameTag.class)
                 && isMixedCase(osmTags.get(NameTag.KEY)))
         {
@@ -142,6 +154,10 @@ public class MixedCaseNameCheck extends BaseCheck
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * @param value
+     * @return
+     */
     private boolean isMixedCase(final String value)
     {
         // Split into words based on spaces
@@ -154,8 +170,8 @@ public class MixedCaseNameCheck extends BaseCheck
             if (wordArray.length > 1 && !lowerCaseWords.contains(word))
             {
                 final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
-                firstLetterMatcher.find();
-                if (Character.isLowerCase(firstLetterMatcher.group().charAt(0)))
+                if (firstLetterMatcher.find()
+                        && Character.isLowerCase(firstLetterMatcher.group().charAt(0)))
                 {
                     return true;
                 }
