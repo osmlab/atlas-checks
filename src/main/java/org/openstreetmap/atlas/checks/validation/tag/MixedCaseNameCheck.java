@@ -45,7 +45,7 @@ public class MixedCaseNameCheck extends BaseCheck
             "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE", "SGP", "SLB", "ZAF", "SWZ", "TZA",
             "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT", "ZMB", "ZWE");
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
-    private static final List<String> LOWER_CASE_WORDS_DEFAULT = Arrays.asList("and", "to", "of");
+    private static final List<String> LOWER_CASE_WORDS_DEFAULT = Arrays.asList("and", "to", "of", "the");
     private static final String SPECIAL_CHARACTERS_DEFAULT = "-/(&";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
             "Mhic", "Mic");

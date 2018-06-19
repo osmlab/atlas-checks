@@ -138,7 +138,7 @@
       "SGP", "SLB", "ZAF", "SWZ", "TZA", "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT",
       "ZMB", "ZWE"],
     "name.language.keys":["name:en"],
-    "lower_case_words":["and", "to", "of", "de", "del", "los", "la", "y"],
+    "lower_case_words":["and", "to", "of", "the"],
     "characters.capital.prefix":"-/(&",
     "name_affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
     "challenge": {
