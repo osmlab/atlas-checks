@@ -2,7 +2,7 @@
 
 This check flags polygons that overlap and represent the same Area of Interest (AOI).
 
-AOIs are defined through the configurable value `aoi.tags.filters`. This is a list of tag filters. If a polygon has any of the tags on any of the filters, it is considered an AOI.
+AOIs are defined through the configurable value `aoi.tags.filters`. This is a list of tag filters. If a polygon has any of the tags in any of the filters, it is considered an AOI.
 
 The defaults AOI tag filters are:  
 
