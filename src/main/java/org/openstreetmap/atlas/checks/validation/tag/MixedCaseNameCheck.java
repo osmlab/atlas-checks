@@ -46,7 +46,7 @@ public class MixedCaseNameCheck extends BaseCheck
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
     private static final List<String> LOWER_CASE_PREPOSITIONS_DEFAULT = Arrays.asList("and", "from",
             "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
-            "per", "till", "up", "via", "with", "for");
+            "per", "till", "up", "via", "with", "for", "in");
     private static final List<String> LOWER_CASE_ARTICLES_DEFAULT = Arrays.asList("a", "an", "the");
     private static final String SPLIT_CHARACTERS_DEFAULT = " -/()&@–";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
