@@ -201,17 +201,15 @@ public class SignPostCheck extends BaseCheck<String>
      */
     private List<Edge> findFirstRampEdge(final Edge finalEdge, final long maxEdgeCount)
     {
-        final int count = 0;
-
         // Go back and collect edges
         final List<Edge> endEdges = new ArrayList<>();
-        if (count < maxEdgeCount)
+        if (maxEdgeCount > 0)
         {
             // Collect in edges and make sure the list is not empty
             final Set<Edge> inEdges = finalEdge.inEdges();
             if (!inEdges.isEmpty())
             {
-                // Check each in edge
+                // Check each inEdge
                 for (final Edge nextEdge : inEdges)
                 {
                     // See if it is connected to a source edge
@@ -231,8 +229,8 @@ public class SignPostCheck extends BaseCheck<String>
                     // Recurse through inEdges if this edge is not the other side of a bidirectional
                     // way
                     else if (nextEdge.highwayTag().isIdenticalClassification(finalEdge.highwayTag())
-                            && !(finalEdge.getMasterEdgeIdentifier() == nextEdge
-                                    .getMasterEdgeIdentifier()))
+                            && finalEdge.getMasterEdgeIdentifier() != nextEdge
+                                    .getMasterEdgeIdentifier())
                     {
                         endEdges.addAll(findFirstRampEdge(nextEdge, maxEdgeCount - 1));
                     }
