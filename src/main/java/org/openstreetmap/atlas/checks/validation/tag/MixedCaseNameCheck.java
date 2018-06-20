@@ -39,14 +39,14 @@ public class MixedCaseNameCheck extends BaseCheck
     // "LKA", "SDN", "SYR", "TWN", "TZA", "THA", "TUN", "UKR", "ARE", "ESH", "YEM"
 
     private static final List<String> CHECK_NAME_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
-            "AUT", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB", "CMR", "CAN", "CYM", "DMA", "FJI",
+            "AUS", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB", "CMR", "CAN", "CYM", "DMA", "FJI",
             "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM", "KEN", "LSO", "MWI", "MLT", "MUS",
             "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE", "SGP", "SLB", "ZAF", "SWZ", "TZA",
             "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT", "ZMB", "ZWE");
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
     private static final List<String> LOWER_CASE_PREPOSITIONS_DEFAULT = Arrays.asList("and", "from",
             "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
-            "per", "till", "up", "via", "with");
+            "per", "till", "up", "via", "with", "for");
     private static final List<String> LOWER_CASE_ARTICLES_DEFAULT = Arrays.asList("a", "an", "the");
     private static final String SPLIT_CHARACTERS_DEFAULT = " -/()&@–";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",

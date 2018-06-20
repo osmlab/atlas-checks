@@ -40,6 +40,7 @@ The standards are broken by the following configurable exceptions (with default 
     * up
     * via
     * with
+    * for
 * Name affixes that may be followed by a capital:
     * Mc
     * Mac
@@ -55,7 +56,7 @@ The first is a list of ISO codes for countries that should have there `name` tag
 
 * AIA
 * ATG
-* AUT
+* AUS
 * BHS
 * BRB
 * BLZ
