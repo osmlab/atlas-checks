@@ -21,7 +21,7 @@ public class MixedCaseNameCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
-            "{\"MixedCaseNameCheck\":{\"check_name.countries\":[\"USA\",\"GRC\"],\"name.language.keys\":[\"name:en\",\"name:el\"],\"lower_case_words\":[\"and\", \"to\", \"of\"],\"characters.capital.prefix\":\"-/(&\",\"name_affixes\":[\"Mc\", \"Mac\", \"Mck\",\"Mhic\", \"Mic\"]}}");
+            "{\"MixedCaseNameCheck\":{\"check_name.countries\":[\"USA\",\"GRC\"],\"name.language.keys\":[\"name:en\",\"name:el\"],\"lower_case\":{\"prepositions\":[\"and\", \"to\", \"of\"],\"articles\":[\"a\", \"an\", \"the\"]},\"words.split.characters\":\" -/(&@\",\"name_affixes\":[\"Mc\", \"Mac\", \"Mck\",\"Mhic\", \"Mic\"]}}");
 
     @Test
     public void invalidNamePoint()
@@ -75,6 +75,14 @@ public class MixedCaseNameCheckTest
     public void validNamePointHyphen()
     {
         this.verifier.actual(this.setup.validNamePointHyphen(),
+                new MixedCaseNameCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validNamePointNumber()
+    {
+        this.verifier.actual(this.setup.validNamePointNumber(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
@@ -152,11 +160,35 @@ public class MixedCaseNameCheckTest
     }
 
     @Test
-    public void validNamePointLowerCaseWord()
+    public void validNamePointLowerCasePreposition()
     {
-        this.verifier.actual(this.setup.validNamePointLowerCaseWord(),
+        this.verifier.actual(this.setup.validNamePointLowerCasePreposition(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validNamePointLowerCaseArticle()
+    {
+        this.verifier.actual(this.setup.validNamePointLowerCaseArticle(),
+                new MixedCaseNameCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validNamePointLowerCaseArticleStart()
+    {
+        this.verifier.actual(this.setup.validNamePointLowerCaseArticleStart(),
+                new MixedCaseNameCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void invalidNamePointLowerCaseArticleStart()
+    {
+        this.verifier.actual(this.setup.invalidNamePointLowerCaseArticleStart(),
+                new MixedCaseNameCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test

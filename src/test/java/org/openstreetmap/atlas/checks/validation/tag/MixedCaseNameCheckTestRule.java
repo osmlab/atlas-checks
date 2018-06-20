@@ -69,6 +69,12 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=2test Test" }) })
+    private Atlas validNamePointNumber;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Test-TesT" }) })
     private Atlas invalidNamePointHyphen;
 
@@ -124,7 +130,25 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Test of Test" }) })
-    private Atlas validNamePointLowerCaseWord;
+    private Atlas validNamePointLowerCasePreposition;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=Test a Test" }) })
+    private Atlas validNamePointLowerCaseArticle;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=A Test" }) })
+    private Atlas validNamePointLowerCaseArticleStart;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=a Test" }) })
+    private Atlas invalidNamePointLowerCaseArticleStart;
 
     @TestAtlas(
             // points
@@ -203,6 +227,11 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
         return this.validNamePointHyphen;
     }
 
+    public Atlas validNamePointNumber()
+    {
+        return this.validNamePointNumber;
+    }
+
     public Atlas invalidNamePointHyphen()
     {
         return this.invalidNamePointHyphen;
@@ -248,9 +277,24 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
         return this.validNamePointNoCaps;
     }
 
-    public Atlas validNamePointLowerCaseWord()
+    public Atlas validNamePointLowerCasePreposition()
     {
-        return this.validNamePointLowerCaseWord;
+        return this.validNamePointLowerCasePreposition;
+    }
+
+    public Atlas validNamePointLowerCaseArticle()
+    {
+        return this.validNamePointLowerCaseArticle;
+    }
+
+    public Atlas validNamePointLowerCaseArticleStart()
+    {
+        return this.validNamePointLowerCaseArticleStart;
+    }
+
+    public Atlas invalidNamePointLowerCaseArticleStart()
+    {
+        return this.invalidNamePointLowerCaseArticleStart;
     }
 
     public Atlas invalidNamePointEn()

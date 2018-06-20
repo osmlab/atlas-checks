@@ -44,9 +44,11 @@ public class MixedCaseNameCheck extends BaseCheck
             "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE", "SGP", "SLB", "ZAF", "SWZ", "TZA",
             "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT", "ZMB", "ZWE");
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
-    private static final List<String> LOWER_CASE_WORDS_DEFAULT = Arrays.asList("and", "to", "of",
-            "the");
-    private static final String SPECIAL_CHARACTERS_DEFAULT = "-/(&";
+    private static final List<String> LOWER_CASE_PREPOSITIONS_DEFAULT = Arrays.asList("and", "from",
+            "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
+            "per", "till", "up", "via", "with");
+    private static final List<String> LOWER_CASE_ARTICLES_DEFAULT = Arrays.asList("a", "an", "the");
+    private static final String SPLIT_CHARACTERS_DEFAULT = " -/(&@–";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
             "Mhic", "Mic");
 
@@ -54,10 +56,12 @@ public class MixedCaseNameCheck extends BaseCheck
     private final List<String> checkNameCountries;
     // A list of language specific name tags to check
     private final List<String> languageNameTags;
-    // A list of words that are normally lower case in names
-    private final List<String> lowerCaseWords;
+    // A list of prepositions that are normally lower case in names
+    private final List<String> lowerCasePrepositions;
+    // A list of articles that are normally lower case in names, unless at the start
+    private final List<String> lowerCaseArticles;
     // A string of characters that can proceed a capital letter
-    private final String specialCharacters;
+    private final String splitCharacters;
     // A list of name affixes that can proceed a capital letter
     private final String nameAffixes;
 
@@ -76,10 +80,12 @@ public class MixedCaseNameCheck extends BaseCheck
                 "check_name.countries", CHECK_NAME_COUNTRIES_DEFAULT);
         this.languageNameTags = (List<String>) configurationValue(configuration,
                 "name.language.keys", LANGUAGE_NAME_TAGS_DEFAULT);
-        this.lowerCaseWords = (List<String>) configurationValue(configuration, "lower_case_words",
-                LOWER_CASE_WORDS_DEFAULT);
-        this.specialCharacters = (String) configurationValue(configuration,
-                "characters.capital.prefix", SPECIAL_CHARACTERS_DEFAULT);
+        this.lowerCasePrepositions = (List<String>) configurationValue(configuration,
+                "lower_case.prepositions", LOWER_CASE_PREPOSITIONS_DEFAULT);
+        this.lowerCaseArticles = (List<String>) configurationValue(configuration,
+                "lower_case.articles", LOWER_CASE_ARTICLES_DEFAULT);
+        this.splitCharacters = (String) configurationValue(configuration, "words.split.characters",
+                SPLIT_CHARACTERS_DEFAULT);
         this.nameAffixes = (String) configurationValue(configuration, "name_affixes",
                 NAME_AFFIXES_DEFAULT, value -> String.join("|", (List<String>) value));
     }
@@ -169,32 +175,35 @@ public class MixedCaseNameCheck extends BaseCheck
     private boolean isMixedCase(final String value)
     {
         // Split into words based on spaces
-        final String[] wordArray = value.split(" ");
+        final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
+        boolean firstWord = true;
         // Check each word
         for (final String word : wordArray)
         {
             // If there is more than 1 word and the word is not in the lower case list: check that
             // the first letter is a capital
-            if (wordArray.length > 1 && !lowerCaseWords.contains(word))
+            if (wordArray.length > 1 && !lowerCasePrepositions.contains(word)
+                    && !(!firstWord && lowerCaseArticles.contains(word)))
             {
                 final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
                 if (firstLetterMatcher.find()
-                        && Character.isLowerCase(firstLetterMatcher.group().charAt(0)))
+                        && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
+                        && !(firstLetterMatcher.start() != 0
+                                && Character.isDigit(word.charAt(firstLetterMatcher.start() - 1))))
                 {
                     return true;
                 }
             }
             // If the word is not all upper case: check if all the letters not following config
             // specified characters and strings, and apostrophes, are lower case
-            if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find()
-                    && Pattern
-                            .compile(String.format(
-                                    "(\\p{L}.*(?<![\\Q%1$s\\E']|%2$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
-                                    this.specialCharacters, this.nameAffixes))
-                            .matcher(word).find())
+            if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find() && Pattern.compile(
+                    String.format("(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
+                            this.nameAffixes))
+                    .matcher(word).find())
             {
                 return true;
             }
+            firstWord = false;
         }
         return false;
     }

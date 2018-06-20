@@ -138,8 +138,11 @@
       "SGP", "SLB", "ZAF", "SWZ", "TZA", "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT",
       "ZMB", "ZWE"],
     "name.language.keys":["name:en"],
-    "lower_case_words":["and", "to", "of", "the"],
-    "characters.capital.prefix":"-/(&",
+    "lower_case":{
+      "prepositions":["and", "to", "of"],
+      "articles":["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto", "per", "till", "up", "via", "with"]
+    },
+    "words.split.characters":" -/(&@–",
     "name_affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
     "challenge": {
       "description": "Tasks containing objects with mixed case names.",
