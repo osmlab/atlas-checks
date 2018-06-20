@@ -31,7 +31,7 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
                     @Area(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_8) }, tags = { "amenity=GRAVE_YARD" }) })
-    private Atlas sameAOIsNoOverlap;
+    private Atlas sameAOIsNoOverlapAtlas;
 
     @TestAtlas(
             // areas
@@ -42,7 +42,7 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
                     @Area(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6), @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "amenity=GRAVE_YARD" }) })
-    private Atlas sameAOIs;
+    private Atlas sameAOIsAtlas;
 
     @TestAtlas(
             // areas
@@ -53,7 +53,7 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
                     @Area(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6), @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "landuse=CEMETERY" }) })
-    private Atlas similarAOIs;
+    private Atlas similarAOIsAtlas;
 
     @TestAtlas(
             // areas
@@ -64,25 +64,25 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
                     @Area(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6), @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "tourism=ZOO" }) })
-    private Atlas differentAOIs;
+    private Atlas differentAOIsAtlas;
 
-    public Atlas sameAOIsNoOverlap()
+    public Atlas sameAOIsNoOverlapAtlas()
     {
-        return this.sameAOIsNoOverlap;
+        return this.sameAOIsNoOverlapAtlas;
     }
 
-    public Atlas sameAOIs()
+    public Atlas sameAOIsAtlas()
     {
-        return this.sameAOIs;
+        return this.sameAOIsAtlas;
     }
 
-    public Atlas similarAOIs()
+    public Atlas similarAOIsAtlas()
     {
-        return this.similarAOIs;
+        return this.similarAOIsAtlas;
     }
 
-    public Atlas differentAOIs()
+    public Atlas differentAOIsAtlas()
     {
-        return this.differentAOIs;
+        return this.differentAOIsAtlas;
     }
 }

@@ -24,33 +24,33 @@ public class OverlappingAOIPolygonCheckTest
             "{\"OverlappingAOIPolygonCheck\":{\"aoi.tags.filters\": [\"amenity->GRAVE_YARD|landuse->CEMETERY\"],\"intersect.minimum.limit\":0.01}}");
 
     @Test
-    public void sameAOIsNoOverlap()
+    public void sameAOIsNoOverlapTest()
     {
-        this.verifier.actual(this.setup.sameAOIsNoOverlap(),
+        this.verifier.actual(this.setup.sameAOIsNoOverlapAtlas(),
                 new OverlappingAOIPolygonCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void sameAOIs()
+    public void sameAOIsTest()
     {
-        this.verifier.actual(this.setup.sameAOIs(),
+        this.verifier.actual(this.setup.sameAOIsAtlas(),
                 new OverlappingAOIPolygonCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void similarAOIs()
+    public void similarAOIsTest()
     {
-        this.verifier.actual(this.setup.similarAOIs(),
+        this.verifier.actual(this.setup.similarAOIsAtlas(),
                 new OverlappingAOIPolygonCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void differentAOIs()
+    public void differentAOIsTest()
     {
-        this.verifier.actual(this.setup.differentAOIs(),
+        this.verifier.actual(this.setup.differentAOIsAtlas(),
                 new OverlappingAOIPolygonCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
