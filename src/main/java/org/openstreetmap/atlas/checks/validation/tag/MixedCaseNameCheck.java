@@ -198,10 +198,12 @@ public class MixedCaseNameCheck extends BaseCheck
             }
             // If the word is not all upper case: check if all the letters not following
             // apostrophes, unless at the end of the word, are lower case
-            if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find() && Pattern.compile(
-                    String.format("(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
-                            this.nameAffixes))
-                    .matcher(word).find())
+            if (Pattern.compile("\\p{Ll}").matcher(word).find()
+                    && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
+                            .matches()
+                    && Pattern.compile(String.format(
+                            "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
+                            this.nameAffixes)).matcher(word).find())
             {
                 return true;
             }

@@ -136,6 +136,22 @@ public class MixedCaseNameCheckTest
     }
 
     @Test
+    public void validNamePointCapsApostrophe()
+    {
+        this.verifier.actual(this.setup.validNamePointCapsApostrophe(),
+                new MixedCaseNameCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validNamePointCapsLowerApostrophe()
+    {
+        this.verifier.actual(this.setup.validNamePointCapsLowerApostrophe(),
+                new MixedCaseNameCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void invalidNamePointApostrophe()
     {
         this.verifier.actual(this.setup.invalidNamePointApostrophe(),
