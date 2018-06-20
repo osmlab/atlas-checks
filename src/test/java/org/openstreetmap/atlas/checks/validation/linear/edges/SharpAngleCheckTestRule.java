@@ -25,7 +25,7 @@ public class SharpAngleCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }) })
-    private Atlas sharpeAngle;
+    private Atlas sharpeAngleAtlas;
 
     @TestAtlas(
             // nodes
@@ -34,7 +34,7 @@ public class SharpAngleCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_2),
                     @Loc(value = TEST_3), @Loc(value = TEST_1) }, tags = { "highway=motorway" }) })
-    private Atlas notSharpeAngle;
+    private Atlas notSharpeAngleAtlas;
 
     @TestAtlas(
             // nodes
@@ -43,20 +43,20 @@ public class SharpAngleCheckTestRule extends CoreTestRule
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_3),
                     @Loc(value = TEST_2), @Loc(value = TEST_1),
                     @Loc(value = TEST_3) }, tags = { "highway=motorway" }) })
-    private Atlas sharpeAngles;
+    private Atlas sharpeAnglesAtlas;
 
-    public Atlas sharpeAngle()
+    public Atlas sharpeAngleAtlas()
     {
-        return this.sharpeAngle;
+        return this.sharpeAngleAtlas;
     }
 
-    public Atlas notSharpeAngle()
+    public Atlas notSharpeAngleAtlas()
     {
-        return this.notSharpeAngle;
+        return this.notSharpeAngleAtlas;
     }
 
-    public Atlas sharpeAngles()
+    public Atlas sharpeAnglesAtlas()
     {
-        return this.sharpeAngles;
+        return this.sharpeAnglesAtlas;
     }
 }

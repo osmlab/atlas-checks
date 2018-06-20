@@ -24,23 +24,26 @@ public class SharpAngleCheckTest
             .inlineConfiguration("{\"SharpAngleCheck\":{\"threshold.degrees\": 97.0}}");
 
     @Test
-    public void sharpeAngle()
+    public void sharpeAngleTest()
     {
-        this.verifier.actual(this.setup.sharpeAngle(), new SharpAngleCheck(inlineConfiguration));
+        this.verifier.actual(this.setup.sharpeAngleAtlas(),
+                new SharpAngleCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void notSharpeAngle()
+    public void notSharpeAngleTest()
     {
-        this.verifier.actual(this.setup.notSharpeAngle(), new SharpAngleCheck(inlineConfiguration));
+        this.verifier.actual(this.setup.notSharpeAngleAtlas(),
+                new SharpAngleCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void sharpeAngles()
+    public void sharpeAnglesTest()
     {
-        this.verifier.actual(this.setup.sharpeAngles(), new SharpAngleCheck(inlineConfiguration));
+        this.verifier.actual(this.setup.sharpeAnglesAtlas(),
+                new SharpAngleCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert
                 .assertTrue(flag.getInstructions().contains("2 angles that are too sharp")));
