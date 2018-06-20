@@ -48,7 +48,7 @@ public class MixedCaseNameCheck extends BaseCheck
             "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
             "per", "till", "up", "via", "with");
     private static final List<String> LOWER_CASE_ARTICLES_DEFAULT = Arrays.asList("a", "an", "the");
-    private static final String SPLIT_CHARACTERS_DEFAULT = " -/(&@–";
+    private static final String SPLIT_CHARACTERS_DEFAULT = " -/()&@–";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
             "Mhic", "Mic");
 
@@ -174,18 +174,20 @@ public class MixedCaseNameCheck extends BaseCheck
      */
     private boolean isMixedCase(final String value)
     {
-        // Split into words based on spaces
+        // Split into words based on configurable characters
         final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
         boolean firstWord = true;
         // Check each word
         for (final String word : wordArray)
         {
-            // If there is more than 1 word and the word is not in the lower case list: check that
+            // If there is more than 1 word, the word is not in the list of prepositions, and the
+            // word is not both in the article list and not the first word: check that
             // the first letter is a capital
             if (wordArray.length > 1 && !lowerCasePrepositions.contains(word)
                     && !(!firstWord && lowerCaseArticles.contains(word)))
             {
                 final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
+                // If the first letter is lower case: return true if it is not preceded by a number
                 if (firstLetterMatcher.find()
                         && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
                         && !(firstLetterMatcher.start() != 0
@@ -194,8 +196,8 @@ public class MixedCaseNameCheck extends BaseCheck
                     return true;
                 }
             }
-            // If the word is not all upper case: check if all the letters not following config
-            // specified characters and strings, and apostrophes, are lower case
+            // If the word is not all upper case: check if all the letters not following
+            // apostrophes, unless at the end of the word, are lower case
             if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find() && Pattern.compile(
                     String.format("(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
                             this.nameAffixes))

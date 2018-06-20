@@ -8,22 +8,38 @@ The standards are as follows:
 
 * Words must start with a capital unless:
     * There are no other words in the name
+    * The first letter is preceded by a number
 * All other letters must be lower case unless: 
     * They follow an apostrophe and are not the last letter of the word
     * The entire word is uppercase
 
 The standards are broken by the following configurable exceptions (with default values):
 
-* Words that do not need to start with a capital:
+* Prepositions that do not need to start with a capital:
     * and
     * to
     * of
     * the
-* Symbols that may be followed by a capital:
-    * \-
-    * /
-    * (
-    * &
+* Articles that are capitalised only if they are the first word
+    * and
+    * from
+    * to
+    * of
+    * by
+    * upon
+    * on
+    * off
+    * at
+    * as
+    * into
+    * like
+    * near
+    * onto
+    * per
+    * till
+    * up
+    * via
+    * with
 * Name affixes that may be followed by a capital:
     * Mc
     * Mac
@@ -89,6 +105,16 @@ The second is a list of `name:[ISOcode]` tags to check. Default values are:
 
 * name:en
 
+A final configurable is a list of characters that names are split by to for words. Its default values are: 
+
+* \-
+* /
+* (
+* )
+* &
+* @
+* –
+
 #### Live Examples
 
 1. Way [id:4780932622](https://www.openstreetmap.org/node/4780932622) has the name `NZ Convenience store`. It is flagged because the S in store should be capitalised. 
@@ -109,7 +135,6 @@ Our first goal is to validate the incoming Atlas object. Valid features for this
 * It has not already been flagged
 
 ```java
-@Override
 public boolean validCheckForObject(final AtlasObject object)
 {
     return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
@@ -125,7 +150,6 @@ Next the objects have each of their name tags, that are being checked, tested fo
 Each improper tag is noted in the output.
 
 ```java
-@Override
 protected Optional<CheckFlag> flag(final AtlasObject object)
 {
     final List<String> mixedCaseNameTags = new ArrayList<>();
@@ -170,39 +194,41 @@ protected Optional<CheckFlag> flag(final AtlasObject object)
 }
 ```
 
-The testing of the name values is performed by the following. It splits each name into words based on spaces and tests each. 
+The testing of the name values is performed by the following. It splits each name into words based on the configurable character list, and tests each. 
 It returns true when improper use of case is found.
 
 ```java
 private boolean isMixedCase(final String value)
 {
-    // Split into words based on spaces
-    final String[] wordArray = value.split(" ");
+    // Split into words based on configurable characters
+    final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
+    boolean firstWord = true;
     // Check each word
     for (final String word : wordArray)
     {
-        // If there is more than 1 word and the word is not in the lower case list: check that
+        // If there is more than 1 word, the word is not in the list of prepositions, and the word is not both in the article list and not the first word: check that
         // the first letter is a capital
-        if (wordArray.length > 1 && !lowerCaseWords.contains(word))
+        if (wordArray.length > 1 && !lowerCasePrepositions.contains(word)
+                && !(!firstWord && lowerCaseArticles.contains(word)))
         {
             final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
             if (firstLetterMatcher.find()
-                    && Character.isLowerCase(firstLetterMatcher.group().charAt(0)))
+                    && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
+                    && !(firstLetterMatcher.start() != 0
+                            && Character.isDigit(word.charAt(firstLetterMatcher.start() - 1))))
             {
                 return true;
             }
         }
-        // If the word is not all upper case: check if all the letters not following config
-        // specified characters and strings, and apostrophes, are lower case
-        if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find()
-                && Pattern
-                        .compile(String.format(
-                                "(\\p{L}.*(?<![\\Q%1$s\\E']|%2$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
-                                this.specialCharacters, this.nameAffixes))
-                        .matcher(word).find())
+        // If the word is not all upper case: check if all the letters not following apostrophes, unless at the end of the word, are lower case
+        if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find() && Pattern.compile(
+                String.format("(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
+                        this.nameAffixes))
+                .matcher(word).find())
         {
             return true;
         }
+        firstWord = false;
     }
     return false;
 }
