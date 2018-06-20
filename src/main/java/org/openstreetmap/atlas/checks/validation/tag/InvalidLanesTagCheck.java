@@ -30,6 +30,8 @@ public class InvalidLanesTagCheck extends BaseCheck
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Way {0,number,#} has an invalid lanes value.");
+    // Maximum number of connected edges that are checked for toll booth nodes
+    private static final int MAX_TOLL_PLAZA_EDGES = 20;
     // Valid values of the lanes OSM key
     private static final String LANES_FILTER_DEFAULT = "Lanes->1,1.5,2,3,4,5,6,7,8,9,10";
     private final TaggableFilter lanesFilter;
@@ -142,13 +144,14 @@ public class InvalidLanesTagCheck extends BaseCheck
         // Queue of edges to be processed
         final ArrayDeque<Edge> toProcess = new ArrayDeque<>();
         Edge polledEdge;
+        int count = 0;
 
         // Add original edge
         connectedEdges.add((Edge) object);
         toProcess.add((Edge) object);
 
         // Get all connected edges with lanes tag values not in the lanesFilter
-        while (!toProcess.isEmpty())
+        while (!toProcess.isEmpty() && count < MAX_TOLL_PLAZA_EDGES)
         {
             polledEdge = toProcess.poll();
             for (final Edge edge : polledEdge.connectedEdges())
@@ -161,6 +164,7 @@ public class InvalidLanesTagCheck extends BaseCheck
                     connectedEdges.add(edge);
                 }
             }
+            count++;
         }
 
         return connectedEdges;
