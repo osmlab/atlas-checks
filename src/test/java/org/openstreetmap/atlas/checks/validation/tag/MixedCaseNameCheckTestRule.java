@@ -25,25 +25,25 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=tEst TeSt" }) })
-    private Atlas invalidNamePoint;
+    private Atlas invalidNamePointAtlas;
 
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=tEst TeSt" }) })
-    private Atlas invalidNameNode;
+    private Atlas invalidNameNodeAtlas;
 
     @TestAtlas(
             // Lines
             lines = { @Line(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                     @Loc(value = TEST_3) }, tags = { "iso_country_code=USA", "name=tEst TeSt" }) })
-    private Atlas invalidNameLine;
+    private Atlas invalidNameLineAtlas;
 
     @TestAtlas(
             // Areas
             areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                     @Loc(value = TEST_3) }, tags = { "iso_country_code=USA", "name=tEst TeSt" }) })
-    private Atlas invalidNameArea;
+    private Atlas invalidNameAreaAtlas;
 
     @TestAtlas(
             // nodes
@@ -52,305 +52,305 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                     @Loc(value = TEST_3) }, tags = { "iso_country_code=USA", "name=tEst TeSt" }) })
-    private Atlas invalidNameEdge;
+    private Atlas invalidNameEdgeAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=tEst" }) })
-    private Atlas invalidNamePointOneWord;
+    private Atlas invalidNamePointOneWordAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Test-Test" }) })
-    private Atlas validNamePointHyphen;
+    private Atlas validNamePointHyphenAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=2test Test" }) })
-    private Atlas validNamePointNumber;
+    private Atlas validNamePointNumberAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Test-TesT" }) })
-    private Atlas invalidNamePointHyphen;
+    private Atlas invalidNamePointHyphenAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=McMan" }) })
-    private Atlas validNamePointAffix;
+    private Atlas validNamePointAffixAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=McMaN" }) })
-    private Atlas invalidNamePointAffix;
+    private Atlas invalidNamePointAffixAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=O'Flanagan" }) })
-    private Atlas validNamePointApostrophe;
+    private Atlas validNamePointApostropheAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Scott's" }) })
-    private Atlas validNamePointApostropheLower;
+    private Atlas validNamePointApostropheLowerAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=SCOTT'S" }) })
-    private Atlas validNamePointApostropheAllCaps;
+    private Atlas validNamePointApostropheAllCapsAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=SCOTT's" }) })
-    private Atlas validNamePointCapsApostrophe;
+    private Atlas validNamePointCapsApostropheAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=SCOTTs'" }) })
-    private Atlas validNamePointCapsLowerApostrophe;
+    private Atlas validNamePointCapsLowerApostropheAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Scott'S" }) })
-    private Atlas invalidNamePointApostrophe;
+    private Atlas invalidNamePointApostropheAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=TEST" }) })
-    private Atlas validNamePointAllCaps;
+    private Atlas validNamePointAllCapsAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=test" }) })
-    private Atlas validNamePointNoCaps;
+    private Atlas validNamePointNoCapsAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Test of Test" }) })
-    private Atlas validNamePointLowerCasePreposition;
+    private Atlas validNamePointLowerCasePrepositionAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=Test a Test" }) })
-    private Atlas validNamePointLowerCaseArticle;
+    private Atlas validNamePointLowerCaseArticleAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=A Test" }) })
-    private Atlas validNamePointLowerCaseArticleStart;
+    private Atlas validNamePointLowerCaseArticleStartAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name=a Test" }) })
-    private Atlas invalidNamePointLowerCaseArticleStart;
+    private Atlas invalidNamePointLowerCaseArticleStartAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name:en=tEst TeSt" }) })
-    private Atlas invalidNamePointEn;
+    private Atlas invalidNamePointEnAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=GRC",
                     "name=τΕστ ΤεΣτ" }) })
-    private Atlas invalidNamePointGreek;
+    private Atlas invalidNamePointGreekAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=GRC",
                     "name=Τεστ Τεστ" }) })
-    private Atlas validNamePointGreek;
+    private Atlas validNamePointGreekAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=GRC",
                     "name:el=τΕστ ΤεΣτ" }) })
-    private Atlas invalidNamePointGreekEl;
+    private Atlas invalidNamePointGreekElAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=GRC",
                     "name:el=Τεστ Τεστ" }) })
-    private Atlas validNamePointGreekEl;
+    private Atlas validNamePointGreekElAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=CHN",
                     "name:en=tEst TeSt", "name=Test of Test" }) })
-    private Atlas invalidNamePointChn;
+    private Atlas invalidNamePointChnAtlas;
 
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=CHN",
                     "name:en=Test of Test", "name=tEst TeSt" }) })
-    private Atlas validNamePointChn;
+    private Atlas validNamePointChnAtlas;
 
-    public Atlas invalidNamePoint()
+    public Atlas invalidNamePointAtlas()
     {
-        return this.invalidNamePoint;
+        return this.invalidNamePointAtlas;
     }
 
-    public Atlas invalidNameNode()
+    public Atlas invalidNameNodeAtlas()
     {
-        return this.invalidNameNode;
+        return this.invalidNameNodeAtlas;
     }
 
-    public Atlas invalidNameLine()
+    public Atlas invalidNameLineAtlas()
     {
-        return this.invalidNameLine;
+        return this.invalidNameLineAtlas;
     }
 
-    public Atlas invalidNameArea()
+    public Atlas invalidNameAreaAtlas()
     {
-        return this.invalidNameArea;
+        return this.invalidNameAreaAtlas;
     }
 
-    public Atlas invalidNameEdge()
+    public Atlas invalidNameEdgeAtlas()
     {
-        return this.invalidNameEdge;
+        return this.invalidNameEdgeAtlas;
     }
 
-    public Atlas invalidNamePointOneWord()
+    public Atlas invalidNamePointOneWordAtlas()
     {
-        return this.invalidNamePointOneWord;
+        return this.invalidNamePointOneWordAtlas;
     }
 
-    public Atlas validNamePointHyphen()
+    public Atlas validNamePointHyphenAtlas()
     {
-        return this.validNamePointHyphen;
+        return this.validNamePointHyphenAtlas;
     }
 
-    public Atlas validNamePointNumber()
+    public Atlas validNamePointNumberAtlas()
     {
-        return this.validNamePointNumber;
+        return this.validNamePointNumberAtlas;
     }
 
-    public Atlas invalidNamePointHyphen()
+    public Atlas invalidNamePointHyphenAtlas()
     {
-        return this.invalidNamePointHyphen;
+        return this.invalidNamePointHyphenAtlas;
     }
 
-    public Atlas validNamePointAffix()
+    public Atlas validNamePointAffixAtlas()
     {
-        return this.validNamePointAffix;
+        return this.validNamePointAffixAtlas;
     }
 
-    public Atlas invalidNamePointAffix()
+    public Atlas invalidNamePointAffixAtlas()
     {
-        return this.invalidNamePointAffix;
+        return this.invalidNamePointAffixAtlas;
     }
 
-    public Atlas validNamePointApostrophe()
+    public Atlas validNamePointApostropheAtlas()
     {
-        return this.validNamePointApostrophe;
+        return this.validNamePointApostropheAtlas;
     }
 
-    public Atlas validNamePointApostropheLower()
+    public Atlas validNamePointApostropheLowerAtlas()
     {
-        return this.validNamePointApostropheLower;
+        return this.validNamePointApostropheLowerAtlas;
     }
 
-    public Atlas validNamePointApostropheAllCaps()
+    public Atlas validNamePointApostropheAllCapsAtlas()
     {
-        return this.validNamePointApostropheAllCaps;
+        return this.validNamePointApostropheAllCapsAtlas;
     }
 
-    public Atlas validNamePointCapsApostrophe()
+    public Atlas validNamePointCapsApostropheAtlas()
     {
-        return this.validNamePointCapsApostrophe;
+        return this.validNamePointCapsApostropheAtlas;
     }
 
-    public Atlas validNamePointCapsLowerApostrophe()
+    public Atlas validNamePointCapsLowerApostropheAtlas()
     {
-        return this.validNamePointCapsLowerApostrophe;
+        return this.validNamePointCapsLowerApostropheAtlas;
     }
 
-    public Atlas invalidNamePointApostrophe()
+    public Atlas invalidNamePointApostropheAtlas()
     {
-        return this.invalidNamePointApostrophe;
+        return this.invalidNamePointApostropheAtlas;
     }
 
-    public Atlas validNamePointAllCaps()
+    public Atlas validNamePointAllCapsAtlas()
     {
-        return this.validNamePointAllCaps;
+        return this.validNamePointAllCapsAtlas;
     }
 
-    public Atlas validNamePointNoCaps()
+    public Atlas validNamePointNoCapsAtlas()
     {
-        return this.validNamePointNoCaps;
+        return this.validNamePointNoCapsAtlas;
     }
 
-    public Atlas validNamePointLowerCasePreposition()
+    public Atlas validNamePointLowerCasePrepositionAtlas()
     {
-        return this.validNamePointLowerCasePreposition;
+        return this.validNamePointLowerCasePrepositionAtlas;
     }
 
-    public Atlas validNamePointLowerCaseArticle()
+    public Atlas validNamePointLowerCaseArticleAtlas()
     {
-        return this.validNamePointLowerCaseArticle;
+        return this.validNamePointLowerCaseArticleAtlas;
     }
 
-    public Atlas validNamePointLowerCaseArticleStart()
+    public Atlas validNamePointLowerCaseArticleStartAtlas()
     {
-        return this.validNamePointLowerCaseArticleStart;
+        return this.validNamePointLowerCaseArticleStartAtlas;
     }
 
-    public Atlas invalidNamePointLowerCaseArticleStart()
+    public Atlas invalidNamePointLowerCaseArticleStartAtlas()
     {
-        return this.invalidNamePointLowerCaseArticleStart;
+        return this.invalidNamePointLowerCaseArticleStartAtlas;
     }
 
-    public Atlas invalidNamePointEn()
+    public Atlas invalidNamePointEnAtlas()
     {
-        return this.invalidNamePointEn;
+        return this.invalidNamePointEnAtlas;
     }
 
-    public Atlas invalidNamePointGreek()
+    public Atlas invalidNamePointGreekAtlas()
     {
-        return this.invalidNamePointGreek;
+        return this.invalidNamePointGreekAtlas;
     }
 
-    public Atlas validNamePointGreek()
+    public Atlas validNamePointGreekAtlas()
     {
-        return this.validNamePointGreek;
+        return this.validNamePointGreekAtlas;
     }
 
-    public Atlas invalidNamePointGreekEl()
+    public Atlas invalidNamePointGreekElAtlas()
     {
-        return this.invalidNamePointGreekEl;
+        return this.invalidNamePointGreekElAtlas;
     }
 
-    public Atlas validNamePointGreekEl()
+    public Atlas validNamePointGreekElAtlas()
     {
-        return this.validNamePointGreekEl;
+        return this.validNamePointGreekElAtlas;
     }
 
-    public Atlas invalidNamePointChn()
+    public Atlas invalidNamePointChnAtlas()
     {
-        return this.invalidNamePointChn;
+        return this.invalidNamePointChnAtlas;
     }
 
-    public Atlas validNamePointChn()
+    public Atlas validNamePointChnAtlas()
     {
-        return this.validNamePointChn;
+        return this.validNamePointChnAtlas;
     }
 }

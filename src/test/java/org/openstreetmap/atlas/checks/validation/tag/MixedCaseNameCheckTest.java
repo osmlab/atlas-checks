@@ -24,241 +24,241 @@ public class MixedCaseNameCheckTest
             "{\"MixedCaseNameCheck\":{\"check_name.countries\":[\"USA\",\"GRC\"],\"name.language.keys\":[\"name:en\",\"name:el\"],\"lower_case\":{\"prepositions\":[\"and\", \"to\", \"of\"],\"articles\":[\"a\", \"an\", \"the\"]},\"words.split.characters\":\" -/(&@\",\"name_affixes\":[\"Mc\", \"Mac\", \"Mck\",\"Mhic\", \"Mic\"]}}");
 
     @Test
-    public void invalidNamePoint()
+    public void invalidNamePointTest()
     {
-        this.verifier.actual(this.setup.invalidNamePoint(),
+        this.verifier.actual(this.setup.invalidNamePointAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNameNode()
+    public void invalidNameNodeTest()
     {
-        this.verifier.actual(this.setup.invalidNameNode(),
+        this.verifier.actual(this.setup.invalidNameNodeAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNameLine()
+    public void invalidNameLineTest()
     {
-        this.verifier.actual(this.setup.invalidNameLine(),
+        this.verifier.actual(this.setup.invalidNameLineAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNameArea()
+    public void invalidNameAreaTest()
     {
-        this.verifier.actual(this.setup.invalidNameArea(),
+        this.verifier.actual(this.setup.invalidNameAreaAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNameEdge()
+    public void invalidNameEdgeTest()
     {
-        this.verifier.actual(this.setup.invalidNameEdge(),
+        this.verifier.actual(this.setup.invalidNameEdgeAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNamePointOneWord()
+    public void invalidNamePointOneWordTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointOneWord(),
+        this.verifier.actual(this.setup.invalidNamePointOneWordAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointHyphen()
+    public void validNamePointHyphenTest()
     {
-        this.verifier.actual(this.setup.validNamePointHyphen(),
+        this.verifier.actual(this.setup.validNamePointHyphenAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointNumber()
+    public void validNamePointNumberTest()
     {
-        this.verifier.actual(this.setup.validNamePointNumber(),
+        this.verifier.actual(this.setup.validNamePointNumberAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void invalidNamePointHyphen()
+    public void invalidNamePointHyphenTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointHyphen(),
+        this.verifier.actual(this.setup.invalidNamePointHyphenAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointAffix()
+    public void validNamePointAffixTest()
     {
-        this.verifier.actual(this.setup.validNamePointAffix(),
+        this.verifier.actual(this.setup.validNamePointAffixAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void invalidNamePointAffix()
+    public void invalidNamePointAffixTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointAffix(),
+        this.verifier.actual(this.setup.invalidNamePointAffixAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointApostrophe()
+    public void validNamePointApostropheTest()
     {
-        this.verifier.actual(this.setup.validNamePointApostrophe(),
+        this.verifier.actual(this.setup.validNamePointApostropheAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointApostropheLower()
+    public void validNamePointApostropheLowerTest()
     {
-        this.verifier.actual(this.setup.validNamePointApostropheLower(),
+        this.verifier.actual(this.setup.validNamePointApostropheLowerAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointApostropheAllCaps()
+    public void validNamePointApostropheAllCapsTest()
     {
-        this.verifier.actual(this.setup.validNamePointApostropheAllCaps(),
+        this.verifier.actual(this.setup.validNamePointApostropheAllCapsAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointCapsApostrophe()
+    public void validNamePointCapsApostropheTest()
     {
-        this.verifier.actual(this.setup.validNamePointCapsApostrophe(),
+        this.verifier.actual(this.setup.validNamePointCapsApostropheAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointCapsLowerApostrophe()
+    public void validNamePointCapsLowerApostropheTest()
     {
-        this.verifier.actual(this.setup.validNamePointCapsLowerApostrophe(),
+        this.verifier.actual(this.setup.validNamePointCapsLowerApostropheAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void invalidNamePointApostrophe()
+    public void invalidNamePointApostropheTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointApostrophe(),
+        this.verifier.actual(this.setup.invalidNamePointApostropheAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointAllCaps()
+    public void validNamePointAllCapsTest()
     {
-        this.verifier.actual(this.setup.validNamePointAllCaps(),
+        this.verifier.actual(this.setup.validNamePointAllCapsAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointNoCaps()
+    public void validNamePointNoCapsTest()
     {
-        this.verifier.actual(this.setup.validNamePointNoCaps(),
+        this.verifier.actual(this.setup.validNamePointNoCapsAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointLowerCasePreposition()
+    public void validNamePointLowerCasePrepositionTest()
     {
-        this.verifier.actual(this.setup.validNamePointLowerCasePreposition(),
+        this.verifier.actual(this.setup.validNamePointLowerCasePrepositionAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointLowerCaseArticle()
+    public void validNamePointLowerCaseArticleTest()
     {
-        this.verifier.actual(this.setup.validNamePointLowerCaseArticle(),
+        this.verifier.actual(this.setup.validNamePointLowerCaseArticleAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void validNamePointLowerCaseArticleStart()
+    public void validNamePointLowerCaseArticleStartTest()
     {
-        this.verifier.actual(this.setup.validNamePointLowerCaseArticleStart(),
+        this.verifier.actual(this.setup.validNamePointLowerCaseArticleStartAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void invalidNamePointLowerCaseArticleStart()
+    public void invalidNamePointLowerCaseArticleStartTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointLowerCaseArticleStart(),
+        this.verifier.actual(this.setup.invalidNamePointLowerCaseArticleStartAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNamePointEn()
+    public void invalidNamePointEnTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointEn(),
+        this.verifier.actual(this.setup.invalidNamePointEnAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void invalidNamePointGreek()
+    public void invalidNamePointGreekTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointGreek(),
+        this.verifier.actual(this.setup.invalidNamePointGreekAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointGreek()
+    public void validNamePointGreekTest()
     {
-        this.verifier.actual(this.setup.validNamePointGreek(),
+        this.verifier.actual(this.setup.validNamePointGreekAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void invalidNamePointGreekEl()
+    public void invalidNamePointGreekElTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointGreekEl(),
+        this.verifier.actual(this.setup.invalidNamePointGreekElAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointGreekEl()
+    public void validNamePointGreekElTest()
     {
-        this.verifier.actual(this.setup.validNamePointGreekEl(),
+        this.verifier.actual(this.setup.validNamePointGreekElAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void invalidNamePointChn()
+    public void invalidNamePointChnTest()
     {
-        this.verifier.actual(this.setup.invalidNamePointChn(),
+        this.verifier.actual(this.setup.invalidNamePointChnAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void validNamePointChn()
+    public void validNamePointChnTest()
     {
-        this.verifier.actual(this.setup.validNamePointChn(),
+        this.verifier.actual(this.setup.validNamePointChnAtlas(),
                 new MixedCaseNameCheck(inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
