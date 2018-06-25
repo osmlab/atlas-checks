@@ -25,7 +25,7 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=20 19" }) })
-    private Atlas motorwayWithIntegerNameTag;
+    private Atlas motorwayWithIntegerNameTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -34,7 +34,7 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=Way St" }) })
-    private Atlas motorwayWithNonIntegerNameTag;
+    private Atlas motorwayWithNonIntegerNameTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -43,7 +43,7 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=1st St" }) })
-    private Atlas motorwayWithMixedNameTag;
+    private Atlas motorwayWithMixedNameTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -53,25 +53,25 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=1st St",
                             "name:left=1" }) })
-    private Atlas motorwayWithMixedNameTagIntegerNameLeftTag;
+    private Atlas motorwayWithMixedNameTagIntegerNameLeftTagAtlas;
 
-    public Atlas motorwayWithIntegerNameTag()
+    public Atlas motorwayWithIntegerNameTagAtlas()
     {
-        return this.motorwayWithIntegerNameTag;
+        return this.motorwayWithIntegerNameTagAtlas;
     }
 
-    public Atlas motorwayWithNonIntegerNameTag()
+    public Atlas motorwayWithNonIntegerNameTagAtlas()
     {
-        return this.motorwayWithNonIntegerNameTag;
+        return this.motorwayWithNonIntegerNameTagAtlas;
     }
 
-    public Atlas motorwayWithMixedNameTag()
+    public Atlas motorwayWithMixedNameTagAtlas()
     {
-        return this.motorwayWithMixedNameTag;
+        return this.motorwayWithMixedNameTagAtlas;
     }
 
-    public Atlas motorwayWithMixedNameTagIntegerNameLeftTag()
+    public Atlas motorwayWithMixedNameTagIntegerNameLeftTagAtlas()
     {
-        return this.motorwayWithMixedNameTagIntegerNameLeftTag;
+        return this.motorwayWithMixedNameTagIntegerNameLeftTagAtlas;
     }
 }

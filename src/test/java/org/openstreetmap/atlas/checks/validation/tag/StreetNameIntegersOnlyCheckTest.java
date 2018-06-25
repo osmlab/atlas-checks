@@ -21,33 +21,33 @@ public class StreetNameIntegersOnlyCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void motorwayWithIntegerNameTag()
+    public void motorwayWithIntegerNameTagTest()
     {
-        this.verifier.actual(this.setup.motorwayWithIntegerNameTag(),
+        this.verifier.actual(this.setup.motorwayWithIntegerNameTagAtlas(),
                 new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void motorwayWithNonIntegerNameTag()
+    public void motorwayWithNonIntegerNameTagTest()
     {
-        this.verifier.actual(this.setup.motorwayWithNonIntegerNameTag(),
+        this.verifier.actual(this.setup.motorwayWithNonIntegerNameTagAtlas(),
                 new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void motorwayWithMixedNameTag()
+    public void motorwayWithMixedNameTagTest()
     {
-        this.verifier.actual(this.setup.motorwayWithMixedNameTag(),
+        this.verifier.actual(this.setup.motorwayWithMixedNameTagAtlas(),
                 new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void motorwayWithMixedNameTagIntegerNameLeftTag()
+    public void motorwayWithMixedNameTagIntegerNameLeftTagTest()
     {
-        this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTag(),
+        this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTagAtlas(),
                 new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
