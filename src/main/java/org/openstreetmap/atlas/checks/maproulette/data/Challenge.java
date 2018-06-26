@@ -21,6 +21,7 @@ public class Challenge implements Serializable
     public static final String KEY_UPDATE_TASKS = "updateTasks";
     public static final String KEY_NAME = "name";
     public static final String KEY_DEFAULT_PRIORITY = "defaultPriority";
+    public static final int KEY_DEFAULT_PRIORITY_VALUE = -1;
     public static final String KEY_HIGH_PRIORITY = "highPriorityRule";
     public static final String KEY_MEDIUM_PRIORITY = "mediumPriorityRule";
     public static final String KEY_LOW_PRIORITY = "lowPriorityRule";
@@ -167,7 +168,7 @@ public class Challenge implements Serializable
             challengeJson.add(KEY_NAME, new JsonPrimitive(challengeName));
         }
 
-        if (this.defaultPriority != null && this.defaultPriority != ChallengePriority.NONE)
+        if (this.defaultPriority != null)
         {
             challengeJson.add(KEY_DEFAULT_PRIORITY,
                     new JsonPrimitive(this.defaultPriority.intValue()));
@@ -177,6 +178,11 @@ public class Challenge implements Serializable
                     new JsonPrimitive(this.getPriorityRuleString(this.mediumPriorityRule)));
             challengeJson.add(KEY_LOW_PRIORITY,
                     new JsonPrimitive(this.getPriorityRuleString(this.lowPriorityRule)));
+        }
+        else
+        {
+            challengeJson.add(KEY_DEFAULT_PRIORITY,
+                    new JsonPrimitive(ChallengePriority.MEDIUM.intValue()));
         }
         return challengeJson;
     }

@@ -13,8 +13,8 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
  */
 public class IntersectingBuildingsTestCaseRule extends CoreTestRule
 {
-    private static final String TEST_1 = "47.620079, -122.206879";
-    private static final String TEST_2 = "47.619576, -122.206917";
+    private static final String TEST_1 = "47.620200, -122.206879";
+    private static final String TEST_2 = "47.619500, -122.206917";
     private static final String TEST_3 = "47.620094, -122.205856";
     private static final String TEST_4 = "47.619587, -122.205833";
     private static final String TEST_5 = "47.620087, -122.204948";
@@ -82,6 +82,15 @@ public class IntersectingBuildingsTestCaseRule extends CoreTestRule
                     @Loc(value = TEST_6), @Loc(value = TEST_2) }, tags = { "building=yes" }) })
     private Atlas severalDuplicateBuildingsAtlas;
 
+    @TestAtlas(areas = {
+            // a building
+            @Area(id = "1234567000000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Loc(value = TEST_6), @Loc(value = TEST_5) }, tags = { "building=yes" }),
+            // another building with same footprint
+            @Area(id = "2234567000000", coordinates = { @Loc(value = TEST_7), @Loc(value = TEST_8),
+                    @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes" }) })
+    private Atlas containsBuildingAtlas;
+
     public Atlas duplicateBuildingsAtlas()
     {
         return this.duplicateBuildingsAtlas;
@@ -110,5 +119,10 @@ public class IntersectingBuildingsTestCaseRule extends CoreTestRule
     public Atlas smallIntersectionBuildingsAtlas()
     {
         return this.smallIntersectionBuildingsAtlas;
+    }
+
+    public Atlas containsBuildingAtlas()
+    {
+        return this.containsBuildingAtlas;
     }
 }
