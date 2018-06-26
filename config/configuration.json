@@ -118,6 +118,17 @@
       "tags":"building"
     }
   },
+  "InvalidAccessTagCheck":{
+    "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
+    "minimum.highway.type":"residential",
+    "challenge": {
+      "description": "Tasks containing invalid access tags",
+      "blurb": "Invalid Access Tags",
+      "instruction": "Correct the displayed invalid access=no tag.",
+      "difficulty": "NORMAL",
+      "tags":"access,highway"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
