@@ -107,6 +107,17 @@
       "tags":"highway"
     }
   },
+  "IntersectingBuildingCheck":
+  {
+    "intersection.lower.limit": 0.01,
+    "challenge": {
+      "description": "Buildings that intersect, contain, or overlap each other.",
+      "blurb": "Intersecting Buildings",
+      "instruction": "Correct intersecting buildings by moving them or dissolving one into another.",
+      "difficulty": "NORMAL",
+      "tags":"building"
+    }
+  },
   "InvalidLanesTagCheck": {
     "lanes.filter": "Lanes->1,1.5,2,3,4,5,6,7,8,9,10",
     "challenge":{
