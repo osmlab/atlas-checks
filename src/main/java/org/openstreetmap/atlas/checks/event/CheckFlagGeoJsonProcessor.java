@@ -24,8 +24,8 @@ import com.google.gson.JsonObject;
 public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent>
 {
 
-    private static final int BATCH_DIVIDEND = 25;
-    private static final int BATCH_MULTIPLIER = 1000;
+    private static final int MAX_BATCH_SUM = 25000;
+    private static final int MIN_BATCH_SIZE = 100;
     private static final int BUCKET_CAPACITY = 100;
     private static final int BUCKET_INCREMENT = 25;
 
@@ -157,9 +157,9 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
         }
         if (this.featureBuckets.isEmpty())
         {
-            return BATCH_DIVIDEND * BATCH_MULTIPLIER;
+            return MAX_BATCH_SUM;
         }
-        return BATCH_DIVIDEND / this.featureBuckets.size() * BATCH_MULTIPLIER;
+        return Math.max(MAX_BATCH_SUM / this.featureBuckets.size(), MIN_BATCH_SIZE);
     }
 
     protected String getFilename(final String challenge, final int size)

@@ -18,7 +18,7 @@ Gradle will look inside this folder [data/](../data/) for any atlas or PBF files
 Atlas Checks allows you to run the checks against PBF files. If you have downloaded a PBF file you can simply
 place the PBF in the [data/](../data/) directory and execute
 
-`gradle run`
+`./gradlew run`
 
 If you want to supply a location to a remote PBF you can use a project property in Gradle to set the PBF location
 and execute
@@ -33,7 +33,7 @@ area allows Atlas Checks to complete faster, or simply for focus. Like running a
 the PBF file using either a URL location or a local file, but in this case you would include the bounding
 box as well.
 
-`gradle run -Pchecks.local.input=https://download.geofabrik.de/africa/south-africa-latest.osm.pbf -Pchecks.local.pbfBoundingBox=lat,lon:lat,lon`
+`./gradlew run -Pchecks.local.input=https://download.geofabrik.de/africa/south-africa-latest.osm.pbf -Pchecks.local.pbfBoundingBox=lat,lon:lat,lon`
 
 In the above case you would replace lat,lon:lat,lon with the actual bounds of your box.
 
@@ -44,7 +44,7 @@ execute the checks over the Atlas file. Ordinarily the Atlas file will simply be
 then garbage collected once we are finished with it. However it may be useful to save the Atlas for later usage, you
 can do this by adding the `savePbfAtlas` flag to your gradle command, like so:
 
-`gradle run -Pchecks.local.savePbfAtlas=true`
+`./gradlew run -Pchecks.local.savePbfAtlas=true`
 
 #### Output File Formats
 
@@ -60,7 +60,7 @@ GeometryCollection within a GeoJson Feature that has aggregate information withi
 By default, all output formats are enabled. This can be changed by setting the `outputFormat` flag to a comma-separated list'
 of desired formats, like so:
 
-`gradle run -Pchecks.local.outputFormats=geojson,metrics`
+`./gradlew run -Pchecks.local.outputFormats=geojson,metrics`
 
 #### Publish directly to MapRoulette
 
