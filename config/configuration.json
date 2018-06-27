@@ -53,6 +53,14 @@
       "tags":"building,highway"
     }
   },
+  "ConflictingAreaTagCombination": {
+    "challenge": {
+      "description": "Task contains Area's with mutually exclusive tag combinations.",
+      "blurb": "Conflicting Area Tag Combination",
+      "instruction": "Open your favorite editor, check the instruction and modify the tags that are considered conflicting",
+      "difficulty": "EASY"
+    }
+  },
   "DuplicateNodeCheck": {
     "challenge": {
       "description": "Tasks contain node locations that have duplicate nodes found.",
