@@ -46,8 +46,6 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
 
     private final double minimumIntersect;
 
-    private final List<String> aoiFiltersString;
-
     // List of TaggableFilters where each filter represents all tags for AOIs that should not
     // overlap
     private final List<TaggableFilter> aoiFilters = new ArrayList<>();
@@ -65,10 +63,9 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         super(configuration);
         this.minimumIntersect = (Double) this.configurationValue(configuration,
                 "intersect.minimum.limit", MINIMUM_PROPORTION_DEFAULT);
-        this.aoiFiltersString = (List<String>) configurationValue(configuration, "aoi.tags.filters",
-                AOI_FILTERS_DEFAULT);
-        this.aoiFiltersString.stream()
-                .forEach(string -> this.aoiFilters.add(new TaggableFilter(string)));
+        final List<String> aoiFiltersString = (List<String>) configurationValue(configuration,
+                "aoi.tags.filters", AOI_FILTERS_DEFAULT);
+        aoiFiltersString.forEach(string -> this.aoiFilters.add(new TaggableFilter(string)));
     }
 
     /**
@@ -165,13 +162,11 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
             System.out
                     .println(String.format("Error clipping [%s] and [%s].", polygon, otherPolygon));
         }
-
         // Skip if nothing is returned
         if (clip == null)
         {
             return false;
         }
-
         // Sum intersection area
         long intersectionArea = 0;
         for (final PolyLine polyline : clip.getClip())
@@ -182,13 +177,11 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
                 intersectionArea += clippedPolygon.surface().asDm7Squared();
             }
         }
-
         // Avoid division by zero
         if (intersectionArea == 0)
         {
             return false;
         }
-
         // Pick the smaller building's area as baseline
         final long baselineArea = Math.min(polygon.surface().asDm7Squared(),
                 otherPolygon.surface().asDm7Squared());
@@ -237,5 +230,4 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         }
         return false;
     }
-
 }
