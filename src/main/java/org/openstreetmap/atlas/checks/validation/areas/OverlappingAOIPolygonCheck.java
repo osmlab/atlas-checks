@@ -20,7 +20,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import com.vividsolutions.jts.geom.TopologyException;
 
 /**
- * This check flags {@link Area}s that overlap and represent the same Area of Interest (AOI)
+ * This check flags {@link Area}s that overlap and represent the same Area of Interest (AOI) AOIs
+ * are defined by {@link TaggableFilter}s, which are grouped in a {@link List}.
  *
  * @author danielbaah
  * @author bbreithaupt
@@ -78,8 +79,11 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area && (aoiFiltersTest(object))
-                && !this.isFlagged(object.getIdentifier());
+        // Checks for areas, that are not flagged, and pass any of the TaggableFilters in
+        // aoiFilters. aoiFiltersTest() and aoiFilters is used in place of a single TaggableFilter
+        // so that each filter may be tested separately later.
+        return object instanceof Area && !this.isFlagged(object.getIdentifier())
+                && aoiFiltersTest(object);
     }
 
     /**
