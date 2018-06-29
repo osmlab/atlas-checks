@@ -10,17 +10,16 @@ The standards are as follows:
     * There are no other words in the name
     * The first letter is preceded by a number
 * All other letters must be lower case unless: 
-    * They follow an apostrophe and are not the last letter of the word
-    * The entire word is uppercase
+    * They follow an apostrophe and, they are not the last letter of the word
+    * The entire word is uppercase, except the last letter if it follows or is followed by an apostrophe
 
 The standards are broken by the following configurable exceptions (with default values):
 
-* Prepositions that do not need to start with a capital:
-    * and
-    * to
-    * of
+* Articles that are capitalised only if they are the first word:
+    * a
+    * an
     * the
-* Articles that are capitalised only if they are the first word
+* Prepositions that do not need to start with a capital:
     * and
     * from
     * to
@@ -41,6 +40,7 @@ The standards are broken by the following configurable exceptions (with default 
     * via
     * with
     * for
+    * in
 * Name affixes that may be followed by a capital:
     * Mc
     * Mac
