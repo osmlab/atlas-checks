@@ -108,6 +108,7 @@ The second is a list of `name:[ISOcode]` tags to check. Default values are:
 
 A final configurable is a list of characters that names are split by to for words. Its default values are: 
 
+* SPACE
 * \-
 * /
 * (
@@ -118,7 +119,7 @@ A final configurable is a list of characters that names are split by to for word
 
 #### Live Examples
 
-1. Way [id:4780932622](https://www.openstreetmap.org/node/4780932622) has the name `NZ Convenience store`. It is flagged because the S in store should be capitalised. 
+1. Way [id:4780932622](https://www.openstreetmap.org/node/4780932622) has the name `NZ Convenience store`. It is flagged because the S in store should be capitalized. 
 
 #### Code Review
 
