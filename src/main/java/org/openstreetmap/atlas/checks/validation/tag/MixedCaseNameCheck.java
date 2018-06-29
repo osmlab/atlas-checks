@@ -30,14 +30,6 @@ public class MixedCaseNameCheck extends BaseCheck
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "{0} {1,number,#} has (an) invalid mixed-case value(s) for the following tag(s): {2}.");
-
-    // Non Bicameral Language Countries
-    // "AFG", "DZA", "BHR", "BGD", "BLR", "BTN", "BRN", "KHM", "TCD", "CHN", "COM",
-    // "DJI", "EGY", "ERI", "ETH", "GEO", "IND", "IRN", "IRQ", "ISR", "JPN", "JOR",
-    // "KAZ", "KWT", "KGZ", "LAO", "LBN", "LBY", "MKD", "MYS", "MDV", "MRT", "MAR",
-    // "MMR", "NPL", "PRK", "OMN", "PAK", "PSE", "QAT", "SAU", "SGP", "SOM", "KOR",
-    // "LKA", "SDN", "SYR", "TWN", "TZA", "THA", "TUN", "UKR", "ARE", "ESH", "YEM"
-
     private static final List<String> CHECK_NAME_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB", "CMR", "CAN", "CYM", "DMA", "FJI",
             "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM", "KEN", "LSO", "MWI", "MLT", "MUS",
