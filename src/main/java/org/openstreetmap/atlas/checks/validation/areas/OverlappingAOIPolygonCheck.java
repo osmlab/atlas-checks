@@ -10,6 +10,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.clipping.Clip;
@@ -96,16 +97,17 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-
         final Area aoi = (Area) object;
         final Polygon aoiPolygon = aoi.asPolygon();
+        final Rectangle aoiBounds = aoiPolygon.bounds();
         boolean hasOverlap = false;
 
         // Set of overlapping area AOIs
-        final Set<Area> overlappingArea = Iterables.stream(object.getAtlas().areasIntersecting(
-                aoiPolygon.bounds(),
-                area -> area.getIdentifier() != aoi.getIdentifier() && area.intersects(aoiPolygon)
-                        && aoiFiltersTest(area) && !this.isFlagged(area.getIdentifier())))
+        final Set<Area> overlappingAreas = Iterables
+                .stream(object.getAtlas().areasIntersecting(aoiBounds,
+                        area -> area.getIdentifier() != aoi.getIdentifier()
+                                && !this.isFlagged(area.getIdentifier())
+                                && area.intersects(aoiPolygon) && aoiFiltersTest(area)))
                 .collectToSet();
 
         final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
@@ -113,18 +115,16 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
 
         // Test each overlapping AOI to see if it overlaps enough and passes the same AOI filter as
         // the object
-        for (final Area area : overlappingArea)
+        for (final Area area : overlappingAreas)
         {
-            if (this.hasMinimumOverlapProportion(aoi.asPolygon(), area.asPolygon()))
+            if (this.hasMinimumOverlapProportion(aoiPolygon, area.asPolygon())
+                    && aoiFiltersTest(object, area))
             {
-                if (aoiFiltersTest(object, area))
-                {
-                    flag.addObject(area);
-                    flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                            area.getOsmIdentifier()));
-                    this.markAsFlagged(area.getIdentifier());
-                    hasOverlap = true;
-                }
+                flag.addObject(area);
+                flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                        area.getOsmIdentifier()));
+                this.markAsFlagged(area.getIdentifier());
+                hasOverlap = true;
             }
         }
 
@@ -152,10 +152,8 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
      *            Another {@link Polygon} to check against for intersection
      * @return true if the polygon to polygon overlap surface area is greater than minimum
      */
-
     private boolean hasMinimumOverlapProportion(final Polygon polygon, final Polygon otherPolygon)
     {
-
         Clip clip = null;
         try
         {
@@ -203,14 +201,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
      */
     private boolean aoiFiltersTest(final AtlasObject object)
     {
-        for (final TaggableFilter filter : this.aoiFilters)
-        {
-            if (filter.test(object))
-            {
-                return true;
-            }
-        }
-        return false;
+        return this.aoiFilters.stream().anyMatch(filter -> filter.test(object));
     }
 
     /**
@@ -225,13 +216,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
      */
     private boolean aoiFiltersTest(final AtlasObject object, final Area area)
     {
-        for (final TaggableFilter filter : this.aoiFilters)
-        {
-            if (filter.test(object) && filter.test(area))
-            {
-                return true;
-            }
-        }
-        return false;
+        return this.aoiFilters.stream()
+                .anyMatch(filter -> filter.test(object) && filter.test(area));
     }
 }
