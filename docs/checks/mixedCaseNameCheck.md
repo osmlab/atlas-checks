@@ -7,7 +7,6 @@ Proper case use is defined by set standards and configurable exceptions.
 The standards are as follows:
 
 * Words must start with a capital unless:
-    * There are no other words in the name
     * The first letter is preceded by a number
 * All other letters must be lower case unless: 
     * They follow an apostrophe and, they are not the last letter of the word
@@ -111,8 +110,6 @@ A final configurable is a list of characters that names are split by to for word
 * SPACE
 * \-
 * /
-* (
-* )
 * &
 * @
 * –
@@ -196,41 +193,51 @@ protected Optional<CheckFlag> flag(final AtlasObject object)
 }
 ```
 
-The testing of the name values is performed by the following. It splits each name into words based on the configurable character list, and tests each. 
+The testing of the name values is performed by the following. It first tests to see if all the letters are lower case. If there are upper case letters, it splits each name into words based on the configurable character list, and tests each. 
 It returns true when improper use of case is found.
 
 ```java
 private boolean isMixedCase(final String value)
 {
-    // Split into words based on configurable characters
-    final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
-    boolean firstWord = true;
-    // Check each word
-    for (final String word : wordArray)
+    // Check if it is all lower case
+    if (Pattern.compile("\\p{Lu}").matcher(value).find())
     {
-        // If there is more than 1 word, the word is not in the list of prepositions, and the word is not both in the article list and not the first word: check that
-        // the first letter is a capital
-        if (wordArray.length > 1 && !lowerCasePrepositions.contains(word)
-                && !(!firstWord && lowerCaseArticles.contains(word)))
+        // Split into words based on configurable characters
+        final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
+        boolean firstWord = true;
+        // Check each word
+        for (final String word : wordArray)
         {
-            final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
-            if (firstLetterMatcher.find()
-                    && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
-                    && !(firstLetterMatcher.start() != 0
-                            && Character.isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+            // If the word is not in the list of prepositions, and the
+            // word is not both in the article list and not the first word: check that
+            // the first letter is a capital
+            if (!lowerCasePrepositions.contains(word)
+                    && !(!firstWord && lowerCaseArticles.contains(word)))
+            {
+                final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
+                // If the first letter is lower case: return true if it is not preceded by a
+                // number
+                if (firstLetterMatcher.find()
+                        && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
+                        && !(firstLetterMatcher.start() != 0 && Character
+                                .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+                {
+                    return true;
+                }
+            }
+            // If the word is not all upper case: check if all the letters not following
+            // apostrophes, unless at the end of the word, are lower case
+            if (Pattern.compile("\\p{Ll}").matcher(word).find()
+                    && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')")
+                            .matcher(word).matches()
+                    && Pattern.compile(String.format(
+                            "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
+                            this.nameAffixes)).matcher(word).find())
             {
                 return true;
             }
+            firstWord = false;
         }
-        // If the word is not all upper case: check if all the letters not following apostrophes, unless at the end of the word, are lower case
-        if (Pattern.compile("[\\p{L}&&[^\\p{Lu}]]").matcher(word).find() && Pattern.compile(
-                String.format("(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
-                        this.nameAffixes))
-                .matcher(word).find())
-        {
-            return true;
-        }
-        firstWord = false;
     }
     return false;
 }
