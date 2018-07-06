@@ -40,6 +40,17 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_2), @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "amenity=GRAVE_YARD" }),
                     @Area(id = "1002000001", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6), @Loc(value = TEST_1), @Loc(value = TEST_4),
+                            @Loc(value = TEST_8) }, tags = { "amenity=GRAVE_YARD" }) })
+    private Atlas sameAOIsMinOverlapAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = {
+                    @Area(id = "1000000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "amenity=GRAVE_YARD" }),
+                    @Area(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6), @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "amenity=GRAVE_YARD" }) })
     private Atlas sameAOIsAtlas;
@@ -69,6 +80,11 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
     public Atlas sameAOIsNoOverlapAtlas()
     {
         return this.sameAOIsNoOverlapAtlas;
+    }
+
+    public Atlas sameAOIsMinOverlapAtlas()
+    {
+        return this.sameAOIsMinOverlapAtlas;
     }
 
     public Atlas sameAOIsAtlas()

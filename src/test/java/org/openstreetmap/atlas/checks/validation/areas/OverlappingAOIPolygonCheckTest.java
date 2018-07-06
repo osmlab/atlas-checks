@@ -32,6 +32,14 @@ public class OverlappingAOIPolygonCheckTest
     }
 
     @Test
+    public void sameAOIsMinOverlapTest()
+    {
+        this.verifier.actual(this.setup.sameAOIsMinOverlapAtlas(),
+                new OverlappingAOIPolygonCheck(inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void sameAOIsTest()
     {
         this.verifier.actual(this.setup.sameAOIsAtlas(),
