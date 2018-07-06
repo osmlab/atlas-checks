@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.checks.validation.utility.IntersectionUtilities;
+import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.Area;

@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.utility;
+package org.openstreetmap.atlas.checks.utility;
 
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
@@ -30,7 +30,8 @@ public final class IntersectionUtilities
      *            Another {@link Polygon} to check against for intersection
      * @return percentage of overlap as a double; 0 if unable to clip
      */
-    public static double findIntersectionPercentage(final Polygon polygon, final Polygon otherPolygon)
+    public static double findIntersectionPercentage(final Polygon polygon,
+            final Polygon otherPolygon)
     {
         Clip clip = null;
         try
