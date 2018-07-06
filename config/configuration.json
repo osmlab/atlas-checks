@@ -137,6 +137,16 @@
       "tags":"access,highway"
     }
   },
+  "InvalidLanesTagCheck": {
+    "lanes.filter": "Lanes->1,1.5,2,3,4,5,6,7,8,9,10",
+    "challenge":{
+      "description":"Tasks contain invalid values for the lanes tag.",
+      "blurb":"Invalid Lanes Tags",
+      "instruction":"Change the lanes tag to have a valid and representative value.",
+      "difficulty":"EASY",
+      "tags":"lanes,highway"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
