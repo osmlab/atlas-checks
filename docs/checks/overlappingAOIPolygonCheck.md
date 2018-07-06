@@ -32,11 +32,14 @@ First we check if the object is an Area and it has a tag that identifies it as a
 
 ```java
 @Override
-    public boolean validCheckForObject(final AtlasObject object)
-    {
-        return object instanceof Area && (aoiFiltersTest(object))
-                && !this.isFlagged(object.getIdentifier());
-    }
+public boolean validCheckForObject(final AtlasObject object)
+{
+    // Checks for areas, that are not flagged, and pass any of the TaggableFilters in
+    // aoiFilters. aoiFiltersTest() and aoiFilters is used in place of a single TaggableFilter
+    // so that each filter may be tested separately later.
+    return object instanceof Area && !this.isFlagged(object.getIdentifier())
+            && aoiFiltersTest(object);
+}
 ```
 
 The AOI tag test is performed by looping through all the tag filters in the configurable value.
@@ -44,14 +47,7 @@ The AOI tag test is performed by looping through all the tag filters in the conf
 ```java
 private boolean aoiFiltersTest(final AtlasObject object)
     {
-        for (final TaggableFilter filter : this.aoiFilters)
-        {
-            if (filter.test(object))
-            {
-                return true;
-            }
-        }
-        return false;
+        return this.aoiFilters.stream().anyMatch(filter -> filter.test(object));
     }
 ```
 
@@ -59,54 +55,47 @@ Then the Areas that overlap the initial Area are found, and tested to see if the
 
 ```java
 @Override
-    protected Optional<CheckFlag> flag(final AtlasObject object)
+protected Optional<CheckFlag> flag(final AtlasObject object)
+{
+    final Area aoi = (Area) object;
+    final Polygon aoiPolygon = aoi.asPolygon();
+    final Rectangle aoiBounds = aoiPolygon.bounds();
+    boolean hasOverlap = false;
+
+    // Set of overlapping area AOIs
+    final Set<Area> overlappingAreas = Iterables
+            .stream(object.getAtlas().areasIntersecting(aoiBounds,
+                    area -> area.getIdentifier() != aoi.getIdentifier()
+                            && !this.isFlagged(area.getIdentifier())
+                            && area.intersects(aoiPolygon) && aoiFiltersTest(area)))
+            .collectToSet();
+
+    final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
+    flag.addObject(object);
+
+    // Test each overlapping AOI to see if it overlaps enough and passes the same AOI filter as
+    // the object
+    for (final Area area : overlappingAreas)
     {
-
-        final Area aoi = (Area) object;
-        final Polygon aoiPolygon = aoi.asPolygon();
-        boolean hasOverlap = false;
-
-        // Set of overlapping area AOIs
-        final Set<Area> overlappingArea = Iterables.stream(object.getAtlas().areasIntersecting(
-                aoiPolygon.bounds(),
-                area -> area.getIdentifier() != aoi.getIdentifier() && area.intersects(aoiPolygon)
-                        && aoiFiltersTest(area) && !this.isFlagged(area.getIdentifier())))
-                .collectToSet();
-
-        final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
-        flag.addObject(object);
-
-        // Test each overlapping AOI to see if it overlaps enough and passes the same AOI filter as
-        // the object
-        for (final Area area : overlappingArea)
+        if (this.hasMinimumOverlapProportion(aoiPolygon, area.asPolygon())
+                && aoiFiltersTest(object, area))
         {
-            if (this.hasMinimumOverlapProportion(aoi.asPolygon(), area.asPolygon()))
-            {
-                if (aoiFiltersTest(object, area))
-                {
-                    flag.addObject(area);
-                    flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                            area.getOsmIdentifier()));
-                    this.markAsFlagged(area.getIdentifier());
-                    hasOverlap = true;
-                }
-            }
+            flag.addObject(area);
+            flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                    area.getOsmIdentifier()));
+            this.markAsFlagged(area.getIdentifier());
+            hasOverlap = true;
         }
-
-        if (hasOverlap)
-        {
-            this.markAsFlagged(object.getIdentifier());
-            return Optional.of(flag);
-        }
-
-        return Optional.empty();
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
+    if (hasOverlap)
     {
-        return FALLBACK_INSTRUCTIONS;
+        this.markAsFlagged(object.getIdentifier());
+        return Optional.of(flag);
     }
+
+    return Optional.empty();
+}
 ```
 
 The minimum overlap test uses the configurable double value `intersect.minimum.limit` and compares the areas by clipping one against the other.
@@ -163,14 +152,8 @@ The similar AOI tag test loops through the AOI filters and finds the one that th
 ```java
 private boolean aoiFiltersTest(final AtlasObject object, final Area area)
     {
-        for (final TaggableFilter filter : this.aoiFilters)
-        {
-            if (filter.test(object) && filter.test(area))
-            {
-                return true;
-            }
-        }
-        return false;
+        return this.aoiFilters.stream()
+                .anyMatch(filter -> filter.test(object) && filter.test(area));
     }
 ```
 
