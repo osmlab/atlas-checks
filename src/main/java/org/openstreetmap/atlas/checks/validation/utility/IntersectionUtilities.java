@@ -30,7 +30,7 @@ public final class IntersectionUtilities
      *            Another {@link Polygon} to check against for intersection
      * @return percentage of overlap as a double; 0 if unable to clip
      */
-    public static double findIntersectionType(final Polygon polygon, final Polygon otherPolygon)
+    public static double findIntersectionPercentage(final Polygon polygon, final Polygon otherPolygon)
     {
         Clip clip = null;
         try

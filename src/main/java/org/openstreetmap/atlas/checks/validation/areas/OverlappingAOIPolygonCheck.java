@@ -114,7 +114,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         // the object
         for (final Area area : overlappingAreas)
         {
-            if (IntersectionUtilities.findIntersectionType(aoiPolygon,
+            if (IntersectionUtilities.findIntersectionPercentage(aoiPolygon,
                     area.asPolygon()) >= this.minimumIntersect && aoiFiltersTest(object, area))
             {
                 flag.addObject(area);
