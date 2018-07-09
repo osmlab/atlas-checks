@@ -165,6 +165,12 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
     @TestAtlas(
             // points
             points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=Test (20kV) Test" }) })
+    private Atlas validNamePointMixedCaseUnitAtlas;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                     "name:en=tEst TeSt" }) })
     private Atlas invalidNamePointEnAtlas;
 
@@ -317,6 +323,11 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
     public Atlas invalidNamePointLowerCaseArticleStartAtlas()
     {
         return this.invalidNamePointLowerCaseArticleStartAtlas;
+    }
+
+    public Atlas validNamePointMixedCaseUnitAtlas()
+    {
+        return this.validNamePointMixedCaseUnitAtlas;
     }
 
     public Atlas invalidNamePointEnAtlas()

@@ -145,6 +145,7 @@
     },
     "words.split.characters":" -/&@–",
     "name_affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
+    "units.mixed_case":["kV"],
     "challenge": {
       "description": "Tasks containing objects with mixed case names.",
       "blurb": "Mixed Case Name",

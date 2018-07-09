@@ -8,6 +8,7 @@ The standards are as follows:
 
 * Words must start with a capital unless:
     * The first letter is preceded by a number
+    * All the words are lower case
 * All other letters must be lower case unless: 
     * They follow an apostrophe and, they are not the last letter of the word
     * The entire word is uppercase, except the last letter if it follows or is followed by an apostrophe
@@ -46,6 +47,8 @@ The standards are broken by the following configurable exceptions (with default 
     * Mck
     * Mhic
     * Mic
+* Mixed case units of measurement that are valid after a number:
+    * kV
     
 These configurables allow this check to be adapted to test different languages.  
 OSM uses the `name` tag for the name in a locations primary language, and `name:[ISOcode]` for other languages.
@@ -208,33 +211,33 @@ private boolean isMixedCase(final String value)
         // Check each word
         for (final String word : wordArray)
         {
-            // If the word is not in the list of prepositions, and the
-            // word is not both in the article list and not the first word: check that
-            // the first letter is a capital
-            if (!lowerCasePrepositions.contains(word)
-                    && !(!firstWord && lowerCaseArticles.contains(word)))
+            // Check if the word is intentionally mixed case
+            if (!Pattern.compile("[^\\p{L}]*\\p{Digit}[\\Q"+this.mixedCaseUnits+"\\E][^\\p{L}]*").matcher(word).find())
             {
-                final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
-                // If the first letter is lower case: return true if it is not preceded by a
-                // number
-                if (firstLetterMatcher.find()
-                        && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
-                        && !(firstLetterMatcher.start() != 0 && Character
-                                .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+                // If the word is not in the list of prepositions, and the
+                // word is not both in the article list and not the first word: check that
+                // the first letter is a capital
+                if (!lowerCasePrepositions.contains(word) && !(!firstWord && lowerCaseArticles.contains(word)))
+                {
+                    final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
+                    // If the first letter is lower case: return true if it is not preceded by a
+                    // number
+                    if (firstLetterMatcher.find() && Character
+                            .isLowerCase(firstLetterMatcher.group().charAt(0)) && !(
+                            firstLetterMatcher.start() != 0 && Character
+                                    .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+                    {
+                        return true;
+                    }
+                }
+                // If the word is not all upper case: check if all the letters not following
+                // apostrophes, unless at the end of the word, are lower case
+                if (Pattern.compile("\\p{Ll}").matcher(word).find() && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
+                        .matches() && Pattern.compile(String.format(
+                        "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes)).matcher(word).find())
                 {
                     return true;
                 }
-            }
-            // If the word is not all upper case: check if all the letters not following
-            // apostrophes, unless at the end of the word, are lower case
-            if (Pattern.compile("\\p{Ll}").matcher(word).find()
-                    && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')")
-                            .matcher(word).matches()
-                    && Pattern.compile(String.format(
-                            "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
-                            this.nameAffixes)).matcher(word).find())
-            {
-                return true;
             }
             firstWord = false;
         }
