@@ -139,9 +139,10 @@
       "ZMB", "ZWE"],
     "name.language.keys":["name:en"],
     "lower_case":{
-      "articles":["and", "to", "of"],
-      "prepositions":["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as", "into",
-        "like", "near", "onto", "per", "till", "up", "via", "with", "for", "in"]
+      "articles":["a", "an", "the"],
+      "prepositions":["and", "from",
+        "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
+        "per", "till", "up", "via", "with", "for", "in"]
     },
     "words.split.characters":" -/&@–",
     "name_affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
