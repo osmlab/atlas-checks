@@ -8,7 +8,7 @@ The standards are as follows:
 
 * Words must start with a capital unless:
     * The first letter is preceded by a number
-    * All the words are lower case
+    * All the words in the name are lower case
 * All other letters must be lower case unless: 
     * They follow an apostrophe and, they are not the last letter of the word
     * The entire word is uppercase, except the last letter if it follows or is followed by an apostrophe
