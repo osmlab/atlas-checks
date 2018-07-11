@@ -123,7 +123,7 @@ public class MixedCaseNameCheck extends BaseCheck
                 && Validators.hasValuesFor(object, NameTag.class)
                 && isMixedCase(osmTags.get(NameTag.KEY)))
         {
-            mixedCaseNameTags.add("name");
+            mixedCaseNameTags.add(NameTag.KEY);
         }
         // Check all language name tags
         for (final String key : languageNameTags)
@@ -139,19 +139,10 @@ public class MixedCaseNameCheck extends BaseCheck
         if (!mixedCaseNameTags.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            final String osmType;
-            // Get OSM type for object
-            if (object instanceof LocationItem)
-            {
-                osmType = "Node";
-            }
-            else
-            {
-                osmType = "Way";
-            }
             // Instruction includes type of OSM object and list of flagged tags
-            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, osmType,
-                    object.getOsmIdentifier(), String.join(", ", mixedCaseNameTags))));
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(0, object instanceof LocationItem ? "Node" : "Way",
+                            object.getOsmIdentifier(), String.join(", ", mixedCaseNameTags))));
         }
         return Optional.empty();
     }
