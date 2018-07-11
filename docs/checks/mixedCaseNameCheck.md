@@ -16,37 +16,11 @@ The standards are as follows:
 The standards are broken by the following configurable exceptions (with default values):
 
 * Articles that are capitalised only if they are the first word:
-    * a
-    * an
-    * the
+    * a, an, the
 * Prepositions that do not need to start with a capital:
-    * and
-    * from
-    * to
-    * of
-    * by
-    * upon
-    * on
-    * off
-    * at
-    * as
-    * into
-    * like
-    * near
-    * onto
-    * per
-    * till
-    * up
-    * via
-    * with
-    * for
-    * in
+    * and, from, to, of, by, upon, on, off, at, as, into, like, near, onto, per, till, up, via, with, for, in
 * Name affixes that may be followed by a capital:
-    * Mc
-    * Mac
-    * Mck
-    * Mhic
-    * Mic
+    * Mc, Mac, Mck, Mhic, Mic
 * Mixed case units of measurement that are valid after a number:
     * kV
     
@@ -56,53 +30,7 @@ This check uses two configurable to control what languages are checked.
 
 The first is a list of ISO codes for countries that should have there `name` tag checked. It has default values of:
 
-* AIA
-* ATG
-* AUS
-* BHS
-* BRB
-* BLZ
-* BMU
-* BWA
-* VGB
-* CMR
-* CAN
-* CYM
-* DMA
-* FJI
-* GMB
-* GHA
-* GIB
-* GRD
-* GUY
-* IRL
-* JAM
-* KEN
-* LSO
-* MWI
-* MLT
-* MUS
-* MSR
-* NAM
-* NZL
-* NGA
-* PNG
-* SYC
-* SLE
-* SGP
-* SLB
-* ZAF
-* SWZ
-* TZA
-* TON
-* TTO
-* TCA
-* UGA
-* GBR
-* USA
-* VUT
-* ZMB
-* ZWE
+* AIA, ATG, AUS, BHS, BRB, BLZ, BMU, BWA, VGB, CMR, CAN, CYM, DMA, FJI, GMB, GHA, GIB, GRD, GUY, IRL, JAM, KEN, LSO, MWI, MLT, MUS, MSR, NAM, NZL, NGA, PNG, SYC, SLE, SGP, SLB, ZAF, SWZ, TZA, TON, TTO, TCA, UGA, GBR, USA, VUT, ZMB, ZWE
 
 The second is a list of `name:[ISOcode]` tags to check. Default values are:
 
@@ -110,12 +38,7 @@ The second is a list of `name:[ISOcode]` tags to check. Default values are:
 
 A final configurable is a list of characters that names are split by to for words. Its default values are: 
 
-* SPACE
-* \-
-* /
-* &
-* @
-* –
+* SPACE, \-, /, &, @, –
 
 #### Live Examples
 
@@ -149,14 +72,9 @@ public boolean validCheckForObject(final AtlasObject object)
 ```
 
 Next the objects have each of their name tags, that are being checked, tested for proper use of case.  
-Each improper tag is noted in the output.
+If the object's ISO code is in checkNameCountries its `name` tag is checked, else only the tags in `languageNameTags` are checked.
 
 ```java
-protected Optional<CheckFlag> flag(final AtlasObject object)
-{
-    final List<String> mixedCaseNameTags = new ArrayList<>();
-    final Map<String, String> osmTags = object.getOsmTags();
-
     // Check ISO against list of countries for testing name tag
     if (checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
             && Validators.hasValuesFor(object, NameTag.class)
@@ -169,80 +87,65 @@ protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         if (osmTags.containsKey(key) && isMixedCase(osmTags.get(key)))
         {
-            mixedCaseNameTags.add(key);
+            mixedCaseNameTags.add(NameTag.KEY);
         }
-
     }
+```
 
-    // If mix case id detected, flag
-    if (!mixedCaseNameTags.isEmpty())
+The test for proper use of case uses multiple regular expressions to check both the entire name and each word. 
+
+The entire word is first checked to see if it contains any capital letters. If so the name is split into words based on a configurable list of characters.
+
+```java
+// Check if it is all lower case
+if (Pattern.compile("\\p{Lu}").matcher(value).find())
+{
+    // Split into words based on configurable characters
+    final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
+    boolean firstWord = true;
+    // Check each word
+    for (final String word : wordArray)
     {
-        this.markAsFlagged(object.getOsmIdentifier());
-        final String osmType;
-        // Get OSM type for object
-        if (object instanceof LocationItem)
-        {
-            osmType = "Node";
-        }
-        else
-        {
-            osmType = "Way";
-        }
-        // Instruction includes type of OSM object and list of flagged tags
-        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, osmType,
-                object.getOsmIdentifier(), String.join(", ", mixedCaseNameTags))));
-    }
-    return Optional.empty();
+```
+
+Next, each word is checked against configurable lists of articles, prepositions, and units to see if it is allowed to have irregular case. 
+
+```java
+// Check if the word is intentionally mixed case
+if (!Pattern.compile("[^\\p{L}]*\\p{Digit}[\\Q"+this.mixedCaseUnits+"\\E][^\\p{L}]*").matcher(word).find())
+{
+    // If the word is not in the list of prepositions, and the
+    // word is not both in the article list and not the first word: check that
+    // the first letter is a capital
+    if (!lowerCasePrepositions.contains(word) && !(!firstWord && lowerCaseArticles.contains(word)))
+    {
+```
+
+The first letter is checked to see if it is upper case, unless it is preceded by a number.
+
+```java
+final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
+// If the first letter is lower case: return true if it is not preceded by a
+// number
+if (firstLetterMatcher.find() && Character
+        .isLowerCase(firstLetterMatcher.group().charAt(0)) && !(
+        firstLetterMatcher.start() != 0 && Character
+                .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+{
+    return true;
 }
 ```
 
-The testing of the name values is performed by the following. It first tests to see if all the letters are lower case. If there are upper case letters, it splits each name into words based on the configurable character list, and tests each. 
-It returns true when improper use of case is found.
+Finally, the rest of the letters are check to see if they are lower case unless the entire word is upper case, the letter is preceded by a name affix, or the letter is next to an apostrophe at the end of the word.  
 
 ```java
-private boolean isMixedCase(final String value)
+// If the word is not all upper case: check if all the letters not following
+// apostrophes, unless at the end of the word, are lower case
+if (Pattern.compile("\\p{Ll}").matcher(word).find() && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
+        .matches() && Pattern.compile(String.format(
+        "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes)).matcher(word).find())
 {
-    // Check if it is all lower case
-    if (Pattern.compile("\\p{Lu}").matcher(value).find())
-    {
-        // Split into words based on configurable characters
-        final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
-        boolean firstWord = true;
-        // Check each word
-        for (final String word : wordArray)
-        {
-            // Check if the word is intentionally mixed case
-            if (!Pattern.compile("[^\\p{L}]*\\p{Digit}[\\Q"+this.mixedCaseUnits+"\\E][^\\p{L}]*").matcher(word).find())
-            {
-                // If the word is not in the list of prepositions, and the
-                // word is not both in the article list and not the first word: check that
-                // the first letter is a capital
-                if (!lowerCasePrepositions.contains(word) && !(!firstWord && lowerCaseArticles.contains(word)))
-                {
-                    final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
-                    // If the first letter is lower case: return true if it is not preceded by a
-                    // number
-                    if (firstLetterMatcher.find() && Character
-                            .isLowerCase(firstLetterMatcher.group().charAt(0)) && !(
-                            firstLetterMatcher.start() != 0 && Character
-                                    .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
-                    {
-                        return true;
-                    }
-                }
-                // If the word is not all upper case: check if all the letters not following
-                // apostrophes, unless at the end of the word, are lower case
-                if (Pattern.compile("\\p{Ll}").matcher(word).find() && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
-                        .matches() && Pattern.compile(String.format(
-                        "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes)).matcher(word).find())
-                {
-                    return true;
-                }
-            }
-            firstWord = false;
-        }
-    }
-    return false;
+    return true;
 }
 ```
 
