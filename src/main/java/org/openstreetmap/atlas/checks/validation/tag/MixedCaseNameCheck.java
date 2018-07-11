@@ -76,14 +76,14 @@ public class MixedCaseNameCheck extends BaseCheck
         this.languageNameTags = (List<String>) configurationValue(configuration,
                 "name.language.keys", LANGUAGE_NAME_TAGS_DEFAULT);
         this.lowerCasePrepositions = (List<String>) configurationValue(configuration,
-                "lower_case.prepositions", LOWER_CASE_PREPOSITIONS_DEFAULT);
-        this.lowerCaseArticles = (List<String>) configurationValue(configuration,
-                "lower_case.articles", LOWER_CASE_ARTICLES_DEFAULT);
-        this.splitCharacters = (String) configurationValue(configuration, "words.split.characters",
+                "name.prepositions", LOWER_CASE_PREPOSITIONS_DEFAULT);
+        this.lowerCaseArticles = (List<String>) configurationValue(configuration, "name.articles",
+                LOWER_CASE_ARTICLES_DEFAULT);
+        this.splitCharacters = (String) configurationValue(configuration, "regex.split",
                 SPLIT_CHARACTERS_DEFAULT);
-        this.nameAffixes = (String) configurationValue(configuration, "name_affixes",
+        this.nameAffixes = (String) configurationValue(configuration, "name.affixes",
                 NAME_AFFIXES_DEFAULT, value -> String.join("|", (List<String>) value));
-        this.mixedCaseUnits = (String) configurationValue(configuration, "units.mixed_case",
+        this.mixedCaseUnits = (String) configurationValue(configuration, "name.units",
                 MIXED_CASE_UNITS_DEFAULT, value -> String.join("|", (List<String>) value));
     }
 
