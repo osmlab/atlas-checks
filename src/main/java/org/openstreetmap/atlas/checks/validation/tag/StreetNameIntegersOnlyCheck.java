@@ -44,7 +44,7 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
     public StreetNameIntegersOnlyCheck(final Configuration configuration)
     {
         super(configuration);
-        this.nameKeys = (List<String>) configurationValue(configuration, "name_keys.filter",
+        this.nameKeys = (List<String>) configurationValue(configuration, "name.keys.filter",
                 NAME_KEYS_DEFAULT);
     }
 
@@ -77,18 +77,21 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
         // Try to convert name to an integer. If it converts without failure it should be flagged.
         for (final String nameKey : this.nameKeys)
         {
-            try
+            final Optional<String> nameValue = object.getTag(nameKey);
+            if (nameValue.isPresent())
             {
-                Integer.parseInt(
-                        object.getOsmTags().getOrDefault(nameKey, "a").replaceAll(" ", ""));
+                try
+                {
+                    Integer.parseInt(nameValue.get().replaceAll(" ", ""));
+                }
+                catch (final NumberFormatException e)
+                {
+                    continue;
+                }
+                this.markAsFlagged(object.getOsmIdentifier());
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier())));
             }
-            catch (final NumberFormatException e)
-            {
-                continue;
-            }
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
 
         return Optional.empty();

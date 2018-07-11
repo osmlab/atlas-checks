@@ -225,7 +225,7 @@
     }
   },
   "StreetNameIntegersOnlyCheck": {
-    "name_keys.filter":["name","name:left","name:right"],
+    "name.keys.filter":["name","name:left","name:right"],
     "challenge": {
       "description": "Tasks containing name tags with only integers",
       "blurb": "Street Names Integers Only",
