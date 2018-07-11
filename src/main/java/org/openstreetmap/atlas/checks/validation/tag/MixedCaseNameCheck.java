@@ -132,7 +132,6 @@ public class MixedCaseNameCheck extends BaseCheck
             {
                 mixedCaseNameTags.add(key);
             }
-
         }
 
         // If mix case id detected, flag
