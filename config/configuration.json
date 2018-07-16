@@ -179,6 +179,22 @@
       "difficulty": "HARD"
     }
   },
+  "OverlappingAOIPolygonCheck":{
+    "aoi.tags.filters": ["amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
+      "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
+      "historic->BATTLEFIELD", "landuse->FOREST|natural->WOOD",
+      "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND",
+      "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN",
+      "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
+      "tourism->ZOO"],
+    "intersect.minimum.limit":0.01,
+    "challenge": {
+      "description": "Tasks containing overlapping AOI ways",
+      "blurb": "Overlapping AOI Polygon",
+      "instruction": "Correct the areas as necessary to not have overlapping ways representing the same AOI",
+      "difficulty": "HARD"
+    }
+  },
   "RoundaboutClosedLoopCheck": {
     "challenge": {
       "description": "A roundabout should be formed by one-way edges with no dead-end nodes.",
