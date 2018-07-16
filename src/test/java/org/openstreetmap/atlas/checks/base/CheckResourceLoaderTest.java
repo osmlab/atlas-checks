@@ -130,4 +130,21 @@ public class CheckResourceLoaderTest
         Assert.assertEquals("Hi", country2Var2);
         Assert.assertEquals("Bye", country3Var2);
     }
+
+    @Test
+    public void testGroupedAndCountryCheckDisabling()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"groups\":{\"alphabetEnds\":[\"ABC\",\"XYZ\"]},\"CheckResourceLoaderTestCheck\":{\"enabled\": true,\"var1\":1,\"var2\":\"Hi\",\"override.DEF.enabled\":false,\"override.alphabetEnds.enabled\":false}}";
+        final String country1 = "ABC";
+        final String country2 = "DEF";
+        final String country3 = "XYZ";
+        final String country4 = "JKL";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country1).isEmpty());
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country2).isEmpty());
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country3).isEmpty());
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry(country4).size());
+    }
 }
