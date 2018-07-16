@@ -469,16 +469,22 @@ public class SignPostCheckTestRule extends CoreTestRule
                             @Loc(value = HIGHWAY_3) }, tags = { "highway=motorway" }),
                     @Edge(coordinates = { @Loc(value = HIGHWAY_3), @Loc(value = HIGHWAY_2),
                             @Loc(value = HIGHWAY_1) }, tags = { "highway=motorway" }),
-                    @Edge(coordinates = { @Loc(value = HIGHWAY2_3), @Loc(value = HIGHWAY2_2),
+                    @Edge(id = "1000000", coordinates = { @Loc(value = HIGHWAY2_3),
+                            @Loc(value = HIGHWAY2_2),
                             @Loc(value = LINK_4) }, tags = { "highway=primary" }),
-                    @Edge(coordinates = { @Loc(value = LINK_4), @Loc(value = HIGHWAY2_1) }, tags = {
-                            "highway=primary" }),
+                    @Edge(id = "-1000000", coordinates = { @Loc(value = LINK_4),
+                            @Loc(value = HIGHWAY2_2),
+                            @Loc(value = HIGHWAY2_3) }, tags = { "highway=primary" }),
+                    @Edge(id = "2000000", coordinates = { @Loc(value = LINK_4),
+                            @Loc(value = HIGHWAY2_1) }, tags = { "highway=primary" }),
+                    @Edge(id = "-2000000", coordinates = { @Loc(value = HIGHWAY2_1),
+                            @Loc(value = LINK_4) }, tags = { "highway=primary" }),
                     @Edge(coordinates = { @Loc(value = LINK_3), @Loc(value = LINK_2),
                             @Loc(value = HIGHWAY_3) }, tags = { "highway=motorway_link" }),
-                    @Edge(coordinates = { @Loc(value = LINK_4), @Loc(value = LINK_3) }, tags = {
-                            "highway=motorway_link" }),
-                    @Edge(coordinates = { @Loc(value = LINK_3), @Loc(value = LINK_4) }, tags = {
-                            "highway=motorway_link" }),
+                    @Edge(id = "3000000", coordinates = { @Loc(value = LINK_3),
+                            @Loc(value = LINK_4) }, tags = { "highway=motorway_link" }),
+                    @Edge(id = "-3000000", coordinates = { @Loc(value = LINK_4),
+                            @Loc(value = LINK_3) }, tags = { "highway=motorway_link" }),
                     @Edge(coordinates = { @Loc(value = HIGHWAY_5), @Loc(value = LINK_3) }, tags = {
                             "highway=motorway_link", "destination=somewhere" }) })
     private Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas;
