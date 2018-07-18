@@ -27,6 +27,7 @@ before_install:
 script:
   - chmod -R ug+x .travis
   - .travis/build.sh
+  - .travis/sonar-gate.sh
   - .travis/merge-dev-to-master-gate.sh
   - .travis/deploy-gate.sh
   - .travis/tag-master-gate.sh
