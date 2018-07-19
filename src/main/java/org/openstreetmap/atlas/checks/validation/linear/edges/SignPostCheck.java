@@ -162,7 +162,8 @@ public class SignPostCheck extends BaseCheck<String>
                 .forEach(inEdge ->
                 {
                     // Find the source of in-ramp
-                    final List<Edge> rampEdgeList = findFirstRampEdge(inEdge, maxEdgeCountForRamp);
+                    final List<Edge> rampEdgeList = findFirstRampEdge(inEdge,
+                            this.maxEdgeCountForRamp);
 
                     for (final Edge rampEdge : rampEdgeList)
                     {
