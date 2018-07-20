@@ -171,10 +171,7 @@ public class MixedCaseNameCheck extends BaseCheck
             for (final String word : wordArray)
             {
                 // Check if the word is intentionally mixed case
-                if (!Pattern
-                        .compile(
-                                "[^\\p{L}]*\\p{Digit}[\\Q" + this.mixedCaseUnits + "\\E][^\\p{L}]*")
-                        .matcher(word).find())
+                if (!isMixedCaseUnit(word))
                 {
                     // If the word is not in the list of prepositions, and the
                     // word is not both in the article list and not the first word: check that
@@ -196,11 +193,7 @@ public class MixedCaseNameCheck extends BaseCheck
                     // If the word is not all upper case: check if all the letters not following
                     // apostrophes, unless at the end of the word, are lower case
                     if (Pattern.compile("\\p{Ll}").matcher(word).find()
-                            && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')")
-                                    .matcher(word).matches()
-                            && Pattern.compile(String.format(
-                                    "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))",
-                                    this.nameAffixes)).matcher(word).find())
+                            && !isMixedCaseAppostrophe(word) && isProperNonFirstCapital(word))
                     {
                         return true;
                     }
@@ -209,5 +202,59 @@ public class MixedCaseNameCheck extends BaseCheck
             }
         }
         return false;
+    }
+
+    /**
+     * Tests a {@link String} against a configurable list of unit abbreviations.
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if {@code word} contains a mixed case unit abbreviation preceded by a number,
+     *         and it does not contain any other alphabetic characters.
+     */
+    private boolean isMixedCaseUnit(final String word)
+    {
+        // This returns true if one of the items in this.mixedCaseUnits is preceded by a number -
+        // `\p{Digit}`
+        // There may be 0 or more non-alphabetic characters proceeding or following the
+        // digit+mixedCaseUnits - `[^\p{L}]*`
+        return Pattern.compile("[^\\p{L}]*\\p{Digit}[\\Q" + this.mixedCaseUnits + "\\E][^\\p{L}]*")
+                .matcher(word).find();
+    }
+
+    /**
+     * Tests a {@link String} for being all upper case, except the last letter which is adjacent to
+     * an apostrophe (ex. MAX's).
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if a lower case letter is found preceding or following an apostrophe that is the
+     *         last or second to last character in the string, and all other letters are upper case
+     */
+    private boolean isMixedCaseAppostrophe(final String word)
+    {
+        // This returns true if the last 2 characters are an apostrophe and a lower case letter, and
+        // all other letters are upper case.
+        return Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
+                .matches();
+    }
+
+    /**
+     * Tests a {@link String} for incorrect capitalization, excluding the first letter.
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if a capital letter is incorrectly used
+     */
+    private boolean isProperNonFirstCapital(final String word)
+    {
+        // This checks each capital letter for incorrect usage
+        // It does not check the first letter - `(\p{L}.*`
+        // To be incorrect usage a capital letter:
+        // Must not be preceded by an apostrophe or name affix - `(?<!'|%1$s)(\p{Lu})`
+        // Must not be the last character if it follows an apostrophe - `(?<=')\p{Lu}(?!.)`
+        return Pattern.compile(String.format(
+                "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes))
+                .matcher(word).find();
     }
 }
