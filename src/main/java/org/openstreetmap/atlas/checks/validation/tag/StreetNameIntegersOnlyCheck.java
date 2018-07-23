@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -58,9 +59,10 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
+        final Map<String, String> osmTags = object.getOsmTags();
         return HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && ((Edge) object).isMasterEdge() && this.nameKeys.stream()
-                        .anyMatch(nameKey -> object.getOsmTags().containsKey(nameKey));
+                && ((Edge) object).isMasterEdge()
+                && this.nameKeys.stream().anyMatch(osmTags::containsKey);
     }
 
     /**
