@@ -33,7 +33,7 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_2)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
-                    @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=Way St" }) })
+                    @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=\tWay St" }) })
     private Atlas motorwayWithNonIntegerNameTagAtlas;
 
     @TestAtlas(

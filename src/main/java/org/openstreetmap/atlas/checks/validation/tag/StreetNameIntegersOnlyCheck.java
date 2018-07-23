@@ -82,7 +82,7 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
             {
                 try
                 {
-                    Integer.parseInt(nameValue.get().replaceAll(" ", ""));
+                    Integer.parseInt(nameValue.get().replaceAll("\\h", ""));
                 }
                 catch (final NumberFormatException e)
                 {
