@@ -58,9 +58,8 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return HighwayTag.isCarNavigableHighway(object)
-                && !this.isFlagged(object.getOsmIdentifier()) && object instanceof Edge
-                && this.nameKeys.stream()
+        return HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
+                && ((Edge) object).isMasterEdge() && this.nameKeys.stream()
                         .anyMatch(nameKey -> object.getOsmTags().containsKey(nameKey));
     }
 
@@ -88,7 +87,6 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
                 {
                     continue;
                 }
-                this.markAsFlagged(object.getOsmIdentifier());
                 return Optional.of(this.createFlag(object,
                         this.getLocalizedInstruction(0, object.getOsmIdentifier())));
             }
