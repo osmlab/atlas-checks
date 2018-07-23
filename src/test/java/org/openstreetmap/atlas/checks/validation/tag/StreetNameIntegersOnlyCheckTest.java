@@ -51,4 +51,14 @@ public class StreetNameIntegersOnlyCheckTest
                 new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
+
+    @Test
+    public void motorwayWithMixedNameTagIntegerNameLeftTagOnlyCheckNameTest()
+    {
+        this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTagAtlas(),
+                new StreetNameIntegersOnlyCheck(ConfigurationResolver
+                        .inlineConfiguration("{\"StreetNameIntegersOnlyCheck\": {\n"
+                                + "    \"name.keys.filter\":[\"name\"]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
 }
