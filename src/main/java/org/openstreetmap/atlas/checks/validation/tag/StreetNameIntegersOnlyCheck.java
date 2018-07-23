@@ -15,6 +15,8 @@ import org.openstreetmap.atlas.tags.names.NameRightTag;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
+import com.google.common.base.CharMatcher;
+
 /**
  * This check flags {@link Edge}s that are car navigable highways and have a name tag that contains
  * only integers.
@@ -83,7 +85,8 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
             {
                 try
                 {
-                    Integer.parseInt(nameValue.get().replaceAll("\\h", ""));
+                    Integer.parseInt(
+                            CharMatcher.BREAKING_WHITESPACE.replaceFrom(nameValue.get(), ""));
                 }
                 catch (final NumberFormatException e)
                 {
