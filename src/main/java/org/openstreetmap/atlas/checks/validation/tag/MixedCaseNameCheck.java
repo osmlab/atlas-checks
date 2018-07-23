@@ -98,11 +98,9 @@ public class MixedCaseNameCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         // Valid objects are items that were OSM nodes or ways
-        return !(object instanceof Relation)
-                && !this.isFlagged(object.getOsmIdentifier())
-                // Must have an ISO code tag...
+        return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
                 && ((object.getTags().containsKey(ISOCountryTag.KEY)
-                        // The ISO must be in checkNameCountries...
+                        // Must have an ISO code that is in checkNameCountries...
                         && this.checkNameCountries
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
