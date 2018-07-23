@@ -97,11 +97,18 @@ public class MixedCaseNameCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
+        // Valid objects are items that were OSM nodes or ways
+        return !(object instanceof Relation)
+                && !this.isFlagged(object.getOsmIdentifier())
+                // Must have an ISO code tag...
                 && ((object.getTags().containsKey(ISOCountryTag.KEY)
-                        && checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+                        // The ISO must be in checkNameCountries...
+                        && this.checkNameCountries
+                                .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+                        // And have a name tag
                         && Validators.hasValuesFor(object, NameTag.class))
-                        || languageNameTags.stream()
+                        // Or it must have a specific language name tag from languageNameTags
+                        || this.languageNameTags.stream()
                                 .anyMatch(key -> object.getOsmTags().containsKey(key)));
     }
 
@@ -119,14 +126,14 @@ public class MixedCaseNameCheck extends BaseCheck
         final Map<String, String> osmTags = object.getOsmTags();
 
         // Check ISO against list of countries for testing name tag
-        if (checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+        if (this.checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                 && Validators.hasValuesFor(object, NameTag.class)
                 && isMixedCase(osmTags.get(NameTag.KEY)))
         {
             mixedCaseNameTags.add(NameTag.KEY);
         }
         // Check all language name tags
-        for (final String key : languageNameTags)
+        for (final String key : this.languageNameTags)
         {
             if (osmTags.containsKey(key) && isMixedCase(osmTags.get(key)))
             {
@@ -176,8 +183,8 @@ public class MixedCaseNameCheck extends BaseCheck
                     // If the word is not in the list of prepositions, and the
                     // word is not both in the article list and not the first word: check that
                     // the first letter is a capital
-                    if (!lowerCasePrepositions.contains(word)
-                            && !(!firstWord && lowerCaseArticles.contains(word)))
+                    if (!this.lowerCasePrepositions.contains(word)
+                            && !(!firstWord && this.lowerCaseArticles.contains(word)))
                     {
                         final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
                         // If the first letter is lower case: return true if it is not preceded by a
@@ -193,7 +200,7 @@ public class MixedCaseNameCheck extends BaseCheck
                     // If the word is not all upper case: check if all the letters not following
                     // apostrophes, unless at the end of the word, are lower case
                     if (Pattern.compile("\\p{Ll}").matcher(word).find()
-                            && !isMixedCaseAppostrophe(word) && isProperNonFirstCapital(word))
+                            && !isMixedCaseApostrophe(word) && isProperNonFirstCapital(word))
                     {
                         return true;
                     }
@@ -231,7 +238,7 @@ public class MixedCaseNameCheck extends BaseCheck
      * @return true if a lower case letter is found preceding or following an apostrophe that is the
      *         last or second to last character in the string, and all other letters are upper case
      */
-    private boolean isMixedCaseAppostrophe(final String word)
+    private boolean isMixedCaseApostrophe(final String word)
     {
         // This returns true if the last 2 characters are an apostrophe and a lower case letter, and
         // all other letters are upper case.
