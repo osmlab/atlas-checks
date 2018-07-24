@@ -62,8 +62,8 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         final Map<String, String> osmTags = object.getOsmTags();
-        return HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && ((Edge) object).isMasterEdge()
+        return object instanceof Edge && ((Edge) object).isMasterEdge()
+                && HighwayTag.isCarNavigableHighway(object)
                 && this.nameKeys.stream().anyMatch(osmTags::containsKey);
     }
 
