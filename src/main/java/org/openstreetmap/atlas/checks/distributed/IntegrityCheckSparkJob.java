@@ -63,9 +63,9 @@ public class IntegrityCheckSparkJob extends SparkJob
      */
     private enum OutputFormats
     {
-    FLAGS,
-    GEOJSON,
-    METRICS
+        FLAGS,
+        GEOJSON,
+        METRICS
     }
 
     @Deprecated
