@@ -112,12 +112,13 @@ Next, each word is checked against configurable lists of articles, prepositions,
 
 ```java
 // Check if the word is intentionally mixed case
-if (!Pattern.compile("[^\\p{L}]*\\p{Digit}[\\Q"+this.mixedCaseUnits+"\\E][^\\p{L}]*").matcher(word).find())
+if (!isMixedCaseUnit(word))
 {
     // If the word is not in the list of prepositions, and the
     // word is not both in the article list and not the first word: check that
     // the first letter is a capital
-    if (!lowerCasePrepositions.contains(word) && !(!firstWord && lowerCaseArticles.contains(word)))
+    if (!this.lowerCasePrepositions.contains(word)
+            && !(!firstWord && this.lowerCaseArticles.contains(word)))
     {
 ```
 
@@ -141,9 +142,8 @@ Finally, the rest of the letters are check to see if they are lower case unless 
 ```java
 // If the word is not all upper case: check if all the letters not following
 // apostrophes, unless at the end of the word, are lower case
-if (Pattern.compile("\\p{Ll}").matcher(word).find() && !Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
-        .matches() && Pattern.compile(String.format(
-        "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes)).matcher(word).find())
+if (Pattern.compile("\\p{Ll}").matcher(word).find()
+        && !isMixedCaseApostrophe(word) && isProperNonFirstCapital(word))
 {
     return true;
 }
