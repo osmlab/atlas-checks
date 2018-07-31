@@ -64,7 +64,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
                 // Otherwise, if crossing edges has valid, but different tag values
                 // Then that is still a valid crossing
                 || edgeLayer.isPresent() && crossingEdgeLayer.isPresent()
-                        && !edgeLayer.equals(crossingEdgeLayer);
+                        && !edgeLayer.orElse(0L).equals(crossingEdgeLayer.orElse(0L));
     }
 
     private static String generateAtlasObjectPairIdentifier(final AtlasObject thisObject,
@@ -120,7 +120,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
         final Edge edge = (Edge) object;
         final PolyLine edgeAsPolyLine = edge.asPolyLine();
         final Rectangle edgeBounds = edge.bounds();
-        final Optional<Long> edgeLayer = LayerTag.getTaggedOrImpliedValue(object, 0L);
+        final Optional<Long> edgeLayer = LayerTag.getTaggedValue(object);
 
         // Retrieve crossing edges
         final Atlas atlas = object.getAtlas();
@@ -140,8 +140,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
         for (final Edge crossingEdge : crossingEdges)
         {
             final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-            final Optional<Long> crossingEdgeLayer = LayerTag.getTaggedOrImpliedValue(crossingEdge,
-                    0L);
+            final Optional<Long> crossingEdgeLayer = LayerTag.getTaggedValue(crossingEdge);
             final Set<Location> intersections = edgeAsPolyLine
                     .intersections(crossingEdgeAsPolyLine);
 
