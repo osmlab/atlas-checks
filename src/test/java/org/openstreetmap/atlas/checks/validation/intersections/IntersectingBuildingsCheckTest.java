@@ -103,17 +103,16 @@ public class IntersectingBuildingsCheckTest
     }
 
     @Test
-    public void testSmallIntersectionBuildingsAtlasWithSmallOverlapLowerLimit()
+    public void testContainsBuildingAtlas()
     {
-        this.verifier.actual(this.setup.smallIntersectionBuildingsAtlas(),
-                new IntersectingBuildingsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"IntersectingBuildingsCheck\": {\"intersection.lower.limit\": 0.01, \"overlap.lower.limit\": 0.10}}")));
+        this.verifier.actual(this.setup.containsBuildingAtlas(), CHECK);
         this.verifier.verifyNotEmpty();
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag ->
         {
             Assert.assertEquals(2, flag.getFlaggedObjects().size());
-            Assert.assertTrue(flag.getInstructions().contains("overlapped by another building"));
+            Assert.assertTrue(flag.getInstructions()
+                    .contains("Building (id=1234567) contains building (id=2234567)."));
         });
     }
 }

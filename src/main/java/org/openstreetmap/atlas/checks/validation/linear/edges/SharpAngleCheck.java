@@ -20,13 +20,13 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * Flags edges that have an angle that is too sharp within their {@link PolyLine}. Sharp angles may
  * indicate inaccurate digitization once this threshold is exceeded. There may be other factors in
  * play here, such as number of intersections, type of highway, etc. But the main breaking point is
- * any angles that are less than 31 degrees.
+ * any angles that are less than 83 degrees.
  *
  * @author mgostintsev
  */
 public class SharpAngleCheck extends BaseCheck<Long>
 {
-    private static final double THRESHOLD_DEGREES_DEFAULT = 149.0;
+    private static final double THRESHOLD_DEGREES_DEFAULT = 97.0;
     private static final String TOO_SHARP_INSTRUCTION_1 = "Highway {0,number,#} has too sharp an angle at {1}";
     private static final String TOO_SHARP_INSTRUCTION_2 = "Highway {0,number,#} has {1} angles that are too sharp";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TOO_SHARP_INSTRUCTION_1,

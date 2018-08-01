@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -77,7 +78,8 @@ public class CheckFlagGeoJsonProcessorTest
         // Validate
         final List<Resource> files = FileSystemHelper.resources(tempDirectory.getAbsolutePath(),
                 FILE_SYSTEM_CONFIG);
-        Assert.assertEquals((int) Math.ceil(eventCount / (double) processor.computeBatchSize()),
+        Assert.assertEquals(
+                Math.max((int) Math.ceil(eventCount / (double) processor.computeBatchSize()), 1),
                 files.size());
 
         int actualEventCount = 0;
@@ -85,7 +87,10 @@ public class CheckFlagGeoJsonProcessorTest
         {
             final JsonObject found = GSON_BUILDER.fromJson(new InputStreamReader(file.read()),
                     JsonObject.class);
-            actualEventCount += found.getAsJsonArray("features").size();
+            if (Objects.nonNull(found))
+            {
+                actualEventCount += found.getAsJsonArray("features").size();
+            }
         }
 
         Assert.assertEquals(eventCount, actualEventCount);

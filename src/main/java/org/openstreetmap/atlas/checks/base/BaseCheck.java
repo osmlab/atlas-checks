@@ -63,7 +63,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
     private final Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
     private final Locale locale;
     private final String name = this.getClass().getSimpleName();
-    private final AtlasEntityPolygonsFilter polygonFilter;
+    private final AtlasEntityPolygonsFilter checkPolygonFilter;
+    private final AtlasEntityPolygonsFilter globalPolygonFilter;
     private TaggableFilter tagFilter = null;
 
     /**
@@ -99,7 +100,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             this.challenge = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
         }
-        this.polygonFilter = AtlasEntityPolygonsFilter.forConfigurationValues(
+        this.globalPolygonFilter = AtlasEntityPolygonsFilter.forConfiguration(configuration);
+        this.checkPolygonFilter = AtlasEntityPolygonsFilter.forConfigurationValues(
                 configurationValue(configuration, AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY,
                         Collections.emptyMap()),
                 configurationValue(configuration,
@@ -135,7 +137,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
     {
         return object -> this.validCheckForObject(object) && this.tagFilter.test(object)
                 && (!(object instanceof AtlasEntity)
-                        || this.polygonFilter.test((AtlasEntity) object))
+                        || this.checkPolygonFilter.test((AtlasEntity) object)
+                                && this.globalPolygonFilter.test((AtlasEntity) object))
                 && (this.acceptPier() || !ManMadeTag.isPier(object));
     }
 
