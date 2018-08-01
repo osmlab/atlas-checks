@@ -1,8 +1,8 @@
 # Atlas Checks
 
-[![Build Status](https://travis-ci.org/osmlab/atlas-checks.svg?branch=master)](https://travis-ci.org/osmlab/atlas-checks)
+[![Build Status](https://travis-ci.org/osmlab/atlas-checks.svg?branch=master)](https://travis-ci.org/osmlab/atlas-checks)  -- [Sonar](https://sonarcloud.io/dashboard?id=org.openstreetmap.atlas%3Aatlas-checks)
 
-The Atlas Checks framework and standalone application are tools to enable quality assurance of Atlas data files. For more information on the Atlas mapping file format please see the [Atlas project](http://github.com/osmlab/atlas) in Github. 
+The Atlas Checks framework and standalone application are tools to enable quality assurance of Atlas data files. For more information on the Atlas mapping file format please see the [Atlas project](http://github.com/osmlab/atlas) in Github.
 
 ## Starting with Atlas Checks
 
