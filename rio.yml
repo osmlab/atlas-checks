@@ -1,0 +1,37 @@
+# ref: https://docs.pie.apple.com/rio/reference/schemav2.html#publish-libraries-2-0
+schemaVersion: '2.0'
+
+builds:
+# prb is intended to compile and test pending pull requests on the branch
+- branchName: apple
+  build:
+    template: gradle:v3:lib:prb
+  machine:
+    java:
+      version: 1.8
+
+# build master everyday, 'H' means the time will be assigned by Jenkins 
+- branchName: apple
+  build:
+    template: gradle:v3:app:build
+  machine:
+    java:
+      version: 1.8
+  trigger:
+    timer: H H * * *
+    gitPush: false
+
+# build master to a release, when needed
+- branchName: apple
+  build:
+    template: gradle:v3:app:release
+  machine:
+    java:
+      version: 1.8
+  trigger:
+    gitPush: false
+
+# needed to publish this to rio
+publish:
+  libraries:
+    repo: m2:oss-patched
