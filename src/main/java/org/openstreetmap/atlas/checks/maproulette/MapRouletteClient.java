@@ -55,9 +55,9 @@ public class MapRouletteClient implements Serializable
             }
             catch (final Exception e)
             {
-                logger.warn(
-                        "Failed to create MapRoulette client. Will continue on, but will not push any tasks to MapRoulette. Error: {}",
-                        e.getMessage());
+                logger.warn(String.format(
+                        "Failed to create MapRoulette client with [%s]. Will continue on, but will not push any tasks.",
+                        configuration), e);
             }
         }
 
@@ -79,24 +79,6 @@ public class MapRouletteClient implements Serializable
         this.connection = new MapRouletteConnection(configuration);
     }
 
-    /**
-     * Adds tasks for a particular challenge name to the internal batch
-     *
-     * @param projectName
-     *            The name of the project for the task
-     * @param challenge
-     *            The {@link Challenge} for this {@link Task}
-     * @param task
-     *            The task itself
-     */
-    public synchronized void addTask(final String projectName, final Challenge challenge,
-            final Task task)
-    {
-        task.setProjectName(projectName);
-        task.setChallengeName(challenge.getName());
-        updateChallengeTaskList(challenge, task);
-    }
-
     public synchronized void addTask(final Challenge challenge, final Task task)
     {
         String projectName;
@@ -116,6 +98,24 @@ public class MapRouletteClient implements Serializable
         this.addTask(projectName, challenge, task);
     }
 
+    /**
+     * Adds tasks for a particular challenge name to the internal batch
+     *
+     * @param projectName
+     *            The name of the project for the task
+     * @param challenge
+     *            The {@link Challenge} for this {@link Task}
+     * @param task
+     *            The task itself
+     */
+    public synchronized void addTask(final String projectName, final Challenge challenge,
+            final Task task)
+    {
+        task.setProjectName(projectName);
+        task.setChallengeName(challenge.getName());
+        updateChallengeTaskList(challenge, task);
+    }
+
     public int getCurrentBatchSize()
     {
         int size = 0;
@@ -126,17 +126,44 @@ public class MapRouletteClient implements Serializable
         return size;
     }
 
-    public void uploadTasks(final Tuple<String, String> key)
-    {
-        this.upload(key);
-    }
-
     /**
      * Upload batched tasks to MapRoulette
      */
     public void uploadTasks()
     {
         this.batch.forEach((key, value) -> this.upload(key));
+    }
+
+    public void uploadTasks(final Tuple<String, String> key)
+    {
+        this.upload(key);
+    }
+
+    private Optional<Challenge> createChallenge(final Project project, final Challenge challenge)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        final Map<String, Challenge> challengeMap = this.challenges.getOrDefault(project.getId(),
+                new HashMap<>());
+        challenge.setParentIdentifier(project.getId());
+        if (!challengeMap.containsKey(challenge.getName()))
+        {
+            challenge.setId(this.connection.createChallenge(project, challenge));
+            challengeMap.put(challenge.getName(), challenge);
+            this.challenges.put(project.getId(), challengeMap);
+        }
+        return Optional.of(challenge);
+    }
+
+    private Project createProject(final String projectName)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        final Project project = this.projects.getOrDefault(projectName, new Project(projectName));
+        if (project.getId() == -1)
+        {
+            project.setId(this.connection.createProject(project));
+            this.projects.put(projectName, project);
+        }
+        return project;
     }
 
     private void updateChallengeTaskList(final Challenge challenge, final Task task)
@@ -167,39 +194,12 @@ public class MapRouletteClient implements Serializable
             {
                 this.createChallenge(this.createProject(task.getProjectName()), challenge);
             }
-            catch (URISyntaxException | UnsupportedEncodingException e)
+            catch (final Exception e)
             {
-                logger.warn("Failed to create/update project structure for {}/{}",
-                        task.getProjectName(), challenge.getName());
+                logger.warn(String.format("Failed to create/update project structure for %s/%s.",
+                        task.getProjectName(), challenge.getName()), e);
             }
         }
-    }
-
-    private Project createProject(final String projectName)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        final Project project = this.projects.getOrDefault(projectName, new Project(projectName));
-        if (project.getId() == -1)
-        {
-            project.setId(this.connection.createProject(project));
-            this.projects.put(projectName, project);
-        }
-        return project;
-    }
-
-    private Optional<Challenge> createChallenge(final Project project, final Challenge challenge)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        final Map<String, Challenge> challengeMap = this.challenges.getOrDefault(project.getId(),
-                new HashMap<>());
-        challenge.setParentIdentifier(project.getId());
-        if (!challengeMap.containsKey(challenge.getName()))
-        {
-            challenge.setId(this.connection.createChallenge(project, challenge));
-            challengeMap.put(challenge.getName(), challenge);
-            this.challenges.put(project.getId(), challengeMap);
-        }
-        return Optional.of(challenge);
     }
 
     private void upload(final Tuple<String, String> key)
@@ -234,14 +234,10 @@ public class MapRouletteClient implements Serializable
                     }
                 }
             }
-            catch (final UnsupportedEncodingException e)
+            catch (final Exception e)
             {
-                logger.debug("Failed to upload batch to map roulette [{}]",
-                        this.connection.getConnectionInfo());
-            }
-            catch (final URISyntaxException e)
-            {
-                logger.debug("Failed to upload batch to map roulette", e);
+                logger.warn(String.format("Failed to upload batch to MapRoulette [%s].",
+                        this.connection.getConnectionInfo()), e);
             }
         }
     }

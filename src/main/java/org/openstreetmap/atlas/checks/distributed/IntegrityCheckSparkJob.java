@@ -389,7 +389,7 @@ public class IntegrityCheckSparkJob extends SparkJob
             final Set<SparkFilePath> paths = countryPathPair._2();
             logger.info("[{}] Committing outputs: {}", country, paths);
 
-            paths.forEach(fileHelper::commit);
+            paths.forEach(fileHelper::commitByCopy);
         });
 
         try
