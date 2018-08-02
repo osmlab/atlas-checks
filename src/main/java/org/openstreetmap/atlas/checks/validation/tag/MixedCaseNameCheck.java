@@ -178,27 +178,25 @@ public class MixedCaseNameCheck extends BaseCheck
                 // Check if the word is intentionally mixed case
                 if (!isMixedCaseUnit(word))
                 {
+                    final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
                     // If the word is not in the list of prepositions, and the
                     // word is not both in the article list and not the first word: check that
                     // the first letter is a capital
-                    if (!this.lowerCasePrepositions.contains(word)
-                            && !(!firstWord && this.lowerCaseArticles.contains(word)))
-                    {
-                        final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
-                        // If the first letter is lower case: return true if it is not preceded by a
-                        // number
-                        if (firstLetterMatcher.find()
-                                && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
-                                && !(firstLetterMatcher.start() != 0 && Character
-                                        .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
-                        {
-                            return true;
-                        }
-                    }
-                    // If the word is not all upper case: check if all the letters not following
-                    // apostrophes, unless at the end of the word, are lower case
-                    if (Pattern.compile("\\p{Ll}").matcher(word).find()
-                            && !isMixedCaseApostrophe(word) && isProperNonFirstCapital(word))
+                    if ((!this.lowerCasePrepositions.contains(word)
+                            && !(!firstWord && this.lowerCaseArticles.contains(word))
+                            // If the first letter is lower case: return true if it is not preceded
+                            // by a
+                            // number
+                            && firstLetterMatcher.find()
+                            && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
+                            && !(firstLetterMatcher.start() != 0 && Character
+                                    .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+                            // If the word is not all upper case: check if all the letters not
+                            // following
+                            // apostrophes, unless at the end of the word, are lower case
+                            || (Pattern.compile("\\p{Ll}").matcher(word).find()
+                                    && !isMixedCaseApostrophe(word)
+                                    && isProperNonFirstCapital(word)))
                     {
                         return true;
                     }

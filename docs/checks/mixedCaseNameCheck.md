@@ -53,100 +53,22 @@ In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edg
 [Points](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Point.java), and
 [Areas](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Area.java).
 
-Our first goal is to validate the incoming Atlas object. Valid features for this check will satisfy the following conditions:
+Our first goal is to validate the incoming Atlas object. Valid features for this check will satisfy the following conditions (see `validCheckForObject` method):
 
 * It is an Edge, Line, Node, Point, or Area
 * It is a country where the `name` tag should be checked and it has a `name` tag or it has a one of the `name:[ISOcode]` tags.
 * It has not already been flagged
 
-```java
-public boolean validCheckForObject(final AtlasObject object)
-{
-    return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
-            && ((object.getTags().containsKey(ISOCountryTag.KEY)
-                    && checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
-                    && Validators.hasValuesFor(object, NameTag.class))
-                    || languageNameTags.stream()
-                            .anyMatch(key -> object.getOsmTags().containsKey(key)));
-}
-```
-
 Next the objects have each of their name tags, that are being checked, tested for proper use of case.  
 If the object's ISO code is in checkNameCountries its `name` tag is checked, else only the tags in `languageNameTags` are checked.
 
-```java
-    // Check ISO against list of countries for testing name tag
-    if (checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
-            && Validators.hasValuesFor(object, NameTag.class)
-            && isMixedCase(osmTags.get(NameTag.KEY)))
-    {
-        mixedCaseNameTags.add("name");
-    }
-    // Check all language name tags
-    for (final String key : languageNameTags)
-    {
-        if (osmTags.containsKey(key) && isMixedCase(osmTags.get(key)))
-        {
-            mixedCaseNameTags.add(NameTag.KEY);
-        }
-    }
-```
-
-The test for proper use of case uses multiple regular expressions to check both the entire name and each word. 
-
-The entire word is first checked to see if it contains any capital letters. If so the name is split into words based on a configurable list of characters.
+The test for proper use of case uses multiple regular expressions to check both the entire name and each word.  
+The most complex expression checks that all letters are lowercase, with the exception of the first letter and letters following apostrophes at the end of the word.
 
 ```java
-// Check if it is all lower case
-if (Pattern.compile("\\p{Lu}").matcher(value).find())
-{
-    // Split into words based on configurable characters
-    final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
-    boolean firstWord = true;
-    // Check each word
-    for (final String word : wordArray)
-    {
-```
-
-Next, each word is checked against configurable lists of articles, prepositions, and units to see if it is allowed to have irregular case. 
-
-```java
-// Check if the word is intentionally mixed case
-if (!isMixedCaseUnit(word))
-{
-    // If the word is not in the list of prepositions, and the
-    // word is not both in the article list and not the first word: check that
-    // the first letter is a capital
-    if (!this.lowerCasePrepositions.contains(word)
-            && !(!firstWord && this.lowerCaseArticles.contains(word)))
-    {
-```
-
-The first letter is checked to see if it is upper case, unless it is preceded by a number.
-
-```java
-final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
-// If the first letter is lower case: return true if it is not preceded by a
-// number
-if (firstLetterMatcher.find() && Character
-        .isLowerCase(firstLetterMatcher.group().charAt(0)) && !(
-        firstLetterMatcher.start() != 0 && Character
-                .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
-{
-    return true;
-}
-```
-
-Finally, the rest of the letters are check to see if they are lower case unless the entire word is upper case, the letter is preceded by a name affix, or the letter is next to an apostrophe at the end of the word.  
-
-```java
-// If the word is not all upper case: check if all the letters not following
-// apostrophes, unless at the end of the word, are lower case
-if (Pattern.compile("\\p{Ll}").matcher(word).find()
-        && !isMixedCaseApostrophe(word) && isProperNonFirstCapital(word))
-{
-    return true;
-}
+return Pattern.compile(String.format(
+    "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes))
+    .matcher(word).find();
 ```
 
 To learn more about the code, please look at the comments in the source code for the check.  
