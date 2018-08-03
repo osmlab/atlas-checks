@@ -77,6 +77,13 @@ public class OneMemberRelationCheck extends BaseCheck
         return Optional.empty();
     }
 
+    /**
+     * Recursively gets the members of relations.
+     *
+     * @param relation
+     *            {@link Relation} to get the members of
+     * @return A {@link Set} of the relations members as {@link AtlasObject}s
+     */
     private Set<AtlasObject> getRelationMembers(final Relation relation)
     {
         final Set<AtlasObject> relationMembers = relation.members().stream()
