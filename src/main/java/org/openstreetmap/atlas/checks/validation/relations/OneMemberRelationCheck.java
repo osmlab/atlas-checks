@@ -22,7 +22,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class OneMemberRelationCheck extends BaseCheck
 {
-    public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only one member.";
+    public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
+            + "one member.";
 
     public static final String MULTIPOLYGON_OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
             + "one member. Multi-polygon relations need multiple polygons.";
