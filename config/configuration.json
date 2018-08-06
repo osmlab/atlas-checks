@@ -53,6 +53,14 @@
       "tags":"building,highway"
     }
   },
+  "ConflictingAreaTagCombination": {
+    "challenge": {
+      "description": "Task contains Area's with mutually exclusive tag combinations.",
+      "blurb": "Conflicting Area Tag Combination",
+      "instruction": "Open your favorite editor, check the instruction and modify the tags that are considered conflicting",
+      "difficulty": "EASY"
+    }
+  },
   "DuplicateNodeCheck": {
     "challenge": {
       "description": "Tasks contain node locations that have duplicate nodes found.",
@@ -107,6 +115,38 @@
       "tags":"highway"
     }
   },
+  "IntersectingBuildingsCheck":
+  {
+    "intersection.lower.limit": 0.01,
+    "challenge": {
+      "description": "Buildings that intersect, contain, or overlap each other.",
+      "blurb": "Intersecting Buildings",
+      "instruction": "Correct intersecting buildings by moving them or dissolving one into another.",
+      "difficulty": "NORMAL",
+      "tags":"building"
+    }
+  },
+  "InvalidAccessTagCheck":{
+    "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
+    "minimum.highway.type":"residential",
+    "challenge": {
+      "description": "Tasks containing invalid access tags",
+      "blurb": "Invalid Access Tags",
+      "instruction": "Correct the displayed invalid access=no tag.",
+      "difficulty": "NORMAL",
+      "tags":"access,highway"
+    }
+  },
+  "InvalidLanesTagCheck": {
+    "lanes.filter": "Lanes->1,1.5,2,3,4,5,6,7,8,9,10",
+    "challenge":{
+      "description":"Tasks contain invalid values for the lanes tag.",
+      "blurb":"Invalid Lanes Tags",
+      "instruction":"Change the lanes tag to have a valid and representative value.",
+      "difficulty":"EASY",
+      "tags":"lanes,highway"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
@@ -136,6 +176,22 @@
       "description": "Tasks containing relations with only one member.",
       "blurb": "One Member Relations",
       "instruction": "Correct the relation to add necessary members",
+      "difficulty": "HARD"
+    }
+  },
+  "OverlappingAOIPolygonCheck":{
+    "aoi.tags.filters": ["amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
+      "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
+      "historic->BATTLEFIELD", "landuse->FOREST|natural->WOOD",
+      "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND",
+      "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN",
+      "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
+      "tourism->ZOO"],
+    "intersect.minimum.limit":0.01,
+    "challenge": {
+      "description": "Tasks containing overlapping AOI ways",
+      "blurb": "Overlapping AOI Polygon",
+      "instruction": "Correct the areas as necessary to not have overlapping ways representing the same AOI",
       "difficulty": "HARD"
     }
   },
@@ -187,7 +243,7 @@
     }
   },
   "SharpAngleCheck": {
-    "threshold.degrees": 149.0,
+    "threshold.degrees": 97.0,
     "challenge": {
       "description": "Each task has edges that have an angle that is too sharp within their polyline. Sharp angles may indicate inaccurate digitization once this threshold is exceeded. There may be other factors in play here such as number of intersections, type of highway, etc. But the main breaking point is any angles that are less than 31.",
       "blurb": "Modify angles that are too acute for possible inaccurate digitization.",
@@ -224,6 +280,16 @@
       "tags":"highway"
     }
   },
+  "StreetNameIntegersOnlyCheck": {
+    "name.keys.filter":["name","name:left","name:right"],
+    "challenge": {
+      "description": "Tasks containing name tags with only integers",
+      "blurb": "Street Names Integers Only",
+      "instruction": "Correct the road with only integers for names.",
+      "difficulty": "Medium",
+      "tags":"highway,name"
+    }
+  },
   "SnakeRoadCheck": {
     "challenge": {
       "description": "Tasks will include ways that are drawn as a single way, when in reality they should be two or more distinct ways",
@@ -243,18 +309,25 @@
     }
   },
   "SignPostCheck": {
-    "enabled": false,
     "linkLength": {
       "minimum.meters": 50.0
     },
+    "ramp":
+    {
+      "max.edges":10,
+      "filter":"highway->motorway_link,trunk_link"
+    },
+    "source.filter":"highway->motorway,trunk",
+    "destination_tag.filter":"destination->*|destination:ref->*|destination:street->*",
+    "arterial.minimum":"RESIDENTIAL",
     "challenge": {
       "description": "Tasks contain nodes where sign post tagging could be missing.  In particular it looks for motorway and trunk ways which have a link edge exiting them.  A task is generated if either the connecting node is missing the motorway_junction tag or the exiting segment is missing the destination tag.",
       "blurb": "Missing sign post tags",
       "instruction": "Either add the missing motorway_junction tag to the identified node and / or the destination tag to the exiting link segment.",
       "difficulty": "NORMAL",
-      "defaultPriority": "MEDIUM"
-    },
-    "tags":"highway"
+      "defaultPriority": "MEDIUM",
+      "tags":"highway"
+    }
   },
   "WaterbodyAndIslandSizeCheck": {
     "surface":{

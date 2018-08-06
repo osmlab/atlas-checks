@@ -1,0 +1,66 @@
+/**
+ * Runs Atlas Checks configured through the gradle.properties file. Multiple run profiles
+ * may be defined through project properties. Set the profile project property to switch
+ * between profiles.  Default is local.
+ *
+ * To change the profile, simply run "gradle -Pprofile=remote run"
+ */
+task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the Atlas Check Spark job.') {
+    classpath = sourceSets.main.runtimeClasspath
+
+    main = project.property("checks.${project.profile}.mainClass")
+
+    // apply arguments defined in the gradle.properties file for this profile
+    def flags = project.properties.findAll { property ->
+        property.toString().startsWith("checks.${project.profile}")
+    } collect {
+        it.toString().replace("checks.${project.profile}.", "-")
+    } collect {
+        it.toString().replace("@ROOTDIR@", rootDir.getAbsolutePath())
+    } collect {
+        it.toString().replace("@BUILDDIR@", buildDir.getAbsolutePath())
+    }
+    args(flags)
+
+    // add log4j config to the classpath
+    classpath('./config/log4j')
+
+    // uncomment to change jvm args
+    // jvmArgs(["-Xmx8g","-Xms8g"])
+
+    // uncomment to enable jvm debugging
+    // debug=true
+}
+
+/**
+ * Wraps runChecks to perform any task involving setup or teardown
+ */
+task run(dependsOn: 'assemble', group: 'application', description: 'Runs the Atlas Check framework configured using profiles defined in gradle.properties.') {
+    doLast {
+        runChecks.getCommandLine().each {
+            line -> println("$line \\")
+        }
+        runChecks.execute()
+    }
+}
+
+task buildCheck(type: Copy) {
+    if (project.hasProperty('CheckName')) {
+        def checkName = project.property('CheckName')
+        def username = System.properties["user.name"]
+        println 'Building new check org.openstreetmap.atlas.checks.validation.' + checkName + '.java'
+        // rename file and move to src directory
+        from("gradle/template") {
+            include 'checks.template'
+            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['CHECKNAME' : checkName, 'USERNAME' : username])
+            rename 'checks.template', checkName + '.java'
+        }
+        into 'src/main/java/org/openstreetmap/atlas/checks/validation'
+        // update configuration and include new check
+    }
+}
+
+task syncLibs(type: Sync) {
+    into "libs"
+    from configurations.runtime
+}

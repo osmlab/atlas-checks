@@ -51,7 +51,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     // tunnel=building_passage should be excluded from eligible candidates
     private static final Predicate<Taggable> ELIGIBLE_TUNNEL_TAGS = object -> Validators
             .hasValuesFor(object, TunnelTag.class)
-            && !(Validators.isOfType(object, TunnelTag.class, TunnelTag.BUILDING_PASSAGE));
+            && !Validators.isOfType(object, TunnelTag.class, TunnelTag.BUILDING_PASSAGE);
     private static final long serialVersionUID = 7040472721500502360L;
 
     /**
@@ -94,12 +94,6 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
     /**
      * Flag an {@link Edge} if it's {@link LayerTag} value is unusual
      */
@@ -107,7 +101,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // Retrieve layer tag value and evaluate it
-        final Optional<Long> layerTagValue = LayerTag.getTaggedOrImpliedValue(object, 0L);
+        final Optional<Long> layerTagValue = LayerTag.getTaggedValue(object);
         final boolean isTagValueValid = layerTagValue.isPresent();
 
         // mark osm id as flagged
@@ -130,7 +124,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         }
 
         // Rule: Junction edges with valid layer must include bridge or tunnel tag
-        if (JunctionTag.isRoundabout(object) && (isTagValueValid && layerTagValue.get() != 0L)
+        if (JunctionTag.isRoundabout(object) && isTagValueValid && layerTagValue.get() != 0L
                 && !(TunnelTag.isTunnel(object) || BridgeTag.isBridge(object)))
         {
             return Optional.of(createFlag(object, this.getLocalizedInstruction(1)));
@@ -145,5 +139,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

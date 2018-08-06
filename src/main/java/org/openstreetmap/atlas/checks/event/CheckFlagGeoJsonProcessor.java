@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
@@ -24,8 +25,8 @@ import com.google.gson.JsonObject;
 public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent>
 {
 
-    private static final int BATCH_DIVIDEND = 25;
-    private static final int BATCH_MULTIPLIER = 1000;
+    private static final int MAX_BATCH_SUM = 25000;
+    private static final int MIN_BATCH_SIZE = 100;
     private static final int BUCKET_CAPACITY = 100;
     private static final int BUCKET_INCREMENT = 25;
 
@@ -49,6 +50,9 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
     // Batch size override
     private int batchSizeOverride;
 
+    // Detect has written
+    private boolean hasWritten;
+
     /**
      * Default constructor
      *
@@ -61,6 +65,7 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
     {
         this.fileHelper = fileHelper;
         this.directory = outputFolder;
+        this.hasWritten = false;
     }
 
     @Override
@@ -110,7 +115,14 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
     {
         try
         {
-            this.featureBuckets.forEach(this::write);
+            if (!this.featureBuckets.isEmpty())
+            {
+                this.featureBuckets.forEach(this::write);
+            }
+            else
+            {
+                this.write(CommonConstants.EMPTY_STRING, new Vector<>());
+            }
         }
         catch (final Exception e)
         {
@@ -157,9 +169,9 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
         }
         if (this.featureBuckets.isEmpty())
         {
-            return BATCH_DIVIDEND * BATCH_MULTIPLIER;
+            return MAX_BATCH_SUM;
         }
-        return BATCH_DIVIDEND / this.featureBuckets.size() * BATCH_MULTIPLIER;
+        return Math.max(MAX_BATCH_SUM / this.featureBuckets.size(), MIN_BATCH_SIZE);
     }
 
     protected String getFilename(final String challenge, final int size)
@@ -183,7 +195,16 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
             this.fileHelper.write(this.directory,
                     this.getFilename(challenge, featureJsonArray.size()),
                     featureCollection.toString());
+            this.hasWritten = true;
             featureBucket.clear();
+        }
+        else if (!this.hasWritten)
+        {
+            logger.warn("Writing empty file with no content in {}.", this.directory);
+            this.fileHelper.write(this.directory,
+                    String.format("%s%s", "empty",
+                            new GeoJsonPathFilter(this.compressOutput).getExtension()),
+                    CommonConstants.EMPTY_STRING);
         }
     }
 }

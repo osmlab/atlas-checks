@@ -131,7 +131,7 @@ public class AtlasDataSource implements Serializable
         if (resource.isPresent())
         {
             final Resource dataSource = resource.get();
-            if (Atlas.isAtlas(dataSource))
+            if (AtlasResourceLoader.IS_ATLAS.test(dataSource))
             {
                 return new AtlasResourceLoader().load(dataSource);
             }
