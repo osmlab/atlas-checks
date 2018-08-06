@@ -269,9 +269,10 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         // Useful file helper to create/delete/name files and directories
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
+
         // Atlas Helper to load different types of Atlas data
-        final AtlasDataSource atlasLoader = new AtlasDataSource(sparkContext, checksConfiguration,
-                pbfBoundary);
+        final AtlasDataSource atlasLoader = this.getAtlasDataSource(sparkContext,
+                checksConfiguration, pbfBoundary);
 
         // Create target folders
         fileHelper.mkdir(SparkFileHelper.combine(targetOutputFolder, OUTPUT_FLAG_FOLDER));
@@ -375,9 +376,11 @@ public class IntegrityCheckSparkJob extends SparkJob
             {
                 logger.error("Exception running integrity checks on {}", country, e);
             }
-
-            logger.info("Integrity checks finished in {} to execute for {}.", timer.elapsedSince(),
-                    country);
+            finally
+            {
+                logger.info("Integrity checks finished in {} to execute for {}.",
+                        timer.elapsedSince(), country);
+            }
 
             return new Tuple2<>(IGNORED_KEY, null);
         }).filter(tuple -> !tuple._1().equals(IGNORED_KEY));
@@ -397,11 +400,29 @@ public class IntegrityCheckSparkJob extends SparkJob
             // Clean up
             logger.info("Deleting {}.", temporaryOutputFolder);
             fileHelper.deleteDirectory(temporaryOutputFolder);
+            atlasLoader.close();
         }
         catch (final Exception e)
         {
             logger.warn("Clean up failed!", e);
         }
+    }
+
+    /**
+     * Gets the {@link AtlasDataSource} object to load the Atlas from
+     *
+     * @param sparkContext
+     *            The Spark context
+     * @param checksConfiguration
+     *            configuration for all the checks
+     * @param pbfBoundary
+     *            The pbf boundary of type {@link Rectangle}
+     * @return A {@link AtlasDataSource}
+     */
+    protected AtlasDataSource getAtlasDataSource(final Map<String, String> sparkContext,
+            final Configuration checksConfiguration, final Rectangle pbfBoundary)
+    {
+        return new AtlasDataSource(sparkContext, checksConfiguration, pbfBoundary);
     }
 
     /**
