@@ -186,15 +186,13 @@ public class MixedCaseNameCheck extends BaseCheck
                     if ((!this.lowerCasePrepositions.contains(word)
                             && !(!firstWord && this.lowerCaseArticles.contains(word))
                             // If the first letter is lower case: return true if it is not preceded
-                            // by a
-                            // number
+                            // by a number
                             && firstLetterMatcher.find()
                             && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
                             && !(firstLetterMatcher.start() != 0 && Character
                                     .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
                             // If the word is not all upper case: check if all the letters not
-                            // following
-                            // apostrophes, unless at the end of the word, are lower case
+                            // following apostrophes, unless at the end of the word, are lower case
                             || (Pattern.compile("\\p{Ll}").matcher(word).find()
                                     && !isMixedCaseApostrophe(word)
                                     && isProperNonFirstCapital(word)))
