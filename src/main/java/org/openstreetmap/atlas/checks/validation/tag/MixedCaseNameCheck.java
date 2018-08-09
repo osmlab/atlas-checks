@@ -60,6 +60,14 @@ public class MixedCaseNameCheck extends BaseCheck
     // Know intentionally mixed case words
     private final String mixedCaseUnits;
 
+    // Regex Patterns
+    private final Pattern upperCasePattern;
+    private final Pattern anyLetterPattern;
+    private final Pattern lowerCasePattern;
+    private final Pattern mixedCaseUnitsPattern;
+    private final Pattern mixedCaseApostrophePattern;
+    private final Pattern nonFirstCapitalPattern;
+
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
      * checks with this constructor, supplying a configuration that can be used to adjust any
@@ -85,6 +93,17 @@ public class MixedCaseNameCheck extends BaseCheck
                 NAME_AFFIXES_DEFAULT, value -> String.join("|", (List<String>) value));
         this.mixedCaseUnits = (String) configurationValue(configuration, "name.units",
                 MIXED_CASE_UNITS_DEFAULT, value -> String.join("|", (List<String>) value));
+
+        // Compile regex
+        this.upperCasePattern = Pattern.compile("\\p{Lu}");
+        this.anyLetterPattern = Pattern.compile("\\p{L}");
+        this.lowerCasePattern = Pattern.compile("\\p{Ll}");
+        this.mixedCaseUnitsPattern = Pattern.compile(
+                String.format("[^\\p{L}]*\\p{Digit}[%1$s][^\\p{L}]*", this.mixedCaseUnits));
+        this.mixedCaseApostrophePattern = Pattern
+                .compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')");
+        this.nonFirstCapitalPattern = Pattern.compile(String.format(
+                "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes));
     }
 
     /**
@@ -168,7 +187,7 @@ public class MixedCaseNameCheck extends BaseCheck
     private boolean isMixedCase(final String value)
     {
         // Check if it is all lower case
-        if (Pattern.compile("\\p{Lu}").matcher(value).find())
+        if (this.upperCasePattern.matcher(value).find())
         {
             // Split into words based on configurable characters
             final String[] wordArray = value.split("[\\Q" + this.splitCharacters + "\\E]");
@@ -179,7 +198,7 @@ public class MixedCaseNameCheck extends BaseCheck
                 // Check if the word is intentionally mixed case
                 if (!isMixedCaseUnit(word))
                 {
-                    final Matcher firstLetterMatcher = Pattern.compile("\\p{L}").matcher(word);
+                    final Matcher firstLetterMatcher = this.anyLetterPattern.matcher(word);
                     // If the word is not in the list of prepositions, and the
                     // word is not both in the article list and not the first word: check that
                     // the first letter is a capital
@@ -193,7 +212,7 @@ public class MixedCaseNameCheck extends BaseCheck
                                     .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
                             // If the word is not all upper case: check if all the letters not
                             // following apostrophes, unless at the end of the word, are lower case
-                            || (Pattern.compile("\\p{Ll}").matcher(word).find()
+                            || (this.lowerCasePattern.matcher(word).find()
                                     && !isMixedCaseApostrophe(word)
                                     && isProperNonFirstCapital(word)))
                     {
@@ -220,8 +239,7 @@ public class MixedCaseNameCheck extends BaseCheck
         // `\p{Digit}`
         // There may be 0 or more non-alphabetic characters proceeding or following the
         // digit+mixedCaseUnits - `[^\p{L}]*`
-        return Pattern.compile("[^\\p{L}]*\\p{Digit}[\\Q" + this.mixedCaseUnits + "\\E][^\\p{L}]*")
-                .matcher(word).find();
+        return this.mixedCaseUnitsPattern.matcher(word).find();
     }
 
     /**
@@ -237,8 +255,7 @@ public class MixedCaseNameCheck extends BaseCheck
     {
         // This returns true if the last 2 characters are an apostrophe and a lower case letter, and
         // all other letters are upper case.
-        return Pattern.compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')").matcher(word)
-                .matches();
+        return this.mixedCaseApostrophePattern.matcher(word).matches();
     }
 
     /**
@@ -255,8 +272,6 @@ public class MixedCaseNameCheck extends BaseCheck
         // To be incorrect usage a capital letter:
         // Must not be preceded by an apostrophe or name affix - `(?<!'|%1$s)(\p{Lu})`
         // Must not be the last character if it follows an apostrophe - `(?<=')\p{Lu}(?!.)`
-        return Pattern.compile(String.format(
-                "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes))
-                .matcher(word).find();
+        return this.nonFirstCapitalPattern.matcher(word).find();
     }
 }
