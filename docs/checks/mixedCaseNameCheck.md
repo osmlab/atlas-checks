@@ -7,11 +7,11 @@ Proper case use is defined by set standards and configurable exceptions.
 The standards are as follows:
 
 * Words must start with a capital unless:
-    * The first letter is preceded by a number
-    * All the words in the name are lower case
+    * The first letter is preceded by a number (ex. 20th)
+    * All the words in the name are lower case (ex. ferry dock)
 * All other letters must be lower case unless: 
-    * They follow an apostrophe and, they are not the last letter of the word
-    * The entire word is uppercase, except the last letter if it follows or is followed by an apostrophe
+    * They follow an apostrophe (ex. O'Flin) and, they are not the last letter of the word (ex. Smith's not Smith'S)
+    * The entire word is uppercase, except the last letter if it follows or is followed by an apostrophe (ex. MAX'S or MAX's)
 
 The standards are broken by the following configurable exceptions (with default values):
 
