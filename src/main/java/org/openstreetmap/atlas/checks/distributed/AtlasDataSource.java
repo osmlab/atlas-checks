@@ -33,9 +33,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author brian_l_davis
  */
-public class AtlasDataSource implements Serializable
+public class AtlasDataSource implements Serializable, AutoCloseable
 {
     private static final long serialVersionUID = -6407331424906155431L;
+    private Atlas atlas = null;
     private final Logger logger = LoggerFactory.getLogger(AtlasDataSource.class);
     private final SparkFileHelper loadHelper;
     private final AtlasFilePathResolver pathResolver;
@@ -133,14 +134,13 @@ public class AtlasDataSource implements Serializable
             final Resource dataSource = resource.get();
             if (AtlasResourceLoader.IS_ATLAS.test(dataSource))
             {
-                return new AtlasResourceLoader().load(dataSource);
+                this.atlas = new AtlasResourceLoader().load(dataSource);
             }
             else if (FileSuffix.resourceFilter(FileSuffix.PBF).test(dataSource))
             {
                 this.logger.info("Loading Atlas from OSM protobuf {}", input);
-                final Atlas atlas = this.loadPbf(dataSource, country);
-                intermediateAtlasHandler.accept(atlas);
-                return atlas;
+                this.atlas = this.loadPbf(dataSource, country);
+                intermediateAtlasHandler.accept(this.atlas);
             }
         }
         else
@@ -150,7 +150,7 @@ public class AtlasDataSource implements Serializable
                     true, atlasFilter);
             if (atlasResources.size() > 0)
             {
-                return new AtlasResourceLoader().load(atlasResources);
+                this.atlas = new AtlasResourceLoader().load(atlasResources);
             }
             else
             {
@@ -164,11 +164,27 @@ public class AtlasDataSource implements Serializable
                     final List<Atlas> atlases = pbfResources.parallelStream()
                             .map(dataSource -> this.loadPbf(dataSource, country))
                             .peek(intermediateAtlasHandler).collect(Collectors.toList());
-                    return new MultiAtlas(atlases);
+                    this.atlas = new MultiAtlas(atlases);
                 }
             }
         }
-        return null;
+        return this.atlas;
+    }
+
+    public Atlas getAtlas()
+    {
+        return this.atlas;
+    }
+
+    public void setAtlas(final Atlas atlas)
+    {
+        this.atlas = atlas;
+    }
+
+    @Override
+    public void close() throws Exception
+    {
+        this.atlas = null;
     }
 
     private Atlas loadPbf(final Resource input, final String country)
