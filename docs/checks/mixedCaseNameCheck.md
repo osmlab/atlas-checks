@@ -24,19 +24,23 @@ The standards are broken by the following configurable exceptions (with default 
 * Mixed case units of measurement that are valid after a number:
     * kV
     
-These configurables allow this check to be adapted to test different languages.  
+The above configurables allow this check to be adapted to test different languages.    
+The check should only test names in languages it is configured to handle.   
 OSM uses the `name` tag for the name in a locations primary language, and `name:[ISOcode]` for other languages.
 This check uses two configurable to control what languages are checked.
 
-The first is a list of ISO codes for countries that should have there `name` tag checked. It has default values of:
+The first is a list of ISO codes for countries that should have there `name` tag checked. 
+The official language(s) of the countries in this list should be (a) language(s) that the check is configured to handle. 
+It has default values of:
 
 * AIA, ATG, AUS, BHS, BRB, BLZ, BMU, BWA, VGB, CMR, CAN, CYM, DMA, FJI, GMB, GHA, GIB, GRD, GUY, IRL, JAM, KEN, LSO, MWI, MLT, MUS, MSR, NAM, NZL, NGA, PNG, SYC, SLE, SGP, SLB, ZAF, SWZ, TZA, TON, TTO, TCA, UGA, GBR, USA, VUT, ZMB, ZWE
 
-The second is a list of `name:[ISOcode]` tags to check. Default values are:
+The second is a list of `name:[ISOcode]` tags to check. These should be for the languages the check is configured to handle.
+ Default values are:
 
 * name:en
 
-A final configurable is a list of characters that names are split by to for words. Its default values are: 
+A final configurable is a list of characters that names are split by, to form words. Its default values are: 
 
 * SPACE, \-, /, &, @, –
 
@@ -56,7 +60,7 @@ In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edg
 Our first goal is to validate the incoming Atlas object. Valid features for this check will satisfy the following conditions (see `validCheckForObject` method):
 
 * It is an Edge, Line, Node, Point, or Area
-* It is a country where the `name` tag should be checked and it has a `name` tag or it has a one of the `name:[ISOcode]` tags.
+* It is a country where the `name` tag should be checked and it has a `name` tag, or it has a one of the `name:[ISOcode]` tags.
 * It has not already been flagged
 
 Next the objects have each of their name tags, that are being checked, tested for proper use of case.  
