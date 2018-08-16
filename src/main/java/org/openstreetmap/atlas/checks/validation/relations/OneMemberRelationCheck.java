@@ -1,17 +1,17 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
-import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -78,7 +78,7 @@ public class OneMemberRelationCheck extends BaseCheck
     }
 
     /**
-     * Recursively gets the members of relations.
+     * Gathers all the members of a relation, replacing child relations with their members.
      *
      * @param relation
      *            {@link Relation} to get the members of
@@ -86,18 +86,27 @@ public class OneMemberRelationCheck extends BaseCheck
      */
     private Set<AtlasObject> getRelationMembers(final Relation relation)
     {
-        // Gather a set of the relation's members
-        final Set<AtlasObject> relationMembers = relation.members().stream()
-                .map(RelationMember::getEntity).collect(Collectors.toSet());
-        relationMembers.forEach(member ->
+        final Set<AtlasObject> relationMembers = new HashSet<>();
+        final ArrayDeque<AtlasObject> toProcess = new ArrayDeque<>();
+        AtlasObject polledMember;
+
+        toProcess.add(relation);
+        while (!toProcess.isEmpty())
         {
-            // Recursively replace sub relations with their members
-            if (member instanceof Relation)
+            polledMember = toProcess.poll();
+            // If a member is a relation do not add it to the set and instead add its members to the
+            // queue for processing
+            if (polledMember instanceof Relation)
             {
-                relationMembers.addAll(getRelationMembers((Relation) member));
-                relationMembers.remove(member);
+                ((Relation) polledMember).members()
+                        .forEach(member -> toProcess.add(member.getEntity()));
             }
-        });
+            // Otherwise add the member to the returned set
+            else
+            {
+                relationMembers.add(polledMember);
+            }
+        }
         return relationMembers;
     }
 }

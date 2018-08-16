@@ -58,7 +58,7 @@ public class OneMemberRelationCheckTest
     }
 
     @Test
-    public void oneMemberRelationRelationTest()
+    public void testOneMemberRelationRelationTest()
     {
         this.verifier.actual(this.setup.oneMemberRelationRelationAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
