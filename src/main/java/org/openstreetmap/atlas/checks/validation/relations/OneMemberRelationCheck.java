@@ -86,10 +86,12 @@ public class OneMemberRelationCheck extends BaseCheck
      */
     private Set<AtlasObject> getRelationMembers(final Relation relation)
     {
+        // Gather a set of the relation's members
         final Set<AtlasObject> relationMembers = relation.members().stream()
                 .map(RelationMember::getEntity).collect(Collectors.toSet());
         relationMembers.forEach(member ->
         {
+            // Recursively replace sub relations with their members
             if (member instanceof Relation)
             {
                 relationMembers.addAll(getRelationMembers((Relation) member));
