@@ -115,7 +115,7 @@
       "tags":"highway"
     }
   },
-  "IntersectingBuildingCheck":
+  "IntersectingBuildingsCheck":
   {
     "intersection.lower.limit": 0.01,
     "challenge": {
