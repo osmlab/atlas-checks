@@ -22,51 +22,53 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
 {
 
     private static final String DEFAULT_VALENCE = "6";
-          static final String MINIMUM_VALENCE_KEY = "minimum.valence";
-    private static final String OTHER_EDGES_INSTRUCTION =
-            "This Mini-Roundabout Node ({0,number,#})"
-                    + " has {1, number,#} connecting edges. Consider changing this.";
-    private static final String TWO_EDGES_INSTRUCTION =
-            "This Mini-Roundabout Node ({0,number,#}) "
-                    + "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
-                    + "highway=TURNING_CIRCLE.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(TWO_EDGES_INSTRUCTION, OTHER_EDGES_INSTRUCTION);
+    static final String MINIMUM_VALENCE_KEY = "minimumValence";
+    private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
+            + " has {1, number,#} connecting edges. Consider changing this.";
+    private static final String TWO_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#}) "
+            + "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
+            + "highway=TURNING_CIRCLE.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
+            OTHER_EDGES_INSTRUCTION);
     private final long minimumValence;
 
     /**
      * Default constructor
      *
-     * @param configuration the JSON configuration for this check
+     * @param configuration
+     *            the JSON configuration for this check
      */
     public InvalidMiniRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumValence = Long.parseLong((String) configuration.get(MINIMUM_VALENCE_KEY).valueOption().orElse(DEFAULT_VALENCE));
+        this.minimumValence = Long.parseLong(
+                this.configurationValue(configuration, MINIMUM_VALENCE_KEY, DEFAULT_VALENCE));
     }
 
-    @Override public boolean validCheckForObject(final AtlasObject object)
+    @Override
+    public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Node && Validators
-                .isOfType(object, HighwayTag.class, HighwayTag.MINI_ROUNDABOUT);
+        return object instanceof Node
+                && Validators.isOfType(object, HighwayTag.class, HighwayTag.MINI_ROUNDABOUT);
     }
 
-    @Override protected Optional<CheckFlag> flag(final AtlasObject object)
+    @Override
+    protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Node node = (Node) object;
         final long valence = node.absoluteValence();
         if (valence < minimumValence)
         {
-            final CheckFlag flag = this.createFlag(node,
-                    this.getLocalizedInstruction(isTurnaround(node) ? 0 : 1,
-                            node.getOsmIdentifier(), valence));
+            final CheckFlag flag = this.createFlag(node, this.getLocalizedInstruction(
+                    isTurnaround(node) ? 0 : 1, node.getOsmIdentifier(), valence));
 
             return Optional.of(flag);
         }
         return Optional.empty();
     }
 
-    @Override protected List<String> getFallbackInstructions()
+    @Override
+    protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
     }
