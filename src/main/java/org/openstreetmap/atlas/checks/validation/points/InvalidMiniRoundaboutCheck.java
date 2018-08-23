@@ -24,10 +24,10 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private static final String DEFAULT_VALENCE = "6";
           static final String MINIMUM_VALENCE_KEY = "minimum.valence";
     private static final String OTHER_EDGES_INSTRUCTION =
-            "This Mini-Roundabout Node ({0, number, #})"
-                    + " has {1, number, #} connecting edges. Consider changing this.";
+            "This Mini-Roundabout Node ({0,number,#})"
+                    + " has {1, number,#} connecting edges. Consider changing this.";
     private static final String TWO_EDGES_INSTRUCTION =
-            "This Mini-Roundabout Node ({0, number, #}) "
+            "This Mini-Roundabout Node ({0,number,#}) "
                     + "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
                     + "highway=TURNING_CIRCLE.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
