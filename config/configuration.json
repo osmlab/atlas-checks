@@ -148,7 +148,7 @@
     }
   },
   "InvalidMiniRoundaboutCheck": {
-    "minimumValence":"6"
+    "minimumValence":6
   },
   "InvalidTurnRestrictionCheck": {
     "challenge": {

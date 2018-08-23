@@ -21,7 +21,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
 {
 
-    private static final String DEFAULT_VALENCE = "6";
+    private static final long DEFAULT_VALENCE = 6;
     static final String MINIMUM_VALENCE_KEY = "minimumValence";
     private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
             + " has {1, number,#} connecting edges. Consider changing this.";
@@ -41,8 +41,8 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     public InvalidMiniRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumValence = Long.parseLong(
-                this.configurationValue(configuration, MINIMUM_VALENCE_KEY, DEFAULT_VALENCE));
+        this.minimumValence = this.configurationValue(configuration, MINIMUM_VALENCE_KEY,
+                DEFAULT_VALENCE);
     }
 
     @Override
