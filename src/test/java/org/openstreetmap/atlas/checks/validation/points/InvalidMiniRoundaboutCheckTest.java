@@ -17,7 +17,7 @@ public class InvalidMiniRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.getNotEnoughValence(), new InvalidMiniRoundaboutCheck(
                 ConfigurationResolver
-                        .inlineConfiguration("{\"InvalidMiniRoundaboutCheck.minimumValence\":1}")));
+                        .inlineConfiguration("{\"InvalidMiniRoundaboutCheck.minimum.valence\":1}")));
         this.verifier.verifyEmpty();
     }
 
@@ -25,7 +25,7 @@ public class InvalidMiniRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.getValidRoundabout(), new InvalidMiniRoundaboutCheck(
                 ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidMiniRoundaboutCheck.minimumValence\":10}")));
+                        "{\"InvalidMiniRoundaboutCheck.minimum.valence\":10}")));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(this::verifyMultipleEdgesFlag);
     }

@@ -147,6 +147,9 @@
       "tags":"lanes,highway"
     }
   },
+  "InvalidMiniRoundaboutCheck": {
+    "minimum.valence":"6"
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
