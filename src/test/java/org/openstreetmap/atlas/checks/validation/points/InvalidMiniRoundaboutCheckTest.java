@@ -1,14 +1,14 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Tests the InvalidMiniRoundaboutCheck for each use case.
@@ -77,20 +77,32 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
     }
 
-    private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges, final long expectedNodes)
+    private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges,
+            final long expectedNodes)
     {
-        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream().collect(Collectors.groupingBy(obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG), Collectors.counting()));
-        Assert.assertEquals(expectedEdges, (long) flagCounts.getOrDefault(this.setup.EDGE_TAG,  -1L));
-        Assert.assertEquals(expectedNodes, (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
+        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream()
+                .collect(Collectors.groupingBy(
+                        obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG),
+                        Collectors.counting()));
+        Assert.assertEquals(expectedEdges,
+                (long) flagCounts.getOrDefault(this.setup.EDGE_TAG, -1L));
+        Assert.assertEquals(expectedNodes,
+                (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(
                 flag.getInstructions().contains("connecting edges. Consider changing this."));
     }
 
-    private void verifyTwoEdgesFlag(final CheckFlag flag, final long expectedEdges, final long expectedNodes)
+    private void verifyTwoEdgesFlag(final CheckFlag flag, final long expectedEdges,
+            final long expectedNodes)
     {
-        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream().collect(Collectors.groupingBy(obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG), Collectors.counting()));
-        Assert.assertEquals(expectedEdges, (long) flagCounts.getOrDefault(this.setup.EDGE_TAG,  -1L));
-        Assert.assertEquals(expectedNodes, (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
+        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream()
+                .collect(Collectors.groupingBy(
+                        obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG),
+                        Collectors.counting()));
+        Assert.assertEquals(expectedEdges,
+                (long) flagCounts.getOrDefault(this.setup.EDGE_TAG, -1L));
+        Assert.assertEquals(expectedNodes,
+                (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(flag.getInstructions().contains(
                 "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
                         + "highway=TURNING_CIRCLE."));
