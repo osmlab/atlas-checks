@@ -27,10 +27,10 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) },
 
             edges = { @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
-                    @TestAtlas.Loc(value = TWO), @TestAtlas.Loc(value = ONE) }, id = "-100"),
+                    @TestAtlas.Loc(value = TWO), @TestAtlas.Loc(value = ONE) }, id = "-100", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
                             @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = THREE) }, id = "100") })
+                            @TestAtlas.Loc(value = THREE) }, id = "100", tags="highway=motorway") })
     private Atlas turningCircle;
 
     // One two-way edge into the roundabout and two one-way edges out -- should be flagged
@@ -39,13 +39,13 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = FOUR)) }, edges = {
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
-                            @TestAtlas.Loc(value = TWO) }, id = "100"),
+                            @TestAtlas.Loc(value = TWO) }, id = "100", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = ONE) }, id = "-100"),
+                            @TestAtlas.Loc(value = ONE) }, id = "-100", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = THREE) }, id = "101"),
+                            @TestAtlas.Loc(value = THREE) }, id = "101", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = FOUR),
-                            @TestAtlas.Loc(value = TWO) }, id = "102") })
+                            @TestAtlas.Loc(value = TWO) }, id = "102", tags="highway=motorway") })
     private Atlas notEnoughValence;
 
     // One one-way in and one one-way out -- shouldn't be a turning circle despite valence == 2
@@ -53,9 +53,9 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TWO), tags = "highway=mini_roundabout"),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) }, edges = {
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
-                            @TestAtlas.Loc(value = TWO) }, id = "100"),
+                            @TestAtlas.Loc(value = TWO) }, id = "100", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = THREE) }, id = "101") })
+                            @TestAtlas.Loc(value = THREE) }, id = "101", tags="highway=motorway") })
     private Atlas noTurns;
 
     // A mini-roundabout with valence of 6 -- should be accepted
@@ -64,18 +64,37 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = FOUR)) }, edges = {
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
-                            @TestAtlas.Loc(value = TWO) }, id = "100"),
+                            @TestAtlas.Loc(value = TWO) }, id = "100", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = ONE) }, id = "-100"),
+                            @TestAtlas.Loc(value = ONE) }, id = "-100", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
-                            @TestAtlas.Loc(value = TWO) }, id = "101"),
+                            @TestAtlas.Loc(value = TWO) }, id = "101", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = THREE) }, id = "-101"),
+                            @TestAtlas.Loc(value = THREE) }, id = "-101", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = FOUR),
-                            @TestAtlas.Loc(value = TWO) }, id = "102"),
+                            @TestAtlas.Loc(value = TWO) }, id = "102", tags="highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
-                            @TestAtlas.Loc(value = FOUR) }, id = "-102") })
+                            @TestAtlas.Loc(value = FOUR) }, id = "-102", tags="highway=motorway") })
     private Atlas validRoundabout;
+
+    // A mini-roundabout with valence of 6, but all 6 edges are pedestrian. Should be flagged.
+    @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TWO), tags = "highway=mini_roundabout"),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = FOUR)) }, edges = {
+            @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
+                    @TestAtlas.Loc(value = TWO) }, id = "100", tags="highway=pedestrian"),
+            @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
+                    @TestAtlas.Loc(value = ONE) }, id = "-100", tags="highway=pedestrian"),
+            @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
+                    @TestAtlas.Loc(value = TWO) }, id = "101", tags="highway=pedestrian"),
+            @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
+                    @TestAtlas.Loc(value = THREE) }, id = "-101", tags="highway=pedestrian"),
+            @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = FOUR),
+                    @TestAtlas.Loc(value = TWO) }, id = "102", tags="highway=pedestrian"),
+            @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
+                    @TestAtlas.Loc(value = FOUR) }, id = "-102", tags="highway=pedestrian") })
+    private Atlas pedestrianRoundabout;
 
     public Atlas getTurningCircle()
     {
@@ -95,5 +114,9 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
     public Atlas getValidRoundabout()
     {
         return this.validRoundabout;
+    }
+
+    public Atlas getPedestrianRoundabout() {
+        return this.pedestrianRoundabout;
     }
 }

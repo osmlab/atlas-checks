@@ -77,6 +77,15 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
     }
 
+    @Test
+    public void pedestrianHighway()
+    {
+        this.verifier.actual(this.setup.getPedestrianRoundabout(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 6, 1));
+    }
+
     private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges,
             final long expectedNodes)
     {
@@ -89,7 +98,7 @@ public class InvalidMiniRoundaboutCheckTest
         Assert.assertEquals(expectedNodes,
                 (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(
-                flag.getInstructions().contains("connecting edges. Consider changing this."));
+                flag.getInstructions().contains("connecting car-navigable edges. Consider changing this."));
     }
 
     private void verifyTwoEdgesFlag(final CheckFlag flag, final long expectedEdges,
@@ -104,7 +113,7 @@ public class InvalidMiniRoundaboutCheckTest
         Assert.assertEquals(expectedNodes,
                 (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(flag.getInstructions().contains(
-                "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
+                "has 2 connecting car-navigable edges. Consider changing this to highway=TURNING_LOOP or "
                         + "highway=TURNING_CIRCLE."));
     }
 
