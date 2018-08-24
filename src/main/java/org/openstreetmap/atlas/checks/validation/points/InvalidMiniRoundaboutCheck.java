@@ -62,7 +62,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             final String instruction = this.getLocalizedInstruction(isTurnaround(node) ? 0 : 1,
                     node.getOsmIdentifier(), valence);
             final CheckFlag flag = this.createFlag(node, instruction);
-            node.connectedEdges().forEach(edge -> flag.addObject(edge, instruction));
+            node.connectedEdges().forEach(edge -> flag.addObject(edge));
             return Optional.of(flag);
         }
         return Optional.empty();
