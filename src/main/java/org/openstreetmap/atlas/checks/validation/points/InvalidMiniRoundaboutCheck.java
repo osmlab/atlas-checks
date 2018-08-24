@@ -61,13 +61,13 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         final Node node = (Node) object;
         final Collection<Edge> carNavigableEdges = getCarNavigableEdges(node);
         final long valence = carNavigableEdges.size();
-        if (valence < minimumValence)
+        if (valence < minimumValence && valence > 0)
         {
             final String instruction = this.getLocalizedInstruction(
                     isTurnaround(node, carNavigableEdges) ? 0 : 1, node.getOsmIdentifier(),
                     valence);
             final CheckFlag flag = this.createFlag(node, instruction);
-            node.connectedEdges().forEach(edge -> flag.addObject(edge));
+            carNavigableEdges.forEach(edge -> flag.addObject(edge));
             return Optional.of(flag);
         }
         return Optional.empty();

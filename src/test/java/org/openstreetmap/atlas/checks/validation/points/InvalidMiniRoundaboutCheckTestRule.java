@@ -82,13 +82,13 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
                             @TestAtlas.Loc(value = FOUR) }, id = "-102", tags = "highway=motorway") })
     private Atlas validRoundabout;
 
-    // A mini-roundabout with valence of 6, but all 6 edges are pedestrian. Should be flagged.
+    // A mini-roundabout with valence of 6, but 5 edges are pedestrian. Should be flagged.
     @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TWO), tags = "highway=mini_roundabout"),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = FOUR)) }, edges = {
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
-                            @TestAtlas.Loc(value = TWO) }, id = "100", tags = "highway=pedestrian"),
+                            @TestAtlas.Loc(value = TWO) }, id = "100", tags = "highway=motorway"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
                             @TestAtlas.Loc(value = ONE) }, id = "-100", tags = "highway=pedestrian"),
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
@@ -100,6 +100,10 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = TWO),
                             @TestAtlas.Loc(value = FOUR) }, id = "-102", tags = "highway=pedestrian") })
     private Atlas pedestrianRoundabout;
+
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), tags = "highway=mini_roundabout") })
+    private Atlas noRoads;
 
     public Atlas getTurningCircle()
     {
@@ -124,5 +128,10 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
     public Atlas getPedestrianRoundabout()
     {
         return this.pedestrianRoundabout;
+    }
+
+    public Atlas getNoRoads()
+    {
+        return this.noRoads;
     }
 }

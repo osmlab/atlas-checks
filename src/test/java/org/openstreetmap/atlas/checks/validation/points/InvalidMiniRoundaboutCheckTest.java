@@ -74,7 +74,7 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getTurningCircle(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 3, 1));
+        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
     }
 
     @Test
@@ -83,7 +83,15 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getPedestrianRoundabout(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 6, 1));
+        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 1, 1));
+    }
+
+    @Test
+    public void noEdgesNoFlags()
+    {
+        this.verifier.actual(this.setup.getNoRoads(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
     }
 
     private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges,
