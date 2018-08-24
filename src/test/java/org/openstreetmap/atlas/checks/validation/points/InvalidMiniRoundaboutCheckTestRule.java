@@ -19,6 +19,7 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
 
     public static final String NODE_TAG = "Node";
     public static final String ITEM_TYPE_TAG = "ItemType";
+    public static final String EDGE_TAG = "Edge";
 
     // One two-way street ending in a roundabout -- should be a turning loop/circle
     @TestAtlas(nodes = {

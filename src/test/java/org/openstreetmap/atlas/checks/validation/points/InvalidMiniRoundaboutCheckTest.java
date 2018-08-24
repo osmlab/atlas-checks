@@ -7,6 +7,9 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * Tests the InvalidMiniRoundaboutCheck for each use case.
  *
@@ -36,7 +39,7 @@ public class InvalidMiniRoundaboutCheckTest
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"InvalidMiniRoundaboutCheck.minimumValence\":10}")));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(this::verifyMultipleEdgesFlag);
+        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 6, 1));
     }
 
     @Test
@@ -53,7 +56,7 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getNotEnoughValence(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(this::verifyMultipleEdgesFlag);
+        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 4, 1));
     }
 
     @Test
@@ -62,7 +65,7 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getNoTurns(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(this::verifyMultipleEdgesFlag);
+        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 2, 1));
     }
 
     @Test
@@ -71,21 +74,23 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getTurningCircle(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(this::verifyTwoEdgesFlag);
+        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
     }
 
-    private void verifyMultipleEdgesFlag(final CheckFlag flag)
+    private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges, final long expectedNodes)
     {
-        flag.getFlaggedObjects().forEach(obj -> Assert.assertTrue(
-                obj.getProperties().get(this.setup.ITEM_TYPE_TAG).equals(this.setup.NODE_TAG)));
+        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream().collect(Collectors.groupingBy(obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG), Collectors.counting()));
+        Assert.assertEquals(expectedEdges, (long) flagCounts.getOrDefault(this.setup.EDGE_TAG,  -1L));
+        Assert.assertEquals(expectedNodes, (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(
                 flag.getInstructions().contains("connecting edges. Consider changing this."));
     }
 
-    private void verifyTwoEdgesFlag(final CheckFlag flag)
+    private void verifyTwoEdgesFlag(final CheckFlag flag, final long expectedEdges, final long expectedNodes)
     {
-        flag.getFlaggedObjects().forEach(obj -> Assert.assertTrue(
-                obj.getProperties().get(this.setup.ITEM_TYPE_TAG).equals(this.setup.NODE_TAG)));
+        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream().collect(Collectors.groupingBy(obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG), Collectors.counting()));
+        Assert.assertEquals(expectedEdges, (long) flagCounts.getOrDefault(this.setup.EDGE_TAG,  -1L));
+        Assert.assertEquals(expectedNodes, (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(flag.getInstructions().contains(
                 "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
                         + "highway=TURNING_CIRCLE."));
