@@ -1,12 +1,15 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -24,9 +27,9 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private static final long DEFAULT_VALENCE = 6;
     static final String MINIMUM_VALENCE_KEY = "minimumValence";
     private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
-            + " has {1, number,#} connecting edges. Consider changing this.";
+            + " has {1, number,#} connecting car-navigable edges. Consider changing this.";
     private static final String TWO_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#}) "
-            + "has 2 connecting edges. Consider changing this to highway=TURNING_LOOP or "
+            + "has 2 connecting car-navigable edges. Consider changing this to highway=TURNING_LOOP or "
             + "highway=TURNING_CIRCLE.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
             OTHER_EDGES_INSTRUCTION);
@@ -56,11 +59,13 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Node node = (Node) object;
-        final long valence = node.absoluteValence();
+        final Collection<Edge> carNavigableEdges = getCarNavigableEdges(node);
+        final long valence = carNavigableEdges.size();
         if (valence < minimumValence)
         {
-            final String instruction = this.getLocalizedInstruction(isTurnaround(node) ? 0 : 1,
-                    node.getOsmIdentifier(), valence);
+            final String instruction = this.getLocalizedInstruction(
+                    isTurnaround(node, carNavigableEdges) ? 0 : 1, node.getOsmIdentifier(),
+                    valence);
             final CheckFlag flag = this.createFlag(node, instruction);
             node.connectedEdges().forEach(edge -> flag.addObject(edge));
             return Optional.of(flag);
@@ -74,9 +79,15 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private boolean isTurnaround(final Node node)
+    private boolean isTurnaround(final Node node, final Collection<Edge> carNavigableEdges)
     {
-        return node.valence() == 1 && node.absoluteValence() == 2;
+        final long masterEdgeCount = carNavigableEdges.stream().filter(Edge::isMasterEdge).count();
+        return masterEdgeCount == 1 && carNavigableEdges.size() == 2;
     }
 
+    private Collection<Edge> getCarNavigableEdges(final Node node)
+    {
+        return node.connectedEdges().stream().filter(HighwayTag::isCarNavigableHighway)
+                .collect(Collectors.toSet());
+    }
 }

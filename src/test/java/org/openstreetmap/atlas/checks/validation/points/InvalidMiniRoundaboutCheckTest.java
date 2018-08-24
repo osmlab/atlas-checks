@@ -74,7 +74,7 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getTurningCircle(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
+        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 3, 1));
     }
 
     @Test
@@ -97,8 +97,8 @@ public class InvalidMiniRoundaboutCheckTest
                 (long) flagCounts.getOrDefault(this.setup.EDGE_TAG, -1L));
         Assert.assertEquals(expectedNodes,
                 (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
-        Assert.assertTrue(
-                flag.getInstructions().contains("connecting car-navigable edges. Consider changing this."));
+        Assert.assertTrue(flag.getInstructions()
+                .contains("connecting car-navigable edges. Consider changing this."));
     }
 
     private void verifyTwoEdgesFlag(final CheckFlag flag, final long expectedEdges,
