@@ -122,7 +122,7 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
     // One one-way in and one one-way out -- shouldn't be a turning circle despite valence == 2
     @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TWO), tags = {
-                    "highway=mini_roundabout", "direction=clockwise" }),
+                    "highway=mini_roundabout", "direction=anticlockwise" }),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) }, edges = {
                     @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = ONE),
                             @TestAtlas.Loc(value = TWO) }, id = "100", tags = "highway=motorway"),

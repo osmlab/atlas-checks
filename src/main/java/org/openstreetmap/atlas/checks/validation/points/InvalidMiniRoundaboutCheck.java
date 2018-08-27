@@ -37,7 +37,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private final long minimumValence;
     private static final String DIRECTION_KEY = "direction";
     private static final List<String> VALID_DIRECTIONS = Arrays.asList("clockwise",
-            "counterclockwise");
+            "anticlockwise");
 
     /**
      * Default constructor
