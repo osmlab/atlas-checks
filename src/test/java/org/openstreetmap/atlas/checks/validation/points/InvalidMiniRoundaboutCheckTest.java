@@ -94,6 +94,22 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verifyEmpty();
     }
 
+    @Test
+    public void turningCircleWithDirectionFlagged()
+    {
+        this.verifier.actual(this.setup.getTurningCircleWithDirection(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
+    }
+
+    @Test
+    public void lowValenceWithDirectionNotFlagged()
+    {
+        this.verifier.actual(this.setup.getNoTurnsWithDirection(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
     private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges,
             final long expectedNodes)
     {

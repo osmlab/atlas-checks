@@ -13,6 +13,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -34,6 +35,9 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
             OTHER_EDGES_INSTRUCTION);
     private final long minimumValence;
+    private static final String DIRECTION_KEY = "direction";
+    private static final List<String> VALID_DIRECTIONS = Arrays.asList("clockwise",
+            "counterclockwise");
 
     /**
      * Default constructor
@@ -61,16 +65,32 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         final Node node = (Node) object;
         final Collection<Edge> carNavigableEdges = getCarNavigableEdges(node);
         final long valence = carNavigableEdges.size();
-        if (valence < minimumValence && valence > 0)
+        final Optional<CheckFlag> result;
+
+        if (isTurnaround(node, carNavigableEdges))
         {
-            final String instruction = this.getLocalizedInstruction(
-                    isTurnaround(node, carNavigableEdges) ? 0 : 1, node.getOsmIdentifier(),
-                    valence);
-            final CheckFlag flag = this.createFlag(node, instruction);
-            carNavigableEdges.forEach(edge -> flag.addObject(edge));
-            return Optional.of(flag);
+            result = Optional.of(flagNode(node, carNavigableEdges,
+                    this.getLocalizedInstruction(0, node.getOsmIdentifier(), valence)));
         }
-        return Optional.empty();
+        else if (!node.containsValue(DIRECTION_KEY, VALID_DIRECTIONS) && valence < minimumValence
+                && valence > 0)
+        {
+            result = Optional.of(flagNode(node, carNavigableEdges,
+                    this.getLocalizedInstruction(1, node.getOsmIdentifier(), valence)));
+        }
+        else
+        {
+            result = Optional.empty();
+        }
+        return result;
+    }
+
+    private CheckFlag flagNode(final Node node, final Collection<Edge> edges,
+            final String instruction)
+    {
+        final CheckFlag flag = this.createFlag(node, instruction);
+        Iterables.stream(edges).forEach(flag::addObject);
+        return flag;
     }
 
     @Override
