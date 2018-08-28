@@ -39,7 +39,8 @@ public class InvalidMiniRoundaboutCheckTest
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"InvalidMiniRoundaboutCheck.minimumValence\":10}")));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 6, 1));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 6, 1));
+        this.verifier.verify(this::verifyMultipleEdgesFlag);
     }
 
     @Test
@@ -56,7 +57,8 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getNotEnoughValence(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 4, 1));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 4, 1));
+        this.verifier.verify(this::verifyMultipleEdgesFlag);
     }
 
     @Test
@@ -65,7 +67,8 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getNoTurns(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 2, 1));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
+        this.verifier.verify(this::verifyMultipleEdgesFlag);
     }
 
     @Test
@@ -74,7 +77,8 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getTurningCircle(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
+        this.verifier.verify(this::verifyTwoEdgesFlag);
     }
 
     @Test
@@ -83,7 +87,8 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.actual(this.setup.getPedestrianRoundabout(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyMultipleEdgesFlag(flag, 1, 1));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 1, 1));
+        this.verifier.verify(this::verifyMultipleEdgesFlag);
     }
 
     @Test
@@ -99,7 +104,8 @@ public class InvalidMiniRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.getTurningCircleWithDirection(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verify(flag -> this.verifyTwoEdgesFlag(flag, 2, 1));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
+        this.verifier.verify(this::verifyTwoEdgesFlag);
     }
 
     @Test
@@ -110,7 +116,7 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verifyEmpty();
     }
 
-    private void verifyMultipleEdgesFlag(final CheckFlag flag, final long expectedEdges,
+    private void verifyNumberNodesAndEdges(final CheckFlag flag, final long expectedEdges,
             final long expectedNodes)
     {
         final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream()
@@ -121,21 +127,16 @@ public class InvalidMiniRoundaboutCheckTest
                 (long) flagCounts.getOrDefault(this.setup.EDGE_TAG, -1L));
         Assert.assertEquals(expectedNodes,
                 (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
+    }
+
+    private void verifyMultipleEdgesFlag(final CheckFlag flag)
+    {
         Assert.assertTrue(flag.getInstructions()
                 .contains("connecting car-navigable edges. Consider changing this."));
     }
 
-    private void verifyTwoEdgesFlag(final CheckFlag flag, final long expectedEdges,
-            final long expectedNodes)
+    private void verifyTwoEdgesFlag(final CheckFlag flag)
     {
-        final Map<String, Long> flagCounts = flag.getFlaggedObjects().stream()
-                .collect(Collectors.groupingBy(
-                        obj -> obj.getProperties().get(this.setup.ITEM_TYPE_TAG),
-                        Collectors.counting()));
-        Assert.assertEquals(expectedEdges,
-                (long) flagCounts.getOrDefault(this.setup.EDGE_TAG, -1L));
-        Assert.assertEquals(expectedNodes,
-                (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
         Assert.assertTrue(flag.getInstructions().contains(
                 "has 2 connecting car-navigable edges. Consider changing this to highway=TURNING_LOOP or "
                         + "highway=TURNING_CIRCLE."));
