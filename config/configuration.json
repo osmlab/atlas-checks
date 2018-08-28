@@ -148,7 +148,13 @@
     }
   },
   "InvalidMiniRoundaboutCheck": {
-    "minimumValence":6
+    "minimumValence":6,
+    "challenge":{
+      "description":"Tasks containing invalid mini-roundabouts.",
+      "blurb":"Invalid Mini-Roundabout Tags",
+      "instruction":"Change the tags to represent the intersection more accurately.",
+      "difficulty":"NORMAL"
+    }
   },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
