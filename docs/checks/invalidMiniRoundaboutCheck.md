@@ -7,7 +7,7 @@ meet the following conditions:
  - Is a `Node` object
  - Has the tag `highway=MINI_ROUNDABOUT`
  - Has less than `minimumValence` number of car-navigable connecting edges AND
-     - Has exactly 2 connecting edges, and those edges share the same OSM ID, OR
+     - Has exactly two connecting edges and exactly one of those edges is a master edge OR
      - The node has neither `direction=CLOCKWISE` nor `direction=ANTICLOCKWISE` values
 
 After performing sensitivity analysis, the best value for `minimumValence` was determined to be 6, 
