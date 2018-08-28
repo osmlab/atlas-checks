@@ -11,7 +11,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
- * Tests the InvalidMiniRoundaboutCheck for each use case.
+ * Tests the {@link InvalidMiniRoundaboutCheck} for each use case.
  *
  * @author nachtm
  */

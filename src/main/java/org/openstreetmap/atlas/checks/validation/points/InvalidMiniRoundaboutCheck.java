@@ -26,7 +26,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
 {
 
     private static final long DEFAULT_VALENCE = 6;
-    static final String MINIMUM_VALENCE_KEY = "minimumValence";
+    private static final String MINIMUM_VALENCE_KEY = "minimumValence";
     private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
             + " has {1, number,#} connecting car-navigable edges. Consider changing this.";
     private static final String TWO_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#}) "
@@ -34,10 +34,10 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             + "highway=TURNING_CIRCLE.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
             OTHER_EDGES_INSTRUCTION);
-    private final long minimumValence;
     private static final String DIRECTION_KEY = "direction";
     private static final List<String> VALID_DIRECTIONS = Arrays.asList("clockwise",
             "anticlockwise");
+    private final long minimumValence;
 
     /**
      * Default constructor
@@ -70,7 +70,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         if (isTurnaround(node, carNavigableEdges))
         {
             result = Optional.of(flagNode(node, carNavigableEdges,
-                    this.getLocalizedInstruction(0, node.getOsmIdentifier(), valence)));
+                    this.getLocalizedInstruction(0, node.getOsmIdentifier())));
         }
         else if (!node.containsValue(DIRECTION_KEY, VALID_DIRECTIONS) && valence < minimumValence
                 && valence > 0)
