@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.tags.DirectionTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -34,9 +35,8 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             + "highway=TURNING_CIRCLE.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
             OTHER_EDGES_INSTRUCTION);
-    private static final String DIRECTION_KEY = "direction";
-    private static final List<String> VALID_DIRECTIONS = Arrays.asList("clockwise",
-            "anticlockwise");
+    private static final DirectionTag[] VALID_DIRECTIONS = { DirectionTag.CLOCKWISE,
+            DirectionTag.ANTICLOCKWISE };
     private final long minimumValence;
 
     /**
@@ -72,8 +72,8 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             result = Optional.of(flagNode(node, carNavigableEdges,
                     this.getLocalizedInstruction(0, node.getOsmIdentifier())));
         }
-        else if (!node.containsValue(DIRECTION_KEY, VALID_DIRECTIONS) && valence < minimumValence
-                && valence > 0)
+        else if (!Validators.isOfType(node, DirectionTag.class, VALID_DIRECTIONS)
+                && valence < minimumValence && valence > 0)
         {
             result = Optional.of(flagNode(node, carNavigableEdges,
                     this.getLocalizedInstruction(1, node.getOsmIdentifier(), valence)));
