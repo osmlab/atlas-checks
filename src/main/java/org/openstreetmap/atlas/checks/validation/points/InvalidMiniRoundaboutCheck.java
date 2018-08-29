@@ -13,6 +13,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.DirectionTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -40,7 +41,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private final long minimumValence;
 
     /**
-     * Default constructor
+     * Construct an InvalidMiniRoundaboutCheck with the given configuration values.
      *
      * @param configuration
      *            the JSON configuration for this check
@@ -67,7 +68,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         final long valence = carNavigableEdges.size();
         final Optional<CheckFlag> result;
 
-        if (isTurnaround(node, carNavigableEdges))
+        if (isTurnaround(carNavigableEdges))
         {
             result = Optional.of(flagNode(node, carNavigableEdges,
                     this.getLocalizedInstruction(0, node.getOsmIdentifier())));
@@ -85,6 +86,15 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         return result;
     }
 
+    /**
+     * Helper function to flag nodes and a collection of related edges with a particular
+     * instruction.
+     *
+     * @param node The node to flag.
+     * @param edges The edges (usually a set of connected edges) to flag.
+     * @param instruction The instruction to include in the flag.
+     * @return The properly flagged CheckNode.
+     */
     private CheckFlag flagNode(final Node node, final Collection<Edge> edges,
             final String instruction)
     {
@@ -99,12 +109,29 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private boolean isTurnaround(final Node node, final Collection<Edge> carNavigableEdges)
+    /**
+     * Determines whether or not a set of edges is a turnaround or not, where a turnaround is defined
+     * as a collection containing a master edge and its reverse edge. This function is only guaranteed
+     * to return sensible results when carNavigableEdges is a subset of the connected edges to a single
+     * node.
+     *
+     * @param carNavigableEdges A collection of edges. Must be a subset of the connected edges to a
+     *                          single node, or else the results are not guaranteed to be logical.
+     * @return True if the collection represents a turnaround, false otherwise.
+     */
+    private boolean isTurnaround(final Collection<Edge> carNavigableEdges)
     {
         final long masterEdgeCount = carNavigableEdges.stream().filter(Edge::isMasterEdge).count();
         return masterEdgeCount == 1 && carNavigableEdges.size() == 2;
     }
 
+    /**
+     * Get all of the edges which are connected to this node and are car-navigable, as per
+     * {@link HighwayTag#isCarNavigableHighway(Taggable)}.
+     *
+     * @param node The node from which to gather connected edges.
+     * @return The edges that are connected to this node and are car-navigable.
+     */
     private Collection<Edge> getCarNavigableEdges(final Node node)
     {
         return node.connectedEdges().stream().filter(HighwayTag::isCarNavigableHighway)

@@ -5,7 +5,7 @@ import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 
 /**
- * Loads the data for the InvalidMiniRoundaboutCheck unit tests.
+ * Loads the data for the {@link InvalidMiniRoundaboutCheck} unit tests.
  *
  * @author nachtm
  */

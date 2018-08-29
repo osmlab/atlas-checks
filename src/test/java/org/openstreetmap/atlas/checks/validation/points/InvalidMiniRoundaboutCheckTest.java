@@ -116,6 +116,13 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verifyEmpty();
     }
 
+    /**
+     * Asserts that the flag contains the number of edges and nodes that are expected.
+     *
+     * @param flag A CheckFlag object.
+     * @param expectedEdges The number of edges that are expected to be in this CheckFlag.
+     * @param expectedNodes The number of nodes that are expected to be in this CheckFlag.
+     */
     private void verifyNumberNodesAndEdges(final CheckFlag flag, final long expectedEdges,
             final long expectedNodes)
     {
@@ -129,12 +136,24 @@ public class InvalidMiniRoundaboutCheckTest
                 (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
     }
 
+    /**
+     * Asserts that a flag contains an instruction describing there being a suspiciously small
+     * number of car-navigable edges.
+     *
+     * @param flag The flag to check.
+     */
     private void verifyMultipleEdgesFlag(final CheckFlag flag)
     {
         Assert.assertTrue(flag.getInstructions()
                 .contains("connecting car-navigable edges. Consider changing this."));
     }
 
+    /**
+     * Asserts that a flag contains an instruction suggesting a conversion from highway=MINI_ROUNDABOUT
+     * to highway=TURNING_LOOP or highway=TURNING_CIRCLE.
+     *
+     * @param flag The flag to check.
+     */
     private void verifyTwoEdgesFlag(final CheckFlag flag)
     {
         Assert.assertTrue(flag.getInstructions().contains(
