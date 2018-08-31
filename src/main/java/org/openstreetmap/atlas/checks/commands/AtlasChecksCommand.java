@@ -1,15 +1,17 @@
 package org.openstreetmap.atlas.checks.commands;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import org.openstreetmap.atlas.utilities.runtime.FlexibleCommand;
-import org.openstreetmap.atlas.utilities.runtime.FlexibleSubCommand;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.openstreetmap.atlas.utilities.runtime.FlexibleCommand;
+import org.openstreetmap.atlas.utilities.runtime.FlexibleSubCommand;
+
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+
 /**
- * Shell for running atlas-checks commands. Run this command with no arguments to learn more about it.
+ * Shell for running atlas-checks commands. Run this command with no arguments to learn more about
+ * it.
  *
  * @author bbreithaupt
  */
@@ -38,10 +40,8 @@ public class AtlasChecksCommand extends FlexibleCommand
     protected Stream<Class<? extends FlexibleSubCommand>> getSupportedCommands()
     {
         final List<Class<? extends FlexibleSubCommand>> returnValue = new ArrayList<>();
-        new FastClasspathScanner(
-                AtlasChecksCommand.class.getPackage().getName())
+        new FastClasspathScanner(AtlasChecksCommand.class.getPackage().getName())
                 .matchClassesImplementing(FlexibleSubCommand.class, returnValue::add).scan();
         return returnValue.stream();
     }
 }
-
