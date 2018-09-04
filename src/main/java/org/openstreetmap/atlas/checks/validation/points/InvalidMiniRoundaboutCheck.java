@@ -38,7 +38,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             OTHER_EDGES_INSTRUCTION);
     private static final DirectionTag[] VALID_DIRECTIONS = { DirectionTag.CLOCKWISE,
             DirectionTag.ANTICLOCKWISE };
-    private final long minimumValence;
+    private final long valenceMinimum;
 
     /**
      * Construct an InvalidMiniRoundaboutCheck with the given configuration values.
@@ -49,7 +49,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     public InvalidMiniRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumValence = this.configurationValue(configuration, MINIMUM_VALENCE_KEY,
+        this.valenceMinimum = this.configurationValue(configuration, MINIMUM_VALENCE_KEY,
                 DEFAULT_VALENCE);
     }
 
@@ -74,10 +74,10 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             result = Optional.of(this.flagNode(node, carNavigableEdges,
                     this.getLocalizedInstruction(0, node.getOsmIdentifier())));
         }
-        // Otherwise, if there is not a direction tag, and the valence is less than minimumValence,
+        // Otherwise, if there is not a direction tag, and the valence is less than valenceMinimum,
         // we want to flag it.
         else if (!Validators.isOfType(node, DirectionTag.class, VALID_DIRECTIONS)
-                && valence < minimumValence && valence > 0)
+                && valence < valenceMinimum && valence > 0)
         {
             result = Optional.of(this.flagNode(node, carNavigableEdges,
                     this.getLocalizedInstruction(1, node.getOsmIdentifier(), valence)));
