@@ -148,7 +148,7 @@
     }
   },
   "InvalidMiniRoundaboutCheck": {
-    "minimumValence":6,
+    "valence.minimum":6,
     "challenge":{
       "description":"Tasks containing invalid mini-roundabouts.",
       "blurb":"Invalid Mini-Roundabout Tags",

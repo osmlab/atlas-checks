@@ -24,37 +24,37 @@ public class InvalidMiniRoundaboutCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void configurableDoesNotFlagLowValence()
+    public void testConfigurableDoesNotFlagLowValence()
     {
-        this.verifier.actual(this.setup.getNotEnoughValence(),
+        this.verifier.actual(this.setup.getNotEnoughValenceAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidMiniRoundaboutCheck\":{\"minimumValence\":1}}")));
+                        "{\"InvalidMiniRoundaboutCheck\":{\"valence.minimum\":1}}")));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void configurableFlagsHighValence()
+    public void testConfigurableFlagsHighValence()
     {
-        this.verifier.actual(this.setup.getValidRoundabout(),
+        this.verifier.actual(this.setup.getValidRoundaboutAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidMiniRoundaboutCheck.minimumValence\":10}")));
+                        "{\"InvalidMiniRoundaboutCheck.valence.minimum\":10}")));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 6, 1));
         this.verifier.verify(this::verifyMultipleEdgesFlag);
     }
 
     @Test
-    public void regularIntersectionHighValence()
+    public void testRegularIntersectionHighValence()
     {
-        this.verifier.actual(this.setup.getValidRoundabout(),
+        this.verifier.actual(this.setup.getValidRoundaboutAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void regularIntersectionLowValence()
+    public void testRegularIntersectionLowValence()
     {
-        this.verifier.actual(this.setup.getNotEnoughValence(),
+        this.verifier.actual(this.setup.getNotEnoughValenceAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 4, 1));
@@ -62,9 +62,9 @@ public class InvalidMiniRoundaboutCheckTest
     }
 
     @Test
-    public void twoOneWayEdges()
+    public void testTwoOneWayEdges()
     {
-        this.verifier.actual(this.setup.getNoTurns(),
+        this.verifier.actual(this.setup.getNoTurnsAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
@@ -72,9 +72,9 @@ public class InvalidMiniRoundaboutCheckTest
     }
 
     @Test
-    public void twoWayDeadEnd()
+    public void testTwoWayDeadEnd()
     {
-        this.verifier.actual(this.setup.getTurningCircle(),
+        this.verifier.actual(this.setup.getTurningCircleAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
@@ -82,9 +82,9 @@ public class InvalidMiniRoundaboutCheckTest
     }
 
     @Test
-    public void pedestrianHighway()
+    public void testPedestrianHighway()
     {
-        this.verifier.actual(this.setup.getPedestrianRoundabout(),
+        this.verifier.actual(this.setup.getPedestrianRoundaboutAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 1, 1));
@@ -92,36 +92,39 @@ public class InvalidMiniRoundaboutCheckTest
     }
 
     @Test
-    public void noEdgesNoFlags()
+    public void testNoEdgesNoFlags()
     {
-        this.verifier.actual(this.setup.getNoRoads(),
+        this.verifier.actual(this.setup.getNoRoadsAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void turningCircleWithDirectionFlagged()
+    public void testTurningCircleWithDirectionFlagged()
     {
-        this.verifier.actual(this.setup.getTurningCircleWithDirection(),
+        this.verifier.actual(this.setup.getTurningCircleWithDirectionAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
         this.verifier.verify(this::verifyTwoEdgesFlag);
     }
 
     @Test
-    public void lowValenceWithDirectionNotFlagged()
+    public void testLowValenceWithDirectionNotFlagged()
     {
-        this.verifier.actual(this.setup.getNoTurnsWithDirection(),
+        this.verifier.actual(this.setup.getNoTurnsWithDirectionAtlas(),
                 new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     /**
-     * Asserts that the flag contains the number of edges and nodes that are expected.
+     * Asserts that the flag contains the number of Edges and Nodes that are expected.
      *
-     * @param flag A CheckFlag object.
-     * @param expectedEdges The number of edges that are expected to be in this CheckFlag.
-     * @param expectedNodes The number of nodes that are expected to be in this CheckFlag.
+     * @param flag
+     *            A CheckFlag object.
+     * @param expectedEdges
+     *            The number of Edges that are expected to be in this CheckFlag.
+     * @param expectedNodes
+     *            The number of Nodes that are expected to be in this CheckFlag.
      */
     private void verifyNumberNodesAndEdges(final CheckFlag flag, final long expectedEdges,
             final long expectedNodes)
@@ -138,26 +141,28 @@ public class InvalidMiniRoundaboutCheckTest
 
     /**
      * Asserts that a flag contains an instruction describing there being a suspiciously small
-     * number of car-navigable edges.
+     * number of car-navigable Edges.
      *
-     * @param flag The flag to check.
+     * @param flag
+     *            The flag to check.
      */
     private void verifyMultipleEdgesFlag(final CheckFlag flag)
     {
         Assert.assertTrue(flag.getInstructions()
-                .contains("connecting car-navigable edges. Consider changing this."));
+                .contains("connecting car-navigable Edges. Consider changing this."));
     }
 
     /**
-     * Asserts that a flag contains an instruction suggesting a conversion from highway=MINI_ROUNDABOUT
-     * to highway=TURNING_LOOP or highway=TURNING_CIRCLE.
+     * Asserts that a flag contains an instruction suggesting a conversion from
+     * highway=MINI_ROUNDABOUT to highway=TURNING_LOOP or highway=TURNING_CIRCLE.
      *
-     * @param flag The flag to check.
+     * @param flag
+     *            The flag to check.
      */
     private void verifyTwoEdgesFlag(final CheckFlag flag)
     {
         Assert.assertTrue(flag.getInstructions().contains(
-                "has 2 connecting car-navigable edges. Consider changing this to highway=TURNING_LOOP or "
+                "has 2 connecting car-navigable Edges. Consider changing this to highway=TURNING_LOOP or "
                         + "highway=TURNING_CIRCLE."));
     }
 
