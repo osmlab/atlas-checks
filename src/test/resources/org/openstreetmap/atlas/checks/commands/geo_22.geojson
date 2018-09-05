@@ -1,0 +1,96 @@
+{
+  "type": "FeatureCollection",
+  "features": [    
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "MultiLineString",
+            "coordinates": [
+              [
+                [
+                  95.7962206,
+                  16.9530557
+                ],
+                [
+                  95.7948411,
+                  16.954256
+                ],
+                [
+                  95.7937324,
+                  16.9550945
+                ],
+                [
+                  95.7929112,
+                  16.9557586
+                ]
+              ],
+              [
+                [
+                  95.7959941,
+                  16.9532308
+                ],
+                [
+                  95.7960933,
+                  16.9531898
+                ],
+                [
+                  95.7960746,
+                  16.9530897
+                ],
+                [
+                  95.7959458,
+                  16.9531487
+                ],
+                [
+                  95.7959941,
+                  16.9532308
+                ]
+              ]
+            ]
+          }
+        ]
+      },
+      "id": "526108856000000",
+      "properties": {
+        "instructions": "1. Building (id-526108856) intersects road (id-548213961)",
+        "name": "BuildingRoadIntersectionCheck (highway=unclassified)",
+        "generator": "AtlasChecks",
+        "timestamp": "Tue Aug 28 10:15:26 PDT 2018",
+        "feature_properties": [
+          {
+            "last_edit_user_name": "4719341",
+            "last_edit_changeset": "56422369",
+            "last_edit_time": "1518806837000",
+            "last_edit_user_id": "7270313",
+            "iso_country_code": "MMR",
+            "osmid": "548213961",
+            "ItemType": "Edge",
+            "highway": "unclassified",
+            "last_edit_version": "2",
+            "ItemId": "548213961000006"
+          },
+          {
+            "last_edit_user_name": "Sahitya Sindhu",
+            "last_edit_changeset": "52204426",
+            "last_edit_time": "1505898560000",
+            "last_edit_user_id": "6682878",
+            "iso_country_code": "MMR",
+            "osmid": "526108856",
+            "ItemType": "Area",
+            "last_edit_version": "1",
+            "ItemId": "526108856000300",
+            "building": "yes"
+          }
+        ],
+        "feature_osmids": [
+          "548213961",
+          "526108856"
+        ],
+        "feature_count": 2
+      }
+    }
+  ]
+}
