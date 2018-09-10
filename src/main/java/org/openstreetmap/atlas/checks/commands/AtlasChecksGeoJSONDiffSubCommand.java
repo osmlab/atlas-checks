@@ -34,8 +34,8 @@ public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCom
     {
         final JsonObject json = getGson()
                 .fromJson(new JsonReader(new InputStreamReader(file.read())), JsonObject.class);
-        json.get("features").getAsJsonArray().forEach(feature -> map
-                .put(feature.getAsJsonObject().get("id").getAsString(), feature.getAsJsonObject()));
+        json.get(FEATURES).getAsJsonArray().forEach(feature -> map
+                .put(feature.getAsJsonObject().get(ID).getAsString(), feature.getAsJsonObject()));
     }
 
     @Override
@@ -52,10 +52,10 @@ public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCom
             }
             // If not missing, check for Atlas id changes
             else if (returnType.equals(DiffReturn.CHANGED) && !identicalFeatureIds(
-                    ((JsonObject) feature).get("properties").getAsJsonObject()
-                            .get("feature_properties").getAsJsonArray(),
+                    ((JsonObject) feature).get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
+                            .getAsJsonArray(),
                     ((HashMap<String, JsonObject>) target).get(identifier).getAsJsonObject()
-                            .get("properties").getAsJsonObject().get("feature_properties")
+                            .get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
                             .getAsJsonArray()))
             {
                 diff.addChanged((JsonObject) feature);
@@ -70,9 +70,9 @@ public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCom
         final ArrayList<String> sourceIds = new ArrayList<>();
         final ArrayList<String> targetIds = new ArrayList<>();
         sourceArray.forEach(
-                object -> sourceIds.add(object.getAsJsonObject().get("ItemId").getAsString()));
+                object -> sourceIds.add(object.getAsJsonObject().get(ITEM_ID).getAsString()));
         targetArray.forEach(
-                object -> targetIds.add(object.getAsJsonObject().get("ItemId").getAsString()));
+                object -> targetIds.add(object.getAsJsonObject().get(ITEM_ID).getAsString()));
         return sourceIds.containsAll(targetIds) && targetIds.containsAll(sourceIds);
     }
 
@@ -82,8 +82,8 @@ public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCom
         final JsonArray featureArray = new JsonArray();
         flags.forEach(featureArray::add);
         final JsonObject featureCollection = new JsonObject();
-        featureCollection.add("type", new JsonPrimitive("FeatureCollection"));
-        featureCollection.add("features", featureArray);
+        featureCollection.add(TYPE, new JsonPrimitive(FEATURE_COLLECTION));
+        featureCollection.add(FEATURES, featureArray);
 
         super.writeSetToGeoJSON(Collections.singleton(featureCollection), output);
     }

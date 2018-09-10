@@ -40,7 +40,7 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
                 // Parse the json
                 final JsonObject source = getGson().fromJson(line, JsonObject.class);
                 // Get the check name
-                final String checkName = source.get("properties").getAsJsonObject().get("generator")
+                final String checkName = source.get(PROPERTIES).getAsJsonObject().get(GENERATOR)
                         .getAsString();
                 // Add the check name as a key
                 if (!map.containsKey(checkName))
@@ -49,7 +49,7 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
                 }
                 // Add the geoJSON as a value
                 ((HashMap<String, HashMap>) map).get(checkName).put(
-                        source.get("properties").getAsJsonObject().get("id").getAsString(), source);
+                        source.get(PROPERTIES).getAsJsonObject().get(ID).getAsString(), source);
             }
         }
         catch (final IOException exc)
@@ -75,9 +75,9 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
                 }
                 // If not missing, check for Atlas id changes
                 else if (returnType.equals(DiffReturn.CHANGED)
-                        && !identicalFeatureIds(featureCollection.get("features").getAsJsonArray(),
+                        && !identicalFeatureIds(featureCollection.get(FEATURES).getAsJsonArray(),
                                 ((HashMap<String, HashMap<String, JsonObject>>) target).get(check)
-                                        .get(identifier).get("features").getAsJsonArray()))
+                                        .get(identifier).get(FEATURES).getAsJsonArray()))
                 {
                     diff.addChanged(featureCollection);
                 }
@@ -100,20 +100,20 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
         sourceArray.forEach(object ->
         {
             // Handle Locations that were added and don't have an id
-            if (object.getAsJsonObject().get("properties").getAsJsonObject().has("ItemId"))
+            if (object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(ITEM_ID))
             {
-                sourceIds.add(object.getAsJsonObject().get("properties").getAsJsonObject()
-                        .get("ItemId").getAsString());
+                sourceIds.add(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get(ITEM_ID).getAsString());
             }
         });
         // Gather all the target ids
         targetArray.forEach(object ->
         {
             // Handle Locations that were added and don't have an id
-            if (object.getAsJsonObject().get("properties").getAsJsonObject().has("ItemId"))
+            if (object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(ITEM_ID))
             {
-                targetIds.add(object.getAsJsonObject().get("properties").getAsJsonObject()
-                        .get("ItemId").getAsString());
+                targetIds.add(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get(ITEM_ID).getAsString());
             }
         });
         // Compare the two id lists

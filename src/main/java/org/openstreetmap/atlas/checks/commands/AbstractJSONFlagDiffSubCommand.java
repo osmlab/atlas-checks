@@ -43,6 +43,16 @@ public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubComma
             "A directory to place output log files in. If not included no outputs files will be written.",
             String::new, Command.Optionality.OPTIONAL);
 
+    // JSON strings
+    static final String FEATURE_COLLECTION = "FeatureCollection";
+    static final String FEATURE_PROPERTIES = "feature_properties";
+    static final String FEATURES = "features";
+    static final String GENERATOR = "generator";
+    static final String ID = "id";
+    static final String ITEM_ID = "ItemId";
+    static final String PROPERTIES = "properties";
+    static final String TYPE = "type";
+
     private final Gson gson = new Gson();
     private final HashMap source = new HashMap();
     private final HashMap target = new HashMap();
@@ -57,7 +67,7 @@ public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubComma
     protected enum DiffReturn
     {
         MISSING,
-        CHANGED
+        CHANGED,
     }
 
     /**
