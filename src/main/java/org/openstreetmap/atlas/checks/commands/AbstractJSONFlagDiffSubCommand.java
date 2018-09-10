@@ -1,14 +1,15 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.streaming.writers.JsonWriter;
 import org.openstreetmap.atlas.utilities.runtime.Command;
@@ -26,17 +27,13 @@ import com.google.gson.JsonObject;
  */
 public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubCommand
 {
-    private static final Command.Switch<Set<String>> SOURCE_FILE_PARAMETER = new Command.Switch<>(
-            "source",
+    private static final Command.Switch<File> SOURCE_FILE_PARAMETER = new Command.Switch<>("source",
             "A comma separated set of files containing atlas-checks flags to compare changes from.",
-            csv -> Stream.of(csv.split(",")).collect(Collectors.toSet()),
-            Command.Optionality.REQUIRED);
+            File::new, Command.Optionality.REQUIRED);
 
-    private static final Command.Switch<Set<String>> TARGET_FILE_PARAMETER = new Command.Switch<>(
-            "target",
+    private static final Command.Switch<File> TARGET_FILE_PARAMETER = new Command.Switch<>("target",
             "A comma separated set of files containing atlas-checks flags to compare changes to.",
-            csv -> Stream.of(csv.split(",")).collect(Collectors.toSet()),
-            Command.Optionality.REQUIRED);
+            File::new, Command.Optionality.REQUIRED);
 
     private static final Command.Switch<String> OUTPUT_FOLDER_PARAMETER = new Command.Switch<>(
             "output",
@@ -141,10 +138,10 @@ public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubComma
     public int execute(final CommandMap command)
     {
         // Get files and parse to maps
-        ((Set) command.get(SOURCE_FILE_PARAMETER))
-                .forEach(path -> this.mapFeatures(new File((String) path), this.source));
-        ((Set) command.get(TARGET_FILE_PARAMETER))
-                .forEach(path -> this.mapFeatures(new File((String) path), this.target));
+        getFilesOfType((File) command.get(SOURCE_FILE_PARAMETER))
+                .forEach(path -> this.mapFeatures(path, this.source));
+        getFilesOfType((File) command.get(TARGET_FILE_PARAMETER))
+                .forEach(path -> this.mapFeatures(path, this.target));
 
         // Get changes from source to target
         final HashSet<JsonObject> additions = getDiff(this.target, this.source, DiffReturn.MISSING)
@@ -170,6 +167,22 @@ public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubComma
         }
 
         return 0;
+    }
+
+    private Set<File> getFilesOfType(final File file)
+    {
+        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(this.fileExtension))
+        {
+            return Collections.singleton(file);
+        }
+        else if (file.isDirectory())
+        {
+            return file
+                    .listFilesRecursively().stream().filter(subFile -> FilenameUtils
+                            .getExtension(subFile.getName()).equalsIgnoreCase(this.fileExtension))
+                    .collect(Collectors.toSet());
+        }
+        return new HashSet<>();
     }
 
     /**
