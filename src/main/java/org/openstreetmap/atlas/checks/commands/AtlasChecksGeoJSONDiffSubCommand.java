@@ -4,7 +4,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.openstreetmap.atlas.streaming.resource.File;
@@ -40,33 +39,29 @@ public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJsonFlagDiffSubCom
     }
 
     @Override
-    protected ArrayList<HashSet<JsonObject>> getMissingAndChanged(final HashMap source,
-            final HashMap target, final boolean onlyMissing)
+    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
+            final DiffReturn returnType)
     {
-        final HashSet<JsonObject> missing = new HashSet<>();
-        final HashSet<JsonObject> changed = new HashSet<>();
+        final JSONFlagDiff diff = new JSONFlagDiff();
         source.forEach((identifier, feature) ->
         {
             // Get missing
             if (!target.containsKey(identifier))
             {
-                missing.add((JsonObject) feature);
+                diff.addMissing((JsonObject) feature);
             }
             // If not missing, check for Atlas id changes
-            else if (!onlyMissing && !identicalFeatureIds(
+            else if (returnType.equals(DiffReturn.CHANGED) && !identicalFeatureIds(
                     ((JsonObject) feature).get("properties").getAsJsonObject()
                             .get("feature_properties").getAsJsonArray(),
                     ((HashMap<String, JsonObject>) target).get(identifier).getAsJsonObject()
                             .get("properties").getAsJsonObject().get("feature_properties")
                             .getAsJsonArray()))
             {
-                changed.add((JsonObject) feature);
+                diff.addChanged((JsonObject) feature);
             }
         });
-        final ArrayList<HashSet<JsonObject>> missingAndChanged = new ArrayList<>();
-        missingAndChanged.add(missing);
-        missingAndChanged.add(changed);
-        return missingAndChanged;
+        return diff;
     }
 
     @Override

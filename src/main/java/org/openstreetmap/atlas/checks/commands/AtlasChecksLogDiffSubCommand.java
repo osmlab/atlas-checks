@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.openstreetmap.atlas.streaming.resource.File;
 
@@ -60,11 +59,10 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJsonFlagDiffSubCommand
     }
 
     @Override
-    protected ArrayList<HashSet<JsonObject>> getMissingAndChanged(final HashMap source,
-            final HashMap target, final boolean onlyMissing)
+    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
+            final DiffReturn returnType)
     {
-        final HashSet<JsonObject> missing = new HashSet<>();
-        final HashSet<JsonObject> changed = new HashSet<>();
+        final JSONFlagDiff diff = new JSONFlagDiff();
         source.forEach((check, flag) ->
         {
             ((HashMap<String, JsonObject>) flag).forEach((identifier, featureCollection) ->
@@ -73,22 +71,19 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJsonFlagDiffSubCommand
                 if (!target.containsKey(check)
                         || !((HashMap<String, HashMap>) target).get(check).containsKey(identifier))
                 {
-                    missing.add(featureCollection);
+                    diff.addMissing(featureCollection);
                 }
                 // If not missing, check for Atlas id changes
-                else if (!onlyMissing
+                else if (returnType.equals(DiffReturn.CHANGED)
                         && !identicalFeatureIds(featureCollection.get("features").getAsJsonArray(),
                                 ((HashMap<String, HashMap<String, JsonObject>>) target).get(check)
                                         .get(identifier).get("features").getAsJsonArray()))
                 {
-                    changed.add(featureCollection);
+                    diff.addChanged(featureCollection);
                 }
             });
         });
-        final ArrayList<HashSet<JsonObject>> missingAndChanged = new ArrayList<>();
-        missingAndChanged.add(missing);
-        missingAndChanged.add(changed);
-        return missingAndChanged;
+        return diff;
     }
 
     @Override

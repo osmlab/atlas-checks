@@ -1,7 +1,6 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +51,44 @@ public abstract class AbstractJsonFlagDiffSubCommand implements FlexibleSubComma
     private String description;
     private String fileExtension;
 
+    /**
+     * Expected returns from {@link #getDiff(HashMap, HashMap, DiffReturn)}.
+     */
+    protected enum DiffReturn
+    {
+        MISSING,
+        CHANGED
+    }
+
+    /**
+     * Helper class for storing diff results.
+     */
+    protected class JSONFlagDiff
+    {
+        private final HashSet<JsonObject> missing = new HashSet<>();
+        private final HashSet<JsonObject> changed = new HashSet<>();
+
+        public void addMissing(final JsonObject object)
+        {
+            this.missing.add(object);
+        }
+
+        public void addChanged(final JsonObject object)
+        {
+            this.changed.add(object);
+        }
+
+        public HashSet<JsonObject> getMissing()
+        {
+            return missing;
+        }
+
+        public HashSet<JsonObject> getChanged()
+        {
+            return changed;
+        }
+    }
+
     public AbstractJsonFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
     {
@@ -100,12 +137,11 @@ public abstract class AbstractJsonFlagDiffSubCommand implements FlexibleSubComma
                 .forEach(path -> this.mapFeatures(new File((String) path), this.target));
 
         // Get changes from source to target
-        final HashSet<JsonObject> additions = getMissingAndChanged(this.target, this.source, true)
-                .get(0);
-        final ArrayList<HashSet<JsonObject>> subAndChange = getMissingAndChanged(this.source,
-                this.target, false);
-        final HashSet<JsonObject> subtractions = subAndChange.get(0);
-        final HashSet<JsonObject> changes = subAndChange.get(1);
+        final HashSet<JsonObject> additions = getDiff(this.target, this.source, DiffReturn.MISSING)
+                .getMissing();
+        final JSONFlagDiff subAndChange = getDiff(this.source, this.target, DiffReturn.CHANGED);
+        final HashSet<JsonObject> subtractions = subAndChange.getMissing();
+        final HashSet<JsonObject> changes = subAndChange.getChanged();
 
         // Write outputs
         System.out.printf(
@@ -147,15 +183,15 @@ public abstract class AbstractJsonFlagDiffSubCommand implements FlexibleSubComma
      *            {@link HashMap} of the flags to compare from
      * @param target
      *            {@link HashMap} of the flags to compare to
-     * @param onlyMissing
-     *            {@code boolean} value to not calculate changes in Atlas object ids
-     * @return an {@link ArrayList} of 2 {@link HashSet}s, the first being the missing features and
-     *         the second being the changed features
+     * @param returnType
+     *            {@link DiffReturn}; If this is {@code CHANGED} the {@code changed} attribute of
+     *            the returned {@link JSONFlagDiff} will be populated.
+     * @return an {@link JSONFlagDiff}
      */
-    protected ArrayList<HashSet<JsonObject>> getMissingAndChanged(final HashMap source,
-            final HashMap target, final boolean onlyMissing)
+    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
+            final DiffReturn returnType)
     {
-        return new ArrayList<>();
+        return new JSONFlagDiff();
     }
 
     /**
