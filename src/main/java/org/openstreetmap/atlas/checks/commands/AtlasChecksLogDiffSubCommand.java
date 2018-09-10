@@ -18,7 +18,7 @@ import com.google.gson.JsonObject;
  *
  * @author bbreithaupt
  */
-public class AtlasChecksLogDiffSubCommand extends AbstractJsonFlagDiffSubCommand
+public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
 {
     public AtlasChecksLogDiffSubCommand()
     {

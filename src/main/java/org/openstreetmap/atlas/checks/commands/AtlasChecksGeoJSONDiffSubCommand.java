@@ -20,7 +20,7 @@ import com.google.gson.stream.JsonReader;
  *
  * @author bbreithaupt
  */
-public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJsonFlagDiffSubCommand
+public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCommand
 {
     public AtlasChecksGeoJSONDiffSubCommand()
     {

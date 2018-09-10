@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
  *
  * @author bbreithaupt
  */
-public abstract class AbstractJsonFlagDiffSubCommand implements FlexibleSubCommand
+public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubCommand
 {
     private static final Command.Switch<Set<String>> SOURCE_FILE_PARAMETER = new Command.Switch<>(
             "source",
@@ -89,7 +89,7 @@ public abstract class AbstractJsonFlagDiffSubCommand implements FlexibleSubComma
         }
     }
 
-    public AbstractJsonFlagDiffSubCommand(final String name, final String description,
+    public AbstractJSONFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
     {
         this.name = name;
