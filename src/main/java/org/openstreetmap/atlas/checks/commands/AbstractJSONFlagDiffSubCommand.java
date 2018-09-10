@@ -28,11 +28,11 @@ import com.google.gson.JsonObject;
 public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubCommand
 {
     private static final Command.Switch<File> SOURCE_FILE_PARAMETER = new Command.Switch<>("source",
-            "A comma separated set of files containing atlas-checks flags to compare changes from.",
+            "A file or directory of files containing atlas-checks flags to compare changes from.",
             File::new, Command.Optionality.REQUIRED);
 
     private static final Command.Switch<File> TARGET_FILE_PARAMETER = new Command.Switch<>("target",
-            "A comma separated set of files containing atlas-checks flags to compare changes to.",
+            "A file or directory of files containing atlas-checks flags to compare changes to.",
             File::new, Command.Optionality.REQUIRED);
 
     private static final Command.Switch<String> OUTPUT_FOLDER_PARAMETER = new Command.Switch<>(
