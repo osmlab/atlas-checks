@@ -16,11 +16,12 @@ import com.google.gson.stream.JsonReader;
 /**
  * Takes 2 sets of atlas-checks geoJSON flag files and reports the number of additions,
  * subtractions, and changed flags from source to target. Optionally, the reported items can be
- * written to new geoJSON files.
+ * written to new geoJSON files. Additions and subtractions are based on flag ids. Changes are
+ * calculated by differences in the Atlas ids of objects in a flag.
  *
  * @author bbreithaupt
  */
-public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCommand
+public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
     public AtlasChecksGeoJSONDiffSubCommand()
     {
@@ -51,7 +52,7 @@ public class AtlasChecksGeoJSONDiffSubCommand extends AbstractJSONFlagDiffSubCom
                 diff.addMissing((JsonObject) feature);
             }
             // If not missing, check for Atlas id changes
-            else if (returnType.equals(DiffReturn.CHANGED) && !identicalFeatureIds(
+            else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
                     ((JsonObject) feature).get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
                             .getAsJsonArray(),
                     ((HashMap<String, JsonObject>) target).get(identifier).getAsJsonObject()

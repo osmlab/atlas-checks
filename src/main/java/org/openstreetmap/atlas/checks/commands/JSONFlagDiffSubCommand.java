@@ -25,7 +25,7 @@ import com.google.gson.JsonObject;
  *
  * @author bbreithaupt
  */
-public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubCommand
+public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 {
     private static final Command.Switch<File> SOURCE_FILE_PARAMETER = new Command.Switch<>("source",
             "A file or directory of files containing atlas-checks flags to compare changes from.",
@@ -96,7 +96,7 @@ public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubComma
         }
     }
 
-    public AbstractJSONFlagDiffSubCommand(final String name, final String description,
+    public JSONFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
     {
         this.name = name;
@@ -144,9 +144,10 @@ public abstract class AbstractJSONFlagDiffSubCommand implements FlexibleSubComma
                 .forEach(path -> this.mapFeatures(path, this.target));
 
         // Get changes from source to target
-        final HashSet<JsonObject> additions = getDiff(this.target, this.source, DiffReturn.MISSING)
-                .getMissing();
-        final JSONFlagDiff subAndChange = getDiff(this.source, this.target, DiffReturn.CHANGED);
+        final HashSet<JsonObject> additions = this
+                .getDiff(this.target, this.source, DiffReturn.MISSING).getMissing();
+        final JSONFlagDiff subAndChange = this.getDiff(this.source, this.target,
+                DiffReturn.CHANGED);
         final HashSet<JsonObject> subtractions = subAndChange.getMissing();
         final HashSet<JsonObject> changes = subAndChange.getChanged();
 

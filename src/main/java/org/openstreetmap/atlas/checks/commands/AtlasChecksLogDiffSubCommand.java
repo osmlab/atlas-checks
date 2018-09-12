@@ -14,11 +14,12 @@ import com.google.gson.JsonObject;
 /**
  * Takes 2 sets of atlas-checks log files and reports the number of additions, subtractions, and
  * changed flags from source to target. Optionally, the reported items can be written to new log
- * files.
+ * files. Additions and subtractions are based on flag ids. Changes are calculated by differences in
+ * the Atlas ids of objects in a flag.
  *
  * @author bbreithaupt
  */
-public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
+public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
 {
     public AtlasChecksLogDiffSubCommand()
     {
@@ -74,10 +75,10 @@ public class AtlasChecksLogDiffSubCommand extends AbstractJSONFlagDiffSubCommand
                     diff.addMissing(featureCollection);
                 }
                 // If not missing, check for Atlas id changes
-                else if (returnType.equals(DiffReturn.CHANGED)
-                        && !identicalFeatureIds(featureCollection.get(FEATURES).getAsJsonArray(),
-                                ((HashMap<String, HashMap<String, JsonObject>>) target).get(check)
-                                        .get(identifier).get(FEATURES).getAsJsonArray()))
+                else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
+                        featureCollection.get(FEATURES).getAsJsonArray(),
+                        ((HashMap<String, HashMap<String, JsonObject>>) target).get(check)
+                                .get(identifier).get(FEATURES).getAsJsonArray()))
                 {
                     diff.addChanged(featureCollection);
                 }
