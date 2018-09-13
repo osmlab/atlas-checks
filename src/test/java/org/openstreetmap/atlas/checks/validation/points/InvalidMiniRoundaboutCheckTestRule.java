@@ -11,7 +11,6 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas;
  */
 public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
 {
-
     public static final String ONE = "40.9608783, -5.6421932";
     public static final String TWO = "40.9609609, -5.6424269";
     public static final String THREE = "40.9609826, -5.6425880";

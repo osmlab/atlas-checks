@@ -26,19 +26,18 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
 {
-
     private static final long DEFAULT_VALENCE = 6;
     private static final String MINIMUM_VALENCE_KEY = "valence.minimum";
     private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
-            + " has {1, number,#} connecting car-navigable Edges. Consider changing this.";
+            + " has {1, number,#} connecting car-navigable Ways. Consider changing this.";
     private static final String TWO_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#}) "
-            + "has 2 connecting car-navigable Edges. Consider changing this to highway=TURNING_LOOP or "
+            + "has 2 connecting car-navigable Ways. Consider changing this to highway=TURNING_LOOP or "
             + "highway=TURNING_CIRCLE.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
             OTHER_EDGES_INSTRUCTION);
     private static final DirectionTag[] VALID_DIRECTIONS = { DirectionTag.CLOCKWISE,
             DirectionTag.ANTICLOCKWISE };
-    private final long valenceMinimum;
+    private final long minimumValence;
 
     /**
      * Construct an InvalidMiniRoundaboutCheck with the given configuration values.
@@ -49,7 +48,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     public InvalidMiniRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
-        this.valenceMinimum = this.configurationValue(configuration, MINIMUM_VALENCE_KEY,
+        this.minimumValence = this.configurationValue(configuration, MINIMUM_VALENCE_KEY,
                 DEFAULT_VALENCE);
     }
 
@@ -66,7 +65,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         final Node node = (Node) object;
         final Collection<Edge> carNavigableEdges = this.getCarNavigableEdges(node);
         final long valence = carNavigableEdges.size();
-        final Optional<CheckFlag> result;
+        Optional<CheckFlag> result = Optional.empty();
 
         // If this Node is a turnaround, we always want to flag it.
         if (this.isTurnaround(carNavigableEdges))
@@ -77,15 +76,10 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         // Otherwise, if there is not a direction tag, and the valence is less than valenceMinimum,
         // we want to flag it.
         else if (!Validators.isOfType(node, DirectionTag.class, VALID_DIRECTIONS)
-                && valence < valenceMinimum && valence > 0)
+                && valence < minimumValence && valence > 0)
         {
             result = Optional.of(this.flagNode(node, carNavigableEdges,
                     this.getLocalizedInstruction(1, node.getOsmIdentifier(), valence)));
-        }
-        // Otherwise, this mini-roundabout is probably legitimate. Don't flag it.
-        else
-        {
-            result = Optional.empty();
         }
         return result;
     }

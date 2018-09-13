@@ -149,7 +149,7 @@ public class InvalidMiniRoundaboutCheckTest
     private void verifyMultipleEdgesFlag(final CheckFlag flag)
     {
         Assert.assertTrue(flag.getInstructions()
-                .contains("connecting car-navigable Edges. Consider changing this."));
+                .contains("connecting car-navigable Ways. Consider changing this."));
     }
 
     /**
@@ -162,7 +162,7 @@ public class InvalidMiniRoundaboutCheckTest
     private void verifyTwoEdgesFlag(final CheckFlag flag)
     {
         Assert.assertTrue(flag.getInstructions().contains(
-                "has 2 connecting car-navigable Edges. Consider changing this to highway=TURNING_LOOP or "
+                "has 2 connecting car-navigable Ways. Consider changing this to highway=TURNING_LOOP or "
                         + "highway=TURNING_CIRCLE."));
     }
 
