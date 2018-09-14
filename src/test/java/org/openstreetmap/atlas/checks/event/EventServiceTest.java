@@ -145,6 +145,24 @@ public class EventServiceTest
     }
 
     @Test
+    public void testUnregisterProcessor()
+    {
+
+        final TestProcessor testProcessor = new TestProcessor();
+        final EventService eventService = EventService
+                .get("Event service for unregistering processor");
+
+        eventService.register(testProcessor);
+        eventService.unRegister(testProcessor);
+        eventService.post(new TestEvent("TESTING"));
+
+        eventService.complete();
+
+        Assert.assertEquals(0, testProcessor.getCompleteCount());
+        Assert.assertEquals(0, testProcessor.getProcessCount());
+    }
+
+    @Test
     public void testZeroComplete()
     {
         testCompleteCount(0);
