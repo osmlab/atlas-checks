@@ -153,7 +153,7 @@ public class EventServiceTest
                 .get("Event service for unregistering processor");
 
         eventService.register(testProcessor);
-        eventService.unRegister(testProcessor);
+        eventService.unregister(testProcessor);
         eventService.post(new TestEvent("TESTING"));
 
         eventService.complete();

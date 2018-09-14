@@ -105,7 +105,7 @@ public final class EventService
      * @param processor
      *            {@link Processor} to unregister
      */
-    public <T extends Event> void unRegister(final Processor<T> processor)
+    public <T extends Event> void unregister(final Processor<T> processor)
     {
         this.eventBus.unregister(processor);
     }
