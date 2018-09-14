@@ -148,9 +148,10 @@ public class InvalidMiniRoundaboutCheckTest
      */
     private void verifyMultipleEdgesFlag(final CheckFlag flag)
     {
-        Assert.assertTrue(flag.getInstructions()
-                .contains("connecting car-navigable Ways. This is unlikely to be an accurate"
-                        + " reflection of the ground truth. Please examine this node and re-tag it appropriately."));
+        Assert.assertTrue(flag.getInstructions().contains(
+                "connecting car-navigable Ways. Please verify that this is the most accurate tag."
+                        + " Possible alternate tags include, but are not limited to, traffic_calming=ISLAND, junction=CIRCULAR,"
+                        + " or removing this tag entirely."));
     }
 
     /**

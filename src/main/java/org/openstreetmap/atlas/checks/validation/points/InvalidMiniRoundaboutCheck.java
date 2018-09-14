@@ -28,8 +28,9 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private static final long DEFAULT_MINIMUM_VALENCE = 6;
     private static final String MINIMUM_VALENCE_KEY = "valence.minimum";
     private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
-            + " has {1, number,#} connecting car-navigable Ways. This is unlikely to be an accurate"
-            + " reflection of the ground truth. Please examine this node and re-tag it appropriately.";
+            + " has {1, number,#} connecting car-navigable Ways. Please verify that this is the most accurate tag."
+            + " Possible alternate tags include, but are not limited to, traffic_calming=ISLAND, junction=CIRCULAR,"
+            + " or removing this tag entirely.";
     private static final String TWO_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#}) "
             + "appears to be a turnaround. Consider changing this to highway=TURNING_LOOP or "
             + "highway=TURNING_CIRCLE.";
