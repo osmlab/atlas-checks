@@ -147,7 +147,6 @@ public class EventServiceTest
     @Test
     public void testUnregisterProcessor()
     {
-
         final TestProcessor testProcessor = new TestProcessor();
         final EventService eventService = EventService
                 .get("Event service for unregistering processor");
