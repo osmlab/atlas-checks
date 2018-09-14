@@ -15,7 +15,6 @@ import org.openstreetmap.atlas.tags.DirectionTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -26,12 +25,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
 {
-    private static final long DEFAULT_VALENCE = 6;
+    private static final long DEFAULT_MINIMUM_VALENCE = 6;
     private static final String MINIMUM_VALENCE_KEY = "valence.minimum";
     private static final String OTHER_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#})"
-            + " has {1, number,#} connecting car-navigable Ways. Consider changing this.";
+            + " has {1, number,#} connecting car-navigable Ways. This is unlikely to be an accurate"
+            + " reflection of the ground truth. Please examine this node and re-tag it appropriately.";
     private static final String TWO_EDGES_INSTRUCTION = "This Mini-Roundabout Node ({0,number,#}) "
-            + "has 2 connecting car-navigable Ways. Consider changing this to highway=TURNING_LOOP or "
+            + "appears to be a turnaround. Consider changing this to highway=TURNING_LOOP or "
             + "highway=TURNING_CIRCLE.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TWO_EDGES_INSTRUCTION,
             OTHER_EDGES_INSTRUCTION);
@@ -49,7 +49,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     {
         super(configuration);
         this.minimumValence = this.configurationValue(configuration, MINIMUM_VALENCE_KEY,
-                DEFAULT_VALENCE);
+                DEFAULT_MINIMUM_VALENCE);
     }
 
     @Override
@@ -78,8 +78,9 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         else if (!Validators.isOfType(node, DirectionTag.class, VALID_DIRECTIONS)
                 && valence < minimumValence && valence > 0)
         {
-            result = Optional.of(this.flagNode(node, carNavigableEdges,
-                    this.getLocalizedInstruction(1, node.getOsmIdentifier(), valence)));
+            result = Optional
+                    .of(this.flagNode(node, carNavigableEdges, this.getLocalizedInstruction(1,
+                            node.getOsmIdentifier(), getMasterEdgeCount(carNavigableEdges))));
         }
         return result;
     }
@@ -100,7 +101,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             final String instruction)
     {
         final CheckFlag flag = this.createFlag(node, instruction);
-        Iterables.stream(edges).forEach(flag::addObject);
+        edges.forEach(flag::addObject);
         return flag;
     }
 
@@ -113,18 +114,17 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     /**
      * Determines whether or not a set of Edges is a turnaround or not, where a turnaround is
      * defined as a collection containing a master Edge and its reverse Edge. This function is only
-     * guaranteed to return sensible results when carNavigableEdges is a subset of the connected
-     * Edges to a single Node.
+     * guaranteed to return sensible results when carNavigableEdges is a collection of the connected
+     * car-navigable Edges for a single Node.
      *
      * @param carNavigableEdges
-     *            A collection of Edges. Must be a subset of the connected Edges to a single Node,
-     *            or else the results are not guaranteed to be logical.
+     *            A collection of Edges. Must be a collection of the connected car-navigable Edges
+     *            from a single Node, or else the results are not guaranteed to be logical.
      * @return True if the collection represents a turnaround, false otherwise.
      */
     private boolean isTurnaround(final Collection<Edge> carNavigableEdges)
     {
-        final long masterEdgeCount = carNavigableEdges.stream().filter(Edge::isMasterEdge).count();
-        return masterEdgeCount == 1 && carNavigableEdges.size() == 2;
+        return getMasterEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
     }
 
     /**
@@ -139,5 +139,17 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     {
         return node.connectedEdges().stream().filter(HighwayTag::isCarNavigableHighway)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Given a list of carNavigableEdges, get the number of those edges which are master edges.
+     *
+     * @param carNavigableEdges
+     *            The carNavigable edges we would like to filter.
+     * @return The number of edges in carNavigableEdges which are master edges.
+     */
+    private long getMasterEdgeCount(final Collection<Edge> carNavigableEdges)
+    {
+        return carNavigableEdges.stream().filter(Edge::isMasterEdge).count();
     }
 }
