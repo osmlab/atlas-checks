@@ -25,7 +25,7 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
     public AtlasChecksGeoJSONDiffSubCommand()
     {
-        super("geoJSON-diff",
+        super("geojson-diff",
                 "Takes 2 sets of atlas-checks geoJSON flag files and reports the number of additions, subtractions, and changed flags from source to target.",
                 "geojson");
     }

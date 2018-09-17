@@ -55,7 +55,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geoJSON-diff", String.format("-source=%s", GEO_11),
+        final String[] args = { "geojson-diff", String.format("-source=%s", GEO_11),
                 String.format("-target=%s", GEO_21), String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -76,7 +76,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geoJSON-diff", String.format("-source=%s", SOURCE_DIRECTORY),
+        final String[] args = { "geojson-diff", String.format("-source=%s", SOURCE_DIRECTORY),
                 String.format("-target=%s", TARGET_DIRECTORY),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
