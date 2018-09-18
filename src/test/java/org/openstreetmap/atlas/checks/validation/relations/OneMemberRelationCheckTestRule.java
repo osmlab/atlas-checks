@@ -102,6 +102,31 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
                             "restriction=no_u_turn", "type=multipolygon" }) })
     private Atlas validRelationMultipolygon;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO) }, tags = { "highway=road" }),
+                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }, tags = { "highway=road" }),
+                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }, tags = { "highway=road" }) },
+            // relations
+            relations = {
+                    @Relation(id = "123", members = {
+                            @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                            @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                            @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                                    "restriction=no_u_turn" }),
+                    @Relation(id = "1231", members = {
+                            @Member(id = "123", type = "relation", role = RelationTypeTag.RESTRICTION_ROLE_FROM) }, tags = {
+                                    "restriction=no_u_turn" }) })
+    private Atlas oneMemberRelationRelationAtlas;
+
     public Atlas getValidRelation()
     {
         return this.validRelation;
@@ -125,5 +150,10 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
     public Atlas getValidRelationMultipolygon()
     {
         return this.validRelationMultipolygon;
+    }
+
+    public Atlas oneMemberRelationRelationAtlas()
+    {
+        return this.oneMemberRelationRelationAtlas;
     }
 }
