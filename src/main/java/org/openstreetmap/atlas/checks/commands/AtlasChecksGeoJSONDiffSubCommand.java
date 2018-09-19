@@ -70,10 +70,20 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     {
         final ArrayList<String> sourceIds = new ArrayList<>();
         final ArrayList<String> targetIds = new ArrayList<>();
-        sourceArray.forEach(
-                object -> sourceIds.add(object.getAsJsonObject().get(ITEM_ID).getAsString()));
-        targetArray.forEach(
-                object -> targetIds.add(object.getAsJsonObject().get(ITEM_ID).getAsString()));
+        sourceArray.forEach(object ->
+        {
+            if (object.getAsJsonObject().has(ITEM_ID))
+            {
+                sourceIds.add(object.getAsJsonObject().get(ITEM_ID).getAsString());
+            }
+        });
+        targetArray.forEach(object ->
+        {
+            if (object.getAsJsonObject().has(ITEM_ID))
+            {
+                targetIds.add(object.getAsJsonObject().get(ITEM_ID).getAsString());
+            }
+        });
         return sourceIds.containsAll(targetIds) && targetIds.containsAll(sourceIds);
     }
 
