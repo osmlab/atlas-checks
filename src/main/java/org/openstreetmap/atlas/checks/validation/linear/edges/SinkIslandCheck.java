@@ -32,6 +32,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author cuthbertm
  * @author gpogulsky
  * @author savannahostrowski
+ * @author nachtm
  */
 public class SinkIslandCheck extends BaseCheck<Long>
 {
@@ -71,7 +72,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return this.validEdge(object) && !this.isFlagged(object.getIdentifier());
+        return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
+                && HighwayTag.highwayTag(object)
+                        .map(tag -> tag.isMoreImportantThanOrEqualTo(HighwayTag.SERVICE))
+                        .orElse(false);
     }
 
     @Override
@@ -96,10 +100,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
         // Keep looping while we still have a valid candidate to explore
         while (candidate != null)
         {
-            // If the edge has already been flagged by another process then we can break out of the
-            // loop and assume that whether the check was a flag or not was handled by the other
-            // process
-            if (this.isFlagged(candidate.getIdentifier()))
+            // If this edge has certain characteristics, we can be sure that we don't want to
+            // flag this node.
+            if (this.shouldQuitNow(candidate))
             {
                 emptyFlag = true;
                 break;
@@ -180,12 +183,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore any airport taxiways and runways, as these often create a sink island
                 && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
                         AerowayTag.RUNWAY)
-                // Ignore edges that have an amenity tag equal to one of the amenityValuesToExclude
-                && !endNodeHasAmenityTypeToExclude(object)
-                // Ignore edges that have been way sectioned at the border, as has high probability
-                // of creating a false positive due to the sectioning of the way
-                && !(SyntheticBoundaryNodeTag.isBoundaryNode(((Edge) object).end())
-                        || SyntheticBoundaryNodeTag.isBoundaryNode(((Edge) object).start()))
                 // Only allow car navigable highways and ignore ferries
                 && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
@@ -209,5 +206,28 @@ public class SinkIslandCheck extends BaseCheck<Long>
         return Validators.isOfType(endNode, AmenityTag.class, AmenityTag.PARKING,
                 AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING,
                 AmenityTag.PARKING_ENTRANCE);
+    }
+
+    /**
+     * This function checks an edge to determine whether it has certain characteristics that signify
+     * to us that we do not want to keep examining this component of the network.
+     *
+     * @param edge
+     *            An Edge we're examining
+     * @return {@code true} if the edge is already flagged, has an amenity type we want to exclude,
+     *         or ends in a boundary node {@code false} otherwise
+     */
+    private boolean shouldQuitNow(final Edge edge)
+    {
+        // If the edge has already been flagged by another process then we can break out of the
+        // loop and assume that whether the check was a flag or not was handled by the other
+        // process
+        return this.isFlagged(edge.getIdentifier())
+                // We don't want to handle certain types of parking amenities
+                || this.endNodeHasAmenityTypeToExclude(edge)
+                // Ignore edges that have been way sectioned at the border, as has high probability
+                // of creating a false positive due to the sectioning of the way
+                || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
+                || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start());
     }
 }
