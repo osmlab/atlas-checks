@@ -43,7 +43,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
     // The default value for the minimum highway type
-    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RACEWAY.toString();
+    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
     private final HighwayTag highwayMinimum;
 
     /**
