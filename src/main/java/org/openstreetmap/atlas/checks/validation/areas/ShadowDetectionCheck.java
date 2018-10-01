@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,7 +67,8 @@ public class ShadowDetectionCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area && this.hasMinKey(object);
+        return !this.isFlagged(object.getIdentifier()) && object instanceof Area
+                && this.hasMinKey(object);
     }
 
     /**
@@ -81,16 +84,26 @@ public class ShadowDetectionCheck extends BaseCheck
         final Area area = (Area) object;
 
         // Check building parts for connection to other building parts
-        if (this.isBuildingPart(area) && !isConnectedPart(area))
+        if (this.isBuildingPart(area))
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(1, object.getOsmIdentifier())));
+            final Set<Area> floatingParts = this.getFloatingParts(area);
+            if (!floatingParts.isEmpty())
+            {
+                final CheckFlag flag = this.createFlag(object,
+                        this.getLocalizedInstruction(1, object.getOsmIdentifier()));
+                for (final Area part : floatingParts)
+                {
+                    this.markAsFlagged(part.getIdentifier());
+                    if (!part.equals(area))
+                    {
+                        flag.addObject(part);
+                    }
+                }
+                return Optional.of(flag);
+            }
         }
         // Flag buildings (not parts) that are floating.
-        else if (!this.isBuildingPart(area) && (!object.getOsmTags()
-                .getOrDefault(MinHeightTag.KEY, ZERO_STRING).equals(ZERO_STRING)
-                || !object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING)
-                        .equals(ZERO_STRING)))
+        else if (this.isOffGround(area))
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
@@ -105,22 +118,34 @@ public class ShadowDetectionCheck extends BaseCheck
     }
 
     /**
-     * Gathers the intersecting or touching building parts for an {@link Area}, and checks that they
-     * are vertically connected.
+     * Uses a BFS to gather all connected building parts. If a part is found that is on the ground,
+     * an empty {@link Set} is returned because the parts are not floating.
      *
-     * @param part
-     *            an {@link Area} with tag {@code building:part=yes}, and either
-     *            {@code min_height=*} or {@code building:min_level=*}
-     * @return true if {@code part} is vertically connected to another building part
+     * @param startingPart
+     *            {@link Area} to start the walker from
+     * @return a {@link Set} of {@link Area}s that are all floating
      */
-    private boolean isConnectedPart(final Area part)
+    private Set<Area> getFloatingParts(final Area startingPart)
     {
-        // Get intersecting or touching building parts
-        final Set<Area> neighboringParts = Iterables.asSet(part.getAtlas().areasIntersecting(
-                part.bounds().expand(Distance.ONE_METER), neighboringPart(part)));
-        // Look for any vertical connection
-        return neighboringParts.stream()
-                .anyMatch(neighbor -> neighborsHeightContains(part, neighbor));
+        final Set<Area> connectedParts = new HashSet<>();
+        final ArrayDeque<Area> toCheck = new ArrayDeque<>();
+        connectedParts.add(startingPart);
+        toCheck.add(startingPart);
+
+        while (!toCheck.isEmpty())
+        {
+            final Area checking = toCheck.poll();
+            if (!isOffGround(checking))
+            {
+                return new HashSet<>();
+            }
+            final Set<Area> neighboringParts = Iterables.asSet(checking.getAtlas()
+                    .areasIntersecting(checking.bounds().expand(Distance.ONE_METER),
+                            neighboringPart(checking, connectedParts)));
+            connectedParts.addAll(neighboringParts);
+            toCheck.addAll(neighboringParts);
+        }
+        return connectedParts;
     }
 
     /**
@@ -131,18 +156,19 @@ public class ShadowDetectionCheck extends BaseCheck
      * @return true if the predicate {@link Area} is a building part and intersects or touches
      *         {@code part}
      */
-    private Predicate<Area> neighboringPart(final Area part)
+    private Predicate<Area> neighboringPart(final Area part, final Set<Area> checked)
     {
         return area ->
         {
             final Polygon partPolygon = part.asPolygon();
             final Polygon areaPolygon = area.asPolygon();
             // Check if it is a building part, and either intersects or touches.
-            return !area.equals(part) && this.isBuildingPart(area)
+            return !checked.contains(area) && this.isBuildingPart(area)
                     && (partPolygon.intersects(areaPolygon)
                             || partPolygon.stream().anyMatch(areaPolygon::contains)
                             || partPolygon.fullyGeometricallyEncloses(areaPolygon)
-                            || areaPolygon.fullyGeometricallyEncloses(partPolygon));
+                            || areaPolygon.fullyGeometricallyEncloses(partPolygon))
+                    && neighborsHeightContains(part, area);
         };
     }
 
@@ -236,5 +262,19 @@ public class ShadowDetectionCheck extends BaseCheck
     {
         return Validators.hasValuesFor(object, BuildingMinLevelTag.class)
                 || Validators.hasValuesFor(object, MinHeightTag.class);
+    }
+
+    /**
+     * Checks if an {@link Area} has tags indicating it is off the ground.
+     *
+     * @param area
+     *            {@link Area} to check
+     * @return true if the area is off the ground
+     */
+    private boolean isOffGround(final Area area)
+    {
+        return !area.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING).equals(ZERO_STRING)
+                || !area.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING)
+                        .equals(ZERO_STRING);
     }
 }

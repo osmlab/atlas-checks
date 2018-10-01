@@ -149,6 +149,21 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                                     "building:part=yes", "height=30", "min_height=17.5" }) })
     private Atlas validBuildingPartsStackedMixedTagsAtlas;
 
+    @TestAtlas(
+            // areas
+            areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building:part=yes",
+                            "building:levels=8", "building:min_level=5" }),
+                    @Area(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+                            @Loc(value = TEST_6), @Loc(value = TEST_5) }, tags = {
+                                    "building:part=yes", "building:levels=8",
+                                    "building:min_level=5" }),
+                    @Area(coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_6),
+                            @Loc(value = TEST_7), @Loc(value = TEST_8) }, tags = {
+                                    "building:part=yes", "building:levels=8",
+                                    "building:min_level=5" }) })
+    private Atlas invalidBuildingPartsManyFloatAtlas;
+
     public Atlas validBuildingAtlas()
     {
         return this.validBuildingAtlas;
@@ -207,5 +222,10 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas validBuildingPartsStackedMixedTagsAtlas()
     {
         return this.validBuildingPartsStackedMixedTagsAtlas;
+    }
+
+    public Atlas invalidBuildingPartsManyFloatAtlas()
+    {
+        return this.invalidBuildingPartsManyFloatAtlas;
     }
 }
