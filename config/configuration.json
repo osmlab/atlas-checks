@@ -94,6 +94,7 @@
     }
   },
   "FloatingEdgeCheck": {
+    "minimum.highway.type": "raceway",
     "length": {
       "maximum.kilometers": 100.0,
       "minimum.meters": 100.0
