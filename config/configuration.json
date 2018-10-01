@@ -274,6 +274,14 @@
       "tags":"highway"
     }
   },
+  "ShadowDetectionCheck": {
+    "challenge": {
+      "description": "Verify the height and level tags to make sure the building does not float in 3D",
+      "blurb": "Fix floating buildings",
+      "instruction": "Open your favorite editor and check the height and placement of the building or building part for 3D alignment.",
+      "difficulty": "NORMAL"
+    }
+  },
   "SharpAngleCheck": {
     "threshold.degrees": 97.0,
     "challenge": {

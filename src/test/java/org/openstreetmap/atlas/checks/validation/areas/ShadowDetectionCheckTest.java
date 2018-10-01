@@ -83,6 +83,22 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
+    public void validBuildingPartsEnclosePartTest()
+    {
+        this.verifier.actual(this.setup.validBuildingPartsEnclosePartAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validBuildingPartsEncloseNeighborTest()
+    {
+        this.verifier.actual(this.setup.validBuildingPartsEncloseNeighborAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void validBuildingPartsStackedTest()
     {
         this.verifier.actual(this.setup.validBuildingPartsStackedAtlas(),

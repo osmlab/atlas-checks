@@ -141,7 +141,8 @@ public class ShadowDetectionCheck extends BaseCheck
             return !area.equals(part) && this.isBuildingPart(area)
                     && (partPolygon.intersects(areaPolygon)
                             || partPolygon.stream().anyMatch(areaPolygon::contains)
-                            || partPolygon.fullyGeometricallyEncloses(areaPolygon));
+                            || partPolygon.fullyGeometricallyEncloses(areaPolygon)
+                            || areaPolygon.fullyGeometricallyEncloses(partPolygon));
         };
     }
 

@@ -21,6 +21,8 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     private static final String TEST_6 = "47.2462967618771,-122.438029951549";
     private static final String TEST_7 = "47.2462635573569,-122.438335168739";
     private static final String TEST_8 = "47.2462223837229,-122.438018212427";
+    private static final String TEST_9 = "47.2463100436794,-122.438112125408";
+    private static final String TEST_10 = "47.2464295797499,-122.437949734211";
 
     @TestAtlas(
             // areas
@@ -106,6 +108,27 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     @TestAtlas(
             // areas
             areas = {
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_10),
+                            @Loc(value = TEST_8), @Loc(value = TEST_7) }, tags = {
+                                    "building:part=yes", "building:levels=5" }),
+                    @Area(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_6),
+                            @Loc(value = TEST_9) }, tags = { "building:part=yes",
+                                    "building:levels=8", "building:min_level=1" }) })
+    private Atlas validBuildingPartsEnclosePartAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_10),
+                    @Loc(value = TEST_8), @Loc(value = TEST_7) }, tags = { "building:part=yes",
+                            "building:levels=5", "building:min_level=1" }),
+                    @Area(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_6),
+                            @Loc(value = TEST_9) }, tags = { "building:part=yes",
+                                    "building:levels=8" }) })
+    private Atlas validBuildingPartsEncloseNeighborAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = {
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = {
                                     "building:part=yes", "building:levels=5" }),
@@ -164,6 +187,16 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidBuildingPartsDisparateAtlas()
     {
         return this.invalidBuildingPartsDisparateAtlas;
+    }
+
+    public Atlas validBuildingPartsEnclosePartAtlas()
+    {
+        return this.validBuildingPartsEnclosePartAtlas;
+    }
+
+    public Atlas validBuildingPartsEncloseNeighborAtlas()
+    {
+        return this.validBuildingPartsEncloseNeighborAtlas;
     }
 
     public Atlas validBuildingPartsStackedAtlas()
