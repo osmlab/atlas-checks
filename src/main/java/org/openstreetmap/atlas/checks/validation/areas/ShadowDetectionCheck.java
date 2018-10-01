@@ -98,6 +98,12 @@ public class ShadowDetectionCheck extends BaseCheck
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
     /**
      * Gathers the intersecting or touching building parts for an {@link Area}, and checks that they
      * are vertically connected.
@@ -132,8 +138,10 @@ public class ShadowDetectionCheck extends BaseCheck
             final Polygon partPolygon = part.asPolygon();
             final Polygon areaPolygon = area.asPolygon();
             // Check if it is a building part, and either intersects or touches.
-            return this.isBuildingPart(area) && (partPolygon.fullyGeometricallyEncloses(areaPolygon)
-                    || partPolygon.stream().anyMatch(areaPolygon::contains));
+            return !area.equals(part) && this.isBuildingPart(area)
+                    && (partPolygon.intersects(areaPolygon)
+                            || partPolygon.stream().anyMatch(areaPolygon::contains)
+                            || partPolygon.fullyGeometricallyEncloses(areaPolygon));
         };
     }
 
