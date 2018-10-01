@@ -18,9 +18,9 @@ public class FloatingEdgeCheckTest
     private FloatingEdgeCheck check = new FloatingEdgeCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"FloatingEdgeCheck\":{\"length\":{\"maximum.kilometers\":16.093,\"minimum.meters\": 1.0}}}"));
-    private FloatingEdgeCheck check2 = new FloatingEdgeCheck(
+    private FloatingEdgeCheck minimumHighwayCheck = new FloatingEdgeCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"FloatingEdgeCheck\":{\"minimum.highway.type\": \"PRIMARY_LINK\",\"length\":{\"maximum.kilometers\":16.093,\"minimum.meters\": 1.0}}}"));
+                    "{\"FloatingEdgeCheck\":{\"highway.minimum\": \"PRIMARY_LINK\",\"length\":{\"maximum.kilometers\":16.093,\"minimum.meters\": 1.0}}}"));
 
     @Test
     public void testBidirectionalFloatingEdge()
@@ -63,7 +63,7 @@ public class FloatingEdgeCheckTest
     @Test
     public void testInlineConfigFloatingEdge()
     {
-        this.verifier.actual(this.setup.floatingEdgeAtlas(), check2);
+        this.verifier.actual(this.setup.floatingEdgeAtlas(), minimumHighwayCheck);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

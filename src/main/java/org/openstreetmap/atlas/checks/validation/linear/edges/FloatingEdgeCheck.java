@@ -43,8 +43,8 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
     // The default value for the minimum highway type
-    private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RACEWAY.toString();
-    private final HighwayTag minimumHighwayType;
+    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RACEWAY.toString();
+    private final HighwayTag highwayMinimum;
 
     /**
      * Default constructor defined by the {@link BaseCheck} required to instantiate the Check within
@@ -71,9 +71,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         this.maximumDistance = configurationValue(configuration, "length.maximum.kilometers",
                 DISTANCE_MAXIMUM_KILOMETERS_DEFAULT, Distance::kilometers);
         // This retrieves the minimum highway type from the config
-        final String highwayType = this.configurationValue(configuration, "minimum.highway.type",
-                MINIMUM_HIGHWAY_TYPE_DEFAULT);
-        this.minimumHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
+        final String highwayType = this.configurationValue(configuration, "highway.minimum",
+                HIGHWAY_MINIMUM_DEFAULT);
+        this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
     }
 
     /**
@@ -184,6 +184,6 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     {
         final Optional<HighwayTag> highwayTagOfObject = HighwayTag.highwayTag(object);
         return highwayTagOfObject.isPresent()
-                && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+                && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.highwayMinimum);
     }
 }
