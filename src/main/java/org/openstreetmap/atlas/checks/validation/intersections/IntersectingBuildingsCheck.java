@@ -6,19 +6,15 @@ import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.PolyLine;
+import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.clipping.Clip;
-import org.openstreetmap.atlas.geography.clipping.Clip.ClipType;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Surface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vividsolutions.jts.geom.TopologyException;
 
 /**
  * Flags the buildings that intersect/overlap with other buildings.
@@ -214,44 +210,8 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
      */
     private IntersectionType findIntersectionType(final Polygon polygon, final Polygon otherPolygon)
     {
-        Clip clip = null;
-        try
-        {
-            clip = polygon.clip(otherPolygon, ClipType.AND);
-        }
-        catch (final TopologyException e)
-        {
-            logger.warn(String.format("Skipping intersection check. Error clipping [%s] and [%s].",
-                    polygon, otherPolygon), e);
-        }
-
-        // Skip if nothing is returned
-        if (clip == null)
-        {
-            return IntersectionType.NONE;
-        }
-
-        // Sum intersection area
-        long intersectionArea = 0;
-        for (final PolyLine polyline : clip.getClip())
-        {
-            if (polyline != null && polyline instanceof Polygon)
-            {
-                final Polygon clippedPolygon = (Polygon) polyline;
-                intersectionArea += clippedPolygon.surface().asDm7Squared();
-            }
-        }
-
-        // Avoid division by zero
-        if (intersectionArea == 0)
-        {
-            return IntersectionType.NONE;
-        }
-
-        // Pick the smaller building's area as baseline
-        final long baselineArea = Math.min(polygon.surface().asDm7Squared(),
-                otherPolygon.surface().asDm7Squared());
-        final double proportion = (double) intersectionArea / baselineArea;
+        final double proportion = IntersectionUtilities.findIntersectionPercentage(polygon,
+                otherPolygon);
         if (proportion >= OVERLAP_LOWER_LIMIT)
         {
             return IntersectionType.OVERLAP;
