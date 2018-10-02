@@ -147,6 +147,15 @@
       "tags":"lanes,highway"
     }
   },
+  "InvalidMiniRoundaboutCheck": {
+    "valence.minimum":6,
+    "challenge":{
+      "description":"Tasks containing invalid mini-roundabouts.",
+      "blurb":"Invalid Mini-Roundabout Tags",
+      "instruction":"Change the tags to represent the intersection more accurately.",
+      "difficulty":"NORMAL"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
