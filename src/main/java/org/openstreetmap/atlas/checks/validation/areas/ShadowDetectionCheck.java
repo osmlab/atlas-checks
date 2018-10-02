@@ -135,10 +135,12 @@ public class ShadowDetectionCheck extends BaseCheck
         while (!toCheck.isEmpty())
         {
             final Area checking = toCheck.poll();
-            if (!isOffGround(checking))
+            // If a connection to the ground is found the parts are not floating
+            if (!isOffGround(checking) && connectedParts.size() > 1)
             {
                 return new HashSet<>();
             }
+            // Get parts connected in 3D
             final Set<Area> neighboringParts = Iterables.asSet(checking.getAtlas()
                     .areasIntersecting(checking.bounds().expand(Distance.ONE_METER),
                             neighboringPart(checking, connectedParts)));

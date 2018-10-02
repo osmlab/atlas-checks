@@ -164,6 +164,13 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                                     "building:min_level=5" }) })
     private Atlas invalidBuildingPartsManyFloatAtlas;
 
+    @TestAtlas(
+            // areas
+            areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building:part=yes",
+                            "height=20", "min_height=5" }) })
+    private Atlas invalidBuildingPartSingleAtlas;
+
     public Atlas validBuildingAtlas()
     {
         return this.validBuildingAtlas;
@@ -227,5 +234,10 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidBuildingPartsManyFloatAtlas()
     {
         return this.invalidBuildingPartsManyFloatAtlas;
+    }
+
+    public Atlas invalidBuildingPartSingleAtlas()
+    {
+        return this.invalidBuildingPartSingleAtlas;
     }
 }

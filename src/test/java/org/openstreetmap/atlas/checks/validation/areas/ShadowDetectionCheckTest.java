@@ -122,4 +122,12 @@ public class ShadowDetectionCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
+
+    @Test
+    public void invalidBuildingPartSingleAtlas()
+    {
+        this.verifier.actual(this.setup.invalidBuildingPartSingleAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
 }
