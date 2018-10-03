@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.tags.BuildingLevelsTag;
 import org.openstreetmap.atlas.tags.BuildingMinLevelTag;
 import org.openstreetmap.atlas.tags.BuildingPartTag;
+import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HeightTag;
 import org.openstreetmap.atlas.tags.MinHeightTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -165,7 +166,8 @@ public class ShadowDetectionCheck extends BaseCheck
             final Polygon partPolygon = part.asPolygon();
             final Polygon areaPolygon = area.asPolygon();
             // Check if it is a building part, and either intersects or touches.
-            return !checked.contains(area) && this.isBuildingPart(area)
+            return !checked.contains(area)
+                    && (this.isBuildingPart(area) || BuildingTag.isBuilding(area))
                     && (partPolygon.intersects(areaPolygon)
                             || partPolygon.stream().anyMatch(areaPolygon::contains)
                             || partPolygon.fullyGeometricallyEncloses(areaPolygon)

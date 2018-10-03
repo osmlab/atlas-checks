@@ -151,6 +151,18 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // areas
+            areas = {
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = {
+                            "building=yes", "building:levels=5" }),
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_6), @Loc(value = TEST_5) }, tags = {
+                            "building:part=yes", "building:levels=8",
+                            "building:min_level=5" }) })
+    private Atlas validBuildingAndPartStackedAtlas;
+
+    @TestAtlas(
+            // areas
             areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                     @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building:part=yes",
                             "building:levels=8", "building:min_level=5" }),
@@ -170,6 +182,8 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                     @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building:part=yes",
                             "height=20", "min_height=5" }) })
     private Atlas invalidBuildingPartSingleAtlas;
+
+
 
     public Atlas validBuildingAtlas()
     {
@@ -229,6 +243,11 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas validBuildingPartsStackedMixedTagsAtlas()
     {
         return this.validBuildingPartsStackedMixedTagsAtlas;
+    }
+
+    public Atlas validBuildingAndPartStackedAtlas()
+    {
+        return this.validBuildingAndPartStackedAtlas;
     }
 
     public Atlas invalidBuildingPartsManyFloatAtlas()
