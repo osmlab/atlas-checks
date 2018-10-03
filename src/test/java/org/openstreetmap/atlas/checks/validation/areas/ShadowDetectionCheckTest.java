@@ -123,6 +123,24 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
+    public void invalidBuildingAndPartStackedTest()
+    {
+        this.verifier.actual(this.setup.invalidBuildingAndPartStackedAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void invalidBuildingsStackedTest()
+    {
+        this.verifier.actual(this.setup.invalidBuildingsStackedAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
     public void invalidBuildingPartsManyFloatTest()
     {
         this.verifier.actual(this.setup.invalidBuildingPartsManyFloatAtlas(),

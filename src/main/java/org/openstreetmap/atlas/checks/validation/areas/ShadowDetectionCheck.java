@@ -39,8 +39,7 @@ public class ShadowDetectionCheck extends BaseCheck
     private static final long serialVersionUID = -6968080042879358551L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "Floating building {0,number,#} has a min_level/min_height above ground level. Determine ground truth and edit accordingly.",
-            "Building Part {0,number,#} is not connected to any other building parts. Determine ground truth and edit accordingly.");
+            "The building(s) and/or building part(s) float(s) above the ground. Please check the height/building:levels and min_height/building:min_level tags.");
 
     private static final double LEVEL_TO_METERS_CONVERSION = 3.5;
     private static final String ZERO_STRING = "0";
@@ -84,30 +83,21 @@ public class ShadowDetectionCheck extends BaseCheck
     {
         final Area area = (Area) object;
 
-        // Check building parts for connection to other building parts
-        if (this.isBuildingPart(area))
+        // Gather connected building parts and check for a connection to the ground
+        final Set<Area> floatingParts = this.getFloatingParts(area);
+        if (!floatingParts.isEmpty())
         {
-            final Set<Area> floatingParts = this.getFloatingParts(area);
-            if (!floatingParts.isEmpty())
+            final CheckFlag flag = this.createFlag(object,
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+            for (final Area part : floatingParts)
             {
-                final CheckFlag flag = this.createFlag(object,
-                        this.getLocalizedInstruction(1, object.getOsmIdentifier()));
-                for (final Area part : floatingParts)
+                this.markAsFlagged(part.getIdentifier());
+                if (!part.equals(area))
                 {
-                    this.markAsFlagged(part.getIdentifier());
-                    if (!part.equals(area))
-                    {
-                        flag.addObject(part);
-                    }
+                    flag.addObject(part);
                 }
-                return Optional.of(flag);
             }
-        }
-        // Flag buildings (not parts) that are floating.
-        else if (this.isOffGround(area))
-        {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            return Optional.of(flag);
         }
         return Optional.empty();
     }
@@ -137,7 +127,7 @@ public class ShadowDetectionCheck extends BaseCheck
         {
             final Area checking = toCheck.poll();
             // If a connection to the ground is found the parts are not floating
-            if (!isOffGround(checking) && connectedParts.size() > 1)
+            if (!isOffGround(checking))
             {
                 return new HashSet<>();
             }
