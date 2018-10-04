@@ -156,7 +156,7 @@ public class ShadowDetectionCheck extends BaseCheck
             final Polygon partPolygon = part.asPolygon();
             final Polygon areaPolygon = area.asPolygon();
             // Check if it is a building part, and either intersects or touches.
-            return !checked.contains(area)
+            return !checked.contains(area) && !this.isFlagged(area.getIdentifier())
                     && (this.isBuildingPart(area) || BuildingTag.isBuilding(area))
                     && (partPolygon.intersects(areaPolygon)
                             || partPolygon.stream().anyMatch(areaPolygon::contains)
@@ -190,17 +190,17 @@ public class ShadowDetectionCheck extends BaseCheck
 
         // Set partMinHeight
         partMinHeight = partTags.containsKey(MinHeightTag.KEY)
-                ? Integer.parseInt(partTags.get(MinHeightTag.KEY))
-                : Integer.parseInt(partTags.get(BuildingMinLevelTag.KEY))
+                ? Double.parseDouble(partTags.get(MinHeightTag.KEY))
+                : Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
                         * LEVEL_TO_METERS_CONVERSION;
         // Set partMaxHeight
         if (partTags.containsKey(HeightTag.KEY))
         {
-            partMaxHeight = Integer.parseInt(partTags.get(HeightTag.KEY));
+            partMaxHeight = Double.parseDouble(partTags.get(HeightTag.KEY));
         }
         else if (partTags.containsKey(BuildingLevelsTag.KEY))
         {
-            partMaxHeight = Integer.parseInt(partTags.get(BuildingLevelsTag.KEY))
+            partMaxHeight = Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
                     * LEVEL_TO_METERS_CONVERSION;
         }
         else
@@ -210,27 +210,34 @@ public class ShadowDetectionCheck extends BaseCheck
         // Set neighborMinHeight
         if (neighborTags.containsKey(MinHeightTag.KEY))
         {
-            neighborMinHeight = Integer.parseInt(neighborTags.get(MinHeightTag.KEY));
+            neighborMinHeight = Double.parseDouble(neighborTags.get(MinHeightTag.KEY));
         }
         else if (neighborTags.containsKey(BuildingMinLevelTag.KEY))
         {
-            neighborMinHeight = Integer.parseInt(neighborTags.get(BuildingMinLevelTag.KEY))
+            neighborMinHeight = Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
                     * LEVEL_TO_METERS_CONVERSION;
         }
         // Set neighborMaxHeight
         if (neighborTags.containsKey(HeightTag.KEY))
         {
-            neighborMaxHeight = Integer.parseInt(neighborTags.get(HeightTag.KEY));
+            neighborMaxHeight = Double.parseDouble(neighborTags.get(HeightTag.KEY));
         }
         else if (neighborTags.containsKey(BuildingLevelsTag.KEY))
         {
-            neighborMaxHeight = Integer.parseInt(neighborTags.get(BuildingLevelsTag.KEY))
+            neighborMaxHeight = Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
                     * LEVEL_TO_METERS_CONVERSION;
         }
 
         // Check the range of heights for overlap.
-        return Range.closed(partMinHeight, partMaxHeight)
-                .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
+        try
+        {
+            return Range.closed(partMinHeight, partMaxHeight)
+                    .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
+        }
+        catch (final IllegalArgumentException exc)
+        {
+            return false;
+        }
     }
 
     /**
