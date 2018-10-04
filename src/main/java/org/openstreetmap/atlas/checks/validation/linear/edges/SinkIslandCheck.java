@@ -1,7 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -40,14 +39,13 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final long TREE_SIZE_DEFAULT = 50;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList("Road is impossible to get out of.");
-    private static final String MOTORCYCLE_PARKING_AMENITY = "MOTORCYCLE_PARKING";
-    private static final String PARKING_ENTRANCE_AMENITY = "PARKING_ENTRANCE";
-    private static final List<String> amenityValuesToExclude = Arrays.asList(
-            AmenityTag.PARKING.toString(), AmenityTag.PARKING_SPACE.toString(),
-            MOTORCYCLE_PARKING_AMENITY, PARKING_ENTRANCE_AMENITY);
+    private static final AmenityTag[] amenityValuesToExclude = { AmenityTag.PARKING,
+            AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING, AmenityTag.PARKING_ENTRANCE };
+    private static final String DEFAULT_MINIMUM_IMPORTANCE_HIGHWAY = "SERVICE";
     private static final long serialVersionUID = -1432150496331502258L;
     private final int storeSize;
     private final int treeSize;
+    private final HighwayTag minimumImportanceHighway;
 
     /**
      * Default constructor
@@ -60,7 +58,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
         super(configuration);
         this.treeSize = configurationValue(configuration, "tree.size", TREE_SIZE_DEFAULT,
                 Math::toIntExact);
-
+        this.minimumImportanceHighway = configurationValue(configuration,
+                "highway.importance.minimum", DEFAULT_MINIMUM_IMPORTANCE_HIGHWAY,
+                string -> HighwayTag.valueOf(string.toUpperCase()));
         // LOAD_FACTOR 0.8 gives us default initial capacity 50 / 0.8 = 62.5
         // map & queue will allocate 64 (the nearest power of 2) for that initial capacity
         // Our algorithm does not allow neither explored set nor candidates queue exceed
@@ -74,7 +74,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
                 && HighwayTag.highwayTag(object)
-                        .map(tag -> tag.isMoreImportantThanOrEqualTo(HighwayTag.SERVICE))
+                        .map(tag -> tag.isMoreImportantThanOrEqualTo(this.minimumImportanceHighway))
                         .orElse(false);
     }
 
@@ -203,9 +203,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
         final Node endNode = edge.end();
 
-        return Validators.isOfType(endNode, AmenityTag.class, AmenityTag.PARKING,
-                AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING,
-                AmenityTag.PARKING_ENTRANCE);
+        return Validators.isOfType(endNode, AmenityTag.class, amenityValuesToExclude);
     }
 
     /**

@@ -84,4 +84,13 @@ public class SinkIslandCheckTest
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
+
+    @Test
+    public void testHighwayImportanceConfiguration()
+    {
+        this.verifier.actual(this.setup.getServiceSinkIsland(),
+                new SinkIslandCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"SinkIslandCheck\": {\"tree.size\": 3, \"highway.importance.minimum\": \"RESIDENTIAL\"}}")));
+        this.verifier.verifyEmpty();
+    }
 }
