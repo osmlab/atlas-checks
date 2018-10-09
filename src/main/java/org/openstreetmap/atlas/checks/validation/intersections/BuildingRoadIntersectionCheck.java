@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
@@ -35,8 +36,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Building (id-{0,number,#}) intersects road (id-{1,number,#})");
+    private static final String BUILDING_ROAD_INTERSECTION_INSTRUCTION = "Building (id-{0,number,#}) intersects road (id-{1,number,#})";
+    private static final String BUILDING_SERVICE_ROAD_INTERSECTION_INSTRUCTION = "Building (id-{0,number,#}) intersects road (id-{1,number,#}), which is a SERVICE road. Please verify whether the intersection is valid or not.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            BUILDING_ROAD_INTERSECTION_INSTRUCTION, BUILDING_SERVICE_ROAD_INTERSECTION_INSTRUCTION);
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
     private static final long serialVersionUID = 5986017212661374165L;
@@ -70,7 +73,11 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 && LayerTag.getTaggedValue(edge).orElse(0L)
                         .equals(LayerTag.getTaggedValue(building).orElse(0L))
                 // And if the building/edge intersection is not valid
-                && !isValidIntersection(building, edge);
+                && !isValidIntersection(building, edge)
+                // And if the edge has no Access = Private tag
+                && !AccessTag.isPrivate(edge)
+                // And if the edge is car navigable
+                && HighwayTag.isCarNavigableHighway(edge);
     }
 
     /**
@@ -162,9 +169,16 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         {
             if (!knownIntersections.contains(edge))
             {
-                flag.addObject(edge, this.getLocalizedInstruction(0, building.getOsmIdentifier(),
-                        edge.getOsmIdentifier()));
-
+                if (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE))
+                {
+                    flag.addObject(edge, this.getLocalizedInstruction(1,
+                            building.getOsmIdentifier(), edge.getOsmIdentifier()));
+                }
+                else
+                {
+                    flag.addObject(edge, this.getLocalizedInstruction(0,
+                            building.getOsmIdentifier(), edge.getOsmIdentifier()));
+                }
                 knownIntersections.add(edge);
                 if (edge.hasReverseEdge())
                 {
