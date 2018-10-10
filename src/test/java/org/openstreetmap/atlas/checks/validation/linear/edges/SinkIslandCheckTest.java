@@ -79,7 +79,7 @@ public class SinkIslandCheckTest
     @Test
     public void testInvalidEdges()
     {
-        this.verifier.actual(this.setup.getServiceSinkIsland(),
+        this.verifier.actual(this.setup.getInvalidEdges(),
                 new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
