@@ -173,7 +173,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     /**
      * Checks if highway tag of given {@link AtlasObject} is of greater or equal priority than the
      * minimum highway type given in the configurable. If no value is given in configurable, the
-     * default highway type of "RACEWAY" will be set as minimum.
+     * default highway type of "SERVICE" will be set as minimum.
      *
      * @param object
      *            an {@link AtlasObject}
