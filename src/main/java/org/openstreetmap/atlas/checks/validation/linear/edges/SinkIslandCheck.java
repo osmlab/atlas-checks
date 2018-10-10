@@ -101,7 +101,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         while (candidate != null)
         {
             // If this edge has certain characteristics, we can be sure that we don't want to
-            // flag this node.
+            // flag it.
             if (this.shouldQuitNow(candidate))
             {
                 emptyFlag = true;
