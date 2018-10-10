@@ -285,6 +285,7 @@
   },
   "SinkIslandCheck": {
     "tree.size": 50,
+    "minimum.highway.type": "SERVICE",
     "challenge": {
       "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
       "blurb": "Identify islands of roads.",

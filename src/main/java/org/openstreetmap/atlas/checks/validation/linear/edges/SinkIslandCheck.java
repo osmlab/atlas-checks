@@ -39,13 +39,13 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final long TREE_SIZE_DEFAULT = 50;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList("Road is impossible to get out of.");
-    private static final AmenityTag[] amenityValuesToExclude = { AmenityTag.PARKING,
+    private static final AmenityTag[] AMENITY_VALUES_TO_EXCLUDE = { AmenityTag.PARKING,
             AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING, AmenityTag.PARKING_ENTRANCE };
-    private static final String DEFAULT_MINIMUM_IMPORTANCE_HIGHWAY = "SERVICE";
+    private static final String DEFAULT_MINIMUM_HIGHWAY_TYPE = "SERVICE";
     private static final long serialVersionUID = -1432150496331502258L;
     private final int storeSize;
     private final int treeSize;
-    private final HighwayTag minimumImportanceHighway;
+    private final HighwayTag minimumHighwayType;
 
     /**
      * Default constructor
@@ -58,8 +58,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
         super(configuration);
         this.treeSize = configurationValue(configuration, "tree.size", TREE_SIZE_DEFAULT,
                 Math::toIntExact);
-        this.minimumImportanceHighway = configurationValue(configuration,
-                "highway.importance.minimum", DEFAULT_MINIMUM_IMPORTANCE_HIGHWAY,
+        this.minimumHighwayType = configurationValue(configuration,
+                "minimum.highway.type", DEFAULT_MINIMUM_HIGHWAY_TYPE,
                 string -> HighwayTag.valueOf(string.toUpperCase()));
         // LOAD_FACTOR 0.8 gives us default initial capacity 50 / 0.8 = 62.5
         // map & queue will allocate 64 (the nearest power of 2) for that initial capacity
@@ -73,9 +73,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
-                && HighwayTag.highwayTag(object)
-                        .map(tag -> tag.isMoreImportantThanOrEqualTo(this.minimumImportanceHighway))
-                        .orElse(false);
+                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
     }
 
     @Override
@@ -191,11 +189,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
     /**
      * This function checks to see if the end node of an Edge AtlasObject has an amenity tag with
-     * one of the amenityValuesToExclude.
+     * one of the AMENITY_VALUES_TO_EXCLUDE.
      * 
      * @param object
      *            An AtlasObject (known to be an Edge)
-     * @return {@code true} if the end node of the end has one of the amenityValuesToExclude, and
+     * @return {@code true} if the end node of the end has one of the AMENITY_VALUES_TO_EXCLUDE, and
      *         {@code false} otherwise
      */
     private boolean endNodeHasAmenityTypeToExclude(final AtlasObject object)
@@ -203,7 +201,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
         final Node endNode = edge.end();
 
-        return Validators.isOfType(endNode, AmenityTag.class, amenityValuesToExclude);
+        return Validators.isOfType(endNode, AmenityTag.class, AMENITY_VALUES_TO_EXCLUDE);
     }
 
     /**
@@ -218,8 +216,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private boolean shouldQuitNow(final Edge edge)
     {
         // If the edge has already been flagged by another process then we can break out of the
-        // loop and assume that whether the check was a flag or not was handled by the other
-        // process
+        // loop and assume that whether the check was a flag or not was handled by the other process
         return this.isFlagged(edge.getIdentifier())
                 // We don't want to handle certain types of parking amenities
                 || this.endNodeHasAmenityTypeToExclude(edge)

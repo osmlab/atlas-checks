@@ -90,7 +90,7 @@ public class SinkIslandCheckTest
     {
         this.verifier.actual(this.setup.getServiceSinkIsland(),
                 new SinkIslandCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"SinkIslandCheck\": {\"tree.size\": 3, \"highway.importance.minimum\": \"RESIDENTIAL\"}}")));
+                        "{\"SinkIslandCheck\": {\"tree.size\": 3, \"minimum.highway.type\": \"RESIDENTIAL\"}}")));
         this.verifier.verifyEmpty();
     }
 }
