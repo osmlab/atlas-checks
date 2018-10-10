@@ -100,7 +100,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         {
             // If this edge has certain characteristics, we can be sure that we don't want to
             // flag it.
-            if (this.doNotFlagThisEdge(candidate))
+            if (this.edgeCharacteristicsToIgnore(candidate))
             {
                 emptyFlag = true;
                 break;
@@ -213,7 +213,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
      * @return {@code true} if the edge is already flagged, has an amenity type we want to exclude,
      *         or ends in a boundary node {@code false} otherwise
      */
-    private boolean doNotFlagThisEdge(final Edge edge)
+    private boolean edgeCharacteristicsToIgnore(final Edge edge)
     {
         // If the edge has already been flagged by another process then we can break out of the
         // loop and assume that whether the check was a flag or not was handled by the other process
