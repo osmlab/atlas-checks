@@ -5,6 +5,8 @@ import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
 /**
  * Unit test atlases for {@link ShadowDetectionCheck}.
@@ -44,6 +46,27 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                     @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes",
                             "building:levels=5", "building:min_level=1" }) })
     private Atlas invalidFloatingLevelBuildingAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_3) }) },
+            // relation
+            relations = { @Relation(members = {
+                    @Member(id = "1000000", type = "area", role = "outer") }, tags = {
+                            "type=multipolygon", "building=yes", "building:levels=5" }) })
+    private Atlas validFloatingLevelRelationBuildingAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_3) }) },
+            // relation
+            relations = { @Relation(members = {
+                    @Member(id = "1000000", type = "area", role = "outer") }, tags = {
+                            "type=multipolygon", "building=yes", "building:levels=5",
+                            "building:min_level=1" }) })
+    private Atlas invalidFloatingLevelRelationBuildingAtlas;
 
     @TestAtlas(
             // areas
@@ -176,6 +199,37 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     @TestAtlas(
             // areas
             areas = {
+                    @Area(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_3) }),
+                    @Area(id = "2000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_6),
+                            @Loc(value = TEST_5) }, tags = { "building:part=yes",
+                                    "building:levels=8", "building:min_level=5" }) },
+            // relation
+            relations = { @Relation(members = {
+                    @Member(id = "1000000", type = "area", role = "outer") }, tags = {
+                            "type=multipolygon", "building=yes", "building:levels=5" }) })
+    private Atlas validBuildingRelationAndPartStackedAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = {
+                    @Area(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_3) }),
+                    @Area(id = "2000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_6),
+                            @Loc(value = TEST_5) }, tags = { "building:part=yes",
+                                    "building:levels=8", "building:min_level=5" }) },
+            // relation
+            relations = { @Relation(members = {
+                    @Member(id = "1000000", type = "area", role = "outer") }, tags = {
+                            "type=multipolygon", "building=yes", "building:levels=5",
+                            "building:min_level=1" }) })
+    private Atlas invalidBuildingRelationAndPartStackedAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = {
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes",
                                     "building:levels=5", "building:min_level=2" }),
@@ -219,6 +273,16 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidFloatingLevelBuildingAtlas()
     {
         return this.invalidFloatingLevelBuildingAtlas;
+    }
+
+    public Atlas validFloatingLevelRelationBuildingAtlas()
+    {
+        return this.validFloatingLevelRelationBuildingAtlas;
+    }
+
+    public Atlas invalidFloatingLevelRelationBuildingAtlas()
+    {
+        return this.invalidFloatingLevelRelationBuildingAtlas;
     }
 
     public Atlas validBuildingPartsTouchAtlas()
@@ -274,6 +338,16 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidBuildingAndPartStackedAtlas()
     {
         return this.invalidBuildingAndPartStackedAtlas;
+    }
+
+    public Atlas validBuildingRelationAndPartStackedAtlas()
+    {
+        return this.validBuildingRelationAndPartStackedAtlas;
+    }
+
+    public Atlas invalidBuildingRelationAndPartStackedAtlas()
+    {
+        return this.invalidBuildingRelationAndPartStackedAtlas;
     }
 
     public Atlas invalidBuildingsStackedAtlas()

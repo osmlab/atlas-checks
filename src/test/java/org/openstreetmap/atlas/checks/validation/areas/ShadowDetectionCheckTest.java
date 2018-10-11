@@ -43,6 +43,22 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
+    public void validFloatingLevelRelationBuildingTest()
+    {
+        this.verifier.actual(this.setup.validFloatingLevelRelationBuildingAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void invalidFloatingLevelRelationBuildingTest()
+    {
+        this.verifier.actual(this.setup.invalidFloatingLevelRelationBuildingAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void validBuildingPartsTouchTest()
     {
         this.verifier.actual(this.setup.validBuildingPartsTouchAtlas(),
@@ -126,6 +142,23 @@ public class ShadowDetectionCheckTest
     public void invalidBuildingAndPartStackedTest()
     {
         this.verifier.actual(this.setup.invalidBuildingAndPartStackedAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void validBuildingRelationAndPartStackedTest()
+    {
+        this.verifier.actual(this.setup.validBuildingRelationAndPartStackedAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void invalidBuildingRelationAndPartStackedTest()
+    {
+        this.verifier.actual(this.setup.invalidBuildingRelationAndPartStackedAtlas(),
                 new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));

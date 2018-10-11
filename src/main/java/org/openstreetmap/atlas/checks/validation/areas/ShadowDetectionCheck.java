@@ -2,18 +2,30 @@ package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.geography.GeometricSurface;
+import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
+import org.openstreetmap.atlas.geography.index.PackedSpatialIndex;
+import org.openstreetmap.atlas.geography.index.RTree;
+import org.openstreetmap.atlas.geography.index.SpatialIndex;
 import org.openstreetmap.atlas.tags.BuildingLevelsTag;
 import org.openstreetmap.atlas.tags.BuildingMinLevelTag;
 import org.openstreetmap.atlas.tags.BuildingPartTag;
@@ -23,7 +35,6 @@ import org.openstreetmap.atlas.tags.MinHeightTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 import com.google.common.collect.Range;
 
@@ -43,6 +54,8 @@ public class ShadowDetectionCheck extends BaseCheck
 
     private static final double LEVEL_TO_METERS_CONVERSION = 3.5;
     private static final String ZERO_STRING = "0";
+
+    private final Map<Atlas, SpatialIndex<Relation>> relationSpatialIndecies = new HashMap<>();
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -67,7 +80,9 @@ public class ShadowDetectionCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !this.isFlagged(object.getIdentifier()) && object instanceof Area
+        return !this.isFlagged(object.getIdentifier())
+                && (object instanceof Area
+                        || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
                 && this.hasMinKey(object);
     }
 
@@ -81,20 +96,34 @@ public class ShadowDetectionCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Area area = (Area) object;
-
         // Gather connected building parts and check for a connection to the ground
-        final Set<Area> floatingParts = this.getFloatingParts(area);
+        final Set<AtlasObject> floatingParts = this.getFloatingParts(object);
         if (!floatingParts.isEmpty())
         {
-            final CheckFlag flag = this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier()));
-            for (final Area part : floatingParts)
+            final CheckFlag flag;
+            if (object instanceof Relation)
+            {
+                flag = this.createFlag(this.flatten((Relation) object),
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+            }
+            else
+            {
+                flag = this.createFlag(object,
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+            }
+            for (final AtlasObject part : floatingParts)
             {
                 this.markAsFlagged(part.getIdentifier());
-                if (!part.equals(area))
+                if (!part.equals(object))
                 {
-                    flag.addObject(part);
+                    if (part instanceof Relation)
+                    {
+                        flag.addObjects(this.flatten((Relation) part));
+                    }
+                    else
+                    {
+                        flag.addObject(part);
+                    }
                 }
             }
             return Optional.of(flag);
@@ -113,28 +142,41 @@ public class ShadowDetectionCheck extends BaseCheck
      * an empty {@link Set} is returned because the parts are not floating.
      *
      * @param startingPart
-     *            {@link Area} to start the walker from
-     * @return a {@link Set} of {@link Area}s that are all floating
+     *            {@link AtlasObject} to start the walker from
+     * @return a {@link Set} of {@link AtlasObject}s that are all floating
      */
-    private Set<Area> getFloatingParts(final Area startingPart)
+    private Set<AtlasObject> getFloatingParts(final AtlasObject startingPart)
     {
-        final Set<Area> connectedParts = new HashSet<>();
-        final ArrayDeque<Area> toCheck = new ArrayDeque<>();
+        final Set<AtlasObject> connectedParts = new HashSet<>();
+        final ArrayDeque<AtlasObject> toCheck = new ArrayDeque<>();
         connectedParts.add(startingPart);
         toCheck.add(startingPart);
 
         while (!toCheck.isEmpty())
         {
-            final Area checking = toCheck.poll();
+            final AtlasObject checking = toCheck.poll();
             // If a connection to the ground is found the parts are not floating
             if (!isOffGround(checking))
             {
                 return new HashSet<>();
             }
             // Get parts connected in 3D
-            final Set<Area> neighboringParts = Iterables.asSet(checking.getAtlas()
-                    .areasIntersecting(checking.bounds().expand(Distance.ONE_METER),
-                            neighboringPart(checking, connectedParts)));
+            final Set<AtlasObject> neighboringParts = new HashSet<>();
+            final Rectangle checkingBounds = checking.bounds();
+            // Get Areas
+            neighboringParts
+                    .addAll(Iterables.asSet(checking.getAtlas().areasIntersecting(checkingBounds,
+                            area -> this.neighboringPart(area, checking, connectedParts))));
+            // Get Relations
+            if (!this.relationSpatialIndecies.containsKey(checking.getAtlas()))
+            {
+                this.relationSpatialIndecies.put(checking.getAtlas(),
+                        this.buildRelationSpatialIndex(checking.getAtlas()));
+            }
+            neighboringParts.addAll(Iterables
+                    .asSet(this.relationSpatialIndecies.get(checking.getAtlas()).get(checkingBounds,
+                            relation -> this.neighboringPart(relation, checking, connectedParts))));
+            // Add the parts to the Set and Queue
             connectedParts.addAll(neighboringParts);
             toCheck.addAll(neighboringParts);
         }
@@ -142,44 +184,51 @@ public class ShadowDetectionCheck extends BaseCheck
     }
 
     /**
-     * Checks if two areas are building parts and overlap or touch each other.
+     * Checks if two {@link AtlasObject}s are building parts and overlap each other.
      *
      * @param part
      *            a known building part to check against
-     * @return true if the predicate {@link Area} is a building part and intersects or touches
-     *         {@code part}
+     * @return true if {@code object} is a building part and overlaps {@code part}
      */
-    private Predicate<Area> neighboringPart(final Area part, final Set<Area> checked)
+    private boolean neighboringPart(final AtlasObject object, final AtlasObject part,
+            final Set<AtlasObject> checked)
     {
-        return area ->
+        final RelationOrAreaToMultiPolygonConverter converter = new RelationOrAreaToMultiPolygonConverter();
+        try
         {
-            final Polygon partPolygon = part.asPolygon();
-            final Polygon areaPolygon = area.asPolygon();
-            // Check if it is a building part, and either intersects or touches.
-            return !checked.contains(area) && !this.isFlagged(area.getIdentifier())
-                    && (this.isBuildingPart(area) || BuildingTag.isBuilding(area))
-                    && (partPolygon.intersects(areaPolygon)
-                            || partPolygon.stream().anyMatch(areaPolygon::contains)
-                            || partPolygon.fullyGeometricallyEncloses(areaPolygon)
-                            || areaPolygon.fullyGeometricallyEncloses(partPolygon))
-                    && neighborsHeightContains(part, area);
-        };
+            final GeometricSurface partPolygon = part instanceof Area ? ((Area) part).asPolygon()
+                    : converter.convert((Relation) part);
+            final GeometricSurface objectPolygon = object instanceof Area
+                    ? ((Area) object).asPolygon() : converter.convert((Relation) object);
+            // Check if it is a building part, and overlaps.
+            return !checked.contains(object) && !this.isFlagged(object.getIdentifier())
+                    && (this.isBuildingPart(object) || BuildingTag.isBuilding(object))
+                    && (partPolygon instanceof Polygon
+                            ? objectPolygon.overlaps((Polygon) partPolygon)
+                            : objectPolygon.overlaps((MultiPolygon) partPolygon))
+                    && neighborsHeightContains(part, object);
+        }
+        // Ignore malformed MultiPolygons
+        catch (final CoreException invalidMultiPolygon)
+        {
+            return false;
+        }
     }
 
     /**
-     * Given two {@link Area}s, checks that they have any intersecting or touching height values.
-     * The range of height values for the {@link Area}s are calculated using height and layer tags.
-     * A {@code min_height} or {@code building:min_layer} tag must exist for {@code part}. All other
-     * tags will use defaults if not found.
+     * Given two {@link AtlasObject}s, checks that they have any intersecting or touching height
+     * values. The range of height values for the {@link AtlasObject}s are calculated using height
+     * and layer tags. A {@code min_height} or {@code building:min_layer} tag must exist for
+     * {@code part}. All other tags will use defaults if not found.
      *
      * @param part
-     *            {@link Area} being checked
+     *            {@link AtlasObject} being checked
      * @param neighbor
-     *            {@lnik Area} being checked against
+     *            {@link AtlasObject} being checked against
      * @return true if {@code part} intersects or touches {@code neighbor}, by default neighbor is
      *         flat on the ground.
      */
-    private boolean neighborsHeightContains(final Area part, final Area neighbor)
+    private boolean neighborsHeightContains(final AtlasObject part, final AtlasObject neighbor)
     {
         final Map<String, String> neighborTags = neighbor.getOsmTags();
         final Map<String, String> partTags = part.getOsmTags();
@@ -188,53 +237,62 @@ public class ShadowDetectionCheck extends BaseCheck
         double neighborMinHeight = 0;
         double neighborMaxHeight = 0;
 
-        // Set partMinHeight
-        partMinHeight = partTags.containsKey(MinHeightTag.KEY)
-                ? Double.parseDouble(partTags.get(MinHeightTag.KEY))
-                : Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
-                        * LEVEL_TO_METERS_CONVERSION;
-        // Set partMaxHeight
-        if (partTags.containsKey(HeightTag.KEY))
-        {
-            partMaxHeight = Double.parseDouble(partTags.get(HeightTag.KEY));
-        }
-        else if (partTags.containsKey(BuildingLevelsTag.KEY))
-        {
-            partMaxHeight = Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
-                    * LEVEL_TO_METERS_CONVERSION;
-        }
-        else
-        {
-            partMaxHeight = partMinHeight;
-        }
-        // Set neighborMinHeight
-        if (neighborTags.containsKey(MinHeightTag.KEY))
-        {
-            neighborMinHeight = Double.parseDouble(neighborTags.get(MinHeightTag.KEY));
-        }
-        else if (neighborTags.containsKey(BuildingMinLevelTag.KEY))
-        {
-            neighborMinHeight = Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
-                    * LEVEL_TO_METERS_CONVERSION;
-        }
-        // Set neighborMaxHeight
-        if (neighborTags.containsKey(HeightTag.KEY))
-        {
-            neighborMaxHeight = Double.parseDouble(neighborTags.get(HeightTag.KEY));
-        }
-        else if (neighborTags.containsKey(BuildingLevelsTag.KEY))
-        {
-            neighborMaxHeight = Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
-                    * LEVEL_TO_METERS_CONVERSION;
-        }
-
-        // Check the range of heights for overlap.
         try
         {
-            return Range.closed(partMinHeight, partMaxHeight)
-                    .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
+            // Set partMinHeight
+            partMinHeight = partTags.containsKey(MinHeightTag.KEY)
+                    ? Double.parseDouble(partTags.get(MinHeightTag.KEY))
+                    : Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
+                            * LEVEL_TO_METERS_CONVERSION;
+            // Set partMaxHeight
+            if (partTags.containsKey(HeightTag.KEY))
+            {
+                partMaxHeight = Double.parseDouble(partTags.get(HeightTag.KEY));
+            }
+            else if (partTags.containsKey(BuildingLevelsTag.KEY))
+            {
+                partMaxHeight = Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
+                        * LEVEL_TO_METERS_CONVERSION;
+            }
+            else
+            {
+                partMaxHeight = partMinHeight;
+            }
+            // Set neighborMinHeight
+            if (neighborTags.containsKey(MinHeightTag.KEY))
+            {
+                neighborMinHeight = Double.parseDouble(neighborTags.get(MinHeightTag.KEY));
+            }
+            else if (neighborTags.containsKey(BuildingMinLevelTag.KEY))
+            {
+                neighborMinHeight = Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
+                        * LEVEL_TO_METERS_CONVERSION;
+            }
+            // Set neighborMaxHeight
+            if (neighborTags.containsKey(HeightTag.KEY))
+            {
+                neighborMaxHeight = Double.parseDouble(neighborTags.get(HeightTag.KEY));
+            }
+            else if (neighborTags.containsKey(BuildingLevelsTag.KEY))
+            {
+                neighborMaxHeight = Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
+                        * LEVEL_TO_METERS_CONVERSION;
+            }
+
+            // Check the range of heights for overlap.
+            try
+            {
+                return Range.closed(partMinHeight, partMaxHeight)
+                        .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
+            }
+            // Ignore buildings with a min value lager than its height
+            catch (final IllegalArgumentException exc)
+            {
+                return false;
+            }
         }
-        catch (final IllegalArgumentException exc)
+        // Ignore features with bad tags (like 2;10)
+        catch (final NumberFormatException badTagValue)
         {
             return false;
         }
@@ -266,16 +324,85 @@ public class ShadowDetectionCheck extends BaseCheck
     }
 
     /**
-     * Checks if an {@link Area} has tags indicating it is off the ground.
+     * Checks if an {@link AtlasObject} has tags indicating it is off the ground.
      *
-     * @param area
-     *            {@link Area} to check
+     * @param object
+     *            {@link AtlasObject} to check
      * @return true if the area is off the ground
      */
-    private boolean isOffGround(final Area area)
+    private boolean isOffGround(final AtlasObject object)
     {
-        return !area.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING).equals(ZERO_STRING)
-                || !area.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING)
+        return !object.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING).equals(ZERO_STRING)
+                || !object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING)
                         .equals(ZERO_STRING);
+    }
+
+    /**
+     * Create a new spatial index that pre filters building relations. Pre-filtering drastically
+     * increases runtime by eliminating very large non-building relations. Copied from
+     * {@link org.openstreetmap.atlas.geography.atlas.AbstractAtlas}.
+     *
+     * @return A newly created spatial index
+     */
+    private SpatialIndex<Relation> buildRelationSpatialIndex(final Atlas atlas)
+    {
+        final SpatialIndex<Relation> index = new PackedSpatialIndex<Relation, Long>(new RTree<>())
+        {
+            @Override
+            protected Long compress(final Relation item)
+            {
+                return item.getIdentifier();
+            }
+
+            @Override
+            protected boolean isValid(final Relation item, final Rectangle bounds)
+            {
+                return item.intersects(bounds);
+            }
+
+            @Override
+            protected Relation restore(final Long packed)
+            {
+                return atlas.relation(packed);
+            }
+        };
+        atlas.relations(relation -> relation.isMultiPolygon() && BuildingTag.isBuilding(relation))
+                .forEach(index::add);
+        return index;
+    }
+
+    /**
+     * remove this when better solution is available
+     *
+     * @param relation
+     *            Relation
+     * @return set of AtlasObjects
+     */
+    public Set<AtlasObject> flatten(final Relation relation)
+    {
+        final Set<AtlasObject> relationMembers = new HashSet<>();
+        final Deque<AtlasObject> toProcess = new LinkedList<>();
+        final Set<Long> relationsSeen = new HashSet<>();
+        AtlasObject polledMember;
+        toProcess.add(relation);
+        while (!toProcess.isEmpty())
+        {
+            polledMember = toProcess.poll();
+            if (polledMember instanceof Relation)
+            {
+                if (relationsSeen.contains(polledMember.getIdentifier()))
+                {
+                    continue;
+                }
+                ((Relation) polledMember).members()
+                        .forEach(member -> toProcess.add(member.getEntity()));
+                relationsSeen.add(polledMember.getIdentifier());
+            }
+            else
+            {
+                relationMembers.add(polledMember);
+            }
+        }
+        return relationMembers;
     }
 }
