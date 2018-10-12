@@ -58,9 +58,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
         super(configuration);
         this.treeSize = configurationValue(configuration, "tree.size", TREE_SIZE_DEFAULT,
                 Math::toIntExact);
-        this.minimumHighwayType = configurationValue(configuration,
-                "minimum.highway.type", DEFAULT_MINIMUM_HIGHWAY_TYPE,
-                string -> HighwayTag.valueOf(string.toUpperCase()));
+        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
+                DEFAULT_MINIMUM_HIGHWAY_TYPE, string -> HighwayTag.valueOf(string.toUpperCase()));
         // LOAD_FACTOR 0.8 gives us default initial capacity 50 / 0.8 = 62.5
         // map & queue will allocate 64 (the nearest power of 2) for that initial capacity
         // Our algorithm does not allow neither explored set nor candidates queue exceed
@@ -72,8 +71,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
-                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+        return this.validEdge(object) && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
+                .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
     }
 
     @Override
