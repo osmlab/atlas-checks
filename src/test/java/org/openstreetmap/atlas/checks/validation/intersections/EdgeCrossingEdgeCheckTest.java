@@ -61,7 +61,8 @@ public class EdgeCrossingEdgeCheckTest
     {
         this.verifier.actual(this.setup.invalidCrossingNonMasterItemsAtlas(),
                 new EdgeCrossingEdgeCheck(configuration));
-        this.verifier.verifyEmpty();
+        this.verifier.verifyNotEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
     }
 
     @Test

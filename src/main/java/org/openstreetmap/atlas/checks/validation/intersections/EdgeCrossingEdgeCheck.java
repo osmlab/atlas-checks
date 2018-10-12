@@ -19,6 +19,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -26,7 +27,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * they should have an intersection location shared in both edges. Otherwise, their layer tag should
  * tell the difference.
  *
- * @author mkalender, gpogulsky
+ * @author mkalender, gpogulsky, bbreithaupt
  */
 public class EdgeCrossingEdgeCheck extends BaseCheck<String>
 {
@@ -64,7 +65,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
                 // Otherwise, if crossing edges has valid, but different tag values
                 // Then that is still a valid crossing
                 || edgeLayer.isPresent() && crossingEdgeLayer.isPresent()
-                        && !edgeLayer.orElse(0L).equals(crossingEdgeLayer.orElse(0L));
+                        && !edgeLayer.get().equals(crossingEdgeLayer.get());
     }
 
     private static String generateAtlasObjectPairIdentifier(final AtlasObject thisObject,
@@ -120,7 +121,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
         final Edge edge = (Edge) object;
         final PolyLine edgeAsPolyLine = edge.asPolyLine();
         final Rectangle edgeBounds = edge.bounds();
-        final Optional<Long> edgeLayer = LayerTag.getTaggedValue(object);
+        final Optional<Long> edgeLayer = Validators.hasValuesFor(edge, LayerTag.class)
+                ? LayerTag.getTaggedValue(edge) : Optional.of(0L);
 
         // Retrieve crossing edges
         final Atlas atlas = object.getAtlas();
@@ -140,7 +142,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
         for (final Edge crossingEdge : crossingEdges)
         {
             final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-            final Optional<Long> crossingEdgeLayer = LayerTag.getTaggedValue(crossingEdge);
+            final Optional<Long> crossingEdgeLayer = Validators.hasValuesFor(crossingEdge,
+                    LayerTag.class) ? LayerTag.getTaggedValue(crossingEdge) : Optional.of(0L);
             final Set<Location> intersections = edgeAsPolyLine
                     .intersections(crossingEdgeAsPolyLine);
 
