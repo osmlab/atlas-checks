@@ -183,7 +183,7 @@ public class UnusualLayerTagsCheckTest
     public void testMissingBridgeLayerTagEdge()
     {
         this.verifier.actual(this.setup.missingLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyEmpty();
+        this.verifier.verifyNotEmpty();
     }
 
     @Test
@@ -228,10 +228,11 @@ public class UnusualLayerTagsCheckTest
     public void testNullJunctionLayerTagEdge()
     {
         this.verifier.actual(this.setup.nullLayerTagJunctionEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
         this.verifier.verify(flag ->
         {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
+            Assert.assertTrue(flag.getInstructions()
+                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
         });
     }
 

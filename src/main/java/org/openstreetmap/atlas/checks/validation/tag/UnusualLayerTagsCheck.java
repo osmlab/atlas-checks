@@ -37,7 +37,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     // Constants for bridge checks
     private static final long BRIDGE_LAYER_TAG_MIN_VALUE = 1;
     public static final String BRIDGE_INSTRUCTION = String.format(
-            "Bridge edges must have no layer tag or a layer tag set to a value in [%d, %d].",
+            "Bridge edges must have a layer tag set to a value in [%d, %d].",
             BRIDGE_LAYER_TAG_MIN_VALUE, BRIDGE_LAYER_TAG_MAX_VALUE);
     private static final int THREE = 3;
     private static final long TUNNEL_LAYER_TAG_MAX_VALUE = -1;
@@ -55,13 +55,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 7040472721500502360L;
 
     /**
-     * Initializes a predicate to limit check for tunnels, junctions, bridges and edges with layer
-     * tag values
+     * Initializes a predicate to limit check for tunnels, bridges and edges with layer tag values
      */
     static
     {
-        ALLOWED_TAGS = Validators.hasValuesFor(JunctionTag.class)
-                .or(Validators.hasValuesFor(BridgeTag.class))
+        ALLOWED_TAGS = Validators.hasValuesFor(BridgeTag.class)
                 .or(Validators.hasValuesFor(LayerTag.class)).or(ELIGIBLE_TUNNEL_TAGS);
     }
 
@@ -78,7 +76,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
 
     /**
      * Validate if given {@link AtlasObject} is actually an {@link Edge} and make sure the edge has
-     * one of the following tags: tunnel, junction, bridge, layer
+     * one of the following tags: tunnel, bridge, layer
      */
     @Override
     public boolean validCheckForObject(final AtlasObject object)
