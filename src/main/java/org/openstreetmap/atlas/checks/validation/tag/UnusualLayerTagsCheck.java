@@ -30,22 +30,22 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     public static final String INVALID_LAYER_INSTRUCTION = String.format(
             "A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
             LayerTag.getMinValue(), LayerTag.getMaxValue());
-    public static final String JUNCTION_INSTRUCTION = "Junction edges with valid layer value "
+    public static final String JUNCTION_INSTRUCTION = "Junctions with valid layer values "
             + "must include bridge or tunnel tags";
     private static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
     // Constants for bridge checks
     private static final long BRIDGE_LAYER_TAG_MIN_VALUE = 1;
     public static final String BRIDGE_INSTRUCTION = String.format(
-            "Bridge edges must have a layer tag set to a value in [%d, %d].",
-            BRIDGE_LAYER_TAG_MIN_VALUE, BRIDGE_LAYER_TAG_MAX_VALUE);
+            "Bridges must have a layer tag set to a value in [%d, %d].", BRIDGE_LAYER_TAG_MIN_VALUE,
+            BRIDGE_LAYER_TAG_MAX_VALUE);
     private static final int THREE = 3;
     private static final long TUNNEL_LAYER_TAG_MAX_VALUE = -1;
     // Constants for tunnel checks
     private static final long TUNNEL_LAYER_TAG_MIN_VALUE = LayerTag.getMinValue();
     public static final String TUNNEL_INSTRUCTION = String.format(
-            "Tunnel edges must have layer tag set to a value in [%d, %d].",
-            TUNNEL_LAYER_TAG_MIN_VALUE, TUNNEL_LAYER_TAG_MAX_VALUE);
+            "Tunnels must have layer tags set to a value in [%d, %d].", TUNNEL_LAYER_TAG_MIN_VALUE,
+            TUNNEL_LAYER_TAG_MAX_VALUE);
     public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TUNNEL_INSTRUCTION,
             JUNCTION_INSTRUCTION, BRIDGE_INSTRUCTION, INVALID_LAYER_INSTRUCTION);
     // tunnel=building_passage should be excluded from eligible candidates
