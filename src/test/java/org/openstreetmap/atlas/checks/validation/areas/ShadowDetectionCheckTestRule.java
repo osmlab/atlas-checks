@@ -37,6 +37,20 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
             // areas
             areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                     @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes",
+                            "height=20", "min_height=-8" }) })
+    private Atlas validBuildingBadMinAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes",
+                            "height=20", "min_height=bad" }) })
+    private Atlas invalidBuildingBadMinAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes",
                             "height=20", "min_height=3" }) })
     private Atlas invalidFloatingHeightBuildingAtlas;
 
@@ -263,6 +277,16 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas validBuildingAtlas()
     {
         return this.validBuildingAtlas;
+    }
+
+    public Atlas validBuildingBadMinAtlas()
+    {
+        return this.validBuildingBadMinAtlas;
+    }
+
+    public Atlas invalidBuildingBadMinAtlas()
+    {
+        return this.invalidBuildingBadMinAtlas;
     }
 
     public Atlas invalidFloatingHeightBuildingAtlas()

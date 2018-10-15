@@ -27,6 +27,22 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
+    public void validBuildingBadMinTest()
+    {
+        this.verifier.actual(this.setup.validBuildingBadMinAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void invalidBuildingBadMinTest()
+    {
+        this.verifier.actual(this.setup.invalidBuildingBadMinAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void invalidFloatingHeightBuildingTest()
     {
         this.verifier.actual(this.setup.invalidFloatingHeightBuildingAtlas(),

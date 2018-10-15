@@ -332,9 +332,22 @@ public class ShadowDetectionCheck extends BaseCheck
      */
     private boolean isOffGround(final AtlasObject object)
     {
-        return !object.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING).equals(ZERO_STRING)
-                || !object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING)
-                        .equals(ZERO_STRING);
+        Double minHeight;
+        Double minLevel;
+        try
+        {
+            minHeight = Double
+                    .parseDouble(object.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING));
+            minLevel = Double.parseDouble(
+                    object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING));
+        }
+        // We want to flag if there is a bad value
+        catch (final NumberFormatException badTagValue)
+        {
+            minHeight = 1.0;
+            minLevel = 1.0;
+        }
+        return minHeight > 0 || minLevel > 0;
     }
 
     /**
