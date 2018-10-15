@@ -23,9 +23,8 @@ public class EdgeCrossingEdgeCheckTest
     {
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(),
                 new EdgeCrossingEdgeCheck(this.configuration));
-        this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 3));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -62,7 +61,7 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.actual(this.setup.invalidCrossingNonMasterItemsAtlas(),
                 new EdgeCrossingEdgeCheck(configuration));
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test

@@ -1,15 +1,16 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
-import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
@@ -20,6 +21,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -29,7 +31,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author mkalender, gpogulsky, bbreithaupt
  */
-public class EdgeCrossingEdgeCheck extends BaseCheck<String>
+public class EdgeCrossingEdgeCheck extends BaseCheck
 {
     private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
@@ -71,22 +73,12 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
                         && !edgeLayer.get().equals(crossingEdgeLayer.get());
     }
 
-    private static String generateAtlasObjectPairIdentifier(final AtlasObject thisObject,
-            final AtlasObject thatObject)
-    {
-        if (thisObject.getIdentifier() < thatObject.getIdentifier())
-        {
-            return thisObject.getIdentifier() + CommonConstants.DASH + thatObject.getIdentifier();
-        }
-
-        return thatObject.getIdentifier() + CommonConstants.DASH + thisObject.getIdentifier();
-    }
-
     public EdgeCrossingEdgeCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
-                MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
+        this.minimumHighwayType = (HighwayTag) configurationValue(configuration,
+                "minimum.highway.type", MINIMUM_HIGHWAY_DEFAULT,
+                str -> Enum.valueOf(HighwayTag.class, ((String) str).toUpperCase()));
     }
 
     @Override
@@ -98,67 +90,72 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // Prepare the edge being tested for checks
-        final Edge edge = (Edge) object;
-        final PolyLine edgeAsPolyLine = edge.asPolyLine();
-        final Rectangle edgeBounds = edge.bounds();
-        final Optional<Long> edgeLayer = Validators.hasValuesFor(edge, LayerTag.class)
-                ? LayerTag.getTaggedValue(edge) : Optional.of(0L);
+        final Set<Edge> invalidEdges = new HashSet<>();
+        final Queue<Edge> toCheck = new ArrayDeque<>();
+        invalidEdges.add((Edge) object);
+        toCheck.add((Edge) object);
 
-        // Retrieve crossing edges
-        final Atlas atlas = object.getAtlas();
-        final Iterable<Edge> crossingEdges = atlas.edgesIntersecting(edgeBounds,
-                // filter out the same edge, non-valid crossing edges and already flagged ones
-                crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
-                        && isValidCrossingEdge(crossingEdge)
-                        && !this.isFlagged(generateAtlasObjectPairIdentifier(edge, crossingEdge)));
-
-        List<Edge> invalidEdges = null;
-
-        // Go through crossing items and collect invalid crossings
-        // NOTE: Due to way sectioning same OSM way could be marked multiple times here. However,
-        // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
-        // Therefore, if an OSM way crosses another OSM way multiple times in separate edges, then
-        // each edge will be marked explicitly.
-        for (final Edge crossingEdge : crossingEdges)
+        // Use BFS to gather all connected invalid crossings, to avoid flagging edges more than once
+        while (!toCheck.isEmpty())
         {
-            final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-            final Optional<Long> crossingEdgeLayer = Validators.hasValuesFor(crossingEdge,
-                    LayerTag.class) ? LayerTag.getTaggedValue(crossingEdge) : Optional.of(0L);
-            final Set<Location> intersections = edgeAsPolyLine
-                    .intersections(crossingEdgeAsPolyLine);
+            final Edge edge = toCheck.poll();
 
-            // Check whether crossing edge can actually cross
-            for (final Location intersection : intersections)
+            // Prepare the edge being tested for checks
+            final PolyLine edgeAsPolyLine = edge.asPolyLine();
+            final Rectangle edgeBounds = edge.bounds();
+            // If layer tag is present use its value, else use the OSM default
+            final Optional<Long> edgeLayer = Validators.hasValuesFor(edge, LayerTag.class)
+                    ? LayerTag.getTaggedValue(edge) : Optional.of(0L);
+
+            // Retrieve crossing edges
+            final Atlas atlas = object.getAtlas();
+            final List<Edge> crossingEdges = Iterables.asList(atlas.edgesIntersecting(edgeBounds,
+                    // filter out the same edge, non-valid crossing edges and already flagged ones
+                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
+                            && isValidCrossingEdge(crossingEdge)
+                            && !invalidEdges.contains(crossingEdge)));
+
+            // Go through crossing items and collect invalid crossings
+            // NOTE: Due to way sectioning same OSM way could be marked multiple times here.
+            // However,
+            // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
+            // Therefore, if an OSM way crosses another OSM way multiple times in separate edges,
+            // then
+            // each edge will be marked explicitly.
+            for (final Edge crossingEdge : crossingEdges)
             {
-                // Add this set to flagged pairs to skip it next time
-                this.markAsFlagged(generateAtlasObjectPairIdentifier(edge, crossingEdge));
+                final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
+                final Optional<Long> crossingEdgeLayer = Validators.hasValuesFor(crossingEdge,
+                        LayerTag.class) ? LayerTag.getTaggedValue(crossingEdge) : Optional.of(0L);
+                final Set<Location> intersections = edgeAsPolyLine
+                        .intersections(crossingEdgeAsPolyLine);
 
-                // Check if crossing is valid or not
-                if (canCross(edgeAsPolyLine, edgeLayer, crossingEdgeAsPolyLine, crossingEdgeLayer,
-                        intersection))
+                // Check whether crossing edge can actually cross
+                for (final Location intersection : intersections)
                 {
-                    continue;
-                }
+                    // Check if crossing is valid or not
+                    if (canCross(edgeAsPolyLine, edgeLayer, crossingEdgeAsPolyLine,
+                            crossingEdgeLayer, intersection))
+                    {
+                        continue;
+                    }
 
-                if (invalidEdges == null)
-                {
-                    // Normally we expect 1 or 2 edges in the list
-                    invalidEdges = new LinkedList<>();
+                    invalidEdges.add(crossingEdge);
+                    toCheck.add(crossingEdge);
                 }
-
-                invalidEdges.add(crossingEdge);
             }
         }
 
-        if (invalidEdges != null)
+        if (invalidEdges.size() > 1)
         {
             final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
+            this.markAsFlagged(object.getIdentifier());
             newFlag.addObject(object);
             newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
 
             invalidEdges.forEach(invalidEdge ->
             {
+                this.markAsFlagged(invalidEdge.getIdentifier());
                 newFlag.addObject(invalidEdge);
                 newFlag.addInstruction(
                         this.getLocalizedInstruction(1, invalidEdge.getOsmIdentifier()));
@@ -187,7 +184,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
     private boolean isValidCrossingEdge(final AtlasObject object)
     {
         if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object))
+                && !TagPredicates.IS_AREA.test(object) && !this.isFlagged(object.getIdentifier()))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
