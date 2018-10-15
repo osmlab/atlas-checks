@@ -10,7 +10,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * {@link UnusualLayerTagsCheck} test data
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class UnusualLayerTagsCheckTestRule extends CoreTestRule
 {

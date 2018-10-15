@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * {@link UnusualLayerTagsCheck} unit test
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class UnusualLayerTagsCheckTest
 {

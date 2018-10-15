@@ -22,7 +22,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * Checks {@link Edge}'s {@link LayerTag} and flags it if the value is unusual. Also see
  * http://wiki.openstreetmap.org/wiki/Key:layer
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
