@@ -86,6 +86,7 @@
     }
   },
   "EdgeCrossingEdgeCheck": {
+    "minimum.highway.type": "service",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",

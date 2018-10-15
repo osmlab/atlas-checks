@@ -10,7 +10,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * {@link EdgeCrossingEdgeCheckTest} data generator
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
 {

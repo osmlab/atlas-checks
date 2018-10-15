@@ -38,7 +38,10 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
     private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
+    private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.SERVICE.toString();
     private static final long serialVersionUID = 2146863485833228593L;
+
+    private final HighwayTag minimumHighwayType;
 
     /**
      * Checks whether given {@link PolyLine}s can cross each other.
@@ -79,33 +82,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
         return thatObject.getIdentifier() + CommonConstants.DASH + thisObject.getIdentifier();
     }
 
-    /**
-     * Validates given {@link AtlasObject} (assumed to be an {@link Edge}) whether it is a valid
-     * crossing edge or not
-     *
-     * @param object
-     *            {@link AtlasObject} to test
-     * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
-     */
-    private static boolean isValidCrossingEdge(final AtlasObject object)
-    {
-        if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object))
-        {
-            final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
-            if (highway.isPresent())
-            {
-                return HighwayTag.isCarNavigableHighway(highway.get())
-                        && !HighwayTag.CROSSING.equals(highway.get());
-            }
-        }
-
-        return false;
-    }
-
     public EdgeCrossingEdgeCheck(final Configuration configuration)
     {
         super(configuration);
+        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
+                MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
     }
 
     @Override
@@ -193,5 +174,30 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<String>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Validates given {@link AtlasObject} (assumed to be an {@link Edge}) whether it is a valid
+     * crossing edge or not
+     *
+     * @param object
+     *            {@link AtlasObject} to test
+     * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
+     */
+    private boolean isValidCrossingEdge(final AtlasObject object)
+    {
+        if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                && !TagPredicates.IS_AREA.test(object))
+        {
+            final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
+            if (highway.isPresent())
+            {
+                return HighwayTag.isCarNavigableHighway(highway.get())
+                        && !HighwayTag.CROSSING.equals(highway.get())
+                        && highway.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+            }
+        }
+
+        return false;
     }
 }

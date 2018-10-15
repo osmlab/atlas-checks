@@ -8,7 +8,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class EdgeCrossingEdgeCheckTest
 {
@@ -50,9 +50,9 @@ public class EdgeCrossingEdgeCheckTest
     public void testInvalidCrossingItemsWithSameLayerTagAtlas()
     {
         this.verifier.actual(this.setup.invalidCrossingItemsWithSameLayerTagAtlas(),
-                new EdgeCrossingEdgeCheck(this.configuration));
-        this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 2));
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"minimum.highway.type\":\"track\"}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
         this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
     }
 
