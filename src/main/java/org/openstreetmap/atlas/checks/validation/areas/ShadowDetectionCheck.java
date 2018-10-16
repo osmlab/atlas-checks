@@ -50,7 +50,8 @@ public class ShadowDetectionCheck extends BaseCheck
     private static final long serialVersionUID = -6968080042879358551L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "The building(s) and/or building part(s) float(s) above the ground. Please check the height/building:levels and min_height/building:min_level tags.");
+            "The building(s) and/or building part(s) float(s) above the ground. Please check the height/building:levels and min_height/building:min_level tags.",
+            "Relation {0,number,#} is floating.");
 
     private static final double LEVEL_TO_METERS_CONVERSION = 3.5;
     private static final String ZERO_STRING = "0";
@@ -104,12 +105,12 @@ public class ShadowDetectionCheck extends BaseCheck
             if (object instanceof Relation)
             {
                 flag = this.createFlag(this.flatten((Relation) object),
-                        this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+                        this.getLocalizedInstruction(0));
+                flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier()));
             }
             else
             {
-                flag = this.createFlag(object,
-                        this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+                flag = this.createFlag(object, this.getLocalizedInstruction(0));
             }
             for (final AtlasObject part : floatingParts)
             {
@@ -119,6 +120,8 @@ public class ShadowDetectionCheck extends BaseCheck
                     if (part instanceof Relation)
                     {
                         flag.addObjects(this.flatten((Relation) part));
+                        flag.addInstruction(
+                                this.getLocalizedInstruction(1, part.getOsmIdentifier()));
                     }
                     else
                     {
