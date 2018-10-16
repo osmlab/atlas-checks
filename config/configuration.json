@@ -94,6 +94,7 @@
     }
   },
   "FloatingEdgeCheck": {
+    "highway.minimum": "service",
     "length": {
       "maximum.kilometers": 100.0,
       "minimum.meters": 100.0
