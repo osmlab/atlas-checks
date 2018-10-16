@@ -148,6 +148,15 @@
       "tags":"lanes,highway"
     }
   },
+  "InvalidMiniRoundaboutCheck": {
+    "valence.minimum":6,
+    "challenge":{
+      "description":"Tasks containing invalid mini-roundabouts.",
+      "blurb":"Invalid Mini-Roundabout Tags",
+      "instruction":"Change the tags to represent the intersection more accurately.",
+      "difficulty":"NORMAL"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
@@ -169,6 +178,28 @@
       "description": "Tasks contain roundabouts that are malformed.",
       "blurb": "Malformed roundabouts",
       "instruction": "Open your favorite editor and fix the roundabout's geometry.",
+      "difficulty": "MEDIUM"
+    }
+  },
+  "MixedCaseNameCheck": {
+    "check_name.countries":["AIA", "ATG", "AUS", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB",
+      "CMR", "CAN", "CYM", "DMA", "FJI", "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM",
+      "KEN", "LSO", "MWI", "MLT", "MUS", "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE",
+      "SGP", "SLB", "ZAF", "SWZ", "TZA", "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT",
+      "ZMB", "ZWE"],
+    "name":{
+      "language.keys":["name:en"],
+      "affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
+      "articles": ["a", "an", "the"],
+      "prepositions": ["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as",
+        "into", "like", "near", "onto", "per", "till", "up", "via", "with", "for", "in"],
+      "units":["kv"]
+    },
+    "regex.split":" -/&@–",
+    "challenge": {
+      "description": "Tasks containing objects with mixed case names.",
+      "blurb": "Mixed Case Name",
+      "instruction": "Correct the listed names tags so they conform to capitalization standards",
       "difficulty": "MEDIUM"
     }
   },
