@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.AreaTag;
+import org.openstreetmap.atlas.tags.BarrierTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
 import org.openstreetmap.atlas.tags.EntranceTag;
@@ -43,6 +44,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
     private static final long serialVersionUID = 5986017212661374165L;
+    private static final long magic = 70384341L;
 
     private static Predicate<Edge> ignoreTags()
     {
@@ -53,10 +55,14 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || YES_VALUE.equals(edge.tag(INDOOR_KEY))
                 || Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY)
-                || edge.connectedNodes().stream().anyMatch(
-                        node -> Validators.isOfType(node, EntranceTag.class, EntranceTag.YES)
-                                || Validators.isOfType(node, AmenityTag.class,
-                                        AmenityTag.PARKING_ENTRANCE)));
+                || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
+                        EntranceTag.class, EntranceTag.YES)
+                        || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE))
+                || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                        && edge.getAtlas()
+                                .nodesWithin(edge.bounds(), node -> Validators.isOfType(node,
+                                        BarrierTag.class, BarrierTag.values()))
+                                .iterator().next() != null));
     }
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
@@ -69,6 +75,11 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 // Amenity=fuel
                 && !(Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
+
+                && !(Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE) && edge
+                        .getAtlas().pointsWithin(building.asPolygon(), point -> Validators
+                                .isOfType(point, AmenityTag.class, AmenityTag.FUEL))
+                        .iterator().hasNext())
                 // And if the layers have the same layer value
                 && LayerTag.getTaggedValue(edge).orElse(0L)
                         .equals(LayerTag.getTaggedValue(building).orElse(0L))
@@ -180,11 +191,12 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                             building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 }
                 knownIntersections.add(edge);
-                if (edge.hasReverseEdge())
+                if (edge.hasReverseEdge() && edge.reversed().isPresent())
                 {
                     knownIntersections.add(edge.reversed().get());
                 }
             }
         }
     }
+
 }

@@ -108,4 +108,11 @@ public class BuildingRoadIntersectionCheckTest
         this.verifier.actual(this.setup.getEdgeHighWayServiceAtlas(), check);
         this.verifier.verifyExpectedSize(0);
     }
+
+    @Test
+    public void testPointsWithinBuilding()
+    {
+        this.verifier.actual(this.setup.getNewAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
 }
