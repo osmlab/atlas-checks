@@ -59,9 +59,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
                         EntranceTag.class, EntranceTag.YES)
                         || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE))
-                || (highwayServiceValidator.test(edge) && edge.getAtlas().nodesWithin(edge.bounds(),
+                || edge.getAtlas().nodesWithin(edge.bounds(),
                         node -> Validators.isOfType(node, BarrierTag.class, BarrierTag.values()))
-                        .iterator().next() != null));
+                        .iterator().next() != null);
     }
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
@@ -75,10 +75,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 && !(highwayServiceValidator.test(edge)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
 
-                && !(highwayServiceValidator.test(edge) && edge
-                        .getAtlas().pointsWithin(building.asPolygon(), point -> Validators
-                                .isOfType(point, AmenityTag.class, AmenityTag.FUEL))
-                        .iterator().hasNext())
+                && !edge.getAtlas().pointsWithin(building.asPolygon(),
+                        point -> Validators.isOfType(point, AmenityTag.class, AmenityTag.FUEL))
+                        .iterator().hasNext()
                 // And if the layers have the same layer value
                 && LayerTag.getTaggedValue(edge).orElse(0L)
                         .equals(LayerTag.getTaggedValue(building).orElse(0L))
@@ -145,13 +144,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         final CheckFlag flag = new CheckFlag(getTaskIdentifier(building));
         flag.addObject(building);
         this.handleIntersections(intersectingEdges, flag, building);
-
-        if (flag.getPolyLines().size() > 1)
-        {
-            return Optional.of(flag);
-        }
-
-        return Optional.empty();
+        return flag.getPolyLines().size() > 1 ? Optional.of(flag) : Optional.empty();
     }
 
     @Override
@@ -191,5 +184,4 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
             }
         }
     }
-
 }
