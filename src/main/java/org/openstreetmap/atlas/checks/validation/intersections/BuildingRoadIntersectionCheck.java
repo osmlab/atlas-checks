@@ -43,8 +43,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
             BUILDING_ROAD_INTERSECTION_INSTRUCTION, BUILDING_SERVICE_ROAD_INTERSECTION_INSTRUCTION);
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
+    private static final Predicate<Edge> highwayServiceValidator = edge -> Validators.isOfType(edge,
+            HighwayTag.class, HighwayTag.SERVICE);
     private static final long serialVersionUID = 5986017212661374165L;
-    private static final long magic = 70384341L;
 
     private static Predicate<Edge> ignoreTags()
     {
@@ -53,16 +54,14 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
                 || YES_VALUE.equals(edge.tag(INDOOR_KEY))
-                || Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                || highwayServiceValidator.test(edge)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY)
                 || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
                         EntranceTag.class, EntranceTag.YES)
                         || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE))
-                || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
-                        && edge.getAtlas()
-                                .nodesWithin(edge.bounds(), node -> Validators.isOfType(node,
-                                        BarrierTag.class, BarrierTag.values()))
-                                .iterator().next() != null));
+                || (highwayServiceValidator.test(edge) && edge.getAtlas().nodesWithin(edge.bounds(),
+                        node -> Validators.isOfType(node, BarrierTag.class, BarrierTag.values()))
+                        .iterator().next() != null));
     }
 
     private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
@@ -73,10 +72,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 && edge.asPolyLine().intersects(building.asPolygon())
                 // And ignore intersections where edge has highway=service and building has
                 // Amenity=fuel
-                && !(Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                && !(highwayServiceValidator.test(edge)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
 
-                && !(Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE) && edge
+                && !(highwayServiceValidator.test(edge) && edge
                         .getAtlas().pointsWithin(building.asPolygon(), point -> Validators
                                 .isOfType(point, AmenityTag.class, AmenityTag.FUEL))
                         .iterator().hasNext())
@@ -180,16 +179,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         {
             if (!knownIntersections.contains(edge))
             {
-                if (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE))
-                {
-                    flag.addObject(edge, this.getLocalizedInstruction(1,
-                            building.getOsmIdentifier(), edge.getOsmIdentifier()));
-                }
-                else
-                {
-                    flag.addObject(edge, this.getLocalizedInstruction(0,
-                            building.getOsmIdentifier(), edge.getOsmIdentifier()));
-                }
+                final int instructionIndex = highwayServiceValidator.test(edge) ? 1 : 0;
+
+                flag.addObject(edge, this.getLocalizedInstruction(instructionIndex,
+                        building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 knownIntersections.add(edge);
                 if (edge.hasReverseEdge() && edge.reversed().isPresent())
                 {
