@@ -116,6 +116,18 @@ public class UnusualLayerTagsCheckTest
     }
 
     @Test
+    public void testMinusInfinityLayerTagJunctionEdge()
+    {
+        this.verifier.actual(this.setup.minusInfinityLayerTagJunctionEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions()
+                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
+        });
+    }
+
+    @Test
     public void testMinusInfinityTunnelLayerTagEdge()
     {
         this.verifier.actual(this.setup.minusInfinityLayerTagTunnelEdgeAtlas(), check);
@@ -144,6 +156,18 @@ public class UnusualLayerTagsCheckTest
     {
         this.verifier.actual(this.setup.minusOneLayerTagEdgeAtlas(), check);
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testMinusOneLayerTagJunctionEdge()
+    {
+        this.verifier.actual(this.setup.minusOneLayerTagJunctionEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(
+                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
+        });
     }
 
     @Test
@@ -299,6 +323,18 @@ public class UnusualLayerTagsCheckTest
     }
 
     @Test
+    public void testPlusInfinityLayerTagJunctionEdge()
+    {
+        this.verifier.actual(this.setup.plusInfinityLayerTagJunctionEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions()
+                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
+        });
+    }
+
+    @Test
     public void testPlusInfinityTunnelLayerTagEdge()
     {
         this.verifier.actual(this.setup.plusInfinityLayerTagTunnelEdgeAtlas(), check);
@@ -322,6 +358,18 @@ public class UnusualLayerTagsCheckTest
     {
         this.verifier.actual(this.setup.plusOneLayerTagEdgeAtlas(), check);
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testPlusOneLayerTagJunctionEdge()
+    {
+        this.verifier.actual(this.setup.plusOneLayerTagJunctionEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(
+                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
+        });
     }
 
     @Test
