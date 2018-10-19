@@ -205,9 +205,11 @@ public class EventServiceTest
     private void testProcessCount(final int threadCount, final int eventCount)
     {
         final TestProcessor testProcessor = new TestProcessor();
+        final TestProcessor otherProcessor = new TestProcessor();
         final EventService eventService = EventService
                 .get("Test service for " + threadCount + "-" + eventCount);
         eventService.register(testProcessor);
+        eventService.register(otherProcessor);
 
         // Send events
         final Pool threadPool = new Pool(threadCount,
