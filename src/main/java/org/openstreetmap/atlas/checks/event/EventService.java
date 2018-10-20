@@ -62,7 +62,7 @@ public final class EventService
         }
 
         this.eventBus.post(new ShutdownEvent());
-        this.processors.forEach(this::unregister);
+        new HashSet<>(this.processors).forEach(this::unregister);
     }
 
     /**
