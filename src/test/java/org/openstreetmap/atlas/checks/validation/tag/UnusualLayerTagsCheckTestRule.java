@@ -10,7 +10,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * {@link UnusualLayerTagsCheck} test data
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class UnusualLayerTagsCheckTestRule extends CoreTestRule
 {
@@ -42,20 +42,21 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     private Atlas invalidLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
+                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "highway=secondary" }) })
     private Atlas missingLayerTagEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "bridge=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "bridge=yes", "highway=secondary" }) })
     private Atlas missingLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "junction=roundabout" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "junction=roundabout", "highway=secondary" }) })
     private Atlas missingLayerTagJunctionEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
@@ -83,7 +84,7 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
             @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
                     @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=null", "junction=roundabout" }) })
+                            "layer=null", "junction=roundabout", "highway=secondary" }) })
     private Atlas nullLayerTagJunctionEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
@@ -142,9 +143,9 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     private Atlas minusInfinityLayerTagEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-1" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "layer=-1", "highway=secondary" }) })
     private Atlas minusOneLayerTagEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
@@ -154,9 +155,9 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     private Atlas zeroLayerTagEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1",
+                            "highway=secondary" }) })
     private Atlas plusOneLayerTagEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
@@ -169,25 +170,25 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
             @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
                     @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-2147483648", "junction=roundabout" }) })
+                            "layer=-2147483648", "junction=roundabout", "highway=secondary" }) })
     private Atlas minusInfinityLayerTagJunctionEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
             @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
                     @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-1", "junction=roundabout" }) })
+                            "layer=-1", "junction=roundabout", "highway=secondary" }) })
     private Atlas minusOneLayerTagJunctionEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
             @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
                     @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1",
-                            "junction=roundabout" }) })
+                            "junction=roundabout", "highway=secondary" }) })
     private Atlas plusOneLayerTagJunctionEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
             @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
                     @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=2147483647", "junction=roundabout" }) })
+                            "layer=2147483647", "junction=roundabout", "highway=secondary" }) })
     private Atlas plusInfinityLayerTagJunctionEdgeAtlas;
 
     // More bridge atlases
@@ -204,33 +205,33 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     private Atlas minusOneLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1", "bridge=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1",
+                            "bridge=yes", "highway=secondary" }) })
     private Atlas plusOneLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=2", "bridge=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=2",
+                            "bridge=yes", "highway=secondary" }) })
     private Atlas plusTwoLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=3", "bridge=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=3",
+                            "bridge=yes", "highway=secondary" }) })
     private Atlas plusThreeLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=4", "bridge=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=4",
+                            "bridge=yes", "highway=secondary" }) })
     private Atlas plusFourLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=5", "bridge=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=5",
+                            "bridge=yes", "highway=secondary" }) })
     private Atlas plusFiveLayerTagBridgeEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
@@ -259,33 +260,33 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     private Atlas minusSixLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-5", "tunnel=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "layer=-5", "tunnel=yes", "highway=secondary" }) })
     private Atlas minusFiveLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-4", "tunnel=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "layer=-4", "tunnel=yes", "highway=secondary" }) })
     private Atlas minusFourLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-3", "tunnel=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "layer=-3", "tunnel=yes", "highway=secondary" }) })
     private Atlas minusThreeLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-2", "tunnel=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "layer=-2", "tunnel=yes", "highway=secondary" }) })
     private Atlas minusTwoLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-1", "tunnel=yes" }) })
+            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
+                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
+                            "layer=-1", "tunnel=yes", "highway=secondary" }) })
     private Atlas minusOneLayerTagTunnelEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
