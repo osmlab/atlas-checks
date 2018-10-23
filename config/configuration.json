@@ -36,6 +36,7 @@
     }
   },
   "BuildingRoadIntersectionCheck": {
+    "highway.filter": "highway->motorway_link,primary_link,primary,residential,secondary_link,secondary,service,tertiary_link,tertiary,track,trunk_link,trunk,unclassified,motorway,road",
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",

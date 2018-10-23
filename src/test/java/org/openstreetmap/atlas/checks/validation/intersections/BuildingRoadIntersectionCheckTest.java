@@ -19,7 +19,9 @@ public class BuildingRoadIntersectionCheckTest
     private static final BuildingRoadIntersectionCheck spanishCheck = new BuildingRoadIntersectionCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"CheckResourceLoader\": {\"scanUrls\": [\"org.openstreetmap.atlas.checks\"]},\"BuildingRoadIntersectionCheck\":{\"enabled\":true,\"locale\":\"es\",\"flags\":{\"en\":[\"Building (id-{0,number,#}) intersects road (id-{1,number,#})\"],\"es\":[\"Edificio(id-{0,number,#}) cruza calle(id-{1,number,#})\"]}}}"));
-
+    private static final BuildingRoadIntersectionCheck highwayFilterCheck = new BuildingRoadIntersectionCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"BuildingRoadIntersectionCheck\":{\"highway.filter\":\"highway->road\"}}"));
     @Rule
     public BuildingRoadIntersectionTestCaseRule setup = new BuildingRoadIntersectionTestCaseRule();
 
@@ -112,7 +114,14 @@ public class BuildingRoadIntersectionCheckTest
     @Test
     public void testPointsWithinBuilding()
     {
-        this.verifier.actual(this.setup.getNewAtlas(), check);
-        this.verifier.verifyExpectedSize(0);
+        this.verifier.actual(this.setup.getbuildingWithAmenityAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testHighwayFilterConfig()
+    {
+        this.verifier.actual(this.setup.getAtlas(), highwayFilterCheck);
+        this.verifier.verifyEmpty();
     }
 }

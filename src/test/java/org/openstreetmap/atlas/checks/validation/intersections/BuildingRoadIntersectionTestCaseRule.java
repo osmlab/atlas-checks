@@ -205,16 +205,14 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                     @Loc(value = TEST_20), @Loc(value = TEST_30), @Loc(value = TEST_40),
                     @Loc(value = TEST_50), @Loc(value = TEST_60) }, tags = { "highway=service" }) },
 
-            areas = {
-                    // Regular building - flagged
-                    @Area(id = "3", coordinates = { @Loc(value = TEST_70), @Loc(value = TEST_80),
-                            @Loc(value = TEST_90), @Loc(value = TEST_100), @Loc(value = TEST_40),
-                            @Loc(value = TEST_30) }, tags = { "building=yes" }) })
-    private Atlas newAtlas;
+            areas = { @Area(id = "3", coordinates = { @Loc(value = TEST_70), @Loc(value = TEST_80),
+                    @Loc(value = TEST_90), @Loc(value = TEST_100), @Loc(value = TEST_40),
+                    @Loc(value = TEST_30) }, tags = { "building=yes" }) })
+    private Atlas buildingWithAmenityAtlas;
 
-    public Atlas getNewAtlas()
+    public Atlas getbuildingWithAmenityAtlas()
     {
-        return this.newAtlas;
+        return this.buildingWithAmenityAtlas;
     }
 
     public Atlas getAtlas()

@@ -26,6 +26,7 @@ import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -38,13 +39,15 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
     private static final String BUILDING_ROAD_INTERSECTION_INSTRUCTION = "Building (id-{0,number,#}) intersects road (id-{1,number,#})";
-    private static final String BUILDING_SERVICE_ROAD_INTERSECTION_INSTRUCTION = "Building (id-{0,number,#}) intersects road (id-{1,number,#}), which is a SERVICE road. Please verify whether the intersection is valid or not.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            BUILDING_ROAD_INTERSECTION_INSTRUCTION, BUILDING_SERVICE_ROAD_INTERSECTION_INSTRUCTION);
+    private static final String SERVICE_ROAD_INTERSECTION_INSTRUCTION = "Building (id-{0,number,#}) intersects road (id-{1,number,#}), which is a SERVICE road. Please verify whether the intersection is valid or not.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList(BUILDING_ROAD_INTERSECTION_INSTRUCTION, SERVICE_ROAD_INTERSECTION_INSTRUCTION);
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
     private static final Predicate<Edge> highwayServiceValidator = edge -> Validators.isOfType(edge,
             HighwayTag.class, HighwayTag.SERVICE);
+    private static final String HIGHWAY_FILTER_DEFAULT = "highway->motorway_link,primary_link,primary,residential,secondary_link,secondary,service,tertiary_link,tertiary,track,trunk_link,trunk,unclassified,motorway,road";
+    private final TaggableFilter highwayFilter;
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
@@ -59,15 +62,17 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
                         EntranceTag.class, EntranceTag.YES)
                         || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE))
+                // Ignore edges with nodes containing Barrier tags
                 || edge.getAtlas().nodesWithin(edge.bounds(),
                         node -> Validators.isOfType(node, BarrierTag.class, BarrierTag.values()))
                         .iterator().next() != null);
     }
 
-    private static Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
+    private Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
     {
-        // An invalid intersection is determined by checking that the highway is a core way
-        return edge -> HighwayTag.isCoreWay(edge)
+        // An invalid intersection is determined by checking that its highway tag is in the
+        // TaggableFilter
+        return edge -> this.highwayFilter.test(edge)
                 // And if the edge intersects the building polygon
                 && edge.asPolyLine().intersects(building.asPolygon())
                 // And ignore intersections where edge has highway=service and building has
@@ -75,6 +80,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 && !(highwayServiceValidator.test(edge)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
 
+                // And ignore intersections where building has nodes within it with Amenity=fuel
                 && !edge.getAtlas().pointsWithin(building.asPolygon(),
                         point -> Validators.isOfType(point, AmenityTag.class, AmenityTag.FUEL))
                         .iterator().hasNext()
@@ -84,9 +90,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 // And if the building/edge intersection is not valid
                 && !isValidIntersection(building, edge)
                 // And if the edge has no Access = Private tag
-                && !AccessTag.isPrivate(edge)
-                // And if the edge is car navigable
-                && HighwayTag.isCarNavigableHighway(edge);
+                && !AccessTag.isPrivate(edge);
     }
 
     /**
@@ -120,6 +124,8 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     public BuildingRoadIntersectionCheck(final Configuration configuration)
     {
         super(configuration);
+        this.highwayFilter = configurationValue(configuration, "highway.filter",
+                HIGHWAY_FILTER_DEFAULT, value -> new TaggableFilter(value));
     }
 
     @Override
@@ -177,9 +183,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 flag.addObject(edge, this.getLocalizedInstruction(instructionIndex,
                         building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 knownIntersections.add(edge);
-                if (edge.hasReverseEdge() && edge.reversed().isPresent())
+                final Optional<Edge> reverseEdge = edge.reversed();
+                if (reverseEdge.isPresent())
                 {
-                    knownIntersections.add(edge.reversed().get());
+                    knownIntersections.add(reverseEdge.get());
                 }
             }
         }
