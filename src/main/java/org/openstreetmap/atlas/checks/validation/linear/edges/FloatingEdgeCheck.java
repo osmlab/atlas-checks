@@ -42,6 +42,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     private final Distance maximumDistance;
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
+    // The default value for the minimum highway type
+    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
+    private final HighwayTag highwayMinimum;
 
     /**
      * Default constructor defined by the {@link BaseCheck} required to instantiate the Check within
@@ -67,6 +70,10 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
         this.maximumDistance = configurationValue(configuration, "length.maximum.kilometers",
                 DISTANCE_MAXIMUM_KILOMETERS_DEFAULT, Distance::kilometers);
+        // This retrieves the minimum highway type from the config
+        final String highwayType = this.configurationValue(configuration, "highway.minimum",
+                HIGHWAY_MINIMUM_DEFAULT);
+        this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
     }
 
     /**
@@ -86,7 +93,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     {
         // Consider navigable master edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(object);
+                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object);
     }
 
     /**
@@ -161,5 +168,22 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     {
         return !(SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end()));
+    }
+
+    /**
+     * Checks if highway tag of given {@link AtlasObject} is of greater or equal priority than the
+     * minimum highway type given in the configurable. If no value is given in configurable, the
+     * default highway type of "SERVICE" will be set as minimum.
+     *
+     * @param object
+     *            an {@link AtlasObject}
+     * @return {@code true} if the highway tag of this object is greater than or equal to the
+     *         minimum type
+     */
+    private boolean isMinimumHighwayType(final AtlasObject object)
+    {
+        final Optional<HighwayTag> highwayTagOfObject = HighwayTag.highwayTag(object);
+        return highwayTagOfObject.isPresent()
+                && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.highwayMinimum);
     }
 }

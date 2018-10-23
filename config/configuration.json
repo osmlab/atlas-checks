@@ -94,6 +94,7 @@
     }
   },
   "FloatingEdgeCheck": {
+    "highway.minimum": "service",
     "length": {
       "maximum.kilometers": 100.0,
       "minimum.meters": 100.0
@@ -294,6 +295,7 @@
   },
   "SinkIslandCheck": {
     "tree.size": 50,
+    "minimum.highway.type": "service",
     "challenge": {
       "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
       "blurb": "Identify islands of roads.",

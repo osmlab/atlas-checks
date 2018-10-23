@@ -31,9 +31,8 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     @Override
     protected void mapFeatures(final File file, final HashMap map)
     {
-        try
+        try (BufferedReader reader = new BufferedReader(new FileReader(file.getPath())))
         {
-            final BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
             String line;
             // Read each line (flag) from the log file
             while ((line = reader.readLine()) != null)
