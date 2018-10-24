@@ -31,7 +31,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author mkalender, gpogulsky, bbreithaupt
  */
-public class EdgeCrossingEdgeCheck extends BaseCheck
+public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 {
     private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
