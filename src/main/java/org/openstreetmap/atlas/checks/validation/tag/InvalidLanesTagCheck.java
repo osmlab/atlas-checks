@@ -51,7 +51,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     {
         super(configuration);
         this.lanesFilter = (TaggableFilter) configurationValue(configuration, "lanes.filter",
-                LANES_FILTER_DEFAULT, value -> new TaggableFilter(value.toString()));
+                LANES_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value.toString()));
     }
 
     /**

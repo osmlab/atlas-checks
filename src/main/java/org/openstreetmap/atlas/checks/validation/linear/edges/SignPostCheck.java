@@ -93,11 +93,11 @@ public class SignPostCheck extends BaseCheck<String>
         this.minimumLinkLength = configurationValue(configuration, "linkLength.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
         this.sourceEdgeFilter = configurationValue(configuration, "source.filter",
-                SOURCE_EDGE_FILTER_DEFAULT, value -> new TaggableFilter(value));
+                SOURCE_EDGE_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value));
         this.rampEdgeFilter = configurationValue(configuration, "ramp.filter", RAMP_FILTER_DEFAULT,
-                value -> new TaggableFilter(value));
+                value -> TaggableFilter.forDefinition(value));
         this.destinationTagFilter = configurationValue(configuration, "destination_tag.filter",
-                DESTINATION_TAG_FILTER_DEFAULT, value -> new TaggableFilter(value));
+                DESTINATION_TAG_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value));
         this.rampDifferentiatorTag = configurationValue(configuration, "ramp.differentiator.tag",
                 null);
         this.arterialMinimum = Enum.valueOf(HighwayTag.class,
