@@ -112,9 +112,16 @@ public class BuildingRoadIntersectionCheckTest
     }
 
     @Test
-    public void testPointsWithinBuilding()
+    public void testIgnoredPointsWithinBuildingAtlas()
     {
-        this.verifier.actual(this.setup.getbuildingWithAmenityAtlas(), check);
+        this.verifier.actual(this.setup.getIgnoredPointsWithinBuildingAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testIgnoredNodesWithinEdgeAtlas()
+    {
+        this.verifier.actual(this.setup.getIgnoredNodesWithinEdgeAtlas(), check);
         this.verifier.verifyEmpty();
     }
 

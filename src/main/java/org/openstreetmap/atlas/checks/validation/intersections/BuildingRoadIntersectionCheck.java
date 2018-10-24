@@ -65,7 +65,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 // Ignore edges with nodes containing Barrier tags
                 || edge.getAtlas().nodesWithin(edge.bounds(),
                         node -> Validators.isOfType(node, BarrierTag.class, BarrierTag.values()))
-                        .iterator().next() != null);
+                        .iterator().hasNext());
     }
 
     private Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
@@ -179,7 +179,6 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
             if (!knownIntersections.contains(edge))
             {
                 final int instructionIndex = highwayServiceValidator.test(edge) ? 1 : 0;
-
                 flag.addObject(edge, this.getLocalizedInstruction(instructionIndex,
                         building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 knownIntersections.add(edge);

@@ -40,14 +40,13 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
     private static final String TEST_80 = "57.2274907, 60.0831821";
     private static final String TEST_90 = "57.2280190, 60.0838174";
     private static final String TEST_100 = "57.2278680, 60.0842460";
-
     private static final String TEST_101 = "57.2277097, 60.0837055";
 
     @TestAtlas(
 
-            nodes = { @Node(coordinates = @Loc(value = TEST_1), tags = { "barrier=*" }),
-                    @Node(coordinates = @Loc(value = TEST_2), tags = { "barrier=*" }),
-                    @Node(coordinates = @Loc(value = TEST_3), tags = { "barrier=*" }) },
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
 
             edges = {
 
@@ -208,11 +207,40 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
             areas = { @Area(id = "3", coordinates = { @Loc(value = TEST_70), @Loc(value = TEST_80),
                     @Loc(value = TEST_90), @Loc(value = TEST_100), @Loc(value = TEST_40),
                     @Loc(value = TEST_30) }, tags = { "building=yes" }) })
-    private Atlas buildingWithAmenityAtlas;
+    private Atlas ignoredPointsWithinBuildingAtlas;
 
-    public Atlas getbuildingWithAmenityAtlas()
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3), tags = { "barrier=gate" }) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=primary" }) },
+
+            areas = {
+                    // Regular building
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }),
+                    // Non-Pedestrian Area
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
+                                    "building=house" }) })
+    private Atlas ignoredNodesWithinEdgeAtlas;
+
+    public Atlas getIgnoredNodesWithinEdgeAtlas()
     {
-        return this.buildingWithAmenityAtlas;
+        return this.ignoredNodesWithinEdgeAtlas;
+    }
+
+    public Atlas getIgnoredPointsWithinBuildingAtlas()
+    {
+        return this.ignoredPointsWithinBuildingAtlas;
     }
 
     public Atlas getAtlas()
