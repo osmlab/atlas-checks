@@ -185,9 +185,10 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
             {
-                return HighwayTag.isCarNavigableHighway(highway.get())
-                        && !HighwayTag.CROSSING.equals(highway.get())
-                        && highway.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+                final HighwayTag highwayTag = highway.get();
+                return HighwayTag.isCarNavigableHighway(highwayTag)
+                        && !HighwayTag.CROSSING.equals(highwayTag)
+                        && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType);
             }
         }
         return false;
