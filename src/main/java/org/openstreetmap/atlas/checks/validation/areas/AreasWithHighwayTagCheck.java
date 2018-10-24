@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,9 +9,8 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.tags.AreaTag;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -22,9 +22,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class AreasWithHighwayTagCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "Area with OSM ID {0,number,#} contains invalid highway tag.",
-            "Area with OSM ID {0,number,#} is missing area tag.");
+            "The way with OSM ID {0,number,#} has a highway value which does not match the OSM standard.",
+            "The way with OSM ID {0,number,#} has a highway value of {1}, which should not have an area=yes tag.");
     private static final long serialVersionUID = 3638306611072651348L;
+    private static final EnumSet<HighwayTag> validHighwayTags = EnumSet.of(HighwayTag.SERVICES,
+            HighwayTag.SERVICE, HighwayTag.REST_AREA, HighwayTag.PEDESTRIAN, HighwayTag.PLATFORM);
+    private static final EnumSet<HighwayTag> notToStandardHighwayTags = EnumSet
+            .of(HighwayTag.FOOTWAY, HighwayTag.BUS_STOP, HighwayTag.PATH, HighwayTag.STEPS);
 
     public AreasWithHighwayTagCheck(final Configuration configuration)
     {
@@ -34,34 +38,50 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area;
+        return object instanceof Area || object instanceof Edge;
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // See configuration for initial check filter; highway=pedestrian & area=yes is a valid
-        // Area/Highway tag combination.
-        final Area area = (Area) object;
-        final Optional<String> highwayTag = area.getTag(HighwayTag.KEY);
-        // First check if highway tag exists
-        if (highwayTag.isPresent())
-        {
-            // Send special instructions for pedestrian highways missing area=yes tag
-            final int localizedInstruction = Validators.isOfType(area, HighwayTag.class,
-                    HighwayTag.PEDESTRIAN) && !Validators.isOfType(area, AreaTag.class, AreaTag.YES)
-                            ? 1 : 0;
-
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(localizedInstruction, object.getOsmIdentifier())));
-
-        }
-        return Optional.empty();
+        return object.getTag(HighwayTag.KEY)
+                .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
+                // If the tag isn't one of the validHighwayTags, we want to flag it.
+                .filter(tag -> !isAcceptableAreaWithHighwayTag(tag)).map(tag ->
+                {
+                    final String instruction;
+                    if (isNotOsmStandard(tag))
+                    {
+                        instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
+                    }
+                    else
+                    {
+                        instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
+                                tag.getTagValue());
+                    }
+                    return this.createFlag(object, instruction);
+                });
     }
 
     @Override
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Areas are allowed to have highway tags contained in validHighwayTags.
+     * 
+     * @param tag
+     * @return True if tag is one of the validHighwayTags
+     */
+    private boolean isAcceptableAreaWithHighwayTag(final HighwayTag tag)
+    {
+        return validHighwayTags.contains(tag);
+    }
+
+    private boolean isNotOsmStandard(final HighwayTag tag)
+    {
+        return notToStandardHighwayTags.contains(tag);
     }
 }

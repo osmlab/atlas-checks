@@ -26,7 +26,7 @@
     }
   },
   "AreasWithHighwayTagCheck":{
-    "tag.filters":"highway->!pedestrian&area->!yes",
+    "tag.filters":"highway->*&area->yes",
     "challenge":{
       "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
       "blurb":"Highways should not be tagged as Areas.",
