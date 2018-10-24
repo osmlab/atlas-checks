@@ -41,6 +41,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.SERVICE.toString();
+    private static final Long OSM_LAYER_DEFAULT = 0L;
     private static final long serialVersionUID = 2146863485833228593L;
 
     private final HighwayTag minimumHighwayType;
@@ -99,13 +100,12 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
         while (!toCheck.isEmpty())
         {
             final Edge edge = toCheck.poll();
-
             // Prepare the edge being tested for checks
             final PolyLine edgeAsPolyLine = edge.asPolyLine();
             final Rectangle edgeBounds = edge.bounds();
             // If layer tag is present use its value, else use the OSM default
             final Optional<Long> edgeLayer = Validators.hasValuesFor(edge, LayerTag.class)
-                    ? LayerTag.getTaggedValue(edge) : Optional.of(0L);
+                    ? LayerTag.getTaggedValue(edge) : Optional.of(OSM_LAYER_DEFAULT);
 
             // Retrieve crossing edges
             final Atlas atlas = object.getAtlas();
@@ -120,13 +120,13 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
             // However,
             // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
             // Therefore, if an OSM way crosses another OSM way multiple times in separate edges,
-            // then
-            // each edge will be marked explicitly.
+            // then each edge will be marked explicitly.
             for (final Edge crossingEdge : crossingEdges)
             {
                 final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
                 final Optional<Long> crossingEdgeLayer = Validators.hasValuesFor(crossingEdge,
-                        LayerTag.class) ? LayerTag.getTaggedValue(crossingEdge) : Optional.of(0L);
+                        LayerTag.class) ? LayerTag.getTaggedValue(crossingEdge)
+                                : Optional.of(OSM_LAYER_DEFAULT);
                 final Set<Location> intersections = edgeAsPolyLine
                         .intersections(crossingEdgeAsPolyLine);
 
@@ -134,14 +134,12 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
                 for (final Location intersection : intersections)
                 {
                     // Check if crossing is valid or not
-                    if (canCross(edgeAsPolyLine, edgeLayer, crossingEdgeAsPolyLine,
+                    if (!canCross(edgeAsPolyLine, edgeLayer, crossingEdgeAsPolyLine,
                             crossingEdgeLayer, intersection))
                     {
-                        continue;
+                        invalidEdges.add(crossingEdge);
+                        toCheck.add(crossingEdge);
                     }
-
-                    invalidEdges.add(crossingEdge);
-                    toCheck.add(crossingEdge);
                 }
             }
         }
@@ -160,10 +158,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
                 newFlag.addInstruction(
                         this.getLocalizedInstruction(1, invalidEdge.getOsmIdentifier()));
             });
-
             return Optional.of(newFlag);
         }
-
         return Optional.empty();
     }
 
@@ -194,7 +190,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck
                         && highway.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
             }
         }
-
         return false;
     }
 }
