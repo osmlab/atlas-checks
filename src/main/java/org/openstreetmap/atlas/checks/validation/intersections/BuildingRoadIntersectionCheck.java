@@ -63,8 +63,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         EntranceTag.class, EntranceTag.YES)
                         || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE))
                 // Ignore edges with nodes containing Barrier tags
-                || edge.getAtlas().nodesWithin(edge.bounds(),
-                        node -> Validators.isOfType(node, BarrierTag.class, BarrierTag.values()))
+                || edge.getAtlas()
+                        .nodesWithin(edge.bounds(),
+                                node -> Validators.hasValuesFor(node, BarrierTag.class))
                         .iterator().hasNext());
     }
 
