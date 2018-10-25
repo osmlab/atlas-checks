@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * {@link BuildingRoadIntersectionCheck} unit test
  *
- * @author mgostintsev
+ * @author mgostintsev, sayas01
  */
 public class BuildingRoadIntersectionCheckTest
 {

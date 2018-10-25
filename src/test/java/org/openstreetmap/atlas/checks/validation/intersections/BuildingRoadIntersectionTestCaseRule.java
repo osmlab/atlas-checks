@@ -12,7 +12,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Point;
 /**
  * {@link BuildingRoadIntersectionCheckTest} test data
  *
- * @author mgostintsev
+ * @author mgostintsev, sayas01
  */
 public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
 {

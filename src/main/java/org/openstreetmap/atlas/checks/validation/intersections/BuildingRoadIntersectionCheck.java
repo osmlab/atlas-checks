@@ -32,9 +32,11 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * Flags buildings that intersect/touch centerlines of roads. This doesn't address cases where
- * buildings get really close to roads, but don't overlap them.
+ * buildings get really close to roads, but don't overlap them. The highways that need to be tested
+ * for intersection can be specified in the "highway.filter" config. By default all highways in the
+ * CAR_NAVIGABLE_ENUM_SET of {@link HighwayTag} are checked for intersection.
  *
- * @author mgostintsev
+ * @author mgostintsev, sayas01
  */
 public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
@@ -44,7 +46,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
             .asList(BUILDING_ROAD_INTERSECTION_INSTRUCTION, SERVICE_ROAD_INTERSECTION_INSTRUCTION);
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
-    private static final Predicate<Edge> highwayServiceValidator = edge -> Validators.isOfType(edge,
+    private static final Predicate<Edge> highwayServiceTag = edge -> Validators.isOfType(edge,
             HighwayTag.class, HighwayTag.SERVICE);
     private static final String HIGHWAY_FILTER_DEFAULT = "highway->motorway_link,primary_link,primary,residential,secondary_link,secondary,service,tertiary_link,tertiary,track,trunk_link,trunk,unclassified,motorway,road";
     private final TaggableFilter highwayFilter;
@@ -57,7 +59,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
                 || YES_VALUE.equals(edge.tag(INDOOR_KEY))
-                || highwayServiceValidator.test(edge)
+                || highwayServiceTag.test(edge)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY)
                 || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
                         EntranceTag.class, EntranceTag.YES)
@@ -78,7 +80,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 && edge.asPolyLine().intersects(building.asPolygon())
                 // And ignore intersections where edge has highway=service and building has
                 // Amenity=fuel
-                && !(highwayServiceValidator.test(edge)
+                && !(highwayServiceTag.test(edge)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
                 // And ignore intersections where building has nodes within it with Amenity=fuel
                 && !edge.getAtlas().pointsWithin(building.asPolygon(),
@@ -178,7 +180,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         {
             if (!knownIntersections.contains(edge))
             {
-                final int instructionIndex = highwayServiceValidator.test(edge) ? 1 : 0;
+                final int instructionIndex = highwayServiceTag.test(edge) ? 1 : 0;
                 flag.addObject(edge, this.getLocalizedInstruction(instructionIndex,
                         building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 knownIntersections.add(edge);
