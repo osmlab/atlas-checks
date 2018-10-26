@@ -10,9 +10,23 @@ task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the
 
     main = project.property("checks.${project.profile}.mainClass")
 
+    // If we're passed -PcountryOverride=XXX, override checks.<profile>.countries with XXX
     if (project.hasProperty('countryOverride')) {
-        project.setProperty("checks.${project.profile}.countries",project.properties["countryOverride"])
-        println project.properties["checks.local.countries"]
+        if (project.hasProperty("checks.${project.profile}.countries")) {
+            project.setProperty("checks.${project.profile}.countries", project.properties["countryOverride"])
+        } else {
+            project.ext["checks.${project.profile}.countries"] = project.properties["countryOverride"]
+        }
+    }
+
+    // If we're passed -PcheckOverride=XXX, override checks.<profile>.checksToRun with XXX
+    if (project.hasProperty("checkOverride")) {
+        println project.properties["checkOverride"]
+        if (project.hasProperty("checks.${project.profile}.checksToRun")) {
+            project.setProperty("checks.${project.profile}.checksToRun", project.properties["checkOverride"])
+        } else {
+            project.ext["checks.${project.profile}.checksToRun"] = project.properties["checkOverride"]
+        }
     }
     // apply arguments defined in the gradle.properties file for this profile
     def flags = project.properties.findAll { property ->

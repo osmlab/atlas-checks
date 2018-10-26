@@ -219,9 +219,14 @@ public class CheckResourceLoader
 
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
+        return loadChecksForCountry(country, checkClass -> true);
+    }
+
+    public <T extends Check> Set<T> loadChecksForCountry(final String country, final Predicate<Class> filter)
+    {
         final Configuration countryConfiguration = this.getConfigurationForCountry(country);
         return loadChecks(
-                checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass),
+                checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass) && filter.test(checkClass),
                 countryConfiguration);
     }
 
