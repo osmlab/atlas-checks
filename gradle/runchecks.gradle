@@ -10,6 +10,10 @@ task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the
 
     main = project.property("checks.${project.profile}.mainClass")
 
+    if (project.hasProperty('countryOverride')) {
+        project.setProperty("checks.${project.profile}.countries",project.properties["countryOverride"])
+        println project.properties["checks.local.countries"]
+    }
     // apply arguments defined in the gradle.properties file for this profile
     def flags = project.properties.findAll { property ->
         property.toString().startsWith("checks.${project.profile}")
