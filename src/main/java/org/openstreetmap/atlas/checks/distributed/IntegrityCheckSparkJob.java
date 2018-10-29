@@ -235,11 +235,12 @@ public class IntegrityCheckSparkJob extends SparkJob
         // Predicate to determine whether or not a given check was passed in as a command line argument.
         // If there is not a CHECKS_TO_RUN switch, this predicate always returns true.
         @SuppressWarnings("unchecked")
-        final Predicate<Class> isCheckToRun = checkClass -> ((Optional<Set<String>>) commandMap.getOption(CHECKS_TO_RUN))
+        final Optional<Set<String>> checksToRun = (Optional<Set<String>>) commandMap.getOption(CHECKS_TO_RUN);
+        final Predicate<Class> isCheckToRun = checkClass -> checksToRun
                 .map(checkNames -> checkNames.contains(checkClass.getSimpleName())).orElse(true);
         // check configuration and country list
-        final Set<BaseCheck> preOverriddenChecks = checkLoader
-                .loadChecks(isCheckToRun);
+        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadEnabledChecks(isCheckToRun);
+        preOverriddenChecks.forEach(check -> logger.info(check.getCheckName()));
         if (!isValidInput(countries, preOverriddenChecks))
         {
             logger.error("No countries supplied or checks enabled, exiting!");

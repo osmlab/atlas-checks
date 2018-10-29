@@ -147,4 +147,29 @@ public class CheckResourceLoaderTest
         Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country3).isEmpty());
         Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry(country4).size());
     }
+
+    @Test
+    public void testAdditionalFilterGeneral()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true}, \"BaseTestCheck\":{\"enabled\": false}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(1, checkResourceLoader.loadEnabledChecks(checkClass -> checkClass.getSimpleName().contains("Resource")).size());
+        Assert.assertTrue(checkResourceLoader.loadEnabledChecks(checkClass -> checkClass.getSimpleName().startsWith("Base")).isEmpty());
+    }
+
+    @Test
+    public void testAdditionalFilterCountrySpecific()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC", checkClass -> checkClass.getSimpleName().contains("Resource")).isEmpty());
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC", checkClass -> checkClass.getSimpleName().startsWith("Base")).size());
+
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF", checkClass -> checkClass.getSimpleName().contains("Resource")).size());
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF", checkClass -> checkClass.getSimpleName().startsWith("Base")).isEmpty());
+    }
 }

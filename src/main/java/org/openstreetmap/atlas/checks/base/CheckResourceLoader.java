@@ -217,6 +217,17 @@ public class CheckResourceLoader
         return loadChecks(this::isEnabledByConfiguration, this.configuration);
     }
 
+    /**
+     * Loads checks that are enabled by configuration and also match some other filter
+     * @param additionalFilter some predicate that returns true for checks we would like to run
+     * @param <T> check type
+     * @return a {@link Set} of checks.
+     */
+    public <T extends Check> Set<T> loadEnabledChecks(final Predicate<Class> additionalFilter)
+    {
+        return loadChecks(checkClass -> this.isEnabledByConfiguration(checkClass) && additionalFilter.test(checkClass));
+    }
+
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
         return loadChecksForCountry(country, checkClass -> true);
