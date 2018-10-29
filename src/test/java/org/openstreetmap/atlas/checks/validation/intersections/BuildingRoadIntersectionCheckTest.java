@@ -21,7 +21,7 @@ public class BuildingRoadIntersectionCheckTest
                     "{\"CheckResourceLoader\": {\"scanUrls\": [\"org.openstreetmap.atlas.checks\"]},\"BuildingRoadIntersectionCheck\":{\"enabled\":true,\"locale\":\"es\",\"flags\":{\"en\":[\"Building (id-{0,number,#}) intersects road (id-{1,number,#})\"],\"es\":[\"Edificio(id-{0,number,#}) cruza calle(id-{1,number,#})\"]}}}"));
     private static final BuildingRoadIntersectionCheck highwayFilterCheck = new BuildingRoadIntersectionCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"BuildingRoadIntersectionCheck\":{\"highway.filter\":\"highway->road\"}}"));
+                    "{\"BuildingRoadIntersectionCheck\":{\"highway.car.navigable\":false}}"));
     @Rule
     public BuildingRoadIntersectionTestCaseRule setup = new BuildingRoadIntersectionTestCaseRule();
 
@@ -86,7 +86,7 @@ public class BuildingRoadIntersectionCheckTest
     @Test
     public void testLayered()
     {
-        this.verifier.actual(this.setup.getLayeredAtlas(), check);
+        this.verifier.actual(this.setup.getLayeredAtlas(), highwayFilterCheck);
         this.verifier.verifyExpectedSize(0);
     }
 
@@ -115,6 +115,7 @@ public class BuildingRoadIntersectionCheckTest
     public void testIgnoredPointsWithinBuildingAtlas()
     {
         this.verifier.actual(this.setup.getIgnoredPointsWithinBuildingAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
         this.verifier.verifyEmpty();
     }
 
@@ -128,7 +129,7 @@ public class BuildingRoadIntersectionCheckTest
     @Test
     public void testHighwayFilterConfig()
     {
-        this.verifier.actual(this.setup.getAtlas(), highwayFilterCheck);
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.getCorewayIntersectionAtlas(), highwayFilterCheck);
+        this.verifier.verifyExpectedSize(2);
     }
 }

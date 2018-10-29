@@ -62,7 +62,7 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                     // Non-Pedestrian Area - flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
-                            @Loc(value = TEST_6) }, tags = { "highway=primary", "building=house" }),
+                            @Loc(value = TEST_6) }, tags = { "highway=steps", "building=house" }),
                     // Pedestrian Area - not flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
@@ -232,6 +232,34 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                             @Loc(value = TEST_6) }, tags = { "highway=primary",
                                     "building=house" }) })
     private Atlas ignoredNodesWithinEdgeAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=steps" }) },
+
+            areas = {
+                    // Regular building - flagged
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }),
+                    // Non-Pedestrian Area - flagged
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "highway=steps", "building=house" }) })
+    private Atlas corewayIntersectionAtlas;
+
+    public Atlas getCorewayIntersectionAtlas()
+    {
+        return this.corewayIntersectionAtlas;
+    }
 
     public Atlas getIgnoredNodesWithinEdgeAtlas()
     {

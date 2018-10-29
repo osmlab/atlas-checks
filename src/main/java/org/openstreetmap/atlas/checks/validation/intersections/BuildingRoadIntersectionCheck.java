@@ -26,7 +26,6 @@ import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -48,8 +47,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     private static final String YES_VALUE = "yes";
     private static final Predicate<Edge> highwayServiceTag = edge -> Validators.isOfType(edge,
             HighwayTag.class, HighwayTag.SERVICE);
-    private static final String HIGHWAY_FILTER_DEFAULT = "highway->motorway_link,primary_link,primary,residential,secondary_link,secondary,service,tertiary_link,tertiary,track,trunk_link,trunk,unclassified,motorway,road";
-    private final TaggableFilter highwayFilter;
+    private final Boolean isCarNavigable;
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
@@ -73,9 +71,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 
     private Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
     {
-        // An invalid intersection is determined by checking that its highway tag is in the
-        // TaggableFilter
-        return edge -> this.highwayFilter.test(edge)
+        // An invalid intersection is determined by checking that its highway tag is car navigable
+        // or core way based on the configuration value
+        return edge -> (this.isCarNavigable ? HighwayTag.isCarNavigableHighway(edge)
+                : HighwayTag.isCoreWay(edge))
                 // And if the edge intersects the building polygon
                 && edge.asPolyLine().intersects(building.asPolygon())
                 // And ignore intersections where edge has highway=service and building has
@@ -126,8 +125,8 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     public BuildingRoadIntersectionCheck(final Configuration configuration)
     {
         super(configuration);
-        this.highwayFilter = configurationValue(configuration, "highway.filter",
-                HIGHWAY_FILTER_DEFAULT, value -> new TaggableFilter(value));
+        this.isCarNavigable = this.configurationValue(configuration, "highway.car.navigable", true);
+
     }
 
     @Override
