@@ -86,7 +86,7 @@ public class BuildingRoadIntersectionCheckTest
     @Test
     public void testLayered()
     {
-        this.verifier.actual(this.setup.getLayeredAtlas(), highwayFilterCheck);
+        this.verifier.actual(this.setup.getLayeredAtlas(), check);
         this.verifier.verifyExpectedSize(0);
     }
 
@@ -115,7 +115,6 @@ public class BuildingRoadIntersectionCheckTest
     public void testIgnoredPointsWithinBuildingAtlas()
     {
         this.verifier.actual(this.setup.getIgnoredPointsWithinBuildingAtlas(), check);
-        this.verifier.verifyExpectedSize(0);
         this.verifier.verifyEmpty();
     }
 
