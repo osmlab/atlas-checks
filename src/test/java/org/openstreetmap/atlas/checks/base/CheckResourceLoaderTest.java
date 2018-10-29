@@ -155,8 +155,14 @@ public class CheckResourceLoaderTest
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 
-        Assert.assertEquals(1, checkResourceLoader.loadEnabledChecks(checkClass -> checkClass.getSimpleName().contains("Resource")).size());
-        Assert.assertTrue(checkResourceLoader.loadEnabledChecks(checkClass -> checkClass.getSimpleName().startsWith("Base")).isEmpty());
+        Assert.assertEquals(1,
+                checkResourceLoader
+                        .loadEnabledChecks(
+                                checkClass -> checkClass.getSimpleName().contains("Resource"))
+                        .size());
+        Assert.assertTrue(checkResourceLoader
+                .loadEnabledChecks(checkClass -> checkClass.getSimpleName().startsWith("Base"))
+                .isEmpty());
     }
 
     @Test
@@ -166,10 +172,26 @@ public class CheckResourceLoaderTest
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC", checkClass -> checkClass.getSimpleName().contains("Resource")).isEmpty());
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC", checkClass -> checkClass.getSimpleName().startsWith("Base")).size());
+        Assert.assertTrue(
+                checkResourceLoader
+                        .loadChecksForCountry("ABC",
+                                checkClass -> checkClass.getSimpleName().contains("Resource"))
+                        .isEmpty());
+        Assert.assertEquals(1,
+                checkResourceLoader
+                        .loadChecksForCountry("ABC",
+                                checkClass -> checkClass.getSimpleName().startsWith("Base"))
+                        .size());
 
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF", checkClass -> checkClass.getSimpleName().contains("Resource")).size());
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF", checkClass -> checkClass.getSimpleName().startsWith("Base")).isEmpty());
+        Assert.assertEquals(1,
+                checkResourceLoader
+                        .loadChecksForCountry("DEF",
+                                checkClass -> checkClass.getSimpleName().contains("Resource"))
+                        .size());
+        Assert.assertTrue(
+                checkResourceLoader
+                        .loadChecksForCountry("DEF",
+                                checkClass -> checkClass.getSimpleName().startsWith("Base"))
+                        .isEmpty());
     }
 }

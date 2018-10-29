@@ -232,10 +232,12 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
-        // Predicate to determine whether or not a given check was passed in as a command line argument.
+        // Predicate to determine whether or not a given check was passed in as a command line
+        // argument.
         // If there is not a CHECKS_TO_RUN switch, this predicate always returns true.
         @SuppressWarnings("unchecked")
-        final Optional<Set<String>> checksToRun = (Optional<Set<String>>) commandMap.getOption(CHECKS_TO_RUN);
+        final Optional<Set<String>> checksToRun = (Optional<Set<String>>) commandMap
+                .getOption(CHECKS_TO_RUN);
         final Predicate<Class> isCheckToRun = checkClass -> checksToRun
                 .map(checkNames -> checkNames.contains(checkClass.getSimpleName())).orElse(true);
         // check configuration and country list
@@ -255,13 +257,13 @@ public class IntegrityCheckSparkJob extends SparkJob
         // Add priority countries first if they are supplied by parameter
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
         countries.stream().filter(priorityCountries::contains)
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country, checkLoader
-                        .loadChecksForCountry(country, isCheckToRun))));
+                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country,
+                        checkLoader.loadChecksForCountry(country, isCheckToRun))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country, checkLoader
-                        .loadChecksForCountry(country, isCheckToRun))));
+                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country,
+                        checkLoader.loadChecksForCountry(country, isCheckToRun))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
