@@ -126,7 +126,6 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     {
         super(configuration);
         this.isCarNavigable = this.configurationValue(configuration, "highway.car.navigable", true);
-
     }
 
     @Override
