@@ -194,4 +194,19 @@ public class CheckResourceLoaderTest
                                 checkClass -> checkClass.getSimpleName().startsWith("Base"))
                         .isEmpty());
     }
+
+    @Test
+    public void testAdditionalFilterNoOp()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(checkResourceLoader.loadChecksForCountry("ABC").size(),
+                checkResourceLoader.loadChecksForCountry("ABC", checkClass -> true).size());
+        Assert.assertEquals(checkResourceLoader.loadChecksForCountry("DEF").size(),
+                checkResourceLoader.loadChecksForCountry("DEF", checkClass -> true).size());
+        Assert.assertEquals(checkResourceLoader.loadChecks().size(),
+                checkResourceLoader.loadEnabledChecks(checkClass -> true).size());
+    }
 }
