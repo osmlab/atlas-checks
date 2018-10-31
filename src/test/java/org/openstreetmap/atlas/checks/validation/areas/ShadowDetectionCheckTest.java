@@ -190,6 +190,23 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
+    public void invalidUntaggedAreasStackedTest()
+    {
+        this.verifier.actual(this.setup.invalidUntaggedAreasStackedAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void validUntaggedAreasStackedBuildingRelationTest()
+    {
+        this.verifier.actual(this.setup.validUntaggedAreasStackedBuildingRelationAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void invalidBuildingPartsManyFloatTest()
     {
         this.verifier.actual(this.setup.invalidBuildingPartsManyFloatAtlas(),

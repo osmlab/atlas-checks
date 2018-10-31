@@ -255,6 +255,32 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     @TestAtlas(
             // areas
             areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                    @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building:levels=5" }),
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_6), @Loc(value = TEST_5) }, tags = {
+                                    "building:levels=8", "building:min_level=5" }) })
+    private Atlas invalidUntaggedAreasStackedAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = {
+                    @Area(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4),
+                            @Loc(value = TEST_3) }, tags = { "building:levels=5" }),
+                    @Area(id = "2000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2), @Loc(value = TEST_6),
+                            @Loc(value = TEST_5) }, tags = { "building:levels=8",
+                                    "building:min_level=5" }) },
+            // relation
+            relations = {
+                    @Relation(members = { @Member(id = "1000000", type = "area", role = "outline"),
+                            @Member(id = "2000000", type = "area", role = "part") }, tags = {
+                                    "type=building" }) })
+    private Atlas validUntaggedAreasStackedBuildingRelationAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = { @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                     @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building:part=yes",
                             "building:levels=8", "building:min_level=5" }),
                     @Area(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
@@ -377,6 +403,16 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidBuildingsStackedAtlas()
     {
         return this.invalidBuildingsStackedAtlas;
+    }
+
+    public Atlas invalidUntaggedAreasStackedAtlas()
+    {
+        return this.invalidUntaggedAreasStackedAtlas;
+    }
+
+    public Atlas validUntaggedAreasStackedBuildingRelationAtlas()
+    {
+        return this.validUntaggedAreasStackedBuildingRelationAtlas;
     }
 
     public Atlas invalidBuildingPartsManyFloatAtlas()

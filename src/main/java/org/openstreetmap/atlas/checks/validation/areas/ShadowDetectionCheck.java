@@ -20,6 +20,7 @@ import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
@@ -32,6 +33,7 @@ import org.openstreetmap.atlas.tags.BuildingPartTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HeightTag;
 import org.openstreetmap.atlas.tags.MinHeightTag;
+import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -205,7 +207,8 @@ public class ShadowDetectionCheck extends BaseCheck
                     ? ((Area) object).asPolygon() : converter.convert((Relation) object);
             // Check if it is a building part, and overlaps.
             return !checked.contains(object) && !this.isFlagged(object.getIdentifier())
-                    && (this.isBuildingPart(object) || BuildingTag.isBuilding(object))
+                    && (this.isBuildingPart(object) || BuildingTag.isBuilding(object)
+                            || this.isBuildingRelationMember(object))
                     && (partPolygon instanceof Polygon
                             ? objectPolygon.overlaps((Polygon) partPolygon)
                             : objectPolygon.overlaps((MultiPolygon) partPolygon))
@@ -311,6 +314,25 @@ public class ShadowDetectionCheck extends BaseCheck
     private boolean isBuildingPart(final AtlasObject object)
     {
         return Validators.isOfType(object, BuildingPartTag.class, BuildingPartTag.YES);
+    }
+
+    /**
+     * Checks if an {@link AtlasObject} is a outline or part member of a building relation. This is
+     * an equivalent tagging to building=* or building:part=yes.
+     *
+     * @param object
+     *            {@link AtlasObject} to check
+     * @return true if the object is part of any relation where it has role outline or part
+     */
+    private boolean isBuildingRelationMember(final AtlasObject object)
+    {
+        return object instanceof AtlasEntity && ((AtlasEntity) object).relations().stream()
+                .anyMatch(relation -> Validators.isOfType(relation, RelationTypeTag.class,
+                        RelationTypeTag.BUILDING)
+                        && relation.members().stream()
+                                .anyMatch(member -> member.getEntity().equals(object)
+                                        && (member.getRole().equals("outline"))
+                                        || member.getRole().equals("part")));
     }
 
     /**
