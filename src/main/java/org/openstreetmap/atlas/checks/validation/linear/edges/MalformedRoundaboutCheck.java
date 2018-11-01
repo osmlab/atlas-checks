@@ -31,9 +31,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     private static final long serialVersionUID = -3018101860747289836L;
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#}, is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
-    private static final String MULTIDIRECTIONAL_INSTRUCTIONS = "This roundabout, {0,number,#}, is"
-            + " multi-directional, or the roundabout has improper angle geometry.";
-    private static final String INCOMPLETE_INSTRUCTIONS = "This roundabout, {0,number,#}, is incomplete, or has been improperly tagged as a roundabout.";
+    private static final String COMPLETE_ROUTE_INSTRUCTIONS = "This roundabout, {0,number,#}, does not form a single complete car navigable route.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -43,7 +41,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
-            MULTIDIRECTIONAL_INSTRUCTIONS, INCOMPLETE_INSTRUCTIONS);
+            COMPLETE_ROUTE_INSTRUCTIONS);
 
     private List<String> leftDrivingCountries;
 
@@ -54,8 +52,6 @@ public class MalformedRoundaboutCheck extends BaseCheck
     {
         CLOCKWISE,
         COUNTERCLOCKWISE,
-        // Handles the case where multiple directions were found in the roundabout
-        MULTIDIRECTIONAL,
         // Handles the case where we were unable to get any information about the roundabout's
         // Direction or if the roundabout's geometry was malformed (concave).
         UNKNOWN
@@ -117,18 +113,11 @@ public class MalformedRoundaboutCheck extends BaseCheck
         catch (final CoreException badRoundabout)
         {
             return Optional.of(this.createFlag(roundaboutEdgeSet,
-                    this.getLocalizedInstruction(2, edge.getOsmIdentifier())));
+                    this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
         }
 
         // Get the direction of the roundabout
         final RoundaboutDirection direction = findRoundaboutDirection(roundaboutEdges);
-
-        // If the roundabout is found to be going in multiple directions
-        if (direction.equals(RoundaboutDirection.MULTIDIRECTIONAL))
-        {
-            return Optional.of(this.createFlag(roundaboutEdgeSet,
-                    this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
-        }
 
         // Determine if the roundabout is in a left or right driving country
         final boolean isLeftDriving = leftDrivingCountries.contains(isoCountryCode);
@@ -172,8 +161,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
      */
     private static RoundaboutDirection findRoundaboutDirection(final Route roundaboutEdges)
     {
-        // Initialize the directionSoFar to UNKNOWN as we have no directional information yet
-        RoundaboutDirection directionSoFar = RoundaboutDirection.UNKNOWN;
+        int clockwiseCount = 0;
+        int counterClockwiseCount = 0;
 
         for (int idx = 0; idx < roundaboutEdges.size(); idx++)
         {
@@ -195,21 +184,18 @@ public class MalformedRoundaboutCheck extends BaseCheck
             {
                 continue;
             }
-
-            // If the directionSoFar is UNKNOWN, and the direction derived from the current pair
-            // Of edges is not UNKNOWN, make the directionSoFar equal to the current pair direction
-            if (directionSoFar.equals(RoundaboutDirection.UNKNOWN))
+            if (direction.equals(RoundaboutDirection.CLOCKWISE))
             {
-                directionSoFar = direction;
+                clockwiseCount += 1;
             }
-            // Otherwise, if the directionSoFar and the direction are not equal, we know that the
-            // Roundabout has segments going in different directions
-            else if (!directionSoFar.equals(direction))
+            if (direction.equals(RoundaboutDirection.COUNTERCLOCKWISE))
             {
-                return RoundaboutDirection.MULTIDIRECTIONAL;
+                counterClockwiseCount += 1;
             }
         }
-        return directionSoFar;
+        return clockwiseCount > counterClockwiseCount ? RoundaboutDirection.CLOCKWISE
+                : clockwiseCount < counterClockwiseCount ? RoundaboutDirection.COUNTERCLOCKWISE
+                        : RoundaboutDirection.UNKNOWN;
     }
 
     /**
