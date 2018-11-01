@@ -11,9 +11,11 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.BfsEdgeWalker;
 import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Route;
+import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -32,6 +34,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout, {0,number,#}, is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
     private static final String COMPLETE_ROUTE_INSTRUCTIONS = "This roundabout, {0,number,#}, does not form a single complete car navigable route.";
+    private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout, {0,number,#}, has car navigable ways inside it.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -41,7 +44,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
-            COMPLETE_ROUTE_INSTRUCTIONS);
+            COMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS);
 
     private List<String> leftDrivingCountries;
 
@@ -108,6 +111,10 @@ public class MalformedRoundaboutCheck extends BaseCheck
         try
         {
             roundaboutEdges = Route.fromNonArrangedEdgeSet(roundaboutEdgeSet, false);
+            if (!roundaboutEdges.start().inEdges().contains(roundaboutEdges.end()))
+            {
+                throw new CoreException("Non-ring roundabout");
+            }
         }
         // If a Route cannot be formed, flag the edges as an incomplete roundabout.
         catch (final CoreException badRoundabout)
@@ -130,6 +137,14 @@ public class MalformedRoundaboutCheck extends BaseCheck
             return Optional.of(this.createFlag(roundaboutEdgeSet,
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
+
+        // Test for middle edges
+        if (this.roundaboutEnclosesRoads(roundaboutEdges))
+        {
+            return Optional.of(this.createFlag(roundaboutEdgeSet,
+                    this.getLocalizedInstruction(2, edge.getOsmIdentifier())));
+        }
+
         return Optional.empty();
     }
 
@@ -227,5 +242,11 @@ public class MalformedRoundaboutCheck extends BaseCheck
         // The cross product tells us the direction of the orthogonal vector, which is
         // Directly related to the direction of rotation/traffic
         return (vector1X * vector2Y) - (vector1Y * vector2X);
+    }
+
+    private boolean roundaboutEnclosesRoads(final Route roundabout)
+    {
+        return roundabout.start().getAtlas().edgesIntersecting(new Polygon(roundabout.asPolyLine()),
+                HighwayTag::isCarNavigableHighway).iterator().hasNext();
     }
 }
