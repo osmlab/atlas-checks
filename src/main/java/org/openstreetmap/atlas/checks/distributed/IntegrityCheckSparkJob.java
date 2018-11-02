@@ -91,7 +91,7 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
-    private static final Switch<Set<String>> CHECKS_TO_RUN = new Switch<>("checksToRun",
+    private static final Switch<Set<String>> CHECK_FILTER = new Switch<>("checkFilter",
             "Comma-separated list of checks to run", value -> StringList
                     .split(value, CommonConstants.COMMA).stream().collect(Collectors.toSet()),
             Optionality.OPTIONAL);
@@ -232,16 +232,16 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
+        @SuppressWarnings("unchecked")
+        final Optional<Set<String>> checkFilter = (Optional<Set<String>>) commandMap
+                .getOption(CHECK_FILTER);
         // Predicate to determine whether or not a given check was passed in as a command line
         // argument.
-        // If there is not a CHECKS_TO_RUN switch, this predicate always returns true.
-        @SuppressWarnings("unchecked")
-        final Optional<Set<String>> checksToRun = (Optional<Set<String>>) commandMap
-                .getOption(CHECKS_TO_RUN);
-        final Predicate<Class> isCheckToRun = checkClass -> checksToRun
+        // If there is not a CHECK_FILTER switch, this predicate always returns true.
+        final Predicate<Class> isValidCheck = checkClass -> checkFilter
                 .map(checkNames -> checkNames.contains(checkClass.getSimpleName())).orElse(true);
         // check configuration and country list
-        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadEnabledChecks(isCheckToRun);
+        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadEnabledChecks(isValidCheck);
         preOverriddenChecks.forEach(check -> logger.info(check.getCheckName()));
         if (!isValidInput(countries, preOverriddenChecks))
         {
@@ -258,12 +258,12 @@ public class IntegrityCheckSparkJob extends SparkJob
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
         countries.stream().filter(priorityCountries::contains)
                 .forEach(country -> countryCheckTuples.add(new Tuple2<>(country,
-                        checkLoader.loadChecksForCountry(country, isCheckToRun))));
+                        checkLoader.loadChecksForCountry(country, isValidCheck))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
                 .forEach(country -> countryCheckTuples.add(new Tuple2<>(country,
-                        checkLoader.loadChecksForCountry(country, isCheckToRun))));
+                        checkLoader.loadChecksForCountry(country, isValidCheck))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
@@ -461,7 +461,7 @@ public class IntegrityCheckSparkJob extends SparkJob
     {
         return super.switches().with(ATLAS_FOLDER, MAP_ROULETTE, COUNTRIES, CONFIGURATION_FILES,
                 CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS,
-                CHECKS_TO_RUN);
+                CHECK_FILTER);
     }
 
     /**
