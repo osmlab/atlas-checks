@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  * {@link MalformedRoundaboutCheckTest} data generator
  *
  * @author savannahostrowski
+ * @author bbreithaupt
  */
 
 public class MalformedRoundaboutCheckTestRule extends CoreTestRule
@@ -39,19 +40,19 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1),
                             @Loc(value = CLOCKWISE_5) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_5),
                             @Loc(value = CLOCKWISE_4) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_4),
                             @Loc(value = CLOCKWISE_3) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_3),
                             @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_2),
                             @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }) })
+                                    "iso_country_code=SGP", "highway=primary" }) })
     private Atlas clockwiseRoundaboutLeftDrivingAtlas;
 
     // Clockwise roundabout, right driving country
@@ -66,19 +67,19 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1),
                             @Loc(value = CLOCKWISE_5) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_5),
                             @Loc(value = CLOCKWISE_4) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_4),
                             @Loc(value = CLOCKWISE_3) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_3),
                             @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_2),
                             @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }) })
+                                    "iso_country_code=USA", "highway=primary" }) })
     private Atlas clockwiseRoundaboutRightDrivingAtlas;
 
     // Counterclockwise roundabout, left driving country
@@ -93,19 +94,19 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
                             @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
                             @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
                             @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }),
+                                    "iso_country_code=SGP", "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
                             @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
-                                    "iso_country_code=SGP" }) })
+                                    "iso_country_code=SGP", "highway=primary" }) })
     private Atlas counterClockwiseRoundaboutLeftDrivingAtlas;
 
     // Counterclockwise roundabout, right driving country
@@ -120,19 +121,19 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
                             @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
                             @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
                             @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
                             @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }) })
+                                    "iso_country_code=USA", "highway=primary" }) })
     private Atlas counterClockwiseRoundaboutRightDrivingAtlas;
 
     // Multi-directional Atlas
@@ -147,20 +148,158 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
                             @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
                             @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_2),
                             @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }),
+                                    "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
-                                    "iso_country_code=USA" }) })
+                                    "iso_country_code=USA", "highway=primary" }) })
     private Atlas multiDirectionalRoundaboutAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_3)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_5)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_5),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "iso_country_code=SGP",
+                                    "highway=primary" }) })
+    private Atlas clockwiseRoundaboutLeftDrivingMissingTagAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_3)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_5)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_3)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_5)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
+                            @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
+                            @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1239", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1240", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1241", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1242", coordinates = { @Loc(value = CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1243", coordinates = { @Loc(value = CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1244", coordinates = { @Loc(value = CLOCKWISE_5),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }) })
+    private Atlas counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_3)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_5)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_4)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
+                            @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "iso_country_code=USA",
+                                    "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
+                            @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1239", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1240", coordinates = { @Loc(value = CLOCKWISE_4),
+                            @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }) })
+    private Atlas counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_3)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_5)),
+                    @Node(coordinates = @Loc(value = CLOCKWISE_4)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
+                            @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
+                            @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1239", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "iso_country_code=USA",
+                                    "highway=primary" }) })
+    private Atlas counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas;
 
     public Atlas clockwiseRoundaboutLeftDrivingAtlas()
     {
@@ -187,4 +326,23 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
         return this.multiDirectionalRoundaboutAtlas;
     }
 
+    public Atlas clockwiseRoundaboutLeftDrivingMissingTagAtlas()
+    {
+        return this.clockwiseRoundaboutLeftDrivingMissingTagAtlas;
+    }
+
+    public Atlas counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas()
+    {
+        return this.counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas;
+    }
+
+    public Atlas counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas()
+    {
+        return this.counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas;
+    }
+
+    public Atlas counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas()
+    {
+        return this.counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas;
+    }
 }

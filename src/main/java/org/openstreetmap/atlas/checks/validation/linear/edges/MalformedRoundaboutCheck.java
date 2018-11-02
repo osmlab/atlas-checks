@@ -11,13 +11,19 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.BfsEdgeWalker;
 import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Route;
+import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.TunnelTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -244,9 +250,44 @@ public class MalformedRoundaboutCheck extends BaseCheck
         return (vector1X * vector2Y) - (vector1Y * vector2X);
     }
 
+    /**
+     * Checks for roads that should not be inside a roundabout. Such roads are car navigable, not a
+     * roundabout, bridge, or tunnel, don't have a layer tag, and have geometry inside the
+     * roundabout.
+     *
+     * @param roundabout
+     *            A roundabout as a {@link Route}
+     * @return true if there is an
+     */
     private boolean roundaboutEnclosesRoads(final Route roundabout)
     {
-        return roundabout.start().getAtlas().edgesIntersecting(new Polygon(roundabout.asPolyLine()),
-                HighwayTag::isCarNavigableHighway).iterator().hasNext();
+        final Polygon roundaboutPoly = new Polygon(roundabout.asPolyLine());
+        return roundabout.start().getAtlas().edgesIntersecting(roundaboutPoly,
+                edge -> HighwayTag.isCarNavigableHighway(edge) && !JunctionTag.isRoundabout(edge)
+                        && !Validators.hasValuesFor(edge, LayerTag.class)
+                        && !BridgeTag.isBridge(edge) && !TunnelTag.isTunnel(edge)
+                        && this.isMoreThanTouching(roundaboutPoly, edge))
+                .iterator().hasNext();
+    }
+
+    /**
+     * Checks if an {@link Edge} is either fully enclosed by a {@link Polygon}, or intersects it at
+     * a point other than one of its {@link Node}s.
+     *
+     * @param polygon
+     *            {@link Polygon} to check against
+     * @param edge
+     *            the {@link Edge} to check
+     * @return true if some part of the {@link Edge} is inside the {@link Polygon} and doesn't just
+     *         have touching {@link Node}s.
+     */
+    private boolean isMoreThanTouching(final Polygon polygon, final Edge edge)
+    {
+        final PolyLine polyline = edge.asPolyLine();
+        return polygon.fullyGeometricallyEncloses(polyline)
+                || polygon.intersections(polyline).stream()
+                        .filter(intersection -> !(edge.start().getLocation().equals(intersection)
+                                || edge.end().getLocation().equals(intersection)))
+                        .iterator().hasNext();
     }
 }

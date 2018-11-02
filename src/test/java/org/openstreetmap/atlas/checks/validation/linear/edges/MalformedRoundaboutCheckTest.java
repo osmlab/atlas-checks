@@ -24,7 +24,6 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-
         this.verifier.verifyEmpty();
     }
 
@@ -33,7 +32,6 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutRightDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -42,7 +40,6 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutLeftDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -51,7 +48,6 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-
         this.verifier.verifyEmpty();
     }
 
@@ -60,7 +56,40 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void clockwiseRoundaboutLeftDrivingMissingTagTest()
+    {
+        this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingMissingTagAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void counterClockwiseConnectedDoubleRoundaboutRightDrivingTest()
+    {
+        this.verifier.actual(
+                this.setup.counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void counterClockwiseRoundaboutRightDrivingWrongEdgesTagTest()
+    {
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void counterClockwiseRoundaboutRightDrivingOutsideConnectionTest()
+    {
+        this.verifier.actual(
+                this.setup.counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }
