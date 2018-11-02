@@ -14,10 +14,6 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class RoundaboutValenceCheckTest
 {
-
-    private final RoundaboutValenceCheck check = new RoundaboutValenceCheck(
-            ConfigurationResolver.inlineConfiguration(
-                    "{\"RoundaboutValenceCheck\":{\"connections.minimum\":2.0,\"connections.maximum\":14.0}}"));
     @Rule
     public RoundaboutValenceCheckTestRule setup = new RoundaboutValenceCheckTestRule();
 
@@ -30,13 +26,6 @@ public class RoundaboutValenceCheckTest
         this.verifier.actual(this.setup.roundaboutWithValenceZero(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
 
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void roundaboutWithValenceZeroFourteenMaxConnections()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceZero(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -57,33 +46,10 @@ public class RoundaboutValenceCheckTest
     }
 
     @Test
-    public void roundaboutWithValenceTwoFourteenMaxConnections()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceTwo(), check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
     public void roundaboutWithValenceFour()
     {
         this.verifier.actual(this.setup.roundaboutWithValenceFour(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void roundaboutWithValenceTen()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceTen(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void roundaboutWithValenceTenFourteenMaxConnections()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceTen(), check);
-        this.verifier.verifyEmpty();
-
     }
 }

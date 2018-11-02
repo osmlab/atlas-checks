@@ -125,4 +125,13 @@ public class MalformedRoundaboutCheckTest
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
+
+    @Test
+    public void counterClockwiseRoundaboutRightDrivingNonCarNavigableAtlas()
+    {
+        this.verifier.actual(
+                this.setup.counterClockwiseRoundaboutRightDrivingNonCarNavigableAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
 }

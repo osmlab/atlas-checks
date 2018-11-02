@@ -1,11 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -38,8 +35,9 @@ public class RoundaboutValenceCheck extends BaseCheck
             + " should not be labelled as a roundabout. "
             + "This feature should be a turning loop or turning circle.";
     public static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node that has more than 1 connections outside the roundabout.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS, MINIMUM_NODE_VALENCE_INSTRUCTION);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS,
+            MINIMUM_NODE_VALENCE_INSTRUCTION);
 
     private static final double LOWER_VALENCE_THRESHOLD_DEFAULT = 2.0;
     private final double minimumValence;
@@ -84,32 +82,28 @@ public class RoundaboutValenceCheck extends BaseCheck
         final Edge edge = (Edge) object;
 
         // Get all edges in the roundabout
-        final Set<Edge> roundaboutEdges = new BfsEdgeWalker(this.isRoundaboutEdge())
-                .collect(edge);
-        roundaboutEdges.forEach(roundaboutEdge ->this.markAsFlagged(roundaboutEdge.getIdentifier()));
-
-        final Set<Edge> connectedEdges = roundaboutEdges.stream()
-                .flatMap(roundaboutEdge -> roundaboutEdge.connectedEdges().stream())
-                .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
-                .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge))
-                .filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
-                .collect(Collectors.toSet());
+        final Set<Edge> roundaboutEdges = new BfsEdgeWalker(this.isRoundaboutEdge()).collect(edge);
+        roundaboutEdges
+                .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
         final Set<Node> roundaboutNodes = roundaboutEdges.stream()
-                .flatMap(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()).collect(Collectors.toSet());
+                .flatMap(roundaboutEdge -> roundaboutEdge.connectedNodes().stream())
+                .collect(Collectors.toSet());
         int totalRoundaboutValence = 0;
-        for (final Node node : roundaboutNodes){
-            final int nodeValance = node.connectedEdges().stream().filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
+        for (final Node node : roundaboutNodes)
+        {
+            final int nodeValance = node.connectedEdges().stream()
+                    .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
                     .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge))
                     .filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
                     .collect(Collectors.toSet()).size();
-            if (nodeValance > 1){
-                return Optional.of(this.createFlag(roundaboutEdges,
-                        this.getLocalizedInstruction(2)));
+            if (nodeValance > 1)
+            {
+                return Optional
+                        .of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(2)));
             }
             totalRoundaboutValence += nodeValance;
         }
-
 
         // If the totalRoundaboutValence is less than the minimum configured number of connections
         // or greater than or equal to the maximum configured number of connections

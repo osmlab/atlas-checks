@@ -129,49 +129,6 @@ public class RoundaboutValenceCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_8) }, tags = { "highway=motorway" }) })
     private Atlas roundaboutWithValenceFour;
 
-    // Roundabout with valence of 10 (should be flagged for inspection). On conditional threshold
-    @TestAtlas(
-            // nodes
-            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
-                    @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
-                    @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
-                    @Node(coordinates = @Loc(value = TEST_7)),
-                    @Node(coordinates = @Loc(value = TEST_8)) },
-            // edges
-            edges = {
-                    @Edge(id = "1111", coordinates = { @Loc(value = TEST_1),
-                            @Loc(value = TEST_2) }, tags = { "junction=roundabout" }),
-                    @Edge(id = "1112", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "junction=roundabout" }),
-                    @Edge(id = "1113", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "junction=roundabout" }),
-                    @Edge(id = "1114", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_1) }, tags = { "junction=roundabout" }),
-                    @Edge(id = "1115", coordinates = { @Loc(value = TEST_1),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1116", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_6) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1117", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_7) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1118", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_8) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1119", coordinates = { @Loc(value = TEST_1),
-                            @Loc(value = TEST_8) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1120", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1121", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_6) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1122", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_7) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1123", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway" }),
-                    @Edge(id = "1124", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_6) }, tags = { "highway=motorway" }) })
-    private Atlas roundaboutWithValenceTen;
-
     public Atlas roundaboutWithValenceZero()
     {
         return this.roundaboutWithValenceZero;
@@ -190,10 +147,5 @@ public class RoundaboutValenceCheckTestRule extends CoreTestRule
     public Atlas roundaboutWithValenceFour()
     {
         return this.roundaboutWithValenceFour;
-    }
-
-    public Atlas roundaboutWithValenceTen()
-    {
-        return this.roundaboutWithValenceTen;
     }
 }
