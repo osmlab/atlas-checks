@@ -27,8 +27,9 @@ import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check flags roundabouts where the directionality is opposite to what it should be, where the
- * roundabout is multi-directional, or where the roundabout has incorrect geometry (concave).
+ * This check flags roundabouts where the directionality is opposite to what it should be, the
+ * roundabout is multi-directional, the roundabout is incomplete, or the roundabout has car
+ * navigable edges inside it.
  *
  * @author savannahostrowski
  * @author bbreithaupt
@@ -62,7 +63,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
         CLOCKWISE,
         COUNTERCLOCKWISE,
         // Handles the case where we were unable to get any information about the roundabout's
-        // Direction or if the roundabout's geometry was malformed (concave).
+        // Direction.
         UNKNOWN
     }
 
@@ -144,7 +145,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
 
-        // Test for middle edges
+        // If there are car navigable edges inside the roundabout flag it, as it is probably
+        // malformed or a throughabout
         if (this.roundaboutEnclosesRoads(roundaboutEdges))
         {
             return Optional.of(this.createFlag(roundaboutEdgeSet,
@@ -175,10 +177,9 @@ public class MalformedRoundaboutCheck extends BaseCheck
      * @see "https://en.wikipedia.org/wiki/Right-hand_rule"
      * @param roundaboutEdges
      *            A list of Edges in a roundabout
-     * @return CLOCKWISE or COUNTERCLOCKWISE if all the edges have positive or negative cross
-     *         products respectively, MULTIDIRECTIONAL if multiple directions are found in the same
-     *         roundabout, and UNKNOWN if all edge cross products are 0 or if the roundabout's
-     *         geometry is malformed
+     * @return CLOCKWISE or COUNTERCLOCKWISE if the majority of the edges have positive or negative
+     *         cross products respectively, and UNKNOWN if all edge cross products are 0 or if the
+     *         roundabout's geometry is malformed
      */
     private static RoundaboutDirection findRoundaboutDirection(final Route roundaboutEdges)
     {
@@ -214,6 +215,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
                 counterClockwiseCount += 1;
             }
         }
+        // Return the Enum for whatever has the highest count
         return clockwiseCount > counterClockwiseCount ? RoundaboutDirection.CLOCKWISE
                 : clockwiseCount < counterClockwiseCount ? RoundaboutDirection.COUNTERCLOCKWISE
                         : RoundaboutDirection.UNKNOWN;
