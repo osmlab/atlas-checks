@@ -81,8 +81,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 PARAMETER_WHITELIST_COUNTRIES, Collections.EMPTY_LIST));
         this.blacklistCountries = Collections.unmodifiableList(configurationValue(configuration,
                 PARAMETER_BLACKLIST_COUNTRIES, Collections.EMPTY_LIST));
-        this.tagFilter = new TaggableFilter(
-                configurationValue(configuration, PARAMETER_WHITELIST_TAGS, ""));
+        this.tagFilter = TaggableFilter
+                .forDefinition(configurationValue(configuration, PARAMETER_WHITELIST_TAGS, ""));
         final Map<String, String> challengeMap = configurationValue(configuration,
                 PARAMETER_CHALLENGE, Collections.EMPTY_MAP);
         this.flagLanguageMap = configurationValue(configuration, PARAMETER_FLAG,
