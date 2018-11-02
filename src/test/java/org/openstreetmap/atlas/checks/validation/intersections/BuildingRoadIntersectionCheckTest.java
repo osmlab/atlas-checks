@@ -21,7 +21,7 @@ public class BuildingRoadIntersectionCheckTest
                     "{\"CheckResourceLoader\": {\"scanUrls\": [\"org.openstreetmap.atlas.checks\"]},\"BuildingRoadIntersectionCheck\":{\"enabled\":true,\"locale\":\"es\",\"flags\":{\"en\":[\"Building (id-{0,number,#}) intersects road (id-{1,number,#})\"],\"es\":[\"Edificio(id-{0,number,#}) cruza calle(id-{1,number,#})\"]}}}"));
     private static final BuildingRoadIntersectionCheck highwayFilterCheck = new BuildingRoadIntersectionCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"BuildingRoadIntersectionCheck\":{\"highway.car.navigable\":false}}"));
+                    "{\"BuildingRoadIntersectionCheck\":{\"car.navigable\":false}}"));
     @Rule
     public BuildingRoadIntersectionTestCaseRule setup = new BuildingRoadIntersectionTestCaseRule();
 

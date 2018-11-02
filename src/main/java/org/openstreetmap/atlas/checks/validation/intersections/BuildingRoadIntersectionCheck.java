@@ -31,9 +31,11 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * Flags buildings that intersect/touch centerlines of roads. This doesn't address cases where
- * buildings get really close to roads, but don't overlap them. The highways that need to be tested
- * for intersection can be specified in the "highway.filter" config. By default all highways in the
- * CAR_NAVIGABLE_ENUM_SET of {@link HighwayTag} are checked for intersection.
+ * buildings get really close to roads, but don't overlap them. The configurable value
+ * "car.navigable" can be set to true or false, depending on which the validity of the intersecting
+ * highways will be checked. The default value of "car.navigable" is set to true. If set to true,
+ * the intersecting highways will be checked for tags in the enum set "CAR_NAVIGABLE_HIGHWAYS", else
+ * checked for tags in "CORE_WAYS" enum set in the {@link HighwayTag} class.
  *
  * @author mgostintsev, sayas01
  */
@@ -125,7 +127,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     public BuildingRoadIntersectionCheck(final Configuration configuration)
     {
         super(configuration);
-        this.isCarNavigable = this.configurationValue(configuration, "highway.car.navigable", true);
+        this.isCarNavigable = this.configurationValue(configuration, "car.navigable", true);
     }
 
     @Override
