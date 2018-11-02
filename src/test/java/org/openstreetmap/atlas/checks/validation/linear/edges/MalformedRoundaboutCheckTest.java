@@ -10,6 +10,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * Tests for {@link MalformedRoundaboutCheck}
  *
  * @author savannahostrowski
+ * @author bbreithaupt
  */
 public class MalformedRoundaboutCheckTest
 {
@@ -89,6 +90,38 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(
                 this.setup.counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void counterClockwiseRoundaboutRightDrivingEnclosedPathTest()
+    {
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingEnclosedPathAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void counterClockwiseRoundaboutRightDrivingEnclosedBridgeTest()
+    {
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingEnclosedBridgeAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void counterClockwiseRoundaboutRightDrivingOneWayNoTest()
+    {
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingOneWayNoAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testClockwiseRoundaboutLeftDrivingConcave()
+    {
+        this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingConcaveAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
