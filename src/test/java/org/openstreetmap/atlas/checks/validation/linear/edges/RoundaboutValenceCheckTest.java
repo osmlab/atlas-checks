@@ -10,6 +10,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * Tests for {@link RoundaboutValenceCheck}
  *
  * @author savannahostrowski
+ * @author bbreithaupt
  */
 public class RoundaboutValenceCheckTest
 {
@@ -85,29 +86,4 @@ public class RoundaboutValenceCheckTest
         this.verifier.verifyEmpty();
 
     }
-
-    @Test
-    public void roundaboutWithValenceEleven()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceEleven(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void roundaboutWithValenceFourteen()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceFourteen(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void roundaboutWithValenceFifteen()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceFifteen(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
 }
