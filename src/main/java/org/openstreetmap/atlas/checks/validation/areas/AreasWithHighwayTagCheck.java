@@ -10,7 +10,9 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -38,29 +40,40 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area || object instanceof Edge;
+        return object instanceof Area || (object instanceof Edge && ((Edge) object).isMasterEdge());
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        return object.getTag(HighwayTag.KEY)
-                .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
-                // If the tag isn't one of the validHighwayTags, we want to flag it.
-                .filter(tag -> !isAcceptableAreaWithHighwayTag(tag)).map(tag ->
-                {
-                    final String instruction;
-                    if (isNotOsmStandard(tag))
+        if (!this.isFlagged(object.getOsmIdentifier()))
+        {
+            return object.getTag(HighwayTag.KEY)
+                    .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
+                    // If the tag isn't one of the validHighwayTags, we want to flag it.
+                    .filter(tag -> !isAcceptableAreaWithHighwayTag(tag)
+                            && Validators.isOfType(object, AreaTag.class, AreaTag.YES))
+                    .map(tag ->
                     {
-                        instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
-                    }
-                    else
-                    {
-                        instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
-                                tag.getTagValue());
-                    }
-                    return this.createFlag(object, instruction);
-                });
+                        final String instruction;
+                        if (isNotOsmStandard(tag))
+                        {
+                            instruction = this.getLocalizedInstruction(0,
+                                    object.getOsmIdentifier());
+                        }
+                        else
+                        {
+                            instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
+                                    tag.getTagValue());
+                        }
+                        this.markAsFlagged(object.getOsmIdentifier());
+                        return this.createFlag(object, instruction);
+                    });
+        }
+        else
+        {
+            return Optional.empty();
+        }
     }
 
     @Override
