@@ -83,7 +83,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 // Amenity=fuel
                 && !(highwayServiceTag.test(edge)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
-                // And ignore intersections where building has nodes within it with Amenity=fuel
+                // And ignore intersections where building has points within it with Amenity=fuel
                 && !edge.getAtlas().pointsWithin(building.asPolygon(),
                         point -> Validators.isOfType(point, AmenityTag.class, AmenityTag.FUEL))
                         .iterator().hasNext()
