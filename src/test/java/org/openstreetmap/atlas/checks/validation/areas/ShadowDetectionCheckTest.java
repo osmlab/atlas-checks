@@ -43,6 +43,14 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
+    public void validBuildingRoofTest()
+    {
+        this.verifier.actual(this.setup.validBuildingRoofAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void invalidFloatingHeightBuildingTest()
     {
         this.verifier.actual(this.setup.invalidFloatingHeightBuildingAtlas(),
@@ -194,8 +202,7 @@ public class ShadowDetectionCheckTest
     {
         this.verifier.actual(this.setup.invalidUntaggedAreasStackedAtlas(),
                 new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test

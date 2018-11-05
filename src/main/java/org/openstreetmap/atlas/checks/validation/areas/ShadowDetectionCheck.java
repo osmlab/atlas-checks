@@ -2,10 +2,8 @@ package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,7 +50,8 @@ public class ShadowDetectionCheck extends BaseCheck
     private static final long serialVersionUID = -6968080042879358551L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "The building(s) and/or building part(s) float(s) above the ground. Please check the height/building:levels and min_height/building:min_level tags.",
+            "The building(s) and/or building part(s) float(s) above the ground. Please check the height/building:levels "
+                    + "and min_height/building:min_level tags for all of the buildings parts.",
             "Relation {0,number,#} is floating.");
 
     private static final double LEVEL_TO_METERS_CONVERSION = 3.5;
@@ -86,7 +85,8 @@ public class ShadowDetectionCheck extends BaseCheck
         return !this.isFlagged(object.getIdentifier())
                 && (object instanceof Area
                         || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
-                && this.hasMinKey(object);
+                && this.hasMinKey(object)
+                && (this.isBuildingOrPart(object) || this.isBuildingRelationMember(object));
     }
 
     /**
@@ -106,7 +106,7 @@ public class ShadowDetectionCheck extends BaseCheck
             final CheckFlag flag;
             if (object instanceof Relation)
             {
-                flag = this.createFlag(this.flatten((Relation) object),
+                flag = this.createFlag(((Relation) object).flatten(),
                         this.getLocalizedInstruction(0));
                 flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier()));
             }
@@ -121,7 +121,7 @@ public class ShadowDetectionCheck extends BaseCheck
                 {
                     if (part instanceof Relation)
                     {
-                        flag.addObjects(this.flatten((Relation) part));
+                        flag.addObjects(((Relation) part).flatten());
                         flag.addInstruction(
                                 this.getLocalizedInstruction(1, part.getOsmIdentifier()));
                     }
@@ -207,8 +207,7 @@ public class ShadowDetectionCheck extends BaseCheck
                     ? ((Area) object).asPolygon() : converter.convert((Relation) object);
             // Check if it is a building part, and overlaps.
             return !checked.contains(object) && !this.isFlagged(object.getIdentifier())
-                    && (this.isBuildingPart(object) || BuildingTag.isBuilding(object)
-                            || this.isBuildingRelationMember(object))
+                    && (this.isBuildingOrPart(object) || this.isBuildingRelationMember(object))
                     && (partPolygon instanceof Polygon
                             ? objectPolygon.overlaps((Polygon) partPolygon)
                             : objectPolygon.overlaps((MultiPolygon) partPolygon))
@@ -305,15 +304,17 @@ public class ShadowDetectionCheck extends BaseCheck
     }
 
     /**
-     * Checks if an {@link AtlasObject} is a building part.
+     * Checks if an {@link AtlasObject} is a building or building:part that is valid for this check.
      *
      * @param object
      *            {@link AtlasObject} to check
      * @return true if {@code object} has a {@code building:part=yes} tag
      */
-    private boolean isBuildingPart(final AtlasObject object)
+    private boolean isBuildingOrPart(final AtlasObject object)
     {
-        return Validators.isOfType(object, BuildingPartTag.class, BuildingPartTag.YES);
+        return (BuildingTag.isBuilding(object)
+                && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF))
+                || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
     }
 
     /**
@@ -407,40 +408,5 @@ public class ShadowDetectionCheck extends BaseCheck
         atlas.relations(relation -> relation.isMultiPolygon() && BuildingTag.isBuilding(relation))
                 .forEach(index::add);
         return index;
-    }
-
-    /**
-     * remove this when better solution is available
-     *
-     * @param relation
-     *            Relation
-     * @return set of AtlasObjects
-     */
-    public Set<AtlasObject> flatten(final Relation relation)
-    {
-        final Set<AtlasObject> relationMembers = new HashSet<>();
-        final Deque<AtlasObject> toProcess = new LinkedList<>();
-        final Set<Long> relationsSeen = new HashSet<>();
-        AtlasObject polledMember;
-        toProcess.add(relation);
-        while (!toProcess.isEmpty())
-        {
-            polledMember = toProcess.poll();
-            if (polledMember instanceof Relation)
-            {
-                if (relationsSeen.contains(polledMember.getIdentifier()))
-                {
-                    continue;
-                }
-                ((Relation) polledMember).members()
-                        .forEach(member -> toProcess.add(member.getEntity()));
-                relationsSeen.add(polledMember.getIdentifier());
-            }
-            else
-            {
-                relationMembers.add(polledMember);
-            }
-        }
-        return relationMembers;
     }
 }
