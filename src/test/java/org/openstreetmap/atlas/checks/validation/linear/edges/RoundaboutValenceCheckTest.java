@@ -21,35 +21,43 @@ public class RoundaboutValenceCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void roundaboutWithValenceZero()
+    public void roundaboutWithValenceZeroTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithValenceZero(),
+        this.verifier.actual(this.setup.roundaboutWithValenceZeroAtlas(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void roundaboutWithValenceOne()
+    public void roundaboutWithValenceOneTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithValenceOne(),
+        this.verifier.actual(this.setup.roundaboutWithValenceOneAtlas(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void roundaboutWithValenceTwo()
+    public void roundaboutWithValenceTwoTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithValenceTwo(),
+        this.verifier.actual(this.setup.roundaboutWithValenceTwoAtlas(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void roundaboutWithValenceFour()
+    public void roundaboutWithValenceFourTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithValenceFour(),
+        this.verifier.actual(this.setup.roundaboutWithValenceFourAtlas(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void roundaboutWithValenceFiveTest()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceFiveAtlas(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 }

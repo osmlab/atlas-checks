@@ -20,7 +20,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 /**
  * This check ensures that roundabouts with unreasonable valences are flagged. In reference to OSM
  * Wiki, each roundabout should have greater than 1 connection as 1 connection should be tagged as a
- * turning point, and no connections is obviously not a valid way.
+ * turning point, and no connections is obviously not a valid way. In addition no individual Node
+ * within a roundabout should have more than one master Edge connecting from outside the roundabout.
  *
  * @author savannahostrowski
  * @author bbreithaupt
@@ -29,12 +30,9 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
-            + "has the wrong valence. It has a valence of {1,number,#}.";
-    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
-            + " should not be labelled as a roundabout. "
-            + "This feature should be a turning loop or turning circle.";
-    public static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node that has more than 1 connections outside the roundabout.";
+    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout has the wrong valence. It has a valence of {1,number,#}.";
+    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This roundabout should be a turning loop or turning circle.";
+    public static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node, {0,number,#}, that has more than 1 connections outside the roundabout.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS,
             MINIMUM_NODE_VALENCE_INSTRUCTION);
@@ -81,14 +79,16 @@ public class RoundaboutValenceCheck extends BaseCheck
     {
         final Edge edge = (Edge) object;
 
-        // Get all edges in the roundabout
+        // Get all Edges in the roundabout
         final Set<Edge> roundaboutEdges = new BfsEdgeWalker(this.isRoundaboutEdge()).collect(edge);
         roundaboutEdges
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
+        // Get all the Nodes in the roundabout
         final Set<Node> roundaboutNodes = roundaboutEdges.stream()
                 .flatMap(roundaboutEdge -> roundaboutEdge.connectedNodes().stream())
                 .collect(Collectors.toSet());
+        // CHeck the valence of each node and gather the total valence
         int totalRoundaboutValence = 0;
         for (final Node node : roundaboutNodes)
         {
@@ -97,10 +97,13 @@ public class RoundaboutValenceCheck extends BaseCheck
                     .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge))
                     .filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
                     .collect(Collectors.toSet()).size();
+            // If a Node has a valance of more than 1, flag it and the roundabout
             if (nodeValance > 1)
             {
-                return Optional
-                        .of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(2)));
+                final CheckFlag flag = this.createFlag(roundaboutEdges,
+                        this.getLocalizedInstruction(2, node.getOsmIdentifier()));
+                flag.addObject(node);
+                return Optional.of(flag);
             }
             totalRoundaboutValence += nodeValance;
         }
@@ -112,12 +115,12 @@ public class RoundaboutValenceCheck extends BaseCheck
             // If the roundabout valence is 1, this should be labelled as a turning loop instead
             if (totalRoundaboutValence == 1)
             {
-                return Optional.of(this.createFlag(roundaboutEdges,
-                        this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
+                return Optional
+                        .of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(1)));
             }
             // Otherwise, we want to flag and given information about identifier and valence
-            return Optional.of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(0,
-                    edge.getOsmIdentifier(), totalRoundaboutValence)));
+            return Optional.of(this.createFlag(roundaboutEdges,
+                    this.getLocalizedInstruction(0, totalRoundaboutValence)));
         }
         // If the totalRoundaboutValence is not unusual, we don't flag the object
         else
