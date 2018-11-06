@@ -111,6 +111,14 @@ public class MalformedRoundaboutCheckTest
     }
 
     @Test
+    public void counterClockwiseRoundaboutBridgeRightDrivingEnclosedTest()
+    {
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void counterClockwiseRoundaboutRightDrivingOneWayNoTest()
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingOneWayNoAtlas(),

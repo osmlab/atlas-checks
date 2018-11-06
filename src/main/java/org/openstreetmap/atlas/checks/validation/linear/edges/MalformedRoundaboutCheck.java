@@ -155,7 +155,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
 
         // If there are car navigable edges inside the roundabout flag it, as it is probably
         // malformed or a throughabout
-        if (this.roundaboutEnclosesRoads(roundaboutEdges))
+        if (roundaboutEdgeSet.stream().noneMatch(this::ignoreCrossings)
+                && this.roundaboutEnclosesRoads(roundaboutEdges))
         {
             return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(2)));
         }
@@ -260,6 +261,19 @@ public class MalformedRoundaboutCheck extends BaseCheck
     }
 
     /**
+     * Checks if an {@link Edge} have values that indicate it is crossable by another edge.
+     *
+     * @param edge
+     *            {@link Edge} to be checked
+     * @return true if it is a bridge or tunnel, or has a layer tag
+     */
+    private boolean ignoreCrossings(final Edge edge)
+    {
+        return Validators.hasValuesFor(edge, LayerTag.class) || BridgeTag.isBridge(edge)
+                || TunnelTag.isTunnel(edge);
+    }
+
+    /**
      * Checks for roads that should not be inside a roundabout. Such roads are car navigable, not a
      * roundabout, bridge, or tunnel, don't have a layer tag, and have geometry inside the
      * roundabout.
@@ -271,11 +285,11 @@ public class MalformedRoundaboutCheck extends BaseCheck
     private boolean roundaboutEnclosesRoads(final Route roundabout)
     {
         final Polygon roundaboutPoly = new Polygon(roundabout.asPolyLine());
-        return roundabout.start().getAtlas().edgesIntersecting(roundaboutPoly,
-                edge -> HighwayTag.isCarNavigableHighway(edge) && !JunctionTag.isRoundabout(edge)
-                        && !Validators.hasValuesFor(edge, LayerTag.class)
-                        && !BridgeTag.isBridge(edge) && !TunnelTag.isTunnel(edge)
-                        && this.isMoreThanTouching(roundaboutPoly, edge))
+        return roundabout.start().getAtlas()
+                .edgesIntersecting(roundaboutPoly,
+                        edge -> HighwayTag.isCarNavigableHighway(edge)
+                                && !JunctionTag.isRoundabout(edge) && !this.ignoreCrossings(edge)
+                                && this.isMoreThanTouching(roundaboutPoly, edge))
                 .iterator().hasNext();
     }
 

@@ -370,6 +370,35 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
                             @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary", "bridge=yes" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
+                            @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
+                            @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=USA", "highway=primary" }),
+                    @Edge(id = "1239", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "iso_country_code=USA",
+                                    "highway=primary" }) })
+    private Atlas counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_3)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_5)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
                                     "iso_country_code=USA", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
                             @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
@@ -497,6 +526,11 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
     public Atlas counterClockwiseRoundaboutRightDrivingEnclosedBridgeAtlas()
     {
         return this.counterClockwiseRoundaboutRightDrivingEnclosedBridgeAtlas;
+    }
+
+    public Atlas counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas()
+    {
+        return this.counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas;
     }
 
     public Atlas counterClockwiseRoundaboutRightDrivingOneWayNoAtlas()
