@@ -60,4 +60,12 @@ public class RoundaboutValenceCheckTest
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
+
+    @Test
+    public void roundaboutWithValenceZeroCyclewayTest()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceZeroCyclewayAtlas(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
 }

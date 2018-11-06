@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -64,7 +65,9 @@ public class RoundaboutValenceCheck extends BaseCheck
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
                 // Make sure that we are only looking at master edges
-                && ((Edge) object).isMasterEdge();
+                && ((Edge) object).isMasterEdge()
+                // Check for excluded highway types
+                && !this.isExcludedHighway(object);
     }
 
     /**
@@ -137,8 +140,22 @@ public class RoundaboutValenceCheck extends BaseCheck
      */
     private BiFunction<Edge, Set<Edge>, Set<Edge>> isRoundaboutEdge()
     {
-        return (edge, queued) -> edge.connectedEdges().stream().filter(
-                connected -> JunctionTag.isRoundabout(connected) && !queued.contains(connected))
+        return (edge, queued) -> edge.connectedEdges().stream()
+                .filter(connected -> JunctionTag.isRoundabout(connected)
+                        && !queued.contains(connected) && !this.isExcludedHighway(connected))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Checks if an {@link AtlasObject} has a highway value that excludes it from this check. These
+     * have been excluded because they commonly act differently from car navigable roundabouts.
+     *
+     * @param object
+     * @return
+     */
+    private boolean isExcludedHighway(final AtlasObject object)
+    {
+        return Validators.isOfType(object, HighwayTag.class, HighwayTag.CYCLEWAY,
+                HighwayTag.PEDESTRIAN, HighwayTag.FOOTWAY);
     }
 }
