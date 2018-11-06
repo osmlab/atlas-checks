@@ -40,7 +40,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
-    private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.SERVICE.toString();
+    private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private static final long serialVersionUID = 2146863485833228593L;
 
@@ -93,7 +93,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         // Use BFS to gather all connected invalid crossings
         final Set<Edge> invalidEdges = this.getInvalidCrossingEdges((Edge) object);
 
-        if (invalidEdges.size() > 1)
+        if (!invalidEdges.isEmpty())
         {
             final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
             this.markAsFlagged(object.getIdentifier());
@@ -204,6 +204,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 }
             }
         }
-        return invalidEdges;
+        return invalidEdges.size() > 1 ? invalidEdges : new HashSet<>();
     }
 }
