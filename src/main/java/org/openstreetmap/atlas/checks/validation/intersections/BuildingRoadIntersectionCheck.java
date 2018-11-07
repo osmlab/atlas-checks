@@ -47,9 +47,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
             .asList(BUILDING_ROAD_INTERSECTION_INSTRUCTION, SERVICE_ROAD_INTERSECTION_INSTRUCTION);
     private static final String INDOOR_KEY = "indoor";
     private static final String YES_VALUE = "yes";
-    private static final Predicate<Edge> highwayServiceTag = edge -> Validators.isOfType(edge,
+    private static final Predicate<Edge> HIGHWAY_SERVICE_TAG = edge -> Validators.isOfType(edge,
             HighwayTag.class, HighwayTag.SERVICE);
-    private final Boolean isCarNavigable;
+    private final Boolean carNavigableEdgesOnly;
     private static final long serialVersionUID = 5986017212661374165L;
 
     private static Predicate<Edge> ignoreTags()
@@ -59,7 +59,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         TunnelTag.YES)
                 || Validators.isOfType(edge, AreaTag.class, AreaTag.YES)
                 || YES_VALUE.equals(edge.tag(INDOOR_KEY))
-                || highwayServiceTag.test(edge)
+                || HIGHWAY_SERVICE_TAG.test(edge)
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY)
                 || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
                         EntranceTag.class, EntranceTag.YES)
@@ -75,18 +75,14 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     {
         // An invalid intersection is determined by checking that its highway tag is car navigable
         // or core way based on the configuration value
-        return edge -> (this.isCarNavigable ? HighwayTag.isCarNavigableHighway(edge)
+        return edge -> (this.carNavigableEdgesOnly ? HighwayTag.isCarNavigableHighway(edge)
                 : HighwayTag.isCoreWay(edge))
                 // And if the edge intersects the building polygon
                 && edge.asPolyLine().intersects(building.asPolygon())
                 // And ignore intersections where edge has highway=service and building has
                 // Amenity=fuel
-                && !(highwayServiceTag.test(edge)
+                && !(HIGHWAY_SERVICE_TAG.test(edge)
                         && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
-                // And ignore intersections where building has points within it with Amenity=fuel
-                && !edge.getAtlas().pointsWithin(building.asPolygon(),
-                        point -> Validators.isOfType(point, AmenityTag.class, AmenityTag.FUEL))
-                        .iterator().hasNext()
                 // And if the layers have the same layer value
                 && LayerTag.getTaggedValue(edge).orElse(0L)
                         .equals(LayerTag.getTaggedValue(building).orElse(0L))
@@ -127,7 +123,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     public BuildingRoadIntersectionCheck(final Configuration configuration)
     {
         super(configuration);
-        this.isCarNavigable = this.configurationValue(configuration, "car.navigable", true);
+        this.carNavigableEdgesOnly = this.configurationValue(configuration, "car.navigable", true);
     }
 
     @Override
@@ -139,7 +135,11 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         return object instanceof Area && BuildingTag.isBuilding(object)
                 && !HighwayTag.isHighwayArea(object)
                 && !Validators.isOfType(object, AmenityTag.class, AmenityTag.PARKING)
-                && !Validators.isOfType(object, BuildingTag.class, BuildingTag.ROOF);
+                && !Validators.isOfType(object, BuildingTag.class, BuildingTag.ROOF)
+                // Ignore buildings that have points withing it with Ameniity=Fuel
+                && !object.getAtlas().pointsWithin(((Area) object).asPolygon(),
+                        point -> Validators.isOfType(point, AmenityTag.class, AmenityTag.FUEL))
+                        .iterator().hasNext();
     }
 
     @Override
@@ -147,7 +147,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     {
         final Area building = (Area) object;
         final Iterable<Edge> intersectingEdges = Iterables.filter(building.getAtlas()
-                .edgesIntersecting(building.bounds(), intersectsCoreWayInvalidly(building)),
+                .edgesIntersecting(building.bounds(), this.intersectsCoreWayInvalidly(building)),
                 ignoreTags());
         final CheckFlag flag = new CheckFlag(getTaskIdentifier(building));
         flag.addObject(building);
@@ -180,7 +180,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         {
             if (!knownIntersections.contains(edge))
             {
-                final int instructionIndex = highwayServiceTag.test(edge) ? 1 : 0;
+                final int instructionIndex = HIGHWAY_SERVICE_TAG.test(edge) ? 1 : 0;
                 flag.addObject(edge, this.getLocalizedInstruction(instructionIndex,
                         building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 knownIntersections.add(edge);
