@@ -40,9 +40,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
     private static final long serialVersionUID = -3018101860747289836L;
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
-    private static final String COMPLETE_ROUTE_INSTRUCTIONS = "This roundabout does not form a single complete car navigable route.";
+    private static final String COMPLETE_ROUTE_INSTRUCTIONS = "This roundabout does not form a single, one-way, complete, car navigable route.";
     private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout has car navigable ways inside it.";
-    private static final String NON_CAR_NAVIGABLE_INSTRUCTIONS = "This roundabout has non car navigable ways.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -52,9 +51,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
-            COMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS,
-            NON_CAR_NAVIGABLE_INSTRUCTIONS);
-    private static final int THREE = 3;
+            COMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS);
 
     private List<String> leftDrivingCountries;
 
@@ -119,12 +116,12 @@ public class MalformedRoundaboutCheck extends BaseCheck
         roundaboutEdgeSet
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
         final Route roundaboutEdges;
-        // Flag if any of them are not car navigable
+        // Flag if any of them are not car navigable or master Edges
         if (roundaboutEdgeSet.stream()
-                .anyMatch(roundaboutEdge -> !HighwayTag.isCarNavigableHighway(roundaboutEdge)))
+                .anyMatch(roundaboutEdge -> !HighwayTag.isCarNavigableHighway(roundaboutEdge)
+                        || !roundaboutEdge.isMasterEdge()))
         {
-            return Optional
-                    .of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(THREE)));
+            return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(1)));
         }
         // Try to build a Route from the edges
         try
