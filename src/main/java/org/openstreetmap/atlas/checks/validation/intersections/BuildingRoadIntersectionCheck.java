@@ -89,7 +89,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 // And if the building/edge intersection is not valid
                 && !isValidIntersection(building, edge)
                 // And if the edge has no Access = Private tag
-                && !AccessTag.isPrivate(edge);
+                && !Validators.isOfType(edge, AccessTag.class, AccessTag.PRIVATE);
     }
 
     /**
