@@ -1,7 +1,11 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -80,12 +84,30 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             return Stream.of(((Area) object).asPolygon());
         } else if (((Relation) object).isMultiPolygon())
         {
-            return StreamSupport.stream(((Relation) object).members().spliterator(), false)
+            return ((Relation) object).members().stream()
                     .map(this::toPolygon)
                     .flatMap(optPoly -> optPoly.isPresent() ? Stream.of(optPoly.get()) : Stream.empty());
         }
         logger.warn("Returning empty stream");
         return Stream.empty();
+    }
+
+    private List<Location> getSkinnyAngleLocations(final Polygon polygon)
+    {
+        final List<Location> results = new ArrayList<>();
+        final List<Segment> segments = polygon.segments();
+        // comparing second segment to first
+        for(int i = 1; i < segments.size(); i++) {
+            if (isSkinnyAngle(segments.get(i-1), segments.get(i))) {
+                results.add(segments.get(i).start());
+            }
+        }
+        // compare last segment to first
+        if (isSkinnyAngle(segments.get(segments.size() - 1), segments.get(0)))
+        {
+            results.add(segments.get(0).start());
+        }
+        return results;
     }
 
     private boolean hasSkinnyAngle(final Polygon polygon)
@@ -134,10 +156,23 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 
     @Override protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Stream<Polygon> buildingPolylines = getPolylines(object);
-
-        if(buildingPolylines.anyMatch(this::hasSkinnyAngle)) {
-            return Optional.of(this.createFlag(object, "Spiky building here."));
+        final List<Location> allSkinnyAngles = getPolylines(object)
+                .map(this::getSkinnyAngleLocations)
+                .filter(angleLocations -> !angleLocations.isEmpty())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        if (!allSkinnyAngles.isEmpty())
+        {
+            final CheckFlag flag;
+            if (object instanceof Area)
+            {
+                flag = this.createFlag(object, "Spiky building here.");
+            } else
+            {
+                flag = this.createFlag(((Relation) object).flatten(), "Spiky building here.");
+            }
+            flag.addPoints(allSkinnyAngles);
+            return Optional.of(flag);
         }
         return Optional.empty();
     }
