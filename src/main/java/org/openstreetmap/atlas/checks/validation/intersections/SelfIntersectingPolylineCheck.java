@@ -64,7 +64,6 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         // Retrieve minimum highway type from the config
         this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
                 MINIMUM_HIGHWAY_TYPE_DEFAULT, string -> HighwayTag.valueOf(string.toUpperCase()));
-
     }
 
     /**
