@@ -20,24 +20,29 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     private static final String ROUND_FIVE = "0.0000005,0.0000020";
 
     @TestAtlas(
-            buildings = @Building(id = "1", outer = @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO_A), @Loc(value=TWO), @Loc(value=THREE)}), tags={"building=yes"})
+            areas = { @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO_A), @Loc(value=TWO), @Loc(value=THREE)}, tags="building=yes")}
     )
     private Atlas spikyBuilding;
 
     @TestAtlas(
-            buildings = @Building(outer = @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO), @Loc(value=FOUR), @Loc(value=THREE)}))
+            areas = { @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO), @Loc(value=FOUR), @Loc(value=THREE)}, tags="building=yes") }
     )
     private Atlas normalBuilding;
 
     @TestAtlas(
-            buildings = @Building(outer = @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value = ROUND_THREE), @Loc(value = ROUND_FOUR), @Loc(value = ROUND_FIVE)}))
+            areas = { @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value = ROUND_THREE), @Loc(value = ROUND_FOUR), @Loc(value = ROUND_FIVE)}, tags="building=yes") }
     )
     private Atlas normalRound;
 
     @TestAtlas(
-            buildings = @Building(outer = @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value=ROUND_TWO), @Loc(value=ROUND_THREE), @Loc(value=ROUND_FOUR), @Loc(value=ROUND_FIVE)}))
+            areas = { @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value=ROUND_TWO), @Loc(value=ROUND_THREE), @Loc(value=ROUND_FOUR), @Loc(value=ROUND_FIVE)}, tags="building=yes") }
     )
     private Atlas roundNumbersSpiky;
+
+    @TestAtlas(
+            areas = { @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value=ROUND_TWO), @Loc(value=ROUND_THREE)}, tags= "building=yes") }
+    )
+    private Atlas spikyButSmall;
 
     public Atlas getSpikyBuilding()
     {
@@ -57,5 +62,10 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     public Atlas getNormalRound()
     {
         return normalRound;
+    }
+
+    public Atlas getSpikyButSmall()
+    {
+        return spikyButSmall;
     }
 }

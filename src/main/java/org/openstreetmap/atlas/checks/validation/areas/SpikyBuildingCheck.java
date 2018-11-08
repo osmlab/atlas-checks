@@ -12,14 +12,12 @@ import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.tags.BuildingPartTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
-import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.slf4j.Logger;
@@ -36,6 +34,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 
     private static final Heading HEADING_THRESHOLD_LOWER = Heading.degrees(15);
     private static final Heading HEADING_THRESHOLD_UPPER = Heading.degrees(165);
+    private static final int MIN_NUMBER_OF_SIDES = 3;
     private static final double COS_15 = 0.9659258262890682867497431997288973676339;
 
     /**
@@ -51,9 +50,9 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     // TODO remove code duplication
     @Override public boolean validCheckForObject(final AtlasObject object)
     {
-        return (object instanceof Area
+        return ((object instanceof Area && ((Area) object).asPolygon().size() > MIN_NUMBER_OF_SIDES)
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
-                && (this.isBuildingOrPart(object) || this.isBuildingRelationMember(object));
+                && (this.isBuildingOrPart(object));
     }
 
     private boolean isBuildingOrPart(final AtlasObject object)
@@ -63,16 +62,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                 || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
     }
 
-    private boolean isBuildingRelationMember(final AtlasObject object)
-    {
-        return object instanceof AtlasEntity && ((AtlasEntity) object).relations().stream()
-                .anyMatch(relation -> Validators.isOfType(relation, RelationTypeTag.class,
-                        RelationTypeTag.BUILDING)
-                        && relation.members().stream()
-                        .anyMatch(member -> member.getEntity().equals(object)
-                                && (member.getRole().equals("outline"))
-                                || member.getRole().equals("part")));
-    }
     // end TODO code duplication
 
     private Optional<Polygon> toPolygon(final RelationMember member)

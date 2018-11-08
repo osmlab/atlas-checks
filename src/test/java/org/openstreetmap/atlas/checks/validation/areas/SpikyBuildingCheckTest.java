@@ -44,6 +44,15 @@ public class SpikyBuildingCheckTest
                 ConfigurationResolver.emptyConfiguration()));
         verifier.verifyEmpty();
     }
+
+    // We should ignore edges with only three vertices
+    @Test
+    public void ignoresSpikyButSmall() {
+        verifier.actual(setup.getSpikyButSmall(), new SpikyBuildingCheck(
+                ConfigurationResolver.emptyConfiguration()));
+        verifier.verifyEmpty();
+    }
+
     @Test
     public void distanceTest() {
         verifier.verifyEmpty();
