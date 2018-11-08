@@ -18,6 +18,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
+import org.openstreetmap.atlas.tags.BuildingTag;
+import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.WaterwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -30,13 +32,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author mgostintsev
  * @author dbaah
+ * @author sayas01
  */
 public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 {
     private static final String AREA_INSTRUCTION = "Feature {0,number,#} has invalid geometry at {1}";
     private static final String POLYLINE_BUILDING_INSTRUCTION = "Feature {0,number,#} is a incomplete "
             + "building at {1}";
-
     private static final String DUPLICATE_EDGE_INSTRUCTION = "Feature {0,number,#} has a duplicate "
             + "Edge at {1}";
     private static final String POLYLINE_INSTRUCTION = "Self-intersecting polyline for feature "
@@ -45,8 +47,10 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             AREA_INSTRUCTION, POLYLINE_BUILDING_INSTRUCTION, DUPLICATE_EDGE_INSTRUCTION);
     private static final Logger logger = LoggerFactory
             .getLogger(SelfIntersectingPolylineCheck.class);
+    private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = "SERVICE";
     public static final Integer THREE = 3;
     private static final long serialVersionUID = 2722288442633787006L;
+    private final HighwayTag minimumHighwayType;
 
     /**
      * Default constructor
@@ -57,6 +61,10 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     public SelfIntersectingPolylineCheck(final Configuration configuration)
     {
         super(configuration);
+        // Retrieve minimum highway type from the config
+        this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
+                MINIMUM_HIGHWAY_TYPE_DEFAULT, string -> HighwayTag.valueOf(string.toUpperCase()));
+
     }
 
     /**
@@ -73,8 +81,10 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // Master edges excluding ineligible highway tags
+        // Master edges with building tags or with eligible highway tags
         return object instanceof Edge && ((Edge) object).isMasterEdge()
+                && (Validators.hasValuesFor(object, BuildingTag.class) || ((Edge) object)
+                        .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType))
                 // Areas
                 || object instanceof Area
                 // Lines excluding ineligible highway tags

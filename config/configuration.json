@@ -256,7 +256,7 @@
     }
   },
   "SelfIntersectingPolylineCheck": {
-    "tags.filter":"highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
+    "minimum.highway.type":"service",
     "challenge": {
       "description": "Verify that the same Polyline does not intersect itself at any point.",
       "blurb": "Modify Polylines such that they do not self intersect.",
