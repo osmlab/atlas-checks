@@ -164,7 +164,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     }
 
     /**
-     * BiFunction for {@link BfsEdgeWalker} that gathers connected edged that are part of a
+     * BiFunction for {@link BfsEdgeWalker} that gathers connected edges that are part of a
      * roundabout.
      *
      * @return {@link BiFunction} for {@link BfsEdgeWalker}
@@ -261,7 +261,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     }
 
     /**
-     * Checks if an {@link Edge} have values that indicate it is crossable by another edge.
+     * Checks if an {@link Edge} has values that indicate it is crossable by another edge.
      *
      * @param edge
      *            {@link Edge} to be checked
@@ -280,7 +280,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
      *
      * @param roundabout
      *            A roundabout as a {@link Route}
-     * @return true if there is an
+     * @return true if there is a road that is crossing and has geometry enclosed by the roundabout
      */
     private boolean roundaboutEnclosesRoads(final Route roundabout)
     {
@@ -289,13 +289,13 @@ public class MalformedRoundaboutCheck extends BaseCheck
                 .edgesIntersecting(roundaboutPoly,
                         edge -> HighwayTag.isCarNavigableHighway(edge)
                                 && !JunctionTag.isRoundabout(edge) && !this.ignoreCrossings(edge)
-                                && this.isMoreThanTouching(roundaboutPoly, edge))
+                                && this.intersectsWithEnclosedGeometry(roundaboutPoly, edge))
                 .iterator().hasNext();
     }
 
     /**
-     * Checks if an {@link Edge} is either fully enclosed by a {@link Polygon}, or intersects it at
-     * a point other than one of its {@link Node}s.
+     * Checks if an {@link Edge} intersects a {@link Polygon} and is either fully inside it or
+     * intersecting at a point other than one of its {@link Node}s.
      *
      * @param polygon
      *            {@link Polygon} to check against
@@ -304,14 +304,14 @@ public class MalformedRoundaboutCheck extends BaseCheck
      * @return true if some part of the {@link Edge} is inside the {@link Polygon} and doesn't just
      *         have touching {@link Node}s.
      */
-    private boolean isMoreThanTouching(final Polygon polygon, final Edge edge)
+    private boolean intersectsWithEnclosedGeometry(final Polygon polygon, final Edge edge)
     {
         final PolyLine polyline = edge.asPolyLine();
-        return polygon.fullyGeometricallyEncloses(polyline)
-                || polygon.intersections(polyline).stream()
-                        .filter(intersection -> !(edge.start().getLocation().equals(intersection)
-                                || edge.end().getLocation().equals(intersection)))
-                        .iterator().hasNext();
+        return polygon.intersections(polyline).stream()
+                .filter(intersection -> !(edge.start().getLocation().equals(intersection)
+                        || edge.end().getLocation().equals(intersection))
+                        || polygon.fullyGeometricallyEncloses(polyline))
+                .iterator().hasNext();
     }
 
     /**
