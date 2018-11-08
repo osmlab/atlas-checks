@@ -12,6 +12,8 @@
       "minimum": 50.0
     }
   },
+  "SpikyBuildingCheck": {
+  },
   "OrphanNodeCheck": {
 
   },
