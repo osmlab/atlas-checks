@@ -19,6 +19,19 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     private static final String ROUND_FOUR = "0.0000025,0.0000020";
     private static final String ROUND_FIVE = "0.0000005,0.0000020";
 
+    private static final String A = "22.5136768, 114.0802380";
+    private static final String B = "22.5136402, 114.0802804";
+    private static final String C = "22.5136130, 114.0802528";
+    private static final String D = "22.5135873, 114.0802267";
+    private static final String E = "22.5135594, 114.0801985";
+    private static final String F = "22.5135961, 114.0801561";
+
+    private static final String G = "50.4542345, -4.8259661";
+    private static final String H = "50.4542210, -4.8257859";
+    private static final String I = "50.4542209, -4.8257867";
+    private static final String J = "50.4541504, -4.8257998";
+    private static final String K = "50.4541645, -4.8259790";
+
     @TestAtlas(
             areas = { @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO_A), @Loc(value=TWO), @Loc(value=THREE)}, tags="building=yes")}
     )
@@ -44,6 +57,17 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     )
     private Atlas spikyButSmall;
 
+    @TestAtlas(
+            areas = { @Area(id = "1", coordinates = {@Loc(value=A), @Loc(value=B), @Loc(value=C), @Loc(value=D), @Loc(value=E), @Loc(value=F)}, tags="building=yes"),
+               }
+    )
+    private Atlas badCase;
+
+    @TestAtlas(
+            areas = {  @Area(coordinates = {@Loc(value=G), @Loc(value=H), @Loc(value=I), @Loc(value=J), @Loc(value=K)}, tags="building=yes") }
+    )
+    private Atlas badCase2;
+
     public Atlas getSpikyBuilding()
     {
         return spikyBuilding;
@@ -67,5 +91,15 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     public Atlas getSpikyButSmall()
     {
         return spikyButSmall;
+    }
+
+    public Atlas badCase()
+    {
+        return badCase;
+    }
+
+    public Atlas badCase2()
+    {
+        return badCase2;
     }
 }

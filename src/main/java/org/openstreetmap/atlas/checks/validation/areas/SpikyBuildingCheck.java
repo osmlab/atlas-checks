@@ -2,12 +2,10 @@ package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -24,6 +22,8 @@ import org.openstreetmap.atlas.tags.BuildingPartTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Angle;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +36,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 {
     private final Logger logger = LoggerFactory.getLogger(SpikyBuildingCheck.class);
 
-    private static final Heading HEADING_THRESHOLD_LOWER = Heading.degrees(15);
-    private static final Heading HEADING_THRESHOLD_UPPER = Heading.degrees(165);
+    private static final Angle HEADING_THRESHOLD_LOWER = Angle.degrees(15);
+    private static final Angle HEADING_THRESHOLD_UPPER = Angle.degrees(165);
     private static final int MIN_NUMBER_OF_SIDES = 3;
     private static final double COS_15 = 0.9659258262890682867497431997288973676339;
 
@@ -51,7 +51,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         super(configuration);
     }
 
-    // TODO remove code duplication
     @Override public boolean validCheckForObject(final AtlasObject object)
     {
         return ((object instanceof Area && ((Area) object).asPolygon().size() > MIN_NUMBER_OF_SIDES)
@@ -65,8 +64,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                 && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF))
                 || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
     }
-
-    // end TODO code duplication
 
     private Optional<Polygon> toPolygon(final RelationMember member)
     {
@@ -92,6 +89,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         return Stream.empty();
     }
 
+    // this is almost exactly the same as polygon.anglesLessThanOrEqualTo, except we also need to
+    // compare the angle between the last segment and the first segment.
     private List<Location> getSkinnyAngleLocations(final Polygon polygon)
     {
         final List<Location> results = new ArrayList<>();
@@ -108,50 +107,15 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             results.add(segments.get(0).start());
         }
         return results;
-    }
 
-    private boolean hasSkinnyAngle(final Polygon polygon)
-    {
-        final List<Segment> segments = polygon.segments();
-        // comparing second segment to first
-        for(int i = 1; i < segments.size(); i++) {
-            if (isSkinnyAngle(segments.get(i-1), segments.get(i))) {
-                return true;
-            }
-        }
-        // compare last segment to first
-        return isSkinnyAngle(segments.get(segments.size() - 1), segments.get(0));
     }
 
     private boolean isSkinnyAngle(final Segment firstSegment, final Segment secondSegment)
     {
-//        final Heading first = firstSegment.pointingNorth().heading().get();
-//        final Heading second = secondSegment.pointingNorth().heading().get();
-//        return first.difference(second).isLessThan(HEADING_THRESHOLD_LOWER)
-//                || first.difference(second).isGreaterThan(HEADING_THRESHOLD_UPPER);
-        return cosine(firstSegment.start(), firstSegment.end(), secondSegment.end()) > COS_15;
-    }
-
-    public static double dotProd(final Location start, final Location middle, final Location end)
-    {
-        return dm7Mult(start.getLatitude().asDm7(), middle.getLatitude().asDm7(), end.getLatitude().asDm7())
-                + dm7Mult(start.getLongitude().asDm7(), middle.getLongitude().asDm7(), end.getLongitude().asDm7());
-    }
-
-    private static long dm7Mult(final long start, final long middle, final long end)
-    {
-        return (start - middle) * (end - middle);
-    }
-
-    public static double distance(final Location start, final Location end)
-    {
-        return Math.sqrt(Math.pow(start.getLatitude().asDm7() - end.getLatitude().asDm7(), 2)
-                + Math.pow(start.getLongitude().asDm7() - end.getLongitude().asDm7(), 2));
-    }
-
-    public static double cosine(final Location start, final Location middle, final Location end)
-    {
-        return dotProd(start, middle, end) / (distance(start, middle) * distance(middle, end));
+        final Heading first = firstSegment.heading().get();
+        final Heading second = secondSegment.reversed().heading().get();
+        final Angle difference = first.difference(second);
+        return difference.isLessThan(HEADING_THRESHOLD_LOWER);
     }
 
     @Override protected Optional<CheckFlag> flag(final AtlasObject object)

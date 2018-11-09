@@ -1,12 +1,9 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
-import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.Segment;
 
 import static org.junit.Assert.*;
 
@@ -54,24 +51,16 @@ public class SpikyBuildingCheckTest
     }
 
     @Test
-    public void distanceTest() {
+    public void badCase() {
+        verifier.actual(setup.badCase(), new SpikyBuildingCheck(
+                ConfigurationResolver.emptyConfiguration()));
         verifier.verifyEmpty();
-        Location start = Location.forString("0,0");
-        Location end = Location.forString("0.5,0.5");
-        Assert.assertEquals(5000000 * Math.sqrt(2), SpikyBuildingCheck.distance(start, end), .001);
     }
 
     @Test
-    public void dotProdTest() {
-        verifier.verifyEmpty();
-        Location start = Location.forString("0,0");
-        Location middle = Location.forString("0.5,0.5");
-        Location end = Location.forString("1,0");
-        Location otherEnd = Location.forString("1,1");
-        Segment a = new Segment(start, middle);
-        Segment b = new Segment(middle, end);
-        Segment c = new Segment(start, end);
-        Assert.assertEquals(0, SpikyBuildingCheck.dotProd(start, middle, end), .0001);
-        Assert.assertEquals(-50000000000000L, SpikyBuildingCheck.dotProd(start, middle, otherEnd), .0001);
+    public void badCase2() {
+        verifier.actual(setup.badCase2(), new SpikyBuildingCheck(
+                ConfigurationResolver.emptyConfiguration()));
+        verifier.verifyExpectedSize(1);
     }
 }
