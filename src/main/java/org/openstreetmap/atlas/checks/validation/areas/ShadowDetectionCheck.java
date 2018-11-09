@@ -296,7 +296,7 @@ public class ShadowDetectionCheck extends BaseCheck
                 return Range.closed(partMinHeight, partMaxHeight)
                         .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
             }
-            // Ignore buildings with a min value lager than its height
+            // Ignore buildings with a min value larger than its height
             catch (final IllegalArgumentException exc)
             {
                 return false;
