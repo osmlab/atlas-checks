@@ -39,8 +39,9 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import com.google.common.collect.Range;
 
 /**
- * This flags buildings and building parts that are floating, casting strange shadows when rendered
- * in 3D.
+ * This flags buildings that are floating in 3D, thus casting a shadow on the base map when rendered
+ * in 3D. Buildings are defined as Areas with a building or building:part tag or are part of a
+ * building relation, or a relation of type multipolygon with a building tag.
  *
  * @author bbreithaupt
  */
@@ -54,10 +55,11 @@ public class ShadowDetectionCheck extends BaseCheck
                     + "and min_height/building:min_level tags for all of the buildings parts.",
             "Relation {0,number,#} is floating.");
 
+    // OSM standard level conversion factor
     private static final double LEVEL_TO_METERS_CONVERSION = 3.5;
     private static final String ZERO_STRING = "0";
 
-    private final Map<Atlas, SpatialIndex<Relation>> relationSpatialIndecies = new HashMap<>();
+    private final Map<Atlas, SpatialIndex<Relation>> relationSpatialIndices = new HashMap<>();
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -104,6 +106,7 @@ public class ShadowDetectionCheck extends BaseCheck
         if (!floatingParts.isEmpty())
         {
             final CheckFlag flag;
+            // If object is a relation, flatten it and add a relation instruction
             if (object instanceof Relation)
             {
                 flag = this.createFlag(((Relation) object).flatten(),
@@ -114,6 +117,7 @@ public class ShadowDetectionCheck extends BaseCheck
             {
                 flag = this.createFlag(object, this.getLocalizedInstruction(0));
             }
+            // Flag all the connected floating parts together
             for (final AtlasObject part : floatingParts)
             {
                 this.markAsFlagged(part.getIdentifier());
@@ -173,13 +177,13 @@ public class ShadowDetectionCheck extends BaseCheck
                     .addAll(Iterables.asSet(checking.getAtlas().areasIntersecting(checkingBounds,
                             area -> this.neighboringPart(area, checking, connectedParts))));
             // Get Relations
-            if (!this.relationSpatialIndecies.containsKey(checking.getAtlas()))
+            if (!this.relationSpatialIndices.containsKey(checking.getAtlas()))
             {
-                this.relationSpatialIndecies.put(checking.getAtlas(),
+                this.relationSpatialIndices.put(checking.getAtlas(),
                         this.buildRelationSpatialIndex(checking.getAtlas()));
             }
             neighboringParts.addAll(Iterables
-                    .asSet(this.relationSpatialIndecies.get(checking.getAtlas()).get(checkingBounds,
+                    .asSet(this.relationSpatialIndices.get(checking.getAtlas()).get(checkingBounds,
                             relation -> this.neighboringPart(relation, checking, connectedParts))));
             // Add the parts to the Set and Queue
             connectedParts.addAll(neighboringParts);
@@ -201,6 +205,7 @@ public class ShadowDetectionCheck extends BaseCheck
         final RelationOrAreaToMultiPolygonConverter converter = new RelationOrAreaToMultiPolygonConverter();
         try
         {
+            // Get the polygons of the parts, either single or multi
             final GeometricSurface partPolygon = part instanceof Area ? ((Area) part).asPolygon()
                     : converter.convert((Relation) part);
             final GeometricSurface objectPolygon = object instanceof Area
@@ -313,6 +318,8 @@ public class ShadowDetectionCheck extends BaseCheck
     private boolean isBuildingOrPart(final AtlasObject object)
     {
         return (BuildingTag.isBuilding(object)
+                // Ignore roofs, as the are often used for items that have supports that are too
+                // small to effectively map (such as a carport)
                 && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF))
                 || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
     }
@@ -378,7 +385,7 @@ public class ShadowDetectionCheck extends BaseCheck
 
     /**
      * Create a new spatial index that pre filters building relations. Pre-filtering drastically
-     * increases runtime by eliminating very large non-building relations. Copied from
+     * decreases runtime by eliminating very large non-building relations. Copied from
      * {@link org.openstreetmap.atlas.geography.atlas.AbstractAtlas}.
      *
      * @return A newly created spatial index
