@@ -58,6 +58,7 @@ public class ShadowDetectionCheck extends BaseCheck
     // OSM standard level conversion factor
     private static final double LEVEL_TO_METERS_CONVERSION = 3.5;
     private static final String ZERO_STRING = "0";
+    private static final RelationOrAreaToMultiPolygonConverter MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
 
     private final Map<Atlas, SpatialIndex<Relation>> relationSpatialIndices = new HashMap<>();
 
@@ -202,14 +203,14 @@ public class ShadowDetectionCheck extends BaseCheck
     private boolean neighboringPart(final AtlasObject object, final AtlasObject part,
             final Set<AtlasObject> checked)
     {
-        final RelationOrAreaToMultiPolygonConverter converter = new RelationOrAreaToMultiPolygonConverter();
         try
         {
             // Get the polygons of the parts, either single or multi
             final GeometricSurface partPolygon = part instanceof Area ? ((Area) part).asPolygon()
-                    : converter.convert((Relation) part);
+                    : MULTI_POLYGON_CONVERTER.convert((Relation) part);
             final GeometricSurface objectPolygon = object instanceof Area
-                    ? ((Area) object).asPolygon() : converter.convert((Relation) object);
+                    ? ((Area) object).asPolygon()
+                    : MULTI_POLYGON_CONVERTER.convert((Relation) object);
             // Check if it is a building part, and overlaps.
             return !checked.contains(object) && !this.isFlagged(object.getIdentifier())
                     && (this.isBuildingOrPart(object) || this.isBuildingRelationMember(object))
