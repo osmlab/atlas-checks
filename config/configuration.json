@@ -13,6 +13,8 @@
     }
   },
   "SpikyBuildingCheck": {
+    "angle.minimum": 15,
+    "sides.minimum": 3
   },
   "OrphanNodeCheck": {
 

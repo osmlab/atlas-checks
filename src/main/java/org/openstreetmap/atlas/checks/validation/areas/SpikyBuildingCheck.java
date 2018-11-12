@@ -37,12 +37,13 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 {
     private final Logger logger = LoggerFactory.getLogger(SpikyBuildingCheck.class);
 
-    private static final Angle HEADING_THRESHOLD_LOWER = Angle.degrees(15);
-    private static final int MIN_NUMBER_OF_SIDES = 3;
+    private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
+    private static final long DEFAULT_MIN_SIDES_NUMBER = 3;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "An angle of {0,number,#.###}, which is under the minimum allowed angle of {1,number}");
-
     private static final String FIRST_INSTRUCTION = "This building has the following suspicious angles: ";
+    private Angle headingThreshold;
+    private long minSidesNumber;
 
     /**
      * Default constructor
@@ -53,12 +54,16 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     public SpikyBuildingCheck(final Configuration configuration)
     {
         super(configuration);
+        this.headingThreshold = this.configurationValue(configuration, "angle.minimum",
+                DEFAULT_MIN_HEADING_THRESHOLD, threshold -> Angle.degrees((double) threshold));
+        this.minSidesNumber = this.configurationValue(configuration, "sides.minimum",
+                DEFAULT_MIN_SIDES_NUMBER);
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return ((object instanceof Area && ((Area) object).asPolygon().size() > MIN_NUMBER_OF_SIDES)
+        return ((object instanceof Area && ((Area) object).asPolygon().size() > minSidesNumber)
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
                 && (this.isBuildingOrPart(object));
     }
@@ -103,7 +108,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         for (int i = 1; i < segments.size(); i++)
         {
             final Angle difference = getDifferenceBetween(segments.get(i - 1), segments.get(i));
-            if (difference.isLessThan(HEADING_THRESHOLD_LOWER))
+            if (difference.isLessThan(headingThreshold))
             {
                 results.add(Tuple.createTuple(difference, segments.get(i).start()));
             }
@@ -111,7 +116,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         // compare last segment to first
         final Angle difference = getDifferenceBetween(segments.get(segments.size() - 1),
                 segments.get(0));
-        if (difference.isLessThan(HEADING_THRESHOLD_LOWER))
+        if (difference.isLessThan(headingThreshold))
         {
             results.add(Tuple.createTuple(difference, segments.get(0).start()));
         }
@@ -147,7 +152,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             }
             flag.addInstructions(allSkinnyAngles
                     .stream().map(tuple -> this.getLocalizedInstruction(0,
-                            tuple.getFirst().asDegrees(), HEADING_THRESHOLD_LOWER.asDegrees()))
+                            tuple.getFirst().asDegrees(), headingThreshold.asDegrees()))
                     .collect(Collectors.toList()));
             flag.addPoints(
                     allSkinnyAngles.stream().map(Tuple::getSecond).collect(Collectors.toList()));
