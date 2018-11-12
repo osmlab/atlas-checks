@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,10 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 
     private static final Angle HEADING_THRESHOLD_LOWER = Angle.degrees(15);
     private static final int MIN_NUMBER_OF_SIDES = 3;
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
+            "An angle of {0,number,#.###}, which is under the minimum allowed angle of {1,number}");
+
+    private static final String FIRST_INSTRUCTION = "This building has the following suspicious angles: ";
 
     /**
      * Default constructor
@@ -89,39 +95,42 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 
     // this is almost exactly the same as polygon.anglesLessThanOrEqualTo, except we also need to
     // compare the angle between the last segment and the first segment.
-    private List<Location> getSkinnyAngleLocations(final Polygon polygon)
+    private List<Tuple<Angle, Location>> getSkinnyAngleLocations(final Polygon polygon)
     {
-        final List<Location> results = new ArrayList<>();
+        final List<Tuple<Angle, Location>> results = new ArrayList<>();
         final List<Segment> segments = polygon.segments();
         // comparing segment to previous segment
         for (int i = 1; i < segments.size(); i++)
         {
-            if (isSkinnyAngle(segments.get(i - 1), segments.get(i)))
+            final Angle difference = getDifferenceBetween(segments.get(i - 1), segments.get(i));
+            if (difference.isLessThan(HEADING_THRESHOLD_LOWER))
             {
-                results.add(segments.get(i).start());
+                results.add(Tuple.createTuple(difference, segments.get(i).start()));
             }
         }
         // compare last segment to first
-        if (isSkinnyAngle(segments.get(segments.size() - 1), segments.get(0)))
+        final Angle difference = getDifferenceBetween(segments.get(segments.size() - 1),
+                segments.get(0));
+        if (difference.isLessThan(HEADING_THRESHOLD_LOWER))
         {
-            results.add(segments.get(0).start());
+            results.add(Tuple.createTuple(difference, segments.get(0).start()));
         }
         return results;
 
     }
 
-    private boolean isSkinnyAngle(final Segment firstSegment, final Segment secondSegment)
+    private Angle getDifferenceBetween(final Segment firstSegment, final Segment secondSegment)
     {
+        // TODO resolve get() issues
         final Heading first = firstSegment.heading().get();
         final Heading second = secondSegment.reversed().heading().get();
-        final Angle difference = first.difference(second);
-        return difference.isLessThan(HEADING_THRESHOLD_LOWER);
+        return first.difference(second);
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final List<Location> allSkinnyAngles = getPolylines(object)
+        final List<Tuple<Angle, Location>> allSkinnyAngles = getPolylines(object)
                 .map(this::getSkinnyAngleLocations)
                 .filter(angleLocations -> !angleLocations.isEmpty()).flatMap(Collection::stream)
                 .collect(Collectors.toList());
@@ -130,15 +139,26 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             final CheckFlag flag;
             if (object instanceof Area)
             {
-                flag = this.createFlag(object, "Spiky building here.");
+                flag = this.createFlag(object, FIRST_INSTRUCTION);
             }
             else
             {
-                flag = this.createFlag(((Relation) object).flatten(), "Spiky building here.");
+                flag = this.createFlag(((Relation) object).flatten(), FIRST_INSTRUCTION);
             }
-            flag.addPoints(allSkinnyAngles);
+            flag.addInstructions(allSkinnyAngles
+                    .stream().map(tuple -> this.getLocalizedInstruction(0,
+                            tuple.getFirst().asDegrees(), HEADING_THRESHOLD_LOWER.asDegrees()))
+                    .collect(Collectors.toList()));
+            flag.addPoints(
+                    allSkinnyAngles.stream().map(Tuple::getSecond).collect(Collectors.toList()));
             return Optional.of(flag);
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }
