@@ -1,12 +1,11 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
@@ -18,6 +17,7 @@ import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -90,17 +90,19 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // Use BFS to gather all connected invalid crossings
-        final Set<Edge> invalidEdges = this.getInvalidCrossingEdges((Edge) object);
+        // Use EdgeWalker to gather all connected invalid crossings. The use of the walker prevents
+        // edges from being flagged more than once.
+        final Set<Edge> collectedEdges = new EdgeCrossingEdgeWalker((Edge) object,
+                this.getInvalidCrossingEdges()).collectEdges();
 
-        if (!invalidEdges.isEmpty())
+        if (collectedEdges.size() > 1)
         {
             final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
             this.markAsFlagged(object.getIdentifier());
             newFlag.addObject(object);
             newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
 
-            invalidEdges.forEach(invalidEdge ->
+            collectedEdges.forEach(invalidEdge ->
             {
                 this.markAsFlagged(invalidEdge.getIdentifier());
                 newFlag.addObject(invalidEdge);
@@ -144,23 +146,14 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * A BFS walker that collects all connected invalid crossings. The use of the walker prevents
-     * edges from being flagged mor than once.
+     * A {@link Function} for an {@link EdgeWalker} that collects all connected invalid crossings.
      *
-     * @param startingEdge
-     *            {@link Edge} to start the walker from.
-     * @return a {@lionk Set} of invalid crossing {@link Edge}s
+     * @return a {@link Set} of invalid crossing {@link Edge}s
      */
-    private Set<Edge> getInvalidCrossingEdges(final Edge startingEdge)
+    private Function<Edge, Stream<Edge>> getInvalidCrossingEdges()
     {
-        final Set<Edge> invalidEdges = new HashSet<>();
-        final Queue<Edge> toCheck = new ArrayDeque<>();
-        invalidEdges.add(startingEdge);
-        toCheck.add(startingEdge);
-
-        while (!toCheck.isEmpty())
+        return edge ->
         {
-            final Edge edge = toCheck.poll();
             // Prepare the edge being tested for checks
             final PolyLine edgeAsPolyLine = edge.asPolyLine();
             final Rectangle edgeBounds = edge.bounds();
@@ -169,41 +162,44 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     ? LayerTag.getTaggedValue(edge) : Optional.of(OSM_LAYER_DEFAULT);
 
             // Retrieve crossing edges
-            final Atlas atlas = startingEdge.getAtlas();
-            final List<Edge> crossingEdges = Iterables.asList(atlas.edgesIntersecting(edgeBounds,
-                    // filter out the same edge, non-valid crossing edges and already flagged ones
-                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
-                            && isValidCrossingEdge(crossingEdge)
-                            && !invalidEdges.contains(crossingEdge)));
-
-            // Go through crossing items and collect invalid crossings
-            // NOTE: Due to way sectioning same OSM way could be marked multiple times here.
-            // However,
-            // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
-            // Therefore, if an OSM way crosses another OSM way multiple times in separate edges,
-            // then each edge will be marked explicitly.
-            for (final Edge crossingEdge : crossingEdges)
-            {
-                final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-                final Optional<Long> crossingEdgeLayer = Validators.hasValuesFor(crossingEdge,
-                        LayerTag.class) ? LayerTag.getTaggedValue(crossingEdge)
-                                : Optional.of(OSM_LAYER_DEFAULT);
-                final Set<Location> intersections = edgeAsPolyLine
-                        .intersections(crossingEdgeAsPolyLine);
-
-                // Check whether crossing edge can actually cross
-                for (final Location intersection : intersections)
-                {
-                    // Check if crossing is valid or not
-                    if (!canCross(edgeAsPolyLine, edgeLayer, crossingEdgeAsPolyLine,
-                            crossingEdgeLayer, intersection))
+            final Atlas atlas = edge.getAtlas();
+            return Iterables
+                    .asList(atlas.edgesIntersecting(edgeBounds,
+                            // filter out the same edge and non-valid crossing edges
+                            crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
+                                    && this.isValidCrossingEdge(crossingEdge)))
+                    .stream()
+                    // Go through crossing items and collect invalid crossings
+                    // NOTE: Due to way sectioning same OSM way could be marked multiple times here.
+                    // However,
+                    // MapRoulette will display way-sectioned edges in case there is an invalid
+                    // crossing.
+                    // Therefore, if an OSM way crosses another OSM way multiple times in separate
+                    // edges,
+                    // then each edge will be marked explicitly.
+                    .filter(crossingEdge ->
                     {
-                        invalidEdges.add(crossingEdge);
-                        toCheck.add(crossingEdge);
-                    }
-                }
-            }
+                        final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
+                        final Optional<Long> crossingEdgeLayer = Validators
+                                .hasValuesFor(crossingEdge, LayerTag.class)
+                                        ? LayerTag.getTaggedValue(crossingEdge)
+                                        : Optional.of(OSM_LAYER_DEFAULT);
+                        return edgeAsPolyLine.intersections(crossingEdgeAsPolyLine).stream()
+                                .anyMatch(intersection -> !canCross(edgeAsPolyLine, edgeLayer,
+                                        crossingEdgeAsPolyLine, crossingEdgeLayer, intersection));
+                    });
+        };
+    }
+
+    /**
+     * A simple {@link EdgeWalker} that filters using nextCandidates.
+     */
+    private class EdgeCrossingEdgeWalker extends EdgeWalker
+    {
+        EdgeCrossingEdgeWalker(final Edge startingEdge,
+                final Function<Edge, Stream<Edge>> nextCandidates)
+        {
+            super(startingEdge, nextCandidates);
         }
-        return invalidEdges.size() > 1 ? invalidEdges : new HashSet<>();
     }
 }
