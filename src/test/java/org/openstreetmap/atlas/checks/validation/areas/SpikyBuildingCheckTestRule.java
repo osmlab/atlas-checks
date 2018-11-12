@@ -3,8 +3,14 @@ package org.openstreetmap.atlas.checks.validation.areas;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
-import org.openstreetmap.atlas.utilities.testing.TestAtlas.*;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 
+/**
+ * SpikyBuildingCheck test atlases
+ *
+ * @author nachtm
+ */
 public class SpikyBuildingCheckTestRule extends CoreTestRule
 {
     private static final String ONE = "47.616988, -122.356726";
@@ -32,40 +38,34 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     private static final String J = "50.4541504, -4.8257998";
     private static final String K = "50.4541645, -4.8259790";
 
-    @TestAtlas(
-            areas = { @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO_A), @Loc(value=TWO), @Loc(value=THREE)}, tags="building=yes")}
-    )
+    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ONE), @Loc(value = TWO_A),
+            @Loc(value = TWO), @Loc(value = THREE) }, tags = "building=yes") })
     private Atlas spikyBuilding;
 
-    @TestAtlas(
-            areas = { @Area(coordinates = {@Loc(value=ONE), @Loc(value=TWO), @Loc(value=FOUR), @Loc(value=THREE)}, tags="building=yes") }
-    )
+    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ONE), @Loc(value = TWO),
+            @Loc(value = FOUR), @Loc(value = THREE) }, tags = "building=yes") })
     private Atlas normalBuilding;
 
-    @TestAtlas(
-            areas = { @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value = ROUND_THREE), @Loc(value = ROUND_FOUR), @Loc(value = ROUND_FIVE)}, tags="building=yes") }
-    )
+    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ROUND_ONE), @Loc(value = ROUND_THREE),
+            @Loc(value = ROUND_FOUR), @Loc(value = ROUND_FIVE) }, tags = "building=yes") })
     private Atlas normalRound;
 
-    @TestAtlas(
-            areas = { @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value=ROUND_TWO), @Loc(value=ROUND_THREE), @Loc(value=ROUND_FOUR), @Loc(value=ROUND_FIVE)}, tags="building=yes") }
-    )
+    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ROUND_ONE), @Loc(value = ROUND_TWO),
+            @Loc(value = ROUND_THREE), @Loc(value = ROUND_FOUR),
+            @Loc(value = ROUND_FIVE) }, tags = "building=yes") })
     private Atlas roundNumbersSpiky;
 
-    @TestAtlas(
-            areas = { @Area(coordinates = {@Loc(value=ROUND_ONE), @Loc(value=ROUND_TWO), @Loc(value=ROUND_THREE)}, tags= "building=yes") }
-    )
+    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ROUND_ONE), @Loc(value = ROUND_TWO),
+            @Loc(value = ROUND_THREE) }, tags = "building=yes") })
     private Atlas spikyButSmall;
 
-    @TestAtlas(
-            areas = { @Area(id = "1", coordinates = {@Loc(value=A), @Loc(value=B), @Loc(value=C), @Loc(value=D), @Loc(value=E), @Loc(value=F)}, tags="building=yes"),
-               }
-    )
+    @TestAtlas(areas = {
+            @Area(id = "1", coordinates = { @Loc(value = A), @Loc(value = B), @Loc(value = C),
+                    @Loc(value = D), @Loc(value = E), @Loc(value = F) }, tags = "building=yes"), })
     private Atlas badCase;
 
-    @TestAtlas(
-            areas = {  @Area(coordinates = {@Loc(value=G), @Loc(value=H), @Loc(value=I), @Loc(value=J), @Loc(value=K)}, tags="building=yes") }
-    )
+    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = G), @Loc(value = H), @Loc(value = I),
+            @Loc(value = J), @Loc(value = K) }, tags = "building=yes") })
     private Atlas badCase2;
 
     public Atlas getSpikyBuilding()

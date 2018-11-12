@@ -23,7 +23,6 @@ import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
-import org.openstreetmap.atlas.utilities.tuples.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,21 +36,21 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private final Logger logger = LoggerFactory.getLogger(SpikyBuildingCheck.class);
 
     private static final Angle HEADING_THRESHOLD_LOWER = Angle.degrees(15);
-    private static final Angle HEADING_THRESHOLD_UPPER = Angle.degrees(165);
     private static final int MIN_NUMBER_OF_SIDES = 3;
-    private static final double COS_15 = 0.9659258262890682867497431997288973676339;
 
     /**
      * Default constructor
      *
-     * @param configuration {@link Configuration} required to construct any Check
+     * @param configuration
+     *            {@link Configuration} required to construct any Check
      */
     public SpikyBuildingCheck(final Configuration configuration)
     {
         super(configuration);
     }
 
-    @Override public boolean validCheckForObject(final AtlasObject object)
+    @Override
+    public boolean validCheckForObject(final AtlasObject object)
     {
         return ((object instanceof Area && ((Area) object).asPolygon().size() > MIN_NUMBER_OF_SIDES)
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
@@ -60,8 +59,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 
     private boolean isBuildingOrPart(final AtlasObject object)
     {
-        return (BuildingTag.isBuilding(object)
-                && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF))
+        return BuildingTag.isBuilding(object)
                 || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
     }
 
@@ -79,11 +77,11 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         if (object instanceof Area)
         {
             return Stream.of(((Area) object).asPolygon());
-        } else if (((Relation) object).isMultiPolygon())
+        }
+        else if (((Relation) object).isMultiPolygon())
         {
-            return ((Relation) object).members().stream()
-                    .map(this::toPolygon)
-                    .flatMap(optPoly -> optPoly.isPresent() ? Stream.of(optPoly.get()) : Stream.empty());
+            return ((Relation) object).members().stream().map(this::toPolygon).flatMap(
+                    optPoly -> optPoly.isPresent() ? Stream.of(optPoly.get()) : Stream.empty());
         }
         logger.warn("Returning empty stream");
         return Stream.empty();
@@ -95,9 +93,11 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     {
         final List<Location> results = new ArrayList<>();
         final List<Segment> segments = polygon.segments();
-        // comparing second segment to first
-        for(int i = 1; i < segments.size(); i++) {
-            if (isSkinnyAngle(segments.get(i-1), segments.get(i))) {
+        // comparing segment to previous segment
+        for (int i = 1; i < segments.size(); i++)
+        {
+            if (isSkinnyAngle(segments.get(i - 1), segments.get(i)))
+            {
                 results.add(segments.get(i).start());
             }
         }
@@ -118,12 +118,12 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         return difference.isLessThan(HEADING_THRESHOLD_LOWER);
     }
 
-    @Override protected Optional<CheckFlag> flag(final AtlasObject object)
+    @Override
+    protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final List<Location> allSkinnyAngles = getPolylines(object)
                 .map(this::getSkinnyAngleLocations)
-                .filter(angleLocations -> !angleLocations.isEmpty())
-                .flatMap(Collection::stream)
+                .filter(angleLocations -> !angleLocations.isEmpty()).flatMap(Collection::stream)
                 .collect(Collectors.toList());
         if (!allSkinnyAngles.isEmpty())
         {
@@ -131,7 +131,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             if (object instanceof Area)
             {
                 flag = this.createFlag(object, "Spiky building here.");
-            } else
+            }
+            else
             {
                 flag = this.createFlag(((Relation) object).flatten(), "Spiky building here.");
             }
