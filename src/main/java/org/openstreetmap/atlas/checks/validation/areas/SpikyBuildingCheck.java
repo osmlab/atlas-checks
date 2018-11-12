@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,8 +41,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
     private static final long DEFAULT_MIN_SIDES_NUMBER = 3;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "An angle of {0,number,#.###}, which is under the minimum allowed angle of {1,number}");
-    private static final String FIRST_INSTRUCTION = "This building has the following suspicious angles: ";
+            "This building has the following angle measurements under the minimum allowed angle of {0}: {1}");
     private Angle headingThreshold;
     private long minSidesNumber;
 
@@ -141,22 +141,20 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         if (!allSkinnyAngles.isEmpty())
         {
-            final CheckFlag flag;
+            final Set<AtlasObject> objectsToFlag;
             if (object instanceof Area)
             {
-                flag = this.createFlag(object, FIRST_INSTRUCTION);
+                objectsToFlag = Collections.singleton(object);
             }
             else
             {
-                flag = this.createFlag(((Relation) object).flatten(), FIRST_INSTRUCTION);
+                objectsToFlag = ((Relation) object).flatten();
             }
-            flag.addInstructions(allSkinnyAngles
-                    .stream().map(tuple -> this.getLocalizedInstruction(0,
-                            tuple.getFirst().asDegrees(), headingThreshold.asDegrees()))
-                    .collect(Collectors.toList()));
-            flag.addPoints(
-                    allSkinnyAngles.stream().map(Tuple::getSecond).collect(Collectors.toList()));
-            return Optional.of(flag);
+            return Optional.of(this.createFlag(objectsToFlag,
+                    this.getLocalizedInstruction(0, headingThreshold.toString(),
+                            allSkinnyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
+                                    .collect(Collectors.joining(", "))),
+                    allSkinnyAngles.stream().map(Tuple::getSecond).collect(Collectors.toList())));
         }
         return Optional.empty();
     }
