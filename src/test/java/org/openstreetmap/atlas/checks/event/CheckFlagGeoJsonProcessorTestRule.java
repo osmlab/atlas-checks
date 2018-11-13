@@ -13,7 +13,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * {@link CheckFlagGeoJsonProcessorTest} test data
  *
- * @author brian_l_davis
+ * @author brian_l_davis, bbreithaupt
  */
 public class CheckFlagGeoJsonProcessorTestRule extends CoreTestRule
 {
@@ -44,7 +44,8 @@ public class CheckFlagGeoJsonProcessorTestRule extends CoreTestRule
 
                     @Area(coordinates = { @Loc(value = TEST_5), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
-                            @Loc(value = TEST_6) }, tags = { "building=yes" }) })
+                            @Loc(value = TEST_6) }, tags = { "building=yes",
+                                    "highway=notanenumvalue" }) })
     private Atlas atlas;
 
     public CheckFlagEvent getCheckFlagEvent()
