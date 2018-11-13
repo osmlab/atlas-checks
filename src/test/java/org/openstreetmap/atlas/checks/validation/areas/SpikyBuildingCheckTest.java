@@ -74,4 +74,12 @@ public class SpikyBuildingCheckTest
                 new SpikyBuildingCheck(ConfigurationResolver.emptyConfiguration()));
         verifier.verifyEmpty();
     }
+
+    @Test
+    public void circleBuilding()
+    {
+        verifier.actual(setup.circleBuilding(),
+                new SpikyBuildingCheck(ConfigurationResolver.emptyConfiguration()));
+        verifier.verifyEmpty();
+    }
 }

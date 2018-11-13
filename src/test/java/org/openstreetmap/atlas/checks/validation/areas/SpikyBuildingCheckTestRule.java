@@ -38,6 +38,18 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     private static final String J = "50.4541504, -4.8257998";
     private static final String K = "50.4541645, -4.8259790";
 
+    private static final String L = "1.2796474, 103.8383986";
+    private static final String M = "1.2796485, 103.8382257";
+    private static final String N = "1.2796800, 103.8382153";
+    private static final String O = "1.2797157, 103.8382624";
+    private static final String P = "1.2797573, 103.8382886";
+    private static final String Q = "1.2798157, 103.8383006";
+    private static final String R = "1.2798743, 103.8382891";
+    private static final String S = "1.2799293, 103.8382500";
+    private static final String T = "1.2799582, 103.8382024";
+    private static final String U = "1.2799679, 103.8381499";
+    private static final String V = "1.2799710, 103.8389356";
+
     @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ONE), @Loc(value = TWO_A),
             @Loc(value = TWO), @Loc(value = THREE) }, tags = "building=yes") })
     private Atlas spikyBuilding;
@@ -67,6 +79,19 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     @TestAtlas(areas = { @Area(coordinates = { @Loc(value = G), @Loc(value = H), @Loc(value = I),
             @Loc(value = J), @Loc(value = K) }, tags = "building=yes") })
     private Atlas badCase2;
+
+    @TestAtlas(areas = {
+            @Area(id = "1", coordinates = { @Loc(value = L), @Loc(value = M), @Loc(value = N),
+                    @Loc(value = O), @Loc(value = P), @Loc(value = Q), @Loc(value = R),
+                    @Loc(value = S), @Loc(value = T), @Loc(value = U),
+                    @Loc(value = V) }, tags = "building=yes"),
+            @Area(id = "2", coordinates = { @Loc(value = P), @Loc(value = Q), @Loc(value = R),
+                    @Loc(value = S), @Loc(value = T), @Loc(value = U), @Loc(value = V),
+                    @Loc(value = L), @Loc(value = M), @Loc(value = N),
+                    @Loc(value = O) }, tags = "building=yes"),
+            @Area(id = "3", coordinates = { @Loc(value = S), @Loc(value = T), @Loc(value = U),
+                    @Loc(value = V), @Loc(value = L) }, tags = "building=yes") })
+    private Atlas circleBuilding;
 
     public Atlas getSpikyBuilding()
     {
@@ -101,5 +126,10 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     public Atlas badCase2()
     {
         return badCase2;
+    }
+
+    public Atlas circleBuilding()
+    {
+        return circleBuilding;
     }
 }
