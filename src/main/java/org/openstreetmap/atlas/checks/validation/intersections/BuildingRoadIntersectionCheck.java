@@ -37,7 +37,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * the intersecting highways will be checked for tags in the enum set "CAR_NAVIGABLE_HIGHWAYS", else
  * checked for tags in "CORE_WAYS" enum set in the {@link HighwayTag} class.
  *
- * @author mgostintsev, sayas01
+ * @author mgostintsev
+ * @author sayas01
  */
 public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
@@ -63,12 +64,9 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         && Validators.isOfType(edge, ServiceTag.class, ServiceTag.DRIVEWAY)
                 || edge.connectedNodes().stream().anyMatch(node -> Validators.isOfType(node,
                         EntranceTag.class, EntranceTag.YES)
-                        || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE))
-                // Ignore edges with nodes containing Barrier tags
-                || edge.getAtlas()
-                        .nodesWithin(edge.bounds(),
-                                node -> Validators.hasValuesFor(node, BarrierTag.class))
-                        .iterator().hasNext());
+                        || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE)
+                        // Ignore edges with nodes containing Barrier tags
+                        || Validators.hasValuesFor(node, BarrierTag.class)));
     }
 
     private Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
@@ -184,10 +182,10 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 flag.addObject(edge, this.getLocalizedInstruction(instructionIndex,
                         building.getOsmIdentifier(), edge.getOsmIdentifier()));
                 knownIntersections.add(edge);
-                final Optional<Edge> reverseEdge = edge.reversed();
-                if (reverseEdge.isPresent())
+                final Optional<Edge> reversedEdge = edge.reversed();
+                if (reversedEdge.isPresent())
                 {
-                    knownIntersections.add(reverseEdge.get());
+                    knownIntersections.add(reversedEdge.get());
                 }
             }
         }
