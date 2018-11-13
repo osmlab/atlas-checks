@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.event;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +26,9 @@ public final class EventService
 
     // Event bus to dispatch events
     private final EventBus eventBus;
+
+    // Container of processors on the EventService
+    private final Collection<Processor<?>> processors = new HashSet<>();
 
     // Thread-safe complete indicator
     private final AtomicBoolean completed = new AtomicBoolean();
@@ -57,6 +62,7 @@ public final class EventService
         }
 
         this.eventBus.post(new ShutdownEvent());
+        new HashSet<>(this.processors).forEach(this::unregister);
     }
 
     /**
@@ -95,6 +101,7 @@ public final class EventService
     public <T extends Event> void register(final Processor<T> processor)
     {
         this.eventBus.register(processor);
+        this.processors.add(processor);
     }
 
     /**
@@ -108,5 +115,6 @@ public final class EventService
     public <T extends Event> void unregister(final Processor<T> processor)
     {
         this.eventBus.unregister(processor);
+        this.processors.remove(processor);
     }
 }

@@ -33,7 +33,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     // Maximum number of connected edges that are checked for toll booth nodes
     private static final int MAX_TOLL_PLAZA_EDGES = 20;
     // Valid values of the lanes OSM key
-    private static final String LANES_FILTER_DEFAULT = "Lanes->1,1.5,2,3,4,5,6,7,8,9,10";
+    private static final String LANES_FILTER_DEFAULT = "lanes->1,1.5,2,3,4,5,6,7,8,9,10";
     private final TaggableFilter lanesFilter;
 
     // Edges that can skip the toll booth test, because they have already been checked.
@@ -51,7 +51,7 @@ public class InvalidLanesTagCheck extends BaseCheck
     {
         super(configuration);
         this.lanesFilter = (TaggableFilter) configurationValue(configuration, "lanes.filter",
-                LANES_FILTER_DEFAULT, value -> new TaggableFilter(value.toString()));
+                LANES_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value.toString()));
     }
 
     /**
