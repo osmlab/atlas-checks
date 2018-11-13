@@ -9,11 +9,13 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * {@link SelfIntersectingPolylineCheck} unit test
  *
  * @author mgostintsev
+ * @author sayas01
  */
 public class SelfIntersectingPolyLineCheckTest
 {
     private final SelfIntersectingPolylineCheck check = new SelfIntersectingPolylineCheck(
-            ConfigurationResolver.emptyConfiguration());
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"SelfIntersectingPolylineCheck\":{\"tags.filter\":\"highway->!proposed&highway->!construction&highway->!footway&highway->!path\"}}"));
     private final SelfIntersectingPolylineCheck minimumHighwayCheck = new SelfIntersectingPolylineCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"SelfIntersectingPolylineCheck\":{\"minimum.highway.type\":\"service\"}}"));
@@ -56,7 +58,7 @@ public class SelfIntersectingPolyLineCheckTest
     public void testInvalidLineGeometryHighwayFootwayTag()
     {
         this.verifier.actual(this.setup.getInvalidLineGeometryHighwayFootwayTag(), check);
-        this.verifier.verifyExpectedSize(1);
+        this.verifier.verifyExpectedSize(0);
     }
 
     @Test
@@ -123,7 +125,7 @@ public class SelfIntersectingPolyLineCheckTest
     }
 
     @Test
-    public void testInlineConfig()
+    public void testMinimumHighwayType()
     {
         this.verifier.actual(this.setup.getInvalidEdgeShapeIntersection(), minimumHighwayCheck);
         this.verifier.verifyExpectedSize(1);

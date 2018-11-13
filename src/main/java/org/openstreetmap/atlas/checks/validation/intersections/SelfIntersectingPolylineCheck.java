@@ -39,6 +39,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     private static final String AREA_INSTRUCTION = "Feature {0,number,#} has invalid geometry at {1}";
     private static final String POLYLINE_BUILDING_INSTRUCTION = "Feature {0,number,#} is a incomplete "
             + "building at {1}";
+
     private static final String DUPLICATE_EDGE_INSTRUCTION = "Feature {0,number,#} has a duplicate "
             + "Edge at {1}";
     private static final String POLYLINE_INSTRUCTION = "Self-intersecting polyline for feature "
