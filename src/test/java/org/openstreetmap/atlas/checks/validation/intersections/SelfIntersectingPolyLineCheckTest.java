@@ -125,9 +125,17 @@ public class SelfIntersectingPolyLineCheckTest
     }
 
     @Test
-    public void testMinimumHighwayType()
+    public void testHighPriorityEdgeIntersection()
     {
         this.verifier.actual(this.setup.getInvalidEdgeShapeIntersection(), minimumHighwayCheck);
         this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testLowPriorityEdgeIntersection()
+    {
+        this.verifier.actual(this.setup.getLowPriorityInvalidEdgeIntersection(),
+                minimumHighwayCheck);
+        this.verifier.verifyEmpty();
     }
 }
