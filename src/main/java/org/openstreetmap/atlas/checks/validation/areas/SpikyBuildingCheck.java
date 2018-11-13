@@ -41,7 +41,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
 
     private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
     private static final long DEFAULT_MIN_SIDES_NUMBER = 3;
-    private static final long DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 5;
+    private static final long DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 25;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "This building has the following angle measurements under the minimum allowed angle of {0}: {1}");
     private Angle headingThreshold;
