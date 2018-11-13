@@ -18,7 +18,7 @@ import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.atlas.pbf.AtlasLoadingOption;
-import org.openstreetmap.atlas.geography.atlas.pbf.OsmPbfLoader;
+import org.openstreetmap.atlas.geography.atlas.raw.creation.RawAtlasGenerator;
 import org.openstreetmap.atlas.geography.boundary.CountryBoundaryMap;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.openstreetmap.atlas.streaming.resource.Resource;
@@ -193,6 +193,6 @@ public class AtlasDataSource implements Serializable, AutoCloseable
         final CountryBoundaryMap map = CountryBoundaryMap
                 .fromBoundaryMap(Collections.singletonMap(country, this.polygon));
         final AtlasLoadingOption option = AtlasLoadingOption.createOptionWithAllEnabled(map);
-        return new OsmPbfLoader(input, this.polygon, option).read();
+        return new RawAtlasGenerator(input, option, this.polygon).build();
     }
 }
