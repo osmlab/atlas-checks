@@ -2,8 +2,11 @@ package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
+import com.google.gson.JsonObject;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
@@ -22,6 +25,8 @@ public class FlaggedPoint extends FlaggedObject
     private final Location point;
     private final Map<String, String> properties;
 
+    private final LocationItem locationItem;
+
     /**
      * Default constructor
      * 
@@ -30,6 +35,7 @@ public class FlaggedPoint extends FlaggedObject
      */
     public FlaggedPoint(final LocationItem locationItem)
     {
+        this.locationItem = locationItem;
         this.point = locationItem.getLocation();
         this.properties = initProperties(locationItem);
     }
@@ -37,6 +43,7 @@ public class FlaggedPoint extends FlaggedObject
     @SuppressWarnings("unchecked")
     public FlaggedPoint(final Location point)
     {
+        this.locationItem = null;
         this.point = point;
         this.properties = Collections.EMPTY_MAP;
     }
@@ -52,6 +59,12 @@ public class FlaggedPoint extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
+    }
+
+    @Override
+    public JsonObject asGeoJsonFeature()
+    {
+        return null;
     }
 
     @SuppressWarnings("unchecked")

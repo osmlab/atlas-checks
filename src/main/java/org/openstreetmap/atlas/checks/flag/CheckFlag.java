@@ -140,7 +140,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
             }
             else
             {
-                this.flaggedObjects.add(new FlaggedPolyline(object));
+                this.flaggedObjects.add(new FlaggedPolyline((AtlasItem) object));
             }
         }
     }
