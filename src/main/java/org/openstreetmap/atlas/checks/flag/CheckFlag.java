@@ -5,14 +5,15 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
@@ -46,7 +47,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private final String identifier;
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
-    private final Set<FlaggedObject> flaggedObjects = new HashSet<>();
+    private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -427,5 +428,10 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public String toString()
     {
         return String.format("[CheckFlag: %s, %s]", this.identifier, this.getInstructions());
+    }
+
+    public List<JsonObject> asGeoJsonFeatures()
+    {
+        return null;
     }
 }

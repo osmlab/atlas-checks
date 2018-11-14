@@ -77,7 +77,7 @@ public class FlaggedPolyline extends FlaggedObject
     @Override
     public JsonObject asGeoJsonFeature()
     {
-        return null;
+        return atlasItem.asGeoJsonFeature();
     }
 
     private String initCountry(final AtlasObject object)

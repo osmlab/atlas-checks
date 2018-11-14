@@ -72,7 +72,7 @@ configurations
 dependencies
 {
     compile packages.commons
-    compile packages.atlas
+    compile files('libs/atlas.jar')
     compile packages.atlas_generator
 
     shaded project.configurations.getByName('compile')
