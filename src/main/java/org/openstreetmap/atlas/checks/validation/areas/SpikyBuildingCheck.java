@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Heading;
@@ -42,11 +43,16 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
     private static final long DEFAULT_MIN_SIDES_NUMBER = 3;
     private static final long DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 25;
+    private static final long DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD = 10;
+    private static final long DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS = 4;
+
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "This building has the following angle measurements under the minimum allowed angle of {0}: {1}");
     private Angle headingThreshold;
     private Angle circularAngleThreshold;
     private long minSidesNumber;
+    private Angle minimumTotalCircularAngleThreshold;
+    private long minimumCircularLineSegments;
 
     /**
      * Default constructor
@@ -64,6 +70,11 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         this.circularAngleThreshold = this.configurationValue(configuration,
                 "angle.circular.maximum", DEFAULT_CIRCULAR_ANGLE_THRESHOLD,
                 threshold -> Angle.degrees((double) threshold));
+        this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
+                "angle.circular.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
+                threshold -> Angle.degrees((double) threshold));
+        this.minimumCircularLineSegments = this.configurationValue(configuration,
+                "sides.circular.minimum", DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS);
     }
 
     @Override
@@ -104,26 +115,87 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         return Stream.empty();
     }
 
+    private int lengthOfSegment(final Tuple<Integer, Integer> startAndEnd, final int size)
+    {
+        // start and end are (both!) inclusive, so add 1
+        final int start = startAndEnd.getFirst();
+        final int end = startAndEnd.getSecond();
+        if (start <= end)
+        {
+            return end - start + 1;
+        }
+        return (size - start) + end + 1;
+    }
+
     private Set<Integer> getIndicesOfCircularSegments(final List<Segment> segments)
     {
-        final List<Integer> indices = new ArrayList<>();
-        for (int i = 1; i < segments.size(); i++)
+        return convertStartsAndEndsToIndices(
+                expandStartsAndEnds(
+                        filterCircularSegmentsByOverallHeadingChange(segments,
+                                convertToStartAndEnds(getCircularSegmentIndices(
+                                        getCircularSegments(segments), segments), segments.size())),
+                        segments.size()),
+                segments.size());
+    }
+
+    private List<Tuple<Integer, Integer>> filterCircularSegmentsByOverallHeadingChange(
+            final List<Segment> referenceList, final List<Tuple<Integer, Integer>> startsAndEnds)
+    {
+        final List<Tuple<Integer, Integer>> result = new ArrayList<>();
+        for (final Tuple<Integer, Integer> startAndEnd : startsAndEnds)
         {
-            final Angle difference = getDifferenceBetween(segments.get(i - 1), segments.get(i));
-            if (difference.isLessThan(circularAngleThreshold))
+            final Segment start = referenceList.get(startAndEnd.getFirst());
+            final Segment end = referenceList.get(startAndEnd.getSecond());
+            final Angle difference = getDifferenceBetween(start, end);
+            if (difference.isGreaterThanOrEqualTo(minimumTotalCircularAngleThreshold))
             {
-                indices.add(i);
+                result.add(startAndEnd);
             }
         }
+        return result;
+    }
 
-        final Angle difference = getDifferenceBetween(segments.get(segments.size() - 1),
-                segments.get(0));
-        if (difference.isLessThan(circularAngleThreshold))
+    private List<Integer> getCircularSegmentIndices(final Set<Segment> circularSegments,
+            final List<Segment> allSegments)
+    {
+        final List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < allSegments.size(); i++)
         {
-            indices.add(0, 0);
+            if (circularSegments.contains(allSegments.get(i)))
+            {
+                result.add(i);
+            }
         }
-        return convertStartsAndEndsToIndices(expandStartsAndEnds(
-                convertToStartAndEnds(indices, segments.size()), segments.size()), segments.size());
+        return result;
+    }
+
+    private Set<Segment> getCircularSegments(final List<Segment> segments)
+    {
+        return getSegmentAndNeighbors(segments).filter(segmentTriple ->
+        {
+            final Segment before = segmentTriple.getLeft();
+            final Segment middle = segmentTriple.getMiddle();
+            final Segment after = segmentTriple.getRight();
+
+            return getDifferenceBetween(before, middle).isLessThan(circularAngleThreshold)
+                    || getDifferenceBetween(middle, after).isLessThan(circularAngleThreshold);
+        }).map(Triple::getMiddle).collect(Collectors.toSet());
+    }
+
+    private Stream<Triple<Segment, Segment, Segment>> getSegmentAndNeighbors(
+            final List<Segment> segments)
+    {
+        final int size = segments.size();
+        return Stream.concat(
+                // Get the middle elements
+                IntStream.range(1, size - 1)
+                        .mapToObj(index -> Triple.of(segments.get(index - 1), segments.get(index),
+                                segments.get(index + 1))),
+                // Get the last and first element
+                // Note that, since the segments wrap around, this stream is still in order!
+                Stream.of(
+                        Triple.of(segments.get(size - 2), segments.get(size - 1), segments.get(0)),
+                        Triple.of(segments.get(size - 1), segments.get(0), segments.get(1))));
     }
 
     private List<Tuple<Integer, Integer>> convertToStartAndEnds(final List<Integer> indices,
@@ -164,7 +236,9 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                             startsAndEnds.get(0).getSecond()));
             startsAndEnds.remove(startsAndEnds.size() - 1);
         }
-        return startsAndEnds;
+        return startsAndEnds.stream().filter(
+                segment -> this.lengthOfSegment(segment, size) >= minimumCircularLineSegments)
+                .collect(Collectors.toList());
     }
 
     private List<Tuple<Integer, Integer>> expandStartsAndEnds(
@@ -197,6 +271,26 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             }
             return valStream.boxed();
         }).collect(Collectors.toSet());
+    }
+
+    /**
+     * Given a polygon, return a stream consisting of all consecutive pairs of segments from this
+     * polygon. For example, given a polygon ABCD, returns a stream with: (AB), (BC), (CD), (DA)
+     *
+     * @param polygon
+     *            A polygon to decompose
+     * @return A stream containing all of the segment pairs in this polygon.
+     */
+    private Stream<Tuple<Segment, Segment>> segmentPairsFrom(final Polygon polygon)
+    {
+        final List<Segment> segments = polygon.segments();
+        return Stream.concat(
+                // take the first segments
+                IntStream.range(1, segments.size())
+                        .mapToObj(secondIndex -> Tuple.createTuple(segments.get(secondIndex - 1),
+                                segments.get(secondIndex))),
+                // dont forget about the closing segment!
+                Stream.of(Tuple.createTuple(segments.get(segments.size() - 1), segments.get(0))));
     }
 
     // this is almost exactly the same as polygon.anglesLessThanOrEqualTo, except we also need to

@@ -89,8 +89,9 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
                     @Loc(value = S), @Loc(value = T), @Loc(value = U), @Loc(value = V),
                     @Loc(value = L), @Loc(value = M), @Loc(value = N),
                     @Loc(value = O) }, tags = "building=yes"),
-            @Area(id = "3", coordinates = { @Loc(value = S), @Loc(value = T), @Loc(value = U),
-                    @Loc(value = V), @Loc(value = L) }, tags = "building=yes") })
+            @Area(id = "3", coordinates = { @Loc(value = Q), @Loc(value = R), @Loc(value = S),
+                    @Loc(value = T), @Loc(value = U), @Loc(value = V),
+                    @Loc(value = L) }, tags = "building=yes") })
     private Atlas circleBuilding;
 
     public Atlas getSpikyBuilding()

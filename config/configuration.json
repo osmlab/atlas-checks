@@ -13,6 +13,8 @@
     }
   },
   "SpikyBuildingCheck": {
+    "angle.circular.total.minimum": 10,
+    "sides.circular.minimum": 4,
     "angle.spiky.maximum": 15,
     "angle.circular.maximum": 25,
     "sides.minimum": 3
