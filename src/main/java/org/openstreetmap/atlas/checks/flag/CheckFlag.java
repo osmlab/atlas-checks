@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
@@ -22,15 +22,18 @@ import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * A {@link CheckFlag} is used to flag one or more {@link AtlasObject}s found to violate some set of
@@ -430,8 +433,48 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return String.format("[CheckFlag: %s, %s]", this.identifier, this.getInstructions());
     }
 
-    public List<JsonObject> asGeoJsonFeatures()
+    public JsonObject asGeoJsonFeature()
     {
-        return null;
+        final JsonObject geometry = boundsGeoJsonGeometry();
+
+        final JsonObject properties = new JsonObject();
+        properties.addProperty("flag", getIdentifier());
+        properties.addProperty("instructions", getInstructions());
+
+        // The legacy GeoJSON FeatureCollection doesn't actually provide this,
+        // but I figure this might be useful to know about if it's there...
+        if (challengeName != null)
+        {
+            properties.addProperty("challenge", challengeName);
+        }
+
+        return GeoJsonUtils.feature(geometry, properties);
+    }
+
+    private JsonObject boundsGeoJsonGeometry()
+    {
+        final Iterator<FlaggedObject> iterator = flaggedObjects.iterator();
+        final Rectangle bounds;
+
+        // Get the first bounds.
+        if (iterator.hasNext())
+        {
+            bounds = iterator.next().bounds();
+        }
+        // If we don't have it, let's instead return null island.
+        else
+        {
+            return GeoJsonUtils.geometry(GeoJsonUtils.POINT, GeoJsonUtils.coordinate(0.0, 0.0));
+        }
+
+        // Otherwise, let's get the rest of the bounds and expand the bounds we have.
+        while (iterator.hasNext())
+        {
+            final Rectangle nextBounds = iterator.next().bounds();
+            bounds.combine(nextBounds);
+        }
+
+        // Turn that bounds into a GeoJSON geometry.
+        return GeoJsonUtils.boundsToPolygonGeometry(bounds);
     }
 }

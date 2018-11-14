@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
-import com.google.gson.JsonObject;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+
+import com.google.gson.JsonObject;
 
 /**
  * Abstract base class for {@link AtlasObject}s flagged by the integrity framework
@@ -64,10 +66,14 @@ public abstract class FlaggedObject implements Serializable
     public abstract Map<String, String> getProperties();
 
     /**
-     *
      * @return A GeoJSON Feature representing the underlying AtlasEntity
      */
     public abstract JsonObject asGeoJsonFeature();
+
+    /**
+     * @return The bounds of the object.
+     */
+    public abstract Rectangle bounds();
 
     /**
      * @return {@code true} if the flagged object has a country code property

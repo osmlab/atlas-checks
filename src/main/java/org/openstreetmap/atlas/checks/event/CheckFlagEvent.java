@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.LocationIterableProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonObject;
@@ -216,5 +217,21 @@ public final class CheckFlagEvent extends Event
     public String toString()
     {
         return this.toGeoJsonFeatureCollection().toString();
+    }
+
+    public String asLineDelimitedGeoJsonFeatures()
+    {
+        final JsonObject flagGeoJsonFeature = flag.asGeoJsonFeature();
+
+        final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString()).append('\n');
+
+        final Set<FlaggedObject> flaggedObjects = flag.getFlaggedObjects();
+        for (final FlaggedObject object : flaggedObjects)
+        {
+            final JsonObject feature = object.asGeoJsonFeature();
+            builder.append(feature.toString()).append('\n');
+        }
+
+        return builder.toString();
     }
 }

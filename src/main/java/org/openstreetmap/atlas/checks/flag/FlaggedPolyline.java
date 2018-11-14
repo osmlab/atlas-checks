@@ -3,9 +3,9 @@ package org.openstreetmap.atlas.checks.flag;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.JsonObject;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -15,6 +15,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
+
+import com.google.gson.JsonObject;
 
 /**
  * A flag for a {@link PolyLine}
@@ -78,6 +80,12 @@ public class FlaggedPolyline extends FlaggedObject
     public JsonObject asGeoJsonFeature()
     {
         return atlasItem.asGeoJsonFeature();
+    }
+
+    @Override
+    public Rectangle bounds()
+    {
+        return atlasItem.bounds();
     }
 
     private String initCountry(final AtlasObject object)

@@ -2,18 +2,17 @@ package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonObject;
 
 /**
  * A flag for a {@code point} {@link Location} P*
@@ -73,6 +72,19 @@ public class FlaggedPoint extends FlaggedObject
         else
         {
             return GeoJsonUtils.feature(point.asGeoJsonGeometry(), new JsonObject());
+        }
+    }
+
+    @Override
+    public Rectangle bounds()
+    {
+        if (locationItem != null)
+        {
+            return locationItem.bounds();
+        }
+        else
+        {
+            return point.bounds();
         }
     }
 
