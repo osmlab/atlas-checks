@@ -130,10 +130,11 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private Set<Integer> getIndicesOfCircularSegments(final List<Segment> segments)
     {
         return convertStartsAndEndsToIndices(
-                expandStartsAndEnds(
-                        filterCircularSegmentsByOverallHeadingChange(segments,
-                                convertToStartAndEnds(getCircularSegmentIndices(
-                                        getCircularSegments(segments), segments), segments.size())),
+                expandStartsAndEnds(filterCircularSegmentsByOverallHeadingChange(segments,
+                        convertToStartAndEnds(
+                                getIndicesOfPotentiallyCircularPoints(
+                                        getPotentiallyCircularPoints(segments), segments),
+                                segments.size())),
                         segments.size()),
                 segments.size());
     }
@@ -167,6 +168,37 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             }
         }
         return result;
+    }
+
+    // we're mapping a point p to the index of the segment directly after p.
+    // eg given polygon ABCDE, A -> 0, E -> 4 (segments AB, BC, CD, DE, EA)
+    private List<Integer> getIndicesOfPotentiallyCircularPoints(
+            final Set<Tuple<Segment, Segment>> points, final List<Segment> segments)
+    {
+        final List<Integer> indices = new ArrayList<>();
+
+        if (points.contains(Tuple.createTuple(segments.get(segments.size() - 1), segments.get(0))))
+        {
+            indices.add(0);
+        }
+
+        for (int i = 1; i < segments.size(); i++)
+        {
+            if (points.contains(Tuple.createTuple(segments.get(i - 1), segments.get(i))))
+            {
+                indices.add(i);
+            }
+        }
+
+        return indices;
+    }
+
+    private Set<Tuple<Segment, Segment>> getPotentiallyCircularPoints(final List<Segment> segments)
+    {
+        return segmentPairsFrom(segments)
+                .filter(segmentTuple -> getDifferenceBetween(segmentTuple.getFirst(),
+                        segmentTuple.getSecond()).isLessThan(circularAngleThreshold))
+                .collect(Collectors.toSet());
     }
 
     private Set<Segment> getCircularSegments(final List<Segment> segments)
@@ -281,9 +313,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      *            A polygon to decompose
      * @return A stream containing all of the segment pairs in this polygon.
      */
-    private Stream<Tuple<Segment, Segment>> segmentPairsFrom(final Polygon polygon)
+    private Stream<Tuple<Segment, Segment>> segmentPairsFrom(final List<Segment> segments)
     {
-        final List<Segment> segments = polygon.segments();
         return Stream.concat(
                 // take the first segments
                 IntStream.range(1, segments.size())
