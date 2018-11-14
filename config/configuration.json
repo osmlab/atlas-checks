@@ -36,6 +36,7 @@
     }
   },
   "BuildingRoadIntersectionCheck": {
+    "car.navigable": true,
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",
