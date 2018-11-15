@@ -1,7 +1,9 @@
 package org.openstreetmap.atlas.checks.event;
 
+import java.util.Date;
 import java.util.function.Consumer;
 
+import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
@@ -72,11 +74,21 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
     {
         try
         {
-            this.write();
+            super.write();
         }
         catch (final Exception e)
         {
             logger.warn("CheckFlag file write is failed.", e);
         }
+    }
+
+    /**
+     * @return the name of the file to be used in {@code #write()} method to write files
+     */
+    @Override
+    protected String getFilename()
+    {
+        return String.format("%s-%s%s", new Date().getTime(), getCount(),
+                new GeoJsonPathFilter(doesCompressOutput()).getExtension());
     }
 }
