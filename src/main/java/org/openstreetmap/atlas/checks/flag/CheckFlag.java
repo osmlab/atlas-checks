@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +21,6 @@ import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
@@ -438,14 +436,15 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         final JsonObject geometry = boundsGeoJsonGeometry();
 
         final JsonObject properties = new JsonObject();
-        properties.addProperty("flag", getIdentifier());
-        properties.addProperty("instructions", getInstructions());
+        properties.addProperty("flag:type", CheckFlag.class.getSimpleName());
+        properties.addProperty("flag:id", getIdentifier());
+        properties.addProperty("flag:instructions", getInstructions());
 
         // The legacy GeoJSON FeatureCollection doesn't actually provide this,
         // but I figure this might be useful to know about if it's there...
         if (challengeName != null)
         {
-            properties.addProperty("challenge", challengeName);
+            properties.addProperty("flag:challenge", challengeName);
         }
 
         return GeoJsonUtils.feature(geometry, properties);

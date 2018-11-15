@@ -20,6 +20,7 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
+import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
 import org.openstreetmap.atlas.checks.event.EventService;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
@@ -65,7 +66,8 @@ public class IntegrityCheckSparkJob extends SparkJob
     {
         FLAGS,
         GEOJSON,
-        METRICS
+        METRICS,
+        TIPPECANOE
     }
 
     @Deprecated
@@ -92,17 +94,19 @@ public class IntegrityCheckSparkJob extends SparkJob
             Boolean::valueOf, Optionality.OPTIONAL, "false");
 
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
+            String.format(
+                    "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe)."),
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
-            Optionality.OPTIONAL, "flags,metrics");
+            Optionality.OPTIONAL, "flags,metrics,tippecanoe");
 
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
     // Outputs
     private static final String OUTPUT_FLAG_FOLDER = "flag";
     private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
+    private static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
     private static final String OUTPUT_ATLAS_FOLDER = "atlas";
     private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
             + FileSuffix.GZIP.toString();
@@ -334,6 +338,21 @@ public class IntegrityCheckSparkJob extends SparkJob
             else
             {
                 metricOutput = null;
+            }
+
+            final SparkFilePath tippecanoeOutput;
+            if (outputFormats.contains(OutputFormats.TIPPECANOE))
+            {
+                tippecanoeOutput = initializeOutput(OUTPUT_TIPPECANOE_FOLDER, TaskContext.get(),
+                        country, temporaryOutputFolder, targetOutputFolder);
+                EventService.get(country)
+                        .register(new CheckFlagTippecanoeProcessor(fileHelper,
+                                tippecanoeOutput.getTemporaryPath())
+                                        .withCompression(compressOutput));
+            }
+            else
+            {
+                tippecanoeOutput = null;
             }
 
             final Consumer<Atlas> intermediateAtlasHandler;

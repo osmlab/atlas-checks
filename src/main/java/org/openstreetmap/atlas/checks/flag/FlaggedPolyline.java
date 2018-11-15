@@ -77,9 +77,15 @@ public class FlaggedPolyline extends FlaggedObject
     }
 
     @Override
-    public JsonObject asGeoJsonFeature()
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        return atlasItem.asGeoJsonFeature();
+        final JsonObject feature = atlasItem.asGeoJsonFeature();
+        final JsonObject properties = feature.getAsJsonObject("properties");
+
+        properties.addProperty("flag:id", flagIdentifier);
+        properties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
+
+        return feature;
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -221,14 +222,24 @@ public final class CheckFlagEvent extends Event
 
     public String asLineDelimitedGeoJsonFeatures()
     {
-        final JsonObject flagGeoJsonFeature = flag.asGeoJsonFeature();
+        return asLineDelimitedGeoJsonFeatures((jsonObject) ->
+        {
+        });
+    }
 
-        final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString()).append('\n');
+    public String asLineDelimitedGeoJsonFeatures(final Consumer<JsonObject> jsonMutator)
+    {
+        final JsonObject flagGeoJsonFeature = flag.asGeoJsonFeature();
+        jsonMutator.accept(flagGeoJsonFeature);
+
+        final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString())
+                .append('\n');
 
         final Set<FlaggedObject> flaggedObjects = flag.getFlaggedObjects();
         for (final FlaggedObject object : flaggedObjects)
         {
-            final JsonObject feature = object.asGeoJsonFeature();
+            final JsonObject feature = object.asGeoJsonFeature(flag.getIdentifier());
+            jsonMutator.accept(feature);
             builder.append(feature.toString()).append('\n');
         }
 

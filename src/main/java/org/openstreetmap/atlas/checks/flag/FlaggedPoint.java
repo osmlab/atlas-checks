@@ -63,16 +63,25 @@ public class FlaggedPoint extends FlaggedObject
     }
 
     @Override
-    public JsonObject asGeoJsonFeature()
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
+        final JsonObject feature;
+        final JsonObject properties;
         if (locationItem != null)
         {
-            return locationItem.asGeoJsonFeature();
+            feature = locationItem.asGeoJsonFeature();
+            properties = feature.getAsJsonObject("properties");
         }
         else
         {
-            return GeoJsonUtils.feature(point.asGeoJsonGeometry(), new JsonObject());
+            properties = new JsonObject();
+            feature = GeoJsonUtils.feature(point.asGeoJsonGeometry(), properties);
         }
+
+        properties.addProperty("flag:id", flagIdentifier);
+        properties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
+
+        return feature;
     }
 
     @Override
