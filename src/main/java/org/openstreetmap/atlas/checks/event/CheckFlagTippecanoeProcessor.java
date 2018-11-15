@@ -23,8 +23,8 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
     private static final Logger logger = LoggerFactory
             .getLogger(CheckFlagTippecanoeProcessor.class);
 
-    private static final int MINIMUM_ZOOM = 1;
-    private static final int MAXIMUM_ZOOM = 8;
+    private static final int FLAG_MINIMUM_ZOOM = 1;
+    private static final int FEATURE_MINIMUM_ZOOM = 8;
 
     private static final Consumer<JsonObject> TIPPECANOE_JSON_MUTATOR = jsonObject ->
     {
@@ -37,11 +37,11 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
 
         if (CheckFlag.class.getSimpleName().equals(type))
         {
-            tippecanoe.addProperty("minzoom", MINIMUM_ZOOM);
+            tippecanoe.addProperty("minzoom", FLAG_MINIMUM_ZOOM);
         }
         else
         {
-            tippecanoe.addProperty("minzoom", MAXIMUM_ZOOM);
+            tippecanoe.addProperty("minzoom", FEATURE_MINIMUM_ZOOM);
         }
     };
 
@@ -51,6 +51,7 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
      * @param fileHelper
      *            {@link SparkFileHelper} instance for I/O operations
      * @param directory
+     *            The directory to write output
      */
     public CheckFlagTippecanoeProcessor(final SparkFileHelper fileHelper, final String directory)
     {

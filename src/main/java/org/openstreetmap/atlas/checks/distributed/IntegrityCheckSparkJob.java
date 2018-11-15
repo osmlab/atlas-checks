@@ -384,8 +384,8 @@ public class IntegrityCheckSparkJob extends SparkJob
                 {
                     executeChecks(country, atlas, checks, mapRouletteConfiguration);
                     // Add output folders for handling later
-                    Stream.of(flagOutput, metricOutput, geoJsonOutput).filter(Objects::nonNull)
-                            .forEach(resultingFiles::add);
+                    Stream.of(flagOutput, metricOutput, geoJsonOutput, tippecanoeOutput)
+                            .filter(Objects::nonNull).forEach(resultingFiles::add);
                 }
 
                 EventService.get(country).complete();
