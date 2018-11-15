@@ -180,7 +180,7 @@ public class CheckResourceLoaderTest
     public void testWhitelistNoOp()
     {
         // A whitelist containing all checks shouldn't impact the behavior
-        final String configSource = "{\"CheckResourceLoader.checks.blacklist\": [\"CheckResourceLoaderTestCheck\",\"BaseTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
+        final String configSource = "{\"CheckResourceLoader.checks.whitelist\": [\"CheckResourceLoaderTestCheck\",\"BaseTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 
