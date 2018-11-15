@@ -36,6 +36,7 @@
     }
   },
   "BuildingRoadIntersectionCheck": {
+    "car.navigable": true,
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",
@@ -86,6 +87,7 @@
     }
   },
   "EdgeCrossingEdgeCheck": {
+    "minimum.highway.type": "no",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
@@ -139,7 +141,7 @@
     }
   },
   "InvalidLanesTagCheck": {
-    "lanes.filter": "Lanes->1,1.5,2,3,4,5,6,7,8,9,10",
+    "lanes.filter": "lanes->1,1.5,2,3,4,5,6,7,8,9,10",
     "challenge":{
       "description":"Tasks contain invalid values for the lanes tag.",
       "blurb":"Invalid Lanes Tags",
