@@ -48,7 +48,9 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     private static final String S = "1.2799293, 103.8382500";
     private static final String T = "1.2799582, 103.8382024";
     private static final String U = "1.2799679, 103.8381499";
+    private static final String U_PRIME = "1.27996945, 103.838543";
     private static final String V = "1.2799710, 103.8389356";
+    private static final String V_PRIME = "1.27995015, 103.8385928";
 
     @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ONE), @Loc(value = TWO_A),
             @Loc(value = TWO), @Loc(value = THREE) }, tags = "building=yes") })
@@ -94,6 +96,12 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
                     @Loc(value = L) }, tags = "building=yes") })
     private Atlas circleBuilding;
 
+    @TestAtlas(areas = {
+            @Area(id = "1", coordinates = { @Loc(value = S), @Loc(value = T), @Loc(value = U), @Loc(value = U_PRIME),
+                    @Loc(value = V), @Loc(value = V_PRIME), @Loc(value = L), @Loc(value = N)}, tags = "building=yes")
+    })
+    private Atlas twoShortConsecutiveCurvesBuilding;
+
     public Atlas getSpikyBuilding()
     {
         return spikyBuilding;
@@ -132,5 +140,10 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     public Atlas circleBuilding()
     {
         return circleBuilding;
+    }
+
+    public Atlas twoShortConsecutiveCurvesBuilding()
+    {
+        return twoShortConsecutiveCurvesBuilding;
     }
 }

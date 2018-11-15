@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -81,5 +82,14 @@ public class SpikyBuildingCheckTest
         verifier.actual(setup.circleBuilding(),
                 new SpikyBuildingCheck(ConfigurationResolver.emptyConfiguration()));
         verifier.verifyEmpty();
+    }
+
+    @Test
+    public void smallConsecutiveCurves()
+    {
+        verifier.actual(setup.twoShortConsecutiveCurvesBuilding(),
+                new SpikyBuildingCheck(ConfigurationResolver.emptyConfiguration()));
+        verifier.verifyExpectedSize(1);
+        verifier.verify(flag -> Assert.assertEquals(2, flag.getPoints().size()));
     }
 }
