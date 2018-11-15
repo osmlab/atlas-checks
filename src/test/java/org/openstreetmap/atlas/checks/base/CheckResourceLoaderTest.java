@@ -155,9 +155,9 @@ public class CheckResourceLoaderTest
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 
-        Assert.assertEquals(1,
-                checkResourceLoader.loadChecks().size());
-        Assert.assertTrue(checkResourceLoader.loadChecks().stream().noneMatch(check -> check.getCheckName().startsWith("Base")));
+        Assert.assertEquals(1, checkResourceLoader.loadChecks().size());
+        Assert.assertTrue(checkResourceLoader.loadChecks().stream()
+                .noneMatch(check -> check.getCheckName().startsWith("Base")));
     }
 
     @Test
@@ -170,8 +170,10 @@ public class CheckResourceLoaderTest
         // ABC contains nothing, since the whitelist and the enabled countries have no overlap
         Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC").isEmpty());
 
-        // DEF contains only CheckResourceLoaderTestCheck, since that is the only overlap between enabled countries and the whitelist
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF").stream().allMatch(check -> check.getCheckName().startsWith("CheckResource")));
+        // DEF contains only CheckResourceLoaderTestCheck, since that is the only overlap between
+        // enabled countries and the whitelist
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF").stream()
+                .allMatch(check -> check.getCheckName().startsWith("CheckResource")));
     }
 
     @Test
@@ -183,10 +185,14 @@ public class CheckResourceLoaderTest
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 
         Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").size());
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").stream().map(Check::getCheckName).filter(name -> name.startsWith("Base")).distinct().count());
+        Assert.assertEquals(1,
+                checkResourceLoader.loadChecksForCountry("ABC").stream().map(Check::getCheckName)
+                        .filter(name -> name.startsWith("Base")).distinct().count());
 
         Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").size());
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName).filter(name -> name.startsWith("CheckResource")).distinct().count());
+        Assert.assertEquals(1,
+                checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName)
+                        .filter(name -> name.startsWith("CheckResource")).distinct().count());
     }
 
     @Test
@@ -209,8 +215,10 @@ public class CheckResourceLoaderTest
         // ABC contains nothing, since the whitelist and the enabled countries have no overlap
         Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF").isEmpty());
 
-        // DEF contains only CheckResourceLoaderTestCheck, since that is the only overlap between enabled countries and the whitelist
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC").stream().allMatch(check -> check.getCheckName().startsWith("Base")));
+        // DEF contains only CheckResourceLoaderTestCheck, since that is the only overlap between
+        // enabled countries and the whitelist
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC").stream()
+                .allMatch(check -> check.getCheckName().startsWith("Base")));
     }
 
     @Test
@@ -222,9 +230,13 @@ public class CheckResourceLoaderTest
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 
         Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").size());
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").stream().map(Check::getCheckName).filter(name -> name.startsWith("Base")).distinct().count());
+        Assert.assertEquals(1,
+                checkResourceLoader.loadChecksForCountry("ABC").stream().map(Check::getCheckName)
+                        .filter(name -> name.startsWith("Base")).distinct().count());
 
         Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").size());
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName).filter(name -> name.startsWith("CheckResource")).distinct().count());
+        Assert.assertEquals(1,
+                checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName)
+                        .filter(name -> name.startsWith("CheckResource")).distinct().count());
     }
 }
