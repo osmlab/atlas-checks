@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -55,6 +56,8 @@ public class CheckResourceLoader
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
     private final Set<String> packages;
+    private final Optional<List<String>> checkWhiteList;
+    private final Optional<List<String>> checkBlackList;
 
     /**
      * Default constructor
@@ -91,6 +94,10 @@ public class CheckResourceLoader
                 .get("CheckResourceLoader.enabledKeyTemplate", DEFAULT_ENABLED_KEY_TEMPLATE)
                 .value();
         this.configuration = configuration;
+        this.checkWhiteList = configuration.get("CheckResourceLoader.checks.whitelist")
+                .valueOption();
+        this.checkBlackList = configuration.get("CheckResourceLoader.checks.blacklist")
+                .valueOption();
     }
 
     public Configuration getConfiguration()
@@ -159,7 +166,12 @@ public class CheckResourceLoader
                         final Class<?> checkClass = classInfo.load();
                         if (checkType.isAssignableFrom(checkClass)
                                 && !Modifier.isAbstract(checkClass.getModifiers())
-                                && isEnabled.test(checkClass))
+                                && isEnabled.test(checkClass)
+                                && this.checkWhiteList.map(
+                                        whitelist -> whitelist.contains(checkClass.getSimpleName()))
+                                        .orElse(true)
+                                && this.checkBlackList.map(blacklist -> !blacklist
+                                        .contains(checkClass.getSimpleName())).orElse(true))
                         {
                             try
                             {
@@ -217,33 +229,11 @@ public class CheckResourceLoader
         return loadChecks(this::isEnabledByConfiguration, this.configuration);
     }
 
-    /**
-     * Loads checks that are enabled by configuration and also match some other filter
-     * 
-     * @param additionalFilter
-     *            some predicate that returns true for checks we would like to run
-     * @param <T>
-     *            check type
-     * @return a {@link Set} of checks.
-     */
-    public <T extends Check> Set<T> loadEnabledChecks(final Predicate<Class> additionalFilter)
-    {
-        return loadChecks(checkClass -> this.isEnabledByConfiguration(checkClass)
-                && additionalFilter.test(checkClass));
-    }
-
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
-    {
-        return loadChecksForCountry(country, checkClass -> true);
-    }
-
-    public <T extends Check> Set<T> loadChecksForCountry(final String country,
-            final Predicate<Class> filter)
     {
         final Configuration countryConfiguration = this.getConfigurationForCountry(country);
         return loadChecks(
-                checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass)
-                        && filter.test(checkClass),
+                checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass),
                 countryConfiguration);
     }
 

@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +41,8 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
+import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
 import org.openstreetmap.atlas.utilities.conversion.StringConverter;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
@@ -91,16 +93,15 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
-    private static final Switch<Set<String>> CHECK_FILTER = new Switch<>("checkFilter",
-            "Comma-separated list of checks to run", value -> StringList
-                    .split(value, CommonConstants.COMMA).stream().collect(Collectors.toSet()),
-            Optionality.OPTIONAL);
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
             String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
             Optionality.OPTIONAL, "flags,metrics");
+    private static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
+            "Comma-separated list of checks to run",
+            checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
 
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
@@ -221,8 +222,22 @@ public class IntegrityCheckSparkJob extends SparkJob
                 CommonConstants.COMMA);
         final MapRouletteConfiguration mapRouletteConfiguration = (MapRouletteConfiguration) commandMap
                 .get(MAP_ROULETTE);
-        final Configuration checksConfiguration = ConfigurationResolver
-                .loadConfiguration(commandMap, CONFIGURATION_FILES, CONFIGURATION_JSON);
+        @SuppressWarnings("unchecked")
+        final Optional<List<String>> checkFilter = (Optional<List<String>>) commandMap
+                .getOption(CHECK_FILTER);
+
+        final Configuration checksConfiguration = new MergedConfiguration(Stream
+                .concat(Stream.of(
+                        ConfigurationResolver.loadConfiguration(commandMap, CONFIGURATION_FILES,
+                                CONFIGURATION_JSON)),
+                        Stream.of(checkFilter
+                                .<Configuration> map(whitelist -> new StandardConfiguration(
+                                        "WhiteListConfiguration",
+                                        Collections.singletonMap(
+                                                "CheckResourceLoader.checks.whitelist", whitelist)))
+                                .orElse(ConfigurationResolver.emptyConfiguration())))
+                .collect(Collectors.toList()));
+
         final boolean saveIntermediateAtlas = (Boolean) commandMap.get(PBF_SAVE_INTERMEDIATE_ATLAS);
         @SuppressWarnings("unchecked")
         final Rectangle pbfBoundary = ((Optional<Rectangle>) commandMap.getOption(PBF_BOUNDING_BOX))
@@ -232,17 +247,8 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
-        @SuppressWarnings("unchecked")
-        final Optional<Set<String>> checkFilter = (Optional<Set<String>>) commandMap
-                .getOption(CHECK_FILTER);
-        // Predicate to determine whether or not a given check was passed in as a command line
-        // argument.
-        // If there is not a CHECK_FILTER switch, this predicate always returns true.
-        final Predicate<Class> isValidCheck = checkClass -> checkFilter
-                .map(checkNames -> checkNames.contains(checkClass.getSimpleName())).orElse(true);
         // check configuration and country list
-        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadEnabledChecks(isValidCheck);
-        preOverriddenChecks.forEach(check -> logger.info(check.getCheckName()));
+        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadChecks();
         if (!isValidInput(countries, preOverriddenChecks))
         {
             logger.error("No countries supplied or checks enabled, exiting!");
@@ -256,14 +262,13 @@ public class IntegrityCheckSparkJob extends SparkJob
         // Create a list of Country to Check tuples
         // Add priority countries first if they are supplied by parameter
         final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
-        countries.stream().filter(priorityCountries::contains)
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country,
-                        checkLoader.loadChecksForCountry(country, isValidCheck))));
+        countries.stream().filter(priorityCountries::contains).forEach(country -> countryCheckTuples
+                .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Then add the rest of the countries
         countries.stream().filter(country -> !priorityCountries.contains(country))
-                .forEach(country -> countryCheckTuples.add(new Tuple2<>(country,
-                        checkLoader.loadChecksForCountry(country, isValidCheck))));
+                .forEach(country -> countryCheckTuples
+                        .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Log countries and integrity
         logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
