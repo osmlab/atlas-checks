@@ -41,7 +41,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private final Logger logger = LoggerFactory.getLogger(SpikyBuildingCheck.class);
 
     private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
-    private static final long DEFAULT_MIN_SIDES_NUMBER = 3;
     private static final long DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 25;
     private static final long DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD = 10;
     private static final long DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS = 4;
@@ -50,7 +49,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             "This building has the following angle measurements under the minimum allowed angle of {0}: {1}");
     private Angle headingThreshold;
     private Angle circularAngleThreshold;
-    private long minSidesNumber;
     private Angle minimumTotalCircularAngleThreshold;
     private long minimumCircularLineSegments;
 
@@ -65,8 +63,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         super(configuration);
         this.headingThreshold = this.configurationValue(configuration, "angle.spiky.maximum",
                 DEFAULT_MIN_HEADING_THRESHOLD, threshold -> Angle.degrees((double) threshold));
-        this.minSidesNumber = this.configurationValue(configuration, "sides.minimum",
-                DEFAULT_MIN_SIDES_NUMBER);
         this.circularAngleThreshold = this.configurationValue(configuration,
                 "angle.circular.maximum", DEFAULT_CIRCULAR_ANGLE_THRESHOLD,
                 threshold -> Angle.degrees((double) threshold));
@@ -80,7 +76,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return ((object instanceof Area && ((Area) object).asPolygon().size() > minSidesNumber)
+        return ((object instanceof Area)
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
                 && (this.isBuildingOrPart(object));
     }

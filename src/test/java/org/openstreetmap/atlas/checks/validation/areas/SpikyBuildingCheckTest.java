@@ -51,15 +51,6 @@ public class SpikyBuildingCheckTest
         verifier.verifyEmpty();
     }
 
-    // We should ignore edges with only three vertices
-    @Test
-    public void ignoresSpikyButSmall()
-    {
-        verifier.actual(setup.getSpikyButSmall(),
-                new SpikyBuildingCheck(ConfigurationResolver.emptyConfiguration()));
-        verifier.verifyEmpty();
-    }
-
     @Test
     public void badCase()
     {

@@ -69,10 +69,6 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
             @Loc(value = ROUND_FIVE) }, tags = "building=yes") })
     private Atlas roundNumbersSpiky;
 
-    @TestAtlas(areas = { @Area(coordinates = { @Loc(value = ROUND_ONE), @Loc(value = ROUND_TWO),
-            @Loc(value = ROUND_THREE) }, tags = "building=yes") })
-    private Atlas spikyButSmall;
-
     @TestAtlas(areas = {
             @Area(id = "1", coordinates = { @Loc(value = A), @Loc(value = B), @Loc(value = C),
                     @Loc(value = D), @Loc(value = E), @Loc(value = F) }, tags = "building=yes"), })
@@ -96,10 +92,9 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
                     @Loc(value = L) }, tags = "building=yes") })
     private Atlas circleBuilding;
 
-    @TestAtlas(areas = {
-            @Area(id = "1", coordinates = { @Loc(value = S), @Loc(value = T), @Loc(value = U), @Loc(value = U_PRIME),
-                    @Loc(value = V), @Loc(value = V_PRIME), @Loc(value = L), @Loc(value = N)}, tags = "building=yes")
-    })
+    @TestAtlas(areas = { @Area(id = "1", coordinates = { @Loc(value = S), @Loc(value = T),
+            @Loc(value = U), @Loc(value = U_PRIME), @Loc(value = V), @Loc(value = V_PRIME),
+            @Loc(value = L), @Loc(value = N) }, tags = "building=yes") })
     private Atlas twoShortConsecutiveCurvesBuilding;
 
     public Atlas getSpikyBuilding()
@@ -120,11 +115,6 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
     public Atlas getNormalRound()
     {
         return normalRound;
-    }
-
-    public Atlas getSpikyButSmall()
-    {
-        return spikyButSmall;
     }
 
     public Atlas badCase()
