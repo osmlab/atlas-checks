@@ -3,6 +3,8 @@ package org.openstreetmap.atlas.checks.vectortiles;
 import org.openstreetmap.atlas.geography.atlas.geojson.LineDelimitedGeoJsonConverter;
 import org.openstreetmap.atlas.utilities.runtime.Command;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
+import org.openstreetmap.atlas.utilities.runtime.RunScript;
+import org.openstreetmap.atlas.utilities.time.Time;
 import org.openstreetmap.atlas.utilities.vectortiles.TippecanoeCommands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +55,21 @@ public class TippecanoeCheckConverter extends Command
         final Path geojson = geojsonDirectory.resolve(LineDelimitedGeoJsonConverter.EVERYTHING);
         final Boolean overwrite = (Boolean) command.get(OVERWRITE);
 
-        LineDelimitedGeoJsonConverter.concatenate(geojsonDirectory);
+        concatenate(geojsonDirectory);
 
         TippecanoeCommands.runTippecanoe(geojson, mbtiles, overwrite, TippecanoeCheckSettings.ARGS);
 
         return 0;
+    }
+
+    public static void concatenate(final Path geojsonDirectory)
+    {
+        final Time time = Time.now();
+        final String directory = geojsonDirectory.toString();
+        final String cat = String.format("cat '%s/'*/*.geojson > '%s/'%s", directory, directory, LineDelimitedGeoJsonConverter.EVERYTHING);
+        final String[] bashCommandArray = new String[] { "bash", "-c", cat };
+        RunScript.run(bashCommandArray);
+        logger.info("Concatenated to {} in {}", LineDelimitedGeoJsonConverter.EVERYTHING, time.elapsedSince());
     }
 
     @Override

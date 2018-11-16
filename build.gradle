@@ -72,6 +72,7 @@ configurations
 dependencies
 {
     compile packages.commons
+    compile 'org.apache.maven:maven-artifact:3.5.4'
     compile files('libs/atlas.jar')
     compile packages.atlas_generator
 
