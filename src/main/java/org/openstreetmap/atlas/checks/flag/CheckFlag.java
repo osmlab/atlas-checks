@@ -29,6 +29,8 @@ import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -45,6 +47,8 @@ import com.google.gson.JsonObject;
 public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
     private static final long serialVersionUID = -1287808902452203852L;
+    private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
+
     private final String identifier;
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
@@ -453,7 +457,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private JsonObject boundsGeoJsonGeometry()
     {
         final Iterator<FlaggedObject> iterator = flaggedObjects.iterator();
-        final Rectangle bounds;
+        Rectangle bounds;
 
         // Get the first bounds.
         if (iterator.hasNext())
@@ -470,7 +474,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         while (iterator.hasNext())
         {
             final Rectangle nextBounds = iterator.next().bounds();
-            bounds.combine(nextBounds);
+            bounds = bounds.combine(nextBounds);
         }
 
         // Turn that bounds into a GeoJSON geometry.
