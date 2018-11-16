@@ -1,5 +1,8 @@
 package org.openstreetmap.atlas.checks.vectortiles;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.openstreetmap.atlas.geography.atlas.geojson.LineDelimitedGeoJsonConverter;
 import org.openstreetmap.atlas.utilities.runtime.Command;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
@@ -9,11 +12,9 @@ import org.openstreetmap.atlas.utilities.vectortiles.TippecanoeCommands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 /**
- * This is a simple CLI that will take tippecanoe line-delimited GeoJSON atlas check output and convert it into vector tiles with tippecanoe.
+ * This is a simple CLI that will take tippecanoe line-delimited GeoJSON atlas check output and
+ * convert it into vector tiles with tippecanoe.
  *
  * @author hallahan
  */
@@ -23,8 +24,9 @@ public class TippecanoeCheckConverter extends Command
 
     private static final Logger logger = LoggerFactory.getLogger(TippecanoeCheckConverter.class);
 
-    private static final Command.Switch<Path> GEOJSON_DIRECTORY = new Command.Switch<>("geojsonDirectory",
-            "The directory to read line-delimited GeoJSON.", Paths::get, Command.Optionality.REQUIRED);
+    private static final Command.Switch<Path> GEOJSON_DIRECTORY = new Command.Switch<>(
+            "geojsonDirectory", "The directory to read line-delimited GeoJSON.", Paths::get,
+            Command.Optionality.REQUIRED);
 
     private static final Switch<Path> MBTILES = new Switch<>("mbtiles",
             "The MBTiles file to which tippecanoe will write vector tiles.", Paths::get,
@@ -40,7 +42,8 @@ public class TippecanoeCheckConverter extends Command
     }
 
     @Override
-    protected int onRun(CommandMap command) {
+    protected int onRun(final CommandMap command)
+    {
         if (!TippecanoeCommands.hasValidTippecanoe())
         {
             logger.error(
@@ -66,14 +69,17 @@ public class TippecanoeCheckConverter extends Command
     {
         final Time time = Time.now();
         final String directory = geojsonDirectory.toString();
-        final String cat = String.format("cat '%s/'*/*.geojson > '%s/'%s", directory, directory, LineDelimitedGeoJsonConverter.EVERYTHING);
+        final String cat = String.format("cat '%s/'*/*.geojson > '%s/'%s", directory, directory,
+                LineDelimitedGeoJsonConverter.EVERYTHING);
         final String[] bashCommandArray = new String[] { "bash", "-c", cat };
         RunScript.run(bashCommandArray);
-        logger.info("Concatenated to {} in {}", LineDelimitedGeoJsonConverter.EVERYTHING, time.elapsedSince());
+        logger.info("Concatenated to {} in {}", LineDelimitedGeoJsonConverter.EVERYTHING,
+                time.elapsedSince());
     }
 
     @Override
-    protected SwitchList switches() {
+    protected SwitchList switches()
+    {
         return new SwitchList().with(GEOJSON_DIRECTORY, MBTILES, OVERWRITE);
     }
 }

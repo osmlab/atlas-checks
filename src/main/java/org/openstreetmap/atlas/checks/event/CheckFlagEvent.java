@@ -230,6 +230,11 @@ public final class CheckFlagEvent extends Event
     public String asLineDelimitedGeoJsonFeatures(final Consumer<JsonObject> jsonMutator)
     {
         final JsonObject flagGeoJsonFeature = flag.asGeoJsonFeature();
+        final JsonObject flagGeoJsonProperties = flagGeoJsonFeature.get("properties")
+                .getAsJsonObject();
+        flagGeoJsonProperties.addProperty("flag:check", getCheckName());
+        flagGeoJsonProperties.addProperty("flag:timestamp", getTimestamp().toString());
+
         jsonMutator.accept(flagGeoJsonFeature);
 
         final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString())

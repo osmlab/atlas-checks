@@ -41,7 +41,8 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
     @AllowConcurrentEvents
     public void process(final CheckFlagEvent event)
     {
-        super.process(event.asLineDelimitedGeoJsonFeatures(TippecanoeCheckSettings.TIPPECANOE_JSON_MUTATOR));
+        super.process(event
+                .asLineDelimitedGeoJsonFeatures(TippecanoeCheckSettings.TIPPECANOE_JSON_MUTATOR));
     }
 
     @Override
