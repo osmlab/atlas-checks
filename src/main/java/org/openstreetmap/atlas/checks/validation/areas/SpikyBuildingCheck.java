@@ -66,16 +66,16 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     public SpikyBuildingCheck(final Configuration configuration)
     {
         super(configuration);
-        this.headingThreshold = this.configurationValue(configuration, "angle.spiky.maximum",
+        this.headingThreshold = this.configurationValue(configuration, "spiky.angle.maximum",
                 DEFAULT_MIN_HEADING_THRESHOLD, threshold -> Angle.degrees((double) threshold));
         this.circularAngleThreshold = this.configurationValue(configuration,
-                "angle.circular.maximum", DEFAULT_CIRCULAR_ANGLE_THRESHOLD,
+                "curves.angle.maximum", DEFAULT_CIRCULAR_ANGLE_THRESHOLD,
                 threshold -> Angle.degrees((double) threshold));
         this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
-                "angle.circular.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
+                "curves.angle.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
                 threshold -> Angle.degrees((double) threshold));
         this.minimumCircularPointsInCurve = this.configurationValue(configuration,
-                "sides.circular.minimum", DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS);
+                "curves.points.minimum", DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         else if (((Relation) object).isMultiPolygon())
         {
             return ((Relation) object).members().stream().map(this::toPolygon).flatMap(
-                    optPoly -> optPoly.isPresent() ? Stream.of(optPoly.get()) : Stream.empty());
+                    optPoly -> optPoly.map(Stream::of).orElse(Stream.empty()));
         }
         logger.warn("Returning empty stream");
         return Stream.empty();
