@@ -29,6 +29,7 @@ import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
     private static final long serialVersionUID = -1287808902452203852L;
     private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
+
+    private static final Distance TEN_METERS = Distance.meters(10);
 
     private final String identifier;
     private String challengeName = null;
@@ -475,6 +478,19 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         {
             final Rectangle nextBounds = iterator.next().bounds();
             bounds = bounds.combine(nextBounds);
+        }
+
+        // We want the bbox to be at least ten meters wide and high. This is for straight lines and
+        // single point flags. I figure this is a good minimum, as it's about the width of a tennis
+        // court, and that seems like a good minimum unit to browse a check flag on the map.
+        if (bounds.width().onEarth().isLessThan(TEN_METERS))
+        {
+            bounds = bounds.expandHorizontally(TEN_METERS);
+        }
+
+        if (bounds.height().onEarth().isLessThan(TEN_METERS))
+        {
+            bounds = bounds.expandVertically(TEN_METERS);
         }
 
         // Turn that bounds into a GeoJSON geometry.
