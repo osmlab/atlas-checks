@@ -50,3 +50,7 @@ java -Xmx12G -cp ./atlas-checks.jar org.openstreetmap.atlas.checks.distributed.I
 -configFiles=file:/Users/n/code/atlas-checks/config/configuration.json \
 -sparkOptions=spark.executor.memory->4g,spark.driver.memory->4g,spark.rdd.compress->true
 ```
+
+For more details on how to work with viewing and creating vector tiles, see:
+
+https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/utilities/vectortiles/README.md
