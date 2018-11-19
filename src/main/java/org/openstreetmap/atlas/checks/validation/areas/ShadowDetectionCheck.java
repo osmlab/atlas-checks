@@ -229,8 +229,9 @@ public class ShadowDetectionCheck extends BaseCheck
     /**
      * Given two {@link AtlasObject}s, checks that they have any intersecting or touching height
      * values. The range of height values for the {@link AtlasObject}s are calculated using height
-     * and layer tags. A {@code min_height} or {@code building:min_layer} tag must exist for
-     * {@code part}. All other tags will use defaults if not found.
+     * and layer tags. Height tags get precedence over level tags. Heights are calculated from level
+     * tags using a conversion factor. A {@code min_height} or {@code building:min_layer} tag must
+     * exist for {@code part}. All other tags will use defaults if not found.
      *
      * @param part
      *            {@link AtlasObject} being checked
@@ -243,52 +244,38 @@ public class ShadowDetectionCheck extends BaseCheck
     {
         final Map<String, String> neighborTags = neighbor.getOsmTags();
         final Map<String, String> partTags = part.getOsmTags();
-        final double partMinHeight;
-        final double partMaxHeight;
-        double neighborMinHeight = 0;
-        double neighborMaxHeight = 0;
 
         try
         {
             // Set partMinHeight
-            partMinHeight = partTags.containsKey(MinHeightTag.KEY)
+            final double partMinHeight = partTags.containsKey(MinHeightTag.KEY)
                     ? Double.parseDouble(partTags.get(MinHeightTag.KEY))
                     : Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
                             * LEVEL_TO_METERS_CONVERSION;
             // Set partMaxHeight
-            if (partTags.containsKey(HeightTag.KEY))
-            {
-                partMaxHeight = Double.parseDouble(partTags.get(HeightTag.KEY));
-            }
-            else if (partTags.containsKey(BuildingLevelsTag.KEY))
-            {
-                partMaxHeight = Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
-                        * LEVEL_TO_METERS_CONVERSION;
-            }
-            else
-            {
-                partMaxHeight = partMinHeight;
-            }
+            final double partMaxHeight = partTags.containsKey(HeightTag.KEY)
+                    ? Double.parseDouble(partTags.get(HeightTag.KEY))
+                    : partTags.containsKey(BuildingLevelsTag.KEY)
+                            ? Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
+                                    * LEVEL_TO_METERS_CONVERSION
+                            // Default to 0 height above the minimum
+                            : partMinHeight;
             // Set neighborMinHeight
-            if (neighborTags.containsKey(MinHeightTag.KEY))
-            {
-                neighborMinHeight = Double.parseDouble(neighborTags.get(MinHeightTag.KEY));
-            }
-            else if (neighborTags.containsKey(BuildingMinLevelTag.KEY))
-            {
-                neighborMinHeight = Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
-                        * LEVEL_TO_METERS_CONVERSION;
-            }
+            final double neighborMinHeight = neighborTags.containsKey(MinHeightTag.KEY)
+                    ? Double.parseDouble(neighborTags.get(MinHeightTag.KEY))
+                    : neighborTags.containsKey(BuildingMinLevelTag.KEY)
+                            ? Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
+                                    * LEVEL_TO_METERS_CONVERSION
+                            // Default to 0
+                            : 0;
             // Set neighborMaxHeight
-            if (neighborTags.containsKey(HeightTag.KEY))
-            {
-                neighborMaxHeight = Double.parseDouble(neighborTags.get(HeightTag.KEY));
-            }
-            else if (neighborTags.containsKey(BuildingLevelsTag.KEY))
-            {
-                neighborMaxHeight = Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
-                        * LEVEL_TO_METERS_CONVERSION;
-            }
+            final double neighborMaxHeight = neighborTags.containsKey(HeightTag.KEY)
+                    ? Double.parseDouble(neighborTags.get(HeightTag.KEY))
+                    : neighborTags.containsKey(BuildingLevelsTag.KEY)
+                            ? Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
+                                    * LEVEL_TO_METERS_CONVERSION
+                            // Default to 0
+                            : 0;
 
             // Check the range of heights for overlap.
             try
