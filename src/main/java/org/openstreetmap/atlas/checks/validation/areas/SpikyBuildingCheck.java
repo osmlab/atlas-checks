@@ -311,20 +311,20 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     }
 
     /**
-     * Finds curved sections of a polygon, then gets the location of all skinny angles inside of the
+     * Finds curved sections of a polygon, then gets the location of all spiky angles inside of the
      * polygon and composes them into a list.
      * 
      * @param polygon
      *            any Polygon to analyze
-     * @return a list of tuples representing skinny angles. The first value is the calculated angle
+     * @return a list of tuples representing spiky angles. The first value is the calculated angle
      *         of a particular point, and the second is its location in the world.
      */
-    private List<Tuple<Angle, Location>> getSkinnyAngleLocations(final Polygon polygon)
+    private List<Tuple<Angle, Location>> getSpikyAngleLocations(final Polygon polygon)
     {
         final List<Segment> segments = polygon.segments();
         final Set<Location> curvedLocations = this.getCurvedLocations(segments);
         return this.segmentPairsFrom(segments)
-                .map(segmentPair -> this.getSkinnyAngleLocation(segmentPair.getFirst(),
+                .map(segmentPair -> this.getSpikyAngleLocation(segmentPair.getFirst(),
                         segmentPair.getSecond(), curvedLocations))
                 .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
     }
@@ -344,7 +344,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      *         equal to headingThreshold. Otherwise, a tuple containing the location of the point
      *         and the angle between beforeAnge and afterAngle
      */
-    private Optional<Tuple<Angle, Location>> getSkinnyAngleLocation(final Segment beforeAngle,
+    private Optional<Tuple<Angle, Location>> getSpikyAngleLocation(final Segment beforeAngle,
             final Segment afterAngle, final Set<Location> curvedLocations)
     {
         if (!curvedLocations.contains(afterAngle.end())
@@ -385,26 +385,27 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final List<Tuple<Angle, Location>> allSkinnyAngles = this.getPolygons(object)
-                .map(this::getSkinnyAngleLocations)
+        final List<Tuple<Angle, Location>> allSpikyAngles = this.getPolygons(object)
+                .map(this::getSpikyAngleLocations)
                 .filter(angleLocations -> !angleLocations.isEmpty()).flatMap(Collection::stream)
                 .collect(Collectors.toList());
-        if (!allSkinnyAngles.isEmpty())
+        if (!allSpikyAngles.isEmpty())
         {
-            final Set<AtlasObject> objectsToFlag;
+            final String instruction = this.getLocalizedInstruction(0, headingThreshold.toString(),
+                    allSpikyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
+                            .collect(Collectors.joining(", ")));
+            final List<Location> markers = allSpikyAngles.stream().map(Tuple::getSecond)
+                    .collect(Collectors.toList());
+            final CheckFlag flag;
             if (object instanceof Area)
             {
-                objectsToFlag = Collections.singleton(object);
+                flag = this.createFlag(object, instruction, markers);
             }
             else
             {
-                objectsToFlag = ((Relation) object).flatten();
+                flag = this.createFlag(((Relation) object).flatten(), instruction, markers);
             }
-            return Optional.of(this.createFlag(objectsToFlag,
-                    this.getLocalizedInstruction(0, headingThreshold.toString(),
-                            allSkinnyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
-                                    .collect(Collectors.joining(", "))),
-                    allSkinnyAngles.stream().map(Tuple::getSecond).collect(Collectors.toList())));
+            return Optional.of(flag);
         }
         return Optional.empty();
     }
