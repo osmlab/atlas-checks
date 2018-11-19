@@ -18,6 +18,13 @@
       "angle.maximum": 25,
       "angle.total.minimum": 10,
       "points.minimum": 4
+    },
+    "challenge": {
+      "description": "Find poorly digitized buildings with sharp angles in their geometry",
+      "blurb": "Fix buildings with spiky geometry",
+      "instruction": "Open your favorite editor and validate that the buildings are mapped correctly",
+      "difficulty": "NORMAL",
+      "tags":"building"
     }
   },
   "OrphanNodeCheck": {
