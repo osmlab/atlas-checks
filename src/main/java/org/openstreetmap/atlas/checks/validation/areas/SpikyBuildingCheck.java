@@ -28,28 +28,22 @@ import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This check flags all buildings with angles less than some threshold value as part of their
  * geometry. The purpose is to catch buildings that were automatically closed incorrectly, or
- * buildings that are likely to have been poorly digitized.
- *
- * In order to avoid flagging most buildings with curved geometry, this check uses a configurable
- * heuristic to detect curves and does not flag potential spikes at the ends of a curve.
+ * buildings that are likely to have been poorly digitized. In order to avoid flagging most
+ * buildings with curved geometry, this check uses a configurable heuristic to detect curves and
+ * does not flag potential spikes at the ends of a curve.
  *
  * @author nachtm
  */
 public class SpikyBuildingCheck extends BaseCheck<Long>
 {
-    private final Logger logger = LoggerFactory.getLogger(SpikyBuildingCheck.class);
-
     private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
     private static final long DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 25;
     private static final long DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD = 10;
     private static final long DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS = 4;
-
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "This building has the following angle measurements under the minimum allowed angle of {0}: {1}");
     private Angle headingThreshold;
@@ -68,9 +62,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         super(configuration);
         this.headingThreshold = this.configurationValue(configuration, "spiky.angle.maximum",
                 DEFAULT_MIN_HEADING_THRESHOLD, threshold -> Angle.degrees((double) threshold));
-        this.circularAngleThreshold = this.configurationValue(configuration,
-                "curves.angle.maximum", DEFAULT_CIRCULAR_ANGLE_THRESHOLD,
-                threshold -> Angle.degrees((double) threshold));
+        this.circularAngleThreshold = this.configurationValue(configuration, "curves.angle.maximum",
+                DEFAULT_CIRCULAR_ANGLE_THRESHOLD, threshold -> Angle.degrees((double) threshold));
         this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
                 "curves.angle.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
                 threshold -> Angle.degrees((double) threshold));
@@ -133,10 +126,9 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         }
         else if (((Relation) object).isMultiPolygon())
         {
-            return ((Relation) object).members().stream().map(this::toPolygon).flatMap(
-                    optPoly -> optPoly.map(Stream::of).orElse(Stream.empty()));
+            return ((Relation) object).members().stream().map(this::toPolygon)
+                    .flatMap(optPoly -> optPoly.map(Stream::of).orElse(Stream.empty()));
         }
-        logger.warn("Returning empty stream");
         return Stream.empty();
     }
 
@@ -150,16 +142,17 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      */
     private Set<Location> getCurvedLocations(final List<Segment> segments)
     {
-        final List<Triple<Integer, Segment, Segment>> curvedSections = summarizeCurvedSections(
-                getPotentiallyCircularPoints(segments)).stream()
-                        // Has at least minimumCircularPointsInCurve
-                        .filter(segment -> segment.getLeft() >= minimumCircularPointsInCurve)
-                        // Changes heading by at least minimumTotalCircularAngleThreshold
-                        .filter(segment -> getDifferenceBetween(segment.getMiddle(),
-                                segment.getRight(), Angle.MINIMUM)
-                                        .isGreaterThanOrEqualTo(minimumTotalCircularAngleThreshold))
-                        .collect(Collectors.toList());
-        return sectionsToLocations(curvedSections, segments);
+        final List<Triple<Integer, Segment, Segment>> curvedSections = this
+                .summarizeCurvedSections(this.getPotentiallyCircularPoints(segments)).stream()
+                // Has at least minimumCircularPointsInCurve
+                .filter(segment -> segment.getLeft() >= minimumCircularPointsInCurve)
+                // Changes heading by at least minimumTotalCircularAngleThreshold
+                .filter(segment -> this
+                        .getDifferenceBetween(segment.getMiddle(), segment.getRight(),
+                                Angle.MINIMUM)
+                        .isGreaterThanOrEqualTo(minimumTotalCircularAngleThreshold))
+                .collect(Collectors.toList());
+        return this.sectionsToLocations(curvedSections, segments);
     }
 
     /**
@@ -174,8 +167,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      */
     private List<Tuple<Segment, Segment>> getPotentiallyCircularPoints(final List<Segment> segments)
     {
-        return segmentPairsFrom(segments)
-                .filter(segmentTuple -> getDifferenceBetween(segmentTuple.getFirst(),
+        return this.segmentPairsFrom(segments)
+                .filter(segmentTuple -> this.getDifferenceBetween(segmentTuple.getFirst(),
                         segmentTuple.getSecond(), Angle.MAXIMUM).isLessThan(circularAngleThreshold))
                 .collect(Collectors.toList());
     }
@@ -198,7 +191,6 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         {
             return Collections.emptyList();
         }
-
         final List<Triple<Integer, Segment, Segment>> summaryStats = new ArrayList<>();
         Tuple<Segment, Segment> start = curvedLocations.get(0);
         Tuple<Segment, Segment> previous = curvedLocations.get(0);
@@ -219,11 +211,9 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
             {
                 numPoints++;
             }
-
             // Always update previous
             previous = location;
         }
-
         // Add the last triple
         summaryStats.add(Triple.of(numPoints, start.getFirst(), previous.getSecond()));
         // We might need to clean up a circular segment that wraps around 0.
@@ -259,13 +249,12 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         {
             return Collections.emptySet();
         }
-
         final Set<Location> locations = new HashSet<>();
         boolean inMiddleOfSegment = false;
         int curvedSectionIndex = 0;
         Segment curvedSectionStart = curvedSections.get(curvedSectionIndex).getMiddle();
         Segment curvedSectionEnd = curvedSections.get(curvedSectionIndex).getRight();
-        for (final Tuple<Segment, Segment> beforeAndAfter : segmentPairsFrom(allSegments)
+        for (final Tuple<Segment, Segment> beforeAndAfter : this.segmentPairsFrom(allSegments)
                 .collect(Collectors.toList()))
         {
             if (inMiddleOfSegment)
@@ -332,15 +321,12 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      */
     private List<Tuple<Angle, Location>> getSkinnyAngleLocations(final Polygon polygon)
     {
-        final List<Tuple<Angle, Location>> results = new ArrayList<>();
         final List<Segment> segments = polygon.segments();
-
-        final Set<Location> curvedLocations = getCurvedLocations(segments);
-
-        segmentPairsFrom(segments)
-                .map(segmentPair -> getSkinnyAngleLocation(segmentPair.getFirst(), segmentPair.getSecond(), curvedLocations))
-                .forEach(optionalSkinnyAngle -> optionalSkinnyAngle.ifPresent(results::add));
-        return results;
+        final Set<Location> curvedLocations = this.getCurvedLocations(segments);
+        return this.segmentPairsFrom(segments)
+                .map(segmentPair -> this.getSkinnyAngleLocation(segmentPair.getFirst(),
+                        segmentPair.getSecond(), curvedLocations))
+                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
     }
 
     /**
@@ -364,7 +350,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         if (!curvedLocations.contains(afterAngle.end())
                 && !curvedLocations.contains(beforeAngle.start()))
         {
-            final Angle difference = getDifferenceBetween(beforeAngle, afterAngle.reversed(),
+            final Angle difference = this.getDifferenceBetween(beforeAngle, afterAngle.reversed(),
                     Angle.MAXIMUM);
             if (difference.isLessThan(headingThreshold))
             {
@@ -399,7 +385,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final List<Tuple<Angle, Location>> allSkinnyAngles = getPolygons(object)
+        final List<Tuple<Angle, Location>> allSkinnyAngles = this.getPolygons(object)
                 .map(this::getSkinnyAngleLocations)
                 .filter(angleLocations -> !angleLocations.isEmpty()).flatMap(Collection::stream)
                 .collect(Collectors.toList());
