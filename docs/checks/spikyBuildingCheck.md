@@ -33,5 +33,29 @@ digitization and should not be flagged.
 
 #### Code Review
 
+###### Curves
+Perfectly identifying curved sections of a building's geometry is not possible, especially given the
+wide variety of mapping techniques across the world. However, it is possible to use heuristics to
+get pretty close. This section will briefly walk through the algorithm used by `SpikyBuildingCheck`
+to detect curves.
+
+The first thing to note is that throughout the code, points are stored as the two surrounding segments.
+So, for a triangle with points ABC and lines (AB, BC, and CA), we store the point B as <AB, BC>. This
+way, we have a little extra context needed later on down the line.
+
+The entry point into this algorithm is `getCurvedLocations`, but we'll start in `getPotentiallyCircularPoints`,
+which grabs all points in a polygon where the change in heading between the previous and following
+segments is less than some threshold. Once we have that list, we want to combine consecutive points
+into a potentially circular segment. We do this in `summarizedCurvedSections`, which takes in an ordered
+list of points in a polygon, and finds the start and end of each segment of consecutive points
+(points that share a segment between them). It returns the segment before the start point, the segment
+after the end point, and the total number of points present in the section. From there, `getCurvedLocations`
+filters out all the summarized curved sections that are either too short, or the difference in headings
+between the first and last segment in the section is too small. Finally, `sectionsToLocations` takes
+all of the curvedLocations and converts them from the metadata tuple with length, start and end, back
+to a list of locations. By taking all the sections at once, it is able to complete the entire conversion
+in a single pass of the list of all segments, since both are in the same order.
+
+###### More Information
 For more information, see the source code in 
 [SpikyBuildingCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/areas/SpikyBuildingCheck.java).
