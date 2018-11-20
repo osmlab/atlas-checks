@@ -45,7 +45,7 @@ import com.google.common.collect.Range;
  *
  * @author bbreithaupt
  */
-public class ShadowDetectionCheck extends BaseCheck
+public class ShadowDetectionCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = -6968080042879358551L;
