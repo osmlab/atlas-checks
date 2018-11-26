@@ -4,15 +4,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.checks.utility.BfsEdgeWalker;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -82,7 +83,8 @@ public class RoundaboutValenceCheck extends BaseCheck
         final Edge edge = (Edge) object;
 
         // Get all Edges in the roundabout
-        final Set<Edge> roundaboutEdges = new BfsEdgeWalker(this.isRoundaboutEdge()).collect(edge);
+        final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
+                .collectEdges();
         roundaboutEdges
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
@@ -132,17 +134,15 @@ public class RoundaboutValenceCheck extends BaseCheck
     }
 
     /**
-     * BiFunction for {@link BfsEdgeWalker} that gathers connected edged that are part of a
+     * Function for {@link SimpleEdgeWalker} that gathers connected edged that are part of a
      * roundabout.
      *
-     * @return {@link BiFunction} for {@link BfsEdgeWalker}
+     * @return {@link Function} for {@link SimpleEdgeWalker}
      */
-    private BiFunction<Edge, Set<Edge>, Set<Edge>> isRoundaboutEdge()
+    private Function<Edge, Stream<Edge>> isRoundaboutEdge()
     {
-        return (edge, queued) -> edge.connectedEdges().stream()
+        return edge -> edge.connectedEdges().stream()
                 .filter(connected -> JunctionTag.isRoundabout(connected)
-                        && !queued.contains(connected)
-                        && HighwayTag.isCarNavigableHighway(connected))
-                .collect(Collectors.toSet());
+                        && HighwayTag.isCarNavigableHighway(connected));
     }
 }
