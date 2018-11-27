@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * Test the configuration loading based on default parameters for enabling checks.
  * 
  * @author brian_l_davis
+ * @author nachtm
  */
 public class CheckResourceLoaderTest
 {
