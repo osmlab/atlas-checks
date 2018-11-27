@@ -62,19 +62,19 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         super(configuration);
         this.headingThreshold = this.configurationValue(configuration, "spiky.angle.maximum",
                 DEFAULT_MIN_HEADING_THRESHOLD, threshold -> Angle.degrees((double) threshold));
-        this.circularAngleThreshold = this.configurationValue(configuration, "curves.angle.maximum",
+        this.circularAngleThreshold = this.configurationValue(configuration, "curve.angle.maximum",
                 DEFAULT_CIRCULAR_ANGLE_THRESHOLD, threshold -> Angle.degrees((double) threshold));
         this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
-                "curves.angle.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
+                "curve.angle.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
                 threshold -> Angle.degrees((double) threshold));
         this.minimumCircularPointsInCurve = this.configurationValue(configuration,
-                "curves.points.minimum", DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS);
+                "curve.points.minimum", DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS);
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return ((object instanceof Area)
+        return (object instanceof Area
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
                 && (this.isBuildingOrPart(object));
     }
@@ -148,7 +148,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                 .filter(segment -> segment.getLeft() >= minimumCircularPointsInCurve)
                 // Changes heading by at least minimumTotalCircularAngleThreshold
                 .filter(segment -> this
-                        .getDifferenceBetween(segment.getMiddle(), segment.getRight(),
+                        .getDifferenceInHeadings(segment.getMiddle(), segment.getRight(),
                                 Angle.MINIMUM)
                         .isGreaterThanOrEqualTo(minimumTotalCircularAngleThreshold))
                 .collect(Collectors.toList());
@@ -168,7 +168,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private List<Tuple<Segment, Segment>> getPotentiallyCircularPoints(final List<Segment> segments)
     {
         return this.segmentPairsFrom(segments)
-                .filter(segmentTuple -> this.getDifferenceBetween(segmentTuple.getFirst(),
+                .filter(segmentTuple -> this.getDifferenceInHeadings(segmentTuple.getFirst(),
                         segmentTuple.getSecond(), Angle.MAXIMUM).isLessThan(circularAngleThreshold))
                 .collect(Collectors.toList());
     }
@@ -350,8 +350,8 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         if (!curvedLocations.contains(afterAngle.end())
                 && !curvedLocations.contains(beforeAngle.start()))
         {
-            final Angle difference = this.getDifferenceBetween(beforeAngle, afterAngle.reversed(),
-                    Angle.MAXIMUM);
+            final Angle difference = this.getDifferenceInHeadings(beforeAngle,
+                    afterAngle.reversed(), Angle.MAXIMUM);
             if (difference.isLessThan(headingThreshold))
             {
                 return Optional.of(Tuple.createTuple(difference, afterAngle.start()));
@@ -374,7 +374,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      *         segment is a single point (same start and end nodes), or defaultAngle if either
      *         segment is a single point
      */
-    private Angle getDifferenceBetween(final Segment firstSegment, final Segment secondSegment,
+    private Angle getDifferenceInHeadings(final Segment firstSegment, final Segment secondSegment,
             final Angle defaultAngle)
     {
         return firstSegment.heading()

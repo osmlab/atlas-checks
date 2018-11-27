@@ -14,7 +14,7 @@
   },
   "SpikyBuildingCheck": {
     "spiky.angle.maximum": 15,
-    "curves": {
+    "curve": {
       "angle.maximum": 25,
       "angle.total.minimum": 10,
       "points.minimum": 4
