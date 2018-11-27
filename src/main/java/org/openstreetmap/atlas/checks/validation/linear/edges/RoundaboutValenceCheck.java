@@ -89,8 +89,7 @@ public class RoundaboutValenceCheck extends BaseCheck
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
         // Get all the Nodes in the roundabout
-        final Set<Node> roundaboutNodes = roundaboutEdges.stream()
-                .flatMap(roundaboutEdge -> roundaboutEdge.connectedNodes().stream())
+        final Set<Node> roundaboutNodes = roundaboutEdges.stream().map(Edge::start)
                 .collect(Collectors.toSet());
         // CHeck the valence of each node and gather the total valence
         int totalRoundaboutValence = 0;
