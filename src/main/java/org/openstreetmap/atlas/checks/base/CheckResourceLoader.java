@@ -43,6 +43,7 @@ import com.google.common.reflect.ClassPath;
  *
  * @author brian_l_davis
  * @author jklamer
+ * @author nachtm
  */
 public class CheckResourceLoader
 {
