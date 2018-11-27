@@ -23,7 +23,7 @@ import com.google.gson.JsonPrimitive;
  * Wraps a {@link CheckFlag} for submission to the {@link EventService} for handling {@link Check}
  * results
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public final class CheckFlagEvent extends Event
 {
@@ -133,11 +133,19 @@ public final class CheckFlagEvent extends Event
         {
             final HighwayTag baslineHighwayTag = highestHighwayTag == null ? HighwayTag.NO
                     : highestHighwayTag;
-            highestHighwayTag = Optional
-                    .ofNullable(((JsonObject) featureProperty).getAsJsonPrimitive(HighwayTag.KEY))
-                    .map(JsonPrimitive::getAsString).map(String::toUpperCase)
-                    .map(HighwayTag::valueOf).filter(baslineHighwayTag::isLessImportantThan)
-                    .orElse(highestHighwayTag);
+            try
+            {
+                highestHighwayTag = Optional
+                        .ofNullable(
+                                ((JsonObject) featureProperty).getAsJsonPrimitive(HighwayTag.KEY))
+                        .map(JsonPrimitive::getAsString).map(String::toUpperCase)
+                        .map(HighwayTag::valueOf).filter(baslineHighwayTag::isLessImportantThan)
+                        .orElse(highestHighwayTag);
+            }
+            catch (final IllegalArgumentException badValue)
+            {
+                return Optional.empty();
+            }
         }
         return Optional.ofNullable(highestHighwayTag)
                 .map(tag -> String.format("%s=%s", HighwayTag.KEY, tag.getTagValue()));

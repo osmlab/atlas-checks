@@ -1,8 +1,8 @@
 project.ext.versions = [
     checkstyle: '7.6.1',
-    atlas: '5.1.13',
+    atlas: '5.2.5',
     commons:'2.6',
-    atlas_generator: '4.0.9.1.APPLE',
+    atlas_generator: '4.1.3',
 ]
 
 project.ext.packages = [

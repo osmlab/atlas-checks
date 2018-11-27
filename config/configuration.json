@@ -36,6 +36,7 @@
     }
   },
   "BuildingRoadIntersectionCheck": {
+    "car.navigable": true,
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",
@@ -86,6 +87,7 @@
     }
   },
   "EdgeCrossingEdgeCheck": {
+    "minimum.highway.type": "no",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
@@ -94,6 +96,7 @@
     }
   },
   "FloatingEdgeCheck": {
+    "highway.minimum": "service",
     "length": {
       "maximum.kilometers": 100.0,
       "minimum.meters": 100.0
@@ -138,7 +141,7 @@
     }
   },
   "InvalidLanesTagCheck": {
-    "lanes.filter": "Lanes->1,1.5,2,3,4,5,6,7,8,9,10",
+    "lanes.filter": "lanes->1,1.5,2,3,4,5,6,7,8,9,10",
     "challenge":{
       "description":"Tasks contain invalid values for the lanes tag.",
       "blurb":"Invalid Lanes Tags",
@@ -294,6 +297,7 @@
   },
   "SinkIslandCheck": {
     "tree.size": 50,
+    "minimum.highway.type": "service",
     "challenge": {
       "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
       "blurb": "Identify islands of roads.",
@@ -358,6 +362,14 @@
       "difficulty": "NORMAL",
       "defaultPriority": "MEDIUM",
       "tags":"highway"
+    }
+  },
+  "UnusualLayerTagsCheck": {
+    "challenge": {
+      "description": "Tunnels (negative), junctions (zero) and bridges (zero or positive) should have meaningful layer tags attached to them. A missing layer tag implies layer value 0. If there is an explicit layer tag, then it must be between -5 and 5.",
+      "blurb": "Verify unusual layer tags.",
+      "instruction": "Open your favorite editor, check the instruction for the task and then modify the tag that is considered unusual or possibly invalid.",
+      "difficulty": "EASY"
     }
   },
   "WaterbodyAndIslandSizeCheck": {

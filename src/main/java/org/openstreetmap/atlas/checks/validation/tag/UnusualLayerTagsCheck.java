@@ -22,7 +22,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * Checks {@link Edge}'s {@link LayerTag} and flags it if the value is unusual. Also see
  * http://wiki.openstreetmap.org/wiki/Key:layer
  *
- * @author mkalender
+ * @author mkalender, bbreithaupt
  */
 public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
@@ -30,22 +30,22 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     public static final String INVALID_LAYER_INSTRUCTION = String.format(
             "A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
             LayerTag.getMinValue(), LayerTag.getMaxValue());
-    public static final String JUNCTION_INSTRUCTION = "Junction edges with valid layer value "
+    public static final String JUNCTION_INSTRUCTION = "Junctions with valid layer values "
             + "must include bridge or tunnel tags";
     private static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
     // Constants for bridge checks
     private static final long BRIDGE_LAYER_TAG_MIN_VALUE = 1;
     public static final String BRIDGE_INSTRUCTION = String.format(
-            "Bridge edges must have no layer tag or a layer tag set to a value in [%d, %d].",
-            BRIDGE_LAYER_TAG_MIN_VALUE, BRIDGE_LAYER_TAG_MAX_VALUE);
+            "Bridges must have a layer tag set to a value in [%d, %d].", BRIDGE_LAYER_TAG_MIN_VALUE,
+            BRIDGE_LAYER_TAG_MAX_VALUE);
     private static final int THREE = 3;
     private static final long TUNNEL_LAYER_TAG_MAX_VALUE = -1;
     // Constants for tunnel checks
     private static final long TUNNEL_LAYER_TAG_MIN_VALUE = LayerTag.getMinValue();
     public static final String TUNNEL_INSTRUCTION = String.format(
-            "Tunnel edges must have layer tag set to a value in [%d, %d].",
-            TUNNEL_LAYER_TAG_MIN_VALUE, TUNNEL_LAYER_TAG_MAX_VALUE);
+            "Tunnels must have layer tags set to a value in [%d, %d].", TUNNEL_LAYER_TAG_MIN_VALUE,
+            TUNNEL_LAYER_TAG_MAX_VALUE);
     public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TUNNEL_INSTRUCTION,
             JUNCTION_INSTRUCTION, BRIDGE_INSTRUCTION, INVALID_LAYER_INSTRUCTION);
     // tunnel=building_passage should be excluded from eligible candidates
@@ -55,13 +55,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 7040472721500502360L;
 
     /**
-     * Initializes a predicate to limit check for tunnels, junctions, bridges and edges with layer
-     * tag values
+     * Initializes a predicate to limit check for tunnels, bridges and edges with layer tag values
      */
     static
     {
-        ALLOWED_TAGS = Validators.hasValuesFor(JunctionTag.class)
-                .or(Validators.hasValuesFor(BridgeTag.class))
+        ALLOWED_TAGS = Validators.hasValuesFor(BridgeTag.class)
                 .or(Validators.hasValuesFor(LayerTag.class)).or(ELIGIBLE_TUNNEL_TAGS);
     }
 
@@ -78,7 +76,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
 
     /**
      * Validate if given {@link AtlasObject} is actually an {@link Edge} and make sure the edge has
-     * one of the following tags: tunnel, junction, bridge, layer
+     * one of the following tags: tunnel, bridge, layer
      */
     @Override
     public boolean validCheckForObject(final AtlasObject object)
