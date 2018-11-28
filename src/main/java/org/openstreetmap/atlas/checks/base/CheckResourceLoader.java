@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -42,6 +43,7 @@ import com.google.common.reflect.ClassPath;
  *
  * @author brian_l_davis
  * @author jklamer
+ * @author nachtm
  */
 public class CheckResourceLoader
 {
@@ -55,6 +57,8 @@ public class CheckResourceLoader
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
     private final Set<String> packages;
+    private final Optional<List<String>> checkWhiteList;
+    private final Optional<List<String>> checkBlackList;
 
     /**
      * Default constructor
@@ -91,6 +95,10 @@ public class CheckResourceLoader
                 .get("CheckResourceLoader.enabledKeyTemplate", DEFAULT_ENABLED_KEY_TEMPLATE)
                 .value();
         this.configuration = configuration;
+        this.checkWhiteList = configuration.get("CheckResourceLoader.checks.whitelist")
+                .valueOption();
+        this.checkBlackList = configuration.get("CheckResourceLoader.checks.blacklist")
+                .valueOption();
     }
 
     public Configuration getConfiguration()
@@ -159,7 +167,12 @@ public class CheckResourceLoader
                         final Class<?> checkClass = classInfo.load();
                         if (checkType.isAssignableFrom(checkClass)
                                 && !Modifier.isAbstract(checkClass.getModifiers())
-                                && isEnabled.test(checkClass))
+                                && isEnabled.test(checkClass)
+                                && this.checkWhiteList.map(
+                                        whitelist -> whitelist.contains(checkClass.getSimpleName()))
+                                        .orElse(true)
+                                && this.checkBlackList.map(blacklist -> !blacklist
+                                        .contains(checkClass.getSimpleName())).orElse(true))
                         {
                             try
                             {
