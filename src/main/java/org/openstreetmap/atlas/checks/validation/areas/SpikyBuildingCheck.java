@@ -62,11 +62,12 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
         super(configuration);
         this.headingThreshold = this.configurationValue(configuration, "spiky.angle.maximum",
                 DEFAULT_MIN_HEADING_THRESHOLD, Angle::degrees);
-        this.circularAngleThreshold = this.configurationValue(configuration, "curve.degrees.maximum.single_heading_change",
-                DEFAULT_CIRCULAR_ANGLE_THRESHOLD, Angle::degrees);
-        this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
-                "curve.degrees.minimum.total_heading_change", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
+        this.circularAngleThreshold = this.configurationValue(configuration,
+                "curve.degrees.maximum.single_heading_change", DEFAULT_CIRCULAR_ANGLE_THRESHOLD,
                 Angle::degrees);
+        this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
+                "curve.degrees.minimum.total_heading_change",
+                DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD, Angle::degrees);
         this.minimumCircularPointsInCurve = this.configurationValue(configuration,
                 "curve.points.minimum", DEFAULT_MINIMUM_CIRCULAR_POINTS);
     }

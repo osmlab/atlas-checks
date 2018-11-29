@@ -87,8 +87,9 @@ public class SpikyBuildingCheckTest
     @Test
     public void circleBuildingFlaggedWithStricterAngleThreshold()
     {
-        verifier.actual(setup.circleBuilding(), new SpikyBuildingCheck(ConfigurationResolver
-                .inlineConfiguration("{\"SpikyBuildingCheck\":{\"curve.degrees.maximum.single_heading_change\":3.0}}")));
+        verifier.actual(setup.circleBuilding(),
+                new SpikyBuildingCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"SpikyBuildingCheck\":{\"curve.degrees.maximum.single_heading_change\":3.0}}")));
         verifier.verifyExpectedSize(3);
     }
 
@@ -104,9 +105,8 @@ public class SpikyBuildingCheckTest
     @Test
     public void spikyBuildingNotFlaggedSmallThreshold()
     {
-        verifier.actual(setup.getSpikyBuilding(),
-                new SpikyBuildingCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"SpikyBuildingCheck\":{\"spiky.angle.maximum\":0.1}}")));
+        verifier.actual(setup.getSpikyBuilding(), new SpikyBuildingCheck(ConfigurationResolver
+                .inlineConfiguration("{\"SpikyBuildingCheck\":{\"spiky.angle.maximum\":0.1}}")));
         verifier.verifyEmpty();
     }
 
