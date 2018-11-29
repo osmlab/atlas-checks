@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.vectortiles;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.atlas.geojson.LineDelimitedGeoJsonConverter;
 import org.openstreetmap.atlas.utilities.runtime.Command;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
@@ -58,11 +59,29 @@ public class TippecanoeConverter extends Command
         final Path geojson = geojsonDirectory.resolve(LineDelimitedGeoJsonConverter.EVERYTHING);
         final Boolean overwrite = (Boolean) command.get(OVERWRITE);
 
+        decompress(geojsonDirectory);
         concatenate(geojsonDirectory);
 
         TippecanoeCommands.runTippecanoe(geojson, mbtiles, overwrite, TippecanoeCheckSettings.ARGS);
 
         return 0;
+    }
+
+    public static void decompress(final Path geojsonDirectory)
+    {
+        final Time time = Time.now();
+        final String directory = geojsonDirectory.toString();
+        final String cat = String.format("gzip -dr '%s'/*/*.geojson.gz", directory);
+        final String[] bashCommandArray = new String[] { "bash", "-c", cat };
+        try
+        {
+            RunScript.run(bashCommandArray);
+            logger.info("Decompressed line-delimited GeoJSON in {}", time.elapsedSince());
+        }
+        catch (final CoreException exception)
+        {
+            logger.warn("Not finding any .geojson.gz to decompress. Continuing...", exception);
+        }
     }
 
     public static void concatenate(final Path geojsonDirectory)
