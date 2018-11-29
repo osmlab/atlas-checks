@@ -13,10 +13,12 @@
     }
   },
   "SpikyBuildingCheck": {
-    "spiky.angle.maximum": 15,
+    "spiky.angle.maximum": 15.0,
     "curve": {
-      "angle.maximum": 25,
-      "angle.total.minimum": 10,
+      "degrees": {
+        "maximum.single_heading_change": 25.0,
+        "minimum.total_heading_change": 10.0
+      },
       "points.minimum": 4
     },
     "challenge": {

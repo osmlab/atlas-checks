@@ -40,10 +40,10 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  */
 public class SpikyBuildingCheck extends BaseCheck<Long>
 {
-    private static final long DEFAULT_MIN_HEADING_THRESHOLD = 15;
-    private static final long DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 25;
-    private static final long DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD = 10;
-    private static final long DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS = 4;
+    private static final double DEFAULT_MIN_HEADING_THRESHOLD = 15;
+    private static final double DEFAULT_CIRCULAR_ANGLE_THRESHOLD = 25;
+    private static final double DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD = 10;
+    private static final long DEFAULT_MINIMUM_CIRCULAR_POINTS = 4;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "There are sharp angles ({0} degrees, which is less than the threshold of {1} degrees) in this building's geometry. This may be a result of poor digitization.");
     private Angle headingThreshold;
@@ -61,14 +61,14 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     {
         super(configuration);
         this.headingThreshold = this.configurationValue(configuration, "spiky.angle.maximum",
-                DEFAULT_MIN_HEADING_THRESHOLD, threshold -> Angle.degrees((double) threshold));
-        this.circularAngleThreshold = this.configurationValue(configuration, "curve.angle.maximum",
-                DEFAULT_CIRCULAR_ANGLE_THRESHOLD, threshold -> Angle.degrees((double) threshold));
+                DEFAULT_MIN_HEADING_THRESHOLD, Angle::degrees);
+        this.circularAngleThreshold = this.configurationValue(configuration, "curve.degrees.maximum.single_heading_change",
+                DEFAULT_CIRCULAR_ANGLE_THRESHOLD, Angle::degrees);
         this.minimumTotalCircularAngleThreshold = this.configurationValue(configuration,
-                "curve.angle.total.minimum", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
-                threshold -> Angle.degrees((double) threshold));
+                "curve.degrees.minimum.total_heading_change", DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD,
+                Angle::degrees);
         this.minimumCircularPointsInCurve = this.configurationValue(configuration,
-                "curve.points.minimum", DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS);
+                "curve.points.minimum", DEFAULT_MINIMUM_CIRCULAR_POINTS);
     }
 
     @Override
