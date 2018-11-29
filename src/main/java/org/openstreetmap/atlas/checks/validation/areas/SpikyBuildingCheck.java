@@ -45,7 +45,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private static final long DEFAULT_MINIMUM_TOTAL_CIRCULAR_ANGLE_THRESHOLD = 10;
     private static final long DEFAULT_MINIMUM_CIRCULAR_LINE_SEGMENTS = 4;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "This building has the following angle measurements under the minimum allowed angle of {0}: {1}");
+            "There are sharp angles ({0} degrees, which is less than the threshold of {1} degrees) in this building's geometry. This may be a result of poor digitization.");
     private Angle headingThreshold;
     private Angle circularAngleThreshold;
     private Angle minimumTotalCircularAngleThreshold;
@@ -76,7 +76,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     {
         return (object instanceof Area
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
-                && (this.isBuildingOrPart(object));
+                && this.isBuildingOrPart(object);
     }
 
     /**
@@ -391,9 +391,11 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         if (!allSpikyAngles.isEmpty())
         {
-            final String instruction = this.getLocalizedInstruction(0, headingThreshold.toString(),
-                    allSpikyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
-                            .collect(Collectors.joining(", ")));
+            final String instruction = this
+                    .getLocalizedInstruction(0,
+                            allSpikyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
+                                    .collect(Collectors.joining(", ")),
+                            headingThreshold.toString());
             final List<Location> markers = allSpikyAngles.stream().map(Tuple::getSecond)
                     .collect(Collectors.toList());
             final CheckFlag flag;

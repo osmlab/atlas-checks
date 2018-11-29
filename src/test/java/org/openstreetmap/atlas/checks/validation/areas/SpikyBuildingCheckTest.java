@@ -76,6 +76,32 @@ public class SpikyBuildingCheckTest
     }
 
     @Test
+    public void circleBuildingFlaggedWithMorePoints()
+    {
+        verifier.actual(setup.circleBuilding(), new SpikyBuildingCheck(ConfigurationResolver
+                .inlineConfiguration("{\"SpikyBuildingCheck\":{\"curve.points.minimum\":10}}")));
+        verifier.verifyExpectedSize(3);
+
+    }
+
+    @Test
+    public void circleBuildingFalggedWithStricterAngleThreshold()
+    {
+        verifier.actual(setup.circleBuilding(), new SpikyBuildingCheck(ConfigurationResolver
+                .inlineConfiguration("{\"SpikyBuildingCheck\":{\"curve.angle.maximum\":3}}")));
+        verifier.verifyExpectedSize(3);
+    }
+
+    @Test
+    public void circleBuildingFlaggedWithLargerTotalAngleRequirement()
+    {
+        verifier.actual(setup.circleBuilding(),
+                new SpikyBuildingCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"SpikyBuildingCheck\":{\"curve.angle.total.minimum\":179}}")));
+        verifier.verifyExpectedSize(3);
+    }
+
+    @Test
     public void smallConsecutiveCurves()
     {
         verifier.actual(setup.twoShortConsecutiveCurvesBuilding(),
