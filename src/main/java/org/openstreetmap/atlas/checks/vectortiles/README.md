@@ -5,7 +5,7 @@ Converts tippecanoe styled line-delimited GeoJSON into vector tiles using tippec
 Example command:
 
 ``` 
-java -Xmx12G -cp ./atlas-checks.jar org.openstreetmap.atlas.checks.vectortiles.TippecanoeCheckConverter \
+java -Xmx12G -cp ./atlas-checks.jar org.openstreetmap.atlas.checks.vectortiles.TippecanoeConverter \
 -geojsonDirectory=/Users/n/code/atlas-checks/spark/tippecanoe \
 -overwrite=true \
 -mbtiles=/Users/n/code/atlas-checks/spark/checks.mbtiles

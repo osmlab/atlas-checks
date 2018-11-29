@@ -18,11 +18,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author hallahan
  */
-public class TippecanoeCheckConverter extends Command
+public class TippecanoeConverter extends Command
 {
     private static final int EXIT_FAILURE = 1;
 
-    private static final Logger logger = LoggerFactory.getLogger(TippecanoeCheckConverter.class);
+    private static final Logger logger = LoggerFactory.getLogger(TippecanoeConverter.class);
 
     private static final Command.Switch<Path> GEOJSON_DIRECTORY = new Command.Switch<>(
             "geojsonDirectory", "The directory to read line-delimited GeoJSON.", Paths::get,
@@ -38,7 +38,7 @@ public class TippecanoeCheckConverter extends Command
 
     public static void main(final String[] args)
     {
-        new TippecanoeCheckConverter().run(args);
+        new TippecanoeConverter().run(args);
     }
 
     @Override
