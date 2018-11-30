@@ -94,4 +94,12 @@ public class AreasWithHighwayTagCheckTest
         this.verifier.actual(this.setup.validAreaHighwayPrimaryNoAreaTag(), check);
         this.verifier.verifyEmpty();
     }
+
+    @Test
+    public void connectedEdgesBadTags()
+    {
+        this.verifier.actual(this.setup.connectedEdgesBadTags(), check);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
 }

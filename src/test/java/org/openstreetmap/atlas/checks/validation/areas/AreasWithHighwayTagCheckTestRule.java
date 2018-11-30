@@ -97,6 +97,17 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
                     @Loc(value = AREA_LOCATION_ONE) }, tags = { "highway=primary" }) })
     private Atlas validAreaHighwayPrimaryNoAreaTag;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_ONE)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_TWO)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_THREE)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_ONE),
+                            @Loc(value = AREA_LOCATION_TWO) }, tags = { "area=yes",
+                                    "highway=primary" }),
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_TWO),
+                            @Loc(value = AREA_LOCATION_THREE) }, tags = { "area=yes",
+                                    "highway=primary" }) })
+    private Atlas connectedEdgesBadTags;
+
     public Atlas areaNoHighwayTagAtlas()
     {
         return this.areaNoHighwayTagAtlas;
@@ -145,6 +156,11 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
     public Atlas validAreaHighwayPrimaryNoAreaTag()
     {
         return validAreaHighwayPrimaryNoAreaTag;
+    }
+
+    public Atlas connectedEdgesBadTags()
+    {
+        return connectedEdgesBadTags;
     }
 
 }

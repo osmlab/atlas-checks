@@ -1,15 +1,20 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -51,9 +56,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
             return object.getTag(HighwayTag.KEY)
                     .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
                     // If the tag isn't one of the validHighwayTags, we want to flag it.
-                    .filter(tag -> !isAcceptableAreaWithHighwayTag(tag)
-                            && Validators.isOfType(object, AreaTag.class, AreaTag.YES))
-                    .map(tag ->
+                    .filter(tag -> isUnacceptableAreaHighwayTagCombination(object, tag)).map(tag ->
                     {
                         final String instruction;
                         if (isNotOsmStandard(tag))
@@ -66,8 +69,23 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                             instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
                                     tag.getTagValue());
                         }
-                        this.markAsFlagged(object.getOsmIdentifier());
-                        return this.createFlag(object, instruction);
+                        final Set<AtlasObject> results;
+                        if (object instanceof Edge)
+                        {
+                            final EdgeWalker walker = new AreasWithHighwayTagCheckWalker(
+                                    (Edge) object);
+                            final Set<Edge> connectedBadEdges = walker.collectEdges().stream()
+                                    .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+                            connectedBadEdges.forEach(
+                                    badEdge -> this.markAsFlagged(badEdge.getOsmIdentifier()));
+                            results = new HashSet<>(connectedBadEdges);
+                        }
+                        else
+                        {
+                            results = Collections.singleton(object);
+                            this.markAsFlagged(object.getOsmIdentifier());
+                        }
+                        return this.createFlag(results, instruction);
                     });
         }
         else
@@ -83,14 +101,17 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * Areas are allowed to have highway tags contained in validHighwayTags.
-     * 
-     * @param tag
-     * @return True if tag is one of the validHighwayTags
+     * An object is not allowed to have a highway tag that is not in validHighwayTags if it also has
+     * an area=yes tag
+     * @param object the object in question
+     * @param tag the object's highway tag
+     * @return true if the object has an invalid highway tag and an area=yes tag
      */
-    private boolean isAcceptableAreaWithHighwayTag(final HighwayTag tag)
+    static boolean isUnacceptableAreaHighwayTagCombination(final AtlasObject object,
+            final HighwayTag tag)
     {
-        return validHighwayTags.contains(tag);
+        return !validHighwayTags.contains(tag)
+                && Validators.isOfType(object, AreaTag.class, AreaTag.YES);
     }
 
     private boolean isNotOsmStandard(final HighwayTag tag)
