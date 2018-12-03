@@ -55,7 +55,7 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
         }
         catch (final Exception e)
         {
-            logger.warn("CheckFlag file write is failed.", e);
+            logger.warn("CheckFlagTippecanoeProcessor write failed.", e);
         }
     }
 
