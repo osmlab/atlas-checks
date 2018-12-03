@@ -237,15 +237,28 @@ public final class CheckFlagEvent extends Event
 
         jsonMutator.accept(flagGeoJsonFeature);
 
-        final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString())
-                .append('\n');
+        final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString());
 
-        final Set<FlaggedObject> flaggedObjects = flag.getFlaggedObjects();
-        for (final FlaggedObject object : flaggedObjects)
+        final FlaggedObject[] flaggedObjects = flag.getFlaggedObjects().toArray(new FlaggedObject[0]);
+        final int flaggedObjectsSize = flaggedObjects.length;
+
+        if (flaggedObjectsSize > 0)
         {
-            final JsonObject feature = object.asGeoJsonFeature(flag.getIdentifier());
+            builder.append('\n');
+
+            // loop through all the flagged objects except the last, give a new line
+            int index = 0;
+            for (; index < flaggedObjectsSize - 1; ++index)
+            {
+                final JsonObject feature = flaggedObjects[index].asGeoJsonFeature(flag.getIdentifier());
+                jsonMutator.accept(feature);
+                builder.append(feature.toString()).append('\n');
+            }
+
+            // dont give a new line to the last
+            final JsonObject feature = flaggedObjects[index].asGeoJsonFeature(flag.getIdentifier());
             jsonMutator.accept(feature);
-            builder.append(feature.toString()).append('\n');
+            builder.append(feature.toString());
         }
 
         return builder.toString();
