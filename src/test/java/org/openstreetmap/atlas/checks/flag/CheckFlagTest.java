@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import com.google.gson.JsonObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +18,8 @@ import org.junit.Test;
  */
 public class CheckFlagTest
 {
+    private static final String GEO_JSON_FEATURE_STRING = "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[-126.031007,31.33531],[-126.031007,36.390535],[-121.009566,36.390535],[-121.009566,31.33531],[-126.031007,31.33531]]]},\"properties\":{\"flag:type\":\"CheckFlag\",\"flag:id\":\"a-identifier\",\"flag:instructions\":\"1. first instruction\\n2. second instruction\"}}";
+
     @Rule
     public CheckFlagTestRule setup = new CheckFlagTestRule();
 
@@ -92,5 +95,19 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlas().entities().forEach(entity -> flag.addObject(entity));
         testSerialization(flag);
+    }
+
+    @Test
+    public void testAsGeoJsonFeature()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        flag.addInstruction("first instruction");
+        flag.addInstruction("second instruction");
+        this.setup.getAtlas().entities().forEach(entity -> flag.addObject(entity));
+
+        final JsonObject geoJsonFeature = flag.asGeoJsonFeature();
+        final String geoJsonFeatureString = geoJsonFeature.toString();
+
+        Assert.assertEquals(GEO_JSON_FEATURE_STRING, geoJsonFeatureString);
     }
 }
