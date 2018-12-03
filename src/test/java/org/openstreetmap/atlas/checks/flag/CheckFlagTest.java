@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import com.google.gson.JsonObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+
+import com.google.gson.JsonObject;
 
 /**
  * Test for {@link CheckFlag}.
@@ -93,7 +94,7 @@ public class CheckFlagTest
     public void testSerializationWithObjects() throws IOException, ClassNotFoundException
     {
         final CheckFlag flag = new CheckFlag("a-identifier");
-        this.setup.getAtlas().entities().forEach(entity -> flag.addObject(entity));
+        this.setup.getAtlas().entities().forEach(flag::addObject);
         testSerialization(flag);
     }
 
@@ -103,7 +104,7 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         flag.addInstruction("first instruction");
         flag.addInstruction("second instruction");
-        this.setup.getAtlas().entities().forEach(entity -> flag.addObject(entity));
+        this.setup.getAtlas().entities().forEach(flag::addObject);
 
         final JsonObject geoJsonFeature = flag.asGeoJsonFeature();
         final String geoJsonFeatureString = geoJsonFeature.toString();
