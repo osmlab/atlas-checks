@@ -1,8 +1,11 @@
 package org.openstreetmap.atlas.checks.event;
 
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,13 +13,9 @@ import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.Resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 /**
  * Tests for {@link CheckFlagTippecanoeProcessor}.
@@ -30,7 +29,8 @@ public class CheckFlagTippecanoeProcessorTest
     private static final int BATCH_SIZE = FileProcessor.BATCH_SIZE;
 
     /**
-     * Might as well just use the test rule for CheckFlagGeoJsonProcessor, as that works fine for this too.
+     * Might as well just use the test rule for CheckFlagGeoJsonProcessor, as that works fine for
+     * this too.
      */
     @Rule
     public CheckFlagGeoJsonProcessorTestRule setup = new CheckFlagGeoJsonProcessorTestRule();
@@ -82,8 +82,7 @@ public class CheckFlagTippecanoeProcessorTest
         // Validate
         final List<Resource> files = FileSystemHelper.resources(tempDirectory.getAbsolutePath(),
                 FILE_SYSTEM_CONFIG);
-        Assert.assertEquals(
-                Math.max((int) Math.ceil(eventCount / (double) BATCH_SIZE), 1),
+        Assert.assertEquals(Math.max((int) Math.ceil(eventCount / (double) BATCH_SIZE), 1),
                 files.size());
 
         processTippecanoeLineDelimitedGeoJson(eventCount, files);
@@ -92,7 +91,8 @@ public class CheckFlagTippecanoeProcessorTest
         tempDirectory.delete();
     }
 
-    private void processTippecanoeLineDelimitedGeoJson(final int eventCount, final List<Resource> files)
+    private void processTippecanoeLineDelimitedGeoJson(final int eventCount,
+            final List<Resource> files)
     {
         int checkFlags = 0;
         for (final Resource file : files)
@@ -109,14 +109,15 @@ public class CheckFlagTippecanoeProcessorTest
             final String[] features = ldgeojson.split("\n");
 
             /*
-            From the test fixture, each event is a check flag + 3 flagged objects.
+             * From the test fixture, each event is a check flag + 3 flagged objects.
              */
             Assert.assertEquals(4 * eventCount, features.length);
 
             for (final String featureString : features)
             {
                 final JsonObject feature = GSON_BUILDER.fromJson(featureString, JsonObject.class);
-                final String flagType = feature.get("properties").getAsJsonObject().get("flag:type").getAsString();
+                final String flagType = feature.get("properties").getAsJsonObject().get("flag:type")
+                        .getAsString();
                 if ("CheckFlag".equals(flagType))
                 {
                     ++checkFlags;
