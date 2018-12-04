@@ -22,7 +22,7 @@ public final class TippecanoeCheckSettings
     private static final int FLAG_MINIMUM_ZOOM = 1;
     private static final int FEATURE_MINIMUM_ZOOM = 8;
 
-    public static final Consumer<JsonObject> TIPPECANOE_JSON_MUTATOR = jsonObject ->
+    public static final Consumer<JsonObject> JSON_MUTATOR = jsonObject ->
     {
         final JsonObject properties = jsonObject.getAsJsonObject("properties");
         final String type = properties.get("flag:type").getAsString();
