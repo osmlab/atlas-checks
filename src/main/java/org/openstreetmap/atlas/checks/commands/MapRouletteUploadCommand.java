@@ -6,7 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,7 +117,14 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                     {
                         reader.lines().forEach(line -> {
                             final Task task = gson.fromJson(line, Task.class);
-                            this.getMapRouletteClient().addTask(this.getChallenge(task.getChallengeName(), instructions), task);
+                            try
+                            {
+                                this.addTask(this.getChallenge(task.getChallengeName(), instructions), task);
+                            }
+                            catch (URISyntaxException | UnsupportedEncodingException error)
+                            {
+                                error.printStackTrace();
+                            }
                         });
                     }
                     catch (final IOException error)
@@ -123,7 +132,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         error.printStackTrace();
                     }
                 }
-                this.getMapRouletteClient().uploadTasks();
+                this.uploadTasks();
             }
             catch (final IOException error)
             {
