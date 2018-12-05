@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
+import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -15,7 +16,7 @@ import com.google.gson.JsonObject;
  *
  * @author brian_l_davis
  */
-public abstract class FlaggedObject implements Serializable
+public abstract class FlaggedObject implements Serializable, Located
 {
     protected static final String COUNTRY_MISSING = "NA";
     protected static final String AREA_TAG = "Area";
@@ -77,6 +78,7 @@ public abstract class FlaggedObject implements Serializable
     /**
      * @return The bounds of the object.
      */
+    @Override
     public abstract Rectangle bounds();
 
     /**
