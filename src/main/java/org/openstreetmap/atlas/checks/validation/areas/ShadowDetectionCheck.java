@@ -214,9 +214,11 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             // Check if it is a building part, and overlaps.
             return !checked.contains(object) && !this.isFlagged(object.getIdentifier())
                     && (this.isBuildingOrPart(object) || this.isBuildingRelationMember(object))
+                    // Check 2D overlap
                     && (partPolygon instanceof Polygon
                             ? objectPolygon.overlaps((Polygon) partPolygon)
                             : objectPolygon.overlaps((MultiPolygon) partPolygon))
+                    // Check 3D overlap
                     && neighborsHeightContains(part, object);
         }
         // Ignore malformed MultiPolygons

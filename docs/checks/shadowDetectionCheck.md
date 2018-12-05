@@ -28,7 +28,7 @@ This is done by testing that each object:
 
 Once an object has been validated it has its `min_height` or `building:min_level` tag checked to see if it is > 0, indicating it is off the ground.
 If it is, a BFS walker is used to find connected building parts that form a path to the ground (see the `getFloatingParts` method).
-The walker uses geographic indices and polygon overlap calculations to locate pats that overlap in 2D (see the `neighboringPart` method), 
+The walker uses geographic indices and polygon overlap calculations to locate parts that overlap in 2D (see the `neighboringPart` method), 
 and then checks height and level tags to determine 3D overlap (see the `neighborsHeightContains` method). 
 When the walker is unable to find a 3D path to the ground, all the collected building parts are flagged as floating. 
 
