@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteCommand;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
@@ -89,6 +90,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private static final Switch<File> CONFIG_LOCATION = new Command.Switch<>("config",
             "Path to a file containing MapRoulette challenge configuration.", File::new, Optionality.REQUIRED);
     private static final String PARAMETER_CHALLENGE = "challenge";
+    private static final String LOG_EXTENSION = "log";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
     private final Map<String, Challenge> checkNameChallengeMap;
 
@@ -113,23 +115,26 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 final Configuration instructions = this.loadConfiguration(commandMap);
                 for (final File logFile : files)
                 {
-                    try (BufferedReader reader = new BufferedReader(new FileReader(logFile.getPath())))
+                    if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
                     {
-                        reader.lines().forEach(line -> {
-                            final Task task = gson.fromJson(line, Task.class);
-                            try
-                            {
-                                this.addTask(this.getChallenge(task.getChallengeName(), instructions), task);
-                            }
-                            catch (URISyntaxException | UnsupportedEncodingException error)
-                            {
-                                error.printStackTrace();
-                            }
-                        });
-                    }
-                    catch (final IOException error)
-                    {
-                        error.printStackTrace();
+                        try (BufferedReader reader = new BufferedReader(new FileReader(logFile.getPath())))
+                        {
+                            reader.lines().forEach(line -> {
+                                final Task task = gson.fromJson(line, Task.class);
+                                try
+                                {
+                                    this.addTask(this.getChallenge(task.getChallengeName(), instructions), task);
+                                }
+                                catch (URISyntaxException | UnsupportedEncodingException error)
+                                {
+                                    error.printStackTrace();
+                                }
+                            });
+                        }
+                        catch (final IOException error)
+                        {
+                            error.printStackTrace();
+                        }
                     }
                 }
                 this.uploadTasks();
