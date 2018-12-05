@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.flag;
 
-import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.atlas.geography.Location;
@@ -14,7 +13,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 
 import com.google.gson.JsonObject;
 
@@ -43,12 +41,9 @@ public class FlaggedPolyline extends FlaggedObject
         this.atlasItem = atlasItem;
         if (atlasItem instanceof Area)
         {
-            // An Area's geometry doesn't include the end (same as start) location. To close the
-            // area boundary, we need to add the end location manually.
-            final List<Location> geometry = Iterables
-                    .asList(((AtlasItem) atlasItem).getRawGeometry());
-            geometry.add(geometry.get(0));
-            this.polyLine = new PolyLine(geometry);
+            // We should actually have a FlaggedPolygon class with a polygon in it instead of just
+            // making polygons be PolyLines. I am not sure why FlaggedPolygon was not implemented.
+            this.polyLine = new PolyLine(((Area) atlasItem).asPolygon().closedLoop());
         }
         else
         {
