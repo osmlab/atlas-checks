@@ -32,9 +32,9 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
             "The way with OSM ID {0,number,#} has a highway value which does not match the OSM standard.",
             "The way with OSM ID {0,number,#} has a highway value of {1}, which should not have an area=yes tag.");
     private static final long serialVersionUID = 3638306611072651348L;
-    private static final EnumSet<HighwayTag> validHighwayTags = EnumSet.of(HighwayTag.SERVICES,
+    private static final EnumSet<HighwayTag> VALID_HIGHWAY_TAGS = EnumSet.of(HighwayTag.SERVICES,
             HighwayTag.SERVICE, HighwayTag.REST_AREA, HighwayTag.PEDESTRIAN, HighwayTag.PLATFORM);
-    private static final EnumSet<HighwayTag> notToStandardHighwayTags = EnumSet
+    private static final EnumSet<HighwayTag> NON_STANDARD_HIGHWAY_TAGS = EnumSet
             .of(HighwayTag.FOOTWAY, HighwayTag.BUS_STOP, HighwayTag.PATH, HighwayTag.STEPS);
 
     public AreasWithHighwayTagCheck(final Configuration configuration)
@@ -55,7 +55,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
         {
             return object.getTag(HighwayTag.KEY)
                     .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
-                    // If the tag isn't one of the validHighwayTags, we want to flag it.
+                    // If the tag isn't one of the VALID_HIGHWAY_TAGS, we want to flag it.
                     .filter(tag -> isUnacceptableAreaHighwayTagCombination(object, tag)).map(tag ->
                     {
                         final String instruction;
@@ -101,21 +101,24 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * An object is not allowed to have a highway tag that is not in validHighwayTags if it also has
-     * an area=yes tag
-     * @param object the object in question
-     * @param tag the object's highway tag
+     * An object is not allowed to have a highway tag that is not in VALID_HIGHWAY_TAGS if it also
+     * has an area=yes tag
+     * 
+     * @param object
+     *            the object in question
+     * @param tag
+     *            the object's highway tag
      * @return true if the object has an invalid highway tag and an area=yes tag
      */
     static boolean isUnacceptableAreaHighwayTagCombination(final AtlasObject object,
             final HighwayTag tag)
     {
-        return !validHighwayTags.contains(tag)
+        return !VALID_HIGHWAY_TAGS.contains(tag)
                 && Validators.isOfType(object, AreaTag.class, AreaTag.YES);
     }
 
     private boolean isNotOsmStandard(final HighwayTag tag)
     {
-        return notToStandardHighwayTags.contains(tag);
+        return NON_STANDARD_HIGHWAY_TAGS.contains(tag);
     }
 }

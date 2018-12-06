@@ -16,14 +16,14 @@ import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 public class AreasWithHighwayTagCheckWalker extends EdgeWalker
 {
 
-    private static final Predicate<Edge> isBadEdgeWithAreaTag = edge -> AreasWithHighwayTagCheck
+    private static final Predicate<Edge> IS_BAD_EDGE_WITH_AREA_TAG = edge -> AreasWithHighwayTagCheck
             .isUnacceptableAreaHighwayTagCombination(edge, edge.highwayTag());
 
-    private static final Function<Edge, Stream<Edge>> getNeighborStream = edge -> edge
+    private static final Function<Edge, Stream<Edge>> GET_NEIGHBOR_STREAM = edge -> edge
             .connectedEdges().stream();
 
     public AreasWithHighwayTagCheckWalker(final Edge startingEdge)
     {
-        super(startingEdge, isBadEdgeWithAreaTag, getNeighborStream);
+        super(startingEdge, IS_BAD_EDGE_WITH_AREA_TAG, GET_NEIGHBOR_STREAM);
     }
 }
