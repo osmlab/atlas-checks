@@ -1,14 +1,13 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,10 +19,9 @@ import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
-import org.openstreetmap.atlas.streaming.resource.InputStreamResource;
+import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
-import org.openstreetmap.atlas.utilities.runtime.Command;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +83,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         }
     }
 
-    private static final Switch<File> INPUT_DIRECTORY = new Command.Switch<>("logfiles",
+    private static final Switch<File> INPUT_DIRECTORY = new Switch<>("logfiles",
             "Path to folder containing log files to upload to MapRoulette.", File::new, Optionality.REQUIRED);
-    private static final Switch<File> CONFIG_LOCATION = new Command.Switch<>("config",
+    private static final Switch<File> CONFIG_LOCATION = new Switch<>("config",
             "Path to a file containing MapRoulette challenge configuration.", File::new, Optionality.REQUIRED);
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final String LOG_EXTENSION = "log";
@@ -102,59 +100,42 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
 
     @Override protected void execute(final CommandMap commandMap, final MapRouletteConfiguration configuration)
     {
-        final File[] files = ((File) commandMap.get(INPUT_DIRECTORY)).listFiles();
-        if (files == null)
-        {
-            logger.error("No files found for the given directory.");
-        }
-        else
-        {
-            try
+        final Gson gson = new GsonBuilder().registerTypeAdapter(Task.class, new TaskDeserializer(configuration.getProjectName())).create();
+        final Configuration instructions = this.loadConfiguration(commandMap);
+        ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile -> {
+            if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
             {
-                final Gson gson = new GsonBuilder().registerTypeAdapter(Task.class, new TaskDeserializer(configuration.getProjectName())).create();
-                final Configuration instructions = this.loadConfiguration(commandMap);
-                for (final File logFile : files)
+                try (BufferedReader reader = new BufferedReader(new FileReader(logFile.getPath())))
                 {
-                    if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
-                    {
-                        try (BufferedReader reader = new BufferedReader(new FileReader(logFile.getPath())))
+                    reader.lines().forEach(line -> {
+                        final Task task = gson.fromJson(line, Task.class);
+                        try
                         {
-                            reader.lines().forEach(line -> {
-                                final Task task = gson.fromJson(line, Task.class);
-                                try
-                                {
-                                    this.addTask(this.getChallenge(task.getChallengeName(), instructions), task);
-                                }
-                                catch (URISyntaxException | UnsupportedEncodingException error)
-                                {
-                                    error.printStackTrace();
-                                }
-                            });
+                            this.addTask(this.getChallenge(task.getChallengeName(), instructions), task);
                         }
-                        catch (final IOException error)
+                        catch (URISyntaxException | UnsupportedEncodingException error)
                         {
                             error.printStackTrace();
                         }
-                    }
+                    });
                 }
-                this.uploadTasks();
+                catch (final IOException error)
+                {
+                    error.printStackTrace();
+                }
             }
-            catch (final IOException error)
-            {
-                error.printStackTrace();
-            }
-        }
+        });
+        this.uploadTasks();
     }
 
     /**
      * Given a command map, load the configuration defined by the CONFIG_LOCATION switch and return it
      * @param map the input map of arguments passed to this command
      * @return the configuration at the specified file location
-     * @throws FileNotFoundException if the configuration file cannot be found
      */
-    private Configuration loadConfiguration(final CommandMap map) throws FileNotFoundException
+    private Configuration loadConfiguration(final CommandMap map)
     {
-        return new StandardConfiguration(new InputStreamResource(new FileInputStream((File) map.get(CONFIG_LOCATION))));
+        return new StandardConfiguration((File) map.get(CONFIG_LOCATION));
     }
 
     /**
@@ -165,7 +146,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      */
     private String getChallengeParameter(final String checkName)
     {
-        return checkName + "." + PARAMETER_CHALLENGE;
+        return MessageFormat.format("{0}.{1}", checkName, PARAMETER_CHALLENGE);
     }
 
     /**
