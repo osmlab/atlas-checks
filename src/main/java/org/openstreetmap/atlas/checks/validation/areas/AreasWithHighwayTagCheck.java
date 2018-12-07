@@ -45,53 +45,46 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area || (object instanceof Edge && ((Edge) object).isMasterEdge());
+        return (object instanceof Area
+                || (object instanceof Edge && ((Edge) object).isMasterEdge()))
+                && !this.isFlagged(object.getOsmIdentifier());
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!this.isFlagged(object.getOsmIdentifier()))
-        {
-            return object.getTag(HighwayTag.KEY)
-                    .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
-                    // If the tag isn't one of the VALID_HIGHWAY_TAGS, we want to flag it.
-                    .filter(tag -> isUnacceptableAreaHighwayTagCombination(object, tag)).map(tag ->
+        return object.getTag(HighwayTag.KEY)
+                .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
+                // If the tag isn't one of the VALID_HIGHWAY_TAGS, we want to flag it.
+                .filter(tag -> isUnacceptableAreaHighwayTagCombination(object, tag)).map(tag ->
+                {
+                    final String instruction;
+                    if (this.isNotOsmStandard(tag))
                     {
-                        final String instruction;
-                        if (isNotOsmStandard(tag))
-                        {
-                            instruction = this.getLocalizedInstruction(0,
-                                    object.getOsmIdentifier());
-                        }
-                        else
-                        {
-                            instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
-                                    tag.getTagValue());
-                        }
-                        final Set<AtlasObject> results;
-                        if (object instanceof Edge)
-                        {
-                            final EdgeWalker walker = new AreasWithHighwayTagCheckWalker(
-                                    (Edge) object);
-                            final Set<Edge> connectedBadEdges = walker.collectEdges().stream()
-                                    .filter(Edge::isMasterEdge).collect(Collectors.toSet());
-                            connectedBadEdges.forEach(
-                                    badEdge -> this.markAsFlagged(badEdge.getOsmIdentifier()));
-                            results = new HashSet<>(connectedBadEdges);
-                        }
-                        else
-                        {
-                            results = Collections.singleton(object);
-                            this.markAsFlagged(object.getOsmIdentifier());
-                        }
-                        return this.createFlag(results, instruction);
-                    });
-        }
-        else
-        {
-            return Optional.empty();
-        }
+                        instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
+                    }
+                    else
+                    {
+                        instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
+                                tag.getTagValue());
+                    }
+                    final Set<AtlasObject> results;
+                    if (object instanceof Edge)
+                    {
+                        final EdgeWalker walker = new AreasWithHighwayTagCheckWalker((Edge) object);
+                        final Set<Edge> connectedBadEdges = walker.collectEdges().stream()
+                                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+                        connectedBadEdges
+                                .forEach(badEdge -> this.markAsFlagged(badEdge.getOsmIdentifier()));
+                        results = new HashSet<>(connectedBadEdges);
+                    }
+                    else
+                    {
+                        results = Collections.singleton(object);
+                        this.markAsFlagged(object.getOsmIdentifier());
+                    }
+                    return this.createFlag(results, instruction);
+                });
     }
 
     @Override
