@@ -31,9 +31,9 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout has the wrong valence. It has a valence of {1,number,#}.";
-    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This roundabout should be a turning loop or turning circle.";
-    public static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node, {0,number,#}, that has more than 1 connections outside the roundabout.";
+    private static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout has the wrong valence. It has a valence of {1,number,#}.";
+    private static final String VALENCE_OF_ONE_INSTRUCTIONS = "This roundabout should be a turning loop or turning circle.";
+    private static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node, {0,number,#}, that has more than 1 connections outside the roundabout.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS,
             MINIMUM_NODE_VALENCE_INSTRUCTION);
@@ -91,14 +91,14 @@ public class RoundaboutValenceCheck extends BaseCheck
         // Get all the Nodes in the roundabout
         final Set<Node> roundaboutNodes = roundaboutEdges.stream().map(Edge::start)
                 .collect(Collectors.toSet());
-        // CHeck the valence of each node and gather the total valence
+        // Check the valence of each node and gather the total valence
         int totalRoundaboutValence = 0;
         for (final Node node : roundaboutNodes)
         {
             final int nodeValance = node.connectedEdges().stream()
-                    .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
-                    .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge))
-                    .filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
+                    .filter(currentEdge -> HighwayTag.isCarNavigableHighway(currentEdge)
+                            && currentEdge.isMasterEdge() && !JunctionTag.isRoundabout(currentEdge)
+                            && !roundaboutEdges.contains(currentEdge))
                     .collect(Collectors.toSet()).size();
             // If a Node has a valance of more than 1, flag it and the roundabout
             if (nodeValance > 1)
@@ -112,7 +112,6 @@ public class RoundaboutValenceCheck extends BaseCheck
         }
 
         // If the totalRoundaboutValence is less than the minimum configured number of connections
-        // or greater than or equal to the maximum configured number of connections
         if (totalRoundaboutValence < this.minimumValence)
         {
             // If the roundabout valence is 1, this should be labelled as a turning loop instead
@@ -133,7 +132,7 @@ public class RoundaboutValenceCheck extends BaseCheck
     }
 
     /**
-     * Function for {@link SimpleEdgeWalker} that gathers connected edged that are part of a
+     * Function for {@link SimpleEdgeWalker} that gathers connected edges that are part of a
      * roundabout.
      *
      * @return {@link Function} for {@link SimpleEdgeWalker}

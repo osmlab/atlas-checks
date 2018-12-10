@@ -40,7 +40,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     private static final long serialVersionUID = -3018101860747289836L;
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
-    private static final String COMPLETE_ROUTE_INSTRUCTIONS = "This roundabout does not form a single, one-way, complete, car navigable route.";
+    private static final String INCOMPLETE_ROUTE_INSTRUCTIONS = "This roundabout does not form a single, one-way, complete, car navigable route.";
     private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout has car navigable ways inside it.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
@@ -51,7 +51,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
-            COMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS);
+            INCOMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS);
 
     private List<String> leftDrivingCountries;
 
@@ -307,10 +307,9 @@ public class MalformedRoundaboutCheck extends BaseCheck
     {
         final PolyLine polyline = edge.asPolyLine();
         return polygon.intersections(polyline).stream()
-                .filter(intersection -> !(edge.start().getLocation().equals(intersection)
+                .anyMatch(intersection -> !(edge.start().getLocation().equals(intersection)
                         || edge.end().getLocation().equals(intersection))
-                        || polygon.fullyGeometricallyEncloses(polyline))
-                .iterator().hasNext();
+                        || polygon.fullyGeometricallyEncloses(polyline));
     }
 
     /**
