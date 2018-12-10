@@ -95,20 +95,20 @@ public class RoundaboutValenceCheck extends BaseCheck
         int totalRoundaboutValence = 0;
         for (final Node node : roundaboutNodes)
         {
-            final int nodeValance = node.connectedEdges().stream()
+            final int nodeValence = node.connectedEdges().stream()
                     .filter(currentEdge -> HighwayTag.isCarNavigableHighway(currentEdge)
                             && currentEdge.isMasterEdge() && !JunctionTag.isRoundabout(currentEdge)
                             && !roundaboutEdges.contains(currentEdge))
                     .collect(Collectors.toSet()).size();
             // If a Node has a valance of more than 1, flag it and the roundabout
-            if (nodeValance > 1)
+            if (nodeValence > 1)
             {
                 final CheckFlag flag = this.createFlag(roundaboutEdges,
                         this.getLocalizedInstruction(2, node.getOsmIdentifier()));
                 flag.addObject(node);
                 return Optional.of(flag);
             }
-            totalRoundaboutValence += nodeValance;
+            totalRoundaboutValence += nodeValence;
         }
 
         // If the totalRoundaboutValence is less than the minimum configured number of connections

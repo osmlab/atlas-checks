@@ -36,12 +36,12 @@ We use a
 [SimpleEdgeWalker](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/walker/SimpleEdgeWalker.java)
 to gather all roundabout Edges that are connected to the original Edge. 
 
-Once we have retrieved and stored all edges in the roundabout, we iterate over connected Node to get the count
-each Nodes's connected non-roundabout edges. These connected non-roundabout Edges must also be 
+Once we have retrieved and stored all edges in the roundabout, we iterate over the connected Nodes to get the count of
+each Node's connected non-roundabout edges. These connected non-roundabout Edges must also be 
 car navigable to avoid counting pedestrian walkways as part of the valence. 
 If any Node has more than one connection the roundabout is flagged, 
 as this can affect routing (see the second to last bullet under 'How to Map': [OSM-wiki:junction=Rrundabout](https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout)).
-Otherwise the valance of each Node is summed to get the total. If the total is less than the configured minimum (default 2), it is flagged. 
+Otherwise the valence of each Node is summed to get the total. If the total is less than the configured minimum (default 2), it is flagged. 
 
 
 To learn more about the code, please look at the comments in the source code for the check.
