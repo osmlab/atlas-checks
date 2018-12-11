@@ -129,7 +129,8 @@ public class MalformedRoundaboutCheck extends BaseCheck
             roundaboutEdges = Route.fromNonArrangedEdgeSet(roundaboutEdgeSet, false);
             if (!roundaboutEdges.start().inEdges().contains(roundaboutEdges.end()))
             {
-                return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(1)));
+                return Optional
+                        .of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(1)));
             }
         }
         // If a Route cannot be formed, flag the edges as an incomplete roundabout.
