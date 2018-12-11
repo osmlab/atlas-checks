@@ -61,8 +61,8 @@ country and the traffic is moving in the clockwise direction or if the roundabou
 country and the traffic is moving in the counterclockwise direction then a flag is thrown.
 
 Finally, we check for car navigable Edges that both intersect the roundabout on the same z level, and are at least partially inside it. 
-This finds items that are generally to large or complex to be considered roundabouts, roundabouts where the wrong ways/edges have been tagged as `junction=roundabout`, 
-and [throughabouts](https://wiki.openstreetmap.org/wiki/Throughabout) that have benn tagged as roundabouts.
+This finds items that are generally to0 large or complex to be considered roundabouts, roundabouts where the wrong ways/edges have been tagged as `junction=roundabout`, 
+and [throughabouts](https://wiki.openstreetmap.org/wiki/Throughabout) that have been tagged as roundabouts.
 
 To learn more about the code, please look at the comments in the source code for the check.
 [MalformedRoundaboutCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/MalformedRoundaboutCheck.java)

@@ -5,7 +5,7 @@
 This check identifies roundabouts that have an unusual valence.
 The valence can be for the entire roundabout or any of its intersections.
 By default, unusual overall valence is
-defined as less than 2. However, this values is configurable, and can be
+defined as less than 2. However, this value is configurable, and can be
 adjusted by setting connections.minimum in the configuration file.
 Each intersection in a roundabout should only ever have one or zero connections to outside roads. 
 
