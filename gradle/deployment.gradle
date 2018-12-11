@@ -35,14 +35,12 @@ uploadArchives
             }
 
             // Hack: Deploy to a local repository first, then upload to Sonatype using scripts.
-            repository(url: maven2_url) {
-                // authentication(userName: System.getenv('SONATYPE_USERNAME'), password: System.getenv('SONATYPE_PASSWORD'))
-                repository(url: "file://localhost/$rootDir/build/deploy")
+            repository(url: "file://localhost/$rootDir/build/deploy" /*maven2_url*/) {
+                authentication(userName: System.getenv('SONATYPE_USERNAME'), password: System.getenv('SONATYPE_PASSWORD'))
             }
 
-            snapshotRepository(url: snapshot_url) {
-                // authentication(userName: System.getenv('SONATYPE_USERNAME'), password: System.getenv('SONATYPE_PASSWORD'))
-                repository(url: "file://localhost/$rootDir/build/deploy")
+            snapshotRepository(url: "file://localhost/$rootDir/build/deploy" /*snapshot_url*/) {
+                authentication(userName: System.getenv('SONATYPE_USERNAME'), password: System.getenv('SONATYPE_PASSWORD'))
             }
 
             pom.project
@@ -81,23 +79,20 @@ uploadArchives
 // https://github.com/h2oai/sparkling-water/tree/3f8fcf387a2bcc080343a8fafdc81aebc0d99fa1/gradle/publish
 // and
 // https://github.com/h2oai/sparkling-water/blob/73d2e2bd11ce35c6379f6961188fb2af1a7bc04b/build.gradle#L228
+// and
+// https://support.sonatype.com/hc/en-us/articles/213465868-Uploading-to-a-Staging-Repository-via-REST-API
+// and
+// https://support.sonatype.com/hc/en-us/articles/213465448-Automatically-dropping-old-staging-repositories
 // Until either this one works for us: https://github.com/marcphilipp/nexus-publish-plugin
 // or this issue is fixed another way:
 // https://github.com/travis-ci/travis-ci/issues/9555
-def createStagingId(def username, def password) {
-    def proc = ['./createStagingId.sh', username, password].execute([], file("${rootDir.toString()}/gradle"))
-    return proc.text
-}
-
-def uploadFiles(def username, def password, def repoDir, def stagingId) {
-    def proc = ['./uploadToNexus.sh', username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle"))
+def uploadAndRelease(def username, def password, def repoDir) {
+    def proc = ['./uploadAndRelease.sh', username, password, repoDir].execute([], file("${rootDir.toString()}/gradle"))
     proc.waitFor()
 }
 
-task publishToNexus(dependsOn: 'publish'){
+task publishToNexusAndClose(dependsOn: 'publish'){
     doLast {
-        def stagingId = createStagingId(System.getenv('SONATYPE_USERNAME'), System.getenv('SONATYPE_PASSWORD')).replace('\n', '')
-        println("my staging id: " + stagingId)
-        uploadFiles(System.getenv('SONATYPE_USERNAME'), System.getenv('SONATYPE_PASSWORD'), "$rootDir/build/deploy", stagingId)
+        uploadAndRelease(System.getenv('SONATYPE_USERNAME'), System.getenv('SONATYPE_PASSWORD'), "$rootDir/build/deploy")
     }
 }
