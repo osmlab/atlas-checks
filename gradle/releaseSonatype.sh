@@ -12,4 +12,3 @@ curl --fail -u $SONATYPE_USERNAME:$SONATYPE_PASSWORD \
     -H "Content-Type:application/json" \
     -d "$RELEASE_PAYLOAD" \
     "$API_ENDPOINT/staging/bulk/promote" \
-    > /dev/null 2>&1
