@@ -88,7 +88,7 @@ uploadArchives
 // https://github.com/travis-ci/travis-ci/issues/9555
 def uploadAndRelease(def username, def password, def repoDir) {
     def proc = ['./uploadAndRelease.sh', username, password, repoDir].execute([], file("${rootDir.toString()}/gradle"))
-    proc.waitFor()
+    proc.waitForProcessOutput(System.out, System.err)
 }
 
 task publishToNexusAndClose(dependsOn: 'publish'){

@@ -11,5 +11,4 @@ curl --fail -u $SONATYPE_USERNAME:$SONATYPE_PASSWORD \
     -X POST \
     -H "Content-Type:application/json" \
     -d "$DROP_PAYLOAD" \
-    "$API_ENDPOINT/staging/bulk/drop" \
-    > /dev/null 2>&1
+    "$API_ENDPOINT/staging/bulk/drop"
