@@ -21,7 +21,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 /**
  * This check ensures that roundabouts with unreasonable valences are flagged. In reference to OSM
  * Wiki, each roundabout should have greater than 1 connection as 1 connection should be tagged as a
- * turning point, and no connections is obviously not a valid way. In addition no individual Node
+ * turning point, and no connections is obviously not a valid way. In addition, no individual Node
  * within a roundabout should have more than one master Edge connecting from outside the roundabout.
  *
  * @author savannahostrowski

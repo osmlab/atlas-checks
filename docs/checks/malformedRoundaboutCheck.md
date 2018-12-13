@@ -2,11 +2,11 @@
 
 #### Description
 This check flags roundabouts where:
-1. the directionality is opposite to what it should be (for example, a counterclockwise roundabout in a right-driving country)
-2. the segments are multi-directional
-3. the roundabout is incomplete or has overlapping segments
-4. part of it is not car navigable
-5. it intersects with car navigable edges on the same level as itself and inside itself  
+1. The directionality is opposite to what it should be (for example, a counterclockwise roundabout in a right-driving country)
+2. The segments are multi-directional
+3. The roundabout is incomplete or has overlapping segments
+4. Part of it is not car navigable
+5. It intersects with car navigable edges on the same level as itself and inside itself  
 
 #### Live Example
 1) This roundabout [id:242413354](https://www.openstreetmap.org/way/242413354) is multi-directional and
