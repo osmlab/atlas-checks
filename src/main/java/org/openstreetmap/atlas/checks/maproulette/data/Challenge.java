@@ -59,8 +59,8 @@ public class Challenge implements Serializable
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty, final String tags)
     {
-        this(name, description, blurb, instruction, difficulty, ChallengePriority.NONE, null, null,
-                null, tags);
+        this(name, description, blurb, instruction, difficulty, ChallengePriority.MEDIUM, null,
+                null, null, tags);
     }
 
     public Challenge(final String name, final String description, final String blurb,

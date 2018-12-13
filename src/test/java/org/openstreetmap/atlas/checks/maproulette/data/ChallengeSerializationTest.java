@@ -33,7 +33,7 @@ public class ChallengeSerializationTest
         Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
         Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
         Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
-        Assert.assertEquals(ChallengePriority.NONE, deserializedChallenge.getDefaultPriority());
+        Assert.assertEquals(ChallengePriority.MEDIUM, deserializedChallenge.getDefaultPriority());
         Assert.assertNull(deserializedChallenge.getHighPriorityRule());
         Assert.assertNull(deserializedChallenge.getMediumPriorityRule());
         Assert.assertNull(deserializedChallenge.getLowPriorityRule());
