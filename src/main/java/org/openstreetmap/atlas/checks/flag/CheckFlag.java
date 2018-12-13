@@ -5,13 +5,17 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.openstreetmap.atlas.checks.base.Check;
@@ -21,10 +25,16 @@ import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
+import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -56,6 +66,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
     private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
+    private final Set<FlaggedRelation> flaggedRelations = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -151,6 +162,12 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
             {
                 this.flaggedObjects.add(new FlaggedPolyline((AtlasItem) object));
             }
+        }
+
+        // If object is instance of relation, then add the relation to flaggedRelations set
+        else if (object instanceof Relation)
+        {
+            this.flaggedRelations.add(new FlaggedRelation((Relation) object));
         }
     }
 
@@ -281,6 +298,14 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
+     * @return a set of flagged {@link Relation}s
+     */
+    public Set<FlaggedRelation> getFlaggedRelations()
+    {
+        return this.flaggedRelations;
+    }
+
+    /**
      * @return the flag identifier
      */
     public String getIdentifier()
@@ -314,13 +339,67 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      * @return a list of {@link GeoJsonBuilder.LocationIterableProperties} representing all flagged
      *         geometries
      */
-    public List<GeoJsonBuilder.LocationIterableProperties> getLocationIterableProperties()
+    public List<GeometryWithProperties> getLocationIterableProperties()
     {
-        return this.flaggedObjects.stream()
-                .map(flaggedObject -> new GeoJsonBuilder.LocationIterableProperties(
-                        flaggedObject.getGeometry(), flaggedObject.getProperties()))
-                .collect(Collectors.toList());
+//        return Stream.concat(getListOfGeoJsonObjectsForFlaggedRelation().stream(),this.flaggedObjects.stream()
+//                .map(flaggedObject -> new GeoJsonBuilder.GeometryWithProperties(
+//                        flaggedObject.getGeometry(), new HashMap<>(flaggedObject.getProperties()))))
+//                .collect(Collectors.toList());
+        return this.flaggedObjects.stream().map(flaggedObject -> new GeoJsonBuilder.GeometryWithProperties
+                (flaggedObject.getGeometry(), new HashMap<>(flaggedObject.getProperties()))).collect(Collectors.toList());
     }
+
+    /**
+     * Creates geojson objects for the members of the flagged relations.
+     *
+     * @return a list of {@link GeoJsonBuilder.GeometryWithProperties} representing all flagged geometries of
+     *         FlaggedRelation
+     */
+//    public List<GeometryWithProperties> getListOfGeoJsonObjectsForFlaggedRelation()
+//    {
+//        final List<GeometryWithProperties> locationIterablePropertyList = new ArrayList<>();
+//        final Iterator<FlaggedRelation> iterator = this.flaggedRelations.iterator();
+//        while (iterator.hasNext())
+//        {
+//
+//            // Get flattened members of relation as a RelationMemberList
+//            final RelationMemberList relationMembers = iterator.next()
+//                    .getFlattenedRelationMembers();
+//            for (final RelationMember relationMember : relationMembers)
+//            {
+//                final AtlasEntity entity = relationMember.getEntity();
+//                final Map<String, Object> flaggedObjectProperties = new HashMap<>();
+//                final JsonArray roles = new JsonArray();
+//                FlaggedObject flaggedObject = null;
+//
+//                if (entity instanceof LocationItem)
+//                {
+//                    final FlaggedPoint flaggedPoint = new FlaggedPoint((LocationItem) entity);
+//                    flaggedObjectProperties.putAll(flaggedPoint.getProperties());
+//                    flaggedObject = flaggedPoint;
+//                }
+//                // If edge, consider only the master edges
+//                else if (Edge.isMasterEdgeIdentifier(entity.getIdentifier()))
+//                {
+//                    final FlaggedPolyline flaggedPolyline = new FlaggedPolyline(entity);
+//                    flaggedObject = flaggedPolyline;
+//                    flaggedObjectProperties.putAll(flaggedPolyline.getProperties());
+//                }
+//                if (flaggedObject != null)
+//                {
+//                    final JsonObject roleDescription = new JsonObject();
+//                    // Add member role and relation identifier to the property map
+//                    roleDescription.addProperty("role", relationMember.getRole());
+//                    roleDescription.addProperty("part of", relationMember.getRelationIdentifier());
+//                    roles.add(roleDescription);
+//                    flaggedObjectProperties.put("roles", roles);
+//                    locationIterablePropertyList.add(new GeoJsonBuilder.GeometryWithProperties(
+//                            flaggedObject.getGeometry(), new HashMap<>(flaggedObjectProperties)));
+//                }
+//            }
+//        }
+//        return locationIterablePropertyList;
+//    }
 
     /**
      * Builds a MapRouletted {@link Task} from this {@link CheckFlag}
