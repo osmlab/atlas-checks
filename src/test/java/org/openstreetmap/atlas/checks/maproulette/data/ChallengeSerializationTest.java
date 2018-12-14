@@ -33,7 +33,7 @@ public class ChallengeSerializationTest
         Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
         Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
         Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
-        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
+        Assert.assertEquals(ChallengePriority.NONE, deserializedChallenge.getDefaultPriority());
         Assert.assertNull(deserializedChallenge.getHighPriorityRule());
         Assert.assertNull(deserializedChallenge.getMediumPriorityRule());
         Assert.assertNull(deserializedChallenge.getLowPriorityRule());
@@ -104,6 +104,24 @@ public class ChallengeSerializationTest
         Assert.assertEquals(deserializedJson.get("description"), rawJson.get("description"));
         Assert.assertEquals(deserializedJson.get("blurb"), rawJson.get("blurb"));
         Assert.assertEquals(deserializedJson.get("instruction"), rawJson.get("instruction"));
+    }
+
+    /**
+     * Tests that a challenge with no defaultPriority specified gets loaded as defaultPriority=LOW.
+     */
+    @Test
+    public void serializationNoDefaultPrioritySpecified()
+    {
+        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge4.json");
+
+        Assert.assertEquals(DESCRIPTION, deserializedChallenge.getDescription());
+        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
+        Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
+        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
+        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
+        Assert.assertNull(deserializedChallenge.getHighPriorityRule());
+        Assert.assertNull(deserializedChallenge.getMediumPriorityRule());
+        Assert.assertNull(deserializedChallenge.getLowPriorityRule());
     }
 
     /**

@@ -51,7 +51,7 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
         }
         catch (final IllegalArgumentException e)
         {
-            logger.trace("Failed to read priority value from Challenge JSON, defaulting to MEDIUM");
+            logger.trace("Failed to read priority value from Challenge JSON, defaulting to LOW");
             priority = ChallengePriority.LOW;
         }
 
