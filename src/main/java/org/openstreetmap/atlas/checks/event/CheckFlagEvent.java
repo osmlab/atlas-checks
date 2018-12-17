@@ -100,7 +100,7 @@ public final class CheckFlagEvent extends Event
             final JsonArray geometriesOfFlaggedRelations = new JsonArray();
             if (!feature.has(TYPE))
             {
-                feature.addProperty(TYPE, "feature");
+                feature.addProperty(TYPE, "Feature");
             }
             // Get flagged relations as GeoJson features
             final List<JsonObject> flaggedRelationFeatures = flaggedRelations.stream()
