@@ -33,6 +33,7 @@ public final class CheckFlagEvent extends Event
 {
     private static final GeoJsonBuilder GEOJSON_BUILDER = new GeoJsonBuilder();
     private static final String GEOMETRY = "geometry";
+    public static final String GEOMETRY_COLLECTION = "GeometryCollection";
     private static final String GEOMETRIES = "geometries";
     private static final String PROPERTIES = "properties";
     private static final String FEATURES = "features";
@@ -96,17 +97,34 @@ public final class CheckFlagEvent extends Event
 
         if (!flaggedRelations.isEmpty())
         {
+            final JsonArray geometriesOfFlaggedRelations = new JsonArray();
+            if (!feature.has(TYPE))
+            {
+                feature.addProperty(TYPE, "feature");
+            }
+            // Get flagged relations as GeoJson features
             final List<JsonObject> flaggedRelationFeatures = flaggedRelations.stream()
                     .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(flag.getIdentifier()))
                     .collect(Collectors.toList());
+            if (flaggedRelations.size() == 1 && !feature.has(GEOMETRY))
+            {
+                feature.add(GEOMETRY, flaggedRelationFeatures.get(0).get(GEOMETRY));
+            }
+            else if (!feature.has(GEOMETRY_COLLECTION))
+            {
+                final JsonObject geometryCollection = new JsonObject();
+                geometryCollection.add(GEOMETRIES, geometriesJsonArray);
+                geometryCollection.addProperty(TYPE, GEOMETRY_COLLECTION);
+                feature.add(GEOMETRY, geometryCollection);
+            }
+
             // Add all geometries of flaggedRelations to the json array
-            final JsonArray geometriesOfFlaggedRelations = new JsonArray();
             flaggedRelationFeatures.stream()
                     .map(flaggedRelationFeature -> flaggedRelationFeature.get(GEOMETRY))
                     .forEach(jsonElement -> geometriesOfFlaggedRelations.add(jsonElement));
-
             // To geometries of flagged objects add geometries of flaggedRelation
             geometriesJsonArray.addAll(geometriesOfFlaggedRelations);
+            // Update feature properties from flaggedRelation features
             flaggedRelationFeatures.stream()
                     .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
                     .forEach(property -> featureProperties.add(property));
