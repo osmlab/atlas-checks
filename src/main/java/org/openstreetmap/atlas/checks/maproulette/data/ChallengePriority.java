@@ -5,6 +5,7 @@ package org.openstreetmap.atlas.checks.maproulette.data;
  */
 public enum ChallengePriority
 {
+    @Deprecated
     NONE(-1),
     HIGH(0),
     MEDIUM(1),
