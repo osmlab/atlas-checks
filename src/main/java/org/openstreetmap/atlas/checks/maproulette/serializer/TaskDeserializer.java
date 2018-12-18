@@ -43,7 +43,7 @@ public class TaskDeserializer implements JsonDeserializer<Task>
 
     @Override
     public Task deserialize(final JsonElement json, final Type typeOfT,
-            final JsonDeserializationContext context) throws JsonParseException
+            final JsonDeserializationContext context)
     {
         final JsonObject full = json.getAsJsonObject();
         final JsonObject properties = full.get(PROPERTIES).getAsJsonObject();
