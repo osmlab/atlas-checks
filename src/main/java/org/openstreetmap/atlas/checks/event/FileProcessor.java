@@ -75,6 +75,11 @@ public abstract class FileProcessor<T extends Event> implements Processor<T>
         return this.counter.get();
     }
 
+    public boolean doesCompressOutput()
+    {
+        return compressOutput;
+    }
+
     /**
      * Processes given String and writes batched events into a file if needed
      *

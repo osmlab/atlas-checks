@@ -4,14 +4,15 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransfor
 plugins {
 	id 'java'
 	id 'maven'
+	id 'maven-publish'
 	id 'idea'
 	id 'eclipse'
 	id 'signing'
 	id 'checkstyle'
 	id 'jacoco'
 	id "com.diffplug.gradle.spotless" version "3.4.0"
-	id 'org.sonarqube' version '2.6'
-	id "io.codearte.nexus-staging" version "0.8.0"
+	id 'org.sonarqube' version '2.6.2'
+	// id "io.codearte.nexus-staging" version "0.12.0"
 	id 'com.github.johnrengelman.shadow' version '1.2.4'
 }
 
