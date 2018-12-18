@@ -17,7 +17,7 @@ then
 		-Dsonar.pullrequest.branch=$SONAR_PULLREQUEST_BRANCH \
 		-Dsonar.pullrequest.base=$TRAVIS_BRANCH \
 		-Dsonar.pullrequest.provider=github \
-		-Dsonar.pullrequest.github.repository=osmlab/atlas \
+		-Dsonar.pullrequest.github.repository=osmlab/atlas-checks \
 		-Dsonar.pullrequest.github.endpoint=https://api.github.com/ \
 		-Dsonar.pullrequest.github.token.secured=$SONAR_PR_DECORATION_GITHUB_TOKEN
 else
