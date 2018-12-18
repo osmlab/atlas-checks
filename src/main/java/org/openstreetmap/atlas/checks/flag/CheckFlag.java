@@ -5,8 +5,8 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,11 +25,16 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * A {@link CheckFlag} is used to flag one or more {@link AtlasObject}s found to violate some set of
@@ -43,10 +48,14 @@ import com.google.gson.JsonArray;
 public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
     private static final long serialVersionUID = -1287808902452203852L;
+    private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
+
+    private static final Distance TEN_METERS = Distance.meters(10);
+
     private final String identifier;
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
-    private final Set<FlaggedObject> flaggedObjects = new HashSet<>();
+    private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -140,7 +149,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
             }
             else
             {
-                this.flaggedObjects.add(new FlaggedPolyline(object));
+                this.flaggedObjects.add(new FlaggedPolyline((AtlasItem) object));
             }
         }
     }
@@ -427,5 +436,64 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public String toString()
     {
         return String.format("[CheckFlag: %s, %s]", this.identifier, this.getInstructions());
+    }
+
+    public JsonObject asGeoJsonFeature()
+    {
+        final JsonObject geometry = boundsGeoJsonGeometry();
+
+        final JsonObject properties = new JsonObject();
+        properties.addProperty("flag:type", CheckFlag.class.getSimpleName());
+        properties.addProperty("flag:id", getIdentifier());
+        properties.addProperty("flag:instructions", getInstructions());
+
+        // The legacy GeoJSON FeatureCollection doesn't actually provide this,
+        // but I figure this might be useful to know about if it's there...
+        if (challengeName != null)
+        {
+            properties.addProperty("flag:challenge", challengeName);
+        }
+
+        return GeoJsonUtils.feature(geometry, properties);
+    }
+
+    private JsonObject boundsGeoJsonGeometry()
+    {
+        final Iterator<FlaggedObject> iterator = flaggedObjects.iterator();
+        Rectangle bounds;
+
+        // Get the first bounds.
+        if (iterator.hasNext())
+        {
+            bounds = iterator.next().bounds();
+        }
+        // If we don't have it, let's instead return null island.
+        else
+        {
+            return GeoJsonUtils.geometry(GeoJsonUtils.POINT, GeoJsonUtils.coordinate(0.0, 0.0));
+        }
+
+        // Otherwise, let's get the rest of the bounds and expand the bounds we have.
+        while (iterator.hasNext())
+        {
+            final Rectangle nextBounds = iterator.next().bounds();
+            bounds = bounds.combine(nextBounds);
+        }
+
+        // We want the bbox to be at least ten meters wide and high. This is for straight lines and
+        // single point flags. I figure this is a good minimum, as it's about the width of a tennis
+        // court, and that seems like a good minimum unit to browse a check flag on the map.
+        if (bounds.width().onEarth().isLessThan(TEN_METERS))
+        {
+            bounds = bounds.expandHorizontally(TEN_METERS);
+        }
+
+        if (bounds.height().onEarth().isLessThan(TEN_METERS))
+        {
+            bounds = bounds.expandVertically(TEN_METERS);
+        }
+
+        // Turn that bounds into a GeoJSON geometry.
+        return GeoJsonUtils.boundsToPolygonGeometry(bounds);
     }
 }

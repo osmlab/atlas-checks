@@ -167,6 +167,16 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
                             @Loc(value = ONE) }, tags = { "building=yes" }) })
     private Atlas invalidAreaBuildingTag;
 
+    @TestAtlas(nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+            @Node(id = "2", coordinates = @Loc(value = TWO)),
+            @Node(id = "3", coordinates = @Loc(value = THREE)),
+            @Node(id = "4", coordinates = @Loc(value = FOUR)),
+            @Node(id = "5", coordinates = @Loc(value = FIVE)) }, edges = {
+                    @Edge(id = INVALID_EDGE_ID_2, coordinates = { @Loc(value = ONE),
+                            @Loc(value = FIVE), @Loc(value = TWO), @Loc(value = THREE),
+                            @Loc(value = FIVE), @Loc(value = FOUR) }, tags = { "highway=track" }) })
+    private Atlas lowPriorityInvalidEdgeIntersection;
+
     public Atlas getValidLineNoSelfIntersection()
     {
         return this.validLineNoSelfIntersection;
@@ -235,5 +245,10 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
     public Atlas getInvalidAreaBuildingTag()
     {
         return this.invalidAreaBuildingTag;
+    }
+
+    public Atlas getLowPriorityInvalidEdgeIntersection()
+    {
+        return this.lowPriorityInvalidEdgeIntersection;
     }
 }

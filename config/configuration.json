@@ -53,6 +53,7 @@
     }
   },
   "BuildingRoadIntersectionCheck": {
+    "car.navigable": true,
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",
@@ -103,6 +104,7 @@
     }
   },
   "EdgeCrossingEdgeCheck": {
+    "minimum.highway.type": "no",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
@@ -274,6 +276,7 @@
   },
   "SelfIntersectingPolylineCheck": {
     "tags.filter":"highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
+    "minimum.highway.type":"service",
     "challenge": {
       "description": "Verify that the same Polyline does not intersect itself at any point.",
       "blurb": "Modify Polylines such that they do not self intersect.",
