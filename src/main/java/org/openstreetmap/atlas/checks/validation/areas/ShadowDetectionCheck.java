@@ -255,44 +255,63 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
                     : Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
                             * LEVEL_TO_METERS_CONVERSION;
             // Set partMaxHeight
-            final double partMaxHeight = partTags.containsKey(HeightTag.KEY)
-                    ? Double.parseDouble(partTags.get(HeightTag.KEY))
-                    : partTags.containsKey(BuildingLevelsTag.KEY)
-                            ? Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
-                                    * LEVEL_TO_METERS_CONVERSION
-                            // Default to 0 height above the minimum
-                            : partMinHeight;
+            final double partMaxHeight;
+            if (partTags.containsKey(HeightTag.KEY))
+            {
+                partMaxHeight = Double.parseDouble(partTags.get(HeightTag.KEY));
+            }
+            else if (partTags.containsKey(BuildingLevelsTag.KEY))
+            {
+                partMaxHeight = Double.parseDouble(partTags.get(BuildingLevelsTag.KEY))
+                        * LEVEL_TO_METERS_CONVERSION;
+            }
+            else
+            {
+                // Default to 0 height above the minimum
+                partMaxHeight = partMinHeight;
+            }
+
             // Set neighborMinHeight
-            final double neighborMinHeight = neighborTags.containsKey(MinHeightTag.KEY)
-                    ? Double.parseDouble(neighborTags.get(MinHeightTag.KEY))
-                    : neighborTags.containsKey(BuildingMinLevelTag.KEY)
-                            ? Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
-                                    * LEVEL_TO_METERS_CONVERSION
-                            // Default to 0
-                            : 0;
+            final double neighborMinHeight;
+            if (neighborTags.containsKey(MinHeightTag.KEY))
+            {
+                neighborMinHeight = Double.parseDouble(neighborTags.get(MinHeightTag.KEY));
+            }
+            else if (neighborTags.containsKey(BuildingMinLevelTag.KEY))
+            {
+                neighborMinHeight = Double.parseDouble(neighborTags.get(BuildingMinLevelTag.KEY))
+                        * LEVEL_TO_METERS_CONVERSION;
+            }
+            else
+            {
+                // Default to 0
+                neighborMinHeight = 0;
+            }
+
             // Set neighborMaxHeight
-            final double neighborMaxHeight = neighborTags.containsKey(HeightTag.KEY)
-                    ? Double.parseDouble(neighborTags.get(HeightTag.KEY))
-                    : neighborTags.containsKey(BuildingLevelsTag.KEY)
-                            ? Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
-                                    * LEVEL_TO_METERS_CONVERSION
-                            // Default to 0
-                            : 0;
+            final double neighborMaxHeight;
+            if (neighborTags.containsKey(HeightTag.KEY))
+            {
+                neighborMaxHeight = Double.parseDouble(neighborTags.get(HeightTag.KEY));
+            }
+            else if (neighborTags.containsKey(BuildingLevelsTag.KEY))
+            {
+                neighborMaxHeight = Double.parseDouble(neighborTags.get(BuildingLevelsTag.KEY))
+                        * LEVEL_TO_METERS_CONVERSION;
+            }
+            else
+            {
+                // Default to 0
+                neighborMaxHeight = 0;
+            }
 
             // Check the range of heights for overlap.
-            try
-            {
-                return Range.closed(partMinHeight, partMaxHeight)
-                        .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
-            }
-            // Ignore buildings with a min value larger than its height
-            catch (final IllegalArgumentException exc)
-            {
-                return false;
-            }
+            return Range.closed(partMinHeight, partMaxHeight)
+                    .isConnected(Range.closed(neighborMinHeight, neighborMaxHeight));
         }
+        // Ignore buildings with a min value larger than its height
         // Ignore features with bad tags (like 2;10)
-        catch (final NumberFormatException badTagValue)
+        catch (final IllegalArgumentException exc)
         {
             return false;
         }
