@@ -1,10 +1,10 @@
 package org.openstreetmap.atlas.checks.flag;
 
-import java.util.List;
 import java.util.Map;
 
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -13,7 +13,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
+
+import com.google.gson.JsonObject;
 
 /**
  * A flag for a {@link PolyLine}
@@ -24,6 +25,7 @@ public class FlaggedPolyline extends FlaggedObject
 {
     private static final long serialVersionUID = -1184306312148054279L;
 
+    private final AtlasItem atlasItem;
     private final String country;
     private final PolyLine polyLine;
     private final Map<String, String> properties;
@@ -31,33 +33,24 @@ public class FlaggedPolyline extends FlaggedObject
     /**
      * Default constructor
      * 
-     * @param object
-     *            the {@link AtlasObject} to flag
+     * @param atlasItem
+     *            the {@link AtlasItem} to flag
      */
-    public FlaggedPolyline(final AtlasObject object)
+    public FlaggedPolyline(final AtlasItem atlasItem)
     {
-        if (object instanceof AtlasItem)
+        this.atlasItem = atlasItem;
+        if (atlasItem instanceof Area)
         {
-            if (object instanceof Area)
-            {
-                // An Area's geometry doesn't include the end (same as start) location. To close the
-                // area boundary, we need to add the end location manually.
-                final List<Location> geometry = Iterables
-                        .asList(((AtlasItem) object).getRawGeometry());
-                geometry.add(geometry.get(0));
-                this.polyLine = new PolyLine(geometry);
-            }
-            else
-            {
-                this.polyLine = new PolyLine(((AtlasItem) object).getRawGeometry());
-            }
+            // We should actually have a FlaggedPolygon class with a polygon in it instead of just
+            // making polygons be PolyLines. I am not sure why FlaggedPolygon was not implemented.
+            this.polyLine = new PolyLine(((Area) atlasItem).asPolygon().closedLoop());
         }
         else
         {
-            this.polyLine = null;
+            this.polyLine = new PolyLine(atlasItem.getRawGeometry());
         }
-        this.properties = initProperties(object);
-        this.country = initCountry(object);
+        this.properties = initProperties(atlasItem);
+        this.country = initCountry(atlasItem);
     }
 
     @Override
@@ -76,6 +69,24 @@ public class FlaggedPolyline extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
+    }
+
+    @Override
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
+    {
+        final JsonObject feature = atlasItem.asGeoJsonFeature();
+        final JsonObject properties = feature.getAsJsonObject("properties");
+
+        properties.addProperty("flag:id", flagIdentifier);
+        properties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
+
+        return feature;
+    }
+
+    @Override
+    public Rectangle bounds()
+    {
+        return atlasItem.bounds();
     }
 
     private String initCountry(final AtlasObject object)

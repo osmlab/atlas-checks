@@ -7,11 +7,13 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Point;
 
 /**
  * {@link BuildingRoadIntersectionCheckTest} test data
  *
  * @author mgostintsev
+ * @author sayas01
  */
 public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
 {
@@ -29,6 +31,18 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
     private static final String TEST_4 = "37.332451,-122.028932";
     private static final String TEST_5 = "37.317585,-122.052138";
     private static final String TEST_6 = "37.390535,-122.031007";
+    private static final String TEST_10 = "57.2278740, 60.0846234";
+    private static final String TEST_20 = "57.2279209, 60.0843459";
+    private static final String TEST_30 = "57.2279025, 60.0841482";
+    private static final String TEST_40 = "57.2273807, 60.0834945";
+    private static final String TEST_50 = "57.2272449, 60.0835572";
+    private static final String TEST_60 = "57.2271068, 60.0837054";
+    private static final String TEST_70 = "57.2273397, 60.0836107";
+    private static final String TEST_80 = "57.2274907, 60.0831821";
+    private static final String TEST_90 = "57.2280190, 60.0838174";
+    private static final String TEST_100 = "57.2278680, 60.0842460";
+    private static final String TEST_101 = "57.2277097, 60.0837055";
+
     @TestAtlas(
 
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
@@ -49,7 +63,7 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                     // Non-Pedestrian Area - flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
-                            @Loc(value = TEST_6) }, tags = { "highway=primary", "building=house" }),
+                            @Loc(value = TEST_6) }, tags = { "highway=steps", "building=house" }),
                     // Pedestrian Area - not flagged
                     @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
                             @Loc(value = TEST_4), @Loc(value = TEST_1),
@@ -169,6 +183,94 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                             @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
                             @Loc(value = TEST_6) }, tags = { "building=yes" }) })
     private Atlas edgeHighWayServiceAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_10)),
+                    @Node(coordinates = @Loc(value = TEST_20)),
+                    @Node(coordinates = @Loc(value = TEST_30)),
+                    @Node(coordinates = @Loc(value = TEST_40)),
+                    @Node(coordinates = @Loc(value = TEST_50)),
+                    @Node(coordinates = @Loc(value = TEST_60)),
+                    @Node(coordinates = @Loc(value = TEST_70)),
+                    @Node(coordinates = @Loc(value = TEST_80)),
+                    @Node(coordinates = @Loc(value = TEST_90)),
+                    @Node(coordinates = @Loc(value = TEST_100)),
+                    @Node(coordinates = @Loc(value = TEST_101), tags = {
+                            "amenity=fuel" }) }, points = {
+                                    @Point(coordinates = @Loc(value = TEST_101), tags = {
+                                            "amenity=fuel" }) },
+
+            edges = { @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_10),
+                    @Loc(value = TEST_20), @Loc(value = TEST_30), @Loc(value = TEST_40),
+                    @Loc(value = TEST_50), @Loc(value = TEST_60) }, tags = { "highway=service" }) },
+
+            areas = { @Area(id = "3", coordinates = { @Loc(value = TEST_70), @Loc(value = TEST_80),
+                    @Loc(value = TEST_90), @Loc(value = TEST_100), @Loc(value = TEST_40),
+                    @Loc(value = TEST_30) }, tags = { "building=yes" }) })
+    private Atlas ignoredPointsWithinBuildingAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3), tags = { "barrier=gate" }) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=primary" }) },
+
+            areas = {
+                    // Regular building
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }),
+                    // Non-Pedestrian Area
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
+                                    "building=house" }) })
+    private Atlas ignoredNodesWithinEdgeAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+
+            edges = {
+
+                    @Edge(id = "292929292929", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=steps" }) },
+
+            areas = {
+                    // Regular building - flagged
+                    @Area(id = "323232323232", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_2), @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "building=yes" }),
+                    // Non-Pedestrian Area - flagged
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_1),
+                            @Loc(value = TEST_6) }, tags = { "highway=steps", "building=house" }) })
+    private Atlas corewayIntersectionAtlas;
+
+    public Atlas getCorewayIntersectionAtlas()
+    {
+        return this.corewayIntersectionAtlas;
+    }
+
+    public Atlas getIgnoredNodesWithinEdgeAtlas()
+    {
+        return this.ignoredNodesWithinEdgeAtlas;
+    }
+
+    public Atlas getIgnoredPointsWithinBuildingAtlas()
+    {
+        return this.ignoredPointsWithinBuildingAtlas;
+    }
 
     public Atlas getAtlas()
     {

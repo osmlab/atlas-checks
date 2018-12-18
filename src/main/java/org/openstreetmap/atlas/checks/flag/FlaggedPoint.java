@@ -4,11 +4,15 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonObject;
 
 /**
  * A flag for a {@code point} {@link Location} P*
@@ -22,6 +26,8 @@ public class FlaggedPoint extends FlaggedObject
     private final Location point;
     private final Map<String, String> properties;
 
+    private final LocationItem locationItem;
+
     /**
      * Default constructor
      * 
@@ -30,6 +36,7 @@ public class FlaggedPoint extends FlaggedObject
      */
     public FlaggedPoint(final LocationItem locationItem)
     {
+        this.locationItem = locationItem;
         this.point = locationItem.getLocation();
         this.properties = initProperties(locationItem);
     }
@@ -37,6 +44,7 @@ public class FlaggedPoint extends FlaggedObject
     @SuppressWarnings("unchecked")
     public FlaggedPoint(final Location point)
     {
+        this.locationItem = null;
         this.point = point;
         this.properties = Collections.EMPTY_MAP;
     }
@@ -52,6 +60,41 @@ public class FlaggedPoint extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
+    }
+
+    @Override
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
+    {
+        final JsonObject feature;
+        final JsonObject properties;
+        if (locationItem != null)
+        {
+            feature = locationItem.asGeoJsonFeature();
+            properties = feature.getAsJsonObject("properties");
+        }
+        else
+        {
+            properties = new JsonObject();
+            feature = GeoJsonUtils.feature(point.asGeoJsonGeometry(), properties);
+        }
+
+        properties.addProperty("flag:id", flagIdentifier);
+        properties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
+
+        return feature;
+    }
+
+    @Override
+    public Rectangle bounds()
+    {
+        if (locationItem != null)
+        {
+            return locationItem.bounds();
+        }
+        else
+        {
+            return point.bounds();
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
+import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
 import org.openstreetmap.atlas.checks.event.EventService;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
@@ -40,6 +42,8 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
+import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
 import org.openstreetmap.atlas.utilities.conversion.StringConverter;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
@@ -65,7 +69,8 @@ public class IntegrityCheckSparkJob extends SparkJob
     {
         FLAGS,
         GEOJSON,
-        METRICS
+        METRICS,
+        TIPPECANOE
     }
 
     @Deprecated
@@ -90,19 +95,23 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
-
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format("Comma-separated list of output formats (flags, metrics, geojson)."),
+            String.format(
+                    "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe)."),
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
-            Optionality.OPTIONAL, "flags,metrics");
+            Optionality.OPTIONAL, "flags,metrics,tippecanoe");
+    private static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
+            "Comma-separated list of checks to run",
+            checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
 
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
     // Outputs
     private static final String OUTPUT_FLAG_FOLDER = "flag";
     private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
+    private static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
     private static final String OUTPUT_ATLAS_FOLDER = "atlas";
     private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
             + FileSuffix.GZIP.toString();
@@ -217,8 +226,22 @@ public class IntegrityCheckSparkJob extends SparkJob
                 CommonConstants.COMMA);
         final MapRouletteConfiguration mapRouletteConfiguration = (MapRouletteConfiguration) commandMap
                 .get(MAP_ROULETTE);
-        final Configuration checksConfiguration = ConfigurationResolver
-                .loadConfiguration(commandMap, CONFIGURATION_FILES, CONFIGURATION_JSON);
+        @SuppressWarnings("unchecked")
+        final Optional<List<String>> checkFilter = (Optional<List<String>>) commandMap
+                .getOption(CHECK_FILTER);
+
+        final Configuration checksConfiguration = new MergedConfiguration(Stream
+                .concat(Stream.of(
+                        ConfigurationResolver.loadConfiguration(commandMap, CONFIGURATION_FILES,
+                                CONFIGURATION_JSON)),
+                        Stream.of(checkFilter
+                                .<Configuration> map(whitelist -> new StandardConfiguration(
+                                        "WhiteListConfiguration",
+                                        Collections.singletonMap(
+                                                "CheckResourceLoader.checks.whitelist", whitelist)))
+                                .orElse(ConfigurationResolver.emptyConfiguration())))
+                .collect(Collectors.toList()));
+
         final boolean saveIntermediateAtlas = (Boolean) commandMap.get(PBF_SAVE_INTERMEDIATE_ATLAS);
         @SuppressWarnings("unchecked")
         final Rectangle pbfBoundary = ((Optional<Rectangle>) commandMap.getOption(PBF_BOUNDING_BOX))
@@ -228,7 +251,6 @@ public class IntegrityCheckSparkJob extends SparkJob
 
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
-
         // check configuration and country list
         final Set<BaseCheck> preOverriddenChecks = checkLoader.loadChecks();
         if (!isValidInput(countries, preOverriddenChecks))
@@ -336,6 +358,21 @@ public class IntegrityCheckSparkJob extends SparkJob
                 metricOutput = null;
             }
 
+            final SparkFilePath tippecanoeOutput;
+            if (outputFormats.contains(OutputFormats.TIPPECANOE))
+            {
+                tippecanoeOutput = initializeOutput(OUTPUT_TIPPECANOE_FOLDER, TaskContext.get(),
+                        country, temporaryOutputFolder, targetOutputFolder);
+                EventService.get(country)
+                        .register(new CheckFlagTippecanoeProcessor(fileHelper,
+                                tippecanoeOutput.getTemporaryPath())
+                                        .withCompression(compressOutput));
+            }
+            else
+            {
+                tippecanoeOutput = null;
+            }
+
             final Consumer<Atlas> intermediateAtlasHandler;
             if (saveIntermediateAtlas)
             {
@@ -365,8 +402,8 @@ public class IntegrityCheckSparkJob extends SparkJob
                 {
                     executeChecks(country, atlas, checks, mapRouletteConfiguration);
                     // Add output folders for handling later
-                    Stream.of(flagOutput, metricOutput, geoJsonOutput).filter(Objects::nonNull)
-                            .forEach(resultingFiles::add);
+                    Stream.of(flagOutput, metricOutput, geoJsonOutput, tippecanoeOutput)
+                            .filter(Objects::nonNull).forEach(resultingFiles::add);
                 }
 
                 EventService.get(country).complete();
@@ -447,7 +484,8 @@ public class IntegrityCheckSparkJob extends SparkJob
     protected SwitchList switches()
     {
         return super.switches().with(ATLAS_FOLDER, MAP_ROULETTE, COUNTRIES, CONFIGURATION_FILES,
-                CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS);
+                CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS,
+                CHECK_FILTER);
     }
 
     /**
