@@ -224,9 +224,18 @@ public class MalformedRoundaboutCheck extends BaseCheck
             }
         }
         // Return the Enum for whatever has the highest count
-        return clockwiseCount > counterClockwiseCount ? RoundaboutDirection.CLOCKWISE
-                : clockwiseCount < counterClockwiseCount ? RoundaboutDirection.COUNTERCLOCKWISE
-                        : RoundaboutDirection.UNKNOWN;
+        if (clockwiseCount > counterClockwiseCount)
+        {
+            return RoundaboutDirection.CLOCKWISE;
+        }
+        else if (clockwiseCount < counterClockwiseCount)
+        {
+            return RoundaboutDirection.COUNTERCLOCKWISE;
+        }
+        else
+        {
+            return RoundaboutDirection.UNKNOWN;
+        }
     }
 
     /**
