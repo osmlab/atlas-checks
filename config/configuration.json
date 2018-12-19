@@ -12,6 +12,23 @@
       "minimum": 50.0
     }
   },
+  "SpikyBuildingCheck": {
+    "spiky.angle.maximum": 15.0,
+    "curve": {
+      "degrees": {
+        "maximum.single_heading_change": 25.0,
+        "minimum.total_heading_change": 10.0
+      },
+      "points.minimum": 4
+    },
+    "challenge": {
+      "description": "Find poorly digitized buildings with sharp angles in their geometry",
+      "blurb": "Fix buildings with spiky geometry",
+      "instruction": "Open your favorite editor and validate that the buildings are mapped correctly",
+      "difficulty": "NORMAL",
+      "tags":"building"
+    }
+  },
   "OrphanNodeCheck": {
 
   },
