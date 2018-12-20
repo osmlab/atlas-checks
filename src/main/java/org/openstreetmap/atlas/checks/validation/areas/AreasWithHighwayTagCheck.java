@@ -51,8 +51,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        return object.getTag(HighwayTag.KEY)
-                .map(tagString -> HighwayTag.valueOf(tagString.toUpperCase()))
+        return HighwayTag.highwayTag(object)
                 // If the tag isn't one of the VALID_HIGHWAY_TAGS, we want to flag it.
                 .filter(tag -> isUnacceptableAreaHighwayTagCombination(object, tag)).map(tag ->
                 {
