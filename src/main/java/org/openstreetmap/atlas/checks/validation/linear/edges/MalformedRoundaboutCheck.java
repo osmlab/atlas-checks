@@ -155,7 +155,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
 
         // If there are car navigable edges inside the roundabout flag it, as it is probably
         // malformed or a throughabout
-        if (roundaboutEdgeSet.stream().noneMatch(this::ignoreCrossings)
+        if (roundaboutEdgeSet.stream().noneMatch(this::ignoreBridgeTunnelCrossings)
                 && this.roundaboutEnclosesRoads(roundaboutEdges))
         {
             return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(2)));
@@ -276,7 +276,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
      *            {@link Edge} to be checked
      * @return true if it is a bridge or tunnel, or has a layer tag
      */
-    private boolean ignoreCrossings(final Edge edge)
+    private boolean ignoreBridgeTunnelCrossings(final Edge edge)
     {
         return Validators.hasValuesFor(edge, LayerTag.class) || BridgeTag.isBridge(edge)
                 || TunnelTag.isTunnel(edge);
@@ -294,11 +294,10 @@ public class MalformedRoundaboutCheck extends BaseCheck
     private boolean roundaboutEnclosesRoads(final Route roundabout)
     {
         final Polygon roundaboutPoly = new Polygon(roundabout.asPolyLine());
-        return roundabout.start().getAtlas()
-                .edgesIntersecting(roundaboutPoly,
-                        edge -> HighwayTag.isCarNavigableHighway(edge)
-                                && !JunctionTag.isRoundabout(edge) && !this.ignoreCrossings(edge)
-                                && this.intersectsWithEnclosedGeometry(roundaboutPoly, edge))
+        return roundabout.start().getAtlas().edgesIntersecting(roundaboutPoly,
+                edge -> HighwayTag.isCarNavigableHighway(edge) && !JunctionTag.isRoundabout(edge)
+                        && !this.ignoreBridgeTunnelCrossings(edge)
+                        && this.intersectsWithEnclosedGeometry(roundaboutPoly, edge))
                 .iterator().hasNext();
     }
 
