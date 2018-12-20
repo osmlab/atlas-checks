@@ -77,6 +77,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                             logger.error("Error thrown while adding task: ", error);
                         }
                     });
+                    this.uploadTasks();
                 }
                 catch (final IOException error)
                 {
@@ -86,7 +87,6 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 }
             }
         });
-        this.uploadTasks();
     }
 
     /**
