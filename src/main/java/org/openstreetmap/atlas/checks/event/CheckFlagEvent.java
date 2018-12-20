@@ -114,7 +114,7 @@ public final class CheckFlagEvent extends Event
             {
                 feature.add(GEOMETRY, flaggedRelationFeatures.get(0).get(GEOMETRY));
             }
-            else if (!feature.has(GEOMETRY_COLLECTION))
+            else if (flaggedRelations.size() != 1 && !feature.has(GEOMETRY))
             {
                 final JsonObject geometryCollection = new JsonObject();
                 geometryCollection.add(GEOMETRIES, geometriesJsonArray);
