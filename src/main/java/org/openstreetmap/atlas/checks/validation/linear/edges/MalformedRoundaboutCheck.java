@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -109,6 +110,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
     {
         final Edge edge = (Edge) object;
         final String isoCountryCode = edge.tag(ISOCountryTag.KEY).toUpperCase();
+        final Set<String> instructions = new HashSet<>();
 
         // Get all edges in the roundabout
         final Set<Edge> roundaboutEdgeSet = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
@@ -116,27 +118,26 @@ public class MalformedRoundaboutCheck extends BaseCheck
         roundaboutEdgeSet
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
         final Route roundaboutEdges;
-        // Flag if any of them are not car navigable or master Edges
-        if (roundaboutEdgeSet.stream()
-                .anyMatch(roundaboutEdge -> !HighwayTag.isCarNavigableHighway(roundaboutEdge)
-                        || !roundaboutEdge.isMasterEdge()))
-        {
-            return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(1)));
-        }
+
         // Try to build a Route from the edges
         try
         {
             roundaboutEdges = Route.fromNonArrangedEdgeSet(roundaboutEdgeSet, false);
-            if (!roundaboutEdges.start().inEdges().contains(roundaboutEdges.end()))
-            {
-                return Optional
-                        .of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(1)));
-            }
         }
         // If a Route cannot be formed, flag the edges as an incomplete roundabout.
         catch (final CoreException badRoundabout)
         {
             return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(1)));
+        }
+
+        // Flag if any of the edges are not car navigable or master Edges, or the route does not
+        // form a closed loop.
+        if (roundaboutEdgeSet.stream()
+                .anyMatch(roundaboutEdge -> !HighwayTag.isCarNavigableHighway(roundaboutEdge)
+                        || !roundaboutEdge.isMasterEdge())
+                || !roundaboutEdges.start().inEdges().contains(roundaboutEdges.end()))
+        {
+            instructions.add(this.getLocalizedInstruction(1));
         }
 
         // Get the direction of the roundabout
@@ -150,7 +151,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
         if (direction.equals(RoundaboutDirection.CLOCKWISE) && !isLeftDriving
                 || direction.equals(RoundaboutDirection.COUNTERCLOCKWISE) && isLeftDriving)
         {
-            return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(0)));
+            instructions.add(this.getLocalizedInstruction(0));
         }
 
         // If there are car navigable edges inside the roundabout flag it, as it is probably
@@ -158,9 +159,13 @@ public class MalformedRoundaboutCheck extends BaseCheck
         if (roundaboutEdgeSet.stream().noneMatch(this::ignoreBridgeTunnelCrossings)
                 && this.roundaboutEnclosesRoads(roundaboutEdges))
         {
-            return Optional.of(this.createFlag(roundaboutEdgeSet, this.getLocalizedInstruction(2)));
+            instructions.add(this.getLocalizedInstruction(2));
         }
 
+        if (!instructions.isEmpty())
+        {
+            return Optional.of(this.createFlag(roundaboutEdgeSet, String.join(" ", instructions)));
+        }
         return Optional.empty();
     }
 

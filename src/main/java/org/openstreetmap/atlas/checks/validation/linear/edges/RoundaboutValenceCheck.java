@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -81,6 +82,8 @@ public class RoundaboutValenceCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
+        final Set<String> instructions = new HashSet<>();
+        final Set<AtlasObject> flaggedObjects = new HashSet<>();
 
         // Get all Edges in the roundabout
         final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
@@ -103,10 +106,8 @@ public class RoundaboutValenceCheck extends BaseCheck
             // If a Node has a valance of more than 1, flag it and the roundabout
             if (nodeValence > 1)
             {
-                final CheckFlag flag = this.createFlag(roundaboutEdges,
-                        this.getLocalizedInstruction(2, node.getOsmIdentifier()));
-                flag.addObject(node);
-                return Optional.of(flag);
+                instructions.add(this.getLocalizedInstruction(2, node.getOsmIdentifier()));
+                flaggedObjects.add(node);
             }
             totalRoundaboutValence += nodeValence;
         }
@@ -117,18 +118,18 @@ public class RoundaboutValenceCheck extends BaseCheck
             // If the roundabout valence is 1, this should be labelled as a turning loop instead
             if (totalRoundaboutValence == 1)
             {
-                return Optional
-                        .of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(1)));
+                instructions.add(this.getLocalizedInstruction(1));
             }
             // Otherwise, we want to flag and given information about identifier and valence
-            return Optional.of(this.createFlag(roundaboutEdges,
-                    this.getLocalizedInstruction(0, totalRoundaboutValence)));
+            instructions.add(this.getLocalizedInstruction(0, totalRoundaboutValence));
         }
-        // If the totalRoundaboutValence is not unusual, we don't flag the object
-        else
+
+        if (!instructions.isEmpty())
         {
-            return Optional.empty();
+            flaggedObjects.addAll(roundaboutEdges);
+            return Optional.of(this.createFlag(flaggedObjects, String.join(" ", instructions)));
         }
+        return Optional.empty();
     }
 
     /**
