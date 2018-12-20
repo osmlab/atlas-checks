@@ -62,11 +62,11 @@ public final class CheckFlagEvent extends Event
         // Add additional properties
         additionalProperties.forEach(flagProperties::addProperty);
 
-        JsonObject feature = new JsonObject();
+        final JsonObject feature;
         final List<GeometryWithProperties> geometriesWithProperties = flag
-                .getLocationIterableProperties();
+                .getGeometryWithProperties();
         final Set<FlaggedRelation> flaggedRelations = flag.getFlaggedRelations();
-        JsonArray geometriesJsonArray = new JsonArray();
+        final JsonArray geometriesJsonArray;
         final JsonArray featureProperties = new JsonArray();
         final Set<JsonElement> featureOsmIds = new HashSet<>();
         if (!geometriesWithProperties.isEmpty())
@@ -94,7 +94,11 @@ public final class CheckFlagEvent extends Event
                         Optional.ofNullable(properties.get("osmid")).ifPresent(featureOsmIds::add);
                     }));
         }
-
+        else
+        {
+            feature = new JsonObject();
+            geometriesJsonArray = new JsonArray();
+        }
         if (!flaggedRelations.isEmpty())
         {
             final JsonArray geometriesOfFlaggedRelations = new JsonArray();
@@ -172,7 +176,7 @@ public final class CheckFlagEvent extends Event
         if (!flag.getFlaggedObjects().isEmpty())
         {
             flagJson = GEOJSON_BUILDER
-                    .createFromGeometriesWithProperties(flag.getLocationIterableProperties())
+                    .createFromGeometriesWithProperties(flag.getGeometryWithProperties())
                     .jsonObject();
         }
         final Set<FlaggedRelation> flaggedRelations = flag.getFlaggedRelations();

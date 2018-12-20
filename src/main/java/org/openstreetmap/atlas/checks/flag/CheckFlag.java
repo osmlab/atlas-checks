@@ -329,14 +329,13 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
-     * @return a list of {@link GeoJsonBuilder.LocationIterableProperties} representing all flagged
-     *         geometries
+     * @return a list of {@link GeometryWithProperties} representing all flagged geometries
      */
-    public List<GeometryWithProperties> getLocationIterableProperties()
+    public List<GeometryWithProperties> getGeometryWithProperties()
     {
         return this.flaggedObjects.stream()
-                .map(flaggedObject -> new GeoJsonBuilder.GeometryWithProperties(
-                        flaggedObject.getGeometry(), new HashMap<>(flaggedObject.getProperties())))
+                .map(flaggedObject -> new GeometryWithProperties(flaggedObject.getGeometry(),
+                        new HashMap<>(flaggedObject.getProperties())))
                 .collect(Collectors.toList());
     }
 
@@ -371,7 +370,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         }
 
         final JsonArray features = new JsonArray();
-        this.getLocationIterableProperties()
+        // Need to update with flaggedRelations as well
+        this.getGeometryWithProperties()
                 .forEach(shape -> features.add(new GeoJsonBuilder().create(shape)));
         task.setGeoJson(Optional.of(features));
 
