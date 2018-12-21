@@ -5,6 +5,7 @@ package org.openstreetmap.atlas.checks.maproulette.data;
  */
 public enum ChallengePriority
 {
+    @Deprecated
     NONE(-1),
     HIGH(0),
     MEDIUM(1),
@@ -21,7 +22,7 @@ public enum ChallengePriority
                 return challengePriority;
             }
         }
-        return ChallengePriority.NONE;
+        return ChallengePriority.LOW;
     }
 
     ChallengePriority(final int value)
