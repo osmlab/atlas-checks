@@ -51,19 +51,13 @@ public class FlaggedRelation extends FlaggedObject
      * A GeoJSON representation of the flagged object.
      *
      * @param flagIdentifier
-     *            We always will want to know the id of the flag assocaited with this flag object.
+     *            We always will want to know the id of the flag associated with this flag object.
      * @return GeoJSON representation of the flagged object.
      */
     @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-
         final JsonObject feature = this.relation.asGeoJsonFeature();
-        final JsonObject properties = feature.getAsJsonObject("properties");
-
-        properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
-
         return feature;
     }
 

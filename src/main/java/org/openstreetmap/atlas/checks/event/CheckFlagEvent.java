@@ -90,7 +90,6 @@ public final class CheckFlagEvent extends Event
                         propertyMap.forEach(
                                 (key, value) -> properties.addProperty(key, (String) value));
                         featureProperties.add(properties);
-
                         Optional.ofNullable(properties.get("osmid")).ifPresent(featureOsmIds::add);
                     }));
         }
@@ -101,7 +100,6 @@ public final class CheckFlagEvent extends Event
         }
         if (!flaggedRelations.isEmpty())
         {
-            final JsonArray geometriesOfFlaggedRelations = new JsonArray();
             if (!feature.has(TYPE))
             {
                 feature.addProperty(TYPE, "Feature");
@@ -121,24 +119,9 @@ public final class CheckFlagEvent extends Event
                 geometryCollection.addProperty(TYPE, GEOMETRY_COLLECTION);
                 feature.add(GEOMETRY, geometryCollection);
             }
-
-            // Add all geometries of flaggedRelations to the json array
-            flaggedRelationFeatures.stream()
-                    .map(flaggedRelationFeature -> flaggedRelationFeature.get(GEOMETRY))
-                    .forEach(jsonElement -> geometriesOfFlaggedRelations.add(jsonElement));
-            // To geometries of flagged objects add geometries of flaggedRelation
-            geometriesJsonArray.addAll(geometriesOfFlaggedRelations);
-            // Update feature properties from flaggedRelation features
-            flaggedRelationFeatures.stream()
-                    .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
-                    .forEach(property -> featureProperties.add(property));
-            // Add osm id
-            flaggedRelationFeatures.stream()
-                    .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
-                    .map(jsonElement -> jsonElement.getAsJsonObject().get("osmIdentifier"))
-                    .forEach(featureOsmIds::add);
+            populateFlaggedRelationPropertiesAndGeometries(flaggedRelationFeatures,
+                    geometriesJsonArray, featureOsmIds, featureProperties);
         }
-
         final JsonArray uniqueFeatureOsmIds = new JsonArray();
         featureOsmIds.forEach(uniqueFeatureOsmIds::add);
 
@@ -157,6 +140,28 @@ public final class CheckFlagEvent extends Event
         feature.addProperty("id", flag.getIdentifier());
         feature.add("properties", flagProperties);
         return feature;
+    }
+
+    private static void populateFlaggedRelationPropertiesAndGeometries(
+            final List<JsonObject> flaggedRelationFeatures, final JsonArray geometriesJsonArray,
+            final Set<JsonElement> featureOsmIds, final JsonArray featureProperties)
+    {
+        final JsonArray geometriesOfFlaggedRelations = new JsonArray();
+        // Add all geometries of flaggedRelations to the json array
+        flaggedRelationFeatures.stream()
+                .map(flaggedRelationFeature -> flaggedRelationFeature.get(GEOMETRY))
+                .forEach(jsonElement -> geometriesOfFlaggedRelations.add(jsonElement));
+        // To geometries of flagged objects add geometries of flaggedRelation
+        geometriesJsonArray.addAll(geometriesOfFlaggedRelations);
+        // Update feature properties from flaggedRelation features
+        flaggedRelationFeatures.stream()
+                .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
+                .forEach(property -> featureProperties.add(property));
+        // Add osm id
+        flaggedRelationFeatures.stream()
+                .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
+                .map(jsonElement -> jsonElement.getAsJsonObject().get("osmIdentifier"))
+                .forEach(featureOsmIds::add);
     }
 
     /**
@@ -311,7 +316,7 @@ public final class CheckFlagEvent extends Event
 
     public String asLineDelimitedGeoJsonFeatures()
     {
-        return asLineDelimitedGeoJsonFeatures(CheckFlagEvent::accept);
+        return asLineDelimitedGeoJsonFeatures(jsonObject -> accept(jsonObject));
     }
 
     public String asLineDelimitedGeoJsonFeatures(final Consumer<JsonObject> jsonMutator)
