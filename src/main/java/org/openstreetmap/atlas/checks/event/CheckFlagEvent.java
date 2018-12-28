@@ -119,8 +119,11 @@ public final class CheckFlagEvent extends Event
                 geometryCollection.addProperty(TYPE, GEOMETRY_COLLECTION);
                 feature.add(GEOMETRY, geometryCollection);
             }
-            populateFlaggedRelationPropertiesAndGeometries(flaggedRelationFeatures,
-                    geometriesJsonArray, featureOsmIds, featureProperties);
+            // To geometries of flagged objects add geometries of flaggedRelation
+            geometriesJsonArray.addAll(populateFlaggedRelationGeometries(flaggedRelationFeatures));
+            featureProperties
+                    .addAll(populateFlaggedRelationFeatureProperties(flaggedRelationFeatures));
+            featureOsmIds.addAll(populateFlaggedRelationFeatureOsmIds(flaggedRelationFeatures));
         }
         final JsonArray uniqueFeatureOsmIds = new JsonArray();
         featureOsmIds.forEach(uniqueFeatureOsmIds::add);
@@ -142,26 +145,59 @@ public final class CheckFlagEvent extends Event
         return feature;
     }
 
-    private static void populateFlaggedRelationPropertiesAndGeometries(
-            final List<JsonObject> flaggedRelationFeatures, final JsonArray geometriesJsonArray,
-            final Set<JsonElement> featureOsmIds, final JsonArray featureProperties)
+    /**
+     * Populates geometries of flaggedRelation features to a {@link JsonArray}
+     *
+     * @param flaggedRelationFeatures
+     *            geojson features of FlaggedRelations
+     * @return {@link JsonArray} of geometries of flaggedRelations
+     */
+    private static JsonArray populateFlaggedRelationGeometries(
+            final List<JsonObject> flaggedRelationFeatures)
     {
         final JsonArray geometriesOfFlaggedRelations = new JsonArray();
         // Add all geometries of flaggedRelations to the json array
         flaggedRelationFeatures.stream()
                 .map(flaggedRelationFeature -> flaggedRelationFeature.get(GEOMETRY))
                 .forEach(jsonElement -> geometriesOfFlaggedRelations.add(jsonElement));
-        // To geometries of flagged objects add geometries of flaggedRelation
-        geometriesJsonArray.addAll(geometriesOfFlaggedRelations);
+        return geometriesOfFlaggedRelations;
+    }
+
+    /**
+     * Populates properties of flaggedRelation features to a {@link JsonArray}
+     *
+     * @param flaggedRelationFeatures
+     *            geojson features of FlaggedRelations
+     * @return {@link JsonArray} of properties of flaggedRelations
+     */
+    private static JsonArray populateFlaggedRelationFeatureProperties(
+            final List<JsonObject> flaggedRelationFeatures)
+    {
+        final JsonArray featureProperties = new JsonArray();
         // Update feature properties from flaggedRelation features
         flaggedRelationFeatures.stream()
                 .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
                 .forEach(property -> featureProperties.add(property));
+        return featureProperties;
+    }
+
+    /**
+     * Populates osmids of flaggedRelation features to a {@link Set<JsonElement>}
+     *
+     * @param flaggedRelationFeatures
+     *            flaggedRelationFeatures geojson features of FlaggedRelations
+     * @return {@link Set<JsonElement>} of all osmids of flaggedRelations
+     */
+    private static Set<JsonElement> populateFlaggedRelationFeatureOsmIds(
+            final List<JsonObject> flaggedRelationFeatures)
+    {
+        final Set<JsonElement> featureOsmIds = new HashSet<>();
         // Add osm id
         flaggedRelationFeatures.stream()
                 .map(flaggedRelationFeature -> flaggedRelationFeature.get(PROPERTIES))
                 .map(jsonElement -> jsonElement.getAsJsonObject().get("osmIdentifier"))
                 .forEach(featureOsmIds::add);
+        return featureOsmIds;
     }
 
     /**

@@ -60,7 +60,7 @@ public class FlaggedRelation extends FlaggedObject
         final JsonObject feature = this.relation.asGeoJsonFeature();
         final JsonObject properties = feature.getAsJsonObject("properties");
         properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
+        properties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
         return feature;
     }
 
