@@ -51,8 +51,8 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
         }
         catch (final IllegalArgumentException e)
         {
-            logger.trace("Failed to read priority value from Challenge JSON, defaulting to NONE");
-            priority = ChallengePriority.NONE;
+            logger.trace("Failed to read priority value from Challenge JSON, defaulting to LOW");
+            priority = ChallengePriority.LOW;
         }
 
         return new Challenge(this.getStringValue(challengeObject, Challenge.KEY_NAME, ""),

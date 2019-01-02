@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.LocationIterableProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonObject;
@@ -216,5 +218,51 @@ public final class CheckFlagEvent extends Event
     public String toString()
     {
         return this.toGeoJsonFeatureCollection().toString();
+    }
+
+    public String asLineDelimitedGeoJsonFeatures()
+    {
+        return asLineDelimitedGeoJsonFeatures((jsonObject) ->
+        {
+        });
+    }
+
+    public String asLineDelimitedGeoJsonFeatures(final Consumer<JsonObject> jsonMutator)
+    {
+        final JsonObject flagGeoJsonFeature = flag.asGeoJsonFeature();
+        final JsonObject flagGeoJsonProperties = flagGeoJsonFeature.get("properties")
+                .getAsJsonObject();
+        flagGeoJsonProperties.addProperty("flag:check", getCheckName());
+        flagGeoJsonProperties.addProperty("flag:timestamp", getTimestamp().toString());
+
+        jsonMutator.accept(flagGeoJsonFeature);
+
+        final StringBuilder builder = new StringBuilder().append(flagGeoJsonFeature.toString());
+
+        final FlaggedObject[] flaggedObjects = flag.getFlaggedObjects()
+                .toArray(new FlaggedObject[0]);
+        final int flaggedObjectsSize = flaggedObjects.length;
+
+        if (flaggedObjectsSize > 0)
+        {
+            builder.append('\n');
+
+            // loop through all the flagged objects except the last, give a new line
+            int index = 0;
+            for (; index < flaggedObjectsSize - 1; ++index)
+            {
+                final JsonObject feature = flaggedObjects[index]
+                        .asGeoJsonFeature(flag.getIdentifier());
+                jsonMutator.accept(feature);
+                builder.append(feature.toString()).append('\n');
+            }
+
+            // dont give a new line to the last
+            final JsonObject feature = flaggedObjects[index].asGeoJsonFeature(flag.getIdentifier());
+            jsonMutator.accept(feature);
+            builder.append(feature.toString());
+        }
+
+        return builder.toString();
     }
 }

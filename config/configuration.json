@@ -12,6 +12,23 @@
       "minimum": 50.0
     }
   },
+  "SpikyBuildingCheck": {
+    "spiky.angle.maximum": 15.0,
+    "curve": {
+      "degrees": {
+        "maximum.single_heading_change": 25.0,
+        "minimum.total_heading_change": 10.0
+      },
+      "points.minimum": 4
+    },
+    "challenge": {
+      "description": "Find poorly digitized buildings with sharp angles in their geometry",
+      "blurb": "Fix buildings with spiky geometry",
+      "instruction": "Open your favorite editor and validate that the buildings are mapped correctly",
+      "difficulty": "NORMAL",
+      "tags":"building"
+    }
+  },
   "OrphanNodeCheck": {
 
   },
@@ -259,6 +276,7 @@
   },
   "SelfIntersectingPolylineCheck": {
     "tags.filter":"highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
+    "minimum.highway.type":"service",
     "challenge": {
       "description": "Verify that the same Polyline does not intersect itself at any point.",
       "blurb": "Modify Polylines such that they do not self intersect.",
@@ -274,6 +292,14 @@
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
       },
       "tags":"highway"
+    }
+  },
+  "ShadowDetectionCheck": {
+    "challenge": {
+      "description": "Verify the height and level tags to make sure the building does not float in 3D",
+      "blurb": "Fix floating buildings",
+      "instruction": "Open your favorite editor and check the height and placement of the building or building part for 3D alignment.",
+      "difficulty": "NORMAL"
     }
   },
   "SharpAngleCheck": {
