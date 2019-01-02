@@ -1,6 +1,6 @@
 project.ext.versions = [
     checkstyle: '7.6.1',
-    atlas: '5.3.1',
+    atlas: '5.3.0',
     commons:'2.6',
     atlas_generator: '4.1.8',
 ]
