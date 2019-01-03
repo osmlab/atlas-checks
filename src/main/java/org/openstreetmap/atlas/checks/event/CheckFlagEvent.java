@@ -105,9 +105,7 @@ public final class CheckFlagEvent extends Event
                 feature.addProperty(TYPE, "Feature");
             }
             // Get flagged relations as GeoJson features
-            final List<JsonObject> flaggedRelationFeatures = flaggedRelations.stream()
-                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(flag.getIdentifier()))
-                    .collect(Collectors.toList());
+            final List<JsonObject> flaggedRelationFeatures = getFlaggedRelationsGeojsonFeatures(flag);
             if (flaggedRelations.size() == 1 && !feature.has(GEOMETRY))
             {
                 feature.add(GEOMETRY, flaggedRelationFeatures.get(0).get(GEOMETRY));
@@ -121,6 +119,7 @@ public final class CheckFlagEvent extends Event
             }
             // To geometries of flagged objects add geometries of flaggedRelation
             geometriesJsonArray.addAll(populateFlaggedRelationGeometries(flaggedRelationFeatures));
+            // To properties of flagged objects add properties of flaggedRelation
             featureProperties
                     .addAll(populateFlaggedRelationFeatureProperties(flaggedRelationFeatures));
             featureOsmIds.addAll(populateFlaggedRelationFeatureOsmIds(flaggedRelationFeatures));
@@ -143,6 +142,19 @@ public final class CheckFlagEvent extends Event
         feature.addProperty("id", flag.getIdentifier());
         feature.add("properties", flagProperties);
         return feature;
+    }
+
+    /**
+     * Converts all {@link FlaggedRelation} to geojson feature
+     *
+     * @param flag CheckFlag
+     * @return {@link List<JsonObject>} corresponding to geojson feature of {@link FlaggedRelation}
+     */
+    private static List<JsonObject> getFlaggedRelationsGeojsonFeatures(final CheckFlag flag)
+    {
+        return flag.getFlaggedRelations().stream()
+                .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(flag.getIdentifier()))
+                .collect(Collectors.toList());
     }
 
     /**
