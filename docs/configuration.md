@@ -99,6 +99,35 @@ You can also check for multiple values in a tag by separating the values by a co
 
 `highway->primary,secondary,tertiary`
 
+#### override
+
+This key allows you to specify certain values for your configuration for particular countries. Each check is allowed to have an `override` object.
+The properties of this object must have keys that are equal to ISO3 country codes.
+The values inside this object are themselves objects, which mimic the structure and properties of the default configuration for this check.
+Values defined inside of this country-specific override object take precedence over the default values, when run on a particular country. An example:
+```
+"CheckOne": {
+    "value": 1.0,
+    "word": "apple"
+    "override": {
+        "ABC": {
+            "value": 2.0,
+            "word": "banana"
+        }
+    }
+}
+```
+For the fictional country with ISO code `ABC`, `CheckOne` will be given the run with `value` equal to 2.0 and `word` equal to orange.
+In the rest of the world, the default values of 1.0 and apple will be used.
+You can also use the dot notation as shorthand to populate simple objects. For example:
+```
+"CheckTwo": {
+    "value": 1.0,
+    "foo": "bar",
+    "override.DEF.foo": "baz"
+}
+```
+would set `foo` to be "baz" in DEF, and "bar" in every other country.
 ### Check Configuration
 
 In the example above there was the following:
