@@ -36,6 +36,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Iterators;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -59,7 +60,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
     private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
-    private final Set<FlaggedRelation> flaggedRelations = new LinkedHashSet<>();
+    private final Set<FlaggedObject> flaggedRelations = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -254,7 +255,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return Objects.equals(this.identifier, otherFlag.identifier)
                 && Objects.equals(this.challengeName, otherFlag.challengeName)
                 && Objects.equals(this.instructions, otherFlag.instructions)
-                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects);
+                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects)
+                && Objects.equals(this.flaggedRelations, otherFlag.flaggedRelations);
     }
 
     /**
@@ -293,7 +295,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     /**
      * @return a set of flagged {@link Relation}s
      */
-    public Set<FlaggedRelation> getFlaggedRelations()
+    public Set<FlaggedObject> getFlaggedRelations()
     {
         return this.flaggedRelations;
     }
@@ -411,7 +413,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public int hashCode()
     {
         return Objects.hash(this.identifier, this.challengeName, this.instructions,
-                this.flaggedObjects);
+                this.flaggedObjects, this.flaggedRelations);
     }
 
     @Override
@@ -477,7 +479,21 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     private JsonObject boundsGeoJsonGeometry()
     {
-        final Iterator<FlaggedObject> iterator = flaggedObjects.iterator();
+        final Iterator<FlaggedObject> iterator;
+        if (!this.flaggedRelations.isEmpty() && !this.flaggedObjects.isEmpty())
+        {
+            iterator = Iterators.concat(this.flaggedRelations.iterator(),
+                    this.flaggedObjects.iterator());
+        }
+
+        else if (!this.flaggedRelations.isEmpty())
+        {
+            iterator = this.flaggedRelations.iterator();
+        }
+        else
+        {
+            iterator = this.flaggedObjects.iterator();
+        }
         Rectangle bounds;
 
         // Get the first bounds.

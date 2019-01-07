@@ -70,7 +70,7 @@ public class FlaggedRelation extends FlaggedObject
     @Override
     public Rectangle bounds()
     {
-        return null;
+        return this.relation.bounds();
     }
 
     /**
