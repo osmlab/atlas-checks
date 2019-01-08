@@ -101,7 +101,6 @@ public final class CheckFlagEvent extends Event
             feature = new JsonObject();
             geometriesJsonArray = new JsonArray();
         }
-
         if (!flaggedRelations.isEmpty())
         {
             if (!feature.has(TYPE))
