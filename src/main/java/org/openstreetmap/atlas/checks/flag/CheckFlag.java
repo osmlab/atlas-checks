@@ -36,7 +36,6 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterators;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -60,7 +59,6 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
     private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
-    private final Set<FlaggedObject> flaggedRelations = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -161,7 +159,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         // If object is instance of relation, then add the relation to flaggedRelations set
         else if (object instanceof Relation)
         {
-            this.flaggedRelations.add(new FlaggedRelation((Relation) object));
+            this.flaggedObjects.add(new FlaggedRelation((Relation) object));
         }
     }
 
@@ -255,8 +253,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return Objects.equals(this.identifier, otherFlag.identifier)
                 && Objects.equals(this.challengeName, otherFlag.challengeName)
                 && Objects.equals(this.instructions, otherFlag.instructions)
-                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects)
-                && Objects.equals(this.flaggedRelations, otherFlag.flaggedRelations);
+                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects);
     }
 
     /**
@@ -297,7 +294,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public Set<FlaggedObject> getFlaggedRelations()
     {
-        return this.flaggedRelations;
+        return this.flaggedObjects.stream().filter(FlaggedRelation.class::isInstance)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -336,6 +334,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public List<GeometryWithProperties> getGeometryWithProperties()
     {
         return this.flaggedObjects.stream()
+                .filter(flaggedObject -> flaggedObject instanceof FlaggedPoint
+                        || flaggedObject instanceof FlaggedPolyline)
                 .map(flaggedObject -> new GeometryWithProperties(flaggedObject.getGeometry(),
                         new HashMap<>(flaggedObject.getProperties())))
                 .collect(Collectors.toList());
@@ -413,7 +413,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public int hashCode()
     {
         return Objects.hash(this.identifier, this.challengeName, this.instructions,
-                this.flaggedObjects, this.flaggedRelations);
+                this.flaggedObjects);
     }
 
     @Override
@@ -479,21 +479,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     private JsonObject boundsGeoJsonGeometry()
     {
-        final Iterator<FlaggedObject> iterator;
-        if (!this.flaggedRelations.isEmpty() && !this.flaggedObjects.isEmpty())
-        {
-            iterator = Iterators.concat(this.flaggedRelations.iterator(),
-                    this.flaggedObjects.iterator());
-        }
-
-        else if (!this.flaggedRelations.isEmpty())
-        {
-            iterator = this.flaggedRelations.iterator();
-        }
-        else
-        {
-            iterator = this.flaggedObjects.iterator();
-        }
+        final Iterator<FlaggedObject> iterator = flaggedObjects.iterator();
         Rectangle bounds;
 
         // Get the first bounds.

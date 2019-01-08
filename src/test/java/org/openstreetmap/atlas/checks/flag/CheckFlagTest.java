@@ -122,8 +122,6 @@ public class CheckFlagTest
         this.setup.getAtlasWithRelations().relations().forEach(flag::addObject);
         // Tests if both the relations are added to flag
         Assert.assertEquals(flag.getFlaggedRelations().size(), 2);
-        // Tests if entities other than relations are not flagged
-        Assert.assertTrue(flag.getFlaggedObjects().isEmpty());
     }
 
     @Test
@@ -134,7 +132,7 @@ public class CheckFlagTest
         // Tests if both the relations are added to flag
         Assert.assertEquals(flag.getFlaggedRelations().size(), 2);
         // Tests if entities other than relations are also flagged
-        Assert.assertEquals(flag.getFlaggedObjects().size(), 13);
+        Assert.assertEquals(flag.getFlaggedObjects().size(), 15);
     }
 
     @Test
