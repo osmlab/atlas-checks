@@ -52,6 +52,22 @@ Configuration for Atlas Checks uses a HOCON (Human Optimized Config Object Notat
  This configuration file is the default configuration file supplied with Atlas Checks and configures the all checks
  that are included with Atlas Checks.
  
+ ### Groups
+
+A configuration file can optionally have a groups object.
+The keys in this object are the names of groups, and the values are lists of ISO3 country codes that are present in those groups.
+For example, given the following groups object:
+```
+{
+  "groups": {
+    "one": ["ABC", "DEF", "GHI"],
+    "two": ["JKL", "MNO", "PQR"]
+  }
+}
+```
+the rest of the file could refer to the fictional countries with ISO codes ABC, DEF, and GHI with the string “one”, and the fictional countries with the codes JKL, MNO, and PQR with the string “two”.
+One use for this is in the override object, discussed below.
+
  ### Common Keys
  
  There are a couple of common keys that all checks can make use of, and are baked into the framework itself, so no
@@ -101,23 +117,34 @@ You can also check for multiple values in a tag by separating the values by a co
 
 #### override
 
-This key allows you to specify certain values for your configuration for particular countries. Each check is allowed to have an `override` object.
-The properties of this object must have keys that are equal to ISO3 country codes.
+This key allows you to specify certain values for your configuration for particular countries.
+The properties of this object must have keys that are equal to ISO3 country codes or group names defined in the groups object, as explained above.
 The values inside this object are themselves objects, which mimic the structure and properties of the default configuration for this check.
-Values defined inside of this country-specific override object take precedence over the default values, when run on a particular country. An example:
+Values defined inside of this country-specific override object take precedence over the default values, when run on a particular country.
+An example:
 ```
-"CheckOne": {
+{
+  "CheckResourceLoader": {...},
+  "groups": {
+    "one": ["ABC", "DEF", "GHI"]
+  },
+  "CheckOne": {
     "value": 1.0,
     "word": "apple"
     "override": {
-        "ABC": {
-            "value": 2.0,
-            "word": "banana"
-        }
+      "JKL": {
+        "value": 2.0,
+        "word": "banana"
+      },
+      "one": {
+        "value": 1.5,
+        "word": "orange"
+      }
     }
+  }
 }
 ```
-For the fictional country with ISO code `ABC`, `CheckOne` will be given the run with `value` equal to 2.0 and `word` equal to orange.
+For the fictional country with ISO code `JKL`, `CheckOne` will be run with `value` equal to 2.0 and `word` equal to banana, while in `ABC`, `DEF`, and `GHI`, `value` will be 1.5 and `word` will be orange.
 In the rest of the world, the default values of 1.0 and apple will be used.
 You can also use the dot notation as shorthand to populate simple objects. For example:
 ```
