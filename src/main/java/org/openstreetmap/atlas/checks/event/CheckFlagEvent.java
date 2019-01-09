@@ -232,12 +232,11 @@ public final class CheckFlagEvent extends Event
     private static Set<JsonElement> populateFlaggedRelationFeatureOsmIds(
             final List<JsonObject> flaggedRelationFeatures)
     {
-        final Set<JsonElement> featureOsmIds = new HashSet<>();
         // Add osm id
-        flaggedRelationFeatures.stream().map(CheckFlagEvent::getFlaggedRelationPropertyFromFeature)
+        return flaggedRelationFeatures.stream()
+                .map(CheckFlagEvent::getFlaggedRelationPropertyFromFeature)
                 .map(jsonElement -> jsonElement.getAsJsonObject().get(OSM_IDENTIFIER))
-                .forEach(featureOsmIds::add);
-        return featureOsmIds;
+                .collect(Collectors.toSet());
     }
 
     /**

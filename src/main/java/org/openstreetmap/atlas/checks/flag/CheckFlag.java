@@ -372,11 +372,20 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         }
 
         final JsonArray features = new JsonArray();
-        // Need to update with flaggedRelations as well
-        this.getGeometryWithProperties()
-                .forEach(shape -> features.add(new GeoJsonBuilder().create(shape)));
+        // Features
+        if (!this.getGeometryWithProperties().isEmpty())
+        {
+            this.getGeometryWithProperties()
+                    .forEach(shape -> features.add(new GeoJsonBuilder().create(shape)));
+        }
+        final Set<FlaggedObject> flaggedRelations = this.getFlaggedRelations();
+        if (!flaggedRelations.isEmpty())
+        {
+            this.getFlaggedRelations().stream()
+                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(identifier))
+                    .forEach(feature -> features.add(feature));
+        }
         task.setGeoJson(Optional.of(features));
-
         return task;
     }
 
