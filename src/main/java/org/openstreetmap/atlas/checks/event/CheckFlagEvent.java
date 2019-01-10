@@ -274,7 +274,7 @@ public final class CheckFlagEvent extends Event
             // element
             flaggedRelations.stream()
                     .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(flag.getIdentifier()))
-                    .forEach(jsonObject -> features.add(jsonObject));
+                    .forEach(features::add);
         }
         final JsonObject flagPropertiesJson = new JsonObject();
         flagPropertiesJson.addProperty("id", flag.getIdentifier());

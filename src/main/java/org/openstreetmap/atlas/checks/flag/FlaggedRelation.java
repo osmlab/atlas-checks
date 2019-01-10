@@ -4,8 +4,10 @@ import java.util.Map;
 
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
+import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 
@@ -20,11 +22,13 @@ public class FlaggedRelation extends FlaggedObject
 {
     private final Relation relation;
     private final Map<String, String> properties;
+    private final String country;
 
     public FlaggedRelation(final Relation relation)
     {
         this.relation = relation;
         this.properties = initProperties(relation);
+        this.country = initCountry(relation);
     }
 
     /**
@@ -58,9 +62,9 @@ public class FlaggedRelation extends FlaggedObject
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
         final JsonObject feature = this.relation.asGeoJsonFeature();
-        final JsonObject properties = feature.getAsJsonObject("properties");
-        properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
+        final JsonObject featureProperties = feature.getAsJsonObject("properties");
+        featureProperties.addProperty("flag:id", flagIdentifier);
+        featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
         return feature;
     }
 
@@ -71,6 +75,15 @@ public class FlaggedRelation extends FlaggedObject
     public Rectangle bounds()
     {
         return this.relation.bounds();
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public String getCountry()
+    {
+        return this.country;
     }
 
     /**
@@ -105,5 +118,27 @@ public class FlaggedRelation extends FlaggedObject
         tags.put(OSM_IDENTIFIER_TAG, relation.getOsmIdentifier() + "");
         tags.put(ITEM_TYPE_TAG, "Relation");
         return tags;
+    }
+
+    private String initCountry(final AtlasObject object)
+    {
+        final Map<String, String> tags = object.getTags();
+        if (tags.containsKey(ISOCountryTag.KEY))
+        {
+            return tags.get(ISOCountryTag.KEY);
+        }
+        return ISOCountryTag.COUNTRY_MISSING;
+    }
+
+    @Override
+    public boolean equals(final Object other)
+    {
+        return super.equals(other);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return super.hashCode();
     }
 }

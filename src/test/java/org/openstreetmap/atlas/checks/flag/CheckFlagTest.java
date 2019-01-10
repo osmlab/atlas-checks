@@ -121,7 +121,7 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlasWithRelations().relations().forEach(flag::addObject);
         // Tests if both the relations are added to flag
-        Assert.assertEquals(flag.getFlaggedRelations().size(), 2);
+        Assert.assertEquals(2, flag.getFlaggedRelations().size());
     }
 
     @Test
@@ -130,9 +130,9 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
         // Tests if both the relations are added to flag
-        Assert.assertEquals(flag.getFlaggedRelations().size(), 2);
+        Assert.assertEquals(2, flag.getFlaggedRelations().size());
         // Tests if entities other than relations are also flagged
-        Assert.assertEquals(flag.getFlaggedObjects().size(), 15);
+        Assert.assertEquals(15, flag.getFlaggedObjects().size());
     }
 
     @Test
@@ -143,9 +143,9 @@ public class CheckFlagTest
         // Checks if members of flagged relations are added
         final FlaggedRelation flaggedRelation = (FlaggedRelation) flag.getFlaggedRelations()
                 .iterator().next();
-        Assert.assertEquals(flaggedRelation.members().size(), 3);
+        Assert.assertFalse(flaggedRelation.members().isEmpty());
         // Tests if list of geometriesWithProperties are populated for the flaggedObjects
-        Assert.assertEquals(flag.getGeometryWithProperties().size(), 13);
+        Assert.assertEquals(13, flag.getGeometryWithProperties().size());
     }
 
     @Test
@@ -153,7 +153,7 @@ public class CheckFlagTest
     {
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
-        Assert.assertEquals(CheckFlagEvent.flagToFeature(flag, new HashMap<>()).get("properties")
-                .getAsJsonObject().get("feature_count").getAsLong(), 15);
+        Assert.assertEquals(15, CheckFlagEvent.flagToFeature(flag, new HashMap<>())
+                .get("properties").getAsJsonObject().get("feature_count").getAsLong());
     }
 }

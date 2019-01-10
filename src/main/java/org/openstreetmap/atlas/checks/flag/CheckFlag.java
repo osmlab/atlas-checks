@@ -383,7 +383,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         {
             this.getFlaggedRelations().stream()
                     .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(identifier))
-                    .forEach(feature -> features.add(feature));
+                    .forEach(features::add);
         }
         task.setGeoJson(Optional.of(features));
         return task;
