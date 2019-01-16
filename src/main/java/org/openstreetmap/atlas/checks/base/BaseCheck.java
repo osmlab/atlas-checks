@@ -176,6 +176,16 @@ public abstract class BaseCheck<T> implements Check, Serializable
         return this.name;
     }
 
+    public AtlasEntityPolygonsFilter getCheckPolygonFilter()
+    {
+        return this.checkPolygonFilter;
+    }
+
+    public AtlasEntityPolygonsFilter getGlobalPolygonFilter()
+    {
+        return this.globalPolygonFilter;
+    }
+
     /**
      * Gets the whitelisted countries for this check. If an empty list is returned it safe to assume
      * this check applies to all countries.
