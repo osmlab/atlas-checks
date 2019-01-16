@@ -1,5 +1,10 @@
 package org.openstreetmap.atlas.checks.event;
 
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.GEOMETRY;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.OSM_IDENTIFIER;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.PROPERTIES;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.TYPE;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,14 +37,10 @@ import com.google.gson.JsonPrimitive;
 public final class CheckFlagEvent extends Event
 {
     private static final GeoJsonBuilder GEOJSON_BUILDER = new GeoJsonBuilder();
-    private static final String GEOMETRY = "geometry";
     private static final String GEOMETRY_COLLECTION = "GeometryCollection";
     private static final String GEOMETRIES = "geometries";
-    private static final String PROPERTIES = "properties";
     private static final String FEATURES = "features";
-    private static final String TYPE = "type";
     private static final String FEATURE_COLLECTION = "FeatureCollection";
-    private static final String OSM_IDENTIFIER = "osmIdentifier";
     private static final String INSTRUCTIONS = "instructions";
 
     private final String checkName;

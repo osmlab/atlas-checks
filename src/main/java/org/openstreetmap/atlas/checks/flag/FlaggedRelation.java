@@ -78,7 +78,7 @@ public class FlaggedRelation extends FlaggedObject
     }
 
     /**
-     * @return
+     * @return ISO country code of the country
      */
     @Override
     public String getCountry()
