@@ -139,12 +139,17 @@ An example:
       "one": {
         "value": 1.5,
         "word": "orange"
+      },
+      "ABC": {
+        "value": 3.0,
+        "word": "mango"
       }
     }
   }
 }
 ```
-For the fictional country with ISO code `JKL`, `CheckOne` will be run with `value` equal to 2.0 and `word` equal to banana, while in `ABC`, `DEF`, and `GHI`, `value` will be 1.5 and `word` will be orange.
+For the fictional country with ISO code `JKL`, `CheckOne` will be run with `value` equal to 2.0 and `word` equal to banana, while in `DEF` and `GHI`, `value` will be 1.5 and `word` will be orange.
+In `ABC`, the specific value takes precedence over the group value, so `value` will be equal to 3.0 and `word` will be mango.
 In the rest of the world, the default values of 1.0 and apple will be used.
 You can also use the dot notation as shorthand to populate simple objects. For example:
 ```
