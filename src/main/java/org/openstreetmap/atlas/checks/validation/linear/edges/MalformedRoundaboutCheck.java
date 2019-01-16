@@ -39,6 +39,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class MalformedRoundaboutCheck extends BaseCheck
 {
     private static final long serialVersionUID = -3018101860747289836L;
+    private static final String BASIC_INSTRUCTION = "This roundabout is malformed.";
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the"
             + " wrong direction, or has been improperly tagged as a roundabout.";
     private static final String INCOMPLETE_ROUTE_INSTRUCTIONS = "This roundabout does not form a single, one-way, complete, car navigable route.";
@@ -52,7 +53,7 @@ public class MalformedRoundaboutCheck extends BaseCheck
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
-            INCOMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS);
+            INCOMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS, BASIC_INSTRUCTION);
 
     private List<String> leftDrivingCountries;
 
@@ -164,7 +165,10 @@ public class MalformedRoundaboutCheck extends BaseCheck
 
         if (!instructions.isEmpty())
         {
-            return Optional.of(this.createFlag(roundaboutEdgeSet, String.join(" ", instructions)));
+            final CheckFlag flag = this.createFlag(roundaboutEdgeSet,
+                    this.getLocalizedInstruction(3));
+            instructions.forEach(flag::addInstruction);
+            return Optional.of(flag);
         }
         return Optional.empty();
     }

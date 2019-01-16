@@ -32,12 +32,13 @@ public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    private static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout has the wrong valence. It has a valence of {1,number,#}.";
+    private static final String BASIC_INSTRUCTION = "This roundabout has improper valence.";
+    private static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout has the wrong valence. It has a valence of {0,number,#}.";
     private static final String VALENCE_OF_ONE_INSTRUCTIONS = "This roundabout should be a turning loop or turning circle.";
     private static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node, {0,number,#}, that has more than 1 connections outside the roundabout.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS,
-            MINIMUM_NODE_VALENCE_INSTRUCTION);
+            MINIMUM_NODE_VALENCE_INSTRUCTION, BASIC_INSTRUCTION);
 
     private static final double LOWER_VALENCE_THRESHOLD_DEFAULT = 2.0;
     private final double minimumValence;
@@ -127,7 +128,9 @@ public class RoundaboutValenceCheck extends BaseCheck
         if (!instructions.isEmpty())
         {
             flaggedObjects.addAll(roundaboutEdges);
-            return Optional.of(this.createFlag(flaggedObjects, String.join(" ", instructions)));
+            final CheckFlag flag = this.createFlag(flaggedObjects, this.getLocalizedInstruction(3));
+            instructions.forEach(flag::addInstruction);
+            return Optional.of(flag);
         }
         return Optional.empty();
     }
