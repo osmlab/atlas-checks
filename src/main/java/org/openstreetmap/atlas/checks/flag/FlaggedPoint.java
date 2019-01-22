@@ -69,7 +69,7 @@ public class FlaggedPoint extends FlaggedObject
         final JsonObject properties;
         if (locationItem != null)
         {
-            feature = locationItem.asGeoJsonFeature();
+            feature = locationItem.asGeoJsonGeometry();
             properties = feature.getAsJsonObject("properties");
         }
         else
