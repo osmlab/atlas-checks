@@ -321,7 +321,14 @@
       "tags":"highway"
     }
   },
-  "SingleSegmentMotorwayCheck": {},
+  "SingleSegmentMotorwayCheck": {
+    "challenge": {
+      "description": "Tasks that identify ways tagged with highway=motorway that are not connected to any ways tagged the same.",
+      "blurb": "Fix disconnected motorways.",
+      "instruction": "Open your favorite editor and check whether the way should be tagged as highway=motorway.",
+      "difficulty": "NORMAL"
+    }
+  },
   "SinkIslandCheck": {
     "tree.size": 50,
     "minimum.highway.type": "service",

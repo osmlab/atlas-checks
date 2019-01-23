@@ -15,7 +15,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * This flags {@link Edge}s that are tagged with highway=motorway and not connected to any other
- * edges with the same highway tag.
+ * {@link Edge}s with the same highway tag.
  *
  * @author bbreithaupt
  */
