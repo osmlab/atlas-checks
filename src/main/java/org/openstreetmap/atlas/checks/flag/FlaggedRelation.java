@@ -61,7 +61,7 @@ public class FlaggedRelation extends FlaggedObject
     @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        final JsonObject feature = this.relation.asGeoJsonFeature();
+        final JsonObject feature = this.relation.asGeoJsonGeometry();
         final JsonObject featureProperties = feature.getAsJsonObject("properties");
         featureProperties.addProperty("flag:id", flagIdentifier);
         featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
