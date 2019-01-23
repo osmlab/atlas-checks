@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.streaming.resource.File;
  * Unit tests for {@link AtlasChecksGeoJSONDiffSubCommand}.
  *
  * @author bbreithaupt
+ * @author sayas01
  */
 public class AtlasChecksGeoJSONDiffSubCommandTest
 {
@@ -127,6 +128,27 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final String[] args = { "geojson-diff", String.format("-source=%s", GEO_11_GZ),
                 String.format("-target=%s", GEO_21_GZ),
                 String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
+
+        temp.deleteRecursively();
+    }
+
+    @Test
+    public void testFileCreationFromGZippedAndUnZippedFiles()
+    {
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "geojson-diff", String.format("-source=%s", GEO_11_GZ),
+                String.format("-target=%s", GEO_21), String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
