@@ -7,6 +7,6 @@ stagingId=$4
 
 find $repodir -type f | while read f; do
     suffix=$(echo $f | sed "s%^$repodir/%%")
-    echo "x${stagingId}x"
-    curl -v -u $name:$password -H "Content-type: application/x-rpm" --upload-file $f https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${stagingId}/${suffix} > /dev/null 2>&1
+    echo "Uploading to: ${stagingId}: ${suffix}"
+    curl -s -u $name:$password -H "Content-type: application/x-rpm" --upload-file $f https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${stagingId}/${suffix}
 done

@@ -15,7 +15,7 @@ public class AreasWithHighwayTagCheckTest
 
     private final AreasWithHighwayTagCheck check = new AreasWithHighwayTagCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"AreasWithHighwayTagCheck\":{\"tags.filter\":\"highway->!pedestrian&area->!yes\"}}"));
+                    "{\"AreasWithHighwayTagCheck\":{\"tags.filter\":\"highway->*&area->yes\"}}"));
 
     @Rule
     public AreasWithHighwayTagCheckTestRule setup = new AreasWithHighwayTagCheckTestRule();
@@ -58,5 +58,48 @@ public class AreasWithHighwayTagCheckTest
         this.verifier.verify(flag -> Assert.assertEquals(flag.getInstructions(),
                 String.format("Area with OSM ID %s is missing area tag.",
                         AreasWithHighwayTagCheckTestRule.INVALID_AREA_ID)));
+    }
+
+    @Test
+    public void validAreaHighwayPlatform()
+    {
+        this.verifier.actual(this.setup.validAreaHighwayPlatform(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void invalidEdgeHighwaySecondary()
+    {
+        this.verifier.actual(this.setup.invalidEdgeHighwaySecondary(), check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void validEdgeHighwayService()
+    {
+        this.verifier.actual(this.setup.validEdgeHighwayService(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validEdgeNoAreaTag()
+    {
+        this.verifier.actual(this.setup.validEdgeNoAreaTag(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validAreaHighwayPrimaryNoAreaTag()
+    {
+        this.verifier.actual(this.setup.validAreaHighwayPrimaryNoAreaTag(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void connectedEdgesBadTags()
+    {
+        this.verifier.actual(this.setup.connectedEdgesBadTags(), check);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 }
