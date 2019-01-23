@@ -64,7 +64,6 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
                 Paths.get(AtlasChecksGeoJSONDiffSubCommandTest.class
                         .getResource("geo_22.geojson.gz").getPath()),
                 Paths.get(GZ_TARGET_DIRECTORY.getPath() + "/geo_22.geojson.gz"));
-
     }
 
     @AfterClass
