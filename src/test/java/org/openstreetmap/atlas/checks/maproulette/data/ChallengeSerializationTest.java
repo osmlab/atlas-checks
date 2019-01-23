@@ -107,6 +107,24 @@ public class ChallengeSerializationTest
     }
 
     /**
+     * Tests that a challenge with no defaultPriority specified gets loaded as defaultPriority=LOW.
+     */
+    @Test
+    public void serializationNoDefaultPrioritySpecified()
+    {
+        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge4.json");
+
+        Assert.assertEquals(DESCRIPTION, deserializedChallenge.getDescription());
+        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
+        Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
+        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
+        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
+        Assert.assertNull(deserializedChallenge.getHighPriorityRule());
+        Assert.assertNull(deserializedChallenge.getMediumPriorityRule());
+        Assert.assertNull(deserializedChallenge.getLowPriorityRule());
+    }
+
+    /**
      * Helper function to get a valid {@link Gson} component with the Challenge deserializer
      * registered as a type adapter.
      * 
