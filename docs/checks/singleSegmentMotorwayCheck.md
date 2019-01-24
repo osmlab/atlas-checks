@@ -19,7 +19,7 @@ Next the valid objects have their connected edges checked to see if there are an
 If none are found the edge is flagged.
 
 Roundabouts are excluded from this check because they often act more like highway links. 
-There presence cannot be counted on to indicate the continuation of a highway classification. 
+Their presence cannot be counted on to indicate the continuation of a highway classification. 
 
 To learn more about the code, please look at the comments in the source code for the check.  
 [SingleSegmentMotorwayCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/SingleSegmentMotorwayCheck.java)
