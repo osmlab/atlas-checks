@@ -47,8 +47,10 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
             edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
                             "highway=primary" }),
-                    @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
-                            "highway=motorway" }),
+                    @Edge(id = "2000000", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_2) }, tags = { "highway=motorway" }),
+                    @Edge(id = "-2000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
                     @Edge(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4) }, tags = {
                             "highway=primary" }) })
     private Atlas invalidPrimaryMotorwayPrimarySegmentAtlas;

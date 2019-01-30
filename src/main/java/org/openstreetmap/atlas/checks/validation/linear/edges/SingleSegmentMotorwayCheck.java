@@ -65,7 +65,8 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (((Edge) object).connectedEdges().stream().noneMatch(this::isMotorwayNotRoundabout))
+        if (((Edge) object).connectedEdges().stream().filter(Edge::isMasterEdge)
+                .noneMatch(this::isMotorwayNotRoundabout))
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
