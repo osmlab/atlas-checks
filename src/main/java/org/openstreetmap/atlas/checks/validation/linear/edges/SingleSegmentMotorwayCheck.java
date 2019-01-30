@@ -14,7 +14,7 @@ import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This flags {@link Edge}s that are tagged with highway=motorway and not connected to any other
+ * This flags {@link Edge}s that are tagged with highway=motorway and are not connected to any other
  * {@link Edge}s with the same highway tag.
  *
  * @author bbreithaupt
@@ -51,7 +51,8 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && ((Edge) object).isMasterEdge()
-                && this.isMotorway((Edge) object) && !this.isFlagged(object.getOsmIdentifier());
+                && this.isMotorwayNotRoundabout((Edge) object)
+                && !this.isFlagged(object.getOsmIdentifier());
     }
 
     /**
@@ -64,7 +65,7 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (((Edge) object).connectedEdges().stream().noneMatch(this::isMotorway))
+        if (((Edge) object).connectedEdges().stream().noneMatch(this::isMotorwayNotRoundabout))
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
@@ -81,7 +82,7 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
      *            {@link Edge}
      * @return {@link boolean}
      */
-    private boolean isMotorway(final Edge edge)
+    private boolean isMotorwayNotRoundabout(final Edge edge)
     {
         return Validators.isOfType(edge, HighwayTag.class, HighwayTag.MOTORWAY)
                 && !JunctionTag.isRoundabout(edge);

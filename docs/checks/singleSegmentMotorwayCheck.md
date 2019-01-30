@@ -1,6 +1,6 @@
 # Single Segment Motorway Check
 
-This check flags Edges that are tagged with highway=motorway and not connected to any other Edges with the same highway tag.
+This check flags Edges that are tagged with highway=motorway and are not connected to any other Edges with the same highway tag.
 
 #### Live Examples
 
