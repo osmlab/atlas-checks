@@ -70,6 +70,20 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2), tags = {
+                            "synthetic_boundary_node=yes" }),
+                    @Node(coordinates = @Loc(value = TEST_3)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=primary" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
+                            "highway=motorway" }) })
+    private Atlas validMotorwaySegmentOneConnectionAtlas;
+
+    @TestAtlas(
+            // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
                     @Node(coordinates = @Loc(value = TEST_4)),
@@ -101,6 +115,11 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
     public Atlas invalidMotorwaySegmentOneConnectionAtlas()
     {
         return this.invalidMotorwaySegmentOneConnectionAtlas;
+    }
+
+    public Atlas validMotorwaySegmentOneConnectionAtlas()
+    {
+        return this.validMotorwaySegmentOneConnectionAtlas;
     }
 
     public Atlas invalidMotorwaySegmentOneConnectionRoundaboutAtlas()

@@ -10,6 +10,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -52,7 +53,8 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && ((Edge) object).isMasterEdge()
                 && this.isMotorwayNotRoundabout((Edge) object)
-                && !this.isFlagged(object.getOsmIdentifier());
+                && !this.isFlagged(object.getOsmIdentifier()) && ((Edge) object).connectedNodes()
+                        .stream().noneMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
     }
 
     /**

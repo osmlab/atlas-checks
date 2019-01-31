@@ -44,6 +44,14 @@ public class SingleSegmentMotorwayCheckTest
     }
 
     @Test
+    public void validMotorwaySegmentOneConnectionTest()
+    {
+        this.verifier.actual(this.setup.validMotorwaySegmentOneConnectionAtlas(),
+                new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void invalidMotorwaySegmentOneConnectionRoundaboutTest()
     {
         this.verifier.actual(this.setup.invalidMotorwaySegmentOneConnectionRoundaboutAtlas(),
