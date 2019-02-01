@@ -63,7 +63,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     private final Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
     private final Locale locale;
     private final String name = this.getClass().getSimpleName();
+    // geo filter specific to this check
     private final AtlasEntityPolygonsFilter checkPolygonFilter;
+    // geo filter for all checks
     private final AtlasEntityPolygonsFilter globalPolygonFilter;
     private TaggableFilter tagFilter = null;
 
@@ -174,6 +176,16 @@ public abstract class BaseCheck<T> implements Check, Serializable
     public final String getCheckName()
     {
         return this.name;
+    }
+
+    public AtlasEntityPolygonsFilter getCheckPolygonFilter()
+    {
+        return this.checkPolygonFilter;
+    }
+
+    public AtlasEntityPolygonsFilter getGlobalPolygonFilter()
+    {
+        return this.globalPolygonFilter;
     }
 
     /**
