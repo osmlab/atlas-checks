@@ -11,11 +11,11 @@ import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Takes 2 sets of atlas-checks log files and reports the number of additions, subtractions, and

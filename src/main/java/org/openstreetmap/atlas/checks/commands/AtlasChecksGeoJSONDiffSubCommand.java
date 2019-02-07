@@ -12,13 +12,13 @@ import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Takes 2 sets of atlas-checks geoJSON flag files and reports the number of additions,
@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+
     public AtlasChecksGeoJSONDiffSubCommand()
     {
         super("geojson-diff",
