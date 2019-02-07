@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Takes 2 sets of atlas-checks log files and reports the number of additions, subtractions, and
@@ -24,6 +27,8 @@ import com.google.gson.JsonObject;
  */
 public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
 {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+
     public AtlasChecksLogDiffSubCommand()
     {
         super("log-diff",
@@ -61,9 +66,9 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                 }
             }
         }
-        catch (final IOException exc)
+        catch (final IOException exception)
         {
-            exc.printStackTrace();
+            logger.warn("File read failed with exception", exception);
         }
     }
 
