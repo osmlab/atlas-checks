@@ -340,6 +340,12 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 Collections.singletonList(instruction), points);
     }
 
+    protected CheckFlag createFlag(final Set<AtlasObject> objects, final List<String> instructions,
+            final List<Location> points)
+    {
+        return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions, points);
+    }
+
     protected abstract Optional<CheckFlag> flag(AtlasObject object);
 
     /**
