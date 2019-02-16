@@ -35,13 +35,13 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=trunk" }),
                     @Edge(id = "2000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=path",
-                            "ferry=YES" }),
+                                    "ferry=YES" }),
                     @Edge(id = "3000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=primary",
-                            "ferry=YES" }),
+                                    "ferry=YES" }),
                     @Edge(id = "4000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=ferry",
-                            "ferry=YES" }) })
+                                    "ferry=YES" }) })
 
     private Atlas ferryHighwayAtlas;
 
@@ -59,16 +59,15 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=trunk" }),
                     @Edge(id = "2000101", coordinates = { @Loc(value = LOCATION_1),
                             @Loc(value = LOCATION_2) }, tags = { "highway=motorway",
-                            "route=ferry" }),
+                                    "route=ferry" }),
                     @Edge(id = "3000101", coordinates = { @Loc(value = LOCATION_1),
-                            @Loc(value = LOCATION_2) }, tags = { "highway=path",
-                            "route=ferry" }),
+                            @Loc(value = LOCATION_2) }, tags = { "highway=path", "route=ferry" }),
                     @Edge(id = "4000101", coordinates = { @Loc(value = LOCATION_1),
                             @Loc(value = LOCATION_2) }, tags = { "highway=motorway_link",
-                            "route=ferry" }),
+                                    "route=ferry" }),
                     @Edge(id = "5000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk",
-                            "route=ferry" }) })
+                                    "route=ferry" }) })
 
     private Atlas highwayAtlas;
 
@@ -86,7 +85,7 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=trunk" }),
                     @Edge(id = "1000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "route=ferry",
-                            "ferry=primary" }) })
+                                    "ferry=primary" }) })
 
     private Atlas validAtlas;
     @TestAtlas(
@@ -103,16 +102,16 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=trunk" }),
                     @Edge(id = "2000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=ferry",
-                            "ferry=YES" }),
+                                    "ferry=YES" }),
                     @Edge(id = "3000105", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_5) }, tags = { "highway=motorway", "route=ferry",
-                            "ferry=YES" }),
+                                    "ferry=YES" }),
                     @Edge(id = "4000104", coordinates = { @Loc(value = LOCATION_1),
                             @Loc(value = LOCATION_5) }, tags = { "highway=path", "route=ferry",
-                            "ferry=YES" }),
+                                    "ferry=YES" }),
                     @Edge(id = "5000103", coordinates = { @Loc(value = LOCATION_4),
                             @Loc(value = LOCATION_5) }, tags = { "highway=construction",
-                            "route=ferry", "ferry=YES" }) })
+                                    "route=ferry", "ferry=YES" }) })
 
     private Atlas minimumHighwayAtlas;
 

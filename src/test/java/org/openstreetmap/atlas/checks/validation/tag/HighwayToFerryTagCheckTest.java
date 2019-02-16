@@ -25,9 +25,8 @@ public class HighwayToFerryTagCheckTest
         this.verifier.actual(this.setup.getFerryHighwayAtlas(),
                 new HighwayToFerryTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag ->
-                Assert.assertTrue(
-                        flag.getInstructions().contains("has a Ferry and a Highway tag for a ferry route")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("has a Ferry and a Highway tag for a ferry route")));
     }
 
     @Test
@@ -36,9 +35,8 @@ public class HighwayToFerryTagCheckTest
         this.verifier.actual(this.setup.getHighwayAtlas(),
                 new HighwayToFerryTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(4, flags.size()));
-        this.verifier.verify(flag ->
-                Assert.assertTrue(
-                        flag.getInstructions().contains("has a Highway tag for a ferry route instead of a Ferry tag")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("has a Highway tag for a ferry route instead of a Ferry tag")));
     }
 
     @Test

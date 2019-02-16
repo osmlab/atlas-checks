@@ -25,21 +25,26 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayToFerryTagCheck extends BaseCheck
 {
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.PATH.toString();
-    private static final String FERRY_TAG_IF_PRESENT_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
-            + "Please verify and update the Ferry tag with the Highway tag value and remove the highway tag";
+    private static final String FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
+            + "Please verify and remove the highway tag";
     private static final String FERRY_TAG_IF_ABSENT_INSTRUCTION = "This way {0,number,#} has a Highway tag for a ferry route instead of a Ferry tag. "
             + "Please verify and add a Ferry tag with the Highway tag value and remove the highway tag";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(FERRY_TAG_IF_PRESENT_INSTRUCTION, FERRY_TAG_IF_ABSENT_INSTRUCTION);
+    private static final String FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
+            + "Please verify and update the Ferry tag with the Highway tag value and remove the highway tag";
+
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION,
+            FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION, FERRY_TAG_IF_ABSENT_INSTRUCTION);
 
     private final HighwayTag minimumHighwayType;
+
     /**
      * Default constructor
      *
-     * @param configuration {@link Configuration} required to construct any Check
+     * @param configuration
+     *            {@link Configuration} required to construct any Check
      */
-    public HighwayToFerryTagCheck(
-            final Configuration configuration)
+    public HighwayToFerryTagCheck(final Configuration configuration)
     {
         super(configuration);
         final String highwayType = (String) this.configurationValue(configuration,
@@ -50,23 +55,40 @@ public class HighwayToFerryTagCheck extends BaseCheck
     /**
      * Checks to see whether the supplied object class type is valid for this particular check
      *
-     * @param object The {@link AtlasObject} you are checking
+     * @param object
+     *            The {@link AtlasObject} you are checking
      * @return true if it is
      */
-    @Override public boolean validCheckForObject(final AtlasObject object)
+    @Override
+    public boolean validCheckForObject(final AtlasObject object)
     {
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
                 && Validators.isOfType(object, RouteTag.class, RouteTag.FERRY)
                 && this.isMinimumHighwayType(object) && !this.isFlagged(object.getOsmIdentifier());
     }
 
-    @Override protected Optional<CheckFlag> flag(final AtlasObject object)
+    @Override
+    protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // Mark OSM id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
-        return Validators.hasValuesFor(object, FerryTag.class)? Optional.of(this.createFlag(object,
-                this.getLocalizedInstruction(0, object.getOsmIdentifier()))) :
-                Optional.of(this.createFlag(object, this.getLocalizedInstruction(1, object.getOsmIdentifier())));
+        if (Validators.hasValuesFor(object, FerryTag.class)
+                && !this.hasSameClassificationAsHighwayTag(object))
+        {
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+        }
+        else if (Validators.hasValuesFor(object, FerryTag.class)
+                && this.hasSameClassificationAsHighwayTag(object))
+        {
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(1, object.getOsmIdentifier())));
+        }
+        else
+        {
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(2, object.getOsmIdentifier())));
+        }
     }
 
     /**
@@ -84,6 +106,19 @@ public class HighwayToFerryTagCheck extends BaseCheck
         return highwayTagOfObject.isPresent()
                 && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
     }
+
+    /**
+     * Verifies if the {@link FerryTag} value is the same as the {@link HighwayTag} value
+     *
+     * @param object
+     *            {@link AtlasObject} whose tag values need to be verified
+     * @return true if the {@link FerryTag} value is the same as the {@link HighwayTag} value
+     */
+    private boolean hasSameClassificationAsHighwayTag(final AtlasObject object)
+    {
+        return object.getTag(FerryTag.KEY).equals(object.getTag(HighwayTag.KEY));
+    }
+
     @Override
     protected List<String> getFallbackInstructions()
     {
