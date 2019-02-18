@@ -35,6 +35,30 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=trunk" }),
                     @Edge(id = "2000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=path",
+                                    "ferry=trunk" }),
+                    @Edge(id = "3000102", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_3) }, tags = { "highway=primary", "route=primary",
+                                    "ferry=primary" }),
+                    @Edge(id = "4000102", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=ferry",
+                                    "ferry=trunk" }) })
+
+    private Atlas sameFerryHighwayTagsAtlas;
+
+    @TestAtlas(
+
+            nodes = { @Node(id = "1", coordinates = @Loc(value = LOCATION_1)),
+                    @Node(id = "2", coordinates = @Loc(value = LOCATION_2)),
+                    @Node(id = "3", coordinates = @Loc(value = LOCATION_3)),
+                    @Node(id = "4", coordinates = @Loc(value = LOCATION_4)),
+                    @Node(id = "5", coordinates = @Loc(value = LOCATION_5)),
+                    @Node(id = "6", coordinates = @Loc(value = LOCATION_6)) },
+
+            edges = {
+                    @Edge(id = "1000101", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_2) }, tags = { "highway=trunk" }),
+                    @Edge(id = "2000102", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=path",
                                     "ferry=YES" }),
                     @Edge(id = "3000102", coordinates = { @Loc(value = LOCATION_2),
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=primary",
@@ -43,7 +67,7 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_3) }, tags = { "highway=trunk", "route=ferry",
                                     "ferry=YES" }) })
 
-    private Atlas ferryHighwayAtlas;
+    private Atlas differentFerryHighwayTagsAtlas;
 
     @TestAtlas(
 
@@ -115,9 +139,14 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
 
     private Atlas minimumHighwayAtlas;
 
-    public Atlas getFerryHighwayAtlas()
+    public Atlas getSameFerryHighwayAtlas()
     {
-        return this.ferryHighwayAtlas;
+        return this.sameFerryHighwayTagsAtlas;
+    }
+
+    public Atlas getDifferentFerryHighwayAtlas()
+    {
+        return this.differentFerryHighwayTagsAtlas;
     }
 
     public Atlas getHighwayAtlas()

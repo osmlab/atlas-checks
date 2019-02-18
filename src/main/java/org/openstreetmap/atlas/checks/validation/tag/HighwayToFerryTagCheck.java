@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -12,6 +13,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.FerryTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RouteTag;
+import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -26,11 +28,13 @@ public class HighwayToFerryTagCheck extends BaseCheck
 {
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.PATH.toString();
     private static final String FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
-            + "Please verify and remove the highway tag";
+            + "Please verify and remove the highway tag.";
     private static final String FERRY_TAG_IF_ABSENT_INSTRUCTION = "This way {0,number,#} has a Highway tag for a ferry route instead of a Ferry tag. "
-            + "Please verify and add a Ferry tag with the Highway tag value and remove the highway tag";
+            + "Please verify and add a Ferry tag with the Highway tag value and remove the highway tag.";
     private static final String FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
-            + "Please verify and update the Ferry tag with the Highway tag value and remove the highway tag";
+            + "Please verify and update the Ferry tag with the Highway tag value and remove the highway tag.";
+    private static final Predicate<Taggable> HAS_FERRY_TAG = object -> Validators
+            .hasValuesFor(object, FerryTag.class);
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION,
@@ -72,18 +76,22 @@ public class HighwayToFerryTagCheck extends BaseCheck
     {
         // Mark OSM id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
-        if (Validators.hasValuesFor(object, FerryTag.class)
-                && !this.hasSameClassificationAsHighwayTag(object))
+        final boolean hasHighwayClassification = this.hasSameClassificationAsHighwayTag(object);
+        final boolean hasFerryTag = HAS_FERRY_TAG.test(object);
+
+        // If the object has a Ferry Tag and is not of the same classification as the Highway Tag
+        if (hasFerryTag && !hasHighwayClassification)
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
-        else if (Validators.hasValuesFor(object, FerryTag.class)
-                && this.hasSameClassificationAsHighwayTag(object))
+        // If the object has a Ferry Tag and is of the same classification as the Highway Tag
+        else if (hasFerryTag && hasHighwayClassification)
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(1, object.getOsmIdentifier())));
         }
+        // If the object has no Ferry Tag
         else
         {
             return Optional.of(this.createFlag(object,

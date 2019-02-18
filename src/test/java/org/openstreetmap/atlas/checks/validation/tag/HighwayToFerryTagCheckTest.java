@@ -20,13 +20,23 @@ public class HighwayToFerryTagCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void testAtlasWithFerryAndHighwayTag()
+    public void testAtlasWithSameFerryAndHighwayTags()
     {
-        this.verifier.actual(this.setup.getFerryHighwayAtlas(),
+        this.verifier.actual(this.setup.getSameFerryHighwayAtlas(),
                 new HighwayToFerryTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains("has a Ferry and a Highway tag for a ferry route")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "has a Ferry and a Highway tag for a ferry route. Please verify and remove the highway tag.")));
+    }
+
+    @Test
+    public void testAtlasWithDifferentFerryAndHighwayTags()
+    {
+        this.verifier.actual(this.setup.getDifferentFerryHighwayAtlas(),
+                new HighwayToFerryTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "has a Ferry and a Highway tag for a ferry route. Please verify and update the Ferry tag with the Highway tag value and remove the highway tag.")));
     }
 
     @Test
