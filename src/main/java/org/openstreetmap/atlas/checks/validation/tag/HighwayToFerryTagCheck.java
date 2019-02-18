@@ -35,7 +35,6 @@ public class HighwayToFerryTagCheck extends BaseCheck
             + "Please verify and update the Ferry tag with the Highway tag value and remove the highway tag.";
     private static final Predicate<Taggable> HAS_FERRY_TAG = object -> Validators
             .hasValuesFor(object, FerryTag.class);
-
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION,
             FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION, FERRY_TAG_IF_ABSENT_INSTRUCTION);
