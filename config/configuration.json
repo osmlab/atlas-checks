@@ -415,7 +415,6 @@
     }
   },
   "HighwayToFerryTagCheck": {
-    "enabled": true,
     "highway.type.minimum": "path"
   }
 }
