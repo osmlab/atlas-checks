@@ -43,7 +43,7 @@
     }
   },
   "AreasWithHighwayTagCheck":{
-    "tag.filters":"highway->!pedestrian&area->!yes",
+    "tag.filters":"highway->*&area->yes",
     "challenge":{
       "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
       "blurb":"Highways should not be tagged as Areas.",
@@ -266,7 +266,6 @@
   },
   "RoundaboutValenceCheck": {
     "connections.minimum": 2.0,
-    "connections.maximum": 14.0,
     "challenge": {
       "description": "Verify that the valence of the roundabout is sensible.",
       "blurb": "Modify Polyline intersections with the roundabout edges",
