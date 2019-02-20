@@ -21,9 +21,9 @@ public abstract class FlaggedObject implements Serializable, Located
     protected static final String COUNTRY_MISSING = "NA";
     protected static final String AREA_TAG = "Area";
     protected static final String EDGE_TAG = "Edge";
-    protected static final String OSM_IDENTIFIER_TAG = "osmid";
-    protected static final String ITEM_IDENTIFIER_TAG = "ItemId";
-    protected static final String ITEM_TYPE_TAG = "ItemType";
+    protected static final String OSM_IDENTIFIER_TAG = "osmIdentifier";
+    protected static final String ITEM_IDENTIFIER_TAG = "identifier";
+    protected static final String ITEM_TYPE_TAG = "itemType";
     protected static final String LINE_TAG = "Line";
     protected static final String NODE_TAG = "Node";
     protected static final String POINT_TAG = "Point";

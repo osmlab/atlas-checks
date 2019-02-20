@@ -5,6 +5,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -24,7 +25,9 @@ import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -151,6 +154,12 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
             {
                 this.flaggedObjects.add(new FlaggedPolyline((AtlasItem) object));
             }
+        }
+
+        // If object is instance of relation, then add the relation to flaggedRelations set
+        else if (object instanceof Relation)
+        {
+            this.flaggedObjects.add(new FlaggedRelation((Relation) object));
         }
     }
 
@@ -281,6 +290,15 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
+     * @return a set of flagged {@link Relation}s
+     */
+    public Set<FlaggedObject> getFlaggedRelations()
+    {
+        return this.flaggedObjects.stream().filter(FlaggedRelation.class::isInstance)
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * @return the flag identifier
      */
     public String getIdentifier()
@@ -311,14 +329,15 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
-     * @return a list of {@link GeoJsonBuilder.LocationIterableProperties} representing all flagged
-     *         geometries
+     * @return a list of {@link GeometryWithProperties} representing all flagged geometries
      */
-    public List<GeoJsonBuilder.LocationIterableProperties> getLocationIterableProperties()
+    public List<GeometryWithProperties> getGeometryWithProperties()
     {
         return this.flaggedObjects.stream()
-                .map(flaggedObject -> new GeoJsonBuilder.LocationIterableProperties(
-                        flaggedObject.getGeometry(), flaggedObject.getProperties()))
+                .filter(flaggedObject -> flaggedObject instanceof FlaggedPoint
+                        || flaggedObject instanceof FlaggedPolyline)
+                .map(flaggedObject -> new GeometryWithProperties(flaggedObject.getGeometry(),
+                        new HashMap<>(flaggedObject.getProperties())))
                 .collect(Collectors.toList());
     }
 
@@ -353,10 +372,20 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         }
 
         final JsonArray features = new JsonArray();
-        this.getLocationIterableProperties()
-                .forEach(shape -> features.add(new GeoJsonBuilder().create(shape)));
+        // Features
+        if (!this.getGeometryWithProperties().isEmpty())
+        {
+            this.getGeometryWithProperties()
+                    .forEach(shape -> features.add(new GeoJsonBuilder().create(shape)));
+        }
+        final Set<FlaggedObject> flaggedRelations = this.getFlaggedRelations();
+        if (!flaggedRelations.isEmpty())
+        {
+            this.getFlaggedRelations().stream()
+                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(identifier))
+                    .forEach(features::add);
+        }
         task.setGeoJson(Optional.of(features));
-
         return task;
     }
 
