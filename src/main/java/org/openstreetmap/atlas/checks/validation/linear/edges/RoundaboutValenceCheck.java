@@ -2,17 +2,19 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -20,26 +22,26 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 /**
  * This check ensures that roundabouts with unreasonable valences are flagged. In reference to OSM
  * Wiki, each roundabout should have greater than 1 connection as 1 connection should be tagged as a
- * turning point, and no connections is obviously not a valid way.
+ * turning point, and no connections is obviously not a valid way. In addition, no individual Node
+ * within a roundabout should have more than one master Edge connecting from outside the roundabout.
  *
  * @author savannahostrowski
+ * @author bbreithaupt
  */
 public class RoundaboutValenceCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 1L;
-    public static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout, {0,number,#}, "
-            + "has the wrong valence. It has a valence of {1,number,#}.";
-    public static final String VALENCE_OF_ONE_INSTRUCTIONS = "This feature, {0,number,#},"
-            + " should not be labelled as a roundabout. "
-            + "This feature should be a turning loop or turning circle.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS);
+    private static final String BASIC_INSTRUCTION = "This roundabout has improper valence.";
+    private static final String WRONG_VALENCE_INSTRUCTIONS = "This roundabout has the wrong valence. It has a valence of {0,number,#}.";
+    private static final String VALENCE_OF_ONE_INSTRUCTIONS = "This roundabout should be a turning loop or turning circle.";
+    private static final String MINIMUM_NODE_VALENCE_INSTRUCTION = "This roundabout has a node, {0,number,#}, that has more than 1 connections outside the roundabout.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            WRONG_VALENCE_INSTRUCTIONS, VALENCE_OF_ONE_INSTRUCTIONS,
+            MINIMUM_NODE_VALENCE_INSTRUCTION, BASIC_INSTRUCTION);
 
     private static final double LOWER_VALENCE_THRESHOLD_DEFAULT = 2.0;
-    private static final double UPPER_VALENCE_THRESHOLD_DEFAULT = 10.0;
     private final double minimumValence;
-    private final double maximumValence;
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -53,8 +55,6 @@ public class RoundaboutValenceCheck extends BaseCheck
 
         this.minimumValence = (double) configurationValue(configuration, "connections.minimum",
                 LOWER_VALENCE_THRESHOLD_DEFAULT);
-        this.maximumValence = (double) configurationValue(configuration, "connections.maximum",
-                UPPER_VALENCE_THRESHOLD_DEFAULT);
     }
 
     @Override
@@ -67,7 +67,9 @@ public class RoundaboutValenceCheck extends BaseCheck
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
                 // Make sure that we are only looking at master edges
-                && ((Edge) object).isMasterEdge();
+                && ((Edge) object).isMasterEdge()
+                // Check for excluded highway types
+                && HighwayTag.isCarNavigableHighway(object);
     }
 
     /**
@@ -81,84 +83,68 @@ public class RoundaboutValenceCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
+        final Set<String> instructions = new HashSet<>();
+        final Set<AtlasObject> flaggedObjects = new HashSet<>();
 
-        // Get all edges in the roundabout
-        final Set<Edge> roundaboutEdges = getAllRoundaboutEdges(edge);
+        // Get all Edges in the roundabout
+        final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
+                .collectEdges();
+        roundaboutEdges
+                .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
-        final Set<Edge> connectedEdges = roundaboutEdges.stream()
-                .flatMap(roundaboutEdge -> roundaboutEdge.connectedEdges().stream())
-                .filter(HighwayTag::isCarNavigableHighway).filter(Edge::isMasterEdge)
-                .filter(currentEdge -> !JunctionTag.isRoundabout(currentEdge))
-                .filter(currentEdge -> !roundaboutEdges.contains(currentEdge))
+        // Get all the Nodes in the roundabout
+        final Set<Node> roundaboutNodes = roundaboutEdges.stream().map(Edge::start)
                 .collect(Collectors.toSet());
-        final int totalRoundaboutValence = connectedEdges.size();
+        // Check the valence of each node and gather the total valence
+        int totalRoundaboutValence = 0;
+        for (final Node node : roundaboutNodes)
+        {
+            final int nodeValence = node.connectedEdges().stream()
+                    .filter(currentEdge -> HighwayTag.isCarNavigableHighway(currentEdge)
+                            && currentEdge.isMasterEdge() && !JunctionTag.isRoundabout(currentEdge)
+                            && !roundaboutEdges.contains(currentEdge))
+                    .collect(Collectors.toSet()).size();
+            // If a Node has a valance of more than 1, flag it and the roundabout
+            if (nodeValence > 1)
+            {
+                instructions.add(this.getLocalizedInstruction(2, node.getOsmIdentifier()));
+                flaggedObjects.add(node);
+            }
+            totalRoundaboutValence += nodeValence;
+        }
 
         // If the totalRoundaboutValence is less than the minimum configured number of connections
-        // or greater than or equal to the maximum configured number of connections
-        if (totalRoundaboutValence < this.minimumValence
-                || totalRoundaboutValence > this.maximumValence)
+        if (totalRoundaboutValence < this.minimumValence)
         {
-            this.markAsFlagged(object.getIdentifier());
-
             // If the roundabout valence is 1, this should be labelled as a turning loop instead
             if (totalRoundaboutValence == 1)
             {
-                return Optional.of(this.createFlag(roundaboutEdges,
-                        this.getLocalizedInstruction(1, edge.getOsmIdentifier())));
+                instructions.add(this.getLocalizedInstruction(1));
             }
             // Otherwise, we want to flag and given information about identifier and valence
-            return Optional.of(this.createFlag(roundaboutEdges, this.getLocalizedInstruction(0,
-                    edge.getOsmIdentifier(), totalRoundaboutValence)));
+            instructions.add(this.getLocalizedInstruction(0, totalRoundaboutValence));
         }
-        // If the totalRoundaboutValence is not unusual, we don't flag the object
-        else
+
+        if (!instructions.isEmpty())
         {
-            return Optional.empty();
+            flaggedObjects.addAll(roundaboutEdges);
+            final CheckFlag flag = this.createFlag(flaggedObjects, this.getLocalizedInstruction(3));
+            instructions.forEach(flag::addInstruction);
+            return Optional.of(flag);
         }
+        return Optional.empty();
     }
 
     /**
-     * This method gets all edges in a roundabout given one edge in that roundabout
-     * 
-     * @param edge
-     *            An Edge object known to be a roundabout edge
-     * @return A set of edges in the roundabout
+     * Function for {@link SimpleEdgeWalker} that gathers connected edges that are part of a
+     * roundabout.
+     *
+     * @return {@link Function} for {@link SimpleEdgeWalker}
      */
-    private Set<Edge> getAllRoundaboutEdges(final Edge edge)
+    private Function<Edge, Stream<Edge>> isRoundaboutEdge()
     {
-        final Set<Edge> roundaboutEdges = new HashSet<>();
-
-        // Initialize a queue to add yet to be processed connected edges to
-        final Queue<Edge> queue = new LinkedList<>();
-
-        // Mark the current Edge as visited and enqueue it
-        this.markAsFlagged(edge.getIdentifier());
-        queue.add(edge);
-
-        // As long as the queue is not empty
-        while (!queue.isEmpty())
-        {
-            // Dequeue a connected edge and add it to the roundaboutEdges
-            final Edge currentEdge = queue.poll();
-
-            roundaboutEdges.add(currentEdge);
-
-            // Get the edges connected to the edge e as an iterator
-            final Set<Edge> connectedEdges = currentEdge.connectedEdges();
-
-            for (final Edge connectedEdge : connectedEdges)
-            {
-                final Long edgeId = connectedEdge.getIdentifier();
-
-                if (JunctionTag.isRoundabout(connectedEdge)
-                        && !roundaboutEdges.contains(connectedEdge))
-
-                {
-                    this.markAsFlagged(edgeId);
-                    queue.add(connectedEdge);
-                }
-            }
-        }
-        return roundaboutEdges;
+        return edge -> edge.connectedEdges().stream()
+                .filter(connected -> JunctionTag.isRoundabout(connected)
+                        && HighwayTag.isCarNavigableHighway(connected));
     }
 }
