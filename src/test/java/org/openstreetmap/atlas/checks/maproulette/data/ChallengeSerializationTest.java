@@ -19,6 +19,7 @@ public class ChallengeSerializationTest
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String BLURB = "BLURB";
     private static final String INSTRUCTION = "INSTRUCTION";
+    private static final String CHECKIN_COMMENT = "#maproulette";
 
     /**
      * Test if a challange can be deserialized from a test JSON file. The challenge resource json
@@ -32,6 +33,7 @@ public class ChallengeSerializationTest
         Assert.assertEquals(DESCRIPTION, deserializedChallenge.getDescription());
         Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
         Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
+        Assert.assertEquals(CHECKIN_COMMENT, deserializedChallenge.getCheckinComment());
         Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
         Assert.assertEquals(ChallengePriority.NONE, deserializedChallenge.getDefaultPriority());
         Assert.assertNull(deserializedChallenge.getHighPriorityRule());
@@ -51,6 +53,7 @@ public class ChallengeSerializationTest
         Assert.assertEquals(DESCRIPTION, deserializedChallenge.getDescription());
         Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
         Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
+        Assert.assertEquals(CHECKIN_COMMENT, deserializedChallenge.getCheckinComment());
         Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
         Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
         Assert.assertNotNull(deserializedChallenge.getHighPriorityRule());
@@ -105,7 +108,7 @@ public class ChallengeSerializationTest
         Assert.assertEquals(deserializedJson.get("blurb"), rawJson.get("blurb"));
         Assert.assertEquals(deserializedJson.get("instruction"), rawJson.get("instruction"));
     }
-
+    
     /**
      * Tests that a challenge with no defaultPriority specified gets loaded as defaultPriority=LOW.
      */

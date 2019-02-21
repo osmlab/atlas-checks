@@ -49,6 +49,7 @@ public class Challenge implements Serializable
     private final String description;
     private final ChallengeDifficulty difficulty;
     private final String instruction;
+    private String checkinComment;
     private String name;
     private final String tags;
     private final ChallengePriority defaultPriority;
@@ -59,8 +60,17 @@ public class Challenge implements Serializable
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty, final String tags)
     {
-        this(name, description, blurb, instruction, difficulty, ChallengePriority.LOW, null, null,
+        this(name, description, blurb, instruction, difficulty, ChallengePriority.NONE, null, null,
                 null, tags);
+    }
+
+    public Challenge(final String name, final String description, final String blurb,
+            final String instruction, final String checkinComment,
+            final ChallengeDifficulty difficulty, final String tags)
+    {
+        this(name, description, blurb, instruction, difficulty, ChallengePriority.NONE, null, null,
+                null, tags);
+        this.checkinComment = checkinComment;
     }
 
     public Challenge(final String name, final String description, final String blurb,
@@ -78,6 +88,17 @@ public class Challenge implements Serializable
         this.mediumPriorityRule = mediumPriorityRule;
         this.lowPriorityRule = lowPriorityRule;
         this.tags = tags;
+        this.checkinComment = "#maproulette";
+    }
+
+    public String getCheckinComment()
+    {
+        return this.checkinComment;
+    }
+
+    public void setCheckinComment(final String checkinComment)
+    {
+        this.checkinComment = checkinComment;
     }
 
     public long getId()
