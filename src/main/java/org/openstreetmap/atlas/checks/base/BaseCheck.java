@@ -353,12 +353,15 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected CheckFlag createFlag(final AtlasObject object, final List<String> instructions)
     {
-        return new CheckFlag(this.getTaskIdentifier(object), Collections.singleton(object), instructions);
+        return new CheckFlag(this.getTaskIdentifier(object), Collections.singleton(object),
+                instructions);
     }
 
-    protected CheckFlag createFlag(final AtlasObject object, final List<String> instructions, final List<Location> points)
+    protected CheckFlag createFlag(final AtlasObject object, final List<String> instructions,
+            final List<Location> points)
     {
-        return new CheckFlag(this.getTaskIdentifier(object), Collections.singleton(object), instructions, points);
+        return new CheckFlag(this.getTaskIdentifier(object), Collections.singleton(object),
+                instructions, points);
     }
 
     protected abstract Optional<CheckFlag> flag(AtlasObject object);
