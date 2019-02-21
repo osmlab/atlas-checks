@@ -37,13 +37,13 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     @Override
-    protected void mapFeatures(final File file, final HashMap map)
+    protected HashMap<String, HashMap<String, JsonObject>> mapFeatures(final File file)
     {
+        final HashMap<String, HashMap<String, JsonObject>> checkFeatureMap = new HashMap<>();
         try (InputStreamReader inputStreamReader = file.isGzipped()
                 ? new InputStreamReader(new GZIPInputStream(new FileInputStream(file.getFile())))
                 : new FileReader(file.getPath()))
         {
-
             try (BufferedReader reader = new BufferedReader(inputStreamReader))
             {
                 String line;
@@ -56,12 +56,9 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                     final String checkName = source.get(PROPERTIES).getAsJsonObject().get(GENERATOR)
                             .getAsString();
                     // Add the check name as a key
-                    if (!map.containsKey(checkName))
-                    {
-                        map.put(checkName, new HashMap<>());
-                    }
+                    checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                     // Add the geoJSON as a value
-                    ((HashMap<String, HashMap>) map).get(checkName).put(
+                    checkFeatureMap.get(checkName).put(
                             source.get(PROPERTIES).getAsJsonObject().get(ID).getAsString(), source);
                 }
             }
@@ -70,33 +67,29 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
         {
             logger.warn("File read failed with exception", exception);
         }
+        return checkFeatureMap;
     }
 
     @Override
-    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
-            final DiffReturn returnType)
+    protected JSONFlagDiff getDiff(final HashMap<String, HashMap<String, JsonObject>> source,
+            final HashMap<String, HashMap<String, JsonObject>> target, final DiffReturn returnType)
     {
         final JSONFlagDiff diff = new JSONFlagDiff();
-        source.forEach((check, flag) ->
+        source.forEach((check, flags) -> flags.forEach((identifier, featureCollection) ->
         {
-            ((HashMap<String, JsonObject>) flag).forEach((identifier, featureCollection) ->
+            // Get missing
+            if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
             {
-                // Get missing
-                if (!target.containsKey(check)
-                        || !((HashMap<String, HashMap>) target).get(check).containsKey(identifier))
-                {
-                    diff.addMissing(featureCollection);
-                }
-                // If not missing, check for Atlas id changes
-                else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
-                        featureCollection.get(FEATURES).getAsJsonArray(),
-                        ((HashMap<String, HashMap<String, JsonObject>>) target).get(check)
-                                .get(identifier).get(FEATURES).getAsJsonArray()))
-                {
-                    diff.addChanged(featureCollection);
-                }
-            });
-        });
+                diff.addMissing(featureCollection);
+            }
+            // If not missing, check for Atlas id changes
+            else if (returnType.equals(DiffReturn.CHANGED)
+                    && !this.identicalFeatureIds(featureCollection.get(FEATURES).getAsJsonArray(),
+                            target.get(check).get(identifier).get(FEATURES).getAsJsonArray()))
+            {
+                diff.addChanged(featureCollection);
+            }
+        }));
         return diff;
     }
 

@@ -47,12 +47,13 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     static final String GENERATOR = "generator";
     static final String ID = "id";
     static final String ITEM_ID = "ItemId";
+    static final String NAME = "name";
     static final String PROPERTIES = "properties";
     static final String TYPE = "type";
 
     private final Gson gson = new Gson();
-    private final HashMap source = new HashMap();
-    private final HashMap target = new HashMap();
+    private HashMap<String, HashMap<String, JsonObject>> source = new HashMap<>();
+    private HashMap<String, HashMap<String, JsonObject>> target = new HashMap<>();
 
     private String name;
     private String description;
@@ -138,10 +139,10 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     public int execute(final CommandMap command)
     {
         // Get files and parse to maps
-        getFilesOfType((File) command.get(SOURCE_FILE_PARAMETER))
-                .forEach(path -> this.mapFeatures(path, this.source));
-        getFilesOfType((File) command.get(TARGET_FILE_PARAMETER))
-                .forEach(path -> this.mapFeatures(path, this.target));
+        this.getFilesOfType((File) command.get(SOURCE_FILE_PARAMETER))
+                .forEach(path -> this.source = this.mergeMaps(this.mapFeatures(path), this.source));
+        this.getFilesOfType((File) command.get(TARGET_FILE_PARAMETER))
+                .forEach(path -> this.target = this.mergeMaps(this.mapFeatures(path), this.target));
 
         // Get changes from source to target
         final HashSet<JsonObject> additions = this
@@ -170,6 +171,13 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
         return 0;
     }
 
+    /**
+     * Given a folder, gathers all files that have a file extension matching {@link #fileExtension}.
+     *
+     * @param file
+     *            a folder with the files to gather.
+     * @return a {@link Set} of {@link File}s
+     */
     private Set<File> getFilesOfType(final File file)
     {
         final String fileName = file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
@@ -201,15 +209,40 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
+     * Merges one 2d check and flags {@link HashMap} into another.
+     *
+     * @param put
+     *            a 2d check and flags {@link HashMap} that will be put into {@code place} to form
+     *            the output
+     * @param place
+     *            2d check and flags {@link HashMap} that will have {@code put} placed into it to
+     *            form the output
+     * @return a merged 2d check and flags {@link HashMap}
+     */
+    private HashMap<String, HashMap<String, JsonObject>> mergeMaps(
+            final HashMap<String, HashMap<String, JsonObject>> put,
+            final HashMap<String, HashMap<String, JsonObject>> place)
+    {
+        final HashMap<String, HashMap<String, JsonObject>> mergedMap = new HashMap<>(place);
+        put.forEach((check, flags) ->
+        {
+            mergedMap.putIfAbsent(check, new HashMap<>());
+            mergedMap.get(check).putAll(flags);
+        });
+        return mergedMap;
+    }
+
+    /**
      * Parses an atlas-checks flag file and maps each flag to its id.
      *
      * @param file
      *            {@link File} containing the flags
-     * @param map
-     *            {@link HashMap} to store the mapped flags
+     * @return a 2d {@link HashMap} containing a {@link HashMap} of {@link JsonObject}s mapped to
+     *         {@link String} feature ids, mapped to {@link String} check names.
      */
-    protected void mapFeatures(final File file, final HashMap map)
+    protected HashMap<String, HashMap<String, JsonObject>> mapFeatures(final File file)
     {
+        return new HashMap<>();
     }
 
     /**
@@ -226,8 +259,8 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *            the returned {@link JSONFlagDiff} will be populated.
      * @return an {@link JSONFlagDiff}
      */
-    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
-            final DiffReturn returnType)
+    protected JSONFlagDiff getDiff(final HashMap<String, HashMap<String, JsonObject>> source,
+            final HashMap<String, HashMap<String, JsonObject>> target, final DiffReturn returnType)
     {
         return new JSONFlagDiff();
     }

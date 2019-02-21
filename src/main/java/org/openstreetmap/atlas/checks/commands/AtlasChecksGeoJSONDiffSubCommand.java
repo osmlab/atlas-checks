@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -31,6 +33,7 @@ import com.google.gson.stream.JsonReader;
 public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+    private static final Pattern NAME_PATTERN = Pattern.compile("(.+) ?");
 
     public AtlasChecksGeoJSONDiffSubCommand()
     {
@@ -40,47 +43,61 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     @Override
-    protected void mapFeatures(final File file, final HashMap map)
+    protected HashMap<String, HashMap<String, JsonObject>> mapFeatures(final File file)
     {
+        final HashMap<String, HashMap<String, JsonObject>> checkFeatureMap = new HashMap<>();
         try (InputStream inputStream = file.isGzipped()
                 ? new GZIPInputStream(new FileInputStream(file.getFile()))
                 : file.read())
         {
+            // Parse the json
             final JsonObject json = getGson()
                     .fromJson(new JsonReader(new InputStreamReader(inputStream)), JsonObject.class);
-            json.get(FEATURES).getAsJsonArray()
-                    .forEach(feature -> map.put(feature.getAsJsonObject().get(ID).getAsString(),
-                            feature.getAsJsonObject()));
+            //
+            json.get(FEATURES).getAsJsonArray().forEach(feature ->
+            {
+                final JsonObject jsonFeature = feature.getAsJsonObject();
+                // Get the check name
+                final Matcher nameMatch = NAME_PATTERN.matcher(
+                        jsonFeature.get(PROPERTIES).getAsJsonObject().get(NAME).getAsString());
+                nameMatch.find();
+                final String checkName = nameMatch.group(1);
+                // Add the check name as a key
+                checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
+                // Add the geoJSON as a value
+                checkFeatureMap.get(checkName).put(feature.getAsJsonObject().get(ID).getAsString(),
+                        jsonFeature);
+            });
         }
         catch (final IOException exception)
         {
             logger.warn("File read failed with exception", exception);
         }
+        return checkFeatureMap;
     }
 
     @Override
-    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
-            final DiffReturn returnType)
+    protected JSONFlagDiff getDiff(final HashMap<String, HashMap<String, JsonObject>> source,
+            final HashMap<String, HashMap<String, JsonObject>> target, final DiffReturn returnType)
     {
         final JSONFlagDiff diff = new JSONFlagDiff();
-        source.forEach((identifier, feature) ->
+        source.forEach((check, flags) -> flags.forEach((identifier, feature) ->
         {
             // Get missing
-            if (!target.containsKey(identifier))
+            if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
             {
-                diff.addMissing((JsonObject) feature);
+                diff.addMissing(feature);
             }
             // If not missing, check for Atlas id changes
             else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
-                    ((JsonObject) feature).get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
+                    feature.get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
                             .getAsJsonArray(),
-                    ((HashMap<String, JsonObject>) target).get(identifier).getAsJsonObject()
-                            .get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
-                            .getAsJsonArray()))
+                    target.get(check).get(identifier).getAsJsonObject().get(PROPERTIES)
+                            .getAsJsonObject().get(FEATURE_PROPERTIES).getAsJsonArray()))
             {
-                diff.addChanged((JsonObject) feature);
+                diff.addChanged(feature);
             }
-        });
+        }));
         return diff;
     }
 

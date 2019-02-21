@@ -91,7 +91,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.geojson")));
 
         temp.deleteRecursively();
     }
@@ -113,7 +113,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("changes-\\d+-2.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-3.geojson")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-4.geojson")));
 
         temp.deleteRecursively();
     }
