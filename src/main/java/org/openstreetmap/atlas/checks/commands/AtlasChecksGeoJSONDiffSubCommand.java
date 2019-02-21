@@ -1,12 +1,19 @@
 package org.openstreetmap.atlas.checks.commands;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -23,6 +30,8 @@ import com.google.gson.stream.JsonReader;
  */
 public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+
     public AtlasChecksGeoJSONDiffSubCommand()
     {
         super("geojson-diff",
@@ -33,10 +42,19 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     @Override
     protected void mapFeatures(final File file, final HashMap map)
     {
-        final JsonObject json = getGson()
-                .fromJson(new JsonReader(new InputStreamReader(file.read())), JsonObject.class);
-        json.get(FEATURES).getAsJsonArray().forEach(feature -> map
-                .put(feature.getAsJsonObject().get(ID).getAsString(), feature.getAsJsonObject()));
+        try (InputStream inputStream = file.isGzipped()
+                ? new GZIPInputStream(new FileInputStream(file.getFile())) : file.read())
+        {
+            final JsonObject json = getGson()
+                    .fromJson(new JsonReader(new InputStreamReader(inputStream)), JsonObject.class);
+            json.get(FEATURES).getAsJsonArray()
+                    .forEach(feature -> map.put(feature.getAsJsonObject().get(ID).getAsString(),
+                            feature.getAsJsonObject()));
+        }
+        catch (final IOException exception)
+        {
+            logger.warn("File read failed with exception", exception);
+        }
     }
 
     @Override

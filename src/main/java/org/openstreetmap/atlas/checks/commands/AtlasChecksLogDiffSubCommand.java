@@ -1,12 +1,18 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.zip.GZIPInputStream;
 
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -21,6 +27,8 @@ import com.google.gson.JsonObject;
  */
 public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
 {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+
     public AtlasChecksLogDiffSubCommand()
     {
         super("log-diff",
@@ -31,30 +39,36 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     @Override
     protected void mapFeatures(final File file, final HashMap map)
     {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file.getPath())))
+        try (InputStreamReader inputStreamReader = file.isGzipped()
+                ? new InputStreamReader(new GZIPInputStream(new FileInputStream(file.getFile())))
+                : new FileReader(file.getPath()))
         {
-            String line;
-            // Read each line (flag) from the log file
-            while ((line = reader.readLine()) != null)
+
+            try (BufferedReader reader = new BufferedReader(inputStreamReader))
             {
-                // Parse the json
-                final JsonObject source = getGson().fromJson(line, JsonObject.class);
-                // Get the check name
-                final String checkName = source.get(PROPERTIES).getAsJsonObject().get(GENERATOR)
-                        .getAsString();
-                // Add the check name as a key
-                if (!map.containsKey(checkName))
+                String line;
+                // Read each line (flag) from the log file
+                while ((line = reader.readLine()) != null)
                 {
-                    map.put(checkName, new HashMap<>());
+                    // Parse the json
+                    final JsonObject source = getGson().fromJson(line, JsonObject.class);
+                    // Get the check name
+                    final String checkName = source.get(PROPERTIES).getAsJsonObject().get(GENERATOR)
+                            .getAsString();
+                    // Add the check name as a key
+                    if (!map.containsKey(checkName))
+                    {
+                        map.put(checkName, new HashMap<>());
+                    }
+                    // Add the geoJSON as a value
+                    ((HashMap<String, HashMap>) map).get(checkName).put(
+                            source.get(PROPERTIES).getAsJsonObject().get(ID).getAsString(), source);
                 }
-                // Add the geoJSON as a value
-                ((HashMap<String, HashMap>) map).get(checkName).put(
-                        source.get(PROPERTIES).getAsJsonObject().get(ID).getAsString(), source);
             }
         }
-        catch (final IOException exc)
+        catch (final IOException exception)
         {
-            exc.printStackTrace();
+            logger.warn("File read failed with exception", exception);
         }
     }
 
