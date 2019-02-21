@@ -50,9 +50,9 @@ public class HighwayToFerryTagCheck extends BaseCheck
     public HighwayToFerryTagCheck(final Configuration configuration)
     {
         super(configuration);
-        final String highwayType = (String) this.configurationValue(configuration,
-                "highway.type.minimum", MINIMUM_HIGHWAY_TYPE_DEFAULT);
-        this.minimumHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
+        this.minimumHighwayType = (HighwayTag) this.configurationValue(configuration,
+                "highway.type.minimum", MINIMUM_HIGHWAY_TYPE_DEFAULT,
+                object -> HighwayTag.valueOf(object.toString().toUpperCase()));
     }
 
     /**
@@ -75,17 +75,17 @@ public class HighwayToFerryTagCheck extends BaseCheck
     {
         // Mark OSM id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
-        final boolean hasHighwayClassification = this.hasSameClassificationAsHighwayTag(object);
+        final boolean hasSameHighwayClassification = this.hasSameClassificationAsHighwayTag(object);
         final boolean hasFerryTag = HAS_FERRY_TAG.test(object);
 
         // If the object has a Ferry Tag and is not of the same classification as the Highway Tag
-        if (hasFerryTag && !hasHighwayClassification)
+        if (hasFerryTag && !hasSameHighwayClassification)
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         // If the object has a Ferry Tag and is of the same classification as the Highway Tag
-        else if (hasFerryTag && hasHighwayClassification)
+        else if (hasFerryTag && hasSameHighwayClassification)
         {
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(1, object.getOsmIdentifier())));
@@ -108,10 +108,9 @@ public class HighwayToFerryTagCheck extends BaseCheck
      */
     private boolean isMinimumHighwayType(final AtlasObject object)
     {
-        final Optional<HighwayTag> highwayTagOfObject = HighwayTag.highwayTag(object);
-
-        return highwayTagOfObject.isPresent()
-                && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+        return HighwayTag.highwayTag(object)
+                .map(highwayTag -> highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType))
+                .orElse(false);
     }
 
     /**
