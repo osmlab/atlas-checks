@@ -301,7 +301,12 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      */
     protected int getSourceSize()
     {
-        return this.source.size();
+        int sourceSize = 0;
+        for (final String check : ((HashMap<String, HashMap>) getSource()).keySet())
+        {
+            sourceSize += ((HashMap<String, HashMap>) getSource()).get(check).size();
+        }
+        return sourceSize;
     }
 
     /**

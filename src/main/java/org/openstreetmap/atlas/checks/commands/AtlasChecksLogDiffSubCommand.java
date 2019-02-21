@@ -126,15 +126,4 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
         // Compare the two id lists
         return sourceIds.containsAll(targetIds) && targetIds.containsAll(sourceIds);
     }
-
-    @Override
-    protected int getSourceSize()
-    {
-        int sourceSize = 0;
-        for (final String check : ((HashMap<String, HashMap>) getSource()).keySet())
-        {
-            sourceSize += ((HashMap<String, HashMap>) getSource()).get(check).size();
-        }
-        return sourceSize;
-    }
 }

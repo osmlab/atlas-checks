@@ -33,7 +33,7 @@ import com.google.gson.stream.JsonReader;
 public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
-    private static final Pattern NAME_PATTERN = Pattern.compile("(.+) ?");
+    private static final Pattern NAME_PATTERN = Pattern.compile("([^ ]+) ?");
 
     public AtlasChecksGeoJSONDiffSubCommand()
     {
