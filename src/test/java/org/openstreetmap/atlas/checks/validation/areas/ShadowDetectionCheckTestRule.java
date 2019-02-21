@@ -307,6 +307,28 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                             "height=20", "min_height=5" }) })
     private Atlas invalidBuildingPartSingleAtlas;
 
+    @TestAtlas(
+            // areas
+            areas = {
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = {
+                                    "building:part=yes", "height=17.5 m" }),
+                    @Area(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+                            @Loc(value = TEST_6), @Loc(value = TEST_5) }, tags = {
+                                    "building:part=yes", "height=28 m", "min_height=3.5 m" }) })
+    private Atlas validBuildingPartsTouchHeightMetersAtlas;
+
+    @TestAtlas(
+            // areas
+            areas = {
+                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
+                            @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = {
+                                    "building:part=yes", "height=57'5\"" }),
+                    @Area(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_4),
+                            @Loc(value = TEST_6), @Loc(value = TEST_5) }, tags = {
+                                    "building:part=yes", "height=91'10\"", "min_height=11'6\"" }) })
+    private Atlas validBuildingPartsTouchHeightFeetInchesAtlas;
+
     public Atlas validBuildingAtlas()
     {
         return this.validBuildingAtlas;
@@ -435,5 +457,15 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidBuildingPartSingleAtlas()
     {
         return this.invalidBuildingPartSingleAtlas;
+    }
+
+    public Atlas validBuildingPartsTouchHeightMetersAtlas()
+    {
+        return this.validBuildingPartsTouchHeightMetersAtlas;
+    }
+
+    public Atlas validBuildingPartsTouchHeightFeetInchesAtlas()
+    {
+        return this.validBuildingPartsTouchHeightFeetInchesAtlas;
     }
 }
