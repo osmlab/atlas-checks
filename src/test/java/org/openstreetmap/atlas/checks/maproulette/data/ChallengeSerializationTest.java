@@ -108,7 +108,7 @@ public class ChallengeSerializationTest
         Assert.assertEquals(deserializedJson.get("blurb"), rawJson.get("blurb"));
         Assert.assertEquals(deserializedJson.get("instruction"), rawJson.get("instruction"));
     }
-    
+
     /**
      * Tests that a challenge with no defaultPriority specified gets loaded as defaultPriority=LOW.
      */
