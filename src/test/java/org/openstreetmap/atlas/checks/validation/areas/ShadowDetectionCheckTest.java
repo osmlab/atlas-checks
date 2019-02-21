@@ -229,4 +229,20 @@ public class ShadowDetectionCheckTest
                 new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
+
+    @Test
+    public void validBuildingPartsTouchHeightMetersTest()
+    {
+        this.verifier.actual(this.setup.validBuildingPartsTouchHeightMetersAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validBuildingPartsTouchHeightFeetInchesTest()
+    {
+        this.verifier.actual(this.setup.validBuildingPartsTouchHeightFeetInchesAtlas(),
+                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
 }
