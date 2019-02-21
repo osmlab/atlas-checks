@@ -42,7 +42,8 @@ public final class MetricFileGenerator extends FileProcessor<MetricEvent>
     {
         super(fileHelper, outputFolder);
         final Optional<FileSuffix> knownSuffix = Arrays.stream(FileSuffix.values())
-                .filter(suffix -> label.endsWith(suffix.toString())).findFirst();
+                .filter(suffix -> label.endsWith(suffix.toString()))
+                .filter(fileSuffix -> !FileSuffix.NONE.equals(fileSuffix)).findFirst();
         if (knownSuffix.isPresent())
         {
             this.label = label.substring(0, label.lastIndexOf(String.valueOf(knownSuffix.get())));
