@@ -25,9 +25,10 @@ The incoming Atlas object must meet the following criteria to be considered for 
 * Has to be a Master Edge and its OSM id should not have already been flagged
 * Has a *route=FERRY* Tag
 * Has a highway Tag  with priority greater than or equal to a minimum highway type. The default 
-minimum highway type is PATH which includes MOTORWAY,MOTORWAY_LINK,TRUNK,TRUNK_LINK,
-PRIMARY,PRIMARY_LINK,SECONDARY,SECONDARY_LINK,TERTIARY,TERTIARY_LINK,UNCLASSIFIED,RESIDENTIAL,SERVICE,
-TRACK,LIVING_STREET,PEDESTRIAN,BUS_GUIDEWAY,RACEWAY,ROAD,CYCLEWAY,FOOTWAY,BRIDLEWAY,STEPS,PATH. 
+minimum highway type is PATH which includes MOTORWAY, MOTORWAY_LINK, TRUNK,TRUNK_LINK, PRIMARY, 
+PRIMARY_LINK, SECONDARY, SECONDARY_LINK, TERTIARY, TERTIARY_LINK, UNCLASSIFIED, RESIDENTIAL, 
+SERVICE, TRACK, LIVING_STREET, PEDESTRIAN, BUS_GUIDEWAY, RACEWAY, ROAD, CYCLEWAY, FOOTWAY, 
+BRIDLEWAY, STEPS and PATH. 
 The minimum highway type is set as a configurable so that the default minimum type can be overridden.
 
 The object is then flagged with appropriate instructions based on the following conditions:
