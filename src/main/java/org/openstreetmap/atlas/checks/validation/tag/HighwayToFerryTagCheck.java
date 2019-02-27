@@ -24,7 +24,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author sayas01
  */
-public class HighwayToFerryTagCheck extends BaseCheck
+public class HighwayToFerryTagCheck extends BaseCheck<Long>
 {
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.PATH.toString();
     private static final String FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
@@ -50,9 +50,8 @@ public class HighwayToFerryTagCheck extends BaseCheck
     public HighwayToFerryTagCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumHighwayType = (HighwayTag) this.configurationValue(configuration,
-                "highway.type.minimum", MINIMUM_HIGHWAY_TYPE_DEFAULT,
-                object -> HighwayTag.valueOf(object.toString().toUpperCase()));
+        this.minimumHighwayType = this.configurationValue(configuration, "highway.type.minimum",
+                MINIMUM_HIGHWAY_TYPE_DEFAULT, value -> HighwayTag.valueOf(value.toUpperCase()));
     }
 
     /**
@@ -78,19 +77,14 @@ public class HighwayToFerryTagCheck extends BaseCheck
         final boolean hasSameHighwayClassification = this.hasSameClassificationAsHighwayTag(object);
         final boolean hasFerryTag = HAS_FERRY_TAG.test(object);
 
-        // If the object has a Ferry Tag and is not of the same classification as the Highway Tag
-        if (hasFerryTag && !hasSameHighwayClassification)
+        // If the object has a Ferry Tag, it is flagged based on the ferry tag value and highway tag
+        // value
+        if (hasFerryTag)
         {
+            final int instructionIndex = hasSameHighwayClassification ? 1 : 0;
             return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                    this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())));
         }
-        // If the object has a Ferry Tag and is of the same classification as the Highway Tag
-        else if (hasFerryTag && hasSameHighwayClassification)
-        {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(1, object.getOsmIdentifier())));
-        }
-        // If the object has no Ferry Tag
         else
         {
             return Optional.of(this.createFlag(object,
