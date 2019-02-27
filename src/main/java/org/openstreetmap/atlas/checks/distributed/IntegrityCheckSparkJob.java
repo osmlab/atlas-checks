@@ -101,7 +101,7 @@ public class IntegrityCheckSparkJob extends SparkJob
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
-            Optionality.OPTIONAL, "flags,metrics,tippecanoe");
+            Optionality.OPTIONAL, "flags,metrics");
     private static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
             "Comma-separated list of checks to run",
             checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
