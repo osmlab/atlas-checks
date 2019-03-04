@@ -7,7 +7,9 @@ import java.util.stream.Stream;
 import org.openstreetmap.atlas.utilities.runtime.FlexibleCommand;
 import org.openstreetmap.atlas.utilities.runtime.FlexibleSubCommand;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 
 /**
  * Shell for running atlas-checks commands. Run this command with no arguments to learn more about
@@ -36,12 +38,20 @@ public class AtlasChecksCommand extends FlexibleCommand
         super(args);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected Stream<Class<? extends FlexibleSubCommand>> getSupportedCommands()
     {
         final List<Class<? extends FlexibleSubCommand>> returnValue = new ArrayList<>();
-        new FastClasspathScanner(AtlasChecksCommand.class.getPackage().getName())
-                .matchClassesImplementing(FlexibleSubCommand.class, returnValue::add).scan();
+
+        try (ScanResult scanResult = new ClassGraph().enableAllInfo()
+                .whitelistPackages(AtlasChecksCommand.class.getPackage().getName()).scan())
+        {
+            final ClassInfoList classInfoList = scanResult
+                    .getClassesImplementing(FlexibleSubCommand.class.getName());
+            classInfoList.loadClasses()
+                    .forEach(klass -> returnValue.add((Class<? extends FlexibleSubCommand>) klass));
+        }
         return returnValue.stream();
     }
 }

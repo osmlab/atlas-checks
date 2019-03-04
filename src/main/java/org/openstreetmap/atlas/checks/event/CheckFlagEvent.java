@@ -1,5 +1,10 @@
 package org.openstreetmap.atlas.checks.event;
 
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.GEOMETRY;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.OSM_IDENTIFIER;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.PROPERTIES;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.TYPE;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -7,12 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlaggedObject;
+import org.openstreetmap.atlas.checks.flag.FlaggedRelation;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.LocationIterableProperties;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonObject;
 import org.openstreetmap.atlas.tags.HighwayTag;
 
@@ -30,6 +37,11 @@ import com.google.gson.JsonPrimitive;
 public final class CheckFlagEvent extends Event
 {
     private static final GeoJsonBuilder GEOJSON_BUILDER = new GeoJsonBuilder();
+    private static final String GEOMETRY_COLLECTION = "GeometryCollection";
+    private static final String GEOMETRIES = "geometries";
+    private static final String FEATURES = "features";
+    private static final String FEATURE_COLLECTION = "FeatureCollection";
+    private static final String INSTRUCTIONS = "instructions";
 
     private final String checkName;
     private final CheckFlag flag;
@@ -48,33 +60,75 @@ public final class CheckFlagEvent extends Event
             final Map<String, String> additionalProperties)
     {
         final JsonObject flagProperties = new JsonObject();
-        flagProperties.addProperty("instructions", flag.getInstructions());
+        flagProperties.addProperty(INSTRUCTIONS, flag.getInstructions());
 
         // Add additional properties
         additionalProperties.forEach(flagProperties::addProperty);
 
         final JsonObject feature;
-        final List<LocationIterableProperties> geometries = flag.getLocationIterableProperties();
-        if (geometries.size() == 1)
+        final List<GeometryWithProperties> geometriesWithProperties = flag
+                .getGeometryWithProperties();
+        final Set<FlaggedObject> flaggedRelations = flag.getFlaggedRelations();
+        final JsonArray geometriesJsonArray;
+        final JsonArray featureProperties = new JsonArray();
+        final Set<JsonElement> featureOsmIds = new HashSet<>();
+        if (!geometriesWithProperties.isEmpty())
         {
-            feature = GEOJSON_BUILDER.create(geometries.get(0));
+            if (geometriesWithProperties.size() + flaggedRelations.size() == 1)
+            {
+                feature = GEOJSON_BUILDER.create(geometriesWithProperties.get(0));
+            }
+            else
+            {
+                feature = GEOJSON_BUILDER.createGeometryCollectionFeature(geometriesWithProperties)
+                        .jsonObject();
+            }
+            // Geometries with coordinates
+            geometriesJsonArray = feature.get(GEOMETRY).getAsJsonObject()
+                    .getAsJsonArray(GEOMETRIES);
+            geometriesWithProperties.forEach(geometry -> Optional
+                    .ofNullable(geometry.getProperties()).ifPresent(propertyMap ->
+                    {
+                        final JsonObject properties = new JsonObject();
+                        propertyMap.forEach(
+                                (key, value) -> properties.addProperty(key, (String) value));
+                        featureProperties.add(properties);
+                        Optional.ofNullable(properties.get(OSM_IDENTIFIER))
+                                .ifPresent(featureOsmIds::add);
+                    }));
         }
         else
         {
-            feature = GEOJSON_BUILDER.createGeometryCollection(geometries).jsonObject();
+            feature = new JsonObject();
+            geometriesJsonArray = new JsonArray();
         }
-
-        final JsonArray featureProperties = new JsonArray();
-        final Set<JsonElement> featureOsmIds = new HashSet<>();
-        geometries.stream().forEach(
-                geometry -> Optional.ofNullable(geometry.getProperties()).ifPresent(propertyMap ->
-                {
-                    final JsonObject properties = new JsonObject();
-                    propertyMap.forEach(properties::addProperty);
-                    featureProperties.add(properties);
-
-                    Optional.ofNullable(properties.get("osmid")).ifPresent(featureOsmIds::add);
-                }));
+        if (!flaggedRelations.isEmpty())
+        {
+            if (!feature.has(TYPE))
+            {
+                feature.addProperty(TYPE, "Feature");
+            }
+            // Get flagged relations as GeoJson features
+            final List<JsonObject> flaggedRelationFeatures = getFlaggedRelationsGeojsonFeatures(
+                    flag);
+            if (flaggedRelations.size() == 1 && !feature.has(GEOMETRY))
+            {
+                feature.add(GEOMETRY, flaggedRelationFeatures.get(0).get(GEOMETRY));
+            }
+            else if (flaggedRelations.size() != 1 && !feature.has(GEOMETRY))
+            {
+                final JsonObject geometryCollection = new JsonObject();
+                geometryCollection.add(GEOMETRIES, geometriesJsonArray);
+                geometryCollection.addProperty(TYPE, GEOMETRY_COLLECTION);
+                feature.add(GEOMETRY, geometryCollection);
+            }
+            // To geometries of flagged objects add geometries of flaggedRelation
+            geometriesJsonArray.addAll(populateFlaggedRelationGeometries(flaggedRelationFeatures));
+            // To properties of flagged objects add properties of flaggedRelation
+            featureProperties
+                    .addAll(populateFlaggedRelationFeatureProperties(flaggedRelationFeatures));
+            featureOsmIds.addAll(populateFlaggedRelationFeatureOsmIds(flaggedRelationFeatures));
+        }
         final JsonArray uniqueFeatureOsmIds = new JsonArray();
         featureOsmIds.forEach(uniqueFeatureOsmIds::add);
 
@@ -85,15 +139,105 @@ public final class CheckFlagEvent extends Event
                                 Optional.ofNullable(flagProperties.getAsJsonPrimitive("name"))
                                         .map(JsonPrimitive::getAsString).orElse("Task"),
                                 decorator)));
-
         // Reference properties lost during GeoJson conversion
         flagProperties.add("feature_properties", featureProperties);
         flagProperties.add("feature_osmids", uniqueFeatureOsmIds);
-        flagProperties.addProperty("feature_count", geometries.size());
+        flagProperties.addProperty("feature_count", featureProperties.size());
 
         feature.addProperty("id", flag.getIdentifier());
         feature.add("properties", flagProperties);
         return feature;
+    }
+
+    /**
+     * Get geometry of flagged relation feature.
+     *
+     * @param flaggedRelationFeature
+     *            {@link FlaggedRelation} feature
+     * @return geometry as {@link JsonElement}
+     */
+    private static JsonElement getFlaggedRelationGeometryFromFeature(
+            final JsonObject flaggedRelationFeature)
+    {
+        return flaggedRelationFeature.get(GEOMETRY);
+    }
+
+    /**
+     * Get property of the flagged relation feature
+     *
+     * @param flaggedRelationFeature
+     *            {@link FlaggedRelation} feature
+     * @return property as {@link JsonElement}
+     */
+    private static JsonElement getFlaggedRelationPropertyFromFeature(
+            final JsonObject flaggedRelationFeature)
+    {
+        return flaggedRelationFeature.get(PROPERTIES);
+    }
+
+    /**
+     * Converts all {@link FlaggedRelation} to geojson feature
+     *
+     * @param flag
+     *            CheckFlag
+     * @return {@link List<JsonObject>} corresponding to geojson feature of {@link FlaggedRelation}
+     */
+    private static List<JsonObject> getFlaggedRelationsGeojsonFeatures(final CheckFlag flag)
+    {
+        return flag.getFlaggedRelations().stream()
+                .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(flag.getIdentifier()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Populates geometries of flaggedRelation features to a {@link JsonArray}
+     *
+     * @param flaggedRelationFeatures
+     *            geojson features of FlaggedRelations
+     * @return {@link JsonArray} of geometries of flaggedRelations
+     */
+    private static JsonArray populateFlaggedRelationGeometries(
+            final List<JsonObject> flaggedRelationFeatures)
+    {
+        final JsonArray geometriesOfFlaggedRelations = new JsonArray();
+        // Add all geometries of flaggedRelations to the json array
+        flaggedRelationFeatures.stream().map(CheckFlagEvent::getFlaggedRelationGeometryFromFeature)
+                .forEach(geometriesOfFlaggedRelations::add);
+        return geometriesOfFlaggedRelations;
+    }
+
+    /**
+     * Populates properties of flaggedRelation features to a {@link JsonArray}
+     *
+     * @param flaggedRelationFeatures
+     *            geojson features of FlaggedRelations
+     * @return {@link JsonArray} of properties of flaggedRelations
+     */
+    private static JsonArray populateFlaggedRelationFeatureProperties(
+            final List<JsonObject> flaggedRelationFeatures)
+    {
+        final JsonArray featureProperties = new JsonArray();
+        // Update feature properties from flaggedRelation features
+        flaggedRelationFeatures.stream().map(CheckFlagEvent::getFlaggedRelationPropertyFromFeature)
+                .forEach(featureProperties::add);
+        return featureProperties;
+    }
+
+    /**
+     * Populates osmids of flaggedRelation features to a {@link Set<JsonElement>}
+     *
+     * @param flaggedRelationFeatures
+     *            flaggedRelationFeatures geojson features of FlaggedRelations
+     * @return {@link Set<JsonElement>} of all osmids of flaggedRelations
+     */
+    private static Set<JsonElement> populateFlaggedRelationFeatureOsmIds(
+            final List<JsonObject> flaggedRelationFeatures)
+    {
+        // Add osm id
+        return flaggedRelationFeatures.stream()
+                .map(CheckFlagEvent::getFlaggedRelationPropertyFromFeature)
+                .map(jsonElement -> jsonElement.getAsJsonObject().get(OSM_IDENTIFIER))
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -109,11 +253,33 @@ public final class CheckFlagEvent extends Event
     public static JsonObject flagToJson(final CheckFlag flag,
             final Map<String, String> additionalProperties)
     {
-        final JsonObject flagJson = GEOJSON_BUILDER.create(flag.getLocationIterableProperties())
-                .jsonObject();
+        JsonObject flagJson = new JsonObject();
+        if (!flag.getFlaggedObjects().isEmpty())
+        {
+            flagJson = GEOJSON_BUILDER
+                    .createFromGeometriesWithProperties(flag.getGeometryWithProperties())
+                    .jsonObject();
+        }
+        final Set<FlaggedObject> flaggedRelations = flag.getFlaggedRelations();
+        // Add features of FlaggedRelation if any
+        if (!flaggedRelations.isEmpty())
+        {
+            // Add type feature collection if not already set.
+            if (!flagJson.has(FEATURES))
+            {
+                flagJson.addProperty(TYPE, FEATURE_COLLECTION);
+                flagJson.add(FEATURES, new JsonArray());
+            }
+            final JsonArray features = flagJson.getAsJsonArray(FEATURES);
+            // Get features of each flaggedRelations and add it to the flagJson object's FEATURES
+            // element
+            flaggedRelations.stream()
+                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(flag.getIdentifier()))
+                    .forEach(features::add);
+        }
         final JsonObject flagPropertiesJson = new JsonObject();
         flagPropertiesJson.addProperty("id", flag.getIdentifier());
-        flagPropertiesJson.addProperty("instructions", flag.getInstructions());
+        flagPropertiesJson.addProperty(INSTRUCTIONS, flag.getInstructions());
 
         // Add additional properties
         additionalProperties.forEach(flagPropertiesJson::addProperty);
@@ -222,7 +388,7 @@ public final class CheckFlagEvent extends Event
 
     public String asLineDelimitedGeoJsonFeatures()
     {
-        return asLineDelimitedGeoJsonFeatures((jsonObject) ->
+        return asLineDelimitedGeoJsonFeatures(jsonObject ->
         {
         });
     }
