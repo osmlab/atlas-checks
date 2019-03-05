@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -13,7 +12,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.FerryTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RouteTag;
-import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -33,8 +31,6 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
             + "Please verify and add a Ferry tag with the Highway tag value and remove the highway tag.";
     private static final String FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION = "This way {0,number,#} has a Ferry and a Highway tag for a ferry route. "
             + "Please verify and update the Ferry tag with the Highway tag value and remove the highway tag.";
-    private static final Predicate<Taggable> HAS_FERRY_TAG = object -> Validators
-            .hasValuesFor(object, FerryTag.class);
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION,
             FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION, FERRY_TAG_IF_ABSENT_INSTRUCTION);
@@ -75,11 +71,10 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
         // Mark OSM id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
         final boolean hasSameHighwayClassification = this.hasSameClassificationAsHighwayTag(object);
-        final boolean hasFerryTag = HAS_FERRY_TAG.test(object);
 
         // If the object has a Ferry Tag, it is flagged based on the ferry tag value and highway tag
         // value
-        if (hasFerryTag)
+        if (Validators.hasValuesFor(object, FerryTag.class))
         {
             final int instructionIndex = hasSameHighwayClassification ? 1 : 0;
             return Optional.of(this.createFlag(object,
