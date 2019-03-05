@@ -89,8 +89,8 @@ public class AtlasChecksLogDiffSubCommandTest
     }
 
     /**
-     * Finds the first geojson or gzipped geojson file from an alpha-numeric sorting of a directory,
-     * and returns its path.
+     * Finds the first log or gzipped log file from an alpha-numeric sorting of a directory, and
+     * returns its path.
      *
      * @param directory
      *            The directory to get a path from
