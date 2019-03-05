@@ -46,7 +46,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     static final String FEATURES = "features";
     static final String GENERATOR = "generator";
     static final String ID = "id";
-    static final String ITEM_ID = "ItemId";
+    static final String ITEM_ID = "identifier";
     static final String NAME = "name";
     static final String PROPERTIES = "properties";
     static final String TYPE = "type";

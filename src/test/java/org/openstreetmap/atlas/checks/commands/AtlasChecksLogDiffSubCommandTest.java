@@ -1,14 +1,19 @@
 package org.openstreetmap.atlas.checks.commands;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
+import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
+import org.openstreetmap.atlas.checks.event.FileProcessor;
+import org.openstreetmap.atlas.checks.event.ShutdownEvent;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.File;
 
 /**
@@ -19,50 +24,101 @@ import org.openstreetmap.atlas.streaming.resource.File;
  */
 public class AtlasChecksLogDiffSubCommandTest
 {
+    // An empty HashMap as an empty Spark configuration
+    private static final Map<String, String> FILE_SYSTEM_CONFIG = new HashMap<>();
+
+    // Temp directories
     private static final File SOURCE_DIRECTORY = File.temporaryFolder();
     private static final File TARGET_DIRECTORY = File.temporaryFolder();
     private static final File GZ_SOURCE_DIRECTORY = File.temporaryFolder();
     private static final File GZ_TARGET_DIRECTORY = File.temporaryFolder();
-    private static final String GEO_11 = AtlasChecksLogDiffSubCommandTest.class
-            .getResource("geo_11.log").getPath();
-    private static final String GEO_21 = AtlasChecksLogDiffSubCommandTest.class
-            .getResource("geo_21.log").getPath();
-    private static final String GEO_11_GZ = AtlasChecksLogDiffSubCommandTest.class
-            .getResource("geo_11.log.gz").getPath();
-    private static final String GEO_21_GZ = AtlasChecksLogDiffSubCommandTest.class
-            .getResource("geo_21.log.gz").getPath();
 
-    @BeforeClass
-    public static void copyLogFiles() throws IOException
+    // Temp Files
+    private String sourceFile;
+    private String targetFile;
+    private String sourceFileGZ;
+    private String targetFileGZ;
+
+    @Rule
+    public final JSONFlagDiffSubCommandTestRule setup = new JSONFlagDiffSubCommandTestRule();
+
+    /**
+     * Generate flag files from {@link CheckFlagEvent}s, into source and target directories. The
+     * files can be compressed.
+     *
+     * @param sourceDirectory
+     *            a {@link File} resource for a source directory
+     * @param targetDirectory
+     *            a {@link File} resource for a target directory
+     * @param compression
+     *            a boolean for whether the files should be compressed
+     */
+    private void generateLogFiles(final File sourceDirectory, final File targetDirectory,
+            final boolean compression)
     {
-        Files.copy(
-                Paths.get(
-                        AtlasChecksLogDiffSubCommandTest.class.getResource("geo_11.log").getPath()),
-                Paths.get(SOURCE_DIRECTORY.getPath() + "/geo_11.log"));
-        Files.copy(
-                Paths.get(
-                        AtlasChecksLogDiffSubCommandTest.class.getResource("geo_12.log").getPath()),
-                Paths.get(SOURCE_DIRECTORY.getPath() + "/geo_12.log"));
-        Files.copy(
-                Paths.get(
-                        AtlasChecksLogDiffSubCommandTest.class.getResource("geo_21.log").getPath()),
-                Paths.get(TARGET_DIRECTORY.getPath() + "/geo_21.log"));
-        Files.copy(
-                Paths.get(
-                        AtlasChecksLogDiffSubCommandTest.class.getResource("geo_22.log").getPath()),
-                Paths.get(TARGET_DIRECTORY.getPath() + "/geo_22.log"));
-        Files.copy(Paths
-                .get(AtlasChecksLogDiffSubCommandTest.class.getResource("geo_11.log.gz").getPath()),
-                Paths.get(GZ_SOURCE_DIRECTORY.getPath() + "/geo_11.log.gz"));
-        Files.copy(Paths
-                .get(AtlasChecksLogDiffSubCommandTest.class.getResource("geo_12.log.gz").getPath()),
-                Paths.get(GZ_SOURCE_DIRECTORY.getPath() + "/geo_12.log.gz"));
-        Files.copy(Paths
-                .get(AtlasChecksLogDiffSubCommandTest.class.getResource("geo_21.log.gz").getPath()),
-                Paths.get(GZ_TARGET_DIRECTORY.getPath() + "/geo_21.log.gz"));
-        Files.copy(Paths
-                .get(AtlasChecksLogDiffSubCommandTest.class.getResource("geo_22.log.gz").getPath()),
-                Paths.get(GZ_TARGET_DIRECTORY.getPath() + "/geo_22.log.gz"));
+
+        // Create first source log file
+        final FileProcessor<CheckFlagEvent> sourceProcessor = new CheckFlagFileProcessor(
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePath())
+                        .withCompression(compression);
+        sourceProcessor.process(this.setup.getConstantCheckFlagEvent());
+        sourceProcessor.process(this.setup.getSubtractionCheckFlagEvent());
+        sourceProcessor.process(new ShutdownEvent());
+
+        // Create second source log file
+        final FileProcessor<CheckFlagEvent> sourceProcessor2 = new CheckFlagFileProcessor(
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePath())
+                        .withCompression(compression);
+        sourceProcessor2.process(this.setup.getPreChangeCheckFlagEvent());
+        sourceProcessor2.process(new ShutdownEvent());
+
+        // Create first target log file
+        final FileProcessor<CheckFlagEvent> targetProcessor = new CheckFlagFileProcessor(
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePath())
+                        .withCompression(compression);
+        targetProcessor.process(this.setup.getConstantCheckFlagEvent());
+        targetProcessor.process(this.setup.getAdditionCheckFlagEvent());
+        targetProcessor.process(new ShutdownEvent());
+
+        // Create second target log file
+        final FileProcessor<CheckFlagEvent> targetProcessor2 = new CheckFlagFileProcessor(
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePath())
+                        .withCompression(compression);
+        targetProcessor2.process(this.setup.getPostChangeCheckFlagEvent());
+        targetProcessor2.process(new ShutdownEvent());
+    }
+
+    /**
+     * Finds the first geojson or gzipped geojson file from an alpha-numeric sorting of a directory,
+     * and returns its path.
+     *
+     * @param directory
+     *            The directory to get a path from
+     * @return a {@link String} path of the first geojson file
+     */
+    private String getFirstGeojsonPath(final File directory)
+    {
+        return directory.listFilesRecursively().stream()
+                .filter(file -> file.getName().endsWith(".log")
+                        || file.getName().endsWith(".log.gz"))
+                .sorted().collect(Collectors.toList()).get(0).getPath();
+    }
+
+    /**
+     * Generate directories of flag files and gather the path to the first file in each.
+     */
+    public void populateTestData()
+    {
+        if (sourceFile == null)
+        {
+            this.generateLogFiles(SOURCE_DIRECTORY, TARGET_DIRECTORY, false);
+            this.generateLogFiles(GZ_SOURCE_DIRECTORY, GZ_TARGET_DIRECTORY, true);
+
+            sourceFile = this.getFirstGeojsonPath(SOURCE_DIRECTORY);
+            targetFile = this.getFirstGeojsonPath(TARGET_DIRECTORY);
+            sourceFileGZ = this.getFirstGeojsonPath(GZ_SOURCE_DIRECTORY);
+            targetFileGZ = this.getFirstGeojsonPath(GZ_TARGET_DIRECTORY);
+        }
     }
 
     @AfterClass
@@ -77,18 +133,20 @@ public class AtlasChecksLogDiffSubCommandTest
     @Test
     public void fileCreationFromFileTest()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-source=%s", GEO_11),
-                String.format("-target=%s", GEO_21), String.format("-output=%s", temp.getPath()) };
+        final String[] args = { "log-diff", String.format("-source=%s", sourceFile),
+                String.format("-target=%s", targetFile),
+                String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("changes-\\d+-0.log")));
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
@@ -98,6 +156,7 @@ public class AtlasChecksLogDiffSubCommandTest
     @Test
     public void fileCreationFromDirectoryTest()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
@@ -110,9 +169,9 @@ public class AtlasChecksLogDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-2.log")));
+                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-3.log")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
         temp.deleteRecursively();
     }
@@ -120,11 +179,12 @@ public class AtlasChecksLogDiffSubCommandTest
     @Test
     public void testFileCreationFromGZippedFile()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-source=%s", GEO_11_GZ),
-                String.format("-target=%s", GEO_21_GZ),
+        final String[] args = { "log-diff", String.format("-source=%s", sourceFileGZ),
+                String.format("-target=%s", targetFileGZ),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -132,7 +192,7 @@ public class AtlasChecksLogDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("changes-\\d+-0.log")));
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
@@ -142,18 +202,20 @@ public class AtlasChecksLogDiffSubCommandTest
     @Test
     public void testFileCreationFromGZippedAndUnZippedFiles()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-source=%s", GEO_11_GZ),
-                String.format("-target=%s", GEO_21), String.format("-output=%s", temp.getPath()) };
+        final String[] args = { "log-diff", String.format("-source=%s", sourceFileGZ),
+                String.format("-target=%s", targetFile),
+                String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("changes-\\d+-0.log")));
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
@@ -163,6 +225,7 @@ public class AtlasChecksLogDiffSubCommandTest
     @Test
     public void testFileCreationFromGZippedDirectory()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
@@ -175,9 +238,9 @@ public class AtlasChecksLogDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-2.log")));
+                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-3.log")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
         temp.deleteRecursively();
     }
