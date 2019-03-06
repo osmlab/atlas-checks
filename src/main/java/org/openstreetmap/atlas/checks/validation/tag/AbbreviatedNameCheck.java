@@ -35,7 +35,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
             "OSM feature with id {0,number,#}'s name tag (`name` = **{1}**) has an abbreviation. Please update the `name` tag to not use abbreviation.");
     // Splitter to parse name
     private static final Splitter NAME_SPLITTER = Splitter
-            .on(CharMatcher.JAVA_LETTER_OR_DIGIT.negate()).omitEmptyStrings();
+            .on(CharMatcher.javaLetterOrDigit().negate()).omitEmptyStrings();
     private static final long serialVersionUID = -3648610800112828238L;
     private final Set<String> abbreviations;
 
@@ -59,7 +59,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof AtlasEntity
-                && !this.isFlagged(this.getUniqueOSMIdentifier((AtlasEntity) object));
+                && !this.isFlagged(this.getUniqueOSMIdentifier(object));
     }
 
     /**
@@ -69,7 +69,7 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // Mark OSM identifier as we are processing it
-        this.markAsFlagged(this.getUniqueOSMIdentifier((AtlasEntity) object));
+        this.markAsFlagged(this.getUniqueOSMIdentifier(object));
 
         // Fetch the name
         final Optional<String> optionalName = NameTag.getNameOf(object);

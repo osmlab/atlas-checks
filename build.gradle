@@ -47,6 +47,7 @@ configurations
         {
             force packages.atlas
             force packages.atlas_generator
+            force packages.guava
 
             // Snappy 1.1.1.6 is the one that has the proper .so libs.
             // https://github.com/xerial/snappy-java/issues/6
