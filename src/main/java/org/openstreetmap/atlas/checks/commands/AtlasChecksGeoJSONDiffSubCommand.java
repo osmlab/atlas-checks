@@ -53,11 +53,11 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
             // Parse the json
             final JsonObject json = getGson()
                     .fromJson(new JsonReader(new InputStreamReader(inputStream)), JsonObject.class);
-            //
+            // Map each feature
             json.get(FEATURES).getAsJsonArray().forEach(feature ->
             {
                 final JsonObject jsonFeature = feature.getAsJsonObject();
-                // Get the check name
+                // Get the check name. Use regex to disregard the appended highway tag values.
                 final Matcher nameMatch = NAME_PATTERN.matcher(
                         jsonFeature.get(PROPERTIES).getAsJsonObject().get(NAME).getAsString());
                 nameMatch.find();
