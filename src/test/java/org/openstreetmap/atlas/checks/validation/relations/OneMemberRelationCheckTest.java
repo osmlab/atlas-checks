@@ -10,16 +10,11 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * Tests for {@link OneMemberRelationCheck}
  *
  * @author savannahostrowski
- * @author nachtm
  */
 public class OneMemberRelationCheckTest
 {
     private static final OneMemberRelationCheck check = new OneMemberRelationCheck(
             ConfigurationResolver.emptyConfiguration());
-
-    private static final OneMemberRelationCheck checkWithMultipolygons = new OneMemberRelationCheck(
-            ConfigurationResolver.inlineConfiguration(
-                    "{\"OneMemberRelationCheck\":{\"relations.skip\":[\"type->person\"]}}"));
 
     @Rule
     public OneMemberRelationCheckTestRule setup = new OneMemberRelationCheckTestRule();
@@ -45,20 +40,20 @@ public class OneMemberRelationCheckTest
     public void testOneMemberRelationMultipolygonInner()
     {
         this.verifier.actual(this.setup.getOneMemberRelationMultipolygonInner(), check);
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
     public void testOneMemberRelationMultipolygonOuter()
     {
         this.verifier.actual(this.setup.getOneMemberRelationMultipolygonOuter(), check);
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
     public void testValidRelationMultipolygon()
     {
-        this.verifier.actual(this.setup.getValidRelationMultipolygon(), checkWithMultipolygons);
+        this.verifier.actual(this.setup.getValidRelationMultipolygon(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -68,22 +63,6 @@ public class OneMemberRelationCheckTest
         this.verifier.actual(this.setup.oneMemberRelationRelationAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 3));
-    }
-
-    @Test
-    public void testOneMemberRelationMultipolygonInnerCustomConfiguration()
-    {
-        this.verifier.actual(this.setup.getOneMemberRelationMultipolygonInner(),
-                checkWithMultipolygons);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void testOneMemberRelationMultipolygonOuterCustomConfiguration()
-    {
-        this.verifier.actual(this.setup.getOneMemberRelationMultipolygonInner(),
-                checkWithMultipolygons);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
 }

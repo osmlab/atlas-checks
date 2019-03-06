@@ -2,12 +2,10 @@ package org.openstreetmap.atlas.checks.validation.relations;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -15,27 +13,25 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
-import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * This check flags {@link Relation}s which contain only one member.
  *
  * @author savannahostrowski
- * @author nachtm
  */
-public class OneMemberRelationCheck extends BaseCheck<Long>
+public class OneMemberRelationCheck extends BaseCheck
 {
     public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
             + "one member.";
 
+    public static final String MULTIPOLYGON_OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
+            + "one member. Multi-polygon relations need multiple polygons.";
+
     public static final String MEMBER_RELATION_INSTRUCTIONS = "This relation, {0,number,#}, contains only relation {1,number,#}.";
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(OMR_INSTRUCTIONS,
-            MEMBER_RELATION_INSTRUCTIONS);
-    private static final List<String> DEFAULT_RELATIONS_TO_SKIP = Collections
-            .singletonList("type->person,multipolygon");
-    private List<TaggableFilter> relationsToSkip;
+            MULTIPOLYGON_OMR_INSTRUCTIONS, MEMBER_RELATION_INSTRUCTIONS);
 
     @Override
     protected List<String> getFallbackInstructions()
@@ -46,16 +42,12 @@ public class OneMemberRelationCheck extends BaseCheck<Long>
     public OneMemberRelationCheck(final Configuration configuration)
     {
         super(configuration);
-        this.relationsToSkip = this.configurationValue(configuration, "relations.skip",
-                DEFAULT_RELATIONS_TO_SKIP, strings -> strings.stream()
-                        .map(TaggableFilter::forDefinition).collect(Collectors.toList()));
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Relation
-                && this.relationsToSkip.stream().noneMatch(filter -> filter.test(object));
+        return object instanceof Relation;
     }
 
     @Override
@@ -70,8 +62,14 @@ public class OneMemberRelationCheck extends BaseCheck<Long>
             if (members.get(0).getEntity().getType().equals(ItemType.RELATION))
             {
                 return Optional.of(createFlag(getRelationMembers((Relation) object),
-                        this.getLocalizedInstruction(1, relation.getOsmIdentifier(),
+                        this.getLocalizedInstruction(2, relation.getOsmIdentifier(),
                                 members.get(0).getEntity().getOsmIdentifier())));
+            }
+            // If the relation is a multi-polygon,
+            if (relation.isMultiPolygon())
+            {
+                return Optional.of(createFlag(getRelationMembers((Relation) object),
+                        this.getLocalizedInstruction(1, relation.getOsmIdentifier())));
             }
             return Optional.of(createFlag(getRelationMembers((Relation) object),
                     this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
