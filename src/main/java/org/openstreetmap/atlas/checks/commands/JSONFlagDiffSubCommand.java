@@ -172,18 +172,32 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 
     private Set<File> getFilesOfType(final File file)
     {
-        if (FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(this.fileExtension))
+        final String fileName = file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
+                : file.getName();
+        if (FilenameUtils.getExtension(fileName).equalsIgnoreCase(this.fileExtension))
         {
             return Collections.singleton(file);
         }
         else if (file.isDirectory())
         {
-            return file
-                    .listFilesRecursively().stream().filter(subFile -> FilenameUtils
-                            .getExtension(subFile.getName()).equalsIgnoreCase(this.fileExtension))
+            return file.listFilesRecursively().stream().filter(this::checkFileExtension)
                     .collect(Collectors.toSet());
         }
         return new HashSet<>();
+    }
+
+    /**
+     * Checks the file extension of the input file
+     *
+     * @param file
+     *            Input file
+     * @return true if the file has the given extension
+     */
+    private boolean checkFileExtension(final File file)
+    {
+        return FilenameUtils.getExtension(
+                file.isGzipped() ? FilenameUtils.getBaseName(file.getName()) : file.getName())
+                .equalsIgnoreCase(this.fileExtension);
     }
 
     /**

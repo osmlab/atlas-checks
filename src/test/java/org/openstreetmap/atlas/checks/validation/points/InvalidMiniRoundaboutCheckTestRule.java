@@ -16,7 +16,7 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
     public static final String THREE = "40.9609826, -5.6425880";
     public static final String FOUR = "40.9610646, -5.6425413";
     public static final String NODE_TAG = "Node";
-    public static final String ITEM_TYPE_TAG = "ItemType";
+    public static final String ITEM_TYPE_TAG = "itemType";
     public static final String EDGE_TAG = "Edge";
 
     // One two-way street ending in a roundabout -- should be a turning loop/circle despite extra

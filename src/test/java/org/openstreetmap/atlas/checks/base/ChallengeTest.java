@@ -29,6 +29,8 @@ public class ChallengeTest
         Assert.assertEquals("description", testCheck.getChallenge().getDescription().toLowerCase());
         Assert.assertEquals("blurb", testCheck.getChallenge().getBlurb().toLowerCase());
         Assert.assertEquals("instruction", testCheck.getChallenge().getInstruction().toLowerCase());
+        Assert.assertEquals("#maproulette",
+                testCheck.getChallenge().getCheckinComment().toLowerCase());
         Assert.assertEquals(ChallengeDifficulty.EASY, testCheck.getChallenge().getDifficulty());
         Assert.assertEquals(ChallengePriority.LOW, testCheck.getChallenge().getDefaultPriority());
 
