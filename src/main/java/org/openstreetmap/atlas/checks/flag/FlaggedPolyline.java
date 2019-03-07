@@ -32,7 +32,7 @@ public class FlaggedPolyline extends FlaggedObject
 
     /**
      * Default constructor
-     * 
+     *
      * @param atlasItem
      *            the {@link AtlasItem} to flag
      */
@@ -54,6 +54,24 @@ public class FlaggedPolyline extends FlaggedObject
     }
 
     @Override
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
+    {
+        final JsonObject feature = this.atlasItem.asGeoJsonGeometry();
+        final JsonObject properties = this.atlasItem.getGeoJsonProperties();
+
+        properties.addProperty("flag:id", flagIdentifier);
+        properties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
+        feature.add("properties", properties);
+        return feature;
+    }
+
+    @Override
+    public Rectangle bounds()
+    {
+        return this.atlasItem.bounds();
+    }
+
+    @Override
     public String getCountry()
     {
         return this.country;
@@ -69,24 +87,6 @@ public class FlaggedPolyline extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
-    }
-
-    @Override
-    public JsonObject asGeoJsonFeature(final String flagIdentifier)
-    {
-        final JsonObject feature = atlasItem.asGeoJsonGeometry();
-        final JsonObject properties = feature.getAsJsonObject("properties");
-
-        properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
-
-        return feature;
-    }
-
-    @Override
-    public Rectangle bounds()
-    {
-        return atlasItem.bounds();
     }
 
     private String initCountry(final AtlasObject object)
