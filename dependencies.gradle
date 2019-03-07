@@ -1,14 +1,12 @@
 project.ext.versions = [
     checkstyle: '7.6.1',
-    atlas: '5.5.0',
+    atlas: '5.5.1',
     commons:'2.6',
     atlas_generator: '4.2.3',
-    guava: '27.0.1-jre',
 ]
 
 project.ext.packages = [
     atlas: "org.openstreetmap.atlas:atlas:${versions.atlas}",
     commons: "commons-lang:commons-lang:${versions.commons}",
     atlas_generator: "org.openstreetmap.atlas:atlas-generator:${versions.atlas_generator}",
-    guava: "com.google.guava:guava:${versions.guava}",
 ]
