@@ -421,5 +421,15 @@
       "difficulty": "NORMAL",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "HighwayToFerryTagCheck": {
+    "highway.type.minimum": "path",
+    "challenge": {
+      "description": "Ferry routes should have a Ferry Tag with a highway classification associated with them. Any ferry routes with a Highway Tag should be updated to a Ferry Tag and the Highway Tag should be dropped. ",
+      "blurb": "Improper tags for Ferry routes.",
+      "instruction": "Open your favorite editor and check the instruction for the task and then create or modify the Ferry Tag and delete the Highway Tag.",
+      "difficulty": "EASY",
+      "defaultPriority": "MEDIUM"
+    }
   }
 }
