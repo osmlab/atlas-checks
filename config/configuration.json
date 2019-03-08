@@ -223,6 +223,7 @@
     }
   },
   "OneMemberRelationCheck": {
+    "tags.filter": "type->!person&type->!multipolygon",
     "challenge": {
       "description": "Tasks containing relations with only one member.",
       "blurb": "One Member Relations",
