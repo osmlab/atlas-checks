@@ -34,8 +34,9 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "OSM feature with id {0,number,#}'s name tag (`name` = **{1}**) has an abbreviation. Please update the `name` tag to not use abbreviation.");
     // Splitter to parse name
-    private static final Splitter NAME_SPLITTER = Splitter
-            .on(CharMatcher.javaLetterOrDigit().negate()).omitEmptyStrings();
+    private static final Splitter NAME_SPLITTER = Splitter.on(CharMatcher.inRange('0', '9')
+            .or(CharMatcher.inRange('a', 'z')).or(CharMatcher.inRange('A', 'Z')).negate())
+            .omitEmptyStrings();
     private static final long serialVersionUID = -3648610800112828238L;
     private final Set<String> abbreviations;
 
