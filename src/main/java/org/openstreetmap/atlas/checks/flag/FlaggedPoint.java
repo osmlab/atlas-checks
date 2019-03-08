@@ -16,7 +16,7 @@ import com.google.gson.JsonObject;
 
 /**
  * A flag for a {@code point} {@link Location} P*
- * 
+ *
  * @author brian_l_davis
  */
 public class FlaggedPoint extends FlaggedObject
@@ -28,9 +28,17 @@ public class FlaggedPoint extends FlaggedObject
 
     private final LocationItem locationItem;
 
+    @SuppressWarnings("unchecked")
+    public FlaggedPoint(final Location point)
+    {
+        this.locationItem = null;
+        this.point = point;
+        this.properties = Collections.EMPTY_MAP;
+    }
+
     /**
      * Default constructor
-     * 
+     *
      * @param locationItem
      *            the {@link LocationItem} to flag
      */
@@ -41,12 +49,39 @@ public class FlaggedPoint extends FlaggedObject
         this.properties = initProperties(locationItem);
     }
 
-    @SuppressWarnings("unchecked")
-    public FlaggedPoint(final Location point)
+    @Override
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        this.locationItem = null;
-        this.point = point;
-        this.properties = Collections.EMPTY_MAP;
+        final JsonObject feature;
+        final JsonObject properties;
+        if (this.locationItem != null)
+        {
+            feature = this.locationItem.asGeoJsonGeometry();
+            properties = this.locationItem.getGeoJsonProperties();
+        }
+        else
+        {
+            properties = new JsonObject();
+            feature = GeoJsonUtils.feature(this.point.asGeoJsonGeometry(), properties);
+        }
+
+        properties.addProperty("flag:id", flagIdentifier);
+        properties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
+        feature.add("properties", properties);
+        return feature;
+    }
+
+    @Override
+    public Rectangle bounds()
+    {
+        if (this.locationItem != null)
+        {
+            return this.locationItem.bounds();
+        }
+        else
+        {
+            return this.point.bounds();
+        }
     }
 
     @Override
@@ -60,41 +95,6 @@ public class FlaggedPoint extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
-    }
-
-    @Override
-    public JsonObject asGeoJsonFeature(final String flagIdentifier)
-    {
-        final JsonObject feature;
-        final JsonObject properties;
-        if (locationItem != null)
-        {
-            feature = locationItem.asGeoJsonGeometry();
-            properties = feature.getAsJsonObject("properties");
-        }
-        else
-        {
-            properties = new JsonObject();
-            feature = GeoJsonUtils.feature(point.asGeoJsonGeometry(), properties);
-        }
-
-        properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
-
-        return feature;
-    }
-
-    @Override
-    public Rectangle bounds()
-    {
-        if (locationItem != null)
-        {
-            return locationItem.bounds();
-        }
-        else
-        {
-            return point.bounds();
-        }
     }
 
     @SuppressWarnings("unchecked")

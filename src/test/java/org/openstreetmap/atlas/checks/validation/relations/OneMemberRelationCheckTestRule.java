@@ -116,12 +116,11 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
                     @Edge(id = "31", coordinates = { @Loc(value = THREE),
                             @Loc(value = ONE) }, tags = { "highway=road" }) },
             // relations
-            relations = {
-                    @Relation(id = "123", members = {
-                            @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
-                            @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
-                            @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
-                                    "restriction=no_u_turn" }),
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                    @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                    @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                            "restriction=no_u_turn" }),
                     @Relation(id = "1231", members = {
                             @Member(id = "123", type = "relation", role = RelationTypeTag.RESTRICTION_ROLE_FROM) }, tags = {
                                     "restriction=no_u_turn" }) })

@@ -28,6 +28,7 @@ import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProperties;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonType;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -230,6 +231,25 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         Iterables.stream(points).map(FlaggedPoint::new).forEach(this.flaggedObjects::add);
     }
 
+    public JsonObject asGeoJsonFeature()
+    {
+        final JsonObject geometry = boundsGeoJsonGeometry();
+
+        final JsonObject properties = new JsonObject();
+        properties.addProperty("flag:type", CheckFlag.class.getSimpleName());
+        properties.addProperty("flag:id", getIdentifier());
+        properties.addProperty("flag:instructions", getInstructions());
+
+        // The legacy GeoJSON FeatureCollection doesn't actually provide this,
+        // but I figure this might be useful to know about if it's there...
+        if (this.challengeName != null)
+        {
+            properties.addProperty("flag:challenge", this.challengeName);
+        }
+
+        return GeoJsonUtils.feature(geometry, properties);
+    }
+
     @Override
     public Rectangle bounds()
     {
@@ -299,6 +319,19 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
+     * @return a list of {@link GeometryWithProperties} representing all flagged geometries
+     */
+    public List<GeometryWithProperties> getGeometryWithProperties()
+    {
+        return this.flaggedObjects.stream()
+                .filter(flaggedObject -> flaggedObject instanceof FlaggedPoint
+                        || flaggedObject instanceof FlaggedPolyline)
+                .map(flaggedObject -> new GeometryWithProperties(flaggedObject.getGeometry(),
+                        new HashMap<>(flaggedObject.getProperties())))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * @return the flag identifier
      */
     public String getIdentifier()
@@ -326,19 +359,6 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
             }
         }
         return builder.toString();
-    }
-
-    /**
-     * @return a list of {@link GeometryWithProperties} representing all flagged geometries
-     */
-    public List<GeometryWithProperties> getGeometryWithProperties()
-    {
-        return this.flaggedObjects.stream()
-                .filter(flaggedObject -> flaggedObject instanceof FlaggedPoint
-                        || flaggedObject instanceof FlaggedPolyline)
-                .map(flaggedObject -> new GeometryWithProperties(flaggedObject.getGeometry(),
-                        new HashMap<>(flaggedObject.getProperties())))
-                .collect(Collectors.toList());
     }
 
     /**
@@ -382,7 +402,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         if (!flaggedRelations.isEmpty())
         {
             this.getFlaggedRelations().stream()
-                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(identifier))
+                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(this.identifier))
                     .forEach(features::add);
         }
         task.setGeoJson(Optional.of(features));
@@ -467,28 +487,9 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return String.format("[CheckFlag: %s, %s]", this.identifier, this.getInstructions());
     }
 
-    public JsonObject asGeoJsonFeature()
-    {
-        final JsonObject geometry = boundsGeoJsonGeometry();
-
-        final JsonObject properties = new JsonObject();
-        properties.addProperty("flag:type", CheckFlag.class.getSimpleName());
-        properties.addProperty("flag:id", getIdentifier());
-        properties.addProperty("flag:instructions", getInstructions());
-
-        // The legacy GeoJSON FeatureCollection doesn't actually provide this,
-        // but I figure this might be useful to know about if it's there...
-        if (challengeName != null)
-        {
-            properties.addProperty("flag:challenge", challengeName);
-        }
-
-        return GeoJsonUtils.feature(geometry, properties);
-    }
-
     private JsonObject boundsGeoJsonGeometry()
     {
-        final Iterator<FlaggedObject> iterator = flaggedObjects.iterator();
+        final Iterator<FlaggedObject> iterator = this.flaggedObjects.iterator();
         Rectangle bounds;
 
         // Get the first bounds.
@@ -499,7 +500,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         // If we don't have it, let's instead return null island.
         else
         {
-            return GeoJsonUtils.geometry(GeoJsonUtils.POINT, GeoJsonUtils.coordinate(0.0, 0.0));
+            return GeoJsonUtils.geometry(GeoJsonType.POINT, GeoJsonUtils.coordinate(0.0, 0.0));
         }
 
         // Otherwise, let's get the rest of the bounds and expand the bounds we have.

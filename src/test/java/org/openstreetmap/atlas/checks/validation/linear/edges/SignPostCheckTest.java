@@ -18,11 +18,11 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 public class SignPostCheckTest
 {
     private static SignPostCheck CHECK = new SignPostCheck(
-            ConfigurationResolver.inlineConfiguration(
-                    "{" + "\"SignPostCheck.source.filter\": \"highway->motorway,trunk,primary|motorroad->yes\", "
-                            + "\"SignPostCheck.ramp.filter\": \"highway->motorway_link,trunk_link,primary,primary_link&motorroad->!\","
-                            + "\"SignPostCheck.ramp.differentiator.tag\": \"diff\","
-                            + "\"SignPostCheck.ramp.angle.difference.degrees\": 90.0" + "}"));
+            ConfigurationResolver.inlineConfiguration("{"
+                    + "\"SignPostCheck.source.filter\": \"highway->motorway,trunk,primary|motorroad->yes\", "
+                    + "\"SignPostCheck.ramp.filter\": \"highway->motorway_link,trunk_link,primary,primary_link&motorroad->!\","
+                    + "\"SignPostCheck.ramp.differentiator.tag\": \"diff\","
+                    + "\"SignPostCheck.ramp.angle.difference.degrees\": 90.0" + "}"));
 
     private static SignPostCheck CHECK2 = new SignPostCheck(
             ConfigurationResolver.inlineConfiguration(

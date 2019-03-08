@@ -1,12 +1,11 @@
 package org.openstreetmap.atlas.checks.utility;
 
+import org.locationtech.jts.geom.TopologyException;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.clipping.Clip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vividsolutions.jts.geom.TopologyException;
 
 /**
  * A set of utilities that are common among intersection checks.
@@ -16,10 +15,6 @@ import com.vividsolutions.jts.geom.TopologyException;
 public final class IntersectionUtilities
 {
     private static final Logger logger = LoggerFactory.getLogger(IntersectionUtilities.class);
-
-    private IntersectionUtilities()
-    {
-    }
 
     /**
      * Find the percentage of overlap for given {@link Polygon}s.
@@ -71,5 +66,9 @@ public final class IntersectionUtilities
         final long baselineArea = Math.min(polygon.surface().asDm7Squared(),
                 otherPolygon.surface().asDm7Squared());
         return (double) intersectionArea / baselineArea;
+    }
+
+    private IntersectionUtilities()
+    {
     }
 }

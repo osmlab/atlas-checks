@@ -231,9 +231,8 @@ public class IntegrityCheckSparkJob extends SparkJob
                 .getOption(CHECK_FILTER);
 
         final Configuration checksConfiguration = new MergedConfiguration(Stream
-                .concat(Stream.of(
-                        ConfigurationResolver.loadConfiguration(commandMap, CONFIGURATION_FILES,
-                                CONFIGURATION_JSON)),
+                .concat(Stream.of(ConfigurationResolver.loadConfiguration(commandMap,
+                        CONFIGURATION_FILES, CONFIGURATION_JSON)),
                         Stream.of(checkFilter
                                 .<Configuration> map(whitelist -> new StandardConfiguration(
                                         "WhiteListConfiguration",
