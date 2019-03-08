@@ -40,9 +40,9 @@ task run(dependsOn: 'assemble', group: 'application', description: 'Runs the Atl
         runChecks.getCommandLine().each {
             line -> println("$line \\")
         }
-        runChecks.execute()
     }
 }
+run.finalizedBy(runChecks)
 
 task buildCheck(type: Copy) {
     if (project.hasProperty('CheckName')) {

@@ -57,11 +57,11 @@ public class FlaggedPolyline extends FlaggedObject
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
         final JsonObject feature = this.atlasItem.asGeoJsonGeometry();
-        final JsonObject properties = this.atlasItem.getGeoJsonProperties();
+        final JsonObject jsonProperties = this.atlasItem.getGeoJsonProperties();
 
-        properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
-        feature.add("properties", properties);
+        jsonProperties.addProperty("flag:id", flagIdentifier);
+        jsonProperties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
+        feature.add("properties", jsonProperties);
         return feature;
     }
 

@@ -77,8 +77,8 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
     // Don't flag edge with area=yes tag and highway tag in validHighwayTags
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_ONE)),
             @Node(coordinates = @Loc(value = AREA_LOCATION_TWO)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO) }, tags = {
-                            "area=yes", "highway=service" }) })
+                    @Loc(value = AREA_LOCATION_ONE),
+                    @Loc(value = AREA_LOCATION_TWO) }, tags = { "area=yes", "highway=service" }) })
     private Atlas validEdgeHighwayService;
 
     // Don't flag edge without area=yes tag
