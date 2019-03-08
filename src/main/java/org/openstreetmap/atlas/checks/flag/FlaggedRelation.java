@@ -20,6 +20,8 @@ import com.google.gson.JsonObject;
  */
 public class FlaggedRelation extends FlaggedObject
 {
+    private static final long serialVersionUID = 81887932468503688L;
+
     private final Relation relation;
     private final Map<String, String> properties;
     private final String country;
@@ -29,6 +31,48 @@ public class FlaggedRelation extends FlaggedObject
         this.relation = relation;
         this.properties = initProperties(relation);
         this.country = initCountry(relation);
+    }
+
+    /**
+     * A GeoJSON representation of the flagged object.
+     *
+     * @param flagIdentifier
+     *            We always will want to know the id of the flag associated with this flag object.
+     * @return GeoJSON representation of the flagged object.
+     */
+    @Override
+    public JsonObject asGeoJsonFeature(final String flagIdentifier)
+    {
+        final JsonObject feature = this.relation.asGeoJsonGeometry();
+        final JsonObject featureProperties = this.relation.getGeoJsonProperties();
+        featureProperties.addProperty("flag:id", flagIdentifier);
+        featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
+        feature.add("properties", featureProperties);
+        return feature;
+    }
+
+    /**
+     * @return The bounds of the object.
+     */
+    @Override
+    public Rectangle bounds()
+    {
+        return this.relation.bounds();
+    }
+
+    @Override
+    public boolean equals(final Object other)
+    {
+        return super.equals(other);
+    }
+
+    /**
+     * @return ISO country code of the country
+     */
+    @Override
+    public String getCountry()
+    {
+        return this.country;
     }
 
     /**
@@ -51,47 +95,10 @@ public class FlaggedRelation extends FlaggedObject
         return this.properties;
     }
 
-    /**
-     * A GeoJSON representation of the flagged object.
-     *
-     * @param flagIdentifier
-     *            We always will want to know the id of the flag associated with this flag object.
-     * @return GeoJSON representation of the flagged object.
-     */
     @Override
-    public JsonObject asGeoJsonFeature(final String flagIdentifier)
+    public int hashCode()
     {
-        final JsonObject feature = this.relation.asGeoJsonGeometry();
-        final JsonObject featureProperties = feature.getAsJsonObject("properties");
-        featureProperties.addProperty("flag:id", flagIdentifier);
-        featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
-        return feature;
-    }
-
-    /**
-     * @return The bounds of the object.
-     */
-    @Override
-    public Rectangle bounds()
-    {
-        return this.relation.bounds();
-    }
-
-    /**
-     * @return ISO country code of the country
-     */
-    @Override
-    public String getCountry()
-    {
-        return this.country;
-    }
-
-    /**
-     * @return list of all members of the relation
-     */
-    public RelationMemberList members()
-    {
-        return this.relation.members();
+        return super.hashCode();
     }
 
     /**
@@ -103,6 +110,24 @@ public class FlaggedRelation extends FlaggedObject
     {
         return Validators.isOfType(this.relation, RelationTypeTag.class,
                 RelationTypeTag.MULTIPOLYGON);
+    }
+
+    /**
+     * @return list of all members of the relation
+     */
+    public RelationMemberList members()
+    {
+        return this.relation.members();
+    }
+
+    private String initCountry(final AtlasObject object)
+    {
+        final Map<String, String> tags = object.getTags();
+        if (tags.containsKey(ISOCountryTag.KEY))
+        {
+            return tags.get(ISOCountryTag.KEY);
+        }
+        return ISOCountryTag.COUNTRY_MISSING;
     }
 
     /**
@@ -118,27 +143,5 @@ public class FlaggedRelation extends FlaggedObject
         tags.put(OSM_IDENTIFIER_TAG, relation.getOsmIdentifier() + "");
         tags.put(ITEM_TYPE_TAG, "Relation");
         return tags;
-    }
-
-    private String initCountry(final AtlasObject object)
-    {
-        final Map<String, String> tags = object.getTags();
-        if (tags.containsKey(ISOCountryTag.KEY))
-        {
-            return tags.get(ISOCountryTag.KEY);
-        }
-        return ISOCountryTag.COUNTRY_MISSING;
-    }
-
-    @Override
-    public boolean equals(final Object other)
-    {
-        return super.equals(other);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return super.hashCode();
     }
 }

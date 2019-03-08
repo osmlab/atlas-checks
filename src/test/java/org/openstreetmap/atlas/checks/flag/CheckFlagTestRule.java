@@ -80,12 +80,11 @@ public class CheckFlagTestRule extends CoreTestRule
                     @Loc(value = TEST_4), @Loc(value = TEST_1),
                     @Loc(value = TEST_6) }, tags = { "building=yes" }) },
             // Relations
-            relations = {
-                    @Relation(id = "123", members = {
-                            @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
-                            @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
-                            @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
-                                    "restriction=no_u_turn" }),
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                    @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                    @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                            "restriction=no_u_turn" }),
                     @Relation(id = "456", members = {
                             @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
                             @Member(id = "1", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA) }, tags = {
