@@ -40,22 +40,17 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
             "A directory to place output log files in. If not included no outputs files will be written.",
             String::new, Command.Optionality.OPTIONAL);
 
-    // JSON strings
-    static final String FEATURE_COLLECTION = "FeatureCollection";
+    // Atlas Checks' GeoJSON strings
     static final String FEATURE_PROPERTIES = "feature_properties";
-    static final String FEATURES = "features";
     static final String GENERATOR = "generator";
     static final String ID = "id";
-    static final String ITEM_ID = "identifier";
     static final String NAME = "name";
-    static final String PROPERTIES = "properties";
-    static final String TYPE = "type";
 
     private final Gson gson = new Gson();
     private HashMap<String, HashMap<String, JsonObject>> source = new HashMap<>();
     private HashMap<String, HashMap<String, JsonObject>> target = new HashMap<>();
 
-    private String name;
+    private String commandName;
     private String description;
     private String fileExtension;
 
@@ -100,7 +95,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     public JSONFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
     {
-        this.name = name;
+        this.commandName = name;
         this.description = description;
         this.fileExtension = fileExtension;
     }
@@ -108,7 +103,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     @Override
     public String getName()
     {
-        return this.name;
+        return this.commandName;
     }
 
     @Override
