@@ -235,10 +235,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      * @return a 2d {@link HashMap} containing a {@link HashMap} of {@link JsonObject}s mapped to
      *         {@link String} feature ids, mapped to {@link String} check names.
      */
-    protected HashMap<String, HashMap<String, JsonObject>> mapFeatures(final File file)
-    {
-        return new HashMap<>();
-    }
+    protected abstract HashMap<String, HashMap<String, JsonObject>> mapFeatures(File file);
 
     /**
      * Takes two {@link HashMap}s containing atlas-checks flags mapped by id. Finds missing elements
@@ -254,11 +251,8 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *            the returned {@link JSONFlagDiff} will be populated.
      * @return an {@link JSONFlagDiff}
      */
-    protected JSONFlagDiff getDiff(final HashMap<String, HashMap<String, JsonObject>> source,
-            final HashMap<String, HashMap<String, JsonObject>> target, final DiffReturn returnType)
-    {
-        return new JSONFlagDiff();
-    }
+    protected abstract JSONFlagDiff getDiff(HashMap<String, HashMap<String, JsonObject>> source,
+            HashMap<String, HashMap<String, JsonObject>> target, DiffReturn returnType);
 
     /**
      * Helper function for {@code getMissingAndChanged} to check for changes in Atlas ids.
@@ -269,10 +263,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *            {@code feature} {@link JsonArray} to check to
      * @return true if all Atlas ids in {@code source} are present in {@code target}, and visa versa
      */
-    protected boolean identicalFeatureIds(final JsonArray sourceArray, final JsonArray targetArray)
-    {
-        return true;
-    }
+    protected abstract boolean identicalFeatureIds(JsonArray sourceArray, JsonArray targetArray);
 
     /**
      * Writes a Set of geoJSON atlas-checks flags to a file.
