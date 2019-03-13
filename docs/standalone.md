@@ -1,24 +1,19 @@
 # Running Atlas Checks as a Standalone Application
 
-For prerequisites for running checks see [dev.md](dev.md). To run the checks only the first two prerequisites are required, Java8 and Gradle. 
+For prerequisites for running checks see [dev.md](dev.md). To run the checks only the first two prerequisites are required, Java8 and Gradle.
 
-Atlas Checks can easily be executed using all the default settings with no additional requirements by simply executing 
+Atlas Checks can easily be executed using all the default settings with no additional requirements by simply executing
 the following statement in the root directory of the cloned Atlas Checks repository:
 
 `gradle run`
 
-This will run Atlas Checks against AIA (Anguilla) found in data/atlas/AIA using the [configuration.json](../config/configuration.json) configuration.
-
-#### Running against new Atlas
-
-Gradle will look inside this folder [data/](../data/) for any atlas or PBF files.  
+This will run Atlas Checks using the [configuration.json](../config/configuration.json) configuration.
 
 #### Running against PBF
 
-Atlas Checks allows you to run the checks against PBF files. If you have downloaded a PBF file you can simply
-place the PBF in the [data/](../data/) directory and execute
+Atlas Checks allows you to run the checks against PBF files.
 
-`./gradlew run`
+`./gradlew run` will download a sample BLZ (Belize) PBF file and run the cheks on it automatically.
 
 If you want to supply a location to a remote PBF you can use a project property in Gradle to set the PBF location
 and execute
@@ -27,7 +22,7 @@ and execute
 
 #### Running against PBF with Bounding Box
 
-Atlas Checks allows you to run checks against a PBF file with a bounding box restriction. This allows you 
+Atlas Checks allows you to run checks against a PBF file with a bounding box restriction. This allows you
 to restrict the checks to a specific area of the map. Either for performance reasons, ie. less geographic
 area allows Atlas Checks to complete faster, or simply for focus. Like running against a PBF, you can include
 the PBF file using either a URL location or a local file, but in this case you would include the bounding
@@ -40,7 +35,7 @@ In the above case you would replace lat,lon:lat,lon with the actual bounds of yo
 #### Saving Intermediate Atlas File
 
 When executing the Atlas Checks against PBF files, the framework will convert the PBF to an Atlas file and then
-execute the checks over the Atlas file. Ordinarily the Atlas file will simply be used as an in-memory object and 
+execute the checks over the Atlas file. Ordinarily the Atlas file will simply be used as an in-memory object and
 then garbage collected once we are finished with it. However it may be useful to save the Atlas for later usage, you
 can do this by adding the `savePbfAtlas` flag to your gradle command, like so:
 
@@ -49,7 +44,7 @@ can do this by adding the `savePbfAtlas` flag to your gradle command, like so:
 #### Output File Formats
 
 Several types of output may be produced by the Atlas Check:
-- Flag Logs (`flags`) - Line delimited GeoJson log files, each line the file representing one Check Flag consisting of a 
+- Flag Logs (`flags`) - Line delimited GeoJson log files, each line the file representing one Check Flag consisting of a
 `FeatureCollection` of features flagged with additional information held within it's properties.
 - Check GeoJson (`geojson`) - Each file contains a `FeatureCollection` containing a `Feature` per Atlas Check. This
 format provides high level view of all geometries flagged by each check, useful for editing and visualization tools like
@@ -77,8 +72,8 @@ The MapRoulette configuration supplied is separated by colons and split into 4 d
 
 #### Creating Compressed Output Files
 
-Flag log and GeoJson files created while running the Atlas Checks are uncompressed by default. Changing this may be 
-important when working with very large data sets. You can change this by adding the `compressOutput` flag to your gradle 
+Flag log and GeoJson files created while running the Atlas Checks are uncompressed by default. Changing this may be
+important when working with very large data sets. You can change this by adding the `compressOutput` flag to your gradle
 command, like so:
 
 `gradle run -Pchecks.local.compressOutput=true`

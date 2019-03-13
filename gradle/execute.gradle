@@ -1,3 +1,19 @@
+task downloadPbf {
+    doLast {
+        mkdir "${buildDir}/example/data/pbfSource/"
+        ant.get(src: "https://apple.box.com/shared/static/1wj4fiuwg88dczgkwxrva8udbbqjn6y5.pbf",
+            dest: "${buildDir}/example/data/pbfSource/belize.osm.pbf",
+            skipexisting: 'true')
+    }
+}
+
+task copyPbf (dependsOn: 'downloadPbf') {
+    doLast {
+        ant.copy(file: "${buildDir}/example/data/pbfSource/belize.osm.pbf",
+            toFile: "${buildDir}/example/data/pbfs/belize.osm.pbf")
+    }
+}
+
 /**
  * Runs Atlas Checks configured through the gradle.properties file. Multiple run profiles
  * may be defined through project properties. Set the profile project property to switch
@@ -35,7 +51,9 @@ task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the
 /**
  * Wraps runChecks to perform any task involving setup or teardown
  */
-task run(dependsOn: 'assemble', group: 'application', description: 'Runs the Atlas Check framework configured using profiles defined in gradle.properties.') {
+task run(dependsOn: ['assemble',
+        'downloadPbf',
+        'copyPbf'], group: 'application', description: 'Runs the Atlas Check framework configured using profiles defined in gradle.properties.') {
     doLast {
         runChecks.getCommandLine().each {
             line -> println("$line \\")
