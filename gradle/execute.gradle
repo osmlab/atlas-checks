@@ -1,7 +1,7 @@
 task downloadPbf {
     doLast {
         mkdir "${buildDir}/example/data/pbfSource/"
-        ant.get(src: "https://apple.box.com/shared/static/1wj4fiuwg88dczgkwxrva8udbbqjn6y5.pbf",
+        ant.get(src: "https://dl.dropboxusercontent.com/s/ddvpimpnbv6o43t/belize-geofabrik-2019-03-13T21-14-02Z.osm.pbf",
             dest: "${buildDir}/example/data/pbfSource/belize.osm.pbf",
             skipexisting: 'true')
     }
