@@ -1,5 +1,9 @@
 package org.openstreetmap.atlas.checks.commands;
 
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.FEATURES;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.IDENTIFIER;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -10,8 +14,6 @@ import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonConstants;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,13 +57,13 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                     // Parse the json
                     final JsonObject source = getGson().fromJson(line, JsonObject.class);
                     // Get the check name
-                    final String checkName = source.get(GeoJsonConstants.PROPERTIES)
-                            .getAsJsonObject().get(GENERATOR).getAsString();
+                    final String checkName = source.get(PROPERTIES).getAsJsonObject().get(GENERATOR)
+                            .getAsString();
                     // Add the check name as a key
                     checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                     // Add the geoJSON as a value
-                    checkFeatureMap.get(checkName).put(source.get(GeoJsonConstants.PROPERTIES)
-                            .getAsJsonObject().get(ID).getAsString(), source);
+                    checkFeatureMap.get(checkName).put(
+                            source.get(PROPERTIES).getAsJsonObject().get(ID).getAsString(), source);
                 }
             }
         }
@@ -85,10 +87,9 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                 diff.addMissing(featureCollection);
             }
             // If not missing, check for Atlas id changes
-            else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
-                    featureCollection.get(GeoJsonConstants.FEATURES).getAsJsonArray(),
-                    target.get(check).get(identifier).get(GeoJsonConstants.FEATURES)
-                            .getAsJsonArray()))
+            else if (returnType.equals(DiffReturn.CHANGED)
+                    && !this.identicalFeatureIds(featureCollection.get(FEATURES).getAsJsonArray(),
+                            target.get(check).get(identifier).get(FEATURES).getAsJsonArray()))
             {
                 diff.addChanged(featureCollection);
             }
@@ -110,22 +111,20 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
         sourceArray.forEach(object ->
         {
             // Handle Locations that were added and don't have an id
-            if (object.getAsJsonObject().get(GeoJsonConstants.PROPERTIES).getAsJsonObject()
-                    .has(GeoJsonUtils.IDENTIFIER))
+            if (object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(IDENTIFIER))
             {
-                sourceIds.add(object.getAsJsonObject().get(GeoJsonConstants.PROPERTIES)
-                        .getAsJsonObject().get(GeoJsonUtils.IDENTIFIER).getAsString());
+                sourceIds.add(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get(IDENTIFIER).getAsString());
             }
         });
         // Gather all the target ids
         targetArray.forEach(object ->
         {
             // Handle Locations that were added and don't have an id
-            if (object.getAsJsonObject().get(GeoJsonConstants.PROPERTIES).getAsJsonObject()
-                    .has(GeoJsonUtils.IDENTIFIER))
+            if (object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(IDENTIFIER))
             {
-                targetIds.add(object.getAsJsonObject().get(GeoJsonConstants.PROPERTIES)
-                        .getAsJsonObject().get(GeoJsonUtils.IDENTIFIER).getAsString());
+                targetIds.add(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get(IDENTIFIER).getAsString());
             }
         });
         // Compare the two id lists

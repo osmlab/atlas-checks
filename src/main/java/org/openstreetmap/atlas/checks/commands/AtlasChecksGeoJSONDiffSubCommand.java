@@ -1,5 +1,11 @@
 package org.openstreetmap.atlas.checks.commands;
 
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.FEATURES;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.TYPE;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonType.FEATURE_COLLECTION;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.IDENTIFIER;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,9 +19,6 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonConstants;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonType;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +60,12 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
             final JsonObject json = getGson()
                     .fromJson(new JsonReader(new InputStreamReader(inputStream)), JsonObject.class);
             // Map each feature
-            json.get(GeoJsonConstants.FEATURES).getAsJsonArray().forEach(feature ->
+            json.get(FEATURES).getAsJsonArray().forEach(feature ->
             {
                 final JsonObject jsonFeature = feature.getAsJsonObject();
                 // Get the check name. Use regex to disregard the appended highway tag values.
-                final Matcher nameMatch = NAME_PATTERN
-                        .matcher(jsonFeature.get(GeoJsonConstants.PROPERTIES).getAsJsonObject()
-                                .get(NAME).getAsString());
+                final Matcher nameMatch = NAME_PATTERN.matcher(
+                        jsonFeature.get(PROPERTIES).getAsJsonObject().get(NAME).getAsString());
                 nameMatch.find();
                 final String checkName = nameMatch.group(1);
                 // Add the check name as a key
@@ -94,11 +96,10 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
             }
             // If not missing, check for Atlas id changes
             else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
-                    feature.get(GeoJsonConstants.PROPERTIES).getAsJsonObject()
-                            .get(FEATURE_PROPERTIES).getAsJsonArray(),
-                    target.get(check).get(identifier).getAsJsonObject()
-                            .get(GeoJsonConstants.PROPERTIES).getAsJsonObject()
-                            .get(FEATURE_PROPERTIES).getAsJsonArray()))
+                    feature.get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
+                            .getAsJsonArray(),
+                    target.get(check).get(identifier).getAsJsonObject().get(PROPERTIES)
+                            .getAsJsonObject().get(FEATURE_PROPERTIES).getAsJsonArray()))
             {
                 diff.addChanged(feature);
             }
@@ -113,16 +114,16 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
         final ArrayList<String> targetIds = new ArrayList<>();
         sourceArray.forEach(object ->
         {
-            if (object.getAsJsonObject().has(GeoJsonUtils.IDENTIFIER))
+            if (object.getAsJsonObject().has(IDENTIFIER))
             {
-                sourceIds.add(object.getAsJsonObject().get(GeoJsonUtils.IDENTIFIER).getAsString());
+                sourceIds.add(object.getAsJsonObject().get(IDENTIFIER).getAsString());
             }
         });
         targetArray.forEach(object ->
         {
-            if (object.getAsJsonObject().has(GeoJsonUtils.IDENTIFIER))
+            if (object.getAsJsonObject().has(IDENTIFIER))
             {
-                targetIds.add(object.getAsJsonObject().get(GeoJsonUtils.IDENTIFIER).getAsString());
+                targetIds.add(object.getAsJsonObject().get(IDENTIFIER).getAsString());
             }
         });
         return sourceIds.containsAll(targetIds) && targetIds.containsAll(sourceIds);
@@ -134,9 +135,8 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
         final JsonArray featureArray = new JsonArray();
         flags.forEach(featureArray::add);
         final JsonObject featureCollection = new JsonObject();
-        featureCollection.add(GeoJsonConstants.TYPE,
-                new JsonPrimitive(GeoJsonType.FEATURE_COLLECTION.toString()));
-        featureCollection.add(GeoJsonConstants.FEATURES, featureArray);
+        featureCollection.add(TYPE, new JsonPrimitive(FEATURE_COLLECTION.toString()));
+        featureCollection.add(FEATURES, featureArray);
 
         super.writeSetToGeoJSON(Collections.singleton(featureCollection), output);
     }
