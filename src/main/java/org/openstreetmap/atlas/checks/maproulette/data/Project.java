@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
  * Very basic class defining the structure of the MapRoulette Project
  * 
  * @author cuthbertm
+ * @author nachtm
  */
 public class Project
 {
@@ -14,17 +15,27 @@ public class Project
     private long id = -1;
     private final String name;
     private final String description;
+    private final String displayName;
 
     public Project(final String name)
     {
         this.name = name;
         this.description = name;
+        this.displayName = name;
     }
 
     public Project(final String name, final String description)
     {
         this.name = name;
         this.description = description;
+        this.displayName = name;
+    }
+
+    public Project(final String name, final String description, final String displayName)
+    {
+        this.name = name;
+        this.description = description;
+        this.displayName = displayName;
     }
 
     public long getId()
@@ -45,6 +56,11 @@ public class Project
     public String getDescription()
     {
         return description;
+    }
+
+    public String getDisplayName()
+    {
+        return displayName;
     }
 
     public JsonObject toJson()
