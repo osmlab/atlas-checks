@@ -17,8 +17,14 @@ import org.slf4j.LoggerFactory;
  */
 public class MapRouletteConfiguration implements Serializable
 {
-    private static final int API_KEY_INDEX = 3;
-    private static final int NUMBER_OF_COMPONENTS = 4;
+    // Note that PROJECT_NAME_INDEX == API_KEY_INDEX! This is because we have two forms:
+    // SERVER:PORT:PROJECT:API_KEY and SERVER:PORT:API_KEY. Under the hood, we are converting from
+    // the first to the second before parsing. So, we need PROJECT_NAME_INDEX to refer to 2
+    // (in the first form) and the rest of the indexes to refer to the second form (where
+    // API_KEY_INDEX is 2).
+    private static final int API_KEY_INDEX = 2;
+    private static final int NUMBER_OF_COMPONENTS_WITH_PROJECT = 4;
+    private static final int NUMBER_OF_COMPONENTS = 3;
     private static final int PORT_INDEX = 1;
     private static final int PROJECT_NAME_INDEX = 2;
     private static final int SERVER_INDEX = 0;
@@ -43,8 +49,9 @@ public class MapRouletteConfiguration implements Serializable
     {
         if (StringUtils.isNotEmpty(configuration))
         {
-            final List<String> components = new LinkedList<>(Arrays.asList(configuration.split(DELIMITER)));
-            if (components.size() == NUMBER_OF_COMPONENTS)
+            final List<String> components = new LinkedList<>(
+                    Arrays.asList(configuration.split(DELIMITER)));
+            if (components.size() == NUMBER_OF_COMPONENTS_WITH_PROJECT)
             {
                 final ProjectConfiguration projectConfiguration = new ProjectConfiguration(
                         components.get(PROJECT_NAME_INDEX));
@@ -87,9 +94,8 @@ public class MapRouletteConfiguration implements Serializable
      * from some network information and a project configuration.
      *
      * @param components
-     *            An ordered list of components defining a connection to Map Roulette. Requires that
-     *            server is at SERVER_INDEX, port is at PORT_INDEX, and the api key is at
-     *            API_KEY_INDEX - 1.
+     *            An ordered list of components defining a connection to Map Roulette. Expects the
+     *            order to be [SERVER, PORT, API_KEY].
      * @param configuration
      *            A ProjectConfiguration defining the project that this connection will connect to
      *            on Map Roulette
@@ -99,12 +105,11 @@ public class MapRouletteConfiguration implements Serializable
     private static MapRouletteConfiguration parseWithProject(final List<String> components,
             final ProjectConfiguration configuration)
     {
-        // TODO clean up indexing/length comparison
-        if (components.size() == NUMBER_OF_COMPONENTS - 1)
+        if (components.size() == NUMBER_OF_COMPONENTS)
         {
             return new MapRouletteConfiguration(components.get(SERVER_INDEX),
                     Integer.parseInt(components.get(PORT_INDEX)), configuration,
-                    components.get(API_KEY_INDEX - 1));
+                    components.get(API_KEY_INDEX));
         }
         logger.debug(String.format(
                 "Map Roulette configuration not set, invalid number of arguments. [%s]",

@@ -27,9 +27,13 @@ public class ProjectConfiguration
 
     /**
      * Defines a project and all of its fields.
-     * @param name The name of the project
-     * @param description The description of the project
-     * @param displayName The name displayed on Map Roulette for the project
+     * 
+     * @param name
+     *            The name of the project
+     * @param description
+     *            The description of the project
+     * @param displayName
+     *            The name displayed on Map Roulette for the project
      */
     public ProjectConfiguration(final String name, final String description,
             final String displayName)
