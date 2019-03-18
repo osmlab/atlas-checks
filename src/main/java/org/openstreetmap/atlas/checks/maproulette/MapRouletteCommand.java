@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public abstract class MapRouletteCommand extends AtlasLoadingCommand
 {
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteCommand.class);
-
+    private static final boolean DEFAULT_ENABLED = true;
     private static final Switch<MapRouletteConfiguration> MAP_ROULETTE = new Switch<>("maproulette",
             "Map roulette server information, format <host>:<port>:<project>:<api_key>",
             MapRouletteConfiguration::parse);
@@ -121,7 +121,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
             return mapRoulette;
         }
         final ProjectConfiguration project = new ProjectConfiguration(mapRoulette.getProjectName(),
-                mapRoulette.getProjectName(), projectDisplayName);
+                mapRoulette.getProjectName(), projectDisplayName, DEFAULT_ENABLED);
         return new MapRouletteConfiguration(mapRoulette.getServer(), mapRoulette.getPort(), project,
                 mapRoulette.getApiKey());
     }

@@ -22,6 +22,7 @@ public class MapRouletteConfiguration implements Serializable
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteConfiguration.class);
     private static final long serialVersionUID = -1060265212173405828L;
     private static final String DELIMITER = ":";
+    private static final boolean PROJECT_DEFAULT_ENABLED = true;
     private final String apiKey;
     private final int port;
     private final String server;
@@ -108,7 +109,7 @@ public class MapRouletteConfiguration implements Serializable
                         "Project name from string ({}) does not equal name from configuration object ({}). Using name from string.",
                         components[PROJECT_NAME_INDEX], configurationToUse);
                 configurationToUse = new ProjectConfiguration(components[PROJECT_NAME_INDEX],
-                        configurationToUse.getDescription(), configurationToUse.getDisplayName());
+                        configurationToUse.getDescription(), configurationToUse.getDisplayName(), PROJECT_DEFAULT_ENABLED);
             }
             return new MapRouletteConfiguration(components[SERVER_INDEX],
                     Integer.parseInt(components[PORT_INDEX]), configurationToUse,

@@ -11,6 +11,7 @@ public class ProjectConfiguration
     private String name;
     private String description;
     private String displayName;
+    private boolean enabled;
 
     /**
      * Defines a basic project, where all optional fields default to name.
@@ -23,6 +24,7 @@ public class ProjectConfiguration
         this.name = name;
         this.description = name;
         this.displayName = name;
+        this.enabled = true;
     }
 
     /**
@@ -34,13 +36,16 @@ public class ProjectConfiguration
      *            The description of the project
      * @param displayName
      *            The name displayed on Map Roulette for the project
+     * @param enabled
+     *            Whether the project is enabled or not
      */
     public ProjectConfiguration(final String name, final String description,
-            final String displayName)
+            final String displayName, final boolean enabled)
     {
         this.name = name;
         this.description = description;
         this.displayName = displayName;
+        this.enabled = enabled;
     }
 
     /**
@@ -50,7 +55,7 @@ public class ProjectConfiguration
      */
     public Project buildProject()
     {
-        return new Project(this.name, this.description, this.displayName);
+        return new Project(this.name, this.description, this.displayName, this.enabled);
     }
 
     public String getName()

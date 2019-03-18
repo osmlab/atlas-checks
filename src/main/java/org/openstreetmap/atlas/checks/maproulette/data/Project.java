@@ -16,12 +16,14 @@ public class Project
     private final String name;
     private final String description;
     private final String displayName;
+    private final boolean enabled;
 
     public Project(final String name)
     {
         this.name = name;
         this.description = name;
         this.displayName = name;
+        this.enabled = true;
     }
 
     public Project(final String name, final String description)
@@ -29,13 +31,15 @@ public class Project
         this.name = name;
         this.description = description;
         this.displayName = name;
+        this.enabled = true;
     }
 
-    public Project(final String name, final String description, final String displayName)
+    public Project(final String name, final String description, final String displayName, final boolean enabled)
     {
         this.name = name;
         this.description = description;
         this.displayName = displayName;
+        this.enabled = enabled;
     }
 
     public long getId()
@@ -61,6 +65,11 @@ public class Project
     public String getDisplayName()
     {
         return displayName;
+    }
+
+    public boolean isEnabled()
+    {
+        return enabled;
     }
 
     public JsonObject toJson()
