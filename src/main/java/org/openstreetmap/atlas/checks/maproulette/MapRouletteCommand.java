@@ -25,21 +25,9 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
 {
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteCommand.class);
 
-    // We take in Map Roulette connection information in one of two ways:
-    // either -maproulette=HOST:PORT:PROJECT:API_KEY,
-    // or -maprouletteConnection=HOST:PORT:API_KEY -projectName=NAME
-    // The second way gives more flexibility as far as defining other project parameters that we
-    // might want to pass in addition
     private static final Switch<MapRouletteConfiguration> MAP_ROULETTE = new Switch<>("maproulette",
             "Map roulette server information, format <host>:<port>:<project>:<api_key>",
             MapRouletteConfiguration::parse);
-    private static final Switch<String> MAP_ROULETTE_NO_PROJECT = new Switch<>(
-            "maprouletteConnection",
-            "Map roulette server information without a project name, format <host>:<port>:<api_key>",
-            StringConverter.IDENTITY);
-    private static final Switch<String> PROJECT_NAME = new Switch<>("projectName",
-            "Name of the project under which all of the tasks will be submitted",
-            StringConverter.IDENTITY);
     private static final Switch<String> PROJECT_DISPLAY_NAME = new Switch<>("projectDisplayName",
             "Display name of the project under which all of the tasks will be submitted",
             StringConverter.IDENTITY);
@@ -126,15 +114,15 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     {
         final MapRouletteConfiguration mapRoulette = (MapRouletteConfiguration) commandMap
                 .get(MAP_ROULETTE);
-        final String mapRouletteNoProject = (String) commandMap.get(MAP_ROULETTE_NO_PROJECT);
-        final String projectName = (String) commandMap.get(PROJECT_NAME);
         final String projectDisplayName = (String) commandMap.get(PROJECT_DISPLAY_NAME);
 
-        if (mapRoulette != null)
+        if (projectDisplayName == null)
         {
             return mapRoulette;
         }
-        return MapRouletteConfiguration.parseWithProject(mapRouletteNoProject,
-                new ProjectConfiguration(projectName, projectName, projectDisplayName));
+        final ProjectConfiguration project = new ProjectConfiguration(mapRoulette.getProjectName(),
+                mapRoulette.getProjectName(), projectDisplayName);
+        return new MapRouletteConfiguration(mapRoulette.getServer(), mapRoulette.getPort(), project,
+                mapRoulette.getApiKey());
     }
 }
