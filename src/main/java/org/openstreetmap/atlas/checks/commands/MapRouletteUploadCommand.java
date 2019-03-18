@@ -1,14 +1,18 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteCommand;
@@ -60,9 +64,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final Configuration instructions = this.loadConfiguration(commandMap);
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
-            if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
+            // If this file is something we handle, read and upload the tasks contained within
+            final Optional<HandledFileType> optionalHandledFileType = maybeGetHandledType(logFile);
+            optionalHandledFileType.ifPresent(handledFileType ->
             {
-                try (BufferedReader reader = new BufferedReader(new FileReader(logFile.getPath())))
+                try (BufferedReader reader = this.getReader(logFile, handledFileType))
                 {
                     reader.lines().forEach(line ->
                     {
@@ -81,12 +87,57 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 }
                 catch (final IOException error)
                 {
-                    logger.error(
-                            MessageFormat.format("Error while reading {0}: ", logFile.getName()),
-                            error);
+                    logger.error("Error while reading {}:", logFile, error);
                 }
-            }
+            });
         });
+    }
+
+    /**
+     * An enum containing the different types of input files that we can handle.
+     */
+    private enum HandledFileType
+    {
+        LOG,
+        ZIPPED_LOG
+    }
+
+    /**
+     * Determine whether or not this file is something we can handle, and classify it accordingly.
+     * @param logFile any file
+     * @return if this file is something this command can handle, the appropriate HandledFileType
+     * enum value; otherwise, an empty optional.
+     */
+    private Optional<HandledFileType> maybeGetHandledType(final File logFile)
+    {
+        if (logFile.getName().endsWith(".log.gz"))
+        {
+            return Optional.of(HandledFileType.ZIPPED_LOG);
+        }
+        else if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
+        {
+            return Optional.of(HandledFileType.LOG);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Read a file that we know we should be able to handle
+     * @param inputFile Some file with a valid, appropriate extension.
+     * @param fileType The type of file that inputFile is
+     * @return a BufferedReader to read inputFile
+     * @throws IOException if the file is not found or is poorly formatted, given its extension.
+     *  For example, if this file is gzipped and something goes wrong in the unzipping process, it
+     *  might throw an error
+     */
+    private BufferedReader getReader(final File inputFile, final HandledFileType fileType) throws
+            IOException
+    {
+        if (fileType == HandledFileType.LOG)
+        {
+            return new BufferedReader(new FileReader(inputFile.getPath()));
+        }
+        return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
     }
 
     /**
