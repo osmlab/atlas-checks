@@ -99,7 +99,7 @@ public class SignPostCheck extends BaseCheck<String>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
-                && !this.isFlagged(this.getTaskIdentifier(object))
+                && !this.isFlagged(String.valueOf(object.getOsmIdentifier()))
                 && this.rampEdgeFilter.test(object) && ((Edge) object).highwayTag().isLink()
                 && ((Edge) object).length().isGreaterThan(this.minimumLinkLength);
     }
@@ -116,7 +116,7 @@ public class SignPostCheck extends BaseCheck<String>
     {
         final Edge edge = (Edge) object;
         final HighwayTag highwayTag = edge.highwayTag();
-        final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
+        final CheckFlag flag = new CheckFlag(String.valueOf(object.getOsmIdentifier()));
         final Set<Node> junctionNodes = new HashSet<>();
         boolean checkDestination = false;
 
@@ -161,7 +161,7 @@ public class SignPostCheck extends BaseCheck<String>
         // Return the flag if it has any flagged objects in it
         if (!flag.getFlaggedObjects().isEmpty())
         {
-            this.markAsFlagged(this.getTaskIdentifier(object));
+            this.markAsFlagged(String.valueOf(object.getOsmIdentifier()));
             return Optional.of(flag);
         }
 
