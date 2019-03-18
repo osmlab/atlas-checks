@@ -46,6 +46,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             Optionality.OPTIONAL, "config/configuration.json");
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final String LOG_EXTENSION = "log";
+    private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
     private final Map<String, Challenge> checkNameChallengeMap;
 
@@ -104,13 +105,17 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
 
     /**
      * Determine whether or not this file is something we can handle, and classify it accordingly.
-     * @param logFile any file
+     * 
+     * @param logFile
+     *            any file
      * @return if this file is something this command can handle, the appropriate HandledFileType
-     * enum value; otherwise, an empty optional.
+     *         enum value; otherwise, an empty optional.
      */
     private Optional<HandledFileType> maybeGetHandledType(final File logFile)
     {
-        if (logFile.getName().endsWith(".log.gz"))
+        // Note that technically the true extension is just .gz, so we can't use the same method as
+        // below.
+        if (logFile.getName().endsWith(ZIPPED_LOG_EXTENSION))
         {
             return Optional.of(HandledFileType.ZIPPED_LOG);
         }
@@ -123,21 +128,26 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
 
     /**
      * Read a file that we know we should be able to handle
-     * @param inputFile Some file with a valid, appropriate extension.
-     * @param fileType The type of file that inputFile is
+     * 
+     * @param inputFile
+     *            Some file with a valid, appropriate extension.
+     * @param fileType
+     *            The type of file that inputFile is
      * @return a BufferedReader to read inputFile
-     * @throws IOException if the file is not found or is poorly formatted, given its extension.
-     *  For example, if this file is gzipped and something goes wrong in the unzipping process, it
-     *  might throw an error
+     * @throws IOException
+     *             if the file is not found or is poorly formatted, given its extension. For
+     *             example, if this file is gzipped and something goes wrong in the unzipping
+     *             process, it might throw an error
      */
-    private BufferedReader getReader(final File inputFile, final HandledFileType fileType) throws
-            IOException
+    private BufferedReader getReader(final File inputFile, final HandledFileType fileType)
+            throws IOException
     {
         if (fileType == HandledFileType.LOG)
         {
             return new BufferedReader(new FileReader(inputFile.getPath()));
         }
-        return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
+        return new BufferedReader(new InputStreamReader(
+                new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
     }
 
     /**
