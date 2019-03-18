@@ -125,7 +125,7 @@ public class SignPostCheck extends BaseCheck<String>
         final Set<Node> junctionNodes = new HashSet<>();
         boolean checkDestination = false;
 
-        // Get in edes from edge and its reverse, if it has one
+        // Get in edges from edge and its reverse, if it has one
         final Set<Edge> inEdges = new HashSet<>(edge.inEdges());
         edge.reversed().ifPresent(reverseEdge -> inEdges.addAll(reverseEdge.inEdges()));
 
@@ -190,7 +190,7 @@ public class SignPostCheck extends BaseCheck<String>
 
     /**
      * Checks if an {@link Edge} has 2 or more out Edges of the same highway classification as
-     * itself, excluding its reverse edge.
+     * itself, excluding its reverseå edge.
      *
      * @param edge
      *            {@link Edge} to check
