@@ -109,7 +109,8 @@ public class MapRouletteConfiguration implements Serializable
                         "Project name from string ({}) does not equal name from configuration object ({}). Using name from string.",
                         components[PROJECT_NAME_INDEX], configurationToUse);
                 configurationToUse = new ProjectConfiguration(components[PROJECT_NAME_INDEX],
-                        configurationToUse.getDescription(), configurationToUse.getDisplayName(), PROJECT_DEFAULT_ENABLED);
+                        configurationToUse.getDescription(), configurationToUse.getDisplayName(),
+                        PROJECT_DEFAULT_ENABLED);
             }
             return new MapRouletteConfiguration(components[SERVER_INDEX],
                     Integer.parseInt(components[PORT_INDEX]), configurationToUse,

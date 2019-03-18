@@ -34,7 +34,8 @@ public class Project
         this.enabled = true;
     }
 
-    public Project(final String name, final String description, final String displayName, final boolean enabled)
+    public Project(final String name, final String description, final String displayName,
+            final boolean enabled)
     {
         this.name = name;
         this.description = description;

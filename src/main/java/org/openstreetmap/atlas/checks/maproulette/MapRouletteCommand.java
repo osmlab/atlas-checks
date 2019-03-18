@@ -29,7 +29,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
             "Map roulette server information, format <host>:<port>:<project>:<api_key>",
             MapRouletteConfiguration::parse);
     private static final Switch<String> PROJECT_DISPLAY_NAME = new Switch<>("projectDisplayName",
-            "Display name of the project under which all of the tasks will be submitted",
+            "Display name of the project under which all of the challenges will be submitted",
             StringConverter.IDENTITY);
     private MapRouletteClient mapRouletteClient;
 
