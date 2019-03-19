@@ -74,11 +74,16 @@ public class MapRouletteClient implements Serializable
      */
     public MapRouletteClient(final MapRouletteConfiguration configuration)
     {
+        this(configuration, new MapRouletteConnection(configuration));
+    }
+
+    MapRouletteClient(final MapRouletteConfiguration configuration, final TaskLoader taskLoader)
+    {
         this.batch = new ConcurrentHashMap<>();
         this.projects = new ConcurrentHashMap<>();
         this.challenges = new ConcurrentHashMap<>();
         this.configuration = configuration;
-        this.connection = new MapRouletteConnection(configuration);
+        this.connection = taskLoader;
     }
 
     public synchronized void addTask(final Challenge challenge, final Task task)

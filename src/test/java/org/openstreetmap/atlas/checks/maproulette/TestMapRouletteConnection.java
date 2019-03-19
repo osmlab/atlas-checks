@@ -1,16 +1,15 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
-import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
-import org.openstreetmap.atlas.checks.maproulette.data.Project;
-import org.openstreetmap.atlas.checks.maproulette.data.Task;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
+import org.openstreetmap.atlas.checks.maproulette.data.Project;
+import org.openstreetmap.atlas.checks.maproulette.data.Task;
 
 /**
  * A stub MapRouletteConnection that doesn't actually connect to anything.
@@ -29,12 +28,14 @@ public class TestMapRouletteConnection implements TaskLoader
         this.challengeToTasks = new HashMap<>();
     }
 
-    @Override public String getConnectionInfo()
+    @Override
+    public String getConnectionInfo()
     {
         return "";
     }
 
-    @Override public boolean uploadBatchTasks(final long challengeId, final Set<Task> tasks)
+    @Override
+    public boolean uploadBatchTasks(final long challengeId, final Set<Task> tasks)
             throws UnsupportedEncodingException, URISyntaxException
     {
         if (this.challengeToTasks.containsKey(challengeId))
@@ -45,22 +46,26 @@ public class TestMapRouletteConnection implements TaskLoader
         {
             this.challengeToTasks.put(challengeId, tasks);
         }
+        return true;
     }
 
-    @Override public boolean uploadTask(final long challengeId, final Task task)
+    @Override
+    public boolean uploadTask(final long challengeId, final Task task)
             throws UnsupportedEncodingException, URISyntaxException
     {
         return false;
     }
 
-    @Override public long createProject(final Project project)
+    @Override
+    public long createProject(final Project project)
             throws UnsupportedEncodingException, URISyntaxException
     {
-        this.projectToChallenges.put(project, Collections.emptySet());
+        this.projectToChallenges.put(project, new HashSet<>());
         return 0;
     }
 
-    @Override public long createChallenge(final Project project, final Challenge challenge)
+    @Override
+    public long createChallenge(final Project project, final Challenge challenge)
             throws UnsupportedEncodingException, URISyntaxException
     {
         if (this.projectToChallenges.containsKey(project))
@@ -79,5 +84,15 @@ public class TestMapRouletteConnection implements TaskLoader
     public Set<Project> uploadedProjects()
     {
         return projectToChallenges.keySet();
+    }
+
+    public Set<Challenge> challengesForProject(final Project project)
+    {
+        return this.projectToChallenges.get(project);
+    }
+
+    public Set<Task> tasksForChallenge(final Challenge challenge)
+    {
+        return this.challengeToTasks.get(challenge);
     }
 }
