@@ -11,15 +11,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.openstreetmap.atlas.streaming.writers.JsonWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,8 @@ import com.google.gson.stream.JsonReader;
  */
 public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
 {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(AtlasChecksGeoJSONDiffSubCommand.class);
     private static final Pattern NAME_PATTERN = Pattern.compile("([^ ]+) ?");
 
     public AtlasChecksGeoJSONDiffSubCommand()
@@ -92,7 +94,7 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
             // Get missing
             if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
             {
-                diff.addMissing(feature);
+                diff.addMissing(feature, check);
             }
             // If not missing, check for Atlas id changes
             else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
@@ -101,7 +103,7 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
                     target.get(check).get(identifier).getAsJsonObject().get(PROPERTIES)
                             .getAsJsonObject().get(FEATURE_PROPERTIES).getAsJsonArray()))
             {
-                diff.addChanged(feature);
+                diff.addChanged(feature, check);
             }
         }));
         return diff;
@@ -130,14 +132,16 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     @Override
-    protected void writeSetToGeoJSON(final Set<JsonObject> flags, final File output)
+    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
     {
         final JsonArray featureArray = new JsonArray();
-        flags.forEach(featureArray::add);
+        flags.values().stream().flatMap(Collection::stream).forEach(featureArray::add);
         final JsonObject featureCollection = new JsonObject();
         featureCollection.add(TYPE, new JsonPrimitive(FEATURE_COLLECTION.toString()));
         featureCollection.add(FEATURES, featureArray);
 
-        super.writeSetToGeoJSON(Collections.singleton(featureCollection), output);
+        final JsonWriter writer = new JsonWriter(output);
+        writer.writeLine(featureCollection);
+        writer.close();
     }
 }

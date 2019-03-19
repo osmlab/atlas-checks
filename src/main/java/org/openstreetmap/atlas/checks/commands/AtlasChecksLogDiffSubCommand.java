@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 
-import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,8 @@ import com.google.gson.JsonObject;
  */
 public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
 {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(AtlasChecksLogDiffSubCommand.class);
 
     public AtlasChecksLogDiffSubCommand()
     {
@@ -84,14 +84,14 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
             // Get missing
             if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
             {
-                diff.addMissing(featureCollection);
+                diff.addMissing(featureCollection, check);
             }
             // If not missing, check for Atlas id changes
             else if (returnType.equals(DiffReturn.CHANGED)
                     && !this.identicalFeatureIds(featureCollection.get(FEATURES).getAsJsonArray(),
                             target.get(check).get(identifier).get(FEATURES).getAsJsonArray()))
             {
-                diff.addChanged(featureCollection);
+                diff.addChanged(featureCollection, check);
             }
         }));
         return diff;

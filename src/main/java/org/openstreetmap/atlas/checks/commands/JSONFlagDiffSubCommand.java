@@ -1,10 +1,12 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +42,8 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
             "A directory to place output log files in. If not included no outputs files will be written.",
             String::new, Command.Optionality.OPTIONAL);
 
+    static final String CHECK_COUNT_FORMAT = "%s: %d%n";
+
     // Atlas Checks' GeoJSON strings
     static final String FEATURE_PROPERTIES = "feature_properties";
     static final String GENERATOR = "generator";
@@ -68,25 +72,27 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      */
     protected class JSONFlagDiff
     {
-        private final HashSet<JsonObject> missing = new HashSet<>();
-        private final HashSet<JsonObject> changed = new HashSet<>();
+        private final Map<String, Set<JsonObject>> missing = new HashMap<>();
+        private final Map<String, Set<JsonObject>> changed = new HashMap<>();
 
-        public void addMissing(final JsonObject object)
+        public void addMissing(final JsonObject object, final String check)
         {
-            this.missing.add(object);
+            this.missing.putIfAbsent(check, new HashSet<>());
+            this.missing.get(check).add(object);
         }
 
-        public void addChanged(final JsonObject object)
+        public void addChanged(final JsonObject object, final String check)
         {
-            this.changed.add(object);
+            this.changed.putIfAbsent(check, new HashSet<>());
+            this.changed.get(check).add(object);
         }
 
-        public HashSet<JsonObject> getMissing()
+        public Map<String, Set<JsonObject>> getMissing()
         {
             return missing;
         }
 
-        public HashSet<JsonObject> getChanged()
+        public Map<String, Set<JsonObject>> getChanged()
         {
             return changed;
         }
@@ -131,6 +137,8 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     @Override
+    // Allow System.out for clean printing.
+    @SuppressWarnings("squid:S106")
     public int execute(final CommandMap command)
     {
         // Get files and parse to maps
@@ -140,18 +148,24 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
                 .forEach(path -> this.target = this.mergeMaps(this.mapFeatures(path), this.target));
 
         // Get changes from source to target
-        final HashSet<JsonObject> additions = this
+        final Map<String, Set<JsonObject>> additions = this
                 .getDiff(this.target, this.source, DiffReturn.MISSING).getMissing();
         final JSONFlagDiff subAndChange = this.getDiff(this.source, this.target,
                 DiffReturn.CHANGED);
-        final HashSet<JsonObject> subtractions = subAndChange.getMissing();
-        final HashSet<JsonObject> changes = subAndChange.getChanged();
+        final Map<String, Set<JsonObject>> subtractions = subAndChange.getMissing();
+        final Map<String, Set<JsonObject>> changes = subAndChange.getChanged();
 
         // Write outputs
-        System.out.printf(
-                "\n Total Items: %d\n   Additions: %d\n     Changes: %d\nSubtractions: %d\n",
-                getSourceSize() + additions.size(), additions.size(), changes.size(),
-                subtractions.size());
+        System.out.printf("%nTotal Items: %d%n",
+                this.getSourceSize() + this.countMapValues(additions));
+        System.out.printf("%nAdditions: %d%n", this.countMapValues(additions));
+        additions.forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
+        System.out.printf("%nChanges: %d%n", this.countMapValues(changes));
+        changes.forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
+        System.out.printf("%nSubtractions: %d%n", this.countMapValues(subtractions));
+        subtractions
+                .forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
+
         final Optional output = command.getOption(OUTPUT_FOLDER_PARAMETER);
         if (output.isPresent())
         {
@@ -228,6 +242,18 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
+     * Gets a count of the {@link JsonObject}s a {@link Map} of {@link Set}s of {@link JsonObject}s.
+     *
+     * @param map
+     *            a {@link Map} of {@link Set}s of {@link JsonObject}s
+     * @return long count of {@link JsonObject}s
+     */
+    private long countMapValues(final Map<String, Set<JsonObject>> map)
+    {
+        return map.values().stream().mapToLong(Collection::size).sum();
+    }
+
+    /**
      * Parses an atlas-checks flag file and maps each flag to its id.
      *
      * @param file
@@ -273,10 +299,10 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      * @param output
      *            {@link File} to output to
      */
-    protected void writeSetToGeoJSON(final Set<JsonObject> flags, final File output)
+    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
     {
         final JsonWriter writer = new JsonWriter(output);
-        flags.forEach(writer::writeLine);
+        flags.values().stream().flatMap(Collection::stream).forEach(writer::writeLine);
         writer.close();
     }
 
@@ -288,9 +314,9 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     protected int getSourceSize()
     {
         int sourceSize = 0;
-        for (final String check : ((HashMap<String, HashMap>) getSource()).keySet())
+        for (final String check : getSource().keySet())
         {
-            sourceSize += ((HashMap<String, HashMap>) getSource()).get(check).size();
+            sourceSize += getSource().get(check).size();
         }
         return sourceSize;
     }
@@ -310,7 +336,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *
      * @return {@link HashMap}
      */
-    protected HashMap getSource()
+    protected HashMap<String, HashMap<String, JsonObject>> getSource()
     {
         return this.source;
     }
@@ -320,7 +346,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *
      * @return {@link HashMap}
      */
-    protected HashMap getTarget()
+    protected HashMap<String, HashMap<String, JsonObject>> getTarget()
     {
         return this.target;
     }
