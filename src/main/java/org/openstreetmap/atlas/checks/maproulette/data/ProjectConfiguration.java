@@ -72,4 +72,9 @@ public class ProjectConfiguration
     {
         return this.displayName;
     }
+
+    public boolean isEnabled()
+    {
+        return this.enabled;
+    }
 }

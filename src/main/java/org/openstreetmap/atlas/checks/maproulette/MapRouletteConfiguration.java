@@ -22,7 +22,6 @@ public class MapRouletteConfiguration implements Serializable
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteConfiguration.class);
     private static final long serialVersionUID = -1060265212173405828L;
     private static final String DELIMITER = ":";
-    private static final boolean PROJECT_DEFAULT_ENABLED = true;
     private final String apiKey;
     private final int port;
     private final String server;
