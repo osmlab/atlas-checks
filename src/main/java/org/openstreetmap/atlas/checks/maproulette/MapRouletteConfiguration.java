@@ -44,19 +44,9 @@ public class MapRouletteConfiguration implements Serializable
             final String[] components = configuration.split(DELIMITER);
             if (components.length == NUMBER_OF_COMPONENTS)
             {
-                ProjectConfiguration projectConfiguration = new ProjectConfiguration(
-                        components[PROJECT_NAME_INDEX]);
-                if (!projectConfiguration.getName().equals(components[PROJECT_NAME_INDEX]))
-                {
-                    logger.warn(
-                            "Project name from string ({}) does not equal name from configuration object ({}). Using name from string.",
-                            components[PROJECT_NAME_INDEX], projectConfiguration);
-                    projectConfiguration = new ProjectConfiguration(components[PROJECT_NAME_INDEX],
-                            projectConfiguration.getDescription(),
-                            projectConfiguration.getDisplayName(), PROJECT_DEFAULT_ENABLED);
-                }
                 return new MapRouletteConfiguration(components[SERVER_INDEX],
-                        Integer.parseInt(components[PORT_INDEX]), projectConfiguration,
+                        Integer.parseInt(components[PORT_INDEX]),
+                        new ProjectConfiguration(components[PROJECT_NAME_INDEX]),
                         components[API_KEY_INDEX]);
             }
         }
