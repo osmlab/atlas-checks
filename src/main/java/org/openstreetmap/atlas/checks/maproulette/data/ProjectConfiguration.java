@@ -1,12 +1,14 @@
 package org.openstreetmap.atlas.checks.maproulette.data;
 
+import java.io.Serializable;
+
 /**
  * Helper class to decouple MapRouletteConfiguration from configuring projects. This allows easier
  * updating of code that handles projects without touching general Map Roulette configuration code.
  *
  * @author nachtm
  */
-public class ProjectConfiguration
+public class ProjectConfiguration implements Serializable
 {
     private String name;
     private String description;
