@@ -66,10 +66,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
             // If this file is something we handle, read and upload the tasks contained within
-            final Optional<HandledFileType> optionalHandledFileType = maybeGetHandledType(logFile);
-            optionalHandledFileType.ifPresent(handledFileType ->
+            final Optional<OutputFileType> optionalHandledFileType = getOptionalOutputType(logFile);
+            optionalHandledFileType.ifPresent(outputFileType ->
             {
-                try (BufferedReader reader = this.getReader(logFile, handledFileType))
+                try (BufferedReader reader = this.getReader(logFile, outputFileType))
                 {
                     reader.lines().forEach(line ->
                     {
@@ -97,10 +97,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     /**
      * An enum containing the different types of input files that we can handle.
      */
-    private enum HandledFileType
+    private enum OutputFileType
     {
         LOG,
-        ZIPPED_LOG
+        COMPRESSED_LOG
     }
 
     /**
@@ -108,20 +108,20 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      * 
      * @param logFile
      *            any file
-     * @return if this file is something this command can handle, the appropriate HandledFileType
+     * @return if this file is something this command can handle, the appropriate OutputFileType
      *         enum value; otherwise, an empty optional.
      */
-    private Optional<HandledFileType> maybeGetHandledType(final File logFile)
+    private Optional<OutputFileType> getOptionalOutputType(final File logFile)
     {
         // Note that technically the true extension is just .gz, so we can't use the same method as
         // below.
         if (logFile.getName().endsWith(ZIPPED_LOG_EXTENSION))
         {
-            return Optional.of(HandledFileType.ZIPPED_LOG);
+            return Optional.of(OutputFileType.COMPRESSED_LOG);
         }
         else if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
         {
-            return Optional.of(HandledFileType.LOG);
+            return Optional.of(OutputFileType.LOG);
         }
         return Optional.empty();
     }
@@ -139,10 +139,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *             example, if this file is gzipped and something goes wrong in the unzipping
      *             process, it might throw an error
      */
-    private BufferedReader getReader(final File inputFile, final HandledFileType fileType)
+    private BufferedReader getReader(final File inputFile, final OutputFileType fileType)
             throws IOException
     {
-        if (fileType == HandledFileType.LOG)
+        if (fileType == OutputFileType.LOG)
         {
             return new BufferedReader(new FileReader(inputFile.getPath()));
         }
