@@ -25,13 +25,17 @@ plugins
 	id 'signing'
 	id 'checkstyle'
 	id 'jacoco'
-	id "com.diffplug.gradle.spotless" version "3.4.0"
+	id "com.diffplug.gradle.spotless" version "3.18.0"
 	id 'org.sonarqube' version '2.6.2'
 	// id "io.codearte.nexus-staging" version "0.12.0"
-	id 'com.github.johnrengelman.shadow' version '1.2.4'
+	id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
 
 apply from: 'dependencies.gradle'
+apply from: 'gradle/quality.gradle'
+apply from: 'gradle/deployment.gradle'
+apply from: 'gradle/execute.gradle'
+
 apply plugin: 'java'
 apply plugin: 'checkstyle'
 apply plugin: 'maven'
@@ -64,14 +68,6 @@ idea {
     project {
         languageLevel = '1.8'
     }
-}
-
-spotless {
-   java {
-      importOrder(['static java', 'static javax', 'static org', 'static com', 'static scala', 'java', 'javax', 'org', 'com', 'scala'])
-      removeUnusedImports()
-      eclipse().configFile 'config/format/code_format.xml'
-   }
 }
 
 // corresponds to POM description
@@ -155,14 +151,6 @@ dependencies
     shaded project.configurations.getByName('compile')
 }
 
-task integrationTest(type: Test) {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    testLogging
-    {
-        events "passed", "skipped", "failed"
-    }
-}
 
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
@@ -232,80 +220,6 @@ gradle.taskGraph.whenReady { taskGraph ->
         }
     }
 }
-
-signing
-{
-    sign configurations.archives
-}
-build.dependsOn.remove(signArchives)
-
-/**
- * Runs Atlas Checks configured through the gradle.properties file. Multiple run profiles
- * may be defined through project properties. Set the profile project property to switch
- * between profiles.  Default is local.
- *
- * To change the profile, simply run "gradle -Pprofile=remote run"
- */
-task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the Atlas Check Spark job.') {
-    classpath = sourceSets.main.runtimeClasspath
-
-    main = project.property("checks.${project.profile}.mainClass")
-
-    // apply arguments defined in the gradle.properties file for this profile
-    def flags = project.properties.findAll { property ->
-        property.toString().startsWith("checks.${project.profile}")
-    } collect {
-        it.toString().replace("checks.${project.profile}.", "-")
-    } collect {
-        it.toString().replace("@ROOTDIR@", rootDir.getAbsolutePath())
-    } collect {
-        it.toString().replace("@BUILDDIR@", buildDir.getAbsolutePath())
-    }
-    args(flags)
-
-    // add log4j config to the classpath
-    classpath('./config/log4j')
-
-    // uncomment to change jvm args
-    // jvmArgs(["-Xmx8g","-Xms8g"])
-
-    // uncomment to enable jvm debugging
-    // debug=true
-}
-
-/**
- * Wraps runChecks to perform any task involving setup or teardown
- */
-task run(dependsOn: 'assemble', group: 'application', description: 'Runs the Atlas Check framework configured using profiles defined in gradle.properties.') {
-    doLast {
-        runChecks.getCommandLine().each {
-            line -> println("$line \\")
-        }
-        runChecks.execute()
-    }
-}
-
-task buildCheck(type: Copy) {
-    if (project.hasProperty('CheckName')) {
-        def checkName = project.property('CheckName')
-        def username = System.properties["user.name"]
-        println 'Building new check org.openstreetmap.atlas.checks.validation.' + checkName + '.java'
-        // rename file and move to src directory
-        from("gradle/template") {
-            include 'checks.template'
-            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: ['CHECKNAME' : checkName, 'USERNAME' : username])
-            rename 'checks.template', checkName + '.java'
-        }
-        into 'src/main/java/org/openstreetmap/atlas/checks/validation'
-        // update configuration and include new check
-    }
-}
-
-task syncLibs(type: Sync) {
-    into "libs"
-    from configurations.runtime
-}
-
 
 // Rio addons
 rio

@@ -19,6 +19,7 @@ import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.atlas.pbf.AtlasLoadingOption;
 import org.openstreetmap.atlas.geography.atlas.raw.creation.RawAtlasGenerator;
+import org.openstreetmap.atlas.geography.atlas.raw.sectioning.WaySectionProcessor;
 import org.openstreetmap.atlas.geography.boundary.CountryBoundaryMap;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.openstreetmap.atlas.streaming.resource.Resource;
@@ -90,6 +91,17 @@ public class AtlasDataSource implements Serializable, AutoCloseable
             final Configuration configuration, final Rectangle boundingBox)
     {
         this(sparkContext, configuration, MultiPolygon.forPolygon(boundingBox));
+    }
+
+    @Override
+    public void close() throws Exception
+    {
+        this.atlas = null;
+    }
+
+    public Atlas getAtlas()
+    {
+        return this.atlas;
     }
 
     /**
@@ -171,20 +183,9 @@ public class AtlasDataSource implements Serializable, AutoCloseable
         return this.atlas;
     }
 
-    public Atlas getAtlas()
-    {
-        return this.atlas;
-    }
-
     public void setAtlas(final Atlas atlas)
     {
         this.atlas = atlas;
-    }
-
-    @Override
-    public void close() throws Exception
-    {
-        this.atlas = null;
     }
 
     private Atlas loadPbf(final Resource input, final String country)
@@ -193,6 +194,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
         final CountryBoundaryMap map = CountryBoundaryMap
                 .fromBoundaryMap(Collections.singletonMap(country, this.polygon));
         final AtlasLoadingOption option = AtlasLoadingOption.createOptionWithAllEnabled(map);
-        return new RawAtlasGenerator(input, option, this.polygon).build();
+        final Atlas raw = new RawAtlasGenerator(input, option, this.polygon).build();
+        return new WaySectionProcessor(raw, option).run();
     }
 }

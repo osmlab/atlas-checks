@@ -159,15 +159,15 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             final Rectangle edgeBounds = edge.bounds();
             // If layer tag is present use its value, else use the OSM default
             final Optional<Long> edgeLayer = Validators.hasValuesFor(edge, LayerTag.class)
-                    ? LayerTag.getTaggedValue(edge) : Optional.of(OSM_LAYER_DEFAULT);
+                    ? LayerTag.getTaggedValue(edge)
+                    : Optional.of(OSM_LAYER_DEFAULT);
 
             // Retrieve crossing edges
             final Atlas atlas = edge.getAtlas();
-            return Iterables
-                    .asList(atlas.edgesIntersecting(edgeBounds,
-                            // filter out the same edge and non-valid crossing edges
-                            crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
-                                    && this.isValidCrossingEdge(crossingEdge)))
+            return Iterables.asList(atlas.edgesIntersecting(edgeBounds,
+                    // filter out the same edge and non-valid crossing edges
+                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
+                            && this.isValidCrossingEdge(crossingEdge)))
                     .stream()
                     // Go through crossing items and collect invalid crossings
                     // NOTE: Due to way sectioning same OSM way could be marked multiple times here.

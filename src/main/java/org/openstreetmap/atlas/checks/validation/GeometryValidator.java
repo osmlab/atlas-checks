@@ -1,11 +1,10 @@
 package org.openstreetmap.atlas.checks.validation;
 
+import org.locationtech.jts.geom.LineString;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.converters.jts.JtsPolyLineConverter;
 import org.openstreetmap.atlas.geography.converters.jts.JtsPolygonConverter;
-
-import com.vividsolutions.jts.geom.LineString;
 
 /**
  * Basic JTS verification for a {@link PolyLine} and {@link Polygon}
@@ -26,7 +25,7 @@ public final class GeometryValidator
      */
     public static boolean isValidPolygon(final Polygon polygon)
     {
-        final com.vividsolutions.jts.geom.Polygon jtsPolygon = POLYGON_CONVERTER.convert(polygon);
+        final org.locationtech.jts.geom.Polygon jtsPolygon = POLYGON_CONVERTER.convert(polygon);
         return jtsPolygon.isSimple();
     }
 
@@ -46,5 +45,4 @@ public final class GeometryValidator
     private GeometryValidator()
     {
     }
-
 }

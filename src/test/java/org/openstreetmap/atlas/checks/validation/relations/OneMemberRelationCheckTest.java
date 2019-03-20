@@ -10,11 +10,15 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * Tests for {@link OneMemberRelationCheck}
  *
  * @author savannahostrowski
+ * @author nachtm
  */
 public class OneMemberRelationCheckTest
 {
     private static final OneMemberRelationCheck check = new OneMemberRelationCheck(
             ConfigurationResolver.emptyConfiguration());
+    private static final OneMemberRelationCheck noPeopleOrMultipolygons = new OneMemberRelationCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"OneMemberRelationCheck\":{\"tags.filter\":\"type->!person&type->!multipolygon\"}}"));
 
     @Rule
     public OneMemberRelationCheckTestRule setup = new OneMemberRelationCheckTestRule();
@@ -63,6 +67,14 @@ public class OneMemberRelationCheckTest
         this.verifier.actual(this.setup.oneMemberRelationRelationAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 3));
+    }
+
+    @Test
+    public void testOneMemberRelationMultipolygonConfig()
+    {
+        this.verifier.actual(this.setup.getOneMemberRelationMultipolygonOuter(),
+                noPeopleOrMultipolygons);
+        this.verifier.verifyEmpty();
     }
 
 }

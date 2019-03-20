@@ -86,7 +86,7 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
                 try
                 {
                     Integer.parseInt(
-                            CharMatcher.BREAKING_WHITESPACE.replaceFrom(nameValue.get(), ""));
+                            CharMatcher.breakingWhitespace().replaceFrom(nameValue.get(), ""));
                 }
                 catch (final NumberFormatException e)
                 {

@@ -22,9 +22,7 @@ branches:
   - dev
 language: java
 jdk:
-  - oraclejdk8
-sudo: false
-dist: trusty
+  - openjdk11
 before_install:
   - chmod -R ug+x .travis
   - .travis/install.sh

@@ -43,7 +43,8 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     protected void mapFeatures(final File file, final HashMap map)
     {
         try (InputStream inputStream = file.isGzipped()
-                ? new GZIPInputStream(new FileInputStream(file.getFile())) : file.read())
+                ? new GZIPInputStream(new FileInputStream(file.getFile()))
+                : file.read())
         {
             final JsonObject json = getGson()
                     .fromJson(new JsonReader(new InputStreamReader(inputStream)), JsonObject.class);
