@@ -9,11 +9,13 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +43,9 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     @Override
-    protected HashMap<String, HashMap<String, JsonObject>> mapFeatures(final File file)
+    protected Map<String, Map<Set<String>, JsonObject>> mapFeatures(final File file)
     {
-        final HashMap<String, HashMap<String, JsonObject>> checkFeatureMap = new HashMap<>();
+        final Map<String, Map<Set<String>, JsonObject>> checkFeatureMap = new HashMap<>();
         try (InputStreamReader inputStreamReader = file.isGzipped()
                 ? new InputStreamReader(new GZIPInputStream(new FileInputStream(file.getFile())))
                 : new FileReader(file.getPath()))
@@ -63,7 +65,8 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                     checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                     // Add the geoJSON as a value
                     checkFeatureMap.get(checkName).put(
-                            source.get(PROPERTIES).getAsJsonObject().get(ID).getAsString(), source);
+                            this.getAtlasIdentifiers(source.get(FEATURES).getAsJsonArray()),
+                            source);
                 }
             }
         }
@@ -74,60 +77,20 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
         return checkFeatureMap;
     }
 
-    @Override
-    protected JSONFlagDiff getDiff(final HashMap<String, HashMap<String, JsonObject>> source,
-            final HashMap<String, HashMap<String, JsonObject>> target, final DiffReturn returnType)
+    /**
+     * Get the atlas ids from an array of features.
+     *
+     * @param features
+     *            a {@link JsonArray} of features
+     * @return a {@link Set} of {@link String} ids
+     */
+    private Set<String> getAtlasIdentifiers(final JsonArray features)
     {
-        final JSONFlagDiff diff = new JSONFlagDiff();
-        source.forEach((check, flags) -> flags.forEach((identifier, featureCollection) ->
-        {
-            // Get missing
-            if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
-            {
-                diff.addMissing(featureCollection, check);
-            }
-            // If not missing, check for Atlas id changes
-            else if (returnType.equals(DiffReturn.CHANGED)
-                    && !this.identicalFeatureIds(featureCollection.get(FEATURES).getAsJsonArray(),
-                            target.get(check).get(identifier).get(FEATURES).getAsJsonArray()))
-            {
-                diff.addChanged(featureCollection, check);
-            }
-        }));
-        return diff;
-    }
-
-    @Override
-    protected boolean identicalFeatureIds(final JsonArray sourceArray, final JsonArray targetArray)
-    {
-        final ArrayList<String> sourceIds = new ArrayList<>();
-        final ArrayList<String> targetIds = new ArrayList<>();
-        // The array must be the same size to match
-        if (sourceArray.size() != targetArray.size())
-        {
-            return false;
-        }
-        // Gather all the source ids
-        sourceArray.forEach(object ->
-        {
-            // Handle Locations that were added and don't have an id
-            if (object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(IDENTIFIER))
-            {
-                sourceIds.add(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
-                        .get(IDENTIFIER).getAsString());
-            }
-        });
-        // Gather all the target ids
-        targetArray.forEach(object ->
-        {
-            // Handle Locations that were added and don't have an id
-            if (object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(IDENTIFIER))
-            {
-                targetIds.add(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
-                        .get(IDENTIFIER).getAsString());
-            }
-        });
-        // Compare the two id lists
-        return sourceIds.containsAll(targetIds) && targetIds.containsAll(sourceIds);
+        return Iterables.stream(features)
+                .filter(object -> object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .has(IDENTIFIER))
+                .map(object -> object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get(IDENTIFIER).getAsString())
+                .collectToSet();
     }
 }

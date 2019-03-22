@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +20,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.streaming.writers.JsonWriter;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,9 +51,9 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     @Override
-    protected HashMap<String, HashMap<String, JsonObject>> mapFeatures(final File file)
+    protected Map<String, Map<Set<String>, JsonObject>> mapFeatures(final File file)
     {
-        final HashMap<String, HashMap<String, JsonObject>> checkFeatureMap = new HashMap<>();
+        final Map<String, Map<Set<String>, JsonObject>> checkFeatureMap = new HashMap<>();
         try (InputStream inputStream = file.isGzipped()
                 ? new GZIPInputStream(new FileInputStream(file.getFile()))
                 : file.read())
@@ -73,8 +73,10 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
                 // Add the check name as a key
                 checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                 // Add the geoJSON as a value
-                checkFeatureMap.get(checkName).put(feature.getAsJsonObject().get(ID).getAsString(),
-                        jsonFeature);
+                checkFeatureMap.get(checkName)
+                        .put(this.getAtlasIdentifiers(feature.getAsJsonObject().get(PROPERTIES)
+                                .getAsJsonObject().get(FEATURE_PROPERTIES).getAsJsonArray()),
+                                jsonFeature);
             });
         }
         catch (final IOException exception)
@@ -84,51 +86,19 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
         return checkFeatureMap;
     }
 
-    @Override
-    protected JSONFlagDiff getDiff(final HashMap<String, HashMap<String, JsonObject>> source,
-            final HashMap<String, HashMap<String, JsonObject>> target, final DiffReturn returnType)
+    /**
+     * Get the atlas ids from an array of feature properties.
+     *
+     * @param properties
+     *            a {@link JsonArray} of feature properties
+     * @return a {@link Set} of {@link String} ids
+     */
+    private Set<String> getAtlasIdentifiers(final JsonArray properties)
     {
-        final JSONFlagDiff diff = new JSONFlagDiff();
-        source.forEach((check, flags) -> flags.forEach((identifier, feature) ->
-        {
-            // Get missing
-            if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
-            {
-                diff.addMissing(feature, check);
-            }
-            // If not missing, check for Atlas id changes
-            else if (returnType.equals(DiffReturn.CHANGED) && !this.identicalFeatureIds(
-                    feature.get(PROPERTIES).getAsJsonObject().get(FEATURE_PROPERTIES)
-                            .getAsJsonArray(),
-                    target.get(check).get(identifier).getAsJsonObject().get(PROPERTIES)
-                            .getAsJsonObject().get(FEATURE_PROPERTIES).getAsJsonArray()))
-            {
-                diff.addChanged(feature, check);
-            }
-        }));
-        return diff;
-    }
-
-    @Override
-    protected boolean identicalFeatureIds(final JsonArray sourceArray, final JsonArray targetArray)
-    {
-        final ArrayList<String> sourceIds = new ArrayList<>();
-        final ArrayList<String> targetIds = new ArrayList<>();
-        sourceArray.forEach(object ->
-        {
-            if (object.getAsJsonObject().has(IDENTIFIER))
-            {
-                sourceIds.add(object.getAsJsonObject().get(IDENTIFIER).getAsString());
-            }
-        });
-        targetArray.forEach(object ->
-        {
-            if (object.getAsJsonObject().has(IDENTIFIER))
-            {
-                targetIds.add(object.getAsJsonObject().get(IDENTIFIER).getAsString());
-            }
-        });
-        return sourceIds.containsAll(targetIds) && targetIds.containsAll(sourceIds);
+        return Iterables.stream(properties)
+                .filter(object -> object.getAsJsonObject().has(IDENTIFIER))
+                .map(object -> object.getAsJsonObject().get(IDENTIFIER).getAsString())
+                .collectToSet();
     }
 
     @Override

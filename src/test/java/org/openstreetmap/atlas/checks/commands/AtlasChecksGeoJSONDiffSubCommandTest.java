@@ -131,8 +131,6 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-0.geojson")));
-        Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
 
         temp.deleteRecursively();
@@ -152,11 +150,9 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.geojson")));
 
         temp.deleteRecursively();
     }
@@ -176,8 +172,6 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-0.geojson")));
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
 
@@ -200,8 +194,6 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-0.geojson")));
-        Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
 
         temp.deleteRecursively();
@@ -221,11 +213,9 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.geojson")));
 
         temp.deleteRecursively();
     }

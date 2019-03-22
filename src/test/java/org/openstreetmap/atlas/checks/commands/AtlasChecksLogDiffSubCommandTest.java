@@ -146,8 +146,6 @@ public class AtlasChecksLogDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-0.log")));
-        Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
         temp.deleteRecursively();
@@ -167,11 +165,9 @@ public class AtlasChecksLogDiffSubCommandTest
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.log")));
 
         temp.deleteRecursively();
     }
@@ -191,8 +187,6 @@ public class AtlasChecksLogDiffSubCommandTest
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-0.log")));
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
@@ -215,8 +209,6 @@ public class AtlasChecksLogDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-0.log")));
-        Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
 
         temp.deleteRecursively();
@@ -236,11 +228,9 @@ public class AtlasChecksLogDiffSubCommandTest
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.log")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.log")));
 
         temp.deleteRecursively();
     }

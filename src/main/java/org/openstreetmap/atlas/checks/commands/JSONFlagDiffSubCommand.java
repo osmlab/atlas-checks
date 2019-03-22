@@ -19,7 +19,6 @@ import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.runtime.FlexibleSubCommand;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -47,56 +46,15 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     // Atlas Checks' GeoJSON strings
     static final String FEATURE_PROPERTIES = "feature_properties";
     static final String GENERATOR = "generator";
-    static final String ID = "id";
     static final String NAME = "name";
 
     private final Gson gson = new Gson();
-    private HashMap<String, HashMap<String, JsonObject>> source = new HashMap<>();
-    private HashMap<String, HashMap<String, JsonObject>> target = new HashMap<>();
+    private Map<String, Map<Set<String>, JsonObject>> source = new HashMap<>();
+    private Map<String, Map<Set<String>, JsonObject>> target = new HashMap<>();
 
     private String commandName;
     private String description;
     private String fileExtension;
-
-    /**
-     * Expected returns from {@link #getDiff(HashMap, HashMap, DiffReturn)}.
-     */
-    protected enum DiffReturn
-    {
-        MISSING,
-        CHANGED,
-    }
-
-    /**
-     * Helper class for storing diff results.
-     */
-    protected class JSONFlagDiff
-    {
-        private final Map<String, Set<JsonObject>> missing = new HashMap<>();
-        private final Map<String, Set<JsonObject>> changed = new HashMap<>();
-
-        public void addMissing(final JsonObject object, final String check)
-        {
-            this.missing.putIfAbsent(check, new HashSet<>());
-            this.missing.get(check).add(object);
-        }
-
-        public void addChanged(final JsonObject object, final String check)
-        {
-            this.changed.putIfAbsent(check, new HashSet<>());
-            this.changed.get(check).add(object);
-        }
-
-        public Map<String, Set<JsonObject>> getMissing()
-        {
-            return missing;
-        }
-
-        public Map<String, Set<JsonObject>> getChanged()
-        {
-            return changed;
-        }
-    }
 
     public JSONFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
@@ -148,20 +106,14 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
                 .forEach(path -> this.target = this.mergeMaps(this.mapFeatures(path), this.target));
 
         // Get changes from source to target
-        final Map<String, Set<JsonObject>> additions = this
-                .getDiff(this.target, this.source, DiffReturn.MISSING).getMissing();
-        final JSONFlagDiff subAndChange = this.getDiff(this.source, this.target,
-                DiffReturn.CHANGED);
-        final Map<String, Set<JsonObject>> subtractions = subAndChange.getMissing();
-        final Map<String, Set<JsonObject>> changes = subAndChange.getChanged();
+        final Map<String, Set<JsonObject>> additions = this.getDiff(this.target, this.source);
+        final Map<String, Set<JsonObject>> subtractions = this.getDiff(this.source, this.target);
 
         // Write outputs
         System.out.printf("%nTotal Items: %d%n",
                 this.getSourceSize() + this.countMapValues(additions));
         System.out.printf("%nAdditions: %d%n", this.countMapValues(additions));
         additions.forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
-        System.out.printf("%nChanges: %d%n", this.countMapValues(changes));
-        changes.forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
         System.out.printf("%nSubtractions: %d%n", this.countMapValues(subtractions));
         subtractions
                 .forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
@@ -169,12 +121,14 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
         final Optional output = command.getOption(OUTPUT_FOLDER_PARAMETER);
         if (output.isPresent())
         {
-            writeSetToGeoJSON(additions, new File(String.format("%s/additions-%d-%d.%s",
-                    output.get(), new Date().getTime(), additions.size(), this.fileExtension)));
-            writeSetToGeoJSON(changes, new File(String.format("%s/changes-%d-%d.%s", output.get(),
-                    new Date().getTime(), changes.size(), this.fileExtension)));
-            writeSetToGeoJSON(subtractions, new File(String.format("%s/subtractions-%d-%d.%s",
-                    output.get(), new Date().getTime(), subtractions.size(), this.fileExtension)));
+            writeSetToGeoJSON(additions,
+                    new File(String.format("%s/additions-%d-%d.%s", output.get(),
+                            new Date().getTime(), this.countMapValues(additions),
+                            this.fileExtension)));
+            writeSetToGeoJSON(subtractions,
+                    new File(String.format("%s/subtractions-%d-%d.%s", output.get(),
+                            new Date().getTime(), this.countMapValues(subtractions),
+                            this.fileExtension)));
         }
 
         return 0;
@@ -228,11 +182,11 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *            form the output
      * @return a merged 2d check and flags {@link HashMap}
      */
-    private HashMap<String, HashMap<String, JsonObject>> mergeMaps(
-            final HashMap<String, HashMap<String, JsonObject>> put,
-            final HashMap<String, HashMap<String, JsonObject>> place)
+    private Map<String, Map<Set<String>, JsonObject>> mergeMaps(
+            final Map<String, Map<Set<String>, JsonObject>> put,
+            final Map<String, Map<Set<String>, JsonObject>> place)
     {
-        final HashMap<String, HashMap<String, JsonObject>> mergedMap = new HashMap<>(place);
+        final Map<String, Map<Set<String>, JsonObject>> mergedMap = new HashMap<>(place);
         put.forEach((check, flags) ->
         {
             mergedMap.putIfAbsent(check, new HashMap<>());
@@ -261,35 +215,34 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      * @return a 2d {@link HashMap} containing a {@link HashMap} of {@link JsonObject}s mapped to
      *         {@link String} feature ids, mapped to {@link String} check names.
      */
-    protected abstract HashMap<String, HashMap<String, JsonObject>> mapFeatures(File file);
+    protected abstract Map<String, Map<Set<String>, JsonObject>> mapFeatures(File file);
 
     /**
-     * Takes two {@link HashMap}s containing atlas-checks flags mapped by id. Finds missing elements
-     * in the target based on keys. Optionally computes changes in the AtlasObject ids found in each
-     * flag.
+     * Takes two 2d {@link HashMap}s containing atlas-checks flags mapped by id mapped by check.
+     * Finds missing elements in the target based on ids.
      *
      * @param source
      *            {@link HashMap} of the flags to compare from
      * @param target
      *            {@link HashMap} of the flags to compare to
-     * @param returnType
-     *            {@link DiffReturn}; If this is {@code CHANGED} the {@code changed} attribute of
-     *            the returned {@link JSONFlagDiff} will be populated.
-     * @return an {@link JSONFlagDiff}
+     * @return a {@link Map} of {@link JsonObject} by check
      */
-    protected abstract JSONFlagDiff getDiff(HashMap<String, HashMap<String, JsonObject>> source,
-            HashMap<String, HashMap<String, JsonObject>> target, DiffReturn returnType);
-
-    /**
-     * Helper function for {@code getMissingAndChanged} to check for changes in Atlas ids.
-     *
-     * @param sourceArray
-     *            {@code feature} {@link JsonArray} to check from
-     * @param targetArray
-     *            {@code feature} {@link JsonArray} to check to
-     * @return true if all Atlas ids in {@code source} are present in {@code target}, and visa versa
-     */
-    protected abstract boolean identicalFeatureIds(JsonArray sourceArray, JsonArray targetArray);
+    protected Map<String, Set<JsonObject>> getDiff(
+            final Map<String, Map<Set<String>, JsonObject>> source,
+            final Map<String, Map<Set<String>, JsonObject>> target)
+    {
+        final Map<String, Set<JsonObject>> diff = new HashMap<>();
+        source.forEach((check, flags) -> flags.forEach((identifier, flag) ->
+        {
+            // Get missing
+            if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
+            {
+                diff.putIfAbsent(check, new HashSet<>());
+                diff.get(check).add(flag);
+            }
+        }));
+        return diff;
+    }
 
     /**
      * Writes a Set of geoJSON atlas-checks flags to a file.
@@ -336,7 +289,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *
      * @return {@link HashMap}
      */
-    protected HashMap<String, HashMap<String, JsonObject>> getSource()
+    protected Map<String, Map<Set<String>, JsonObject>> getSource()
     {
         return this.source;
     }
@@ -346,7 +299,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
      *
      * @return {@link HashMap}
      */
-    protected HashMap<String, HashMap<String, JsonObject>> getTarget()
+    protected Map<String, Map<Set<String>, JsonObject>> getTarget()
     {
         return this.target;
     }

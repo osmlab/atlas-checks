@@ -52,7 +52,11 @@ public class JSONFlagDiffSubCommandTestRule extends CoreTestRule
 
     public CheckFlagEvent getConstantCheckFlagEvent()
     {
-        return this.getSimpleCheckFlagEvent(this.atlas.node(1000000L), TEST_CHECK_1);
+        final CheckFlagEvent event = this.getSimpleCheckFlagEvent(this.atlas.node(1000000L),
+                TEST_CHECK_1);
+        event.getCheckFlag().addObject(this.atlas.node(2000000L));
+        event.getCheckFlag().addPoint(this.atlas.node(3000000L).getLocation());
+        return event;
     }
 
     public CheckFlagEvent getSubtractionCheckFlagEvent()
