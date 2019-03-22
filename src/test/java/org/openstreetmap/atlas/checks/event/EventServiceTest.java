@@ -24,7 +24,7 @@ public class EventServiceTest
     public void testNullEvent()
     {
         final TestProcessor testProcessor = new TestProcessor();
-        final EventService eventService = EventService.get("Test service for null event");
+        final EventServiceable eventService = EventService.get("Test service for null event");
         eventService.register(testProcessor);
 
         // Send event and complete
@@ -52,7 +52,7 @@ public class EventServiceTest
     public void testPostAfterComplete()
     {
         final TestProcessor testProcessor = new TestProcessor();
-        final EventService eventService = EventService
+        final EventServiceable eventService = EventService
                 .get("Test service for posting after completion");
         eventService.register(testProcessor);
 
@@ -148,7 +148,7 @@ public class EventServiceTest
     public void testUnregisterProcessor()
     {
         final TestProcessor testProcessor = new TestProcessor();
-        final EventService eventService = EventService
+        final EventServiceable eventService = EventService
                 .get("Event service for unregistering processor");
 
         eventService.register(testProcessor);
@@ -170,7 +170,7 @@ public class EventServiceTest
     private void testCompleteCount(final int completeCount)
     {
         final TestProcessor testProcessor = new TestProcessor();
-        final EventService eventService = EventService
+        final EventServiceable eventService = EventService
                 .get("Test service complete " + completeCount);
         eventService.register(testProcessor);
 
@@ -188,7 +188,7 @@ public class EventServiceTest
     private void testEventResult(final TestEvent event)
     {
         final TestProcessor testProcessor = new TestProcessor();
-        final EventService eventService = EventService
+        final EventServiceable eventService = EventService
                 .get("Test service for " + event.getMessage());
         eventService.register(testProcessor);
 
@@ -206,7 +206,7 @@ public class EventServiceTest
     {
         final TestProcessor testProcessor = new TestProcessor();
         final TestProcessor otherProcessor = new TestProcessor();
-        final EventService eventService = EventService
+        final EventServiceable eventService = EventService
                 .get("Test service for " + threadCount + "-" + eventCount);
         eventService.register(testProcessor);
         eventService.register(otherProcessor);
