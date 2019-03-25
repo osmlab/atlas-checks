@@ -4,7 +4,6 @@ package org.openstreetmap.atlas.checks.event;
  * The {@link Processor} interface provides simple hooks for implementations to handle events.
  *
  * @deprecated - use {@link org.openstreetmap.atlas.event.Processor}
- *
  * @author mkalender
  * @param <T>
  *            Type that is going to be processed

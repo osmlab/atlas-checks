@@ -6,7 +6,6 @@ import java.util.Date;
  * Useful base class to hold common information for {@link Event} implementations
  *
  * @deprecated - use {@link org.openstreetmap.atlas.event.Event}.
- *
  * @author mkalender
  */
 @Deprecated
