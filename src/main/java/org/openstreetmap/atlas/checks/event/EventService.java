@@ -15,8 +15,11 @@ import com.google.common.eventbus.EventBus;
 /**
  * A simple in-memory publish-subscribe service built on top of {@link EventBus}
  *
+ * @deprecated - use {@link org.openstreetmap.atlas.event.EventService}
+ *
  * @author mkalender
  */
+@Deprecated
 public final class EventService
 {
     private static final Logger logger = LoggerFactory.getLogger(EventService.class);
