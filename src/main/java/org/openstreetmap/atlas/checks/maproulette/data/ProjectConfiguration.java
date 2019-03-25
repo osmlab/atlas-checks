@@ -10,10 +10,10 @@ import java.io.Serializable;
  */
 public class ProjectConfiguration implements Serializable
 {
-    private String name;
-    private String description;
-    private String displayName;
-    private boolean enabled;
+    private final String name;
+    private final String description;
+    private final String displayName;
+    private final boolean enabled;
 
     /**
      * Defines a basic project, where all optional fields default to name.
