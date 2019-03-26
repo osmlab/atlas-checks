@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.commands;
+package org.openstreetmap.atlas.checks.maproulette;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -15,8 +15,6 @@ import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteCommand;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;

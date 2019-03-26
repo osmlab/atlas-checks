@@ -44,7 +44,7 @@ public class TestMapRouletteConnection implements TaskLoader
         }
         else
         {
-            this.challengeToTasks.put(challengeId, tasks);
+            this.challengeToTasks.put(challengeId, new HashSet<>(tasks));
         }
         return true;
     }
@@ -93,6 +93,6 @@ public class TestMapRouletteConnection implements TaskLoader
 
     public Set<Task> tasksForChallenge(final Challenge challenge)
     {
-        return this.challengeToTasks.get(challenge);
+        return this.challengeToTasks.get(challenge.getId());
     }
 }
