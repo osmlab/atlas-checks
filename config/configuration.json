@@ -42,6 +42,15 @@
       "defaultPriority": "LOW"
     }
   },
+  "AddressStreetNameCheck": {
+    "search.distance": 75.0,
+    "challenge": {
+      "description": "Tasks contain nodes with addr:street names that don't match the surrounding roads",
+      "blurb": "Nodes with mismatched addr:street names",
+      "instruction": "Open your favorite editor and edit the node street names",
+      "difficulty": "HARD"
+    }
+  },
   "AreasWithHighwayTagCheck":{
     "tag.filters":"highway->*&area->yes",
     "challenge":{
