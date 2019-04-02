@@ -119,12 +119,12 @@ public class MixedCaseNameCheck extends BaseCheck
         // Valid objects are items that were OSM nodes or ways (Equivalent to Atlas nodes, points,
         // edges, lines and areas)
         return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
-                && ((object.getTags().containsKey(ISOCountryTag.KEY)
+                && (object.getTags().containsKey(ISOCountryTag.KEY)
                         // Must have an ISO code that is in checkNameCountries...
                         && this.checkNameCountries
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
-                        && Validators.hasValuesFor(object, NameTag.class))
+                        && Validators.hasValuesFor(object, NameTag.class)
                         // Or it must have a specific language name tag from languageNameTags
                         || this.languageNameTags.stream()
                                 .anyMatch(key -> object.getOsmTags().containsKey(key)));
@@ -144,7 +144,8 @@ public class MixedCaseNameCheck extends BaseCheck
         final Map<String, String> osmTags = object.getOsmTags();
 
         // Check ISO against list of countries for testing name tag
-        if (this.checkNameCountries.contains(object.tag(ISOCountryTag.KEY).toUpperCase())
+        final String country = object.tag(ISOCountryTag.KEY);
+        if (country != null && this.checkNameCountries.contains(country.toUpperCase())
                 && Validators.hasValuesFor(object, NameTag.class)
                 && isMixedCase(osmTags.get(NameTag.KEY)))
         {
@@ -202,19 +203,19 @@ public class MixedCaseNameCheck extends BaseCheck
                     // If the word is not in the list of prepositions, and the
                     // word is not both in the article list and not the first word: check that
                     // the first letter is a capital
-                    if ((!this.lowerCasePrepositions.contains(word)
+                    if (!this.lowerCasePrepositions.contains(word)
                             && !(!firstWord && this.lowerCaseArticles.contains(word))
                             // If the first letter is lower case: return true if it is not preceded
                             // by a number
                             && firstLetterMatcher.find()
                             && Character.isLowerCase(firstLetterMatcher.group().charAt(0))
                             && !(firstLetterMatcher.start() != 0 && Character
-                                    .isDigit(word.charAt(firstLetterMatcher.start() - 1))))
+                                    .isDigit(word.charAt(firstLetterMatcher.start() - 1)))
                             // If the word is not all upper case: check if all the letters not
                             // following apostrophes, unless at the end of the word, are lower case
-                            || (this.lowerCasePattern.matcher(word).find()
+                            || this.lowerCasePattern.matcher(word).find()
                                     && !isMixedCaseApostrophe(word)
-                                    && isProperNonFirstCapital(word)))
+                                    && isProperNonFirstCapital(word))
                     {
                         return true;
                     }
@@ -223,6 +224,22 @@ public class MixedCaseNameCheck extends BaseCheck
             }
         }
         return false;
+    }
+
+    /**
+     * Tests a {@link String} for being all upper case, except the last letter which is adjacent to
+     * an apostrophe (ex. MAX's).
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if a lower case letter is found preceding or following an apostrophe that is the
+     *         last or second to last character in the string, and all other letters are upper case
+     */
+    private boolean isMixedCaseApostrophe(final String word)
+    {
+        // This returns true if the last 2 characters are an apostrophe and a lower case letter, and
+        // all other letters are upper case.
+        return this.mixedCaseApostrophePattern.matcher(word).matches();
     }
 
     /**
@@ -240,22 +257,6 @@ public class MixedCaseNameCheck extends BaseCheck
         // There may be 0 or more non-alphabetic characters proceeding or following the
         // digit+mixedCaseUnits - `[^\p{L}]*`
         return this.mixedCaseUnitsPattern.matcher(word).find();
-    }
-
-    /**
-     * Tests a {@link String} for being all upper case, except the last letter which is adjacent to
-     * an apostrophe (ex. MAX's).
-     *
-     * @param word
-     *            {@link String} to test
-     * @return true if a lower case letter is found preceding or following an apostrophe that is the
-     *         last or second to last character in the string, and all other letters are upper case
-     */
-    private boolean isMixedCaseApostrophe(final String word)
-    {
-        // This returns true if the last 2 characters are an apostrophe and a lower case letter, and
-        // all other letters are upper case.
-        return this.mixedCaseApostrophePattern.matcher(word).matches();
     }
 
     /**
