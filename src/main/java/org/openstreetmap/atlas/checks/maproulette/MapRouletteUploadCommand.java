@@ -1,18 +1,20 @@
-package org.openstreetmap.atlas.checks.commands;
+package org.openstreetmap.atlas.checks.maproulette;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteCommand;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
@@ -42,6 +44,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             Optionality.OPTIONAL, "config/configuration.json");
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final String LOG_EXTENSION = "log";
+    private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
     private final Map<String, Challenge> checkNameChallengeMap;
 
@@ -60,9 +63,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final Configuration instructions = this.loadConfiguration(commandMap);
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
-            if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
+            // If this file is something we handle, read and upload the tasks contained within
+            final Optional<OutputFileType> optionalHandledFileType = getOptionalOutputType(logFile);
+            optionalHandledFileType.ifPresent(outputFileType ->
             {
-                try (BufferedReader reader = new BufferedReader(new FileReader(logFile.getPath())))
+                try (BufferedReader reader = this.getReader(logFile, outputFileType))
                 {
                     reader.lines().forEach(line ->
                     {
@@ -81,12 +86,66 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 }
                 catch (final IOException error)
                 {
-                    logger.error(
-                            MessageFormat.format("Error while reading {0}: ", logFile.getName()),
-                            error);
+                    logger.error("Error while reading {}:", logFile, error);
                 }
-            }
+            });
         });
+    }
+
+    /**
+     * An enum containing the different types of input files that we can handle.
+     */
+    private enum OutputFileType
+    {
+        LOG,
+        COMPRESSED_LOG
+    }
+
+    /**
+     * Determine whether or not this file is something we can handle, and classify it accordingly.
+     * 
+     * @param logFile
+     *            any file
+     * @return if this file is something this command can handle, the appropriate OutputFileType
+     *         enum value; otherwise, an empty optional.
+     */
+    private Optional<OutputFileType> getOptionalOutputType(final File logFile)
+    {
+        // Note that technically the true extension is just .gz, so we can't use the same method as
+        // below.
+        if (logFile.getName().endsWith(ZIPPED_LOG_EXTENSION))
+        {
+            return Optional.of(OutputFileType.COMPRESSED_LOG);
+        }
+        else if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
+        {
+            return Optional.of(OutputFileType.LOG);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Read a file that we know we should be able to handle
+     * 
+     * @param inputFile
+     *            Some file with a valid, appropriate extension.
+     * @param fileType
+     *            The type of file that inputFile is
+     * @return a BufferedReader to read inputFile
+     * @throws IOException
+     *             if the file is not found or is poorly formatted, given its extension. For
+     *             example, if this file is gzipped and something goes wrong in the unzipping
+     *             process, it might throw an error
+     */
+    private BufferedReader getReader(final File inputFile, final OutputFileType fileType)
+            throws IOException
+    {
+        if (fileType == OutputFileType.LOG)
+        {
+            return new BufferedReader(new FileReader(inputFile.getPath()));
+        }
+        return new BufferedReader(new InputStreamReader(
+                new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
     }
 
     /**

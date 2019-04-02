@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.maproulette;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.function.Function;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
@@ -78,20 +79,24 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     @Override
     protected int onRun(final CommandMap commandMap)
     {
-        final MapRouletteConfiguration mapRoulette = this.fromCommandMap(commandMap);
+        return this.onRun(commandMap, MapRouletteClient::new);
+    }
 
+    protected int onRun(final CommandMap commandMap,
+            final Function<MapRouletteConfiguration, MapRouletteClient> clientConstructor)
+    {
+        final MapRouletteConfiguration mapRoulette = this.fromCommandMap(commandMap);
         if (mapRoulette != null)
         {
             try
             {
-                this.mapRouletteClient = new MapRouletteClient(mapRoulette);
+                this.mapRouletteClient = clientConstructor.apply(mapRoulette);
             }
             catch (final IllegalArgumentException e)
             {
                 logger.warn("Failed to initialize the MapRouletteClient", e);
             }
         }
-
         execute(commandMap, mapRoulette);
         return 0;
     }
