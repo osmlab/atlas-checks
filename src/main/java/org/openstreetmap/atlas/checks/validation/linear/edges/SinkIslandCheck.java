@@ -106,9 +106,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 emptyFlag = true;
                 break;
             }
+
             // Retrieve all the valid outgoing edges to explore
             final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
                     .collect(Collectors.toSet());
+
             if (outEdges.isEmpty())
             {
                 // Sink edge. Don't mark the edge explored until we know how big the tree is
