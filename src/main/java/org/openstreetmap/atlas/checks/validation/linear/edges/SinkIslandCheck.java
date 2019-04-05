@@ -107,7 +107,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 break;
             }
             // Retrieve all the valid outgoing edges to explore
-            final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge).collect(Collectors.toSet());
+            final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
+                    .collect(Collectors.toSet());
             if (outEdges.isEmpty())
             {
                 // Sink edge. Don't mark the edge explored until we know how big the tree is
@@ -222,14 +223,15 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // of creating a false positive due to the sectioning of the way
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
-                // Ignore edges that are of type service and has connection to pedestrian navigable ways
+                // Ignore edges that are of type service and has connection to pedestrian navigable
+                // ways
                 || this.isServiceRoad(edge) && this.isConnectedToPedestrian(edge);
     }
 
     private boolean isServiceRoad(final AtlasObject edge)
     {
-        return Validators.isOfType(edge,HighwayTag.class,HighwayTag.SERVICE) && Validators.hasValuesFor(edge,
-                ServiceTag.class);
+        return Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                && Validators.hasValuesFor(edge, ServiceTag.class);
     }
 
     private boolean isConnectedToPedestrian(final Edge edge)
