@@ -19,6 +19,7 @@ import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RouteTag;
+import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -32,6 +33,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author gpogulsky
  * @author savannahostrowski
  * @author nachtm
+ * @author sayas01
  */
 public class SinkIslandCheck extends BaseCheck<Long>
 {
@@ -71,7 +73,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return this.validEdge(object) && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
+        return this.validEdge(object) && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
+                && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
                 .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
     }
 
@@ -104,12 +107,21 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 emptyFlag = true;
                 break;
             }
-
+            final Set<Edge> outEdges = candidate.outEdges().stream().filter(edge-> !RouteTag.isFerry(object) && this.validEdge(edge)).collect(
+                    Collectors.toSet());
+            Set<Edge> filteredOutEdges;
             // Retrieve all the valid outgoing edges to explore
-            final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
-                    .collect(Collectors.toSet());
+            if(this.isServiceRoad(candidate))
+            {
+                // check if out edges is car navigable or pedestrian
+                filteredOutEdges = outEdges.stream().filter(edge->HighwayTag.isCarNavigableHighway(object)||
+                        HighwayTag.isPedestrianNavigableHighway(object)).collect(Collectors.toSet());
 
-            if (outEdges.isEmpty())
+            }
+            else{
+                filteredOutEdges = outEdges.stream().filter(edge->HighwayTag.isCarNavigableHighway(object)).collect(Collectors.toSet());
+            }
+            if (filteredOutEdges.isEmpty())
             {
                 // Sink edge. Don't mark the edge explored until we know how big the tree is
                 terminal.add(candidate);
@@ -122,7 +134,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // From the list of outgoing edges from the current candidate filter out any edges
                 // that have already been explored and add all the rest to the queue of possible
                 // candidates
-                outEdges.stream().filter(outEdge -> !explored.contains(outEdge))
+                filteredOutEdges.stream().filter(outEdge -> !explored.contains(outEdge))
                         .forEach(candidates::add);
 
                 // If the number of available candidates and the size of the currently explored
@@ -180,10 +192,17 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore any airport taxiways and runways, as these often create a sink island
                 && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
                         AerowayTag.RUNWAY)
-                // Only allow car navigable highways and ignore ferries
-                && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
+    }
+
+    private boolean hasValidHighwayClassification(final AtlasObject connectedEdge, final AtlasObject candidateEdge)
+    {
+        if(!this.isServiceRoad(candidateEdge))
+        {
+            return HighwayTag.isCarNavigableHighway(connectedEdge) && !RouteTag.isFerry(connectedEdge);
+        }
+        return true;
     }
 
     /**
@@ -223,5 +242,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // of creating a false positive due to the sectioning of the way
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start());
+    }
+
+    private boolean isServiceRoad(final AtlasObject edge)
+    {
+        return Validators.isOfType(edge,HighwayTag.class,HighwayTag.SERVICE) && Validators.hasValuesFor(edge,
+                ServiceTag.class);
     }
 }
