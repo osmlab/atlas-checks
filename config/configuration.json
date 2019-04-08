@@ -43,7 +43,7 @@
     }
   },
   "AddressStreetNameCheck": {
-    "search.distance": 75.0,
+    "search.distance": 100.0,
     "challenge": {
       "description": "Tasks contain nodes with addr:street names that don't match the surrounding roads",
       "blurb": "Nodes with mismatched addr:street names",

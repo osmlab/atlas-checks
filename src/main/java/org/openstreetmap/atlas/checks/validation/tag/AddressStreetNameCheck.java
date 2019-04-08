@@ -19,7 +19,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * This flags {@link Point}s where their addr:street tag value does not match any of the name tag
- * vales of {@link Edge}s within a configurable search distance.
+ * values of {@link Edge}s within a configurable search distance.
  *
  * @author bbreithaupt
  */
@@ -30,7 +30,7 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "Address node {0,number,#} has an addr:street value that does not match the name of any surrounding roads.");
-    private static final Double SEARCH_DISTANCE_DEFAULT = 75.0;
+    private static final Double SEARCH_DISTANCE_DEFAULT = 100.0;
 
     // Distance to search for Edges around a Point
     private final Distance searchDistance;
