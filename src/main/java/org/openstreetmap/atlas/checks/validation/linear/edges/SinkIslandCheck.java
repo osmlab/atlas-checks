@@ -225,17 +225,32 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // of creating a false positive due to the sectioning of the way
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
-                // Ignore edges that are of type service and has connection to pedestrian navigable
+                // Ignore edges that are of type service and is connected to pedestrian navigable
                 // ways
                 || this.isServiceRoad(edge) && this.isConnectedToPedestrian(edge);
     }
 
-    private boolean isServiceRoad(final AtlasObject edge)
+    /**
+     * Checks if an {@link Edge} is of type service
+     * 
+     * @param edge
+     *            any edge
+     * @return true if the highway classification of the edge is of type service and it has a
+     *         service tag
+     */
+    private boolean isServiceRoad(final Edge edge)
     {
         return Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                 && Validators.hasValuesFor(edge, ServiceTag.class);
     }
 
+    /**
+     * Checks if an {@link Edge} is connected to any edge that is a pedestrian navigable highway
+     * 
+     * @param edge
+     *            any edge
+     * @return true if the edge has connection to pedestrian navigable highways
+     */
     private boolean isConnectedToPedestrian(final Edge edge)
     {
         return edge.connectedEdges().stream().anyMatch(HighwayTag::isPedestrianNavigableHighway);

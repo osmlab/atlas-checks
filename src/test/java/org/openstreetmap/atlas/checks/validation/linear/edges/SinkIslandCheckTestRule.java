@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  *
  * @author gpogulsky
  * @author nachtm
+ * @author sayas01
  */
 public class SinkIslandCheckTestRule extends CoreTestRule
 {
@@ -121,6 +122,15 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                             "highway=service" }), })
     private Atlas invalidEdges;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+            @Node(coordinates = @Loc(value = TEST_2)),
+            @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=service", "service=driveway" }),
+                    @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
+                            "highway=pedestrian" }) })
+    private Atlas pedestrianNetwork;
+
     public Atlas getSingleEdgeAtlas()
     {
         return this.singleEdgeAtlas;
@@ -154,6 +164,11 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     public Atlas getServiceSinkIsland()
     {
         return this.serviceSinkIsland;
+    }
+
+    public Atlas getEdgeConnectedToPedestrianNetwork()
+    {
+        return this.pedestrianNetwork;
     }
 
     public Atlas getInvalidEdges()
