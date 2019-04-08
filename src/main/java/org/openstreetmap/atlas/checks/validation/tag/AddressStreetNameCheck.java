@@ -1,6 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +28,7 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
 
     private static final long serialVersionUID = 5401402333350044455L;
 
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "Address node {0,number,#} has an addr:street value that does not match the name of any roads within {1,number,#} meters.");
     private static final Double SEARCH_DISTANCE_DEFAULT = 100.0;
 
@@ -83,14 +83,13 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
 
         // Flag the object if there are edges within the search distance and the addr:street values
         // is not present in the set of Edge name tag values
-        if (!streetNameValues.isEmpty()
-                && !streetNameValues.contains(object.tag(AddressStreetTag.KEY)))
-        {
-            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
-                    object.getOsmIdentifier(), this.searchDistance.asMeters())));
-        }
-
-        return Optional.empty();
+        return !streetNameValues.isEmpty()
+                && !streetNameValues.contains(object.tag(AddressStreetTag.KEY))
+                        ? Optional
+                                .of(this.createFlag(object,
+                                        this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                                                this.searchDistance.asMeters())))
+                        : Optional.empty();
     }
 
     @Override
