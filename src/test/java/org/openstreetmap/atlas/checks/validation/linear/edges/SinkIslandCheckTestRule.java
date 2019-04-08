@@ -166,13 +166,13 @@ public class SinkIslandCheckTestRule extends CoreTestRule
         return this.serviceSinkIsland;
     }
 
-    public Atlas getEdgeConnectedToPedestrianNetwork()
-    {
-        return this.pedestrianNetwork;
-    }
-
     public Atlas getInvalidEdges()
     {
         return this.invalidEdges;
+    }
+
+    public Atlas getEdgeConnectedToPedestrianNetwork()
+    {
+        return this.pedestrianNetwork;
     }
 }
