@@ -22,7 +22,8 @@ public class AddressStreetNameCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // points
-            points = { @Point(coordinates = @Loc(value = TEST_4), tags = { "addr:street=1st" }) },
+            points = {
+                    @Point(coordinates = @Loc(value = TEST_4), tags = { "addr:street=1st st" }) },
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_2)),
@@ -30,9 +31,9 @@ public class AddressStreetNameCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                            "highway=residential", "name=1st" }),
+                            "highway=residential", "name=1st st" }),
                     @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
-                            "highway=residential", "name=2st" }) })
+                            "highway=residential", "name=2nd st" }) })
     private Atlas validAddressStreetTagAtlas;
 
     @TestAtlas(
@@ -44,12 +45,13 @@ public class AddressStreetNameCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_2)) },
             // edges
             edges = { @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                    "highway=residential", "name=1st", "name:fr=Rue de adresse" }) })
+                    "highway=residential", "name=1st st", "name:fr=Rue de adresse" }) })
     private Atlas validAddressStreetLocalizedTagAtlas;
 
     @TestAtlas(
             // points
-            points = { @Point(coordinates = @Loc(value = TEST_4), tags = { "addr:street=3rd" }) },
+            points = {
+                    @Point(coordinates = @Loc(value = TEST_4), tags = { "addr:street=3rd st" }) },
             // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_2)),
@@ -57,9 +59,9 @@ public class AddressStreetNameCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                            "highway=residential", "name=1st", "name:fr=Rue de adresse" }),
+                            "highway=residential", "name=1st st", "name:fr=Rue de adresse" }),
                     @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
-                            "highway=residential", "name=2st" }) })
+                            "highway=residential", "name=2nd st" }) })
     private Atlas invalidAddressStreetTagAtlas;
 
     public Atlas validAddressStreetTagAtlas()

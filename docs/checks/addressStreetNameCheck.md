@@ -5,8 +5,8 @@ The search distance for surrounding streets is based on a configurable value tha
 
 #### Live Examples
 
-1. Node [id:847673678](https://www.openstreetmap.org/node/847673678) has an `addr:street` value of Stykkishólmsvegur that does not match any name of surrounding roads.
-2. Node [id:2416844306](https://www.openstreetmap.org/node/2416844306) has an `addr:street` value of Vitatorg that is a typo of the nearby road V**í**tatorg.
+1. Node [id:847673678](https://www.openstreetmap.org/node/847673678) has an `addr:street` value of Stykkishólmsvegur that does not match any name of surrounding streets.
+2. Node [id:2416844306](https://www.openstreetmap.org/node/2416844306) has an `addr:street` value of Vitatorg that is a typo of the nearby street V**í**tatorg.
 
 #### Code Review
 
