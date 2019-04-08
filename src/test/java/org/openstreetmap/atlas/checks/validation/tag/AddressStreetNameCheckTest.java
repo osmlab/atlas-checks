@@ -5,7 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
-import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * Unit test for {@link AddressStreetNameCheck}
@@ -19,9 +18,6 @@ public class AddressStreetNameCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
-
-    private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
-            "{\"InvalidLanesTagCheck\":{\"lanes.filter\":\"lanes->1,1.5,2\"}}");
 
     @Test
     public void validAddressStreetTagTest()
@@ -52,7 +48,7 @@ public class AddressStreetNameCheckTest
     {
         this.verifier.actual(this.setup.validAddressStreetTagAtlas(),
                 new AddressStreetNameCheck(ConfigurationResolver
-                        .inlineConfiguration("{\"AddressStreetNameCheck.search.distance\":1.0}")));
+                        .inlineConfiguration("{\"AddressStreetNameCheck.bounds.size\":1.0}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 

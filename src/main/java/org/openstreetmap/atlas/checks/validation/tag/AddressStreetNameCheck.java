@@ -29,7 +29,7 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 5401402333350044455L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "Address node {0,number,#} has an addr:street value that does not match the name of any surrounding roads.");
+            "Address node {0,number,#} has an addr:street value that does not match the name of any roads within {1,number,#} meters.");
     private static final Double SEARCH_DISTANCE_DEFAULT = 100.0;
 
     // Distance to search for Edges around a Point
@@ -46,7 +46,7 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
     public AddressStreetNameCheck(final Configuration configuration)
     {
         super(configuration);
-        this.searchDistance = configurationValue(configuration, "search.distance",
+        this.searchDistance = configurationValue(configuration, "bounds.size",
                 SEARCH_DISTANCE_DEFAULT, Distance::meters);
     }
 
@@ -86,8 +86,8 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
         if (!streetNameValues.isEmpty()
                 && !streetNameValues.contains(object.tag(AddressStreetTag.KEY)))
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                    object.getOsmIdentifier(), this.searchDistance.asMeters())));
         }
 
         return Optional.empty();
