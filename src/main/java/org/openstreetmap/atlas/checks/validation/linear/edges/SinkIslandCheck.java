@@ -8,13 +8,11 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
@@ -232,24 +230,27 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // ways
                 || this.isServiceRoad(edge) && this.isConnectedToPedestrian(edge)
                 // Ignore edges that are fully enclosed in areas with amenity values to exclude
-                || this.isWithinBuilding(edge);
+                || this.isServiceRoad(edge) && this.isWithinAreasWithExcludedAmenityTags(edge);
     }
 
     /**
-     * Checks if the edge is fully enclosed within areas that have amenity tags that are in the AMENITY_VALUES_TO_EXCLUDE list
-     * @param edge any edge
+     * Checks if the edge is fully enclosed within areas that have amenity tags that are in the
+     * AMENITY_VALUES_TO_EXCLUDE list
+     *
+     * @param edge
+     *            any edge
      * @return true if the edge is fully enclosed within the area with excluded amenity tag
      */
-    private boolean isWithinBuilding(final Edge edge)
+    private boolean isWithinAreasWithExcludedAmenityTags(final Edge edge)
     {
         return StreamSupport
-                .stream(edge.getAtlas().areasCovering(edge.start().getLocation()).spliterator(),
-                        false)
-                .filter(area -> Validators
-                        .isOfType(area, AmenityTag.class, AMENITY_VALUES_TO_EXCLUDE))
-                .anyMatch(area-> area.asPolygon().fullyGeometricallyEncloses(edge.start()
-                        .getLocation())&& area.asPolygon().fullyGeometricallyEncloses(edge.end().getLocation()));
-
+                .stream(edge.getAtlas()
+                        .areasCovering(edge.start().getLocation(),
+                                area -> Validators.isOfType(area, AmenityTag.class,
+                                        AMENITY_VALUES_TO_EXCLUDE))
+                        .spliterator(), false)
+                .anyMatch(area -> area.asPolygon()
+                        .fullyGeometricallyEncloses(edge.end().getLocation()));
     }
 
     /**

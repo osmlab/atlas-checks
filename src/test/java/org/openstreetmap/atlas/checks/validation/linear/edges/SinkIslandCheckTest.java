@@ -100,6 +100,14 @@ public class SinkIslandCheckTest
     {
         this.verifier.actual(this.setup.getEdgeConnectedToPedestrianNetwork(), new SinkIslandCheck(
                 ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testEdgesWithinAreasWithAmenityTags()
+    {
+        this.verifier.actual(this.setup.getEdgeWithinAreaWithAmenityTag(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
     }
 }

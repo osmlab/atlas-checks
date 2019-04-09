@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
@@ -24,6 +25,12 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     private static final String TEST_6 = "37.325440,-122.033948";
     private static final String TEST_7 = "37.3314171,-122.0304871";
     private static final String TEST_8 = "37.324233,-122.003467";
+    private static final String TEST_9 = "56.3097870, 9.1207824";
+    private static final String TEST_10 = "56.3101021, 9.1213965";
+    private static final String TEST_11 = "56.3095716, 9.1223019";
+    private static final String TEST_12 = "56.3092499, 9.1216749";
+    private static final String TEST_13 = "56.3096026, 9.1211942";
+    private static final String TEST_14 = "56.3098639, 9.1217029";
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_3)),
             @Node(coordinates = @Loc(value = TEST_2)), @Node(coordinates = @Loc(value = TEST_6)),
@@ -131,6 +138,17 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                             "highway=pedestrian" }) })
     private Atlas pedestrianNetwork;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_9)),
+            @Node(coordinates = @Loc(value = TEST_10)), @Node(coordinates = @Loc(value = TEST_11)),
+            @Node(coordinates = @Loc(value = TEST_12)), @Node(coordinates = @Loc(value = TEST_13)),
+            @Node(coordinates = @Loc(value = TEST_14)) }, areas = { @Area(coordinates = {
+                    @Loc(value = TEST_9), @Loc(value = TEST_10), @Loc(value = TEST_11),
+                    @Loc(value = TEST_12) }, tags = { "amenity=parking" }) }, edges = {
+                            @Edge(id = "1", coordinates = { @Loc(value = TEST_13),
+                                    @Loc(value = TEST_14) }, tags = { "highway=service",
+                                            "service=parking_aisle" }) })
+    private Atlas edgeWithinAreaWithAmenityTag;
+
     public Atlas getSingleEdgeAtlas()
     {
         return this.singleEdgeAtlas;
@@ -174,5 +192,10 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     public Atlas getEdgeConnectedToPedestrianNetwork()
     {
         return this.pedestrianNetwork;
+    }
+
+    public Atlas getEdgeWithinAreaWithAmenityTag()
+    {
+        return this.edgeWithinAreaWithAmenityTag;
     }
 }
