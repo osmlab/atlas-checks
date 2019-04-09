@@ -3,12 +3,14 @@ package org.openstreetmap.atlas.checks.maproulette;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author cuthbertm
  * @author mgostintsev
+ * @author nachtm
  */
 public class MapRouletteConfiguration implements Serializable
 {
@@ -19,10 +21,11 @@ public class MapRouletteConfiguration implements Serializable
     private static final int SERVER_INDEX = 0;
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteConfiguration.class);
     private static final long serialVersionUID = -1060265212173405828L;
+    private static final String DELIMITER = ":";
     private final String apiKey;
     private final int port;
-    private final String projectName;
     private final String server;
+    private final ProjectConfiguration projectConfiguration;
 
     /**
      * Parses a map roulette configuration object from a string that follows the structure
@@ -37,11 +40,12 @@ public class MapRouletteConfiguration implements Serializable
     {
         if (StringUtils.isNotEmpty(configuration))
         {
-            final String[] components = configuration.split(":");
+            final String[] components = configuration.split(DELIMITER);
             if (components.length == NUMBER_OF_COMPONENTS)
             {
                 return new MapRouletteConfiguration(components[SERVER_INDEX],
-                        Integer.parseInt(components[PORT_INDEX]), components[PROJECT_NAME_INDEX],
+                        Integer.parseInt(components[PORT_INDEX]),
+                        new ProjectConfiguration(components[PROJECT_NAME_INDEX]),
                         components[API_KEY_INDEX]);
             }
         }
@@ -54,9 +58,15 @@ public class MapRouletteConfiguration implements Serializable
     public MapRouletteConfiguration(final String server, final int port, final String projectName,
             final String apiKey)
     {
+        this(server, port, new ProjectConfiguration(projectName), apiKey);
+    }
+
+    public MapRouletteConfiguration(final String server, final int port,
+            final ProjectConfiguration projectConfiguration, final String apiKey)
+    {
         this.server = server;
         this.port = port;
-        this.projectName = projectName;
+        this.projectConfiguration = projectConfiguration;
         this.apiKey = apiKey;
     }
 
@@ -72,7 +82,7 @@ public class MapRouletteConfiguration implements Serializable
 
     public String getProjectName()
     {
-        return this.projectName;
+        return this.projectConfiguration.getName();
     }
 
     public String getServer()
@@ -80,9 +90,15 @@ public class MapRouletteConfiguration implements Serializable
         return this.server;
     }
 
+    public ProjectConfiguration getProjectConfiguration()
+    {
+        return this.projectConfiguration;
+    }
+
     @Override
     public String toString()
     {
-        return String.format("%s:%d:%s:%s", this.server, this.port, this.projectName, this.apiKey);
+        return String.format("%s:%d:%s:%s", this.server, this.port,
+                this.projectConfiguration.getName(), this.apiKey);
     }
 }
