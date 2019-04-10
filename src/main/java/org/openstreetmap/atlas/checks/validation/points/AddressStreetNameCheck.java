@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.tag;
+package org.openstreetmap.atlas.checks.validation.points;
 
 import java.util.Collections;
 import java.util.List;

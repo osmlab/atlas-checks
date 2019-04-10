@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.tag;
+package org.openstreetmap.atlas.checks.validation.points;
 
 import org.junit.Assert;
 import org.junit.Rule;

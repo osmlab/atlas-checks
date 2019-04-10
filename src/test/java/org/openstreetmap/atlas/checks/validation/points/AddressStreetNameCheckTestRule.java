@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.tag;
+package org.openstreetmap.atlas.checks.validation.points;
 
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
