@@ -186,7 +186,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Only allow car navigable highways and ignore ferries
                 && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
-                && !TagPredicates.IS_AREA.test(object);
+                && !TagPredicates.IS_AREA.test(object)
+                // Ignore edges that are fully enclosed in areas with amenity values to exclude
+                && !(this.isServiceRoad((Edge) object)
+                        && this.isWithinAreasWithExcludedAmenityTags((Edge) object));
     }
 
     /**
@@ -217,6 +220,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
      */
     private boolean edgeCharacteristicsToIgnore(final Edge edge)
     {
+
         // If the edge has already been flagged by another process then we can break out of the
         // loop and assume that whether the check was a flag or not was handled by the other process
         return this.isFlagged(edge.getIdentifier())
@@ -228,9 +232,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
                 // Ignore edges that are of type service and is connected to pedestrian navigable
                 // ways
-                || this.isServiceRoad(edge) && this.isConnectedToPedestrian(edge)
-                // Ignore edges that are fully enclosed in areas with amenity values to exclude
-                || this.isServiceRoad(edge) && this.isWithinAreasWithExcludedAmenityTags(edge);
+                || this.isServiceRoad(edge) && this.isConnectedToPedestrian(edge);
     }
 
     /**
@@ -245,12 +247,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return StreamSupport
                 .stream(edge.getAtlas()
-                        .areasCovering(edge.start().getLocation(),
-                                area -> Validators.isOfType(area, AmenityTag.class,
-                                        AMENITY_VALUES_TO_EXCLUDE))
+                        .areas(area -> Validators.isOfType(area, AmenityTag.class,
+                                AMENITY_VALUES_TO_EXCLUDE))
                         .spliterator(), false)
-                .anyMatch(area -> area.asPolygon()
-                        .fullyGeometricallyEncloses(edge.end().getLocation()));
+                .anyMatch(area -> area.asPolygon().fullyGeometricallyEncloses(edge.asPolyLine()));
     }
 
     /**
