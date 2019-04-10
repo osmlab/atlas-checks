@@ -206,7 +206,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public void addObjects(final Iterable<AtlasObject> objects)
     {
-        Iterables.stream(objects).forEach(this::addObject);
+        objects.forEach(this::addObject);
     }
 
     /**

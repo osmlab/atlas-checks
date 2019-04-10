@@ -7,6 +7,7 @@ import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -43,12 +44,11 @@ public class FlaggedRelation extends FlaggedObject
     @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        final JsonObject feature = this.relation.asGeoJsonGeometry();
+        final JsonObject geoJsonGeometry = this.relation.asGeoJsonGeometry();
         final JsonObject featureProperties = this.relation.getGeoJsonProperties();
         featureProperties.addProperty("flag:id", flagIdentifier);
         featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
-        feature.add("properties", featureProperties);
-        return feature;
+        return GeoJsonUtils.feature(geoJsonGeometry, featureProperties);
     }
 
     /**
