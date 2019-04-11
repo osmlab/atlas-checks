@@ -220,7 +220,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
      */
     private boolean edgeCharacteristicsToIgnore(final Edge edge)
     {
-
         // If the edge has already been flagged by another process then we can break out of the
         // loop and assume that whether the check was a flag or not was handled by the other process
         return this.isFlagged(edge.getIdentifier())
