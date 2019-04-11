@@ -246,8 +246,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return StreamSupport
                 .stream(edge.getAtlas()
-                        .areas(area -> Validators.isOfType(area, AmenityTag.class,
-                                AMENITY_VALUES_TO_EXCLUDE))
+                        .areasIntersecting(edge.bounds(),
+                                area -> Validators.isOfType(area, AmenityTag.class,
+                                        AMENITY_VALUES_TO_EXCLUDE))
                         .spliterator(), false)
                 .anyMatch(area -> area.asPolygon().fullyGeometricallyEncloses(edge.asPolyLine()));
     }
