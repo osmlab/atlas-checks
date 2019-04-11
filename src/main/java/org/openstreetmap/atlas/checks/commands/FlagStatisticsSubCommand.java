@@ -31,7 +31,7 @@ import com.google.gson.JsonObject;
 /**
  * @author bbreithaupt
  */
-public class FlagSummarySubCommand extends AbstractAtlasShellToolsCommand
+public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String INPUT_OPTION = "input";
     private static final String UNCOMPRESSED_FLAG = "uncompressed";
@@ -45,10 +45,10 @@ public class FlagSummarySubCommand extends AbstractAtlasShellToolsCommand
 
     public static void main(final String[] args)
     {
-        new FlagSummarySubCommand().runSubcommandAndExit(args);
+        new FlagStatisticsSubCommand().runSubcommandAndExit(args);
     }
 
-    public FlagSummarySubCommand()
+    public FlagStatisticsSubCommand()
     {
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
         this.outputDelegate = this.getCommandOutputDelegate();
@@ -89,13 +89,13 @@ public class FlagSummarySubCommand extends AbstractAtlasShellToolsCommand
     @Override
     public String getCommandName()
     {
-        return "flag-summary";
+        return "flag-stats";
     }
 
     @Override
     public String getSimpleDescription()
     {
-        return "get flag counts for a set of atlas checks log files";
+        return "get flag counts for a set of atlas checks' log files";
     }
 
     @Override
@@ -131,7 +131,11 @@ public class FlagSummarySubCommand extends AbstractAtlasShellToolsCommand
         final HashMap<String, HashMap<String, Counter>> countryCheckMap = new HashMap<>();
         new File(path).listFilesRecursively().stream()
                 .filter(file -> !file.isDirectory()
-                        && this.optionAndArgumentDelegate.hasOption(UNCOMPRESSED_FLAG) ? FilenameUtils.getExtension(file.getName()).equals("log") : file.isGzipped() && FilenameUtils.getExtension(FilenameUtils.getBaseName(file.getName())).equals("log"))
+                        && this.optionAndArgumentDelegate.hasOption(UNCOMPRESSED_FLAG)
+                                ? FilenameUtils.getExtension(file.getName()).equals("log")
+                                : file.isGzipped() && FilenameUtils
+                                        .getExtension(FilenameUtils.getBaseName(file.getName()))
+                                        .equals("log"))
                 .forEach(file ->
                 {
                     final String country = FilenameUtils.getName(file.getParent());
@@ -204,14 +208,19 @@ public class FlagSummarySubCommand extends AbstractAtlasShellToolsCommand
             }).collect(Collectors.joining(COMMA)));
             outputString.append(COMMA);
             outputString.append((Long) countries.stream()
-                    .filter(country -> countryCheckCounts.get(country).containsKey(check)).mapToLong(country -> countryCheckCounts.get(country).get(check).getValue()).sum());
+                    .filter(country -> countryCheckCounts.get(country).containsKey(check))
+                    .mapToLong(country -> countryCheckCounts.get(country).get(check).getValue())
+                    .sum());
             outputString.append(LINE_SEPARATOR);
         });
 
         outputString.append("Total,");
-        final List<Long> countryCounts = countries.stream().map(country -> countryCheckCounts.get(country).entrySet().stream().mapToLong(entry -> entry.getValue().getValue()).sum()).collect(
-                Collectors.toList());
-        outputString.append(countryCounts.stream().map(String::valueOf).collect(Collectors.joining(COMMA)));
+        final List<Long> countryCounts = countries.stream()
+                .map(country -> countryCheckCounts.get(country).entrySet().stream()
+                        .mapToLong(entry -> entry.getValue().getValue()).sum())
+                .collect(Collectors.toList());
+        outputString.append(
+                countryCounts.stream().map(String::valueOf).collect(Collectors.joining(COMMA)));
         outputString.append(COMMA);
         outputString.append(countryCounts.stream().mapToLong(Long::longValue).sum());
 

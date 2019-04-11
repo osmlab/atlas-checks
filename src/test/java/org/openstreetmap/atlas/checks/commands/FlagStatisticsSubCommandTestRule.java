@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
-public class FlagSummarySubCommandTestRule extends CoreTestRule
+public class FlagStatisticsSubCommandTestRule extends CoreTestRule
 {
     private static final String TEST_1 = "-15.950131,-5.683072";
 
@@ -19,8 +19,7 @@ public class FlagSummarySubCommandTestRule extends CoreTestRule
     private Atlas atlas;
 
     /**
-     * Generate a simple {@link CheckFlagEvent}, that have one node and use a test
-     * instruction.
+     * Generate a simple {@link CheckFlagEvent}, that have one node and use a test instruction.
      *
      * @param checkName
      *            a {@link String} check name
@@ -35,6 +34,5 @@ public class FlagSummarySubCommandTestRule extends CoreTestRule
 
         return new CheckFlagEvent(checkName, flag);
     }
-
 
 }
