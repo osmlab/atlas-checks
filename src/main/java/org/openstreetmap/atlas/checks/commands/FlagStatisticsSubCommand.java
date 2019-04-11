@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDelegate;
@@ -27,6 +28,8 @@ import org.openstreetmap.atlas.utilities.scalars.Counter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author bbreithaupt
@@ -38,6 +41,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private static final String DIFFERENCE_OPTION = "difference";
     private static final String OUTPUT_OPTION = "output";
     private static final String GENERATOR = "generator";
+
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
 
     private final Gson gson = new Gson();
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
@@ -129,6 +134,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private HashMap<String, HashMap<String, Counter>> getCountryCheckCounts(final String path)
     {
         final HashMap<String, HashMap<String, Counter>> countryCheckMap = new HashMap<>();
+        logger.info("Reading files from: {}", path);
         new File(path).listFilesRecursively().stream()
                 .filter(file -> !file.isDirectory()
                         && this.optionAndArgumentDelegate.hasOption(UNCOMPRESSED_FLAG)
@@ -138,6 +144,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                                         .equals("log"))
                 .forEach(file ->
                 {
+                    logger.info("Reading: {}", file.getName());
                     final String country = FilenameUtils.getName(file.getParent());
                     countryCheckMap.putIfAbsent(country, new HashMap<>());
 
@@ -146,7 +153,6 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                                     new GZIPInputStream(new FileInputStream(file.getFile())))
                             : new FileReader(file.getPath()))
                     {
-
                         try (BufferedReader reader = new BufferedReader(inputStreamReader))
                         {
                             String line;
@@ -183,6 +189,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private void writeOutput(final HashMap<String, HashMap<String, Counter>> countryCheckCounts,
             final Optional<String> outputPath) throws IOException
     {
+        logger.info("Generating output");
         final List<String> countries = new ArrayList<>(countryCheckCounts.keySet());
         java.util.Collections.sort(countries);
         final List<String> checks = countryCheckCounts.entrySet().stream()
