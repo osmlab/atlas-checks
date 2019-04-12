@@ -42,6 +42,7 @@ import com.google.gson.JsonObject;
  * Given a directory of log files created by atlas-checks, upload those files to MapRoulette.
  *
  * @author nachtm
+ * @author bbreithaupt
  */
 public class MapRouletteUploadCommand extends MapRouletteCommand
 {

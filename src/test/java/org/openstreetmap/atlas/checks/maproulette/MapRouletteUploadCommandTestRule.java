@@ -13,6 +13,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Point;
  * Data for unit tests for MapRouletteUploadCommand
  *
  * @author nachtm
+ * @author bbreithaupt
  */
 public class MapRouletteUploadCommandTestRule extends CoreTestRule
 {

@@ -23,6 +23,7 @@ import org.openstreetmap.atlas.utilities.runtime.CommandMap;
  * Unit tests for MapRouletteUploadCommand.
  *
  * @author nachtm
+ * @author bbreithaupt
  */
 public class MapRouletteUploadCommandTest
 {
