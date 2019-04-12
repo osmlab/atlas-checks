@@ -231,7 +231,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
                 // Ignore edges that are of type service and is connected to pedestrian navigable
                 // ways
-                || this.isServiceRoad(edge) && this.isConnectedToPedestrian(edge);
+                || this.isServiceRoad(edge) && this.isConnectedToPedestrianNavigableHighway(edge);
     }
 
     /**
@@ -274,7 +274,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
      *            any edge
      * @return true if the edge has connection to pedestrian navigable highways
      */
-    private boolean isConnectedToPedestrian(final Edge edge)
+    private boolean isConnectedToPedestrianNavigableHighway(final Edge edge)
     {
         return edge.connectedEdges().stream().anyMatch(HighwayTag::isPedestrianNavigableHighway);
     }
