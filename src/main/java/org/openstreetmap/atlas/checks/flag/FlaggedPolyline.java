@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 
 import com.google.gson.JsonObject;
@@ -56,13 +57,11 @@ public class FlaggedPolyline extends FlaggedObject
     @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        final JsonObject feature = this.atlasItem.asGeoJsonGeometry();
+        final JsonObject geoJsonGeometry = this.atlasItem.asGeoJsonGeometry();
         final JsonObject jsonProperties = this.atlasItem.getGeoJsonProperties();
-
         jsonProperties.addProperty("flag:id", flagIdentifier);
         jsonProperties.addProperty("flag:type", FlaggedPolyline.class.getSimpleName());
-        feature.add("properties", jsonProperties);
-        return feature;
+        return GeoJsonUtils.feature(geoJsonGeometry, jsonProperties);
     }
 
     @Override
