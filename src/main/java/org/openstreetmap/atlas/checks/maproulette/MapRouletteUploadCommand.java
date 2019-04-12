@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -8,8 +10,10 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
@@ -20,6 +24,8 @@ import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.serializer.TaskDeserializer;
 import org.openstreetmap.atlas.streaming.resource.File;
+import org.openstreetmap.atlas.tags.ISOCountryTag;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
@@ -28,6 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Given a directory of log files created by atlas-checks, upload those files to MapRoulette.
@@ -42,6 +51,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private static final Switch<File> CONFIG_LOCATION = new Switch<>("config",
             "Path to a file containing MapRoulette challenge configuration.", File::new,
             Optionality.OPTIONAL, "config/configuration.json");
+    private static final Switch<List<String>> COUNTRIES = new Switch<>("countries",
+            "A comma separated list of ISO3 country codes to filter flags by.",
+            string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL);
+    private static final Switch<List<String>> CHECKS = new Switch<>("checks",
+            "A comma separated list of check names to filter flags by.",
+            string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL);
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final String LOG_EXTENSION = "log";
     private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
@@ -71,15 +86,38 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 {
                     reader.lines().forEach(line ->
                     {
+                        // Get Task from geojson
                         final Task task = gson.fromJson(line, Task.class);
-                        try
+                        // Get the first country code from the geojson
+                        final Optional<String> countryCode = Iterables
+                                .stream(task.getGeoJson().orElse(new JsonArray()))
+                                .map(this::getElementCountryCode)
+                                .firstMatching(iso -> !iso.equals(""));
+                        // Get the challenge name from the Task
+                        final String check = task.getChallengeName();
+                        // Get the countries filter
+                        final List<String> countries = (List<String>) commandMap.get(COUNTRIES);
+                        // Get the checks filter
+                        final List<String> checks = (List<String>) commandMap.get(CHECKS);
+                        // If the country filter and country code exist, check that the country code
+                        // is in the filter.
+                        if ((countries == null || (countryCode.isPresent()
+                                && countries.contains(countryCode.get())))
+                                // If the checks filter exists, check that the challenge name is in
+                                // the checks filter.
+                                && (checks == null || checks.contains(check)))
                         {
-                            this.addTask(this.getChallenge(task.getChallengeName(), instructions),
-                                    task);
-                        }
-                        catch (URISyntaxException | UnsupportedEncodingException error)
-                        {
-                            logger.error("Error thrown while adding task: ", error);
+                            try
+                            {
+                                // try to add the task fot upload
+                                this.addTask(
+                                        this.getChallenge(task.getChallengeName(), instructions),
+                                        task);
+                            }
+                            catch (URISyntaxException | UnsupportedEncodingException error)
+                            {
+                                logger.error("Error thrown while adding task: ", error);
+                            }
                         }
                     });
                     this.uploadTasks();
@@ -200,10 +238,35 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         });
     }
 
+    /**
+     * Gathers the ISO3 country code from a {@link JsonElement}, if it has one.
+     *
+     * @param element
+     *            a {@link JsonElement}
+     * @return a {@link String} containing the ISO3 country code, or an empty string if no code was
+     *         found
+     */
+    private String getElementCountryCode(final JsonElement element)
+    {
+        final JsonObject elementJson = element.getAsJsonObject();
+        // If the element has properties
+        if (elementJson.has(PROPERTIES))
+        {
+            final JsonObject properties = elementJson.get(PROPERTIES).getAsJsonObject();
+            // And the properties have a country code
+            if (properties.has(ISOCountryTag.KEY))
+            {
+                // Get the country code
+                return properties.get(ISOCountryTag.KEY).getAsString();
+            }
+        }
+        return "";
+    }
+
     @Override
     public SwitchList switches()
     {
-        return super.switches().with(INPUT_DIRECTORY, CONFIG_LOCATION);
+        return super.switches().with(INPUT_DIRECTORY, CONFIG_LOCATION, COUNTRIES, CHECKS);
     }
 
     public static void main(final String[] args)
