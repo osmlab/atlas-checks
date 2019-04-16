@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String INPUT_OPTION = "input";
-    private static final String UNCOMPRESSED_FLAG = "uncompressed";
     private static final String DIFFERENCE_OPTION = "difference";
     private static final String OUTPUT_OPTION = "output";
     private static final String GENERATOR = "generator";
@@ -115,9 +114,6 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         this.registerOptionWithRequiredArgument(INPUT_OPTION,
                 "A directory of folders containing atlas-checks log files.",
                 OptionOptionality.REQUIRED, INPUT_OPTION);
-        this.registerOption(UNCOMPRESSED_FLAG, 'u',
-                "Look for uncompressed log files, instead of gzipped ones.",
-                OptionOptionality.OPTIONAL);
         this.registerOptionWithRequiredArgument(DIFFERENCE_OPTION, 'd',
                 "A second set of log files to diff against.", OptionOptionality.OPTIONAL,
                 DIFFERENCE_OPTION);
@@ -136,12 +132,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final HashMap<String, HashMap<String, Counter>> countryCheckMap = new HashMap<>();
         logger.info("Reading files from: {}", path);
         new File(path).listFilesRecursively().stream()
-                .filter(file -> !file.isDirectory()
-                        && this.optionAndArgumentDelegate.hasOption(UNCOMPRESSED_FLAG)
-                                ? FilenameUtils.getExtension(file.getName()).equals("log")
-                                : file.isGzipped() && FilenameUtils
-                                        .getExtension(FilenameUtils.getBaseName(file.getName()))
-                                        .equals("log"))
+                .filter(file -> FilenameUtils.getExtension(file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
+                        : file.getName()).equalsIgnoreCase("log"))
                 .forEach(file ->
                 {
                     logger.info("Reading: {}", file.getName());

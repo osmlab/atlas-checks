@@ -32,8 +32,8 @@ public class FlagStatisticsSubCommandTest
 
     private static final boolean[] COMPRESSION_OPTIONS = { false, true };
 
-    private static final String COUTRY_1 = "ABC";
-    private static final String COUTRY_2 = "XYZ";
+    private static final String COUNTRY_1 = "ABC";
+    private static final String COUNTRY_2 = "XYZ";
 
     private static final String CHECK_1 = "Check1";
     private static final String CHECK_2 = "Check2";
@@ -75,13 +75,13 @@ public class FlagStatisticsSubCommandTest
     {
         if (!this.testDataCreated)
         {
-            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUTRY_1,
+            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_1,
                     ImmutableMap.of(CHECK_1, 3, CHECK_2, 2));
-            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUTRY_2,
+            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_2,
                     ImmutableMap.of(CHECK_1, 2));
-            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUTRY_1,
+            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_1,
                     ImmutableMap.of(CHECK_1, 3, CHECK_2, 1));
-            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUTRY_2,
+            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_2,
                     ImmutableMap.of(CHECK_1, 4));
             this.testDataCreated = true;
         }
@@ -102,9 +102,9 @@ public class FlagStatisticsSubCommandTest
 
         final String[] arguments = { "--input=" + SOURCE_DIRECTORY.getAbsolutePath(),
                 "--output=" + outputFile.getAbsolutePath() };
-        // FlagStatisticsSubCommand.main(arguments);
+        FlagStatisticsSubCommand.main(arguments);
 
-        final String expectedText = "Check,ABC,XYZ,TotalCheck1,3,2,5Check2,2,ND,2Total,5,2,7";
+        final String expectedText = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,ND,4Total,10,4,14";
         final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
                 .collect(Collectors.joining());
 
