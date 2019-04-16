@@ -92,8 +92,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         // Get the first country code from the geojson
                         final Optional<String> countryCode = Iterables
                                 .stream(task.getGeoJson().orElse(new JsonArray()))
-                                .map(this::getElementCountryCode)
-                                .firstMatching(iso -> !iso.equals(""));
+                                .map(this::getElementCountryCode).firstMatching(Optional::isPresent)
+                                .get();
                         // Get the challenge name from the Task
                         final String check = task.getChallengeName();
                         // Get the countries filter
@@ -244,10 +244,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *
      * @param element
      *            a {@link JsonElement}
-     * @return a {@link String} containing the ISO3 country code, or an empty string if no code was
-     *         found
+     * @return an {@link Optional} {@link String} containing the ISO3 country code
      */
-    private String getElementCountryCode(final JsonElement element)
+    private Optional<String> getElementCountryCode(final JsonElement element)
     {
         final JsonObject elementJson = element.getAsJsonObject();
         // If the element has properties
@@ -258,10 +257,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             if (properties.has(ISOCountryTag.KEY))
             {
                 // Get the country code
-                return properties.get(ISOCountryTag.KEY).getAsString();
+                return Optional.of(properties.get(ISOCountryTag.KEY).getAsString());
             }
         }
-        return "";
+        return Optional.empty();
     }
 
     @Override
