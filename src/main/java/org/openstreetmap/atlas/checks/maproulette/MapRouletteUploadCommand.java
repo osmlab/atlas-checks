@@ -110,7 +110,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-                                // try to add the task fot upload
+                                // try to add the task for upload
                                 this.addTask(
                                         this.getChallenge(task.getChallengeName(), instructions),
                                         task);
