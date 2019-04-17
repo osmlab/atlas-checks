@@ -76,7 +76,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return this.validEdge(object) && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
                 .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType)
-        // Ignore edges that are fully enclosed in areas with amenity values to exclude
+                // Ignore edges that are fully enclosed in areas with amenity values to exclude
                 && !(this.isServiceRoad((Edge) object)
                         && this.isWithinAreasWithExcludedAmenityTags((Edge) object));
     }
