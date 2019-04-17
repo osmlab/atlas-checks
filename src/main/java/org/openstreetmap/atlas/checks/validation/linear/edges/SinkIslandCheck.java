@@ -74,9 +74,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return this.validEdge(object) && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
-                .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType)
-                // Ignore edges that are fully enclosed in areas with amenity values to exclude
+        return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
+                && ((Edge) object).highwayTag()
+                        .isMoreImportantThanOrEqualTo(this.minimumHighwayType)
                 && !(this.isServiceRoad((Edge) object)
                         && this.isWithinAreasWithExcludedAmenityTags((Edge) object));
     }
