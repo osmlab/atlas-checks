@@ -10,7 +10,6 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * @author matthieun
  * @author gpogulsky
  * @author nachtm
- * @author sayas01
  */
 public class SinkIslandCheckTest
 {
@@ -92,22 +91,6 @@ public class SinkIslandCheckTest
         this.verifier.actual(this.setup.getServiceSinkIsland(),
                 new SinkIslandCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"SinkIslandCheck\": {\"tree.size\": 3, \"minimum.highway.type\": \"RESIDENTIAL\"}}")));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testSingleEdgePartOfPedestrianNetwork()
-    {
-        this.verifier.actual(this.setup.getEdgeConnectedToPedestrianNetwork(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testEdgesWithinAreasWithAmenityTags()
-    {
-        this.verifier.actual(this.setup.getEdgeWithinAreaWithAmenityTag(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
         this.verifier.verifyEmpty();
     }
 }

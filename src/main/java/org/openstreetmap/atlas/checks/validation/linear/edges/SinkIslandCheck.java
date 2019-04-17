@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -20,7 +19,6 @@ import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RouteTag;
-import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -34,7 +32,6 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author gpogulsky
  * @author savannahostrowski
  * @author nachtm
- * @author sayas01
  */
 public class SinkIslandCheck extends BaseCheck<Long>
 {
@@ -186,10 +183,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Only allow car navigable highways and ignore ferries
                 && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
-                && !TagPredicates.IS_AREA.test(object)
-                // Ignore edges that are fully enclosed in areas with amenity values to exclude
-                && !(this.isServiceRoad((Edge) object)
-                        && this.isWithinAreasWithExcludedAmenityTags((Edge) object));
+                && !TagPredicates.IS_AREA.test(object);
     }
 
     /**
@@ -228,54 +222,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore edges that have been way sectioned at the border, as has high probability
                 // of creating a false positive due to the sectioning of the way
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
-                || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
-                // Ignore edges that are of type service and is connected to pedestrian navigable
-                // ways
-                || this.isServiceRoad(edge) && this.isConnectedToPedestrianNavigableHighway(edge);
-    }
-
-    /**
-     * Checks if the edge is fully enclosed within areas that have amenity tags that are in the
-     * AMENITY_VALUES_TO_EXCLUDE list
-     *
-     * @param edge
-     *            any edge
-     * @return true if the edge is fully enclosed within the area with excluded amenity tag
-     */
-    private boolean isWithinAreasWithExcludedAmenityTags(final Edge edge)
-    {
-        return StreamSupport
-                .stream(edge.getAtlas()
-                        .areasIntersecting(edge.bounds(),
-                                area -> Validators.isOfType(area, AmenityTag.class,
-                                        AMENITY_VALUES_TO_EXCLUDE))
-                        .spliterator(), false)
-                .anyMatch(area -> area.asPolygon().fullyGeometricallyEncloses(edge.asPolyLine()));
-    }
-
-    /**
-     * Checks if an {@link Edge} is of type service
-     * 
-     * @param edge
-     *            any edge
-     * @return true if the highway classification of the edge is of type service and it has a
-     *         service tag
-     */
-    private boolean isServiceRoad(final Edge edge)
-    {
-        return Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
-                && Validators.hasValuesFor(edge, ServiceTag.class);
-    }
-
-    /**
-     * Checks if an {@link Edge} is connected to any edge that is a pedestrian navigable highway
-     * 
-     * @param edge
-     *            any edge
-     * @return true if the edge has connection to pedestrian navigable highways
-     */
-    private boolean isConnectedToPedestrianNavigableHighway(final Edge edge)
-    {
-        return edge.connectedEdges().stream().anyMatch(HighwayTag::isPedestrianNavigableHighway);
+                || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start());
     }
 }
