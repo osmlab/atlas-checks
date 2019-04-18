@@ -25,11 +25,11 @@ import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDe
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
 import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
 import org.openstreetmap.atlas.utilities.scalars.Counter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author bbreithaupt
@@ -131,10 +131,9 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     {
         final HashMap<String, HashMap<String, Counter>> countryCheckMap = new HashMap<>();
         logger.info("Reading files from: {}", path);
-        new File(path).listFilesRecursively().stream()
-                .filter(file -> FilenameUtils.getExtension(file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
-                        : file.getName()).equalsIgnoreCase("log"))
-                .forEach(file ->
+        new File(path).listFilesRecursively().stream().filter(file -> FilenameUtils.getExtension(
+                file.isGzipped() ? FilenameUtils.getBaseName(file.getName()) : file.getName())
+                .equalsIgnoreCase("log")).forEach(file ->
                 {
                     logger.info("Reading: {}", file.getName());
                     final String country = FilenameUtils.getName(file.getParent());

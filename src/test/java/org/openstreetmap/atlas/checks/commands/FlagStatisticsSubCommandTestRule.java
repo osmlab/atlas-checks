@@ -9,6 +9,11 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
+/**
+ * Unit test rule for {@link FlagStatisticsSubCommand}.
+ *
+ * @author bbreithaupt
+ */
 public class FlagStatisticsSubCommandTestRule extends CoreTestRule
 {
     private static final String TEST_1 = "-15.950131,-5.683072";

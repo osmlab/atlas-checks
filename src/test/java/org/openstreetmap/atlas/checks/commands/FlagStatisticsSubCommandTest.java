@@ -21,6 +21,11 @@ import org.openstreetmap.atlas.streaming.resource.File;
 
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * Unit tests for {@link FlagStatisticsSubCommand}.
+ *
+ * @author bbreithaupt
+ */
 public class FlagStatisticsSubCommandTest
 {
     // An empty HashMap as an empty Spark configuration
@@ -37,8 +42,7 @@ public class FlagStatisticsSubCommandTest
 
     private static final String CHECK_1 = "Check1";
     private static final String CHECK_2 = "Check2";
-
-    private boolean testDataCreated = false;
+    private static final String CHECK_3 = "Check3";
 
     @Rule
     public final FlagStatisticsSubCommandTestRule setup = new FlagStatisticsSubCommandTestRule();
@@ -73,17 +77,16 @@ public class FlagStatisticsSubCommandTest
      */
     private void populateTestData()
     {
-        if (!this.testDataCreated)
+        if (SOURCE_DIRECTORY.listFilesRecursively().isEmpty())
         {
             this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_1,
                     ImmutableMap.of(CHECK_1, 3, CHECK_2, 2));
             this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_2,
-                    ImmutableMap.of(CHECK_1, 2));
+                    ImmutableMap.of(CHECK_1, 2, CHECK_3, 1));
             this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_1,
                     ImmutableMap.of(CHECK_1, 3, CHECK_2, 1));
             this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_2,
-                    ImmutableMap.of(CHECK_1, 4));
-            this.testDataCreated = true;
+                    ImmutableMap.of(CHECK_1, 4, CHECK_3, 1));
         }
     }
 
@@ -102,9 +105,9 @@ public class FlagStatisticsSubCommandTest
 
         final String[] arguments = { "--input=" + SOURCE_DIRECTORY.getAbsolutePath(),
                 "--output=" + outputFile.getAbsolutePath() };
-        FlagStatisticsSubCommand.main(arguments);
+        new FlagStatisticsSubCommand().runSubcommand(arguments);
 
-        final String expectedText = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,ND,4Total,10,4,14";
+        final String expectedText = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,ND,4Check3,ND,2,2Total,10,6,16";
         final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
                 .collect(Collectors.joining());
 
@@ -113,4 +116,23 @@ public class FlagStatisticsSubCommandTest
         outputFile.delete();
     }
 
+    @Test
+    public void getDiffTest() throws IOException
+    {
+        this.populateTestData();
+        final File outputFile = File.temporary();
+
+        final String[] arguments = { "--input=" + SOURCE_DIRECTORY.getAbsolutePath(),
+                "--diff=" + TARGET_DIRECTORY.getAbsolutePath(),
+                "--output=" + outputFile.getAbsolutePath() };
+        new FlagStatisticsSubCommand().runSubcommand(arguments);
+
+        final String expectedText = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,ND,-2Check3,ND,0,0Total,-2,4,2";
+        final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
+                .collect(Collectors.joining());
+
+        Assert.assertEquals(expectedText, actualText);
+
+        outputFile.delete();
+    }
 }
