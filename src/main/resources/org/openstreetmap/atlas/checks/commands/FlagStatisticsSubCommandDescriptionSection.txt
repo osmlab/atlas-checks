@@ -1,0 +1,7 @@
+Count the number of flags per check per country for a set of atlas-checks log files.
+The input folder should contain subdirectories with country names or ISO codes that then contain log files.
+The log files can be either gzipped or uncompressed.
+The output is a table of the counts per check per country.
+Optionally the output can be written to a csv file.
+A second directory of log files can also be input. This will produce an output of
+the difference between the first and second input.
