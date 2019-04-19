@@ -59,6 +59,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     @Override
+    @SuppressWarnings("squid:S3655")
     public int execute()
     {
         final HashMap<String, HashMap<String, Counter>> inputCounts = this.getCountryCheckCounts(
@@ -186,51 +187,55 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<String> checks = countryCheckCounts.entrySet().stream()
                 .flatMap(entry -> entry.getValue().keySet().stream()).distinct().sorted()
                 .collect(Collectors.toList());
-        final StringBuilder outputString = new StringBuilder();
+        final List<List<String>> outputLines = new ArrayList<>();
 
-        outputString.append("Check,");
-        outputString.append(String.join(COMMA, countries));
-        outputString.append(",Total");
-        outputString.append(LINE_SEPARATOR);
+        final List<String> headers = new ArrayList<>();
+        headers.add("Check");
+        headers.addAll(countries);
+        headers.add("Total");
+        outputLines.add(headers);
 
         checks.forEach(check ->
         {
-            outputString.append(check).append(COMMA);
-            outputString.append(countries.stream().map(country ->
+            final List<String> checkRow = new ArrayList<>();
+            checkRow.add(check);
+            checkRow.addAll(countries.stream().map(country ->
             {
                 if (countryCheckCounts.get(country).containsKey(check))
                 {
                     return String.valueOf(countryCheckCounts.get(country).get(check).getValue());
                 }
                 return "ND";
-            }).collect(Collectors.joining(COMMA)));
-            outputString.append(COMMA);
-            outputString.append((Long) countries.stream()
+            }).collect(Collectors.toList()));
+            checkRow.add(String.valueOf((Long) countries.stream()
                     .filter(country -> countryCheckCounts.get(country).containsKey(check))
                     .mapToLong(country -> countryCheckCounts.get(country).get(check).getValue())
-                    .sum());
-            outputString.append(LINE_SEPARATOR);
+                    .sum()));
+            outputLines.add(checkRow);
         });
 
-        outputString.append("Total,");
+        final List<String> totals = new ArrayList<>();
+        totals.add("Total");
         final List<Long> countryCounts = countries.stream()
                 .map(country -> countryCheckCounts.get(country).entrySet().stream()
                         .mapToLong(entry -> entry.getValue().getValue()).sum())
                 .collect(Collectors.toList());
-        outputString.append(
-                countryCounts.stream().map(String::valueOf).collect(Collectors.joining(COMMA)));
-        outputString.append(COMMA);
-        outputString.append(countryCounts.stream().mapToLong(Long::longValue).sum());
+        totals.addAll(countryCounts.stream().map(String::valueOf).collect(Collectors.toList()));
+        totals.add(String.valueOf(countryCounts.stream().mapToLong(Long::longValue).sum()));
+        outputLines.add(totals);
+
+        final String outputString = outputLines.stream().map(line -> String.join(COMMA, line))
+                .collect(Collectors.joining(LINE_SEPARATOR));
 
         if (outputPath.isPresent())
         {
             try (FileWriter outputWriter = new FileWriter(new File(outputPath.get()).getFile()))
             {
-                outputWriter.write(outputString.toString());
+                outputWriter.write(outputString);
             }
         }
 
-        this.outputDelegate.printStdout(LINE_SEPARATOR + outputString.toString() + LINE_SEPARATOR);
+        this.outputDelegate.printStdout(LINE_SEPARATOR + outputString + LINE_SEPARATOR);
     }
 
     /**
