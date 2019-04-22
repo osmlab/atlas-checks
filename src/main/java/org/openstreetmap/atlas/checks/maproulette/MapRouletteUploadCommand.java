@@ -77,6 +77,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final Gson gson = new GsonBuilder().registerTypeAdapter(Task.class,
                 new TaskDeserializer(configuration.getProjectName())).create();
         final Configuration instructions = this.loadConfiguration(commandMap);
+        // Get the countries filter
+        final List<String> countries = (List<String>) commandMap.get(COUNTRIES);
+        // Get the checks filter
+        final List<String> checks = (List<String>) commandMap.get(CHECKS);
+
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
             // If this file is something we handle, read and upload the tasks contained within
@@ -89,17 +94,13 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                     {
                         // Get Task from geojson
                         final Task task = gson.fromJson(line, Task.class);
-                        // Get the first country code from the geojson
+                        // Get the first country code from the Task
                         final Optional<String> countryCode = Iterables
                                 .stream(task.getGeoJson().orElse(new JsonArray()))
                                 .map(this::getElementCountryCode).firstMatching(Optional::isPresent)
                                 .get();
                         // Get the challenge name from the Task
                         final String check = task.getChallengeName();
-                        // Get the countries filter
-                        final List<String> countries = (List<String>) commandMap.get(COUNTRIES);
-                        // Get the checks filter
-                        final List<String> checks = (List<String>) commandMap.get(CHECKS);
                         // If the country filter and country code exist, check that the country code
                         // is in the filter.
                         if ((countries == null || (countryCode.isPresent()
@@ -110,7 +111,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-                                // try to add the task for upload
+                                // Try to add the task for upload
                                 this.addTask(
                                         this.getChallenge(task.getChallengeName(), instructions),
                                         task);
