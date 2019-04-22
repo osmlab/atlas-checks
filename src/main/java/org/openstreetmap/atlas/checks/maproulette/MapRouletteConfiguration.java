@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
  * @author cuthbertm
  * @author mgostintsev
  * @author nachtm
+ * @author bbreithaupt
  */
 public class MapRouletteConfiguration implements Serializable
 {
@@ -21,7 +22,7 @@ public class MapRouletteConfiguration implements Serializable
     private static final int SERVER_INDEX = 0;
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteConfiguration.class);
     private static final long serialVersionUID = -1060265212173405828L;
-    private static final String DELIMITER = ":";
+    private static final String DELIMITER = "(?<!https|http):";
     private final String apiKey;
     private final int port;
     private final String server;
