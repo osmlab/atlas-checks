@@ -221,7 +221,9 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         return new Retry(DEFAULT_CONNECTION_RETRIES, Duration.seconds(DEFAULT_CONNECTION_WAIT))
                 .run(() ->
                 {
-                    final String serverConnection = "http://" + configuration.getServer() + ":"
+                    final String serverConnection = (configuration.getServer().startsWith("http")
+                            ? ""
+                            : "http://") + configuration.getServer() + ":"
                             + configuration.getPort();
                     final GetResource homepage = new GetResource(serverConnection);
                     final int statusCode = homepage.getStatusCode();
