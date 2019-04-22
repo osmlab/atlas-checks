@@ -82,7 +82,7 @@ public class SignPostCheck extends BaseCheck<String>
         this.minimumLinkLength = configurationValue(configuration, "linkLength.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
         this.sourceEdgeFilter = configurationValue(configuration, "source.filter",
-                SOURCE_EDGE_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value));
+                SOURCE_EDGE_FILTER_DEFAULT, TaggableFilter::forDefinition);
         this.rampEdgeFilter = configurationValue(configuration, "ramp.filter", RAMP_FILTER_DEFAULT,
                 TaggableFilter::forDefinition);
         this.destinationTagFilter = configurationValue(configuration, "destination_tag.filter",
@@ -190,7 +190,7 @@ public class SignPostCheck extends BaseCheck<String>
 
     /**
      * Checks if an {@link Edge} has 2 or more out Edges of the same highway classification as
-     * itself, excluding its reverseå edge.
+     * itself, excluding its reverse edge.
      *
      * @param edge
      *            {@link Edge} to check
