@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
@@ -55,7 +54,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                     "configuration can't be null and must be able to connect to MapRouletteServers to create a connection.");
         }
         this.configuration = configuration;
-        this.uriBuilder = new URIBuilder().setScheme(HttpHost.DEFAULT_SCHEME_NAME)
+        this.uriBuilder = new URIBuilder().setScheme(this.configuration.getScheme())
                 .setHost(this.configuration.getServer()).setPort(this.configuration.getPort());
     }
 
@@ -221,10 +220,8 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         return new Retry(DEFAULT_CONNECTION_RETRIES, Duration.seconds(DEFAULT_CONNECTION_WAIT))
                 .run(() ->
                 {
-                    final String serverConnection = (configuration.getServer().startsWith("http")
-                            ? ""
-                            : "http://") + configuration.getServer() + ":"
-                            + configuration.getPort();
+                    final String serverConnection = configuration.getScheme() + "://"
+                            + configuration.getServer() + ":" + configuration.getPort();
                     final GetResource homepage = new GetResource(serverConnection);
                     final int statusCode = homepage.getStatusCode();
                     if (statusCode != HttpStatus.SC_OK)

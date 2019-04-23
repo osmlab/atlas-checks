@@ -12,7 +12,8 @@ import org.junit.Test;
 public class MapRouletteConfigurationTest
 {
     private static final String SERVER = "server";
-    private static final String SERVER2 = "https://server";
+    private static final String SCHEME = "http";
+    private static final String SCHEME2 = "https";
     private static final int PORT = 123;
     private static final String PROJECT_NAME = "project";
     private static final String API_KEY = "key";
@@ -25,6 +26,7 @@ public class MapRouletteConfigurationTest
     {
         final MapRouletteConfiguration configuration = MapRouletteConfiguration.parse(CONFIG);
         Assert.assertNotNull(configuration);
+        Assert.assertEquals(SCHEME, configuration.getScheme());
         Assert.assertEquals(SERVER, configuration.getServer());
         Assert.assertEquals(PORT, configuration.getPort());
         Assert.assertEquals(PROJECT_NAME, configuration.getProjectName());
@@ -37,7 +39,8 @@ public class MapRouletteConfigurationTest
     {
         final MapRouletteConfiguration configuration = MapRouletteConfiguration.parse(CONFIG2);
         Assert.assertNotNull(configuration);
-        Assert.assertEquals(SERVER2, configuration.getServer());
+        Assert.assertEquals(SCHEME2, configuration.getScheme());
+        Assert.assertEquals(SERVER, configuration.getServer());
         Assert.assertEquals(PORT, configuration.getPort());
         Assert.assertEquals(PROJECT_NAME, configuration.getProjectName());
         Assert.assertEquals(API_KEY, configuration.getApiKey());
