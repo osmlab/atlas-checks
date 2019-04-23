@@ -107,7 +107,7 @@ public class FlagStatisticsSubCommandTest
                 "--output=" + outputFile.getAbsolutePath() };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 
-        final String expectedText = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,ND,4Check3,ND,2,2Total,10,6,16";
+        final String expectedText = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,,4Check3,,2,2Total,10,6,16";
         final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
                 .collect(Collectors.joining());
 
@@ -127,7 +127,7 @@ public class FlagStatisticsSubCommandTest
                 "--output=" + outputFile.getAbsolutePath() };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 
-        final String expectedText = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,ND,-2Check3,ND,0,0Total,-2,4,2";
+        final String expectedText = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,,-2Check3,,0,0Total,-2,4,2";
         final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
                 .collect(Collectors.joining());
 

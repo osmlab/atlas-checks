@@ -243,8 +243,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                 {
                     return String.valueOf(countryCheckCounts.get(country).get(check).getValue());
                 }
-                // If there is no value for a country us ND for No Data
-                return "ND";
+                // If there is no value for a country return an empty string
+                return "";
             }).collect(Collectors.toList()));
             // Get the total count for this check across all countries
             checkRow.add(String.valueOf((Long) countries.stream()
