@@ -127,7 +127,7 @@ public class MapRouletteConfiguration implements Serializable
     @Override
     public String toString()
     {
-        return String.format("%s:%d:%s:%s", this.server, this.port,
+        return String.format("%s://%s:%d:%s:%s", this.scheme, this.server, this.port,
                 this.projectConfiguration.getName(), this.apiKey);
     }
 }
