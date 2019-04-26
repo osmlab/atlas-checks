@@ -6,8 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
 import org.openstreetmap.atlas.exception.CoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author cuthbertm
@@ -22,7 +20,6 @@ public class MapRouletteConfiguration implements Serializable
     private static final int PORT_INDEX = 1;
     private static final int PROJECT_NAME_INDEX = 2;
     private static final int SERVER_INDEX = 0;
-    private static final Logger logger = LoggerFactory.getLogger(MapRouletteConfiguration.class);
     private static final long serialVersionUID = -1060265212173405828L;
     private static final String DELIMITER = "(?<!https|http):";
     private static final String SCHEME_DELIMITER = "://";
