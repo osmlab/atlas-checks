@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,9 +67,9 @@ public class MapRouletteConfiguration implements Serializable
                         components[API_KEY_INDEX]);
             }
         }
-        logger.debug("Map Roulette configuration not set, invalid string passed in. [{}]",
+        throw new CoreException(
+                "Map Roulette configuration not set, invalid string passed in. [{}]",
                 configuration);
-        return null;
     }
 
     public MapRouletteConfiguration(final String server, final int port, final String projectName,

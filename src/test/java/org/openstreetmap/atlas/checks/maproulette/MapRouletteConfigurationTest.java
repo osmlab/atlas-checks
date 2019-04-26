@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.maproulette;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openstreetmap.atlas.exception.CoreException;
 
 /**
  * Unit tests for MapRouletteConfiguration
@@ -50,7 +51,17 @@ public class MapRouletteConfigurationTest
     @Test
     public void testBadParse()
     {
-        final MapRouletteConfiguration configuration = MapRouletteConfiguration.parse(BAD_CONFIG);
-        Assert.assertNull(configuration);
+        try
+        {
+            final MapRouletteConfiguration configuration = MapRouletteConfiguration
+                    .parse(BAD_CONFIG);
+        }
+        catch (final Exception exception)
+        {
+            if (!(exception instanceof CoreException))
+            {
+                Assert.fail();
+            }
+        }
     }
 }
