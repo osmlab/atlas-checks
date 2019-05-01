@@ -42,7 +42,7 @@ import com.google.gson.JsonObject;
 public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String INPUT_OPTION = "input";
-    private static final String DIFFERENCE_OPTION = "difference";
+    private static final String REFERENCE_OPTION = "reference";
     private static final String OUTPUT_OPTION = "output";
     private static final String GENERATOR = "generator";
 
@@ -71,16 +71,16 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final Map<String, Map<String, Counter>> inputCounts = this.getCountryCheckCounts(
                 this.optionAndArgumentDelegate.getOptionArgument(INPUT_OPTION).get());
 
-        final Optional<String> differenceFilePath = this.optionAndArgumentDelegate
-                .getOptionArgument(DIFFERENCE_OPTION);
+        final Optional<String> referenceFilePath = this.optionAndArgumentDelegate
+                .getOptionArgument(REFERENCE_OPTION);
         try
         {
             // If a second input is supplied..
-            if (differenceFilePath.isPresent())
+            if (referenceFilePath.isPresent())
             {
                 // Read the second input
                 final Map<String, Map<String, Counter>> targetCounts = this
-                        .getCountryCheckCounts(differenceFilePath.get());
+                        .getCountryCheckCounts(referenceFilePath.get());
                 // Get the difference between the outputs and output it
                 this.writeOutput(getDifference(inputCounts, targetCounts),
                         this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION));
@@ -104,7 +104,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     @Override
     public String getCommandName()
     {
-        return "flag-stats";
+        return "flag-statistics";
     }
 
     @Override
@@ -128,9 +128,9 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         this.registerOptionWithRequiredArgument(INPUT_OPTION, 'i',
                 "A directory of folders containing atlas-checks log files.",
                 OptionOptionality.REQUIRED, INPUT_OPTION);
-        this.registerOptionWithRequiredArgument(DIFFERENCE_OPTION, 'd',
+        this.registerOptionWithRequiredArgument(REFERENCE_OPTION, 'r',
                 "A second set of log files to diff against.", OptionOptionality.OPTIONAL,
-                DIFFERENCE_OPTION);
+                REFERENCE_OPTION);
         this.registerOptionWithRequiredArgument(OUTPUT_OPTION, 'o', "A csv to output results to.",
                 OptionOptionality.OPTIONAL, OUTPUT_OPTION);
         super.registerOptionsAndArguments();
@@ -192,7 +192,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                     catch (final IOException exception)
                     {
                         this.outputDelegate.printlnWarnMessage(
-                                "File read failed with exception" + exception.getMessage());
+                                String.format("Exception thrown while reading file %s: %s",
+                                        file.getName(), exception.getMessage()));
                     }
                 });
 

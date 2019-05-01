@@ -123,7 +123,7 @@ public class FlagStatisticsSubCommandTest
         final File outputFile = File.temporary();
 
         final String[] arguments = { "--input=" + SOURCE_DIRECTORY.getAbsolutePath(),
-                "--diff=" + TARGET_DIRECTORY.getAbsolutePath(),
+                "--reference=" + TARGET_DIRECTORY.getAbsolutePath(),
                 "--output=" + outputFile.getAbsolutePath() };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 

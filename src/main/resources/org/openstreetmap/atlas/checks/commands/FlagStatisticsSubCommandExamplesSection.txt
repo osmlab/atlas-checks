@@ -1,8 +1,8 @@
 Get the counts of a set of log files:
-#$ flag-stats --input path/to/log_country_folder
+#$ flag-statistics --input path/to/log_country_folder
 Get the counts of a set of log files and write the output to a csv file:
-#$ flag-stats --input path/to/log_country_folder --output path/to/log-counts.csv
+#$ flag-statistics --input path/to/log_country_folder --output path/to/log-counts.csv
 Get the difference between two sets of log files:
-#$ flag-stats --input path/to/source_log_country_folder --difference path/to/source_log_country_folder
+#$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder
 Get the difference between two sets of log files and write the output to a csv file:
-#$ flag-stats --input path/to/source_log_country_folder --difference path/to/source_log_country_folder --output path/to/log-counts.csv
+#$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder --output path/to/log-counts.csv
