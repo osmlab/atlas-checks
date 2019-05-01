@@ -119,7 +119,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
                             {
-                                logger.error("Error thrown while adding task: ", error);
+                                logger.error("Exception thrown while adding task: ", error);
                             }
                         }
                     });
@@ -127,7 +127,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 }
                 catch (final IOException error)
                 {
-                    logger.error("Error while reading {}:", logFile, error);
+                    logger.error("Exception while reading {}:", logFile, error);
                 }
             });
         });
