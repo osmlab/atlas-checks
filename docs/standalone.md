@@ -65,9 +65,9 @@ API Key. This can be easily done by including the following parameter during you
 `gradle run -Pchecks.local.maproulette=http://maproulette.org:80:HOME_12345:APIKey`
 
 The MapRoulette configuration supplied is separated by colons and split into 4 different values which are:
-1. http://maproulette.org - The hostname for the MapRoulette server that you are connecting too
+1. http://maproulette.org - The hostname for the MapRoulette server that you are connecting to
 2. 80 - The port for the MapRoulette server that you are connecting to
-3. HOME_12345 - This would be the name of the project (any project) that you have access too and wish to store the check results in.
+3. HOME_12345 - This would be the name of the project (any project) that you have access to and wish to store the check results in.
 4. APIKey - Your personal APIKey from MapRoulette to allow access to upload checks.
 
 #### Creating Compressed Output Files
