@@ -78,9 +78,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 new TaskDeserializer(configuration.getProjectName())).create();
         final Configuration instructions = this.loadConfiguration(commandMap);
         // Get the countries filter
-        final List<String> countries = (List<String>) commandMap.get(COUNTRIES);
+        final Optional<List<String>> countries = (Optional<List<String>>) commandMap
+                .getOption(COUNTRIES);
         // Get the checks filter
-        final List<String> checks = (List<String>) commandMap.get(CHECKS);
+        final Optional<List<String>> checks = (Optional<List<String>>) commandMap.getOption(CHECKS);
 
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
@@ -103,11 +104,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         final String check = task.getChallengeName();
                         // If the country filter and country code exist, check that the country code
                         // is in the filter.
-                        if ((countries == null || (countryCode.isPresent()
-                                && countries.contains(countryCode.get())))
+                        if ((!countries.isPresent() || (countryCode.isPresent()
+                                && countries.get().contains(countryCode.get())))
                                 // If the checks filter exists, check that the challenge name is in
                                 // the checks filter.
-                                && (checks == null || checks.contains(check)))
+                                && (!checks.isPresent() || checks.get().contains(check)))
                         {
                             try
                             {
