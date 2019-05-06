@@ -79,7 +79,7 @@ public class SignPostCheck extends BaseCheck<String>
     {
         super(configuration);
 
-        this.minimumLinkLength = configurationValue(configuration, "linkLength.minimum.meters",
+        this.minimumLinkLength = configurationValue(configuration, "link.length.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
         this.sourceEdgeFilter = configurationValue(configuration, "source.filter",
                 SOURCE_EDGE_FILTER_DEFAULT, TaggableFilter::forDefinition);

@@ -229,7 +229,7 @@ public class SignPostCheckTest
     {
         this.verifier.actual(this.setup.twoWayTrunksUTurnMissingJunctionAndDestinationAtlas(),
                 new SignPostCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"SignPostCheck.linkLength.minimum.meters\":10.0}")));
+                        "{\"SignPostCheck.link.length.minimum.meters\":10.0}")));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> verify(flag, 3, true, true));
     }

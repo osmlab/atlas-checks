@@ -322,11 +322,13 @@
     }
   },
   "SignPostCheck": {
-    "linkLength.minimum.meters": 50.0,
+    "link":{
+      "length.minimum.meters": 50.0,
+      "link.branch.check": true
+    },
     "source.filter": "highway->motorway,trunk",
     "ramp.filter":"highway->motorway_link,trunk_link",
     "destination_tag.filter":"destination->*|destination:ref->*|destination:street->*|destination:backward->*|destination:forwards->*",
-    "link.branch.check": true,
     "challenge": {
       "description": "Tasks contain nodes where sign post tagging could be missing.  In particular it looks for motorway and trunk ways which have a link edge exiting them.  A task is generated if either the connecting node is missing the motorway_junction tag or the exiting segment is missing the destination tag.",
       "blurb": "Missing sign post tags",
