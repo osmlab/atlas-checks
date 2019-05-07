@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
+import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * Stand-alone MapRoulette client
  *
  * @author mgostintsev
+ * @author nachtm
  */
 public class MapRouletteClient implements Serializable
 {
@@ -72,30 +74,36 @@ public class MapRouletteClient implements Serializable
      */
     public MapRouletteClient(final MapRouletteConfiguration configuration)
     {
+        this(configuration, new MapRouletteConnection(configuration));
+    }
+
+    MapRouletteClient(final MapRouletteConfiguration configuration, final TaskLoader taskLoader)
+    {
         this.batch = new ConcurrentHashMap<>();
         this.projects = new ConcurrentHashMap<>();
         this.challenges = new ConcurrentHashMap<>();
         this.configuration = configuration;
-        this.connection = new MapRouletteConnection(configuration);
+        this.connection = taskLoader;
     }
 
     public synchronized void addTask(final Challenge challenge, final Task task)
     {
-        String projectName;
+        ProjectConfiguration projectConfiguration;
         if (this.configuration != null)
         {
-            projectName = this.configuration.getProjectName();
-            if (StringUtils.isEmpty(projectName) && StringUtils.isNotEmpty(task.getProjectName()))
+            projectConfiguration = this.configuration.getProjectConfiguration();
+            if (StringUtils.isEmpty(projectConfiguration.getName())
+                    && StringUtils.isNotEmpty(task.getProjectName()))
             {
-                projectName = task.getProjectName();
+                projectConfiguration = new ProjectConfiguration(task.getProjectName());
             }
         }
         else
         {
-            projectName = task.getProjectName();
+            projectConfiguration = new ProjectConfiguration(task.getProjectName());
         }
 
-        this.addTask(projectName, challenge, task);
+        this.addTask(projectConfiguration, challenge, task);
     }
 
     /**
@@ -111,9 +119,15 @@ public class MapRouletteClient implements Serializable
     public synchronized void addTask(final String projectName, final Challenge challenge,
             final Task task)
     {
-        task.setProjectName(projectName);
+        this.addTask(new ProjectConfiguration(projectName), challenge, task);
+    }
+
+    public synchronized void addTask(final ProjectConfiguration projectConfiguration,
+            final Challenge challenge, final Task task)
+    {
+        task.setProjectName(projectConfiguration.getName());
         task.setChallengeName(challenge.getName());
-        updateChallengeTaskList(challenge, task);
+        updateChallengeTaskList(challenge, task, projectConfiguration);
     }
 
     public int getCurrentBatchSize()
@@ -154,10 +168,12 @@ public class MapRouletteClient implements Serializable
         return Optional.of(challenge);
     }
 
-    private Project createProject(final String projectName)
+    private Project createProject(final ProjectConfiguration projectConfiguration)
             throws UnsupportedEncodingException, URISyntaxException
     {
-        final Project project = this.projects.getOrDefault(projectName, new Project(projectName));
+        final String projectName = projectConfiguration.getName();
+        final Project project = this.projects.getOrDefault(projectName,
+                projectConfiguration.buildProject());
         if (project.getId() == -1)
         {
             project.setId(this.connection.createProject(project));
@@ -166,8 +182,8 @@ public class MapRouletteClient implements Serializable
         return project;
     }
 
-    private void updateChallengeTaskList(final Challenge challenge, final Task task)
-            throws CoreException
+    private void updateChallengeTaskList(final Challenge challenge, final Task task,
+            final ProjectConfiguration projectConfiguration) throws CoreException
     {
         final Tuple<String, String> taskKey = new Tuple<>(task.getProjectName(),
                 challenge.getName());
@@ -192,7 +208,7 @@ public class MapRouletteClient implements Serializable
             this.batch.put(taskKey, challengeTaskList);
             try
             {
-                this.createChallenge(this.createProject(task.getProjectName()), challenge);
+                this.createChallenge(this.createProject(projectConfiguration), challenge);
             }
             catch (final Exception e)
             {
