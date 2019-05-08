@@ -1,20 +1,19 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.directory.api.util.Strings;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
-import org.openstreetmap.atlas.tags.DestinationTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -22,41 +21,36 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * This check is used to help identify segments that are missing the proper tagging for sign posts.
- * The basic logic of the check is to first find all edges with given filter with on and off ramps.
- * Once ramps are identified and filtered, a flag is thrown if one or both of the following
+ * The basic logic of the check is to first find all Edges that are the start of an on or off ramp.
+ * Once Edges are identified and filtered, a flag is thrown if one or both of the following
  * conditions are met.
  * <p>
  * 1) The starting node for an off ramp is missing the highway=motorway_junction tag<br>
  * 2) The ramp road is missing the destination tag<br>
  * <p>
  * If either of these cases is true and ramp is over a certain length then a flag is created.
+ * Optionally, branching Edges of on and off ramps can be checked for destination tags. This is
+ * configurable to accommodate varying standards in different countries.
  *
  * @author ericgodwin
  * @author mkalender
+ * @author bbreithaupt
  */
 public class SignPostCheck extends BaseCheck<String>
 {
     private static final long serialVersionUID = 8042255121118115024L;
 
     // Instruction
-    private static final String NODE_INSTRUCTION = "Junction node {0,number,#} is missing the following tags: {1}.";
-    private static final String EDGE_INSTRUCTION = "Way {0,number,#} ({1}) is missing the following tags: {2}.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(NODE_INSTRUCTION,
-            EDGE_INSTRUCTION);
-    private static final String OFF_RAMP_KEY = "off-ramp";
-    private static final String ON_RAMP_KEY = "on-ramp";
+    private static final String JUNCTION_NODE_INSTRUCTION = "Junction node {0,number,#} is missing a highway=motorway_junction tag.";
+    private static final String DESTINATION_TAG_INSTRUCTION = "Way {0,number,#} is missing a destination tag.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList(JUNCTION_NODE_INSTRUCTION, DESTINATION_TAG_INSTRUCTION);
 
     // Default values for configurable settings
     private static final double DISTANCE_MINIMUM_METERS_DEFAULT = 50;
     private static final String SOURCE_EDGE_FILTER_DEFAULT = "highway->motorway,trunk";
     private static final String RAMP_FILTER_DEFAULT = "highway->motorway_link,trunk_link";
-    private static final String DESTINATION_TAG_FILTER_DEFAULT = "destination->*|destination:ref->*|destination:street->*";
-    private static final String ARTERIAL_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
-
-    // Maximum number of hops while collecting ramp edges
-    private static final long MAX_EDGE_COUNT_FOR_RAMP_DEFAULT = 5;
-
-    private final long maxEdgeCountForRamp;
+    private static final String DESTINATION_TAG_FILTER_DEFAULT = "destination->*|destination:ref->*|destination:street->*|destination:backward->*|destination:forwards->*";
 
     // The minimum link length to examine.
     private final Distance minimumLinkLength;
@@ -70,11 +64,8 @@ public class SignPostCheck extends BaseCheck<String>
     // A filter for the variations of the destination tag
     private final TaggableFilter destinationTagFilter;
 
-    // A tag to differentiate ramps from roads with the same classification
-    private final String rampDifferentiatorTag;
-
-    // The minimum highway tag for an arterial road
-    private final HighwayTag arterialMinimum;
+    // Whether to check link branches for destination tags.
+    private final boolean checkLinkBranches;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -88,21 +79,15 @@ public class SignPostCheck extends BaseCheck<String>
     {
         super(configuration);
 
-        this.maxEdgeCountForRamp = configurationValue(configuration, "ramp.max.edges",
-                MAX_EDGE_COUNT_FOR_RAMP_DEFAULT);
-        this.minimumLinkLength = configurationValue(configuration, "linkLength.minimum.meters",
+        this.minimumLinkLength = configurationValue(configuration, "link.length.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
         this.sourceEdgeFilter = configurationValue(configuration, "source.filter",
-                SOURCE_EDGE_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value));
+                SOURCE_EDGE_FILTER_DEFAULT, TaggableFilter::forDefinition);
         this.rampEdgeFilter = configurationValue(configuration, "ramp.filter", RAMP_FILTER_DEFAULT,
-                value -> TaggableFilter.forDefinition(value));
+                TaggableFilter::forDefinition);
         this.destinationTagFilter = configurationValue(configuration, "destination_tag.filter",
-                DESTINATION_TAG_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value));
-        this.rampDifferentiatorTag = configurationValue(configuration, "ramp.differentiator.tag",
-                null);
-        this.arterialMinimum = Enum.valueOf(HighwayTag.class,
-                configurationValue(configuration, "arterial.minimum", ARTERIAL_MINIMUM_DEFAULT)
-                        .toUpperCase());
+                DESTINATION_TAG_FILTER_DEFAULT, TaggableFilter::forDefinition);
+        this.checkLinkBranches = configurationValue(configuration, "link.branch.check", true);
     }
 
     /**
@@ -115,7 +100,13 @@ public class SignPostCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object) && this.sourceEdgeFilter.test(object);
+        // Must be a master Edge, and must not have been flagged already
+        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
+                && !this.isFlagged(String.valueOf(object.getOsmIdentifier()))
+                // Must be a link defined in the rampEdgeFilter
+                && this.rampEdgeFilter.test(object) && ((Edge) object).highwayTag().isLink()
+                // Must be longer than the configurable limit
+                && ((Edge) object).length().isGreaterThan(this.minimumLinkLength);
     }
 
     /**
@@ -130,57 +121,61 @@ public class SignPostCheck extends BaseCheck<String>
     {
         final Edge edge = (Edge) object;
         final HighwayTag highwayTag = edge.highwayTag();
-        final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
+        final CheckFlag flag = new CheckFlag(String.valueOf(object.getOsmIdentifier()));
+        final Set<Node> junctionNodes = new HashSet<>();
+        boolean checkDestination = false;
 
-        // First find off ramps
-        edge.end().outEdges().stream()
-                .filter(connectedEdge -> isPossiblyRamp(edge, highwayTag, connectedEdge))
-                .forEach(outEdge ->
-                {
-                    // Check to see if start node is missing junction tag
-                    final Node start = outEdge.start();
-                    if (!Validators.isOfType(start, HighwayTag.class, HighwayTag.MOTORWAY_JUNCTION))
-                    {
-                        flag.addInstruction(this.getLocalizedInstruction(0,
-                                start.getOsmIdentifier(), String.format("%s=%s", HighwayTag.KEY,
-                                        HighwayTag.MOTORWAY_JUNCTION.getTagValue())));
-                        flag.addObject(start);
-                    }
+        // Get in edges from edge and its reverse, if it has one
+        final Set<Edge> inEdges = new HashSet<>(edge.inEdges());
+        edge.reversed().ifPresent(reverseEdge -> inEdges.addAll(reverseEdge.inEdges()));
 
-                    // Check if edge is missing destination tag
-                    if (!destinationTagFilter.test(outEdge))
-                    {
-                        flag.addInstruction(this.getLocalizedInstruction(1,
-                                outEdge.getOsmIdentifier(), OFF_RAMP_KEY, DestinationTag.KEY));
-                        flag.addObject(outEdge);
-                    }
-                });
+        // Check all in edges to find all unmarked junction nodes, and check if a destination tag is
+        // required
+        for (final Edge inEdge : inEdges)
+        {
+            // Check if inEdge is a source edge. If so this is an off ramp and needs a junction node
+            // and destination tag.
+            if (this.sourceEdgeFilter.test(inEdge))
+            {
+                checkDestination = true;
+                junctionNodes.add(inEdge.end());
+            }
+            // Check if inEdge is not a link. If so it is an on ramp and needs a destination tag.
+            else if (!inEdge.highwayTag().equals(highwayTag))
+            {
+                checkDestination = true;
+            }
+            // If currently configured to check branches, check if inEdge is a stem. If so this is a
+            // branch
+            else if (this.checkLinkBranches && this.isLinkStem(inEdge))
+            {
+                checkDestination = true;
+            }
+        }
 
-        // Then repeat the work for on ramps
-        edge.start().inEdges().stream()
-                .filter(connectedEdge -> isPossiblyRamp(edge, highwayTag, connectedEdge))
-                .forEach(inEdge ->
-                {
-                    // Find the source of in-ramp
-                    final List<Edge> rampEdgeList = findFirstRampEdge(inEdge,
-                            this.maxEdgeCountForRamp);
+        // Check to see if nodes are missing junction tags
+        junctionNodes.forEach(node ->
+        {
+            if (!Validators.isOfType(node, HighwayTag.class, HighwayTag.MOTORWAY_JUNCTION))
+            {
+                flag.addInstruction(this.getLocalizedInstruction(0, node.getOsmIdentifier()));
+                flag.addObject(node);
+            }
+        });
 
-                    for (final Edge rampEdge : rampEdgeList)
-                    {
-
-                        // Check if edge is missing destination tag
-                        if (!destinationTagFilter.test(rampEdge))
-                        {
-                            flag.addInstruction(this.getLocalizedInstruction(1,
-                                    rampEdge.getOsmIdentifier(), ON_RAMP_KEY, DestinationTag.KEY));
-                            flag.addObject(rampEdge);
-                        }
-                    }
-                });
+        // Check to see if the edge is missing a destination tag or relation
+        if (checkDestination && !this.destinationTagFilter.test(edge)
+                && edge.relations().stream().noneMatch(relation -> Validators.isOfType(relation,
+                        RelationTypeTag.class, RelationTypeTag.DESTINATION_SIGN)))
+        {
+            flag.addInstruction(this.getLocalizedInstruction(1, edge.getOsmIdentifier()));
+            flag.addObject(edge);
+        }
 
         // Return the flag if it has any flagged objects in it
         if (!flag.getFlaggedObjects().isEmpty())
         {
+            this.markAsFlagged(String.valueOf(object.getOsmIdentifier()));
             return Optional.of(flag);
         }
 
@@ -194,94 +189,18 @@ public class SignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * Given a final {@link Edge}, hops back and finds the first edge that was forming the ramp.
+     * Checks if an {@link Edge} has 2 or more out Edges of the same highway classification as
+     * itself, excluding its reverse edge.
      *
-     * @param finalEdge
-     *            {@link Edge} that is the last/final piece of the ramp
-     * @return {@link Edge} that possibly is the first {@link Edge} forming the ramp
+     * @param edge
+     *            {@link Edge} to check
+     * @return true if the road branches from this {@link Edge}, with the same highway class
      */
-    private List<Edge> findFirstRampEdge(final Edge finalEdge, final long maxEdgeCount)
+    private boolean isLinkStem(final Edge edge)
     {
-        // Go back and collect edges
-        final List<Edge> endEdges = new ArrayList<>();
-        if (maxEdgeCount > 0)
-        {
-            // Collect in edges and make sure the list is not empty
-            final Set<Edge> inEdges = finalEdge.inEdges();
-            if (!inEdges.isEmpty())
-            {
-                // Check each inEdge
-                for (final Edge nextEdge : inEdges)
-                {
-                    // See if it is connected to a source edge
-                    if (this.sourceEdgeFilter.test(nextEdge))
-                    {
-                        endEdges.clear();
-                        return endEdges;
-                    }
-                    // See if it is an arterial
-                    if (!this.rampEdgeFilter.test(nextEdge) && HighwayTag.highwayTag(nextEdge)
-                            .orElse(HighwayTag.NO).isMoreImportantThanOrEqualTo(arterialMinimum))
-                    {
-                        endEdges.clear();
-                        endEdges.add(finalEdge);
-                        return endEdges;
-                    }
-                    // Recurse through inEdges if this edge is not the other side of a bidirectional
-                    // way
-                    else if (nextEdge.highwayTag().isIdenticalClassification(finalEdge.highwayTag())
-                            && finalEdge.getMasterEdgeIdentifier() != nextEdge
-                                    .getMasterEdgeIdentifier())
-                    {
-                        endEdges.addAll(findFirstRampEdge(nextEdge, maxEdgeCount - 1));
-                    }
-                }
-                return endEdges;
-            }
-        }
-        endEdges.clear();
-        endEdges.add(finalEdge);
-        return endEdges;
-    }
-
-    /**
-     * Returns if given a connected {@link Edge} is possibly a ramp entering or leaving source
-     * {@link Edge}.
-     *
-     * @param sourceEdge
-     *            Source {@link Edge}
-     * @param sourceHighwayTag
-     *            {@link HighwayTag} of the source {@link Edge}
-     * @param connectedEdge
-     *            Connected {@link Edge} to source {@link Edge}
-     * @return true if connected {@link Edge} is a ramp
-     */
-    private boolean isPossiblyRamp(final Edge sourceEdge, final HighwayTag sourceHighwayTag,
-            final Edge connectedEdge)
-    {
-        // Ignore if edge is failing to pass ramp filter and also ignore if it is short
-        if (!this.rampEdgeFilter.test(connectedEdge)
-                || !connectedEdge.length().isGreaterThan(this.minimumLinkLength))
-        {
-            return false;
-        }
-
-        // Different classification is a good indication for a ramp
-        if (!sourceHighwayTag.isIdenticalClassification(connectedEdge.highwayTag()))
-        {
-            return true;
-        }
-
-        // If ramp differentiator tag is supplied, then use it to differentiate same classification
-        // edges
-        if (this.rampDifferentiatorTag == null)
-        {
-            return true;
-        }
-
-        // Look for certain tag differences if edges have same highway tag
-        final String sourceTag = sourceEdge.tag(this.rampDifferentiatorTag);
-        final String rampTag = connectedEdge.tag(this.rampDifferentiatorTag);
-        return !(sourceTag == null && rampTag == null || Strings.equals(sourceTag, rampTag));
+        return edge.outEdges().stream()
+                .filter(outEdge -> outEdge.highwayTag().equals(edge.highwayTag())
+                        && outEdge.getIdentifier() != edge.getIdentifier())
+                .count() >= 2;
     }
 }
