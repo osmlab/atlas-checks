@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import static org.openstreetmap.atlas.checks.constants.CommonConstants.COMMA;
+import static org.openstreetmap.atlas.checks.constants.CommonConstants.EMPTY_STRING;
 import static org.openstreetmap.atlas.checks.constants.CommonConstants.LINE_SEPARATOR;
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
 
@@ -11,14 +12,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
@@ -44,7 +48,9 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private static final String INPUT_OPTION = "input";
     private static final String REFERENCE_OPTION = "reference";
     private static final String OUTPUT_OPTION = "output";
+    private static final String OUTPUT_TYPES_OPTION = "output-types";
     private static final String GENERATOR = "generator";
+    private static final String CHECK = "Check";
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
 
@@ -71,25 +77,66 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final Map<String, Map<String, Counter>> inputCounts = this.getCountryCheckCounts(
                 this.optionAndArgumentDelegate.getOptionArgument(INPUT_OPTION).get());
 
-        final Optional<String> referenceFilePath = this.optionAndArgumentDelegate
-                .getOptionArgument(REFERENCE_OPTION);
+        // Get the output folder path
+        final String outputFolder = this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION)
+                .get();
+        // Get the output types
+        final List<String> outputTypes = Arrays
+                .asList(StringUtils.split(this.optionAndArgumentDelegate
+                        .getOptionArgument(OUTPUT_TYPES_OPTION).orElse("full"), ','));
+
         try
         {
-            // If a second input is supplied..
+            // Write the counts for the input logs is requested
+            if (outputTypes.contains("full"))
+            {
+                this.writeCSV(outputFolder + "/input.csv", generateFullOutput(inputCounts));
+            }
+            // Generate the totals output
+            List<List<String>> totalsOutput = generateTotalsOutputStage1(inputCounts);
+            // Generate the counts output if requested
+            List<List<String>> countsOutput = generateCountsOutputStage1(inputCounts);
+
+            // Get the optional reference input
+            final Optional<String> referenceFilePath = this.optionAndArgumentDelegate
+                    .getOptionArgument(REFERENCE_OPTION);
+            // If a second input is supplied...
             if (referenceFilePath.isPresent())
             {
                 // Read the second input
-                final Map<String, Map<String, Counter>> targetCounts = this
+                final Map<String, Map<String, Counter>> referenceCounts = this
                         .getCountryCheckCounts(referenceFilePath.get());
-                // Get the difference between the outputs and output it
-                this.writeOutput(getDifference(inputCounts, targetCounts),
-                        this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION));
+
+                // Get the difference
+                final Map<String, Map<String, Counter>> differenceCounts = this
+                        .getDifference(inputCounts, referenceCounts);
+
+                // Write outputs for the reference and difference if requested
+                if (outputTypes.contains("full"))
+                {
+                    this.writeCSV(outputFolder + "/reference.csv",
+                            generateFullOutput(referenceCounts));
+                    this.writeCSV(outputFolder + "/difference.csv",
+                            generateFullOutput(differenceCounts));
+                }
+
+                // Add the reference and difference metrics to the totals output
+                totalsOutput = generateTotalsOutputStage2(totalsOutput, referenceCounts,
+                        differenceCounts);
+                // Add the reference and difference metrics to the counts output
+                countsOutput = generateCountsOutputStage2(countsOutput, referenceCounts,
+                        differenceCounts);
             }
-            else
+
+            // Write the totals output if requested
+            if (outputTypes.contains("totals"))
             {
-                // Else, just output the counts from the main input
-                this.writeOutput(inputCounts,
-                        this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION));
+                this.writeCSV(outputFolder + "/totals.csv", totalsOutput);
+            }
+            // Write the counts output if requested
+            if (outputTypes.contains("counts"))
+            {
+                this.writeCSV(outputFolder + "/counts.csv", countsOutput);
             }
         }
         catch (final IOException exception)
@@ -131,8 +178,11 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         this.registerOptionWithRequiredArgument(REFERENCE_OPTION, 'r',
                 "A second set of log files to diff against.", OptionOptionality.OPTIONAL,
                 REFERENCE_OPTION);
-        this.registerOptionWithRequiredArgument(OUTPUT_OPTION, 'o', "A csv to output results to.",
-                OptionOptionality.OPTIONAL, OUTPUT_OPTION);
+        this.registerOptionWithRequiredArgument(OUTPUT_OPTION, 'o',
+                "A folder to output results to.", OptionOptionality.REQUIRED, OUTPUT_OPTION);
+        this.registerOptionWithRequiredArgument(OUTPUT_TYPES_OPTION, 't',
+                "A comma separated list of outputs to generate: full,totals,counts",
+                OptionOptionality.OPTIONAL, OUTPUT_TYPES_OPTION);
         super.registerOptionsAndArguments();
     }
 
@@ -146,11 +196,11 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      */
     private Map<String, Map<String, Counter>> getCountryCheckCounts(final String path)
     {
-        final Map<String, Map<String, Counter>> countryCheckMap = new HashMap<>();
+        final Map<String, Map<String, Counter>> countryCheckMap = new ConcurrentHashMap<>();
         logger.info("Reading files from: {}", path);
 
         // Check all files in the folder and all sub-folders
-        new File(path).listFilesRecursively().stream()
+        new File(path).listFilesRecursively().parallelStream()
                 // Filter the files to only include log files, either gzipped or uncompressed
                 .filter(file -> FilenameUtils
                         .getExtension(file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
@@ -162,7 +212,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                     // Get the parent folder name and assume it is a county code
                     final String country = FilenameUtils.getName(file.getParent());
                     // Add the country to the map
-                    countryCheckMap.putIfAbsent(country, new HashMap<>());
+                    countryCheckMap.putIfAbsent(country, new ConcurrentHashMap<>());
 
                     // Read the log file
                     try (InputStreamReader inputStreamReader = file.isGzipped()
@@ -198,92 +248,6 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                 });
 
         return countryCheckMap;
-    }
-
-    /**
-     * Converts a map of flag counts per check per country into a printable csv table, and writes it
-     * to standard out. Optionally also prints the table to a supplied file path.
-     *
-     * @param countryCheckCounts
-     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
-     *            {@link String}
-     * @param outputPath
-     *            an {@link Optional} {@link String} file path
-     * @throws IOException
-     */
-    private void writeOutput(final Map<String, Map<String, Counter>> countryCheckCounts,
-            final Optional<String> outputPath) throws IOException
-    {
-        logger.info("Generating output");
-        // Get a list of country names in alphabetical order
-        final List<String> countries = new ArrayList<>(countryCheckCounts.keySet());
-        java.util.Collections.sort(countries);
-        // Get a list of check names in alphabetical order
-        final List<String> checks = countryCheckCounts.entrySet().stream()
-                .flatMap(entry -> entry.getValue().keySet().stream()).distinct().sorted()
-                .collect(Collectors.toList());
-        // A list to hold all the output strings as a table of lines
-        final List<List<String>> outputLines = new ArrayList<>();
-
-        // Generate the header row with all country names
-        final List<String> headers = new ArrayList<>();
-        headers.add("Check");
-        headers.addAll(countries);
-        headers.add("Total");
-        outputLines.add(headers);
-
-        // Generate a row for each check
-        checks.forEach(check ->
-        {
-            final List<String> checkRow = new ArrayList<>();
-            checkRow.add(check);
-            // Get the value of the check for each country
-            checkRow.addAll(countries.stream().map(country ->
-            {
-                if (countryCheckCounts.get(country).containsKey(check))
-                {
-                    return String.valueOf(countryCheckCounts.get(country).get(check).getValue());
-                }
-                // If there is no value for a country return an empty string
-                return "";
-            }).collect(Collectors.toList()));
-            // Get the total count for this check across all countries
-            checkRow.add(String.valueOf((Long) countries.stream()
-                    .filter(country -> countryCheckCounts.get(country).containsKey(check))
-                    .mapToLong(country -> countryCheckCounts.get(country).get(check).getValue())
-                    .sum()));
-            outputLines.add(checkRow);
-        });
-
-        // Get totals for all the countries
-        final List<String> totals = new ArrayList<>();
-        totals.add("Total");
-        // Calculate the totals and store them
-        final List<Long> countryCounts = countries.stream()
-                .map(country -> countryCheckCounts.get(country).entrySet().stream()
-                        .mapToLong(entry -> entry.getValue().getValue()).sum())
-                .collect(Collectors.toList());
-        // Convert the totals to strings
-        totals.addAll(countryCounts.stream().map(String::valueOf).collect(Collectors.toList()));
-        // Sum the totals to get a total number of flags for all countries and checks
-        totals.add(String.valueOf(countryCounts.stream().mapToLong(Long::longValue).sum()));
-        outputLines.add(totals);
-
-        // Generate a string from the list of lines
-        final String outputString = outputLines.stream().map(line -> String.join(COMMA, line))
-                .collect(Collectors.joining(LINE_SEPARATOR));
-
-        // If an output path is supplied write the table to the file
-        if (outputPath.isPresent())
-        {
-            try (FileWriter outputWriter = new FileWriter(new File(outputPath.get()).getFile()))
-            {
-                outputWriter.write(outputString);
-            }
-        }
-
-        // Print the table to standard out
-        this.outputDelegate.printStdout(LINE_SEPARATOR + outputString + LINE_SEPARATOR);
     }
 
     /**
@@ -328,4 +292,328 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 
         return difference;
     }
+
+    /**
+     * Converts a map of flag counts per check per country into a table structure with checks as
+     * rows and countries as columns, including row and column totals. All values are converted to
+     * strings for easy conversion to a printable csv string.
+     *
+     * @param countryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @return a 2D {@link List} of {@link String}s
+     */
+    private List<List<String>> generateFullOutput(
+            final Map<String, Map<String, Counter>> countryCheckCounts)
+    {
+        // Get a list of country names in alphabetical order
+        final List<String> countries = new ArrayList<>(countryCheckCounts.keySet());
+        java.util.Collections.sort(countries);
+        // Get a list of check names in alphabetical order
+        final List<String> checks = countryCheckCounts.entrySet().stream()
+                .flatMap(entry -> entry.getValue().keySet().stream()).distinct().sorted()
+                .collect(Collectors.toList());
+        // A list to hold all the output strings as a table of lines
+        final List<List<String>> outputLines = new ArrayList<>();
+
+        // Generate the header row with all country names
+        final List<String> headers = new ArrayList<>();
+        headers.add(CHECK);
+        headers.addAll(countries);
+        headers.add("Total");
+        outputLines.add(headers);
+
+        // Generate a row for each check
+        checks.forEach(check ->
+        {
+            final List<String> checkRow = new ArrayList<>();
+            checkRow.add(check);
+            // Get the value of the check for each country
+            checkRow.addAll(countries.stream().map(country ->
+            {
+                final Optional<Long> count = getCountryCheckCount(countryCheckCounts, country,
+                        check);
+
+                if (count.isPresent())
+                {
+                    return String.valueOf(count.get());
+                }
+                // If there is no value for a country return an empty string
+                return EMPTY_STRING;
+            }).collect(Collectors.toList()));
+            // Get the total count for this check across all countries
+            checkRow.add(String.valueOf(getCheckTotal(countryCheckCounts, check)));
+            outputLines.add(checkRow);
+        });
+
+        // Get totals for all the countries
+        final List<String> totals = new ArrayList<>();
+        totals.add("Total");
+        // Calculate the totals and store them
+        final List<Long> countryCounts = countries.stream()
+                .map(country -> countryCheckCounts.get(country).entrySet().stream()
+                        .mapToLong(entry -> entry.getValue().getValue()).sum())
+                .collect(Collectors.toList());
+        // Convert the totals to strings
+        totals.addAll(countryCounts.stream().map(String::valueOf).collect(Collectors.toList()));
+        // Sum the totals to get a total number of flags for all countries and checks
+        totals.add(String.valueOf(countryCounts.stream().mapToLong(Long::longValue).sum()));
+        outputLines.add(totals);
+
+        return outputLines;
+    }
+
+    /**
+     * Converts a map of flag counts per check per country into a table structure with checks as the
+     * first column and total check counts as the second. All values are converted to strings for
+     * easy conversion to a printable csv string.
+     *
+     * @param countryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @return a 2D {@link List} of {@link String}s
+     */
+    private List<List<String>> generateTotalsOutputStage1(
+            final Map<String, Map<String, Counter>> countryCheckCounts)
+    {
+        // Get a list of check names in alphabetical order
+        final List<String> checks = countryCheckCounts.entrySet().stream()
+                .flatMap(entry -> entry.getValue().keySet().stream()).distinct().sorted()
+                .collect(Collectors.toList());
+        // A list to hold all the output strings as a table of lines
+        final List<List<String>> outputLines = new ArrayList<>();
+
+        // Generate the header row
+        final List<String> headers = new ArrayList<>();
+        headers.add(CHECK);
+        headers.add("Input");
+        outputLines.add(headers);
+
+        // For each check...
+        checks.forEach(check ->
+        {
+            final List<String> checkRow = new ArrayList<>();
+            // Add the check name
+            checkRow.add(check);
+            // Add the total count
+            checkRow.add(String.valueOf(getCheckTotal(countryCheckCounts, check)));
+            outputLines.add(checkRow);
+        });
+
+        return outputLines;
+    }
+
+    /**
+     * Appends the totals of two maps of flag counts per check per country to the output of
+     * {@link #generateTotalsOutputStage1(Map)}.
+     *
+     * @param stage1Output
+     *            a 2D {@link List} of {@link String}s representing a table of checks names and
+     *            total counts
+     * @param referenceCountryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @param diffCountryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @return a 2D {@link List} of {@link String}s
+     */
+    private List<List<String>> generateTotalsOutputStage2(final List<List<String>> stage1Output,
+            final Map<String, Map<String, Counter>> referenceCountryCheckCounts,
+            final Map<String, Map<String, Counter>> diffCountryCheckCounts)
+    {
+        // Copy the output lines list
+        final List<List<String>> outputLines = new ArrayList<>(stage1Output);
+
+        // Add new headers
+        outputLines.get(0).add("Reference");
+        outputLines.get(0).add("Difference");
+
+        // For each row...
+        for (int index = 1; index < outputLines.size(); index++)
+        {
+            // Get the check name from the row
+            final String check = outputLines.get(index).get(0);
+            // Add the reference total
+            outputLines.get(index)
+                    .add(String.valueOf(getCheckTotal(referenceCountryCheckCounts, check)));
+            // Add the difference total
+            outputLines.get(index)
+                    .add(String.valueOf(getCheckTotal(diffCountryCheckCounts, check)));
+        }
+
+        return outputLines;
+    }
+
+    /**
+     * Converts a map of flag counts per check per country into a table structure with countries as
+     * the first column check names as the second, and counts as the third column. All values are
+     * converted to strings for easy conversion to a printable csv string.
+     *
+     * @param countryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @return a 2D {@link List} of {@link String}s
+     */
+    private List<List<String>> generateCountsOutputStage1(
+            final Map<String, Map<String, Counter>> countryCheckCounts)
+    {
+        // Get a list of country names in alphabetical order
+        final List<String> countries = new ArrayList<>(countryCheckCounts.keySet());
+        java.util.Collections.sort(countries);
+        // Get a list of check names in alphabetical order
+        final List<String> checks = countryCheckCounts.entrySet().stream()
+                .flatMap(entry -> entry.getValue().keySet().stream()).distinct().sorted()
+                .collect(Collectors.toList());
+        // A list to hold all the output strings as a table of lines
+        final List<List<String>> outputLines = new ArrayList<>();
+
+        // Generate the header row
+        final List<String> headers = new ArrayList<>();
+        headers.add("Country");
+        headers.add(CHECK);
+        headers.add("Input");
+        outputLines.add(headers);
+
+        // For each country and check...
+        countries.forEach(country -> checks.forEach(check ->
+        {
+            final List<String> countryCheckRow = new ArrayList<>();
+            // Add the county code
+            countryCheckRow.add(country);
+            // Add the check name
+            countryCheckRow.add(check);
+
+            // Get the optional country check count
+            final Optional<Long> count = getCountryCheckCount(countryCheckCounts, country, check);
+            if (count.isPresent())
+            {
+                // If present add the value
+                countryCheckRow.add(String.valueOf(count.get()));
+            }
+            else
+            {
+                // Else add an empty string
+                countryCheckRow.add(EMPTY_STRING);
+            }
+
+            outputLines.add(countryCheckRow);
+        }));
+
+        return outputLines;
+    }
+
+    /**
+     * Appends the counts of two maps of flag counts per check per country to the output of
+     * {@link #generateCountsOutputStage1(Map)}.
+     *
+     * @param stage1Output
+     *            a 2D {@link List} of {@link String}s representing a table wher each row is a
+     *            country, check, and associated count
+     * @param referenceCountryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @param diffCountryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @return a 2D {@link List} of {@link String}s
+     */
+    private List<List<String>> generateCountsOutputStage2(final List<List<String>> stage1Output,
+            final Map<String, Map<String, Counter>> referenceCountryCheckCounts,
+            final Map<String, Map<String, Counter>> diffCountryCheckCounts)
+    {
+        // Copy the output lines list
+        final List<List<String>> outputLines = new ArrayList<>(stage1Output);
+
+        // Add new headers
+        outputLines.get(0).add("Reference");
+        outputLines.get(0).add("Difference");
+
+        // For each row...
+        for (int index = 1; index < outputLines.size(); index++)
+        {
+            // Get the reference value for the country and check
+            final Optional<Long> referenceCount = getCountryCheckCount(referenceCountryCheckCounts,
+                    stage1Output.get(index).get(0), stage1Output.get(index).get(1));
+            // Append the value or an empty string
+            stage1Output.get(index)
+                    .add(referenceCount.isPresent() ? String.valueOf(referenceCount.get())
+                            : EMPTY_STRING);
+
+            // Get the difference value for the country and check
+            final Optional<Long> differenceCount = getCountryCheckCount(diffCountryCheckCounts,
+                    stage1Output.get(index).get(0), stage1Output.get(index).get(1));
+            // Append the value or an empty string
+            stage1Output.get(index)
+                    .add(differenceCount.isPresent() ? String.valueOf(differenceCount.get())
+                            : EMPTY_STRING);
+        }
+
+        return outputLines;
+    }
+
+    /**
+     * Given a map of flag counts per check per country, get the count value for a specific country
+     * and check.
+     *
+     * @param countryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @param country
+     *            {@link String} country code
+     * @param check
+     *            {@link String} check name
+     * @return and {@link Optional} of the count as a {@link long}
+     */
+    private Optional<Long> getCountryCheckCount(
+            final Map<String, Map<String, Counter>> countryCheckCounts, final String country,
+            final String check)
+    {
+        if (countryCheckCounts.containsKey(country)
+                && countryCheckCounts.get(country).containsKey(check))
+        {
+            return Optional.of(countryCheckCounts.get(country).get(check).getValue());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Given a map of flag counts per check per country, get the total count for a single check.
+     *
+     * @param countryCheckCounts
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country
+     *            {@link String}
+     * @param check
+     *            {@link String} check name
+     * @return the count as a {@link long}
+     */
+    private long getCheckTotal(final Map<String, Map<String, Counter>> countryCheckCounts,
+            final String check)
+    {
+        return countryCheckCounts.keySet().stream().mapToLong(country -> countryCheckCounts
+                .get(country).getOrDefault(check, new Counter()).getValue()).sum();
+    }
+
+    /**
+     * Convert a 2D {@link List} of {@link String}s into a csv {@link String}, and write to a file.
+     *
+     * @param outputPath
+     *            {@link String} path to write the csv to
+     * @param table
+     *            a 2D {@link List} of {@link String}s
+     * @throws IOException
+     *             when unable to write output
+     */
+    private void writeCSV(final String outputPath, final List<List<String>> table)
+            throws IOException
+    {
+        final String outputString = table.stream().map(line -> String.join(COMMA, line))
+                .collect(Collectors.joining(LINE_SEPARATOR));
+
+        try (FileWriter outputWriter = new FileWriter(new File(outputPath).getFile()))
+        {
+            outputWriter.write(outputString);
+        }
+    }
+
 }

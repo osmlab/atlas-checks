@@ -101,38 +101,75 @@ public class FlagStatisticsSubCommandTest
     public void getCountsTest() throws IOException
     {
         this.populateTestData();
-        final File outputFile = File.temporary();
+        final File outputFolder = File.temporaryFolder();
 
         final String[] arguments = { "--input=" + SOURCE_DIRECTORY.getAbsolutePath(),
-                "--output=" + outputFile.getAbsolutePath() };
+                "--output=" + outputFolder.getAbsolutePath(), "--output-types=full,totals,counts" };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 
-        final String expectedText = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,,4Check3,,2,2Total,10,6,16";
-        final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
-                .collect(Collectors.joining());
+        final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,,4Check3,,2,2Total,10,6,16";
+        final String actualTextInput = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/input.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextInput, actualTextInput);
 
-        Assert.assertEquals(expectedText, actualText);
+        final String expectedTextTotals = "Check,InputCheck1,10Check2,4Check3,2";
+        final String actualTextTotals = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/totals.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextTotals, actualTextTotals);
 
-        outputFile.delete();
+        final String expectedTextCounts = "Country,Check,InputABC,Check1,6ABC,Check2,4ABC,Check3,XYZ,Check1,4XYZ,Check2,XYZ,Check3,2";
+        final String actualTextCounts = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/counts.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextCounts, actualTextCounts);
+
+        outputFolder.deleteRecursively();
     }
 
     @Test
     public void getDiffTest() throws IOException
     {
         this.populateTestData();
-        final File outputFile = File.temporary();
+        final File outputFolder = File.temporaryFolder();
 
         final String[] arguments = { "--input=" + SOURCE_DIRECTORY.getAbsolutePath(),
                 "--reference=" + TARGET_DIRECTORY.getAbsolutePath(),
-                "--output=" + outputFile.getAbsolutePath() };
+                "--output=" + outputFolder.getAbsolutePath(), "--output-types=full,totals,counts" };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 
-        final String expectedText = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,,-2Check3,,0,0Total,-2,4,2";
-        final String actualText = new BufferedReader(new FileReader(outputFile.getFile())).lines()
-                .collect(Collectors.joining());
+        final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,,4Check3,,2,2Total,10,6,16";
+        final String actualTextInput = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/input.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextInput, actualTextInput);
 
-        Assert.assertEquals(expectedText, actualText);
+        final String expectedTextReference = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
+        final String actualTextReference = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/reference.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextReference, actualTextReference);
 
-        outputFile.delete();
+        final String expectedTextDifference = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,,-2Check3,,0,0Total,-2,4,2";
+        final String actualTextDifference = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/difference.csv")).lines()
+                        .collect(Collectors.joining());
+
+        final String expectedTextTotals = "Check,Input,Reference,DifferenceCheck1,10,14,4Check2,4,2,-2Check3,2,2,0";
+        final String actualTextTotals = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/totals.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextTotals, actualTextTotals);
+
+        final String expectedTextCounts = "Country,Check,Input,Reference,DifferenceABC,Check1,6,6,0ABC,Check2,4,2,-2ABC,Check3,,,XYZ,Check1,4,8,4XYZ,Check2,,,XYZ,Check3,2,2,0";
+        final String actualTextCounts = new BufferedReader(
+                new FileReader(outputFolder.getAbsolutePath() + "/counts.csv")).lines()
+                        .collect(Collectors.joining());
+        Assert.assertEquals(expectedTextCounts, actualTextCounts);
+
+        Assert.assertEquals(expectedTextDifference, actualTextDifference);
+
+        outputFolder.deleteRecursively();
     }
 }
