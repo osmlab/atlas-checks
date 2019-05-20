@@ -109,7 +109,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 
                 // Get the difference
                 final Map<String, Map<String, Counter>> differenceCounts = this
-                        .getDifference(inputCounts, referenceCounts);
+                        .getDifference(referenceCounts, inputCounts);
 
                 // Write outputs for the reference and difference if requested
                 if (outputTypes.contains("full"))
@@ -426,7 +426,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<List<String>> outputLines = new ArrayList<>(stage1Output);
 
         // Add new headers
-        outputLines.get(0).add("Reference");
+        outputLines.get(0).add(1, "Reference");
         outputLines.get(0).add("Difference");
 
         // For each row...
@@ -435,8 +435,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             // Get the check name from the row
             final String check = outputLines.get(index).get(0);
             // Add the reference total
-            outputLines.get(index)
-                    .add(String.valueOf(getCheckTotal(referenceCountryCheckCounts, check)));
+            outputLines.get(index).add(1,
+                    String.valueOf(getCheckTotal(referenceCountryCheckCounts, check)));
             // Add the difference total
             outputLines.get(index)
                     .add(String.valueOf(getCheckTotal(diffCountryCheckCounts, check)));
@@ -526,7 +526,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<List<String>> outputLines = new ArrayList<>(stage1Output);
 
         // Add new headers
-        outputLines.get(0).add("Reference");
+        outputLines.get(0).add(2, "Reference");
         outputLines.get(0).add("Difference");
 
         // For each row...
@@ -536,8 +536,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             final Optional<Long> referenceCount = getCountryCheckCount(referenceCountryCheckCounts,
                     stage1Output.get(index).get(0), stage1Output.get(index).get(1));
             // Append the value or an empty string
-            stage1Output.get(index)
-                    .add(referenceCount.isPresent() ? String.valueOf(referenceCount.get())
+            stage1Output.get(index).add(2,
+                    referenceCount.isPresent() ? String.valueOf(referenceCount.get())
                             : EMPTY_STRING);
 
             // Get the difference value for the country and check
