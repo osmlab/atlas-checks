@@ -109,19 +109,19 @@ public class FlagStatisticsSubCommandTest
 
         final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
         final String actualTextInput = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/input.csv")).lines()
+                new FileReader(outputFolder.getAbsolutePath() + "/runSummary.csv")).lines()
                         .collect(Collectors.joining());
         Assert.assertEquals(expectedTextInput, actualTextInput);
 
-        final String expectedTextTotals = "Check,InputCheck1,14Check2,2Check3,2";
+        final String expectedTextTotals = "Check,Input(sum)Check1,14Check2,2Check3,2";
         final String actualTextTotals = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/totals.csv")).lines()
+                new FileReader(outputFolder.getAbsolutePath() + "/checkSummary.csv")).lines()
                         .collect(Collectors.joining());
         Assert.assertEquals(expectedTextTotals, actualTextTotals);
 
         final String expectedTextCounts = "Country,Check,InputABC,Check1,6ABC,Check2,2ABC,Check3,XYZ,Check1,8XYZ,Check2,XYZ,Check3,2";
         final String actualTextCounts = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/counts.csv")).lines()
+                new FileReader(outputFolder.getAbsolutePath() + "/checkByCountry.csv")).lines()
                         .collect(Collectors.joining());
         Assert.assertEquals(expectedTextCounts, actualTextCounts);
 
@@ -141,30 +141,24 @@ public class FlagStatisticsSubCommandTest
 
         final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
         final String actualTextInput = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/input.csv")).lines()
+                new FileReader(outputFolder.getAbsolutePath() + "/runSummary.csv")).lines()
                         .collect(Collectors.joining());
         Assert.assertEquals(expectedTextInput, actualTextInput);
 
-        final String expectedTextReference = "Check,ABC,XYZ,TotalCheck1,6,4,10Check2,4,,4Check3,,2,2Total,10,6,16";
-        final String actualTextReference = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/reference.csv")).lines()
-                        .collect(Collectors.joining());
-        Assert.assertEquals(expectedTextReference, actualTextReference);
-
         final String expectedTextDifference = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,,-2Check3,,0,0Total,-2,4,2";
         final String actualTextDifference = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/difference.csv")).lines()
-                        .collect(Collectors.joining());
+                new FileReader(outputFolder.getAbsolutePath() + "/runSummaryDifference.csv"))
+                        .lines().collect(Collectors.joining());
 
-        final String expectedTextTotals = "Check,Reference,Input,DifferenceCheck1,10,14,4Check2,4,2,-2Check3,2,2,0";
+        final String expectedTextTotals = "Check,Reference(sum),Input(sum),Difference(sum)Check1,10,14,4Check2,4,2,-2Check3,2,2,0";
         final String actualTextTotals = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/totals.csv")).lines()
+                new FileReader(outputFolder.getAbsolutePath() + "/checkSummary.csv")).lines()
                         .collect(Collectors.joining());
         Assert.assertEquals(expectedTextTotals, actualTextTotals);
 
         final String expectedTextCounts = "Country,Check,Reference,Input,DifferenceABC,Check1,6,6,0ABC,Check2,4,2,-2ABC,Check3,,,XYZ,Check1,4,8,4XYZ,Check2,,,XYZ,Check3,2,2,0";
         final String actualTextCounts = new BufferedReader(
-                new FileReader(outputFolder.getAbsolutePath() + "/counts.csv")).lines()
+                new FileReader(outputFolder.getAbsolutePath() + "/checkByCountry.csv")).lines()
                         .collect(Collectors.joining());
         Assert.assertEquals(expectedTextCounts, actualTextCounts);
 

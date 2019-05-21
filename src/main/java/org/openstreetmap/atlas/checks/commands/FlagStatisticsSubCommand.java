@@ -51,6 +51,12 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private static final String OUTPUT_TYPES_OPTION = "output-types";
     private static final String GENERATOR = "generator";
     private static final String CHECK = "Check";
+    private static final String INPUT = "Input";
+    private static final String REFERENCE = "Reference";
+    private static final String DIFFERENCE = "Difference";
+    private static final String TOTAL = "Total";
+    private static final String FULL = "full";
+    private static final String SUM_SUFFIX = "(sum)";
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
 
@@ -76,26 +82,25 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         // Read the main input folder
         final Map<String, Map<String, Counter>> inputCounts = this.getCountryCheckCounts(
                 this.optionAndArgumentDelegate.getOptionArgument(INPUT_OPTION).get());
-
         // Get the output folder path
         final String outputFolder = this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION)
                 .get();
         // Get the output types
-        final List<String> outputTypes = Arrays
-                .asList(StringUtils.split(this.optionAndArgumentDelegate
-                        .getOptionArgument(OUTPUT_TYPES_OPTION).orElse("full"), ','));
+        final List<String> outputTypes = Arrays.asList(StringUtils.split(
+                this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_TYPES_OPTION).orElse(FULL),
+                ','));
 
         try
         {
             // Write the counts for the input logs is requested
-            if (outputTypes.contains("full"))
+            if (outputTypes.contains(FULL))
             {
-                this.writeCSV(outputFolder + "/input.csv", generateFullOutput(inputCounts));
+                this.writeCSV(outputFolder + "/runSummary.csv", generateFullOutput(inputCounts));
             }
             // Generate the totals output
-            List<List<String>> totalsOutput = generateTotalsOutputStage1(inputCounts);
+            List<List<String>> totalsOutput = generateTotalsOutput(inputCounts);
             // Generate the counts output if requested
-            List<List<String>> countsOutput = generateCountsOutputStage1(inputCounts);
+            List<List<String>> countsOutput = generateCountsOutput(inputCounts);
 
             // Get the optional reference input
             final Optional<String> referenceFilePath = this.optionAndArgumentDelegate
@@ -111,32 +116,30 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                 final Map<String, Map<String, Counter>> differenceCounts = this
                         .getDifference(referenceCounts, inputCounts);
 
-                // Write outputs for the reference and difference if requested
-                if (outputTypes.contains("full"))
+                // Write outputs for the difference if requested
+                if (outputTypes.contains(FULL))
                 {
-                    this.writeCSV(outputFolder + "/reference.csv",
-                            generateFullOutput(referenceCounts));
-                    this.writeCSV(outputFolder + "/difference.csv",
+                    this.writeCSV(outputFolder + "/runSummaryDifference.csv",
                             generateFullOutput(differenceCounts));
                 }
 
                 // Add the reference and difference metrics to the totals output
-                totalsOutput = generateTotalsOutputStage2(totalsOutput, referenceCounts,
-                        differenceCounts);
+                totalsOutput = addReferenceAndDifferenceToTotalsOutput(totalsOutput,
+                        referenceCounts, differenceCounts);
                 // Add the reference and difference metrics to the counts output
-                countsOutput = generateCountsOutputStage2(countsOutput, referenceCounts,
-                        differenceCounts);
+                countsOutput = addReferenceAndDifferenceToCountsOutput(countsOutput,
+                        referenceCounts, differenceCounts);
             }
 
             // Write the totals output if requested
             if (outputTypes.contains("totals"))
             {
-                this.writeCSV(outputFolder + "/totals.csv", totalsOutput);
+                this.writeCSV(outputFolder + "/checkSummary.csv", totalsOutput);
             }
             // Write the counts output if requested
             if (outputTypes.contains("counts"))
             {
-                this.writeCSV(outputFolder + "/counts.csv", countsOutput);
+                this.writeCSV(outputFolder + "/checkByCountry.csv", countsOutput);
             }
         }
         catch (final IOException exception)
@@ -320,7 +323,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<String> headers = new ArrayList<>();
         headers.add(CHECK);
         headers.addAll(countries);
-        headers.add("Total");
+        headers.add(TOTAL);
         outputLines.add(headers);
 
         // Generate a row for each check
@@ -348,7 +351,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 
         // Get totals for all the countries
         final List<String> totals = new ArrayList<>();
-        totals.add("Total");
+        totals.add(TOTAL);
         // Calculate the totals and store them
         final List<Long> countryCounts = countries.stream()
                 .map(country -> countryCheckCounts.get(country).entrySet().stream()
@@ -373,7 +376,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      *            {@link String}
      * @return a 2D {@link List} of {@link String}s
      */
-    private List<List<String>> generateTotalsOutputStage1(
+    private List<List<String>> generateTotalsOutput(
             final Map<String, Map<String, Counter>> countryCheckCounts)
     {
         // Get a list of check names in alphabetical order
@@ -386,7 +389,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         // Generate the header row
         final List<String> headers = new ArrayList<>();
         headers.add(CHECK);
-        headers.add("Input");
+        headers.add(INPUT + SUM_SUFFIX);
         outputLines.add(headers);
 
         // For each check...
@@ -405,7 +408,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 
     /**
      * Appends the totals of two maps of flag counts per check per country to the output of
-     * {@link #generateTotalsOutputStage1(Map)}.
+     * {@link #generateTotalsOutput(Map)}.
      *
      * @param stage1Output
      *            a 2D {@link List} of {@link String}s representing a table of checks names and
@@ -418,7 +421,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      *            {@link String}
      * @return a 2D {@link List} of {@link String}s
      */
-    private List<List<String>> generateTotalsOutputStage2(final List<List<String>> stage1Output,
+    private List<List<String>> addReferenceAndDifferenceToTotalsOutput(
+            final List<List<String>> stage1Output,
             final Map<String, Map<String, Counter>> referenceCountryCheckCounts,
             final Map<String, Map<String, Counter>> diffCountryCheckCounts)
     {
@@ -426,8 +430,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<List<String>> outputLines = new ArrayList<>(stage1Output);
 
         // Add new headers
-        outputLines.get(0).add(1, "Reference");
-        outputLines.get(0).add("Difference");
+        outputLines.get(0).add(1, REFERENCE + SUM_SUFFIX);
+        outputLines.get(0).add(DIFFERENCE + SUM_SUFFIX);
 
         // For each row...
         for (int index = 1; index < outputLines.size(); index++)
@@ -455,7 +459,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      *            {@link String}
      * @return a 2D {@link List} of {@link String}s
      */
-    private List<List<String>> generateCountsOutputStage1(
+    private List<List<String>> generateCountsOutput(
             final Map<String, Map<String, Counter>> countryCheckCounts)
     {
         // Get a list of country names in alphabetical order
@@ -472,7 +476,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<String> headers = new ArrayList<>();
         headers.add("Country");
         headers.add(CHECK);
-        headers.add("Input");
+        headers.add(INPUT);
         outputLines.add(headers);
 
         // For each country and check...
@@ -505,7 +509,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 
     /**
      * Appends the counts of two maps of flag counts per check per country to the output of
-     * {@link #generateCountsOutputStage1(Map)}.
+     * {@link #generateCountsOutput(Map)}.
      *
      * @param stage1Output
      *            a 2D {@link List} of {@link String}s representing a table wher each row is a
@@ -518,7 +522,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      *            {@link String}
      * @return a 2D {@link List} of {@link String}s
      */
-    private List<List<String>> generateCountsOutputStage2(final List<List<String>> stage1Output,
+    private List<List<String>> addReferenceAndDifferenceToCountsOutput(
+            final List<List<String>> stage1Output,
             final Map<String, Map<String, Counter>> referenceCountryCheckCounts,
             final Map<String, Map<String, Counter>> diffCountryCheckCounts)
     {
@@ -526,8 +531,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final List<List<String>> outputLines = new ArrayList<>(stage1Output);
 
         // Add new headers
-        outputLines.get(0).add(2, "Reference");
-        outputLines.get(0).add("Difference");
+        outputLines.get(0).add(2, REFERENCE);
+        outputLines.get(0).add(DIFFERENCE);
 
         // For each row...
         for (int index = 1; index < outputLines.size(); index++)
