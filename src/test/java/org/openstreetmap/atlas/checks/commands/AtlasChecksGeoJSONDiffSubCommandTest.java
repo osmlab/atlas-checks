@@ -122,8 +122,8 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", sourceFile),
-                String.format("-target=%s", targetFile),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", sourceFile),
+                String.format("-input=%s", targetFile),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -143,8 +143,8 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", SOURCE_DIRECTORY),
-                String.format("-target=%s", TARGET_DIRECTORY),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", SOURCE_DIRECTORY),
+                String.format("-input=%s", TARGET_DIRECTORY),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -164,8 +164,8 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", sourceFileGZ),
-                String.format("-target=%s", targetFileGZ),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", sourceFileGZ),
+                String.format("-input=%s", targetFileGZ),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -185,8 +185,8 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", sourceFileGZ),
-                String.format("-target=%s", targetFile),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", sourceFileGZ),
+                String.format("-input=%s", targetFile),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -206,8 +206,8 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", GZ_SOURCE_DIRECTORY),
-                String.format("-target=%s", GZ_TARGET_DIRECTORY),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", GZ_SOURCE_DIRECTORY),
+                String.format("-input=%s", GZ_TARGET_DIRECTORY),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 

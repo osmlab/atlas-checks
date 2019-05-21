@@ -31,7 +31,7 @@ import com.google.gson.stream.JsonReader;
 
 /**
  * Takes 2 sets of atlas-checks geoJSON flag files and reports the number of additions,
- * subtractions, and changed flags from source to target. Optionally, the reported items can be
+ * subtractions, and changed flags from reference to input. Optionally, the reported items can be
  * written to new geoJSON files. Additions and subtractions are based on flag ids. Changes are
  * calculated by differences in the Atlas ids of objects in a flag.
  *
@@ -46,7 +46,7 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     public AtlasChecksGeoJSONDiffSubCommand()
     {
         super("geojson-diff",
-                "Takes 2 sets of atlas-checks geoJSON flag files and reports the number of additions, subtractions, and changed flags from source to target.",
+                "Takes 2 sets of atlas-checks geoJSON flag files and reports the number of additions, subtractions, and changed flags from reference to input.",
                 "geojson");
     }
 

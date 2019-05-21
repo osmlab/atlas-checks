@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 
 /**
  * Takes 2 sets of atlas-checks log files and reports the number of additions, subtractions, and
- * changed flags from source to target. Optionally, the reported items can be written to new log
+ * changed flags from reference to input. Optionally, the reported items can be written to new log
  * files. Additions and subtractions are based on flag ids. Changes are calculated by differences in
  * the Atlas ids of objects in a flag.
  *
@@ -38,7 +38,7 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     public AtlasChecksLogDiffSubCommand()
     {
         super("log-diff",
-                "Takes 2 sets of atlas-checks log flag files and reports the number of additions, subtractions, and changed flags from source to target.",
+                "Takes 2 sets of atlas-checks log flag files and reports the number of additions, subtractions, and changed flags from reference to input.",
                 "log");
     }
 

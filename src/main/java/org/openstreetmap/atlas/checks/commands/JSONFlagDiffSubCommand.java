@@ -28,12 +28,13 @@ import com.google.gson.JsonObject;
  */
 public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 {
-    private static final Command.Switch<File> SOURCE_FILE_PARAMETER = new Command.Switch<>("source",
-            "A file or directory of files containing atlas-checks flags to compare changes from.",
+    private static final Command.Switch<File> REFERENCE_FILE_PARAMETER = new Command.Switch<>(
+            "reference",
+            "A file or directory of files containing atlas-checks flags to use as a baseline for comparison.",
             File::new, Command.Optionality.REQUIRED);
 
-    private static final Command.Switch<File> TARGET_FILE_PARAMETER = new Command.Switch<>("target",
-            "A file or directory of files containing atlas-checks flags to compare changes to.",
+    private static final Command.Switch<File> INPUT_FILE_PARAMETER = new Command.Switch<>("input",
+            "A file or directory of files containing atlas-checks flags to compare changes from the baseline.",
             File::new, Command.Optionality.REQUIRED);
 
     private static final Command.Switch<String> OUTPUT_FOLDER_PARAMETER = new Command.Switch<>(
@@ -79,7 +80,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     @Override
     public Command.SwitchList switches()
     {
-        return new Command.SwitchList().with(SOURCE_FILE_PARAMETER, TARGET_FILE_PARAMETER,
+        return new Command.SwitchList().with(REFERENCE_FILE_PARAMETER, INPUT_FILE_PARAMETER,
                 OUTPUT_FOLDER_PARAMETER);
     }
 
@@ -87,9 +88,9 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     public void usage(final PrintStream writer)
     {
         writer.print(
-                "-source=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from\n");
+                "-reference=path/to/first/flag/file,path/to/second/flag/file : file of flags to use as a baseline\n");
         writer.print(
-                "-target=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes to\n");
+                "-target=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from the baseline\n");
         writer.print(
                 "-output=path/to/output/folder : optional directory to write output files to\n");
     }
@@ -100,9 +101,9 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     public int execute(final CommandMap command)
     {
         // Get files and parse to maps
-        this.getFilesOfType((File) command.get(SOURCE_FILE_PARAMETER))
+        this.getFilesOfType((File) command.get(REFERENCE_FILE_PARAMETER))
                 .forEach(path -> this.source = this.mergeMaps(this.mapFeatures(path), this.source));
-        this.getFilesOfType((File) command.get(TARGET_FILE_PARAMETER))
+        this.getFilesOfType((File) command.get(INPUT_FILE_PARAMETER))
                 .forEach(path -> this.target = this.mergeMaps(this.mapFeatures(path), this.target));
 
         // Get changes from source to target
