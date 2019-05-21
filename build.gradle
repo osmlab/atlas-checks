@@ -19,7 +19,7 @@ plugins {
 apply from: 'dependencies.gradle'
 apply from: 'gradle/quality.gradle'
 apply from: 'gradle/deployment.gradle'
-apply from: 'gradle/runchecks.gradle'
+apply from: 'gradle/execute.gradle'
 
 description = "Atlas Checks"
 

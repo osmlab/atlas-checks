@@ -2,11 +2,14 @@ package org.openstreetmap.atlas.checks.maproulette;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.function.Function;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
+import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.geography.atlas.AtlasLoadingCommand;
+import org.openstreetmap.atlas.utilities.conversion.StringConverter;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +20,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author cuthbertm
  * @author mgostintsev
+ * @author nachtm
  */
 public abstract class MapRouletteCommand extends AtlasLoadingCommand
 {
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteCommand.class);
+    private static final boolean DEFAULT_ENABLED = true;
     private static final Switch<MapRouletteConfiguration> MAP_ROULETTE = new Switch<>("maproulette",
             "Map roulette server information, format <host>:<port>:<project>:<api_key>",
             MapRouletteConfiguration::parse);
+    private static final Switch<String> PROJECT_DISPLAY_NAME = new Switch<>("projectDisplayName",
+            "Display name of the project under which all of the challenges will be submitted",
+            StringConverter.IDENTITY);
     private MapRouletteClient mapRouletteClient;
 
     public MapRouletteClient getClient()
@@ -71,13 +79,18 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     @Override
     protected int onRun(final CommandMap commandMap)
     {
-        final MapRouletteConfiguration mapRoulette = (MapRouletteConfiguration) commandMap
-                .get(MAP_ROULETTE);
+        return this.onRun(commandMap, MapRouletteClient::new);
+    }
+
+    protected int onRun(final CommandMap commandMap,
+            final Function<MapRouletteConfiguration, MapRouletteClient> clientConstructor)
+    {
+        final MapRouletteConfiguration mapRoulette = this.fromCommandMap(commandMap);
         if (mapRoulette != null)
         {
             try
             {
-                this.mapRouletteClient = new MapRouletteClient(mapRoulette);
+                this.mapRouletteClient = clientConstructor.apply(mapRoulette);
             }
             catch (final IllegalArgumentException e)
             {
@@ -100,5 +113,21 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
         {
             this.mapRouletteClient.uploadTasks();
         }
+    }
+
+    private MapRouletteConfiguration fromCommandMap(final CommandMap commandMap)
+    {
+        final MapRouletteConfiguration mapRoulette = (MapRouletteConfiguration) commandMap
+                .get(MAP_ROULETTE);
+        final String projectDisplayName = (String) commandMap.get(PROJECT_DISPLAY_NAME);
+
+        if (projectDisplayName == null)
+        {
+            return mapRoulette;
+        }
+        final ProjectConfiguration project = new ProjectConfiguration(mapRoulette.getProjectName(),
+                mapRoulette.getProjectName(), projectDisplayName, DEFAULT_ENABLED);
+        return new MapRouletteConfiguration(mapRoulette.getServer(), mapRoulette.getPort(), project,
+                mapRoulette.getApiKey());
     }
 }
