@@ -52,23 +52,22 @@ public class FlaggedPoint extends FlaggedObject
     @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        final JsonObject feature;
+        final JsonObject geoJsonGeometry;
         final JsonObject properties;
         if (this.locationItem != null)
         {
-            feature = this.locationItem.asGeoJsonGeometry();
+            geoJsonGeometry = this.locationItem.asGeoJsonGeometry();
             properties = this.locationItem.getGeoJsonProperties();
         }
         else
         {
             properties = new JsonObject();
-            feature = GeoJsonUtils.feature(this.point.asGeoJsonGeometry(), properties);
+            geoJsonGeometry = this.point.asGeoJsonGeometry();
         }
 
         properties.addProperty("flag:id", flagIdentifier);
         properties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
-        feature.add("properties", properties);
-        return feature;
+        return GeoJsonUtils.feature(geoJsonGeometry, properties);
     }
 
     @Override

@@ -127,7 +127,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
         }
         final ProjectConfiguration project = new ProjectConfiguration(mapRoulette.getProjectName(),
                 mapRoulette.getProjectName(), projectDisplayName, DEFAULT_ENABLED);
-        return new MapRouletteConfiguration(mapRoulette.getServer(), mapRoulette.getPort(), project,
-                mapRoulette.getApiKey());
+        return new MapRouletteConfiguration(mapRoulette.getScheme(), mapRoulette.getServer(),
+                mapRoulette.getPort(), project, mapRoulette.getApiKey());
     }
 }
