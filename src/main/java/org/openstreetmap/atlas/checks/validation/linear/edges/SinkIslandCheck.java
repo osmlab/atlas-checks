@@ -74,8 +74,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return this.validEdge(object) && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
-                .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+        return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
+                && ((Edge) object).highwayTag()
+                        .isMoreImportantThanOrEqualTo(this.minimumHighwayType)
+                && !(this.isServiceRoad((Edge) object)
+                        && this.isWithinAreasWithExcludedAmenityTags((Edge) object));
     }
 
     @Override
@@ -186,10 +189,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Only allow car navigable highways and ignore ferries
                 && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
-                && !TagPredicates.IS_AREA.test(object)
-                // Ignore edges that are fully enclosed in areas with amenity values to exclude
-                && !(this.isServiceRoad((Edge) object)
-                        && this.isWithinAreasWithExcludedAmenityTags((Edge) object));
+                && !TagPredicates.IS_AREA.test(object);
     }
 
     /**
