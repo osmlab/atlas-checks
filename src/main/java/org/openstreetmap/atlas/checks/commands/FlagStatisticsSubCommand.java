@@ -55,7 +55,6 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private static final String REFERENCE = "Reference";
     private static final String DIFFERENCE = "Difference";
     private static final String TOTAL = "Total";
-    private static final String FULL = "full";
     private static final String SUM_SUFFIX = "(sum)";
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationResolver.class);
@@ -63,6 +62,16 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
     private final Gson gson = new Gson();
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
     private final CommandOutputDelegate outputDelegate;
+
+    /**
+     * Output type argument values
+     */
+    private enum OutputTypes
+    {
+        RUN_SUMMARY,
+        CHECK_SUMMARY,
+        CHECK_BY_COUNTRY
+    }
 
     public static void main(final String[] args)
     {
@@ -86,14 +95,14 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final String outputFolder = this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION)
                 .get();
         // Get the output types
-        final List<String> outputTypes = Arrays.asList(StringUtils.split(
-                this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_TYPES_OPTION).orElse(FULL),
-                ','));
+        final List<String> outputTypes = Arrays.asList(StringUtils
+                .split(this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_TYPES_OPTION)
+                        .orElse(OutputTypes.RUN_SUMMARY.toString()).toUpperCase(), ','));
 
         try
         {
             // Write the counts for the input logs is requested
-            if (outputTypes.contains(FULL))
+            if (outputTypes.contains(OutputTypes.RUN_SUMMARY.toString()))
             {
                 this.writeCSV(outputFolder + "/runSummary.csv", generateFullOutput(inputCounts));
             }
@@ -117,7 +126,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                         .getDifference(referenceCounts, inputCounts);
 
                 // Write outputs for the difference if requested
-                if (outputTypes.contains(FULL))
+                if (outputTypes.contains(OutputTypes.RUN_SUMMARY.toString()))
                 {
                     this.writeCSV(outputFolder + "/runSummaryDifference.csv",
                             generateFullOutput(differenceCounts));
@@ -132,12 +141,12 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             }
 
             // Write the totals output if requested
-            if (outputTypes.contains("totals"))
+            if (outputTypes.contains(OutputTypes.CHECK_SUMMARY.toString()))
             {
                 this.writeCSV(outputFolder + "/checkSummary.csv", totalsOutput);
             }
             // Write the counts output if requested
-            if (outputTypes.contains("counts"))
+            if (outputTypes.contains(OutputTypes.CHECK_BY_COUNTRY.toString()))
             {
                 this.writeCSV(outputFolder + "/checkByCountry.csv", countsOutput);
             }

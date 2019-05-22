@@ -3,6 +3,6 @@ Get the counts of a set of log files:
 Get the difference between two sets of log files:
 #$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder --output path/to/output/folder
 Get the difference between two sets of log files as totals:
-#$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder --output path/to/output/folder --ouptut-types totals
+#$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder --output path/to/output/folder --ouptut-types check_summary
 Get the difference between two sets of log files with all output types:
-#$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder --output path/to/output/folder --ouptut-types totals,counts,full
+#$ flag-statistics --input path/to/source_log_country_folder --reference path/to/target_log_country_folder --output path/to/output/folder --ouptut-types run_summary,check_summary,check_by_country

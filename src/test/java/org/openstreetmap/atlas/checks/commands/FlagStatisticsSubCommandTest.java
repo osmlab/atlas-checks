@@ -104,7 +104,8 @@ public class FlagStatisticsSubCommandTest
         final File outputFolder = File.temporaryFolder();
 
         final String[] arguments = { "--input=" + TARGET_DIRECTORY.getAbsolutePath(),
-                "--output=" + outputFolder.getAbsolutePath(), "--output-types=full,totals,counts" };
+                "--output=" + outputFolder.getAbsolutePath(),
+                "--output-types=run_summary,check_summary,check_by_country" };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 
         final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
@@ -136,7 +137,8 @@ public class FlagStatisticsSubCommandTest
 
         final String[] arguments = { "--input=" + TARGET_DIRECTORY.getAbsolutePath(),
                 "--reference=" + SOURCE_DIRECTORY.getAbsolutePath(),
-                "--output=" + outputFolder.getAbsolutePath(), "--output-types=full,totals,counts" };
+                "--output=" + outputFolder.getAbsolutePath(),
+                "--output-types=run_summary,check_summary,check_by_country" };
         new FlagStatisticsSubCommand().runSubcommand(arguments);
 
         final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
