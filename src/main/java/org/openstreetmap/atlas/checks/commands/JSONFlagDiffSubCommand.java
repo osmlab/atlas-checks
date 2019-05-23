@@ -32,11 +32,9 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
             "reference",
             "A file or directory of files containing atlas-checks flags to use as a baseline for comparison.",
             File::new, Command.Optionality.REQUIRED);
-
     private static final Command.Switch<File> INPUT_FILE_PARAMETER = new Command.Switch<>("input",
             "A file or directory of files containing atlas-checks flags to compare changes from the baseline.",
             File::new, Command.Optionality.REQUIRED);
-
     private static final Command.Switch<String> OUTPUT_FOLDER_PARAMETER = new Command.Switch<>(
             "output",
             "A directory to place output log files in. If not included no outputs files will be written.",
@@ -50,8 +48,8 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     static final String NAME = "name";
 
     private final Gson gson = new Gson();
-    private Map<String, Map<Set<String>, JsonObject>> source = new HashMap<>();
-    private Map<String, Map<Set<String>, JsonObject>> target = new HashMap<>();
+    private Map<String, Map<Set<String>, JsonObject>> reference = new HashMap<>();
+    private Map<String, Map<Set<String>, JsonObject>> input = new HashMap<>();
 
     private String commandName;
     private String description;
@@ -90,7 +88,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
         writer.print(
                 "-reference=path/to/first/flag/file,path/to/second/flag/file : file of flags to use as a baseline\n");
         writer.print(
-                "-target=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from the baseline\n");
+                "-input=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from the baseline\n");
         writer.print(
                 "-output=path/to/output/folder : optional directory to write output files to\n");
     }
@@ -101,18 +99,18 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     public int execute(final CommandMap command)
     {
         // Get files and parse to maps
-        this.getFilesOfType((File) command.get(REFERENCE_FILE_PARAMETER))
-                .forEach(path -> this.source = this.mergeMaps(this.mapFeatures(path), this.source));
+        this.getFilesOfType((File) command.get(REFERENCE_FILE_PARAMETER)).forEach(
+                path -> this.reference = this.mergeMaps(this.mapFeatures(path), this.reference));
         this.getFilesOfType((File) command.get(INPUT_FILE_PARAMETER))
-                .forEach(path -> this.target = this.mergeMaps(this.mapFeatures(path), this.target));
+                .forEach(path -> this.input = this.mergeMaps(this.mapFeatures(path), this.input));
 
-        // Get changes from source to target
-        final Map<String, Set<JsonObject>> additions = this.getDiff(this.target, this.source);
-        final Map<String, Set<JsonObject>> subtractions = this.getDiff(this.source, this.target);
+        // Get changes from reference to input
+        final Map<String, Set<JsonObject>> additions = this.getDiff(this.input, this.reference);
+        final Map<String, Set<JsonObject>> subtractions = this.getDiff(this.reference, this.input);
 
         // Write outputs
         System.out.printf("%nTotal Items: %d%n",
-                this.getSourceSize() + this.countMapValues(additions));
+                this.getReferenceSize() + this.countMapValues(additions));
         System.out.printf("%nAdditions: %d%n", this.countMapValues(additions));
         additions.forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
         System.out.printf("%nSubtractions: %d%n", this.countMapValues(subtractions));
@@ -220,23 +218,23 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 
     /**
      * Takes two 2d {@link HashMap}s containing atlas-checks flags mapped by id mapped by check.
-     * Finds missing elements in the target based on ids.
+     * Finds missing elements in the input based on ids.
      *
-     * @param source
+     * @param reference
      *            {@link HashMap} of the flags to compare from
-     * @param target
+     * @param input
      *            {@link HashMap} of the flags to compare to
      * @return a {@link Map} of {@link JsonObject} by check
      */
     protected Map<String, Set<JsonObject>> getDiff(
-            final Map<String, Map<Set<String>, JsonObject>> source,
-            final Map<String, Map<Set<String>, JsonObject>> target)
+            final Map<String, Map<Set<String>, JsonObject>> reference,
+            final Map<String, Map<Set<String>, JsonObject>> input)
     {
         final Map<String, Set<JsonObject>> diff = new HashMap<>();
-        source.forEach((check, flags) -> flags.forEach((identifier, flag) ->
+        reference.forEach((check, flags) -> flags.forEach((identifier, flag) ->
         {
             // Get missing
-            if (!target.containsKey(check) || !target.get(check).containsKey(identifier))
+            if (!input.containsKey(check) || !input.get(check).containsKey(identifier))
             {
                 diff.putIfAbsent(check, new HashSet<>());
                 diff.get(check).add(flag);
@@ -261,16 +259,16 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
-     * A getter for the number of flags in {@link #source}
+     * A getter for the number of flags in {@link #reference}
      *
      * @return {@code int}
      */
-    protected int getSourceSize()
+    protected int getReferenceSize()
     {
         int sourceSize = 0;
-        for (final String check : getSource().keySet())
+        for (final String check : getReference().keySet())
         {
-            sourceSize += getSource().get(check).size();
+            sourceSize += getReference().get(check).size();
         }
         return sourceSize;
     }
@@ -286,22 +284,22 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
-     * Getter for {@link #source}
+     * Getter for {@link #reference}
      *
      * @return {@link HashMap}
      */
-    protected Map<String, Map<Set<String>, JsonObject>> getSource()
+    protected Map<String, Map<Set<String>, JsonObject>> getReference()
     {
-        return this.source;
+        return this.reference;
     }
 
     /**
-     * Getter for {@link #target}
+     * Getter for {@link #input}
      *
      * @return {@link HashMap}
      */
-    protected Map<String, Map<Set<String>, JsonObject>> getTarget()
+    protected Map<String, Map<Set<String>, JsonObject>> getInput()
     {
-        return this.target;
+        return this.input;
     }
 }
