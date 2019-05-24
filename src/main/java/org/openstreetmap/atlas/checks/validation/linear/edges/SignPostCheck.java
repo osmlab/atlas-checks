@@ -3,10 +3,10 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.directory.api.util.Strings;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -282,6 +282,6 @@ public class SignPostCheck extends BaseCheck<String>
         // Look for certain tag differences if edges have same highway tag
         final String sourceTag = sourceEdge.tag(this.rampDifferentiatorTag);
         final String rampTag = connectedEdge.tag(this.rampDifferentiatorTag);
-        return !(sourceTag == null && rampTag == null || Strings.equals(sourceTag, rampTag));
+        return !(Objects.equals(sourceTag, rampTag));
     }
 }
