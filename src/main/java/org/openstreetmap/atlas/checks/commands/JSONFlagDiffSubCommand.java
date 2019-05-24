@@ -95,7 +95,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 
     @Override
     // Allow System.out for clean printing.
-    @SuppressWarnings("squid:S106")
+    @SuppressWarnings({ "squid:S106", "squid:S2234" })
     public int execute(final CommandMap command)
     {
         // Get files and parse to maps
