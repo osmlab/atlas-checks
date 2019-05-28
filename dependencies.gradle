@@ -1,9 +1,9 @@
 project.ext.versions = [
     checkstyle: '8.18',
     jacoco: '0.8.3',
-    atlas: '5.6.1',
+    atlas: '5.6.4',
     commons:'2.6',
-    atlas_generator: '4.3.0',
+    atlas_generator: '4.3.1',
 ]
 
 project.ext.packages = [
