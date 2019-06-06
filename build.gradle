@@ -51,13 +51,11 @@ configurations
             // Snappy 1.1.1.6 is the one that has the proper .so libs.
             // https://github.com/xerial/snappy-java/issues/6
             force 'org.xerial.snappy:snappy-java:1.1.1.6'
-            force 'org.scala-lang:scala-library:2.10.2'
 
-            // http://stackoverflow.com/questions/31039367/spark-parallelize-could-not-find-creator-property-with-name-id
-            // This is to avoid a JsonMappingException for something named 'id' in org.apache.spark.rdd.RDDOperationScope
-            force 'com.fasterxml.jackson.core:jackson-core:2.4.4'
-            force 'com.fasterxml.jackson.core:jackson-databind:2.4.4'
-            force 'org.slf4j:slf4j-api:1.7.12'
+            // Force the version compatible with the latest version
+            // of Spark brought in by atlas generator 
+            force 'com.fasterxml.jackson.core:jackson-core:2.9.8'
+            force 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
         }
     }
     shaded
