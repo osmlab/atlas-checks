@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -208,23 +207,24 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      */
     private Map<String, Map<String, Counter>> getCountryCheckCounts(final String path)
     {
-        final Map<String, Map<String, Counter>> countryCheckMap = new ConcurrentHashMap<>();
+
         logger.info("Reading files from: {}", path);
 
         // Check all files in the folder and all sub-folders
-        new File(path).listFilesRecursively().parallelStream()
+        return new File(path).listFilesRecursively().parallelStream()
                 // Filter the files to only include log files, either gzipped or uncompressed
                 .filter(file -> FilenameUtils
                         .getExtension(file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
                                 : file.getName())
                         .equalsIgnoreCase("log"))
-                .forEach(file ->
+                .map(file ->
                 {
+                    final Map<String, Map<String, Counter>> countryCheckMap = new HashMap<>();
                     logger.info("Reading: {}", file.getName());
                     // Get the parent folder name and assume it is a county code
                     final String country = FilenameUtils.getName(file.getParent());
                     // Add the country to the map
-                    countryCheckMap.putIfAbsent(country, new ConcurrentHashMap<>());
+                    countryCheckMap.putIfAbsent(country, new HashMap<>());
 
                     // Read the log file
                     try (InputStreamReader inputStreamReader = file.isGzipped()
@@ -257,9 +257,35 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                                 String.format("Exception thrown while reading file %s: %s",
                                         file.getName(), exception.getMessage()));
                     }
-                });
+                    return countryCheckMap;
+                }).collect(HashMap::new, this::mergeMaps, this::mergeMaps);
+    }
 
-        return countryCheckMap;
+    /**
+     * Merges one 2d country checks {@link HashMap} into another.
+     *
+     * @param put
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country *
+     *            {@link String}
+     * @param place
+     *            a 2D {@link Map} of flag {@link Counter}s per check {@link String} per country *
+     *            {@link String}
+     * @return a merged 2d country checks {@link HashMap}
+     */
+    private Map<String, Map<String, Counter>> mergeMaps(
+            final Map<String, Map<String, Counter>> place,
+            final Map<String, Map<String, Counter>> put)
+    {
+        put.forEach((country, checks) ->
+        {
+            place.putIfAbsent(country, new HashMap<>());
+            checks.forEach((check, counter) ->
+            {
+                place.get(country).putIfAbsent(check, new Counter());
+                place.get(country).get(check).add(counter.getValue());
+            });
+        });
+        return place;
     }
 
     /**
