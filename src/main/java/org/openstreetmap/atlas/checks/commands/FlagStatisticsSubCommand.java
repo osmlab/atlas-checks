@@ -258,7 +258,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                                         file.getName(), exception.getMessage()));
                     }
                     return countryCheckMap;
-                }).reduce(this::mergeMaps).orElse(new HashMap<>());
+                }).collect(HashMap::new, this::mergeMaps, this::mergeMaps);
     }
 
     /**
@@ -272,20 +272,20 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
      *            {@link String}
      * @return a merged 2d country checks {@link HashMap}
      */
-    private Map<String, Map<String, Counter>> mergeMaps(final Map<String, Map<String, Counter>> put,
-            final Map<String, Map<String, Counter>> place)
+    private Map<String, Map<String, Counter>> mergeMaps(
+            final Map<String, Map<String, Counter>> place,
+            final Map<String, Map<String, Counter>> put)
     {
-        final Map<String, Map<String, Counter>> mergedMap = new HashMap<>(place);
         put.forEach((country, checks) ->
         {
-            mergedMap.putIfAbsent(country, new HashMap<>());
+            place.putIfAbsent(country, new HashMap<>());
             checks.forEach((check, counter) ->
             {
-                mergedMap.get(country).putIfAbsent(check, new Counter());
-                mergedMap.get(country).get(check).add(counter.getValue());
+                place.get(country).putIfAbsent(check, new Counter());
+                place.get(country).get(check).add(counter.getValue());
             });
         });
-        return mergedMap;
+        return place;
     }
 
     /**
