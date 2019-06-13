@@ -1,0 +1,141 @@
+package org.openstreetmap.atlas.checks.distributed;
+
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.RDD;
+import org.openstreetmap.atlas.checks.base.Check;
+import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
+import org.openstreetmap.atlas.checks.constants.CommonConstants;
+import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
+import org.openstreetmap.atlas.checks.utility.ShardGroup;
+import org.openstreetmap.atlas.checks.utility.ShardGrouper;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
+import org.openstreetmap.atlas.geography.sharding.Shard;
+import org.openstreetmap.atlas.utilities.collections.StringList;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
+import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
+import org.openstreetmap.atlas.utilities.maps.MultiMap;
+import org.openstreetmap.atlas.utilities.runtime.CommandMap;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import scala.Tuple2;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArguments
+{
+
+    private static final Logger logger = LoggerFactory.getLogger(ShardedIntegrityChecksSparkJob.class);
+    private static final Switch<Distance> EXPANSION_DISTANCE = new Switch<>("shardBufferDistance", "Distance to expand the bounds of the shard group to create a network in kilometers",distanceString -> Distance.kilometers(Double.valueOf(distanceString)), Optionality.OPTIONAL, "10.0");
+    private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad", "The maximum amount of shards loaded into memory per executor", Integer::valueOf, Optionality.OPTIONAL, "60");
+
+    @Override
+    public String getName()
+    {
+        return "Sharded Integrity Checks Spark Job";
+    }
+
+    @Override
+    public void start(final CommandMap commandMap)
+    {
+        final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
+        final String input = Optional.ofNullable(input(commandMap)).orElse(atlasDirectory);
+        final String output = output(commandMap);
+        @SuppressWarnings("unchecked")
+        final Set<OutputFormats> outputFormats = (Set<OutputFormats>) commandMap
+                .get(OUTPUT_FORMATS);
+        final StringList countries = StringList.split((String) commandMap.get(COUNTRIES),
+                CommonConstants.COMMA);
+        final MapRouletteConfiguration mapRouletteConfiguration = (MapRouletteConfiguration) commandMap
+                .get(MAP_ROULETTE);
+        @SuppressWarnings("unchecked")
+        final Optional<List<String>> checkFilter = (Optional<List<String>>) commandMap
+                .getOption(CHECK_FILTER);
+
+        final Configuration checksConfiguration = new MergedConfiguration(Stream
+                .concat(Stream.of(ConfigurationResolver.loadConfiguration(commandMap,
+                        CONFIGURATION_FILES, CONFIGURATION_JSON)),
+                        Stream.of(checkFilter
+                                .<Configuration> map(whitelist -> new StandardConfiguration(
+                                        "WhiteListConfiguration",
+                                        Collections.singletonMap(
+                                                "CheckResourceLoader.checks.whitelist", whitelist)))
+                                .orElse(ConfigurationResolver.emptyConfiguration())))
+                .collect(Collectors.toList()));
+
+        final Map<String, String> sparkContext = configurationMap();
+        final boolean saveIntermediateAtlas = (Boolean) commandMap.get(PBF_SAVE_INTERMEDIATE_ATLAS);
+        final AtlasFilePathResolver resolver = new AtlasFilePathResolver(checksConfiguration);
+        final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
+        final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
+
+       //check inputs
+        if(countries.isEmpty())
+        {
+            logger.error("No countries found to run");
+            return;
+        }
+        final MultiMap<String, Check>  countryChecks = new MultiMap<>();
+        for(final String country: countries)
+        {
+            final Set<Check> checksLoadedForCountry =  checkLoader.loadChecksForCountry(country);
+            if(checksLoadedForCountry.isEmpty())
+            {
+                logger.warn("No checks loaded for country {}. Skipping execution", country);
+            }else
+            {
+                checksLoadedForCountry.forEach(check -> countryChecks.add(country, check));
+            }
+        }
+        if(countryChecks.isEmpty())
+        {
+            logger.error("No checks loaded for any of the countries provided. Skipping execution");
+            return;
+        }
+
+        // find the shards for each country atlas files
+        MultiMap<String, Shard>  countryShards = countryShardMapFromShardFiles(countries.stream().collect(Collectors.toSet()), resolver, input, sparkContext);
+        if(countryShards.isEmpty())
+        {
+            logger.info("No atlas files found in input ");
+        }
+
+        if(!countries.stream().allMatch(countryShards::containsKey))
+        {
+            final Set<String> missingCountries = countries.stream().filter(aCountry -> ! countryShards.containsKey(aCountry)).collect(
+                    Collectors.toSet());
+            logger.error("Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas or <zoom>_<x>_<y>.pbf", input, missingCountries.toString());
+            return;
+        }
+
+        final Integer maxShardLoad = (Integer) commandMap.get(SHARD_LOAD_MAX);
+        final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
+        final List<Tuple2<String, ShardGroup>> countryShardGroups = new LinkedList<>();
+        int unitsOfWork = 0;
+        for(final Map.Entry<String, List<Shard>> countryShard: countryShards.entrySet())
+        {
+            final List<ShardGroup> groupsForCountry = new ShardGrouper(countryShard.getValue(), maxShardLoad, distanceToLoadShards).getGroups();
+            unitsOfWork += groupsForCountry.size();
+            groupsForCountry.stream().map(group -> new Tuple2<>(countryShard.getKey(), group)).forEach(countryShardGroups::add);
+        }
+
+        final JavaRDD<Tuple2<String, ShardGroup>> countryGroups = this.getContext().parallelize(countryShardGroups, unitsOfWork);
+        //countryGroups.map(//do work)
+    }
+
+    @Override
+    protected SwitchList switches()
+    {
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE);
+    }
+}
