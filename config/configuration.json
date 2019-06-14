@@ -144,9 +144,15 @@
       "tags":"highway"
     }
   },
-  "GeneralizedCoastlineCheck":
-  {
-
+  "GeneralizedCoastlineCheck": {
+    "challenge": {
+      "description": "Coastlines whose nodes are too far apart.",
+      "blurb": "Ways",
+      "instruction": "Open your favorite editor and add more nodes to the coastline.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "tags":"coastline"
+    }
   },
   "IntersectingBuildingsCheck":
   {

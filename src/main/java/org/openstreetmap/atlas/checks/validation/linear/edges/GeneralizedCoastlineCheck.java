@@ -40,10 +40,10 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
         super(configuration);
-        this.percentageThreshold = this.configurationValue(configuration, "thresholdPercentage",
+        this.percentageThreshold = this.configurationValue(configuration, "node.minimum.threshold",
                 MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE);
         this.minimumDistanceBetweenNodes = this.configurationValue(configuration,
-                "distanceBetweenNodes.minimum", MINIMUM_DISTANCE_BETWEEN_NODES);
+                "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES);
     }
 
     /**

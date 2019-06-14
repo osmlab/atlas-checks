@@ -55,7 +55,7 @@ public class GeneralizedCoastlineCheckTest
     {
         this.verifier.actual(this.setup.getExactThresholdGeneralized(),
                 new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"GeneralizedCoastlineCheck\":{\"generalizedCoastline.thresholdPercentage\":33.33}}")));
+                        "{\"GeneralizedCoastlineCheck\":{\"generalizedCoastline.node.minimum.threshold\":33.33}}")));
         this.verifier.verifyExpectedSize(1);
     }
 
