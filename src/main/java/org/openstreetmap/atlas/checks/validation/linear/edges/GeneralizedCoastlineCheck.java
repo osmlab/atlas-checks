@@ -31,6 +31,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private static final long MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
 
+    private static final double PERCENTAGE_ADJUST = 100.0;
     private final double percentageThreshold;
     private final long minimumDistanceBetweenNodes;
 
@@ -74,7 +75,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final double generalizedSegments = percentCoastlineSegmentsThatAreGeneralized(
+        final double generalizedSegments = getGeneralizedSegmentPercentage(
                 (LineItem) object);
         if (generalizedSegments >= this.percentageThreshold)
         {
@@ -93,19 +94,11 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
      * @return The percentage of generalized {@link Segment}s in the parameter {@link LineItem},
      *         0-100 inclusive.
      */
-    private double percentCoastlineSegmentsThatAreGeneralized(final LineItem line)
+    private double getGeneralizedSegmentPercentage(final LineItem line)
     {
-        int innerCount = 0;
-        final List<Segment> segments = line.asPolyLine().segments();
-        for (final Segment segment : segments)
-        {
-            if (segment.length().asMeters() >= this.minimumDistanceBetweenNodes)
-            {
-                ++innerCount;
-            }
-        }
-        final double percentageAdjust = 100.0;
-        return innerCount == 0 ? 0.0 : percentageAdjust * ((double) innerCount / segments.size());
+        List<Segment> segments = line.asPolyLine().segments();
+        final double innerCount = segments.stream().filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes).count();
+        return innerCount == 0.0 ? 0.0 : PERCENTAGE_ADJUST * (innerCount / segments.size());
     }
 
     @Override
