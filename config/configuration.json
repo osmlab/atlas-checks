@@ -145,6 +145,8 @@
     }
   },
   "GeneralizedCoastlineCheck": {
+    "node.minimum.distance": 100,
+    "node.minimum.threshold": 30.0,
     "challenge": {
       "description": "Coastlines whose nodes are too far apart.",
       "blurb": "Ways",

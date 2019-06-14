@@ -75,8 +75,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final double generalizedSegments = getGeneralizedSegmentPercentage(
-                (LineItem) object);
+        final double generalizedSegments = getGeneralizedSegmentPercentage((LineItem) object);
         if (generalizedSegments >= this.percentageThreshold)
         {
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
@@ -96,8 +95,10 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
      */
     private double getGeneralizedSegmentPercentage(final LineItem line)
     {
-        List<Segment> segments = line.asPolyLine().segments();
-        final double innerCount = segments.stream().filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes).count();
+        final List<Segment> segments = line.asPolyLine().segments();
+        final double innerCount = segments.stream()
+                .filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes)
+                .count();
         return innerCount == 0.0 ? 0.0 : PERCENTAGE_ADJUST * (innerCount / segments.size());
     }
 
