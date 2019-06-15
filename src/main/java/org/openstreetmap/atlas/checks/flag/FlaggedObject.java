@@ -57,6 +57,12 @@ public abstract class FlaggedObject implements Serializable, Located
     }
 
     /**
+     * Return either itself or a copy of itself where there is no memory reference to an Atlas.
+     *
+     * @return Flagged Object with no memory reference to an Atlas
+     */
+    public abstract FlaggedObject getAsCompleteFlaggedObject();
+    /**
      * @return the flagged object's country code
      */
     public String getCountry()

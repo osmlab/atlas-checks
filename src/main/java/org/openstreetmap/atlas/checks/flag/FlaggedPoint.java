@@ -50,6 +50,12 @@ public class FlaggedPoint extends FlaggedObject
     }
 
     @Override
+    public FlaggedObject getAsCompleteFlaggedObject()
+    {
+        return this;
+    }
+
+    @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
         final JsonObject geoJsonGeometry;

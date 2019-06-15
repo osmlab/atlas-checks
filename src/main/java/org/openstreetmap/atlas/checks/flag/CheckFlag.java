@@ -59,7 +59,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private final String identifier;
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
-    private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
+    private Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -254,6 +254,13 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public Rectangle bounds()
     {
         return Rectangle.forLocated(new MultiIterable<>(this.getShapes()));
+    }
+
+    public void makeComplete()
+    {
+        final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();
+        this.flaggedObjects.forEach( flaggedObject -> completeFlaggedObjects.add(flaggedObject.getAsCompleteFlaggedObject()));
+        this.flaggedObjects = completeFlaggedObjects;
     }
 
     @Override

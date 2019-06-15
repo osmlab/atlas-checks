@@ -160,40 +160,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
                 });
         });
 
-        // no atlas shard files found, looking for pbf shard files
-        logger.info("Not atlas files found, looking for pbf shard files");
-        if(countryShardMap.isEmpty())
-        {
-            countries.forEach(country ->
-            {
-                final String countryDirectory = pathResolver.resolvePath(atlasFolder, country);
-                FileSystemHelper.listResourcesRecursively(countryDirectory, sparkContext, new OsmPbfFilePathFilter())
-                        .forEach(pbfResource ->
-                        {
-                            final Matcher matcher = PBF_FILENAME_PATTERN.matcher(pbfResource.getName());
-                            if(matcher.find())
-                            {
-                                try
-                                {
-                                    final String zoomString = matcher.group(1);
-                                    final String xString = matcher.group(2);
-                                    final String yString = matcher.group(3);
-                                    countryShardMap.add(country,
-                                            new SlippyTile(Integer.parseInt(xString),
-                                                    Integer.parseInt(yString),
-                                                    Integer.parseInt(zoomString)));
-                                }catch (final Exception e)
-                                {
-                                    logger.warn(String.format("Couldn't parse shard file name %s.",
-                                            pbfResource.getName()), e);
-                                }
-                            }
-                        }
-
-                );
-            });
-        }
-
         return countryShardMap;
     }
 }

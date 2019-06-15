@@ -1,16 +1,23 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.api.java.function.VoidFunction2;
 import org.apache.spark.rdd.RDD;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.utility.ShardGroup;
 import org.openstreetmap.atlas.checks.utility.ShardGrouper;
+import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.sharding.Shard;
+import org.openstreetmap.atlas.utilities.collections.Maps;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
@@ -20,15 +27,19 @@ import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Serializable;
 import scala.Tuple2;
+import scala.Tuple3;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,17 +131,41 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         final Integer maxShardLoad = (Integer) commandMap.get(SHARD_LOAD_MAX);
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
-        final List<Tuple2<String, ShardGroup>> countryShardGroups = new LinkedList<>();
+        final List<ShardedCheckFlagsTask> tasks = new LinkedList<>();
         int unitsOfWork = 0;
         for(final Map.Entry<String, List<Shard>> countryShard: countryShards.entrySet())
         {
             final List<ShardGroup> groupsForCountry = new ShardGrouper(countryShard.getValue(), maxShardLoad, distanceToLoadShards).getGroups();
             unitsOfWork += groupsForCountry.size();
-            groupsForCountry.stream().map(group -> new Tuple2<>(countryShard.getKey(), group)).forEach(countryShardGroups::add);
+            groupsForCountry.stream().map(group -> new ShardedCheckFlagsTask(countryShard.getKey(), group, countryChecks.get(countryShard.getKey()))).forEach(tasks::add);
         }
 
-        final JavaRDD<Tuple2<String, ShardGroup>> countryGroups = this.getContext().parallelize(countryShardGroups, unitsOfWork);
-        //countryGroups.map(//do work)
+        this.getContext().parallelize(tasks, unitsOfWork).mapToPair(produceFlags(input, fileHelper)).reduceByKey(UniqueCheckFlagContainer::combine).foreach(processFlags(output, fileHelper));
+    }
+
+    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(final String input, final SparkFileHelper fileHelper)
+    {
+        return task ->
+        {
+            return new Tuple2<>(task.getCountry(), new UniqueCheckFlagContainer());
+        };
+    }
+
+    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output, final SparkFileHelper fileHelper)
+    {
+        return tuple ->
+        {
+                return;
+        };
+    }
+
+
+    private Function<Shard, Optional<Atlas>> atlasFetcher(final String countryInput, final SparkFileHelper fileHelper)
+    {
+        return (Function<Shard, Optional<Atlas>> & Serializable) shard ->
+        {
+            return Optional.empty();
+        };
     }
 
     @Override
