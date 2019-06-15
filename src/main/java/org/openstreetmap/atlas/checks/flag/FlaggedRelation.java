@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteRelation;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
@@ -64,6 +65,12 @@ public class FlaggedRelation extends FlaggedObject
     public boolean equals(final Object other)
     {
         return super.equals(other);
+    }
+
+    @Override
+    public FlaggedObject getAsCompleteFlaggedObject()
+    {
+        return new FlaggedRelation(CompleteRelation.from(this.relation));
     }
 
     /**

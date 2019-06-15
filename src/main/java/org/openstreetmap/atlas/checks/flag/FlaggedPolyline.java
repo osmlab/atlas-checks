@@ -2,9 +2,13 @@ package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Map;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteArea;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteLine;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -68,6 +72,22 @@ public class FlaggedPolyline extends FlaggedObject
     public Rectangle bounds()
     {
         return this.atlasItem.bounds();
+    }
+
+    @Override
+    public FlaggedObject getAsCompleteFlaggedObject()
+    {
+        if(this.atlasItem instanceof Area)
+        {
+            return new FlaggedPolyline(CompleteArea.from((Area) this.atlasItem));
+        }else if( this.atlasItem instanceof Edge)
+        {
+            return  new FlaggedPolyline(CompleteEdge.from((Edge) this.atlasItem));
+        }else if(this.atlasItem instanceof Line)
+        {
+            return new FlaggedPolyline(CompleteLine.from((Line) this.atlasItem));
+        }
+        throw new CoreException("FlaggedPolyline has improper Atlas Item {}", this.atlasItem);
     }
 
     @Override
