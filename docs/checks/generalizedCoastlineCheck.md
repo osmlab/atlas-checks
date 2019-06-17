@@ -15,4 +15,4 @@ The check ensures that the Atlas object being evaluated is a [LineItem](https://
 calculates the percentage of Segments whose lengths are greater than some configured value. Then it flags the item if
 this percentage is greater than some configured value.
 
-Please see source code for the GeneralizedCoastlineCheck here: [GeneralizedCoastlineCheck](src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/GeneralizedCoastlineCheck.java)
+Please see source code for the GeneralizedCoastlineCheck here: [GeneralizedCoastlineCheck](src/main/java/org/openstreetmap/atlas/checks/validation/linear/lines/GeneralizedCoastlineCheck.java)
