@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.linear.edges;
+package org.openstreetmap.atlas.checks.validation.linear.lines;
 
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
