@@ -1,7 +1,15 @@
 package org.openstreetmap.atlas.checks.distributed;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.openstreetmap.atlas.checks.atlas.CountrySpecificAtlasFilePathFilter;
-import org.openstreetmap.atlas.checks.atlas.OsmPbfFilePathFilter;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
@@ -17,15 +25,6 @@ import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 public abstract class IntegrityChecksCommandArguments extends SparkJob
 {
 
@@ -40,9 +39,11 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
         TIPPECANOE
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(IntegrityChecksCommandArguments.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(IntegrityChecksCommandArguments.class);
     private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
-    private static final Pattern PBF_FILENAME_PATTERN = Pattern.compile("^([0-9]+)-([0-9]+)-([0-9]+)");
+    private static final Pattern PBF_FILENAME_PATTERN = Pattern
+            .compile("^([0-9]+)-([0-9]+)-([0-9]+)");
 
     @Deprecated
     protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
@@ -76,7 +77,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
             "Comma-separated list of checks to run",
             checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
-
 
     @Override
     protected SwitchList switches()
@@ -124,7 +124,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
         final MultiMap<String, Shard> countryShardMap = new MultiMap<>();
         logger.info("Building country shard map from country shard files.");
 
-
         countries.forEach(country ->
         {
             final String countryDirectory = pathResolver.resolvePath(atlasFolder, country);
@@ -134,30 +133,30 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
                     .compile(String.format(ATLAS_FILENAME_PATTERN_FORMAT, country));
 
             // Go over shard files for the country and use file name pattern to find out shards
-            FileSystemHelper.listResourcesRecursively(countryDirectory, sparkContext,
-                    atlasFilter).forEach(shardFile ->
-                {
-                    final String shardFileName = shardFile.getName();
-                    final Matcher matcher = atlasFilePattern.matcher(shardFileName);
-                    if (matcher.find())
+            FileSystemHelper.listResourcesRecursively(countryDirectory, sparkContext, atlasFilter)
+                    .forEach(shardFile ->
                     {
-                        try
+                        final String shardFileName = shardFile.getName();
+                        final Matcher matcher = atlasFilePattern.matcher(shardFileName);
+                        if (matcher.find())
                         {
-                            final String zoomString = matcher.group(1);
-                            final String xString = matcher.group(2);
-                            final String yString = matcher.group(3);
-                            countryShardMap.add(country,
-                                    new SlippyTile(Integer.parseInt(xString),
-                                            Integer.parseInt(yString),
-                                            Integer.parseInt(zoomString)));
+                            try
+                            {
+                                final String zoomString = matcher.group(1);
+                                final String xString = matcher.group(2);
+                                final String yString = matcher.group(3);
+                                countryShardMap.add(country,
+                                        new SlippyTile(Integer.parseInt(xString),
+                                                Integer.parseInt(yString),
+                                                Integer.parseInt(zoomString)));
+                            }
+                            catch (final Exception e)
+                            {
+                                logger.warn(String.format("Couldn't parse shard file name %s.",
+                                        shardFileName), e);
+                            }
                         }
-                        catch (final Exception e)
-                        {
-                            logger.warn(String.format("Couldn't parse shard file name %s.",
-                                    shardFileName), e);
-                        }
-                    }
-                });
+                    });
         });
 
         return countryShardMap;

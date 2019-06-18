@@ -1,39 +1,6 @@
 package org.openstreetmap.atlas.checks.distributed;
 
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.api.java.function.VoidFunction2;
-import org.apache.spark.rdd.RDD;
-import org.openstreetmap.atlas.checks.base.Check;
-import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
-import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
-import org.openstreetmap.atlas.checks.constants.CommonConstants;
-import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
-import org.openstreetmap.atlas.checks.utility.ShardGroup;
-import org.openstreetmap.atlas.checks.utility.ShardGrouper;
-import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
-import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
-import org.openstreetmap.atlas.geography.atlas.Atlas;
-import org.openstreetmap.atlas.geography.sharding.Shard;
-import org.openstreetmap.atlas.utilities.collections.Maps;
-import org.openstreetmap.atlas.utilities.collections.StringList;
-import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
-import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
-import org.openstreetmap.atlas.utilities.maps.MultiMap;
-import org.openstreetmap.atlas.utilities.runtime.CommandMap;
-import org.openstreetmap.atlas.utilities.scalars.Distance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import scala.Serializable;
-import scala.Tuple2;
-import scala.Tuple3;
-
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +10,44 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
+import org.openstreetmap.atlas.checks.base.Check;
+import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
+import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
+import org.openstreetmap.atlas.checks.constants.CommonConstants;
+import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
+import org.openstreetmap.atlas.checks.utility.ShardGroup;
+import org.openstreetmap.atlas.checks.utility.ShardGrouper;
+import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
+import org.openstreetmap.atlas.geography.sharding.Shard;
+import org.openstreetmap.atlas.utilities.collections.StringList;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
+import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
+import org.openstreetmap.atlas.utilities.maps.MultiMap;
+import org.openstreetmap.atlas.utilities.runtime.CommandMap;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import scala.Serializable;
+import scala.Tuple2;
+
 public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArguments
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(ShardedIntegrityChecksSparkJob.class);
-    private static final Switch<Distance> EXPANSION_DISTANCE = new Switch<>("shardBufferDistance", "Distance to expand the bounds of the shard group to create a network in kilometers",distanceString -> Distance.kilometers(Double.valueOf(distanceString)), Optionality.OPTIONAL, "10.0");
-    private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad", "The maximum amount of shards loaded into memory per executor", Integer::valueOf, Optionality.OPTIONAL, "60");
+    private static final Logger logger = LoggerFactory
+            .getLogger(ShardedIntegrityChecksSparkJob.class);
+    private static final Switch<Distance> EXPANSION_DISTANCE = new Switch<>("shardBufferDistance",
+            "Distance to expand the bounds of the shard group to create a network in kilometers",
+            distanceString -> Distance.kilometers(Double.valueOf(distanceString)),
+            Optionality.OPTIONAL, "10.0");
+    private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad",
+            "The maximum amount of shards loaded into memory per executor", Integer::valueOf,
+            Optionality.OPTIONAL, "60");
 
     @Override
     public String getName()
@@ -90,42 +89,47 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
-       //check inputs
-        if(countries.isEmpty())
+        // check inputs
+        if (countries.isEmpty())
         {
             logger.error("No countries found to run");
             return;
         }
-        final MultiMap<String, Check>  countryChecks = new MultiMap<>();
-        for(final String country: countries)
+        final MultiMap<String, Check> countryChecks = new MultiMap<>();
+        for (final String country : countries)
         {
-            final Set<Check> checksLoadedForCountry =  checkLoader.loadChecksForCountry(country);
-            if(checksLoadedForCountry.isEmpty())
+            final Set<Check> checksLoadedForCountry = checkLoader.loadChecksForCountry(country);
+            if (checksLoadedForCountry.isEmpty())
             {
                 logger.warn("No checks loaded for country {}. Skipping execution", country);
-            }else
+            }
+            else
             {
                 checksLoadedForCountry.forEach(check -> countryChecks.add(country, check));
             }
         }
-        if(countryChecks.isEmpty())
+        if (countryChecks.isEmpty())
         {
             logger.error("No checks loaded for any of the countries provided. Skipping execution");
             return;
         }
 
         // find the shards for each country atlas files
-        MultiMap<String, Shard>  countryShards = countryShardMapFromShardFiles(countries.stream().collect(Collectors.toSet()), resolver, input, sparkContext);
-        if(countryShards.isEmpty())
+        MultiMap<String, Shard> countryShards = countryShardMapFromShardFiles(
+                countries.stream().collect(Collectors.toSet()), resolver, input, sparkContext);
+        if (countryShards.isEmpty())
         {
             logger.info("No atlas files found in input ");
         }
 
-        if(!countries.stream().allMatch(countryShards::containsKey))
+        if (!countries.stream().allMatch(countryShards::containsKey))
         {
-            final Set<String> missingCountries = countries.stream().filter(aCountry -> ! countryShards.containsKey(aCountry)).collect(
-                    Collectors.toSet());
-            logger.error("Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas or <zoom>_<x>_<y>.pbf", input, missingCountries.toString());
+            final Set<String> missingCountries = countries.stream()
+                    .filter(aCountry -> !countryShards.containsKey(aCountry))
+                    .collect(Collectors.toSet());
+            logger.error(
+                    "Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas or <zoom>_<x>_<y>.pbf",
+                    input, missingCountries.toString());
             return;
         }
 
@@ -133,34 +137,42 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
         final List<ShardedCheckFlagsTask> tasks = new LinkedList<>();
         int unitsOfWork = 0;
-        for(final Map.Entry<String, List<Shard>> countryShard: countryShards.entrySet())
+        for (final Map.Entry<String, List<Shard>> countryShard : countryShards.entrySet())
         {
-            final List<ShardGroup> groupsForCountry = new ShardGrouper(countryShard.getValue(), maxShardLoad, distanceToLoadShards).getGroups();
+            final List<ShardGroup> groupsForCountry = new ShardGrouper(countryShard.getValue(),
+                    maxShardLoad, distanceToLoadShards).getGroups();
             unitsOfWork += groupsForCountry.size();
-            groupsForCountry.stream().map(group -> new ShardedCheckFlagsTask(countryShard.getKey(), group, countryChecks.get(countryShard.getKey()))).forEach(tasks::add);
+            groupsForCountry.stream().map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
+                    group, countryChecks.get(countryShard.getKey()))).forEach(tasks::add);
         }
 
-        this.getContext().parallelize(tasks, unitsOfWork).mapToPair(produceFlags(input, fileHelper)).reduceByKey(UniqueCheckFlagContainer::combine).foreach(processFlags(output, fileHelper));
+        this.getContext().parallelize(tasks, unitsOfWork).mapToPair(produceFlags(input, fileHelper))
+                .reduceByKey(UniqueCheckFlagContainer::combine)
+                .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
     }
 
-    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(final String input, final SparkFileHelper fileHelper)
+    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
+            final String input, final SparkFileHelper fileHelper)
     {
         return task ->
         {
+
             return new Tuple2<>(task.getCountry(), new UniqueCheckFlagContainer());
         };
     }
 
-    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output, final SparkFileHelper fileHelper)
+    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output,
+            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats, final MapRouletteConfiguration mapRouletteConfiguration)
     {
         return tuple ->
         {
-                return;
+
+            return;
         };
     }
 
-
-    private Function<Shard, Optional<Atlas>> atlasFetcher(final String countryInput, final SparkFileHelper fileHelper)
+    private Function<Shard, Optional<Atlas>> atlasFetcher(final String countryInput,
+            final SparkFileHelper fileHelper)
     {
         return (Function<Shard, Optional<Atlas>> & Serializable) shard ->
         {

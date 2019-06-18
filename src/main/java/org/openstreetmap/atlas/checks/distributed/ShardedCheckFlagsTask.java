@@ -1,16 +1,14 @@
 package org.openstreetmap.atlas.checks.distributed;
 
+import java.util.List;
 
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.utility.ShardGroup;
 
-import java.util.List;
-import java.util.Set;
-
 public class ShardedCheckFlagsTask
 {
     private final String country;
-    private final ShardGroup  shardGroup;
+    private final ShardGroup shardGroup;
     private final List<Check> checks;
 
     public ShardedCheckFlagsTask(final String country, final ShardGroup shardGroup,

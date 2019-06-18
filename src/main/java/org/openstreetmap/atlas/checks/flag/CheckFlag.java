@@ -259,7 +259,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public void makeComplete()
     {
         final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();
-        this.flaggedObjects.forEach( flaggedObject -> completeFlaggedObjects.add(flaggedObject.getAsCompleteFlaggedObject()));
+        this.flaggedObjects.forEach(flaggedObject -> completeFlaggedObjects
+                .add(flaggedObject.getAsCompleteFlaggedObject()));
         this.flaggedObjects = completeFlaggedObjects;
     }
 

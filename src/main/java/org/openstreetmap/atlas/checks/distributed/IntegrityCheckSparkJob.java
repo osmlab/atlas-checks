@@ -420,8 +420,6 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         return staticPaths;
     }
 
-
-
     /**
      * Basic sanity check to ensure we aren't processing an empty list of countries or integrity
      * checks
