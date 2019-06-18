@@ -1,6 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.linear.lines;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,8 +13,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Flags generalized coastlines-- that is, OSM ways with the tag natural=coastline where x% or more
@@ -26,16 +24,14 @@ import org.slf4j.LoggerFactory;
  */
 public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline.");
     private static final long MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
 
-    private static final double PERCENTAGE_ADJUST = 100.0;
+    private static final double HUNDRED_PERCENT = 100.0;
     private final double percentageThreshold;
     private final long minimumDistanceBetweenNodes;
-
-    private static final Logger logger = LoggerFactory.getLogger(GeneralizedCoastlineCheck.class);
 
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
@@ -59,9 +55,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     {
         return object instanceof LineItem
                 && (Validators.isOfType(object, NaturalTag.class, NaturalTag.COASTLINE)
-                        || ((LineItem) object).relations().stream()
-                                .anyMatch((Relation relation) -> Validators.isOfType(relation,
-                                        NaturalTag.class, NaturalTag.COASTLINE)));
+                        || ((LineItem) object).relations().stream().anyMatch(relation -> Validators
+                                .isOfType(relation, NaturalTag.class, NaturalTag.COASTLINE)));
     }
 
     /**
@@ -75,13 +70,11 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final double generalizedSegments = getGeneralizedSegmentPercentage((LineItem) object);
-        if (generalizedSegments >= this.percentageThreshold)
-        {
-            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
-                    generalizedSegments, this.minimumDistanceBetweenNodes)));
-        }
-        return Optional.empty();
+        final double generalizedSegments = this.getGeneralizedSegmentPercentage((LineItem) object);
+        return generalizedSegments >= this.percentageThreshold
+                ? Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                        generalizedSegments, this.minimumDistanceBetweenNodes)))
+                : Optional.empty();
     }
 
     /**
@@ -99,7 +92,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
         final double innerCount = segments.stream()
                 .filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes)
                 .count();
-        return innerCount == 0.0 ? 0.0 : PERCENTAGE_ADJUST * (innerCount / segments.size());
+        return segments.size() == 0 ? 0.0 : HUNDRED_PERCENT * (innerCount / segments.size());
     }
 
     @Override
