@@ -46,10 +46,11 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     private static final long DEFAULT_MINIMUM_CIRCULAR_POINTS = 4;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "There are sharp angles ({0} degrees, which is less than the threshold of {1} degrees) in this building's geometry. This may be a result of poor digitization.");
-    private Angle headingThreshold;
-    private Angle circularAngleThreshold;
-    private Angle minimumTotalCircularAngleThreshold;
-    private long minimumCircularPointsInCurve;
+    private static final long serialVersionUID = 4855581831899813303L;
+    private final Angle headingThreshold;
+    private final Angle circularAngleThreshold;
+    private final Angle minimumTotalCircularAngleThreshold;
+    private final long minimumCircularPointsInCurve;
 
     /**
      * Default constructor
@@ -80,40 +81,90 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
                 && this.isBuildingOrPart(object);
     }
 
-    /**
-     * Given an object, returns true if that object has a building tag or building part tag
-     * indicating that it is either a building or a building part.
-     * 
-     * @param object
-     *            any AtlasObject
-     * @return true if object is a building or a building part, false otherwise
-     */
-    private boolean isBuildingOrPart(final AtlasObject object)
+    @Override
+    protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        return BuildingTag.isBuilding(object)
-                || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
-    }
-
-    /**
-     * Converts a RelationMember to a polygon if that member is an area.
-     * 
-     * @param member
-     *            any RelationMember object
-     * @return an polygon containing the geometry of member if it is an area, otherwise an empty
-     *         optional.
-     */
-    private Optional<Polygon> toPolygon(final RelationMember member)
-    {
-        if (member.getEntity().getType().equals(ItemType.AREA))
+        final List<Tuple<Angle, Location>> allSpikyAngles = this.getPolygons(object)
+                .map(this::getSpikyAngleLocations)
+                .filter(angleLocations -> !angleLocations.isEmpty()).flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        if (!allSpikyAngles.isEmpty())
         {
-            return Optional.of(((Area) member.getEntity()).asPolygon());
+            final String instruction = this
+                    .getLocalizedInstruction(0,
+                            allSpikyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
+                                    .collect(Collectors.joining(", ")),
+                            this.headingThreshold.toString());
+            final List<Location> markers = allSpikyAngles.stream().map(Tuple::getSecond)
+                    .collect(Collectors.toList());
+            final CheckFlag flag;
+            if (object instanceof Area)
+            {
+                flag = this.createFlag(object, instruction, markers);
+            }
+            else
+            {
+                flag = this.createFlag(((Relation) object).flatten(), instruction, markers);
+            }
+            return Optional.of(flag);
         }
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Returns a set of locations which correspond to interior angles of curved portions of a
+     * polygons' geometry, using some heuristics to define curved.
+     *
+     * @param segments
+     *            the cached results of a call to Polyline.segments()
+     * @return A set of all locations for which the heuristics hold true.
+     */
+    private Set<Location> getCurvedLocations(final List<Segment> segments)
+    {
+        final List<Triple<Integer, Segment, Segment>> curvedSections = this
+                .summarizeCurvedSections(this.getPotentiallyCircularPoints(segments)).stream()
+                // Has at least minimumCircularPointsInCurve
+                .filter(segment -> segment.getLeft() >= this.minimumCircularPointsInCurve)
+                // Changes heading by at least minimumTotalCircularAngleThreshold
+                .filter(segment -> this
+                        .getDifferenceInHeadings(segment.getMiddle(), segment.getRight(),
+                                Angle.MINIMUM)
+                        .isGreaterThanOrEqualTo(this.minimumTotalCircularAngleThreshold))
+                .collect(Collectors.toList());
+        return this.sectionsToLocations(curvedSections, segments);
+    }
+
+    /**
+     * Gets the difference in headings between firstSegment and secondSegment, returning
+     * defaultAngle if either segments are a point.
+     *
+     * @param firstSegment
+     *            the first segment to compare
+     * @param secondSegment
+     *            the second segment to compare
+     * @param defaultAngle
+     *            the default value to return
+     * @return the difference between firstSegment.heading() and secondSegment.heading() if neither
+     *         segment is a single point (same start and end nodes), or defaultAngle if either
+     *         segment is a single point
+     */
+    private Angle getDifferenceInHeadings(final Segment firstSegment, final Segment secondSegment,
+            final Angle defaultAngle)
+    {
+        return firstSegment.heading()
+                .flatMap(first -> secondSegment.heading().map(first::difference))
+                .orElse(defaultAngle);
+    }
+
     /**
      * Gets all of the polygons contained in this object, if this object has any.
-     * 
+     *
      * @param object
      *            any atlas object
      * @return A singleton stream if object is an Area, a stream if object is a Multipolygon, or an
@@ -134,32 +185,9 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     }
 
     /**
-     * Returns a set of locations which correspond to interior angles of curved portions of a
-     * polygons' geometry, using some heuristics to define curved.
-     * 
-     * @param segments
-     *            the cached results of a call to Polyline.segments()
-     * @return A set of all locations for which the heuristics hold true.
-     */
-    private Set<Location> getCurvedLocations(final List<Segment> segments)
-    {
-        final List<Triple<Integer, Segment, Segment>> curvedSections = this
-                .summarizeCurvedSections(this.getPotentiallyCircularPoints(segments)).stream()
-                // Has at least minimumCircularPointsInCurve
-                .filter(segment -> segment.getLeft() >= minimumCircularPointsInCurve)
-                // Changes heading by at least minimumTotalCircularAngleThreshold
-                .filter(segment -> this
-                        .getDifferenceInHeadings(segment.getMiddle(), segment.getRight(),
-                                Angle.MINIMUM)
-                        .isGreaterThanOrEqualTo(minimumTotalCircularAngleThreshold))
-                .collect(Collectors.toList());
-        return this.sectionsToLocations(curvedSections, segments);
-    }
-
-    /**
      * Given a polygon, return a list of all points which have a change in heading less than
      * circularAngleThreshold.
-     * 
+     *
      * @param segments
      *            the cached results of a call to Polyline.segments()
      * @return A List of Tuples containing two consecutive segments. We use this to refer to the
@@ -170,64 +198,73 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     {
         return this.segmentPairsFrom(segments)
                 .filter(segmentTuple -> this.getDifferenceInHeadings(segmentTuple.getFirst(),
-                        segmentTuple.getSecond(), Angle.MAXIMUM).isLessThan(circularAngleThreshold))
+                        segmentTuple.getSecond(), Angle.MAXIMUM)
+                        .isLessThan(this.circularAngleThreshold))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Given a list of potentially circular points, summarize each section into a triple containing
-     * the segment before the first point, the segment after the last point, and the number of
-     * points contained inside.
-     * 
+     * For an point defined by the two surrounding segments, return the angle and location of that
+     * point if that point is not part of a curve, and the angle between the two segments is less
+     * than headingThreshold.
+     *
+     * @param beforeAngle
+     *            the segment directly before the point in question
+     * @param afterAngle
+     *            the segment directly after the point in question
      * @param curvedLocations
-     *            a list of points defined by the two segments connected to those points, as
-     *            generated by getPotentiallyCircularPoints.
-     * @return a list of summary stats for each curved segment, containing the number of points, the
-     *         segment before the first point, and the segment after the last point, in that order.
+     *            the locations of all curved segments in the polygon
+     * @return an empty optional if the point is part of a curve, or if the angle is greater than or
+     *         equal to headingThreshold. Otherwise, a tuple containing the location of the point
+     *         and the angle between beforeAnge and afterAngle
      */
-    private List<Triple<Integer, Segment, Segment>> summarizeCurvedSections(
-            final List<Tuple<Segment, Segment>> curvedLocations)
+    private Optional<Tuple<Angle, Location>> getSpikyAngleLocation(final Segment beforeAngle,
+            final Segment afterAngle, final Set<Location> curvedLocations)
     {
-        if (curvedLocations.isEmpty())
+        if (!curvedLocations.contains(afterAngle.end())
+                && !curvedLocations.contains(beforeAngle.start()))
         {
-            return Collections.emptyList();
-        }
-        final List<Triple<Integer, Segment, Segment>> summaryStats = new ArrayList<>();
-        Tuple<Segment, Segment> start = curvedLocations.get(0);
-        Tuple<Segment, Segment> previous = curvedLocations.get(0);
-        int numPoints = 1;
-        for (final Tuple<Segment, Segment> location : curvedLocations.subList(1,
-                curvedLocations.size()))
-        {
-            // If this location doesn't share a segment with the previous location, we just finished
-            // a segment
-            if (!previous.getSecond().equals(location.getFirst()))
+            final Angle difference = this.getDifferenceInHeadings(beforeAngle,
+                    afterAngle.reversed(), Angle.MAXIMUM);
+            if (difference.isLessThan(this.headingThreshold))
             {
-                summaryStats.add(Triple.of(numPoints, start.getFirst(), previous.getSecond()));
-                numPoints = 1;
-                start = location;
+                return Optional.of(Tuple.createTuple(difference, afterAngle.start()));
             }
-            // Otherwise, we're still part of the same curved section, so just increment numPoints
-            else
-            {
-                numPoints++;
-            }
-            // Always update previous
-            previous = location;
         }
-        // Add the last triple
-        summaryStats.add(Triple.of(numPoints, start.getFirst(), previous.getSecond()));
-        // We might need to clean up a circular segment that wraps around 0.
-        if (summaryStats.get(0).getMiddle()
-                .equals(summaryStats.get(summaryStats.size() - 1).getRight()))
-        {
-            final Triple<Integer, Segment, Segment> first = summaryStats.get(0);
-            final Triple<Integer, Segment, Segment> last = summaryStats.get(0);
+        return Optional.empty();
+    }
 
-            summaryStats.set(0, Triple.of(first.getLeft() + last.getLeft(), last.getMiddle(),
-                    first.getRight()));
-        }
-        return summaryStats;
+    /**
+     * Finds curved sections of a polygon, then gets the location of all spiky angles inside of the
+     * polygon and composes them into a list.
+     *
+     * @param polygon
+     *            any Polygon to analyze
+     * @return a list of tuples representing spiky angles. The first value is the calculated angle
+     *         of a particular point, and the second is its location in the world.
+     */
+    private List<Tuple<Angle, Location>> getSpikyAngleLocations(final Polygon polygon)
+    {
+        final List<Segment> segments = polygon.segments();
+        final Set<Location> curvedLocations = this.getCurvedLocations(segments);
+        return this.segmentPairsFrom(segments)
+                .map(segmentPair -> this.getSpikyAngleLocation(segmentPair.getFirst(),
+                        segmentPair.getSecond(), curvedLocations))
+                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+    }
+
+    /**
+     * Given an object, returns true if that object has a building tag or building part tag
+     * indicating that it is either a building or a building part.
+     *
+     * @param object
+     *            any AtlasObject
+     * @return true if object is a building or a building part, false otherwise
+     */
+    private boolean isBuildingOrPart(final AtlasObject object)
+    {
+        return BuildingTag.isBuilding(object)
+                || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
     }
 
     /**
@@ -235,7 +272,7 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
      * polygon, traverse the polygon and return a set of all curved locations. Effectively a
      * reversal of summarizeCurvedSections. Note that every segment listed in curvedSections should
      * exist somewhere in allSegments!
-     * 
+     *
      * @param curvedSections
      *            a list of summary stats for a polygon generated by summarizeCurvedSections
      * @param allSegments
@@ -312,110 +349,75 @@ public class SpikyBuildingCheck extends BaseCheck<Long>
     }
 
     /**
-     * Finds curved sections of a polygon, then gets the location of all spiky angles inside of the
-     * polygon and composes them into a list.
-     * 
-     * @param polygon
-     *            any Polygon to analyze
-     * @return a list of tuples representing spiky angles. The first value is the calculated angle
-     *         of a particular point, and the second is its location in the world.
-     */
-    private List<Tuple<Angle, Location>> getSpikyAngleLocations(final Polygon polygon)
-    {
-        final List<Segment> segments = polygon.segments();
-        final Set<Location> curvedLocations = this.getCurvedLocations(segments);
-        return this.segmentPairsFrom(segments)
-                .map(segmentPair -> this.getSpikyAngleLocation(segmentPair.getFirst(),
-                        segmentPair.getSecond(), curvedLocations))
-                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
-    }
-
-    /**
-     * For an point defined by the two surrounding segments, return the angle and location of that
-     * point if that point is not part of a curve, and the angle between the two segments is less
-     * than headingThreshold.
-     * 
-     * @param beforeAngle
-     *            the segment directly before the point in question
-     * @param afterAngle
-     *            the segment directly after the point in question
+     * Given a list of potentially circular points, summarize each section into a triple containing
+     * the segment before the first point, the segment after the last point, and the number of
+     * points contained inside.
+     *
      * @param curvedLocations
-     *            the locations of all curved segments in the polygon
-     * @return an empty optional if the point is part of a curve, or if the angle is greater than or
-     *         equal to headingThreshold. Otherwise, a tuple containing the location of the point
-     *         and the angle between beforeAnge and afterAngle
+     *            a list of points defined by the two segments connected to those points, as
+     *            generated by getPotentiallyCircularPoints.
+     * @return a list of summary stats for each curved segment, containing the number of points, the
+     *         segment before the first point, and the segment after the last point, in that order.
      */
-    private Optional<Tuple<Angle, Location>> getSpikyAngleLocation(final Segment beforeAngle,
-            final Segment afterAngle, final Set<Location> curvedLocations)
+    private List<Triple<Integer, Segment, Segment>> summarizeCurvedSections(
+            final List<Tuple<Segment, Segment>> curvedLocations)
     {
-        if (!curvedLocations.contains(afterAngle.end())
-                && !curvedLocations.contains(beforeAngle.start()))
+        if (curvedLocations.isEmpty())
         {
-            final Angle difference = this.getDifferenceInHeadings(beforeAngle,
-                    afterAngle.reversed(), Angle.MAXIMUM);
-            if (difference.isLessThan(headingThreshold))
-            {
-                return Optional.of(Tuple.createTuple(difference, afterAngle.start()));
-            }
+            return Collections.emptyList();
         }
-        return Optional.empty();
-    }
-
-    /**
-     * Gets the difference in headings between firstSegment and secondSegment, returning
-     * defaultAngle if either segments are a point.
-     * 
-     * @param firstSegment
-     *            the first segment to compare
-     * @param secondSegment
-     *            the second segment to compare
-     * @param defaultAngle
-     *            the default value to return
-     * @return the difference between firstSegment.heading() and secondSegment.heading() if neither
-     *         segment is a single point (same start and end nodes), or defaultAngle if either
-     *         segment is a single point
-     */
-    private Angle getDifferenceInHeadings(final Segment firstSegment, final Segment secondSegment,
-            final Angle defaultAngle)
-    {
-        return firstSegment.heading()
-                .flatMap(first -> secondSegment.heading().map(first::difference))
-                .orElse(defaultAngle);
-    }
-
-    @Override
-    protected Optional<CheckFlag> flag(final AtlasObject object)
-    {
-        final List<Tuple<Angle, Location>> allSpikyAngles = this.getPolygons(object)
-                .map(this::getSpikyAngleLocations)
-                .filter(angleLocations -> !angleLocations.isEmpty()).flatMap(Collection::stream)
-                .collect(Collectors.toList());
-        if (!allSpikyAngles.isEmpty())
+        final List<Triple<Integer, Segment, Segment>> summaryStats = new ArrayList<>();
+        Tuple<Segment, Segment> start = curvedLocations.get(0);
+        Tuple<Segment, Segment> previous = curvedLocations.get(0);
+        int numPoints = 1;
+        for (final Tuple<Segment, Segment> location : curvedLocations.subList(1,
+                curvedLocations.size()))
         {
-            final String instruction = this
-                    .getLocalizedInstruction(0,
-                            allSpikyAngles.stream().map(Tuple::getFirst).map(Angle::toString)
-                                    .collect(Collectors.joining(", ")),
-                            headingThreshold.toString());
-            final List<Location> markers = allSpikyAngles.stream().map(Tuple::getSecond)
-                    .collect(Collectors.toList());
-            final CheckFlag flag;
-            if (object instanceof Area)
+            // If this location doesn't share a segment with the previous location, we just finished
+            // a segment
+            if (!previous.getSecond().equals(location.getFirst()))
             {
-                flag = this.createFlag(object, instruction, markers);
+                summaryStats.add(Triple.of(numPoints, start.getFirst(), previous.getSecond()));
+                numPoints = 1;
+                start = location;
             }
+            // Otherwise, we're still part of the same curved section, so just increment numPoints
             else
             {
-                flag = this.createFlag(((Relation) object).flatten(), instruction, markers);
+                numPoints++;
             }
-            return Optional.of(flag);
+            // Always update previous
+            previous = location;
         }
-        return Optional.empty();
+        // Add the last triple
+        summaryStats.add(Triple.of(numPoints, start.getFirst(), previous.getSecond()));
+        // We might need to clean up a circular segment that wraps around 0.
+        if (summaryStats.get(0).getMiddle()
+                .equals(summaryStats.get(summaryStats.size() - 1).getRight()))
+        {
+            final Triple<Integer, Segment, Segment> first = summaryStats.get(0);
+            final Triple<Integer, Segment, Segment> last = summaryStats.get(0);
+
+            summaryStats.set(0, Triple.of(first.getLeft() + last.getLeft(), last.getMiddle(),
+                    first.getRight()));
+        }
+        return summaryStats;
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
+    /**
+     * Converts a RelationMember to a polygon if that member is an area.
+     *
+     * @param member
+     *            any RelationMember object
+     * @return an polygon containing the geometry of member if it is an area, otherwise an empty
+     *         optional.
+     */
+    private Optional<Polygon> toPolygon(final RelationMember member)
     {
-        return FALLBACK_INSTRUCTIONS;
+        if (member.getEntity().getType().equals(ItemType.AREA))
+        {
+            return Optional.of(((Area) member.getEntity()).asPolygon());
+        }
+        return Optional.empty();
     }
 }

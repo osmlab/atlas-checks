@@ -24,26 +24,26 @@ public class InvalidLanesTagCheckTest
             "{\"InvalidLanesTagCheck\":{\"lanes.filter\":\"lanes->1,1.5,2\"}}");
 
     @Test
-    public void validLanesTag()
-    {
-        this.verifier.actual(this.setup.validLanesTag(),
-                new InvalidLanesTagCheck(inlineConfiguration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
     public void invalidLanesTag()
     {
         this.verifier.actual(this.setup.invalidLanesTag(),
-                new InvalidLanesTagCheck(inlineConfiguration));
+                new InvalidLanesTagCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void validLanesTag()
+    {
+        this.verifier.actual(this.setup.validLanesTag(),
+                new InvalidLanesTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
     public void validLanesTagTollBooth()
     {
         this.verifier.actual(this.setup.validLanesTagTollBooth(),
-                new InvalidLanesTagCheck(inlineConfiguration));
+                new InvalidLanesTagCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

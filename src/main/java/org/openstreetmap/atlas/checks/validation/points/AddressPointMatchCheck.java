@@ -34,7 +34,6 @@ import com.google.common.base.Strings;
 
 public class AddressPointMatchCheck extends BaseCheck
 {
-    private static final long serialVersionUID = -756695185133616997L;
     public static final String NO_STREET_NAME_POINT_INSTRUCTIONS = "This Node, {0,number,#}, has "
             + "no street name specified in the address. The street name should likely "
             + "be one of {1}. These names were derived from nearby Nodes.";
@@ -44,6 +43,7 @@ public class AddressPointMatchCheck extends BaseCheck
     public static final String NO_SUGGESTED_NAMES_INSTRUCTIONS = "This node, {0,number,#}, has "
             + "no street name specified in the address. No suggestions names were found as there were no "
             + "nearby Nodes or Ways with street name key tags.";
+    private static final long serialVersionUID = -756695185133616997L;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             NO_STREET_NAME_POINT_INSTRUCTIONS, NO_STREET_NAME_EDGE_INSTRUCTIONS,
             NO_SUGGESTED_NAMES_INSTRUCTIONS);
@@ -51,12 +51,6 @@ public class AddressPointMatchCheck extends BaseCheck
     private static final double BOUNDS_SIZE_DEFAULT = 75.0;
 
     private final Distance boundsSize;
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
 
     public AddressPointMatchCheck(final Configuration configuration)
     {
@@ -92,7 +86,7 @@ public class AddressPointMatchCheck extends BaseCheck
         final Point point = (Point) object;
 
         // Get a bounding box around the Point of interest
-        final Rectangle box = point.getLocation().boxAround(boundsSize);
+        final Rectangle box = point.getLocation().boxAround(this.boundsSize);
 
         // Get all Points in the bounding box, remove Points that have null as their
         // street name or do not have the street name key tag, and get a set of candidate street
@@ -128,6 +122,12 @@ public class AddressPointMatchCheck extends BaseCheck
             return Optional.of(this.createFlag(point,
                     this.getLocalizedInstruction(1, point.getOsmIdentifier(), edges)));
         }
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**

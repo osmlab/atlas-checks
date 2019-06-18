@@ -27,6 +27,22 @@ public class TagTest
     public BaseTestRule setup = new BaseTestRule();
 
     /**
+     * Test combination tags. In the two cases first, filter by any features that contain the tag
+     * and value "whitelist=true" but does not contain the value "blacklist=false". We specifically
+     * used the filter "!true" even though we could have used "false" to test negation in filters.
+     * Second, Test the OR functionality, process all features that contain "whitelist=true" or
+     * "highway=trunk".
+     */
+    @Test
+    public void testCombinationTags()
+    {
+        final String config = "{\"BaseTestCheck\":{\"tags.filter\":\"whitelist->true&blacklist->!true\"}}";
+        this.testConfiguration(config, 1);
+        final String config2 = "{\"BaseTestCheck\":{\"tags.filter\":\"whitelist->true|highway->trunk\"}}";
+        this.testConfiguration(config2, 5);
+    }
+
+    /**
      * Test that when setting the filter explicitly with no value that it would essentially be
      * ignored.
      */
@@ -53,22 +69,6 @@ public class TagTest
     }
 
     /**
-     * Test combination tags. In the two cases first, filter by any features that contain the tag
-     * and value "whitelist=true" but does not contain the value "blacklist=false". We specifically
-     * used the filter "!true" even though we could have used "false" to test negation in filters.
-     * Second, Test the OR functionality, process all features that contain "whitelist=true" or
-     * "highway=trunk".
-     */
-    @Test
-    public void testCombinationTags()
-    {
-        final String config = "{\"BaseTestCheck\":{\"tags.filter\":\"whitelist->true&blacklist->!true\"}}";
-        this.testConfiguration(config, 1);
-        final String config2 = "{\"BaseTestCheck\":{\"tags.filter\":\"whitelist->true|highway->trunk\"}}";
-        this.testConfiguration(config2, 5);
-    }
-
-    /**
      * Private function used by all test cases to easily test the configuration instead of rewriting
      * the code constantly.
      * 
@@ -79,7 +79,7 @@ public class TagTest
      */
     private void testConfiguration(final String config, final int numberOfFlags)
     {
-        final Atlas atlas = setup.getAtlas();
+        final Atlas atlas = this.setup.getAtlas();
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(config);
         final List<CheckFlag> flags = Iterables
                 .asList(new BaseTestCheck(configuration).flags(atlas));

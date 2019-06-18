@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 public class Project
 {
     @SuppressWarnings("checkstyle:memberName")
-    private long id = -1;
+    private long identifier = -1;
     private final String name;
     private final String description;
     private final String displayName;
@@ -43,34 +43,34 @@ public class Project
         this.enabled = enabled;
     }
 
-    public long getId()
-    {
-        return id;
-    }
-
-    public void setId(final long identifier)
-    {
-        this.id = identifier;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
     public String getDescription()
     {
-        return description;
+        return this.description;
     }
 
     public String getDisplayName()
     {
-        return displayName;
+        return this.displayName;
+    }
+
+    public long getId()
+    {
+        return this.identifier;
+    }
+
+    public String getName()
+    {
+        return this.name;
     }
 
     public boolean isEnabled()
     {
-        return enabled;
+        return this.enabled;
+    }
+
+    public void setId(final long identifier)
+    {
+        this.identifier = identifier;
     }
 
     public JsonObject toJson()
