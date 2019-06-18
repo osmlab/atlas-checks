@@ -3,9 +3,9 @@
 A generalized coastline can be seen as any coastline that contains too many long line segments. Although perhaps simple to render, long line segments are problematic in that they don't capture the local structure of coastlines at low zoom levels.
 
 Generalized coastlines may cause a few problems:
-  1. Inhibited navigation
-  2. Poor user experience
-  3. Territorial inaccuracies
+1. Inhibited navigation
+2. Poor user experience
+3. Territorial inaccuracies
 Navigation suffers as a result of poor local accuracy on segments of the coastline. Routing algorithms that rely on this generalized representation of a coastline may give unreliable or unsafe instructions from the point of view of a user on the ground. Boundaries (country, state, etc.) that rely on precisely mapped coastlines may find that maps with generalized coastlines create problems when carrying out coastal or shipping activities.
 
 This check exists to address the above problems with generalized coastlines. Editors who encounter flagged generalized coastlines may resolve the issue by increasing the number of nodes along a long line segment of the coastline to "break it up."
