@@ -1,17 +1,17 @@
 package org.openstreetmap.atlas.checks.utility;
 
-import org.openstreetmap.atlas.checks.flag.CheckFlag;
-
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
 
 public class UniqueCheckFlagContainer implements Serializable
 {
 
-    public static UniqueCheckFlagContainer combine(final UniqueCheckFlagContainer container1, final UniqueCheckFlagContainer container2)
+    public static UniqueCheckFlagContainer combine(final UniqueCheckFlagContainer container1,
+            final UniqueCheckFlagContainer container2)
     {
         container2.uniqueFlags.entrySet().forEach(entry ->
         {
@@ -20,7 +20,6 @@ public class UniqueCheckFlagContainer implements Serializable
         return container1;
     }
 
-
     private final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> uniqueFlags;
 
     public UniqueCheckFlagContainer()
@@ -28,7 +27,8 @@ public class UniqueCheckFlagContainer implements Serializable
         this.uniqueFlags = new ConcurrentHashMap<>();
     }
 
-    private UniqueCheckFlagContainer(final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> flags)
+    private UniqueCheckFlagContainer(
+            final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> flags)
     {
         this.uniqueFlags = flags;
     }
@@ -47,7 +47,7 @@ public class UniqueCheckFlagContainer implements Serializable
 
     private Stream<CheckFlag> stream()
     {
-        return this.uniqueFlags.values().stream().map(ConcurrentHashMap::values).flatMap(
-                Collection::stream);
+        return this.uniqueFlags.values().stream().map(ConcurrentHashMap::values)
+                .flatMap(Collection::stream);
     }
 }

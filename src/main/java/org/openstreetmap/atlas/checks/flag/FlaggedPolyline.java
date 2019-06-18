@@ -77,13 +77,15 @@ public class FlaggedPolyline extends FlaggedObject
     @Override
     public FlaggedObject getAsCompleteFlaggedObject()
     {
-        if(this.atlasItem instanceof Area)
+        if (this.atlasItem instanceof Area)
         {
             return new FlaggedPolyline(CompleteArea.from((Area) this.atlasItem));
-        }else if( this.atlasItem instanceof Edge)
+        }
+        else if (this.atlasItem instanceof Edge)
         {
-            return  new FlaggedPolyline(CompleteEdge.from((Edge) this.atlasItem));
-        }else if(this.atlasItem instanceof Line)
+            return new FlaggedPolyline(CompleteEdge.from((Edge) this.atlasItem));
+        }
+        else if (this.atlasItem instanceof Line)
         {
             return new FlaggedPolyline(CompleteLine.from((Line) this.atlasItem));
         }

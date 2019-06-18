@@ -61,7 +61,6 @@ import scala.Tuple2;
 public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 {
 
-
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
     // Outputs
@@ -417,8 +416,6 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         staticPaths.add(getAlternateSubFolderOutput(output, OUTPUT_ATLAS_FOLDER));
         return staticPaths;
     }
-
-
 
     /**
      * Basic sanity check to ensure we aren't processing an empty list of countries or integrity

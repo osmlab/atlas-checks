@@ -19,7 +19,7 @@ public class ShardGroup extends ArrayList<Shard>
 {
     private final String name;
 
-    public ShardGroup( final Collection<? extends Shard> collection, final String name)
+    public ShardGroup(final Collection<? extends Shard> collection, final String name)
     {
         super(collection);
         this.name = name;
