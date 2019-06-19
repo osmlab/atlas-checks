@@ -7,6 +7,8 @@ import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.event.MetricEvent;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
+import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
+import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.openstreetmap.atlas.utilities.time.Time;
@@ -33,13 +35,13 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
      *            check that is being executed
      * @param objects
      *            {@link AtlasObject}s that are going to be executed
-     * @param client
-     *            {@link MapRouletteClient} that will upload the tasks to MapRoulette
+     * @param configuration
+     *            {@link MapRouletteConfiguration} that will upload the tasks to MapRoulette
      */
     public RunnableCheck(final String country, final Check check,
-            final Iterable<AtlasObject> objects, final MapRouletteClient client)
+            final Iterable<AtlasObject> objects, final EventService eventService)
     {
-        super(country, check, objects, client);
+        super(country, check, objects, eventService);
     }
 
     /**
@@ -66,8 +68,6 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
             final Duration checkRunTime = timer.elapsedSince();
             logger.info("{} completed in {}.", this.getName(), checkRunTime);
             this.getEventService().post(new MetricEvent(this.getName(), checkRunTime));
-
-            this.uploadTasks();
         }
         catch (final Exception e)
         {

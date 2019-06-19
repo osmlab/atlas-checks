@@ -34,7 +34,7 @@ import com.google.gson.JsonPrimitive;
  *
  * @author mkalender, bbreithaupt
  */
-public final class CheckFlagEvent extends Event
+public final class CheckFlagEvent extends org.openstreetmap.atlas.event.Event
 {
     private static final GeoJsonBuilder GEOJSON_BUILDER = new GeoJsonBuilder();
     private static final String GEOMETRY_COLLECTION = "GeometryCollection";
