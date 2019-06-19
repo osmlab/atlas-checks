@@ -6,6 +6,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.openstreetmap.atlas.checks.distributed.LogFilePathFilter;
+import org.openstreetmap.atlas.event.Event;
+import org.openstreetmap.atlas.event.Processor;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
