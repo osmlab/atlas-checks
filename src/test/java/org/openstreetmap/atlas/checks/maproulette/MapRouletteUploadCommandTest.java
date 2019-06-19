@@ -29,11 +29,36 @@ public class MapRouletteUploadCommandTest
 {
     private static final String MAPROULETTE_CONFIG = "-maproulette=host:2222:project:api";
     private static final File FOLDER = File.temporaryFolder();
-
-    private boolean filesCreated = false;
-
     @Rule
     public final MapRouletteUploadCommandTestRule setup = new MapRouletteUploadCommandTestRule();
+    private boolean filesCreated = false;
+
+    @AfterClass
+    public static void cleanup()
+    {
+        new File(FOLDER.getPath()).deleteRecursively();
+    }
+
+    @Test
+    public void testCheckFilter()
+    {
+        final String[] additionalArguments = { "-checks=SomeCheck" };
+        this.runAndTest(additionalArguments, 1, 1, 1);
+    }
+
+    @Test
+    public void testCountryFilter()
+    {
+        final String[] additionalArguments = { "-countries=CAN" };
+        this.runAndTest(additionalArguments, 1, 1, 1);
+    }
+
+    @Test
+    public void testExecute()
+    {
+        final String[] additionalArguments = {};
+        this.runAndTest(additionalArguments, 1, 2, 2);
+    }
 
     @Before
     public void writeFiles()
@@ -44,24 +69,18 @@ public class MapRouletteUploadCommandTest
             final FileProcessor<CheckFlagEvent> unzippedProcessor = new CheckFlagFileProcessor(
                     new SparkFileHelper(Collections.emptyMap()),
                     FOLDER.child("unzipped.log").toString()).withCompression(false);
-            unzippedProcessor.process(setup.getOneBasicFlag());
+            unzippedProcessor.process(this.setup.getOneBasicFlag());
             unzippedProcessor.process(new ShutdownEvent());
 
             // Create a zipped file
             final FileProcessor<CheckFlagEvent> zippedProcessor = new CheckFlagFileProcessor(
                     new SparkFileHelper(Collections.emptyMap()),
                     FOLDER.child("zipped.log.gz").toString()).withCompression(true);
-            zippedProcessor.process(setup.getAnotherBasicFlag());
+            zippedProcessor.process(this.setup.getAnotherBasicFlag());
             zippedProcessor.process(new ShutdownEvent());
 
             this.filesCreated = true;
         }
-    }
-
-    @AfterClass
-    public static void cleanup()
-    {
-        new File(FOLDER.getPath()).deleteRecursively();
     }
 
     /**
@@ -103,26 +122,5 @@ public class MapRouletteUploadCommandTest
             challenges.forEach(challenge -> Assert.assertEquals(expectedTasks,
                     connection.tasksForChallenge(challenge).size()));
         });
-    }
-
-    @Test
-    public void testExecute()
-    {
-        final String[] additionalArguments = {};
-        this.runAndTest(additionalArguments, 1, 2, 2);
-    }
-
-    @Test
-    public void testCheckFilter()
-    {
-        final String[] additionalArguments = { "-checks=SomeCheck" };
-        this.runAndTest(additionalArguments, 1, 1, 1);
-    }
-
-    @Test
-    public void testCountryFilter()
-    {
-        final String[] additionalArguments = { "-countries=CAN" };
-        this.runAndTest(additionalArguments, 1, 1, 1);
     }
 }

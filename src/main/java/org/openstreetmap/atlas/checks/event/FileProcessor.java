@@ -59,6 +59,11 @@ public abstract class FileProcessor<T extends Event> implements Processor<T>
         this.counter = new AtomicInteger(0);
     }
 
+    public boolean doesCompressOutput()
+    {
+        return this.compressOutput;
+    }
+
     /**
      * @return the maximum number of events to be batched in a file
      */
@@ -73,11 +78,6 @@ public abstract class FileProcessor<T extends Event> implements Processor<T>
     public final int getCount()
     {
         return this.counter.get();
-    }
-
-    public boolean doesCompressOutput()
-    {
-        return compressOutput;
     }
 
     /**

@@ -33,7 +33,7 @@ public class TaskDeserializer implements JsonDeserializer<Task>
     private static final String FEATURES = "features";
     private static final String GEOMETRY = "geometry";
     private static final String COORDINATES = "coordinates";
-    private String projectName;
+    private final String projectName;
 
     public TaskDeserializer(final String projectName)
     {
@@ -55,15 +55,30 @@ public class TaskDeserializer implements JsonDeserializer<Task>
         result.setPoints(this.getPointsFromGeojson(geojson));
         result.setGeoJson(Optional.of(this.filterOutPointsFromGeojson(geojson)));
         result.setInstruction(instruction);
-        result.setProjectName(projectName);
+        result.setProjectName(this.projectName);
         result.setTaskIdentifier(taskID);
         return result;
     }
 
     /**
+     * The opposite of getPointsFromGeojson -- get all geojson features which do contain a
+     * properties field from a {@link JsonArray}.
+     *
+     * @param features
+     *            a {@link JsonArray} of geojson features
+     * @return a JsonArray containing all features which were added to a task through
+     *         task.setGeojson() and therefore should have properties.
+     */
+    private JsonArray filterOutPointsFromGeojson(final JsonArray features)
+    {
+        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES))
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+
+    /**
      * Returns a {@link Set} of {@link Location}s gathered from feature.geometry.coordinates for
      * each feature in features which does not have a properties field.
-     * 
+     *
      * @param features
      *            a {@link JsonArray} of geojson features.
      * @return a {@link Set} of {@link Location}s which were generated from task.addPoints() (and
@@ -78,21 +93,6 @@ public class TaskDeserializer implements JsonDeserializer<Task>
                         Latitude.degrees(longlatArray.get(1).getAsDouble()),
                         Longitude.degrees(longlatArray.get(0).getAsDouble())))
                 .collect(Collectors.toSet());
-    }
-
-    /**
-     * The opposite of getPointsFromGeojson -- get all geojson features which do contain a
-     * properties field from a {@link JsonArray}.
-     * 
-     * @param features
-     *            a {@link JsonArray} of geojson features
-     * @return a JsonArray containing all features which were added to a task through
-     *         task.setGeojson() and therefore should have properties.
-     */
-    private JsonArray filterOutPointsFromGeojson(final JsonArray features)
-    {
-        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES))
-                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
     /**

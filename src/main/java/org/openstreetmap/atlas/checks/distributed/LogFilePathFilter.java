@@ -16,7 +16,7 @@ public class LogFilePathFilter implements PathFilter
     private static final String COMPRESSED_FILE_EXTENSION = UNCOMPRESSED_FILE_EXTENSION
             + FileSuffix.GZIP.toString();
 
-    private String extension;
+    private final String extension;
 
     /**
      * Default constructor
@@ -48,6 +48,6 @@ public class LogFilePathFilter implements PathFilter
      */
     public String getExtension()
     {
-        return extension;
+        return this.extension;
     }
 }

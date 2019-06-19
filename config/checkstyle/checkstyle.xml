@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE module PUBLIC
-        "-//Puppy Crawl//DTD Check Configuration 1.1//EN"
-        "http://www.puppycrawl.com/dtds/configuration_1_1.dtd">
+"-//Puppy Crawl//DTD Check Configuration 1.1//EN"
+"http://www.puppycrawl.com/dtds/configuration_1_1.dtd">
 
 <module name="Checker">
     <module name="NewlineAtEndOfFile" />
-    <module name="SuppressWarningsFilter" />
     <module name="TreeWalker">
-        <module name="SuppressWarningsHolder" />
-
         <!-- Checks for Javadoc comments. -->
         <module name="JavadocMethod">
             <property name="scope" value="protected" />
@@ -114,6 +111,7 @@
         <module name="ParameterAssignment"/>
         <module name="RequireThis">
             <property name="checkMethods" value="false"/>
+            <property name="validateOnlyOverlapping" value="false"/>
         </module>
         <module name="SimplifyBooleanExpression" />
         <module name="SimplifyBooleanReturn" />
@@ -138,16 +136,18 @@
         <module name="FinalParameters" />
         <!-- Skipping indentation until https://github.com/checkstyle/checkstyle/issues/3342 is resolved
         <module name="Indentation" >
-            <property name="lineWrappingIndentation" value="8"/>
-            <property name="forceStrictCondition" value="false"/>
-        </module> -->
-        <module name="OuterTypeFilename"/>
-        <module name="TrailingComment"/>
-        <module name="TodoComment" />
-        <module name="UpperEll" />
+        <property name="lineWrappingIndentation" value="8"/>
+        <property name="forceStrictCondition" value="false"/>
+    </module> -->
+    <module name="OuterTypeFilename"/>
+    <module name="TrailingComment">
+        <property name="legalComment" value="NOSONAR"/>
     </module>
+    <module name="TodoComment" />
+    <module name="UpperEll" />
+</module>
 
-    <module name="SuppressionFilter">
-        <property name="file" value="${config_loc}/suppressions.xml" />
-    </module>
+<module name="SuppressionFilter">
+    <property name="file" value="${config_loc}/suppressions.xml" />
+</module>
 </module>

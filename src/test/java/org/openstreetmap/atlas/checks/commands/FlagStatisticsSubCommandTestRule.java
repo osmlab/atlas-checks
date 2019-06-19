@@ -32,7 +32,7 @@ public class FlagStatisticsSubCommandTestRule extends CoreTestRule
      */
     public CheckFlagEvent getOneNodeCheckFlagEvent(final String checkName)
     {
-        final AtlasObject node = atlas.node(1000000L);
+        final AtlasObject node = this.atlas.node(1000000L);
         final CheckFlag flag = new CheckFlag(String.valueOf(node.getIdentifier()));
         flag.addObject(node);
         flag.addInstruction(TEST_INSTRUCTION);
