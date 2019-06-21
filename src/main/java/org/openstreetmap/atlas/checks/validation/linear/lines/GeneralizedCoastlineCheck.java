@@ -3,9 +3,11 @@ package org.openstreetmap.atlas.checks.validation.linear.lines;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
@@ -71,9 +73,12 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final double generalizedSegments = this.getGeneralizedSegmentPercentage((LineItem) object);
+        final List<Location> pointsForFlagging = this.getPointsForFlagging((LineItem) object);
         return generalizedSegments >= this.percentageThreshold
-                ? Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
-                        generalizedSegments, this.minimumDistanceBetweenNodes)))
+                ? Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(0, generalizedSegments,
+                                this.minimumDistanceBetweenNodes),
+                        pointsForFlagging))
                 : Optional.empty();
     }
 
@@ -93,6 +98,21 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 .filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes)
                 .count();
         return segments.size() == 0 ? 0.0 : HUNDRED_PERCENT * (innerCount / segments.size());
+    }
+
+    /**
+     *
+     * @param line
+     *          The LineItem whose midpoints are flagged
+     * @return  A {@link List} of {@link Location}s, each element of the list being the midpoint of generalized segments
+     * of the parameter coastline
+     */
+    private List<Location> getPointsForFlagging(final LineItem line)
+    {
+        return line.asPolyLine().segments().stream()
+                .filter(segment -> segment.length().asMeters() >= MINIMUM_DISTANCE_BETWEEN_NODES)
+                .map(segment -> segment.start().midPoint(segment.end()))
+                .collect(Collectors.toList());
     }
 
     @Override
