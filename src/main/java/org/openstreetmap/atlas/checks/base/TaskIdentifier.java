@@ -37,7 +37,7 @@ public class TaskIdentifier
      * @param objects
      *            a {@code Set} of {@link AtlasObject}s used to form the {@code identifier}
      */
-    public TaskIdentifier(final Set<? extends AtlasObject> objects)
+    public TaskIdentifier(final Set<AtlasObject> objects)
     {
         if (objects == null || objects.isEmpty())
         {
