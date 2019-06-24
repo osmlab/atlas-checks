@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
@@ -351,7 +350,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
         return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions, points);
     }
 
-    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects, final List<String> instructions)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final List<String> instructions)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions);
     }
@@ -372,7 +372,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     /**
      * If this object is a way-sectioned edge, return a set of all edges that originated from the
      * set. Otherwise, return a singleton containing this edge.
-     * @param object Any AtlasObject
+     *
+     * @param object
+     *            Any AtlasObject
      * @return A set of objects related to the original OSM data.
      */
     protected Set<AtlasObject> gatherWaySectionedEdges(final AtlasObject object)
@@ -387,8 +389,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     /**
      * Given a set of AtlasObjects, for each Edge in the set, add all other edges that originated
      * from the same way to the set.
-     * 
-     * @param objects A set of objects from which the ways will be gathered
+     *
+     * @param objects
+     *            A set of objects from which the ways will be gathered
      * @return The union of the original objects and any edges that are part of the same way
      */
     protected Set<AtlasObject> gatherWaySectionedEdges(final Set<? extends AtlasObject> objects)
