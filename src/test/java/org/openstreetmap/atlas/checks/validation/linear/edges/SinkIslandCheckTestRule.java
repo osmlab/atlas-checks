@@ -31,6 +31,15 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     private static final String TEST_12 = "56.3092499, 9.1216749";
     private static final String TEST_13 = "56.3096026, 9.1211942";
     private static final String TEST_14 = "56.3098639, 9.1217029";
+    private static final String TEST_15 = "4.8711235, 114.9226319";
+    private static final String TEST_16 = "4.8716031, 114.9231528";
+    private static final String TEST_17 = "4.8718274, 114.9233965";
+    private static final String TEST_18 = "4.8714768, 114.9236523";
+    private static final String TEST_19 = "4.8716384, 114.9224705";
+    private static final String TEST_20 = "4.8719516, 114.9222574";
+    private static final String TEST_21 = "4.8721288, 114.9220754";
+    private static final String TEST_22 = "4.8723897, 114.9224152";
+    private static final String TEST_23 = "4.8721288, 114.9224435";
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_3)),
             @Node(coordinates = @Loc(value = TEST_2)), @Node(coordinates = @Loc(value = TEST_6)),
@@ -116,7 +125,7 @@ public class SinkIslandCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = TEST_2)),
             @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                            "highway=service", "aeroway=taxiway" }),
+                            "highway=service" }),
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
                             "highway=service", "route=ferry" }),
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
@@ -148,6 +157,46 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                                     @Loc(value = TEST_14) }, tags = { "highway=service",
                                             "service=parking_aisle" }) })
     private Atlas edgeWithinAreaWithAmenityTag;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_15)),
+            @Node(coordinates = @Loc(value = TEST_16)), @Node(coordinates = @Loc(value = TEST_17)),
+            @Node(coordinates = @Loc(value = TEST_18)) }, edges = {
+                    @Edge(id = "1", coordinates = { @Loc(value = TEST_15), @Loc(value = TEST_16),
+                            @Loc(value = TEST_17) }, tags = { "highway=service",
+                                    "access=private" }),
+                    @Edge(id = "2", coordinates = { @Loc(value = TEST_16),
+                            @Loc(value = TEST_18) }, tags = { "highway=service" }) })
+    private Atlas nonCarNavigableEdgesAtlas;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_19)),
+            @Node(coordinates = @Loc(value = TEST_20)), @Node(coordinates = @Loc(value = TEST_21)),
+            @Node(coordinates = @Loc(value = TEST_22)),
+            @Node(coordinates = @Loc(value = TEST_23)) }, areas = { @Area(coordinates = {
+                    @Loc(value = TEST_20), @Loc(value = TEST_21), @Loc(value = TEST_22),
+                    @Loc(value = TEST_23) }, tags = { "amenity=fuel" }) }, edges = {
+                            @Edge(id = "1", coordinates = { @Loc(value = TEST_19),
+                                    @Loc(value = TEST_20) }, tags = { "highway=service" }) })
+    private Atlas edgesEndingInBuildingAtlas;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_19)),
+            @Node(coordinates = @Loc(value = TEST_20), tags = { "amenity=parking_entrance" }),
+            @Node(coordinates = @Loc(value = TEST_21)), @Node(coordinates = @Loc(value = TEST_22)),
+            @Node(coordinates = @Loc(value = TEST_23)) }, areas = { @Area(coordinates = {
+                    @Loc(value = TEST_20), @Loc(value = TEST_21), @Loc(value = TEST_22),
+                    @Loc(value = TEST_23) }) }, edges = {
+                            @Edge(id = "1", coordinates = { @Loc(value = TEST_20),
+                                    @Loc(value = TEST_19) }, tags = { "highway=service" }) })
+    private Atlas parkingGarageEntranceOrExitAtlas;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_9)),
+            @Node(coordinates = @Loc(value = TEST_10)), @Node(coordinates = @Loc(value = TEST_11)),
+            @Node(coordinates = @Loc(value = TEST_12)), @Node(coordinates = @Loc(value = TEST_13)),
+            @Node(coordinates = @Loc(value = TEST_14)) }, areas = { @Area(coordinates = {
+                    @Loc(value = TEST_9), @Loc(value = TEST_10), @Loc(value = TEST_11),
+                    @Loc(value = TEST_12) }, tags = { "aeroway=aerodrome" }) }, edges = {
+                            @Edge(id = "1", coordinates = { @Loc(value = TEST_13),
+                                    @Loc(value = TEST_14) }, tags = { "highway=service" }) })
+    private Atlas edgesWithinAirportAtlas;
 
     public Atlas getSingleEdgeAtlas()
     {
@@ -197,5 +246,25 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     public Atlas getEdgeWithinAreaWithAmenityTag()
     {
         return this.edgeWithinAreaWithAmenityTag;
+    }
+
+    public Atlas getParkingGarageEntranceOrExit()
+    {
+        return this.parkingGarageEntranceOrExitAtlas;
+    }
+
+    public Atlas getEdgesEndingInBuilding()
+    {
+        return this.edgesEndingInBuildingAtlas;
+    }
+
+    public Atlas getEdgesWithinAirport()
+    {
+        return this.edgesWithinAirportAtlas;
+    }
+
+    public Atlas getNonCarNavigableEdges()
+    {
+        return this.nonCarNavigableEdgesAtlas;
     }
 }
