@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.atlas.predicates;
 import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
@@ -106,4 +107,17 @@ public interface TagPredicates
      */
     Predicate<AtlasObject> IS_CROSSING_HIGHWAY = object -> Validators.isOfType(object,
             HighwayTag.class, HighwayTag.CROSSING);
+
+    /**
+     * Tests if the {@link AtlasObject} has car navigable highway type and access tag not in Private
+     * enum set
+     */
+    Predicate<AtlasObject> IS_CAR_NAVIGABLE_NON_PRIVATE_HIGHWAY = object -> HighwayTag
+            .isCarNavigableHighway(object) && !AccessTag.isPrivate(object);
+
+    /**
+     * Tests if the {@link AtlasObject} has car navigable highway type and access=!no tag
+     */
+    Predicate<AtlasObject> IS_CAR_NAVIGABLE_HIGHWAY = object -> HighwayTag
+            .isCarNavigableHighway(object) && !AccessTag.isNo(object);
 }

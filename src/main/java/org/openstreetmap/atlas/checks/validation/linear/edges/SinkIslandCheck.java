@@ -16,7 +16,6 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
-import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
@@ -314,7 +313,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
      */
     private boolean isCarNavigableHighway(final Edge edge)
     {
-        return HighwayTag.isCarNavigableHighway(edge) && !AccessTag.isPrivate(edge)
+        return TagPredicates.IS_CAR_NAVIGABLE_NON_PRIVATE_HIGHWAY.test(edge)
                 && !(Validators.isOfType(edge, MotorVehicleTag.class, MotorVehicleTag.NO)
                         || Validators.isOfType(edge, MotorcarTag.class, MotorcarTag.NO));
     }
