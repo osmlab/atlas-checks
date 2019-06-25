@@ -369,7 +369,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     /**
      * If this object is a way-sectioned edge, return a set of all edges that originated from the
-     * set. Otherwise, return a singleton containing this edge.
+     * set. Otherwise, return a singleton containing this object.
      *
      * @param object
      *            Any AtlasObject
