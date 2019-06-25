@@ -25,6 +25,7 @@ import org.openstreetmap.atlas.tags.MotorcarTag;
 import org.openstreetmap.atlas.tags.RouteTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
+import org.openstreetmap.atlas.tags.VehicleTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -315,6 +316,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return TagPredicates.IS_CAR_NAVIGABLE_NON_PRIVATE_HIGHWAY.test(edge)
                 && !(Validators.isOfType(edge, MotorVehicleTag.class, MotorVehicleTag.NO)
-                        || Validators.isOfType(edge, MotorcarTag.class, MotorcarTag.NO));
+                        || Validators.isOfType(edge, MotorcarTag.class, MotorcarTag.NO)
+        || Validators.isOfType(edge, VehicleTag.class, VehicleTag.NO));
     }
 }
