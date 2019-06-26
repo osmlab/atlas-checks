@@ -27,7 +27,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline.");
+            "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline. (recommended: place a couple more nodes near the dotted portion of the line)");
     private static final long MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
 
@@ -101,11 +101,10 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
-     *
      * @param line
-     *          The LineItem whose midpoints are flagged
-     * @return  A {@link List} of {@link Location}s, each element of the list being the midpoint of generalized segments
-     * of the parameter coastline
+     *            The LineItem whose midpoints are flagged
+     * @return A {@link List} of {@link Location}s, each element of the list being the midpoint of
+     *         generalized segments of the parameter coastline
      */
     private List<Location> getPointsForFlagging(final LineItem line)
     {
