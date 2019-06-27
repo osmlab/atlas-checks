@@ -256,6 +256,9 @@
       "difficulty": "HARD"
     }
   },
+  "RoadNameSpellingConsistencyCheck": {
+
+  },
   "RoundaboutClosedLoopCheck": {
     "challenge": {
       "description": "A roundabout should be formed by one-way edges with no dead-end nodes.",
