@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * Flags generalized coastlines-- that is, OSM ways with the tag natural=coastline where x% or more
@@ -27,13 +28,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline. (recommended: place a couple more nodes near the dotted portion of the line)");
-    private static final long MINIMUM_DISTANCE_BETWEEN_NODES = 100;
+            "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline. The midpoint of generalized segments is dotted for convenience.");
+    private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
 
     private static final double HUNDRED_PERCENT = 100.0;
     private final double percentageThreshold;
-    private final long minimumDistanceBetweenNodes;
+    private final Distance minimumDistanceBetweenNodes;
 
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
@@ -41,7 +42,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
         this.percentageThreshold = this.configurationValue(configuration, "node.minimum.threshold",
                 MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE);
         this.minimumDistanceBetweenNodes = this.configurationValue(configuration,
-                "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES);
+                "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
     }
 
     /**
@@ -94,9 +95,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private double getGeneralizedSegmentPercentage(final LineItem line)
     {
         final List<Segment> segments = line.asPolyLine().segments();
-        final double innerCount = segments.stream()
-                .filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes)
-                .count();
+        final double innerCount = segments.stream().filter(segment -> segment.length()
+                .isGreaterThanOrEqualTo(this.minimumDistanceBetweenNodes)).count();
         return segments.size() == 0 ? 0.0 : HUNDRED_PERCENT * (innerCount / segments.size());
     }
 
