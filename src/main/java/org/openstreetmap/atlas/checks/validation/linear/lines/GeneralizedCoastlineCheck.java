@@ -33,6 +33,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
 
     private static final double HUNDRED_PERCENT = 100.0;
+    private static final long serialVersionUID = 1576217971819771231L;
     private final double percentageThreshold;
     private final Distance minimumDistanceBetweenNodes;
 
@@ -83,6 +84,12 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 : Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
     /**
      * This method calculates the percentage of {@link Segment}s in the {@link LineItem} whose
      * lengths are greater than or equal to the minimumDistanceBetweenNodes configuration value
@@ -112,12 +119,6 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 .filter(segment -> segment.length().asMeters() >= MINIMUM_DISTANCE_BETWEEN_NODES)
                 .map(segment -> segment.start().midPoint(segment.end()))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 
 }
