@@ -83,7 +83,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      * @param instructions
      *            a list of free form instructions
      */
-    public CheckFlag(final String identifier, final Set<AtlasObject> objects,
+    public CheckFlag(final String identifier, final Set<? extends AtlasObject> objects,
             final List<String> instructions)
     {
         this(identifier, objects, instructions, new ArrayList<>());
@@ -102,7 +102,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      * @param points
      *            {@code point} {@link Location}s to highlight
      */
-    public CheckFlag(final String identifier, final Set<AtlasObject> objects,
+    public CheckFlag(final String identifier, final Set<? extends AtlasObject> objects,
             final List<String> instructions, final List<Location> points)
     {
         addObjects(objects);
@@ -204,7 +204,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      * @param objects
      *            a list of {@link AtlasObject}s
      */
-    public void addObjects(final Iterable<AtlasObject> objects)
+    public void addObjects(final Iterable<? extends AtlasObject> objects)
     {
         objects.forEach(this::addObject);
     }
