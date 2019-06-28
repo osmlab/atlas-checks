@@ -125,42 +125,42 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
 
     public Atlas getWithSingleRelationGeneralized()
     {
-        return withSingleRelationGeneralized;
+        return this.withSingleRelationGeneralized;
     }
 
     public Atlas getWithNestedRelationGeneralized()
     {
-        return withNestedRelationGeneralized;
+        return this.withNestedRelationGeneralized;
     }
 
     public Atlas getMoreThanThresholdGeneralized()
     {
-        return moreThanThresholdGeneralized;
+        return this.moreThanThresholdGeneralized;
     }
 
     public Atlas getLessThanThresholdNotGeneralized()
     {
-        return lessThanThresholdNotGeneralized;
+        return this.lessThanThresholdNotGeneralized;
     }
 
     public Atlas getExactThresholdGeneralized()
     {
-        return exactThresholdGeneralized;
+        return this.exactThresholdGeneralized;
     }
 
     public Atlas getOneLineSegmentGeneralized()
     {
-        return oneLineSegmentGeneralized;
+        return this.oneLineSegmentGeneralized;
     }
 
     public Atlas getOneLineSegmentNotGeneralized()
     {
-        return oneLineSegmentNotGeneralized;
+        return this.oneLineSegmentNotGeneralized;
     }
 
     public Atlas getOneLineGeneralizedOneLineNotGeneralized()
     {
-        return oneLineGeneralizedOneLineNotGeneralized;
+        return this.oneLineGeneralizedOneLineNotGeneralized;
     }
 
 }
