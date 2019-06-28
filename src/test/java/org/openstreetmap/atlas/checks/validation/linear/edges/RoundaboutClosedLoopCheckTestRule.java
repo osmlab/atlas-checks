@@ -180,6 +180,11 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "junction=roundabout" }) })
     private Atlas masterRoundaboutEdgesWithOneMissingOneWayTagAtlas;
 
+    public Atlas masterRoundaboutEdgeWithValence1NodesAtlas()
+    {
+        return this.masterRoundaboutEdgeWithValence1NodesAtlas;
+    }
+
     public Atlas masterRoundaboutEdgesWithABidirectionalRoadAtlas()
     {
         return this.masterRoundaboutEdgesWithABidirectionalRoadAtlas;
@@ -218,11 +223,6 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
     public Atlas masterRoundaboutEdgesWithValence2NodesAtlas()
     {
         return this.masterRoundaboutEdgesWithValence2NodesAtlas;
-    }
-
-    public Atlas masterRoundaboutEdgeWithValence1NodesAtlas()
-    {
-        return this.masterRoundaboutEdgeWithValence1NodesAtlas;
     }
 
     public Atlas nonRoundaboutEdgeAtlas()

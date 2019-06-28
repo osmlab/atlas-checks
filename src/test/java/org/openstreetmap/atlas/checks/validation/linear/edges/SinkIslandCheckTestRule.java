@@ -149,46 +149,6 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                                             "service=parking_aisle" }) })
     private Atlas edgeWithinAreaWithAmenityTag;
 
-    public Atlas getSingleEdgeAtlas()
-    {
-        return this.singleEdgeAtlas;
-    }
-
-    public Atlas getTestAtlas()
-    {
-        return this.testAtlas;
-    }
-
-    public Atlas getSingleEdgeWithAmenityAtlas()
-    {
-        return this.singleEdgeWithAmenityAtlas;
-    }
-
-    public Atlas getTwoEdgesWithAmenityAtlas()
-    {
-        return this.twoEdgesWithAmenityAtlas;
-    }
-
-    public Atlas getTrackSinkIsland()
-    {
-        return this.trackSinkIsland;
-    }
-
-    public Atlas getTrackAndPrimarySinkIsland()
-    {
-        return this.trackAndHighwaySinkIsland;
-    }
-
-    public Atlas getServiceSinkIsland()
-    {
-        return this.serviceSinkIsland;
-    }
-
-    public Atlas getInvalidEdges()
-    {
-        return this.invalidEdges;
-    }
-
     public Atlas getEdgeConnectedToPedestrianNetwork()
     {
         return this.pedestrianNetwork;
@@ -197,5 +157,45 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     public Atlas getEdgeWithinAreaWithAmenityTag()
     {
         return this.edgeWithinAreaWithAmenityTag;
+    }
+
+    public Atlas getInvalidEdges()
+    {
+        return this.invalidEdges;
+    }
+
+    public Atlas getServiceSinkIsland()
+    {
+        return this.serviceSinkIsland;
+    }
+
+    public Atlas getSingleEdgeAtlas()
+    {
+        return this.singleEdgeAtlas;
+    }
+
+    public Atlas getSingleEdgeWithAmenityAtlas()
+    {
+        return this.singleEdgeWithAmenityAtlas;
+    }
+
+    public Atlas getTestAtlas()
+    {
+        return this.testAtlas;
+    }
+
+    public Atlas getTrackAndPrimarySinkIsland()
+    {
+        return this.trackAndHighwaySinkIsland;
+    }
+
+    public Atlas getTrackSinkIsland()
+    {
+        return this.trackSinkIsland;
+    }
+
+    public Atlas getTwoEdgesWithAmenityAtlas()
+    {
+        return this.twoEdgesWithAmenityAtlas;
     }
 }

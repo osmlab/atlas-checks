@@ -77,14 +77,9 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_8) }, tags = { "tourism=ZOO" }) })
     private Atlas differentAOIsAtlas;
 
-    public Atlas sameAOIsNoOverlapAtlas()
+    public Atlas differentAOIsAtlas()
     {
-        return this.sameAOIsNoOverlapAtlas;
-    }
-
-    public Atlas sameAOIsMinOverlapAtlas()
-    {
-        return this.sameAOIsMinOverlapAtlas;
+        return this.differentAOIsAtlas;
     }
 
     public Atlas sameAOIsAtlas()
@@ -92,13 +87,18 @@ public class OverlappingAOIPolygonCheckTestRule extends CoreTestRule
         return this.sameAOIsAtlas;
     }
 
+    public Atlas sameAOIsMinOverlapAtlas()
+    {
+        return this.sameAOIsMinOverlapAtlas;
+    }
+
+    public Atlas sameAOIsNoOverlapAtlas()
+    {
+        return this.sameAOIsNoOverlapAtlas;
+    }
+
     public Atlas similarAOIsAtlas()
     {
         return this.similarAOIsAtlas;
-    }
-
-    public Atlas differentAOIsAtlas()
-    {
-        return this.differentAOIsAtlas;
     }
 }

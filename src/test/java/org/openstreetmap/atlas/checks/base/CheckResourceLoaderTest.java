@@ -19,6 +19,51 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class CheckResourceLoaderTest
 {
+    @Test
+    public void testBlacklistCountrySpecific()
+    {
+        final String configSource = "{\"CheckResourceLoader.checks.blacklist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        // ABC contains nothing, since the whitelist and the enabled countries have no overlap
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF").isEmpty());
+
+        // DEF contains only CheckResourceLoaderTestCheck, since that is the only overlap between
+        // enabled countries and the whitelist
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC").stream()
+                .allMatch(check -> check.getCheckName().startsWith("Base")));
+    }
+
+    @Test
+    public void testBlacklistGeneral()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"CheckResourceLoader.checks.blacklist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoaderTestCheck\":{\"enabled\": true}, \"BaseTestCheck\":{\"enabled\": false}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(0, checkResourceLoader.loadChecks().size());
+    }
+
+    @Test
+    public void testBlacklistNoOp()
+    {
+        // A blacklist containing no checks shouldn't impact the behavior
+        final String configSource = "{\"CheckResourceLoader.checks.blacklist\": [], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").size());
+        Assert.assertEquals(1,
+                checkResourceLoader.loadChecksForCountry("ABC").stream().map(Check::getCheckName)
+                        .filter(name -> name.startsWith("Base")).distinct().count());
+
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").size());
+        Assert.assertEquals(1,
+                checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName)
+                        .filter(name -> name.startsWith("CheckResource")).distinct().count());
+    }
+
     /**
      * Test the check loading using country keyword specific configurations. Assert that each
      * country gets its own version of the check.
@@ -94,6 +139,23 @@ public class CheckResourceLoaderTest
         Assert.assertEquals(1, loaded.size());
     }
 
+    @Test
+    public void testGroupedAndCountryCheckDisabling()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"groups\":{\"alphabetEnds\":[\"ABC\",\"XYZ\"]},\"CheckResourceLoaderTestCheck\":{\"enabled\": true,\"var1\":1,\"var2\":\"Hi\",\"override.DEF.enabled\":false,\"override.alphabetEnds.enabled\":false}}";
+        final String country1 = "ABC";
+        final String country2 = "DEF";
+        final String country3 = "XYZ";
+        final String country4 = "JKL";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country1).isEmpty());
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country2).isEmpty());
+        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country3).isEmpty());
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry(country4).size());
+    }
+
     /**
      * Test Grouped country overrides
      */
@@ -133,35 +195,6 @@ public class CheckResourceLoaderTest
     }
 
     @Test
-    public void testGroupedAndCountryCheckDisabling()
-    {
-        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"groups\":{\"alphabetEnds\":[\"ABC\",\"XYZ\"]},\"CheckResourceLoaderTestCheck\":{\"enabled\": true,\"var1\":1,\"var2\":\"Hi\",\"override.DEF.enabled\":false,\"override.alphabetEnds.enabled\":false}}";
-        final String country1 = "ABC";
-        final String country2 = "DEF";
-        final String country3 = "XYZ";
-        final String country4 = "JKL";
-        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
-        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country1).isEmpty());
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country2).isEmpty());
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry(country3).isEmpty());
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry(country4).size());
-    }
-
-    @Test
-    public void testWhitelistGeneral()
-    {
-        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"CheckResourceLoader.checks.whitelist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoaderTestCheck\":{\"enabled\": true}, \"BaseTestCheck\":{\"enabled\": false}}";
-        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
-        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-
-        Assert.assertEquals(1, checkResourceLoader.loadChecks().size());
-        Assert.assertTrue(checkResourceLoader.loadChecks().stream()
-                .noneMatch(check -> check.getCheckName().startsWith("Base")));
-    }
-
-    @Test
     public void testWhitelistCountrySpecific()
     {
         final String configSource = "{\"CheckResourceLoader.checks.whitelist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
@@ -178,55 +211,22 @@ public class CheckResourceLoaderTest
     }
 
     @Test
+    public void testWhitelistGeneral()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"CheckResourceLoader.checks.whitelist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoaderTestCheck\":{\"enabled\": true}, \"BaseTestCheck\":{\"enabled\": false}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(1, checkResourceLoader.loadChecks().size());
+        Assert.assertTrue(checkResourceLoader.loadChecks().stream()
+                .noneMatch(check -> check.getCheckName().startsWith("Base")));
+    }
+
+    @Test
     public void testWhitelistNoOp()
     {
         // A whitelist containing all checks shouldn't impact the behavior
         final String configSource = "{\"CheckResourceLoader.checks.whitelist\": [\"CheckResourceLoaderTestCheck\",\"BaseTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
-        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
-        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").size());
-        Assert.assertEquals(1,
-                checkResourceLoader.loadChecksForCountry("ABC").stream().map(Check::getCheckName)
-                        .filter(name -> name.startsWith("Base")).distinct().count());
-
-        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").size());
-        Assert.assertEquals(1,
-                checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName)
-                        .filter(name -> name.startsWith("CheckResource")).distinct().count());
-    }
-
-    @Test
-    public void testBlacklistGeneral()
-    {
-        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"CheckResourceLoader.checks.blacklist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoaderTestCheck\":{\"enabled\": true}, \"BaseTestCheck\":{\"enabled\": false}}";
-        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
-        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-
-        Assert.assertEquals(0, checkResourceLoader.loadChecks().size());
-    }
-
-    @Test
-    public void testBlacklistCountrySpecific()
-    {
-        final String configSource = "{\"CheckResourceLoader.checks.blacklist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
-        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
-        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-
-        // ABC contains nothing, since the whitelist and the enabled countries have no overlap
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("DEF").isEmpty());
-
-        // DEF contains only CheckResourceLoaderTestCheck, since that is the only overlap between
-        // enabled countries and the whitelist
-        Assert.assertTrue(checkResourceLoader.loadChecksForCountry("ABC").stream()
-                .allMatch(check -> check.getCheckName().startsWith("Base")));
-    }
-
-    @Test
-    public void testBlacklistNoOp()
-    {
-        // A blacklist containing no checks shouldn't impact the behavior
-        final String configSource = "{\"CheckResourceLoader.checks.blacklist\": [], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
         final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
         final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
 

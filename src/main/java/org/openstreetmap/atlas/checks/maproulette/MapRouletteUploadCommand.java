@@ -46,6 +46,15 @@ import com.google.gson.JsonObject;
  */
 public class MapRouletteUploadCommand extends MapRouletteCommand
 {
+    /**
+     * An enum containing the different types of input files that we can handle.
+     */
+    private enum OutputFileType
+    {
+        LOG,
+        COMPRESSED_LOG
+    }
+
     private static final Switch<File> INPUT_DIRECTORY = new Switch<>("logfiles",
             "Path to folder containing log files to upload to MapRoulette.", File::new,
             Optionality.REQUIRED);
@@ -64,10 +73,21 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
     private final Map<String, Challenge> checkNameChallengeMap;
 
+    public static void main(final String[] args)
+    {
+        new MapRouletteUploadCommand().run(args);
+    }
+
     public MapRouletteUploadCommand()
     {
         super();
         this.checkNameChallengeMap = new HashMap<>();
+    }
+
+    @Override
+    public SwitchList switches()
+    {
+        return super.switches().with(INPUT_DIRECTORY, CONFIG_LOCATION, COUNTRIES, CHECKS);
     }
 
     @Override
@@ -134,92 +154,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     }
 
     /**
-     * An enum containing the different types of input files that we can handle.
-     */
-    private enum OutputFileType
-    {
-        LOG,
-        COMPRESSED_LOG
-    }
-
-    /**
-     * Determine whether or not this file is something we can handle, and classify it accordingly.
-     * 
-     * @param logFile
-     *            any file
-     * @return if this file is something this command can handle, the appropriate OutputFileType
-     *         enum value; otherwise, an empty optional.
-     */
-    private Optional<OutputFileType> getOptionalOutputType(final File logFile)
-    {
-        // Note that technically the true extension is just .gz, so we can't use the same method as
-        // below.
-        if (logFile.getName().endsWith(ZIPPED_LOG_EXTENSION))
-        {
-            return Optional.of(OutputFileType.COMPRESSED_LOG);
-        }
-        else if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
-        {
-            return Optional.of(OutputFileType.LOG);
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Read a file that we know we should be able to handle
-     * 
-     * @param inputFile
-     *            Some file with a valid, appropriate extension.
-     * @param fileType
-     *            The type of file that inputFile is
-     * @return a BufferedReader to read inputFile
-     * @throws IOException
-     *             if the file is not found or is poorly formatted, given its extension. For
-     *             example, if this file is gzipped and something goes wrong in the unzipping
-     *             process, it might throw an error
-     */
-    private BufferedReader getReader(final File inputFile, final OutputFileType fileType)
-            throws IOException
-    {
-        if (fileType == OutputFileType.LOG)
-        {
-            return new BufferedReader(new FileReader(inputFile.getPath()));
-        }
-        return new BufferedReader(new InputStreamReader(
-                new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
-    }
-
-    /**
-     * Given a command map, load the configuration defined by the CONFIG_LOCATION switch and return
-     * it
-     * 
-     * @param map
-     *            the input map of arguments passed to this command
-     * @return the configuration at the specified file location
-     */
-    private Configuration loadConfiguration(final CommandMap map)
-    {
-        return new StandardConfiguration((File) map.get(CONFIG_LOCATION));
-    }
-
-    /**
-     * Returns a string which can be used as a key in a configuration to get checkName's challenge
-     * configuration
-     * 
-     * @param checkName
-     *            the name of the a check in a configuration file
-     * @return checkName.challenge
-     */
-    private String getChallengeParameter(final String checkName)
-    {
-        return MessageFormat.format("{0}.{1}", checkName, PARAMETER_CHALLENGE);
-    }
-
-    /**
      * If we've already looked up checkName, return the cached result from our store. Otherwise,
      * read the challenge parameters from fallbackConfiguration and deserialize them into a
      * Challenge object.
-     * 
+     *
      * @param checkName
      *            the name of the check
      * @param fallbackConfiguration
@@ -239,6 +177,19 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             result.setName(checkName);
             return result;
         });
+    }
+
+    /**
+     * Returns a string which can be used as a key in a configuration to get checkName's challenge
+     * configuration
+     * 
+     * @param checkName
+     *            the name of the a check in a configuration file
+     * @return checkName.challenge
+     */
+    private String getChallengeParameter(final String checkName)
+    {
+        return MessageFormat.format("{0}.{1}", checkName, PARAMETER_CHALLENGE);
     }
 
     /**
@@ -265,14 +216,63 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         return Optional.empty();
     }
 
-    @Override
-    public SwitchList switches()
+    /**
+     * Determine whether or not this file is something we can handle, and classify it accordingly.
+     *
+     * @param logFile
+     *            any file
+     * @return if this file is something this command can handle, the appropriate OutputFileType
+     *         enum value; otherwise, an empty optional.
+     */
+    private Optional<OutputFileType> getOptionalOutputType(final File logFile)
     {
-        return super.switches().with(INPUT_DIRECTORY, CONFIG_LOCATION, COUNTRIES, CHECKS);
+        // Note that technically the true extension is just .gz, so we can't use the same method as
+        // below.
+        if (logFile.getName().endsWith(ZIPPED_LOG_EXTENSION))
+        {
+            return Optional.of(OutputFileType.COMPRESSED_LOG);
+        }
+        else if (FilenameUtils.getExtension(logFile.getName()).equals(LOG_EXTENSION))
+        {
+            return Optional.of(OutputFileType.LOG);
+        }
+        return Optional.empty();
     }
 
-    public static void main(final String[] args)
+    /**
+     * Read a file that we know we should be able to handle
+     *
+     * @param inputFile
+     *            Some file with a valid, appropriate extension.
+     * @param fileType
+     *            The type of file that inputFile is
+     * @return a BufferedReader to read inputFile
+     * @throws IOException
+     *             if the file is not found or is poorly formatted, given its extension. For
+     *             example, if this file is gzipped and something goes wrong in the unzipping
+     *             process, it might throw an error
+     */
+    private BufferedReader getReader(final File inputFile, final OutputFileType fileType)
+            throws IOException
     {
-        new MapRouletteUploadCommand().run(args);
+        if (fileType == OutputFileType.LOG)
+        {
+            return new BufferedReader(new FileReader(inputFile.getPath()));
+        }
+        return new BufferedReader(new InputStreamReader(
+                new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
+    }
+
+    /**
+     * Given a command map, load the configuration defined by the CONFIG_LOCATION switch and return
+     * it
+     *
+     * @param map
+     *            the input map of arguments passed to this command
+     * @return the configuration at the specified file location
+     */
+    private Configuration loadConfiguration(final CommandMap map)
+    {
+        return new StandardConfiguration((File) map.get(CONFIG_LOCATION));
     }
 }

@@ -38,6 +38,18 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 public class MalformedRoundaboutCheck extends BaseCheck
 {
+    /**
+     * An enum of RoundaboutDirections
+     */
+    public enum RoundaboutDirection
+    {
+        CLOCKWISE,
+        COUNTERCLOCKWISE,
+        // Handles the case where we were unable to get any information about the roundabout's
+        // Direction.
+        UNKNOWN
+    }
+
     private static final long serialVersionUID = -3018101860747289836L;
     private static final String BASIC_INSTRUCTION = "This roundabout is malformed.";
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the"
@@ -54,7 +66,6 @@ public class MalformedRoundaboutCheck extends BaseCheck
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WRONG_WAY_INSTRUCTIONS,
             INCOMPLETE_ROUTE_INSTRUCTIONS, ENCLOSED_ROADS_INSTRUCTIONS, BASIC_INSTRUCTION);
-
     private final List<String> leftDrivingCountries;
 
     /**
@@ -329,17 +340,5 @@ public class MalformedRoundaboutCheck extends BaseCheck
                         && !this.ignoreBridgeTunnelCrossings(edge)
                         && this.intersectsWithEnclosedGeometry(roundaboutPoly, edge))
                 .iterator().hasNext();
-    }
-
-    /**
-     * An enum of RoundaboutDirections
-     */
-    public enum RoundaboutDirection
-    {
-        CLOCKWISE,
-        COUNTERCLOCKWISE,
-        // Handles the case where we were unable to get any information about the roundabout's
-        // Direction.
-        UNKNOWN
     }
 }

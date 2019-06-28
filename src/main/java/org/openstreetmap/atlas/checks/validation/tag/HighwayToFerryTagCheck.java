@@ -34,6 +34,7 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION,
             FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION, FERRY_TAG_IF_ABSENT_INSTRUCTION);
+    private static final long serialVersionUID = 2166377913919285833L;
 
     private final HighwayTag minimumHighwayType;
 
@@ -87,19 +88,10 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
         }
     }
 
-    /**
-     * Verifies that the priority of the {@link HighwayTag} of the {@link AtlasObject} is greater
-     * than or equal to the minimum highway type.
-     *
-     * @param object
-     *            {@link AtlasObject} whose {@link HighwayTag} is verified for minimum highway value
-     * @return true if the highway tag of the object is greater or equal to the minimum highway type
-     */
-    private boolean isMinimumHighwayType(final AtlasObject object)
+    @Override
+    protected List<String> getFallbackInstructions()
     {
-        return HighwayTag.highwayTag(object)
-                .map(highwayTag -> highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType))
-                .orElse(false);
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -114,9 +106,18 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
         return object.getTag(FerryTag.KEY).equals(object.getTag(HighwayTag.KEY));
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
+    /**
+     * Verifies that the priority of the {@link HighwayTag} of the {@link AtlasObject} is greater
+     * than or equal to the minimum highway type.
+     *
+     * @param object
+     *            {@link AtlasObject} whose {@link HighwayTag} is verified for minimum highway value
+     * @return true if the highway tag of the object is greater or equal to the minimum highway type
+     */
+    private boolean isMinimumHighwayType(final AtlasObject object)
     {
-        return FALLBACK_INSTRUCTIONS;
+        return HighwayTag.highwayTag(object)
+                .map(highwayTag -> highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType))
+                .orElse(false);
     }
 }

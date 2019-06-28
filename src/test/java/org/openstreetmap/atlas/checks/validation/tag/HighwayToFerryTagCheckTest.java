@@ -20,16 +20,6 @@ public class HighwayToFerryTagCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void testAtlasWithSameFerryAndHighwayTags()
-    {
-        this.verifier.actual(this.setup.getSameFerryHighwayAtlas(),
-                new HighwayToFerryTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "has a Ferry and a Highway tag for a ferry route. Please verify and remove the highway tag.")));
-    }
-
-    @Test
     public void testAtlasWithDifferentFerryAndHighwayTags()
     {
         this.verifier.actual(this.setup.getDifferentFerryHighwayAtlas(),
@@ -50,12 +40,13 @@ public class HighwayToFerryTagCheckTest
     }
 
     @Test
-    public void testMinimumHighwayConfiguration()
+    public void testAtlasWithSameFerryAndHighwayTags()
     {
-        this.verifier.actual(this.setup.getMinimumHighwayAtlas(),
-                new HighwayToFerryTagCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"HighwayToFerryTagCheck\":{\"highway.type.minimum\":\"service\"}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+        this.verifier.actual(this.setup.getSameFerryHighwayAtlas(),
+                new HighwayToFerryTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "has a Ferry and a Highway tag for a ferry route. Please verify and remove the highway tag.")));
     }
 
     @Test
@@ -65,5 +56,14 @@ public class HighwayToFerryTagCheckTest
                 new HighwayToFerryTagCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"HighwayToFerryTagCheck\":{\"highway.type.minimum\":\"path\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void testMinimumHighwayConfiguration()
+    {
+        this.verifier.actual(this.setup.getMinimumHighwayAtlas(),
+                new HighwayToFerryTagCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"HighwayToFerryTagCheck\":{\"highway.type.minimum\":\"service\"}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
 }

@@ -36,12 +36,6 @@ public class IntersectionUtilitiesTest
     private static final Polygon POLYGON3 = new Polygon(LOCATION5, LOCATION6, LOCATION8);
 
     @Test
-    public void findIntersectionPercentageSamePolygonTest()
-    {
-        assertTrue(IntersectionUtilities.findIntersectionPercentage(POLYGON1, POLYGON1) >= 1);
-    }
-
-    @Test
     public void findIntersectionPercentageIntersectingPolygonTest()
     {
         final double intersectPolygon = IntersectionUtilities.findIntersectionPercentage(POLYGON1,
@@ -53,5 +47,11 @@ public class IntersectionUtilitiesTest
     public void findIntersectionPercentageNonIntersectingPolygonTest()
     {
         assertTrue(IntersectionUtilities.findIntersectionPercentage(POLYGON1, POLYGON3) == 0);
+    }
+
+    @Test
+    public void findIntersectionPercentageSamePolygonTest()
+    {
+        assertTrue(IntersectionUtilities.findIntersectionPercentage(POLYGON1, POLYGON1) >= 1);
     }
 }

@@ -19,19 +19,19 @@ public class WaterbodyAndIslandSizeTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void invalidMultiPolygonNoNaturalWaterTagRelationTest()
+    {
+        this.verifier.actual(this.setup.getInvalidMultiPolygonNoNaturalWaterTagRelationAtlas(),
+                new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void largeIsletTest()
     {
         this.verifier.actual(this.setup.getLargeIsletAtlas(),
                 new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotEmpty();
-    }
-
-    @Test
-    public void validIslandSizeTest()
-    {
-        this.verifier.actual(this.setup.getValidSizeIslandAtlas(),
-                new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -43,11 +43,11 @@ public class WaterbodyAndIslandSizeTest
     }
 
     @Test
-    public void smallWaterbodyTest()
+    public void smallIslandMultiPolygonDuplicateTest()
     {
-        this.verifier.actual(this.setup.getSmallWaterbodyAtlas(),
+        this.verifier.actual(this.setup.getSmallIslandMultiPolygonDuplicateAtlas(),
                 new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
@@ -67,6 +67,14 @@ public class WaterbodyAndIslandSizeTest
     }
 
     @Test
+    public void smallMultiPolygonWaterbodyMemberTest()
+    {
+        this.verifier.actual(this.setup.getSmallMultiPolygonWaterbodyMemberAtlas(),
+                new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyNotEmpty();
+    }
+
+    @Test
     public void smallRockMultiPolygonIslandTest()
     {
         this.verifier.actual(this.setup.getSmallRockMultiPolygonIslandAtlas(),
@@ -75,26 +83,18 @@ public class WaterbodyAndIslandSizeTest
     }
 
     @Test
-    public void smallIslandMultiPolygonDuplicateTest()
+    public void smallWaterbodyTest()
     {
-        this.verifier.actual(this.setup.getSmallIslandMultiPolygonDuplicateAtlas(),
-                new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void invalidMultiPolygonNoNaturalWaterTagRelationTest()
-    {
-        this.verifier.actual(this.setup.getInvalidMultiPolygonNoNaturalWaterTagRelationAtlas(),
-                new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void smallMultiPolygonWaterbodyMemberTest()
-    {
-        this.verifier.actual(this.setup.getSmallMultiPolygonWaterbodyMemberAtlas(),
+        this.verifier.actual(this.setup.getSmallWaterbodyAtlas(),
                 new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotEmpty();
+    }
+
+    @Test
+    public void validIslandSizeTest()
+    {
+        this.verifier.actual(this.setup.getValidSizeIslandAtlas(),
+                new WaterbodyAndIslandSizeCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
     }
 }
