@@ -102,9 +102,14 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
                                     "highway=motorway", "oneway=yes", "junction=roundabout" }), })
     private Atlas invalidMotorwaySegmentOneConnectionRoundaboutAtlas;
 
-    public Atlas validMotorwaySegmentsAtlas()
+    public Atlas invalidMotorwaySegmentOneConnectionAtlas()
     {
-        return this.validMotorwaySegmentsAtlas;
+        return this.invalidMotorwaySegmentOneConnectionAtlas;
+    }
+
+    public Atlas invalidMotorwaySegmentOneConnectionRoundaboutAtlas()
+    {
+        return this.invalidMotorwaySegmentOneConnectionRoundaboutAtlas;
     }
 
     public Atlas invalidPrimaryMotorwayPrimarySegmentAtlas()
@@ -112,18 +117,13 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
         return this.invalidPrimaryMotorwayPrimarySegmentAtlas;
     }
 
-    public Atlas invalidMotorwaySegmentOneConnectionAtlas()
-    {
-        return this.invalidMotorwaySegmentOneConnectionAtlas;
-    }
-
     public Atlas validMotorwaySegmentOneConnectionAtlas()
     {
         return this.validMotorwaySegmentOneConnectionAtlas;
     }
 
-    public Atlas invalidMotorwaySegmentOneConnectionRoundaboutAtlas()
+    public Atlas validMotorwaySegmentsAtlas()
     {
-        return this.invalidMotorwaySegmentOneConnectionRoundaboutAtlas;
+        return this.validMotorwaySegmentsAtlas;
     }
 }

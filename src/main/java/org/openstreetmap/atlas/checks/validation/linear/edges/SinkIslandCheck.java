@@ -173,43 +173,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
     }
 
     /**
-     * This function will check various elements of the edge to make sure that we should be looking
-     * at it.
-     *
-     * @param object
-     *            the edge to check whether we want to continue looking at it
-     * @return {@code true} if is a valid object to look at
-     */
-    private boolean validEdge(final AtlasObject object)
-    {
-        return object instanceof Edge
-                // Ignore any airport taxiways and runways, as these often create a sink island
-                && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
-                        AerowayTag.RUNWAY)
-                // Only allow car navigable highways and ignore ferries
-                && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
-                // Ignore any highways tagged as areas
-                && !TagPredicates.IS_AREA.test(object);
-    }
-
-    /**
-     * This function checks to see if the end node of an Edge AtlasObject has an amenity tag with
-     * one of the AMENITY_VALUES_TO_EXCLUDE.
-     * 
-     * @param object
-     *            An AtlasObject (known to be an Edge)
-     * @return {@code true} if the end node of the end has one of the AMENITY_VALUES_TO_EXCLUDE, and
-     *         {@code false} otherwise
-     */
-    private boolean endNodeHasAmenityTypeToExclude(final AtlasObject object)
-    {
-        final Edge edge = (Edge) object;
-        final Node endNode = edge.end();
-
-        return Validators.isOfType(endNode, AmenityTag.class, AMENITY_VALUES_TO_EXCLUDE);
-    }
-
-    /**
      * This function checks an edge to determine whether it has certain characteristics that signify
      * to us that we do not want to keep examining this component of the network.
      *
@@ -235,6 +198,49 @@ public class SinkIslandCheck extends BaseCheck<Long>
     }
 
     /**
+     * This function checks to see if the end node of an Edge AtlasObject has an amenity tag with
+     * one of the AMENITY_VALUES_TO_EXCLUDE.
+     * 
+     * @param object
+     *            An AtlasObject (known to be an Edge)
+     * @return {@code true} if the end node of the end has one of the AMENITY_VALUES_TO_EXCLUDE, and
+     *         {@code false} otherwise
+     */
+    private boolean endNodeHasAmenityTypeToExclude(final AtlasObject object)
+    {
+        final Edge edge = (Edge) object;
+        final Node endNode = edge.end();
+
+        return Validators.isOfType(endNode, AmenityTag.class, AMENITY_VALUES_TO_EXCLUDE);
+    }
+
+    /**
+     * Checks if an {@link Edge} is connected to any edge that is a pedestrian navigable highway
+     *
+     * @param edge
+     *            any edge
+     * @return true if the edge has connection to pedestrian navigable highways
+     */
+    private boolean isConnectedToPedestrianNavigableHighway(final Edge edge)
+    {
+        return edge.connectedEdges().stream().anyMatch(HighwayTag::isPedestrianNavigableHighway);
+    }
+
+    /**
+     * Checks if an {@link Edge} is of type service
+     *
+     * @param edge
+     *            any edge
+     * @return true if the highway classification of the edge is of type service and it has a
+     *         service tag
+     */
+    private boolean isServiceRoad(final Edge edge)
+    {
+        return Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
+                && Validators.hasValuesFor(edge, ServiceTag.class);
+    }
+
+    /**
      * Checks if the edge is fully enclosed within areas that have amenity tags that are in the
      * AMENITY_VALUES_TO_EXCLUDE list
      *
@@ -254,28 +260,22 @@ public class SinkIslandCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if an {@link Edge} is of type service
-     * 
-     * @param edge
-     *            any edge
-     * @return true if the highway classification of the edge is of type service and it has a
-     *         service tag
+     * This function will check various elements of the edge to make sure that we should be looking
+     * at it.
+     *
+     * @param object
+     *            the edge to check whether we want to continue looking at it
+     * @return {@code true} if is a valid object to look at
      */
-    private boolean isServiceRoad(final Edge edge)
+    private boolean validEdge(final AtlasObject object)
     {
-        return Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
-                && Validators.hasValuesFor(edge, ServiceTag.class);
-    }
-
-    /**
-     * Checks if an {@link Edge} is connected to any edge that is a pedestrian navigable highway
-     * 
-     * @param edge
-     *            any edge
-     * @return true if the edge has connection to pedestrian navigable highways
-     */
-    private boolean isConnectedToPedestrianNavigableHighway(final Edge edge)
-    {
-        return edge.connectedEdges().stream().anyMatch(HighwayTag::isPedestrianNavigableHighway);
+        return object instanceof Edge
+                // Ignore any airport taxiways and runways, as these often create a sink island
+                && !Validators.isOfType(object, AerowayTag.class, AerowayTag.TAXIWAY,
+                        AerowayTag.RUNWAY)
+                // Only allow car navigable highways and ignore ferries
+                && HighwayTag.isCarNavigableHighway(object) && !RouteTag.isFerry(object)
+                // Ignore any highways tagged as areas
+                && !TagPredicates.IS_AREA.test(object);
     }
 }

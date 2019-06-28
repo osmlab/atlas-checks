@@ -77,6 +77,12 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
     /**
      * Checks if an {@link Edge} is tagged with highway=motorway. Roundabouts are excluded, as they
      * act more like motorway_links than motorway segments in most cases found.
@@ -89,11 +95,5 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     {
         return Validators.isOfType(edge, HighwayTag.class, HighwayTag.MOTORWAY)
                 && !JunctionTag.isRoundabout(edge);
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 }

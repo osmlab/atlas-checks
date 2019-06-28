@@ -44,6 +44,32 @@ public class InvalidMiniRoundaboutCheckTest
     }
 
     @Test
+    public void testLowValenceWithDirectionNotFlagged()
+    {
+        this.verifier.actual(this.setup.getNoTurnsWithDirectionAtlas(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testNoEdgesNoFlags()
+    {
+        this.verifier.actual(this.setup.getNoRoadsAtlas(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testPedestrianHighway()
+    {
+        this.verifier.actual(this.setup.getPedestrianRoundaboutAtlas(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 1, 1));
+        this.verifier.verify(this::verifyMultipleEdgesFlag);
+    }
+
+    @Test
     public void testRegularIntersectionHighValence()
     {
         this.verifier.actual(this.setup.getValidRoundaboutAtlas(),
@@ -59,6 +85,15 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 4, 1));
         this.verifier.verify(this::verifyMultipleEdgesFlag);
+    }
+
+    @Test
+    public void testTurningCircleWithDirectionFlagged()
+    {
+        this.verifier.actual(this.setup.getTurningCircleWithDirectionAtlas(),
+                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
+        this.verifier.verify(this::verifyTwoEdgesFlag);
     }
 
     @Test
@@ -81,39 +116,19 @@ public class InvalidMiniRoundaboutCheckTest
         this.verifier.verify(this::verifyTwoEdgesFlag);
     }
 
-    @Test
-    public void testPedestrianHighway()
+    /**
+     * Asserts that a flag contains an instruction describing there being a suspiciously small
+     * number of car-navigable Edges.
+     *
+     * @param flag
+     *            The flag to check.
+     */
+    private void verifyMultipleEdgesFlag(final CheckFlag flag)
     {
-        this.verifier.actual(this.setup.getPedestrianRoundaboutAtlas(),
-                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 1, 1));
-        this.verifier.verify(this::verifyMultipleEdgesFlag);
-    }
-
-    @Test
-    public void testNoEdgesNoFlags()
-    {
-        this.verifier.actual(this.setup.getNoRoadsAtlas(),
-                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testTurningCircleWithDirectionFlagged()
-    {
-        this.verifier.actual(this.setup.getTurningCircleWithDirectionAtlas(),
-                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verify(flag -> this.verifyNumberNodesAndEdges(flag, 2, 1));
-        this.verifier.verify(this::verifyTwoEdgesFlag);
-    }
-
-    @Test
-    public void testLowValenceWithDirectionNotFlagged()
-    {
-        this.verifier.actual(this.setup.getNoTurnsWithDirectionAtlas(),
-                new InvalidMiniRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
+        Assert.assertTrue(flag.getInstructions().contains(
+                "connecting car-navigable Ways. Please verify that this is the most accurate tag."
+                        + " Possible alternate tags include, but are not limited to, traffic_calming=ISLAND, junction=CIRCULAR,"
+                        + " or removing this tag entirely."));
     }
 
     /**
@@ -137,21 +152,6 @@ public class InvalidMiniRoundaboutCheckTest
                 (long) flagCounts.getOrDefault(this.setup.EDGE_TAG, -1L));
         Assert.assertEquals(expectedNodes,
                 (long) flagCounts.getOrDefault(this.setup.NODE_TAG, -1L));
-    }
-
-    /**
-     * Asserts that a flag contains an instruction describing there being a suspiciously small
-     * number of car-navigable Edges.
-     *
-     * @param flag
-     *            The flag to check.
-     */
-    private void verifyMultipleEdgesFlag(final CheckFlag flag)
-    {
-        Assert.assertTrue(flag.getInstructions().contains(
-                "connecting car-navigable Ways. Please verify that this is the most accurate tag."
-                        + " Possible alternate tags include, but are not limited to, traffic_calming=ISLAND, junction=CIRCULAR,"
-                        + " or removing this tag entirely."));
     }
 
     /**

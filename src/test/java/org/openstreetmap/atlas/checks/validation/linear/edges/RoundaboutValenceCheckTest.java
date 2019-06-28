@@ -21,12 +21,19 @@ public class RoundaboutValenceCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void roundaboutWithValenceZeroTest()
+    public void roundaboutWithValenceFiveTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithValenceZeroAtlas(),
+        this.verifier.actual(this.setup.roundaboutWithValenceFiveAtlas(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void roundaboutWithValenceFourTest()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceFourAtlas(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -46,26 +53,19 @@ public class RoundaboutValenceCheckTest
     }
 
     @Test
-    public void roundaboutWithValenceFourTest()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceFourAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void roundaboutWithValenceFiveTest()
-    {
-        this.verifier.actual(this.setup.roundaboutWithValenceFiveAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void roundaboutWithValenceZeroCyclewayTest()
     {
         this.verifier.actual(this.setup.roundaboutWithValenceZeroCyclewayAtlas(),
                 new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void roundaboutWithValenceZeroTest()
+    {
+        this.verifier.actual(this.setup.roundaboutWithValenceZeroAtlas(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 }

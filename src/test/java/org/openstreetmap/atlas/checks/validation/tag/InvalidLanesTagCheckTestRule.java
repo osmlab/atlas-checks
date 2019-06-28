@@ -76,14 +76,14 @@ public class InvalidLanesTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas validLanesTagTollBooth;
 
-    public Atlas validLanesTag()
-    {
-        return this.validLanesTag;
-    }
-
     public Atlas invalidLanesTag()
     {
         return this.invalidLanesTag;
+    }
+
+    public Atlas validLanesTag()
+    {
+        return this.validLanesTag;
     }
 
     public Atlas validLanesTagTollBooth()

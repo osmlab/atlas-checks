@@ -183,11 +183,6 @@ public abstract class BaseCheck<T> implements Check, Serializable
         return this.checkPolygonFilter;
     }
 
-    public AtlasEntityPolygonsFilter getGlobalPolygonFilter()
-    {
-        return this.globalPolygonFilter;
-    }
-
     /**
      * Gets the whitelisted countries for this check. If an empty list is returned it safe to assume
      * this check applies to all countries.
@@ -197,6 +192,11 @@ public abstract class BaseCheck<T> implements Check, Serializable
     public List<String> getCountries()
     {
         return this.countries;
+    }
+
+    public AtlasEntityPolygonsFilter getGlobalPolygonFilter()
+    {
+        return this.globalPolygonFilter;
     }
 
     public Locale getLocale()
@@ -327,26 +327,28 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 Collections.singletonList(instruction), points);
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final String instruction)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final String instruction)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects,
                 Collections.singletonList(instruction));
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final String instruction,
-            final List<Location> points)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final String instruction, final List<Location> points)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects,
                 Collections.singletonList(instruction), points);
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final List<String> instructions,
-            final List<Location> points)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final List<String> instructions, final List<Location> points)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions, points);
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final List<String> instructions)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final List<String> instructions)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions);
     }
@@ -394,30 +396,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
      *            set of {@link AtlasObject}s comprising this task
      * @return a unique string identifier for this task, made from the sorted object identifiers
      */
-    protected String getTaskIdentifier(final Set<AtlasObject> objects)
+    protected String getTaskIdentifier(final Set<? extends AtlasObject> objects)
     {
         return new TaskIdentifier(objects).toString();
-    }
-
-    /**
-     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasObject)} except instead of using the
-     * OSM identifier we use the Atlas identifier
-     *
-     * @param object
-     *            {@link AtlasObject} to generate unique identifier for
-     * @return unique object identifier among different types
-     */
-    protected String getUniqueObjectIdentifier(final AtlasObject object)
-    {
-        if (object instanceof AtlasEntity)
-        {
-            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
-                    object.getIdentifier());
-        }
-        else
-        {
-            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
-        }
     }
 
     /**
@@ -437,6 +418,27 @@ public abstract class BaseCheck<T> implements Check, Serializable
         {
             return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
                     object.getOsmIdentifier());
+        }
+        else
+        {
+            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
+        }
+    }
+
+    /**
+     * Similar to {@link BaseCheck#getUniqueOSMIdentifier(AtlasObject)} except instead of using the
+     * OSM identifier we use the Atlas identifier
+     *
+     * @param object
+     *            {@link AtlasObject} to generate unique identifier for
+     * @return unique object identifier among different types
+     */
+    protected String getUniqueObjectIdentifier(final AtlasObject object)
+    {
+        if (object instanceof AtlasEntity)
+        {
+            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
+                    object.getIdentifier());
         }
         else
         {

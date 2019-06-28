@@ -20,11 +20,11 @@ public class AddressStreetNameCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void validAddressStreetTagTest()
+    public void invalidAddressStreetTagTest()
     {
-        this.verifier.actual(this.setup.validAddressStreetTagAtlas(),
+        this.verifier.actual(this.setup.invalidAddressStreetTagAtlas(),
                 new AddressStreetNameCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -36,19 +36,19 @@ public class AddressStreetNameCheckTest
     }
 
     @Test
-    public void invalidAddressStreetTagTest()
-    {
-        this.verifier.actual(this.setup.invalidAddressStreetTagAtlas(),
-                new AddressStreetNameCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void validAddressStreetTagConfigNoEdgeInRangeTest()
     {
         this.verifier.actual(this.setup.validAddressStreetTagAtlas(),
                 new AddressStreetNameCheck(ConfigurationResolver
                         .inlineConfiguration("{\"AddressStreetNameCheck.bounds.size\":1.0}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validAddressStreetTagTest()
+    {
+        this.verifier.actual(this.setup.validAddressStreetTagAtlas(),
+                new AddressStreetNameCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 

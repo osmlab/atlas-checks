@@ -96,40 +96,6 @@ public class InvalidLanesTagCheck extends BaseCheck
     }
 
     /**
-     * Checks for a node with {@code barrier=toll_booth} amongst the {@link Edge}s that are
-     * connected to the input {@link Edge} and have an otherwise invalid {@code lanes} tag.
-     *
-     * @param object
-     *            an {@link Edge} with an otherwise invalid {@code lanes} tag, to be checked for
-     *            toll booths
-     * @return a boolean that is true when a toll booth is found
-     */
-    private boolean partOfTollBooth(final AtlasObject object)
-    {
-        final HashSet<Edge> connectedInvalidEdges = connectedInvalidLanes(object);
-
-        // check for toll booths
-        for (final Edge edge : connectedInvalidEdges)
-        {
-            for (final Node node : edge.connectedNodes())
-            {
-                if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
-                {
-                    // If there is a toll booth, mark them so we don't process
-                    // items twice unnecessarily, and return true
-                    connectedInvalidEdges
-                            .forEach(validEdge -> this.markAsFlagged(validEdge.getOsmIdentifier()));
-                    return true;
-                }
-            }
-        }
-        // If not a toll booth, mark for flagging so they can skip this toll booth check.
-        connectedInvalidEdges
-                .forEach(invalidEdge -> this.isChecked.add(invalidEdge.getIdentifier()));
-        return false;
-    }
-
-    /**
      * Gets the {@link Edge}s that are connected to the input {@link Edge} and have an otherwise
      * invalid {@code lanes} tag.
      *
@@ -168,5 +134,39 @@ public class InvalidLanesTagCheck extends BaseCheck
         }
 
         return connectedEdges;
+    }
+
+    /**
+     * Checks for a node with {@code barrier=toll_booth} amongst the {@link Edge}s that are
+     * connected to the input {@link Edge} and have an otherwise invalid {@code lanes} tag.
+     *
+     * @param object
+     *            an {@link Edge} with an otherwise invalid {@code lanes} tag, to be checked for
+     *            toll booths
+     * @return a boolean that is true when a toll booth is found
+     */
+    private boolean partOfTollBooth(final AtlasObject object)
+    {
+        final HashSet<Edge> connectedInvalidEdges = connectedInvalidLanes(object);
+
+        // check for toll booths
+        for (final Edge edge : connectedInvalidEdges)
+        {
+            for (final Node node : edge.connectedNodes())
+            {
+                if (Validators.isOfType(node, BarrierTag.class, BarrierTag.TOLL_BOOTH))
+                {
+                    // If there is a toll booth, mark them so we don't process
+                    // items twice unnecessarily, and return true
+                    connectedInvalidEdges
+                            .forEach(validEdge -> this.markAsFlagged(validEdge.getOsmIdentifier()));
+                    return true;
+                }
+            }
+        }
+        // If not a toll booth, mark for flagging so they can skip this toll booth check.
+        connectedInvalidEdges
+                .forEach(invalidEdge -> this.isChecked.add(invalidEdge.getIdentifier()));
+        return false;
     }
 }

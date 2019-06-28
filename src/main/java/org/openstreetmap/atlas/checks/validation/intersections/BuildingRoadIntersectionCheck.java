@@ -50,8 +50,8 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
     private static final String YES_VALUE = "yes";
     private static final Predicate<Edge> HIGHWAY_SERVICE_TAG = edge -> Validators.isOfType(edge,
             HighwayTag.class, HighwayTag.SERVICE);
-    private final Boolean carNavigableEdgesOnly;
     private static final long serialVersionUID = 5986017212661374165L;
+    private final Boolean carNavigableEdgesOnly;
 
     private static Predicate<Edge> ignoreTags()
     {
@@ -67,27 +67,6 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                         || Validators.isOfType(node, AmenityTag.class, AmenityTag.PARKING_ENTRANCE)
                         // Ignore edges with nodes containing Barrier tags
                         || Validators.hasValuesFor(node, BarrierTag.class)));
-    }
-
-    private Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
-    {
-        // An invalid intersection is determined by checking that its highway tag is car navigable
-        // or core way based on the configuration value
-        return edge -> (this.carNavigableEdgesOnly ? HighwayTag.isCarNavigableHighway(edge)
-                : HighwayTag.isCoreWay(edge))
-                // And if the edge intersects the building polygon
-                && edge.asPolyLine().intersects(building.asPolygon())
-                // And ignore intersections where edge has highway=service and building has
-                // Amenity=fuel
-                && !(HIGHWAY_SERVICE_TAG.test(edge)
-                        && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
-                // And if the layers have the same layer value
-                && LayerTag.getTaggedValue(edge).orElse(0L)
-                        .equals(LayerTag.getTaggedValue(building).orElse(0L))
-                // And if the building/edge intersection is not valid
-                && !isValidIntersection(building, edge)
-                // And if the edge has no Access = Private tag
-                && !Validators.isOfType(edge, AccessTag.class, AccessTag.PRIVATE);
     }
 
     /**
@@ -189,5 +168,26 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 }
             }
         }
+    }
+
+    private Predicate<Edge> intersectsCoreWayInvalidly(final Area building)
+    {
+        // An invalid intersection is determined by checking that its highway tag is car navigable
+        // or core way based on the configuration value
+        return edge -> (this.carNavigableEdgesOnly ? HighwayTag.isCarNavigableHighway(edge)
+                : HighwayTag.isCoreWay(edge))
+                // And if the edge intersects the building polygon
+                && edge.asPolyLine().intersects(building.asPolygon())
+                // And ignore intersections where edge has highway=service and building has
+                // Amenity=fuel
+                && !(HIGHWAY_SERVICE_TAG.test(edge)
+                        && Validators.isOfType(building, AmenityTag.class, AmenityTag.FUEL))
+                // And if the layers have the same layer value
+                && LayerTag.getTaggedValue(edge).orElse(0L)
+                        .equals(LayerTag.getTaggedValue(building).orElse(0L))
+                // And if the building/edge intersection is not valid
+                && !isValidIntersection(building, edge)
+                // And if the edge has no Access = Private tag
+                && !Validators.isOfType(edge, AccessTag.class, AccessTag.PRIVATE);
     }
 }

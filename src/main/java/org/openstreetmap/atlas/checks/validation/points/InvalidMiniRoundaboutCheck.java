@@ -38,6 +38,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
             OTHER_EDGES_INSTRUCTION);
     private static final DirectionTag[] VALID_DIRECTIONS = { DirectionTag.CLOCKWISE,
             DirectionTag.ANTICLOCKWISE };
+    private static final long serialVersionUID = 2590918466698565671L;
     private final long minimumValence;
 
     /**
@@ -77,13 +78,19 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         // Otherwise, if there is not a direction tag, and the valence is less than valenceMinimum,
         // we want to flag it.
         else if (!Validators.isOfType(node, DirectionTag.class, VALID_DIRECTIONS)
-                && valence < minimumValence && valence > 0)
+                && valence < this.minimumValence && valence > 0)
         {
             result = Optional
                     .of(this.flagNode(node, carNavigableEdges, this.getLocalizedInstruction(1,
                             node.getOsmIdentifier(), getMasterEdgeCount(carNavigableEdges))));
         }
         return result;
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -104,28 +111,6 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         final CheckFlag flag = this.createFlag(node, instruction);
         edges.forEach(flag::addObject);
         return flag;
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
-    /**
-     * Determines whether or not a set of Edges is a turnaround or not, where a turnaround is
-     * defined as a collection containing a master Edge and its reverse Edge. This function is only
-     * guaranteed to return sensible results when carNavigableEdges is a collection of the connected
-     * car-navigable Edges for a single Node.
-     *
-     * @param carNavigableEdges
-     *            A collection of Edges. Must be a collection of the connected car-navigable Edges
-     *            from a single Node, or else the results are not guaranteed to be logical.
-     * @return True if the collection represents a turnaround, false otherwise.
-     */
-    private boolean isTurnaround(final Collection<Edge> carNavigableEdges)
-    {
-        return getMasterEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
     }
 
     /**
@@ -152,5 +137,21 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     private long getMasterEdgeCount(final Collection<Edge> carNavigableEdges)
     {
         return carNavigableEdges.stream().filter(Edge::isMasterEdge).count();
+    }
+
+    /**
+     * Determines whether or not a set of Edges is a turnaround or not, where a turnaround is
+     * defined as a collection containing a master Edge and its reverse Edge. This function is only
+     * guaranteed to return sensible results when carNavigableEdges is a collection of the connected
+     * car-navigable Edges for a single Node.
+     *
+     * @param carNavigableEdges
+     *            A collection of Edges. Must be a collection of the connected car-navigable Edges
+     *            from a single Node, or else the results are not guaranteed to be logical.
+     * @return True if the collection represents a turnaround, false otherwise.
+     */
+    private boolean isTurnaround(final Collection<Edge> carNavigableEdges)
+    {
+        return getMasterEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
     }
 }

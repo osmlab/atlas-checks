@@ -22,13 +22,44 @@ public class AddressPointMatchCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    // Has street name, number and is part of associated street relation
     @Test
-    public void pointWithStreetNameStreetNumberAndAssociatedStreet()
+    public void pointWithEmptyStreetNameEdgeCandidatesDuplicateNames()
     {
-        this.verifier.actual(this.setup.pointWithStreetNameStreetNumberAndAssociatedStreet(),
+        this.verifier.actual(this.setup.pointWithEmptyStreetNameEdgeCandidatesDuplicateNames(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNameEdgeCandidatesNoDuplicates()
+    {
+        this.verifier.actual(this.setup.pointWithEmptyStreetNameEdgeCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNameNoStreetNumberNoCandidates()
+    {
+        this.verifier.actual(this.setup.pointWithEmptyStreetNameNoStreetNumberNoCandidates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNamePointCandidatesDuplicateNames()
+    {
+        this.verifier.actual(this.setup.pointWithEmptyStreetNamePointCandidatesDuplicateNames(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithEmptyStreetNamePointCandidatesNoDuplicates()
+    {
+        this.verifier.actual(this.setup.pointWithEmptyStreetNamePointCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     // Has no street name, has street number and has associated street relation
@@ -50,28 +81,14 @@ public class AddressPointMatchCheckTest
     }
 
     @Test
-    public void pointWithStreetNameStreetNumber()
-    {
-        this.verifier.actual(this.setup.pointWithStreetNameStreetNumber(),
-                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void pointWithStreetNameNoStreetNumberNoCandidates()
-    {
-        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberNoCandidates(),
-                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates()
+    public void pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames()
     {
         this.verifier.actual(
-                this.setup.pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates(),
+                this.setup.pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(
+                flag -> Assert.assertTrue(flag.getInstructions().contains(JONES_STREET_NAME)));
     }
 
     @Test
@@ -79,6 +96,14 @@ public class AddressPointMatchCheckTest
     {
         this.verifier.actual(
                 this.setup.pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates(),
+                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void pointWithStreetNameNoStreetNumberNoCandidates()
+    {
+        this.verifier.actual(this.setup.pointWithStreetNameNoStreetNumberNoCandidates(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -96,53 +121,28 @@ public class AddressPointMatchCheckTest
     }
 
     @Test
-    public void pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames()
+    public void pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates()
     {
         this.verifier.actual(
-                this.setup.pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames(),
-                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(
-                flag -> Assert.assertTrue(flag.getInstructions().contains(JONES_STREET_NAME)));
-    }
-
-    @Test
-    public void pointWithEmptyStreetNameNoStreetNumberNoCandidates()
-    {
-        this.verifier.actual(this.setup.pointWithEmptyStreetNameNoStreetNumberNoCandidates(),
+                this.setup.pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void pointWithEmptyStreetNamePointCandidatesNoDuplicates()
+    public void pointWithStreetNameStreetNumber()
     {
-        this.verifier.actual(this.setup.pointWithEmptyStreetNamePointCandidatesNoDuplicates(),
+        this.verifier.actual(this.setup.pointWithStreetNameStreetNumber(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
+    // Has street name, number and is part of associated street relation
     @Test
-    public void pointWithEmptyStreetNameEdgeCandidatesNoDuplicates()
+    public void pointWithStreetNameStreetNumberAndAssociatedStreet()
     {
-        this.verifier.actual(this.setup.pointWithEmptyStreetNameEdgeCandidatesNoDuplicates(),
+        this.verifier.actual(this.setup.pointWithStreetNameStreetNumberAndAssociatedStreet(),
                 new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void pointWithEmptyStreetNamePointCandidatesDuplicateNames()
-    {
-        this.verifier.actual(this.setup.pointWithEmptyStreetNamePointCandidatesDuplicateNames(),
-                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void pointWithEmptyStreetNameEdgeCandidatesDuplicateNames()
-    {
-        this.verifier.actual(this.setup.pointWithEmptyStreetNameEdgeCandidatesDuplicateNames(),
-                new AddressPointMatchCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

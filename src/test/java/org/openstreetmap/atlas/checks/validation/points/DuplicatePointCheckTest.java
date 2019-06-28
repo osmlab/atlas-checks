@@ -20,19 +20,19 @@ public class DuplicatePointCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void singlePoint()
-    {
-        this.verifier.actual(this.setup.singlePointAtlas(),
-                new DuplicatePointCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
     public void duplicatePoint()
     {
         this.verifier.actual(this.setup.duplicatePointAtlas(),
                 new DuplicatePointCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void singlePoint()
+    {
+        this.verifier.actual(this.setup.singlePointAtlas(),
+                new DuplicatePointCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
 }
