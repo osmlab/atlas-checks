@@ -35,14 +35,14 @@ public class Task
             this.description = description;
         }
 
-        public Location getLocation()
-        {
-            return location;
-        }
-
         public Optional<String> getDescription()
         {
-            return description;
+            return this.description;
+        }
+
+        public Location getLocation()
+        {
+            return this.location;
         }
     }
 
@@ -68,6 +68,11 @@ public class Task
     public Task()
     {
 
+    }
+
+    public void addPoint(final Location point, final String description)
+    {
+        this.points.add(new PointInformation(point, Optional.ofNullable(description)));
     }
 
     /**
@@ -123,7 +128,7 @@ public class Task
 
     public String getProjectName()
     {
-        return projectName;
+        return this.projectName;
     }
 
     public String getTaskIdentifier()
@@ -155,11 +160,6 @@ public class Task
     public void setPoint(final Location point)
     {
         this.points.add(new PointInformation(point, Optional.empty()));
-    }
-
-    public void addPoint(final Location point, final String description)
-    {
-        this.points.add(new PointInformation(point, Optional.ofNullable(description)));
     }
 
     public void setPoints(final Set<Location> points)

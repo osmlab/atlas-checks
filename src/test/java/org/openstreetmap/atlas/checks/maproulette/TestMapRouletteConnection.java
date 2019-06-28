@@ -28,10 +28,45 @@ public class TestMapRouletteConnection implements TaskLoader
         this.challengeToTasks = new HashMap<>();
     }
 
+    public Set<Challenge> challengesForProject(final Project project)
+    {
+        return this.projectToChallenges.get(project);
+    }
+
+    @Override
+    public long createChallenge(final Project project, final Challenge challenge)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        if (this.projectToChallenges.containsKey(project))
+        {
+            this.projectToChallenges.get(project).add(challenge);
+        }
+        else
+        {
+            final Set<Challenge> newSet = new HashSet<>();
+            newSet.add(challenge);
+            this.projectToChallenges.put(project, newSet);
+        }
+        return 0;
+    }
+
+    @Override
+    public long createProject(final Project project)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        this.projectToChallenges.put(project, new HashSet<>());
+        return 0;
+    }
+
     @Override
     public String getConnectionInfo()
     {
         return "";
+    }
+
+    public Set<Task> tasksForChallenge(final Challenge challenge)
+    {
+        return this.challengeToTasks.get(challenge.getId());
     }
 
     @Override
@@ -56,43 +91,8 @@ public class TestMapRouletteConnection implements TaskLoader
         return false;
     }
 
-    @Override
-    public long createProject(final Project project)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        this.projectToChallenges.put(project, new HashSet<>());
-        return 0;
-    }
-
-    @Override
-    public long createChallenge(final Project project, final Challenge challenge)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        if (this.projectToChallenges.containsKey(project))
-        {
-            this.projectToChallenges.get(project).add(challenge);
-        }
-        else
-        {
-            final Set<Challenge> newSet = new HashSet<>();
-            newSet.add(challenge);
-            this.projectToChallenges.put(project, newSet);
-        }
-        return 0;
-    }
-
     public Set<Project> uploadedProjects()
     {
-        return projectToChallenges.keySet();
-    }
-
-    public Set<Challenge> challengesForProject(final Project project)
-    {
-        return this.projectToChallenges.get(project);
-    }
-
-    public Set<Task> tasksForChallenge(final Challenge challenge)
-    {
-        return this.challengeToTasks.get(challenge.getId());
+        return this.projectToChallenges.keySet();
     }
 }

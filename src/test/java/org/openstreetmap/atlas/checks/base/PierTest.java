@@ -35,7 +35,8 @@ public class PierTest
         final String configSource = "{\"PierTestCheck.accept.piers\": true}";
         final PierTestCheck check = new PierTestCheck(
                 ConfigurationResolver.inlineConfiguration(configSource));
-        final Set<CheckFlag> flags = Iterables.stream(check.flags(setup.getAtlas())).collectToSet();
+        final Set<CheckFlag> flags = Iterables.stream(check.flags(this.setup.getAtlas()))
+                .collectToSet();
         Assert.assertEquals(3, flags.size());
     }
 
@@ -49,7 +50,8 @@ public class PierTest
         final String configSource = "{\"PierTestCheck.accept.piers\": false}";
         final PierTestCheck check = new PierTestCheck(
                 ConfigurationResolver.inlineConfiguration(configSource));
-        final Set<CheckFlag> flags = Iterables.stream(check.flags(setup.getAtlas())).collectToSet();
+        final Set<CheckFlag> flags = Iterables.stream(check.flags(this.setup.getAtlas()))
+                .collectToSet();
         Assert.assertEquals(2, flags.size());
         flags.forEach(flag -> Assert.assertNotEquals(100, flag.getIdentifier()));
     }
