@@ -144,6 +144,18 @@
       "tags":"highway"
     }
   },
+  "GeneralizedCoastlineCheck": {
+    "node.minimum.distance": 100.0,
+    "node.minimum.threshold": 30.0,
+    "challenge": {
+      "description": "Coastlines whose nodes are too far apart.",
+      "blurb": "Ways",
+      "instruction": "Open your favorite editor and add more nodes to the coastline.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "tags":"coastline"
+    }
+  },
   "IntersectingBuildingsCheck":
   {
     "intersection.lower.limit": 0.01,
