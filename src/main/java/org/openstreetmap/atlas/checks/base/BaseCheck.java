@@ -327,26 +327,28 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 Collections.singletonList(instruction), points);
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final String instruction)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final String instruction)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects,
                 Collections.singletonList(instruction));
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final String instruction,
-            final List<Location> points)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final String instruction, final List<Location> points)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects,
                 Collections.singletonList(instruction), points);
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final List<String> instructions,
-            final List<Location> points)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final List<String> instructions, final List<Location> points)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions, points);
     }
 
-    protected CheckFlag createFlag(final Set<AtlasObject> objects, final List<String> instructions)
+    protected CheckFlag createFlag(final Set<? extends AtlasObject> objects,
+            final List<String> instructions)
     {
         return new CheckFlag(this.getTaskIdentifier(objects), objects, instructions);
     }
@@ -394,7 +396,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
      *            set of {@link AtlasObject}s comprising this task
      * @return a unique string identifier for this task, made from the sorted object identifiers
      */
-    protected String getTaskIdentifier(final Set<AtlasObject> objects)
+    protected String getTaskIdentifier(final Set<? extends AtlasObject> objects)
     {
         return new TaskIdentifier(objects).toString();
     }

@@ -92,9 +92,14 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final String outputFolder = this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_OPTION)
                 .get();
         // Get the output types
-        final List<String> outputTypes = Arrays.asList(StringUtils
-                .split(this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_TYPES_OPTION)
-                        .orElse(OutputTypes.RUN_SUMMARY.toString()).toUpperCase(), ','));
+        final List<String> outputTypes = Arrays
+                .asList(StringUtils
+                        .split(this.optionAndArgumentDelegate.getOptionArgument(OUTPUT_TYPES_OPTION)
+                                .orElse(String
+                                        .join(COMMA,
+                                                Arrays.stream(OutputTypes.values()).map(Enum::name)
+                                                        .collect(Collectors.toSet())))
+                                .toUpperCase(), ','));
 
         try
         {
@@ -190,7 +195,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         this.registerOptionWithRequiredArgument(OUTPUT_OPTION, 'o',
                 "A folder to output results to.", OptionOptionality.REQUIRED, OUTPUT_OPTION);
         this.registerOptionWithRequiredArgument(OUTPUT_TYPES_OPTION, 't',
-                "A comma separated list of outputs to generate: full,totals,counts",
+                "A comma separated list of outputs to generate: run_summary,check_summary,check_by_country",
                 OptionOptionality.OPTIONAL, OUTPUT_TYPES_OPTION);
         super.registerOptionsAndArguments();
     }
