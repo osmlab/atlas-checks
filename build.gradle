@@ -60,7 +60,7 @@ configurations
     }
     shaded
     {
-		resolutionStrategy
+        resolutionStrategy
         {
             force packages.atlas
             force packages.atlas_generator
