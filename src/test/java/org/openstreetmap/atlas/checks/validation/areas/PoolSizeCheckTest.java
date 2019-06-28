@@ -23,19 +23,6 @@ public class PoolSizeCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     /**
-     * Tests whether the pool in our test atlas falls within the bounds set by the configuration, in
-     * this instance we expect the pool to be greater than 1m2 and less than 100m2
-     */
-    @Test
-    public void testValidPoolSize()
-    {
-        this.verifier.actual(this.setup.getPoolAtlas(),
-                new PoolSizeCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"PoolSizeCheck\":{\"surface.maximum\":100.0,\"surface.minimum\":1.0}}")));
-        this.verifier.verifyEmpty();
-    }
-
-    /**
      * Tests whether the pool in our test atlas falls outside the bounds set by the configuration
      * and is larger than the maximum allowed size. In this test case we are using the same test
      * atlas so we simply modify the maximum to 60m2 as the pool in our test atlas is 63.5m2
@@ -61,5 +48,18 @@ public class PoolSizeCheckTest
                 new PoolSizeCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"PoolSizeCheck\":{\"surface.maximum\":100.0,\"surface.minimum\":70.0}}")));
         this.verifier.verifyExpectedSize(1);
+    }
+
+    /**
+     * Tests whether the pool in our test atlas falls within the bounds set by the configuration, in
+     * this instance we expect the pool to be greater than 1m2 and less than 100m2
+     */
+    @Test
+    public void testValidPoolSize()
+    {
+        this.verifier.actual(this.setup.getPoolAtlas(),
+                new PoolSizeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"PoolSizeCheck\":{\"surface.maximum\":100.0,\"surface.minimum\":1.0}}")));
+        this.verifier.verifyEmpty();
     }
 }

@@ -329,14 +329,9 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                                     "building:part=yes", "height=91'10\"", "min_height=11'6\"" }) })
     private Atlas validBuildingPartsTouchHeightFeetInchesAtlas;
 
-    public Atlas validBuildingAtlas()
+    public Atlas invalidBuildingAndPartStackedAtlas()
     {
-        return this.validBuildingAtlas;
-    }
-
-    public Atlas validBuildingBadMinAtlas()
-    {
-        return this.validBuildingBadMinAtlas;
+        return this.invalidBuildingAndPartStackedAtlas;
     }
 
     public Atlas invalidBuildingBadMinAtlas()
@@ -344,49 +339,9 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
         return this.invalidBuildingBadMinAtlas;
     }
 
-    public Atlas validBuildingRoofAtlas()
+    public Atlas invalidBuildingPartSingleAtlas()
     {
-        return this.validBuildingRoofAtlas;
-    }
-
-    public Atlas invalidFloatingHeightBuildingAtlas()
-    {
-        return this.invalidFloatingHeightBuildingAtlas;
-    }
-
-    public Atlas invalidFloatingLevelBuildingAtlas()
-    {
-        return this.invalidFloatingLevelBuildingAtlas;
-    }
-
-    public Atlas validFloatingLevelRelationBuildingAtlas()
-    {
-        return this.validFloatingLevelRelationBuildingAtlas;
-    }
-
-    public Atlas invalidFloatingLevelRelationBuildingAtlas()
-    {
-        return this.invalidFloatingLevelRelationBuildingAtlas;
-    }
-
-    public Atlas validBuildingPartsTouchAtlas()
-    {
-        return this.validBuildingPartsTouchAtlas;
-    }
-
-    public Atlas validBuildingPartsTouchGroundAtlas()
-    {
-        return this.validBuildingPartsTouchGroundAtlas;
-    }
-
-    public Atlas validBuildingPartsIntersectAtlas()
-    {
-        return this.validBuildingPartsIntersectAtlas;
-    }
-
-    public Atlas invalidBuildingPartsIntersectAtlas()
-    {
-        return this.invalidBuildingPartsIntersectAtlas;
+        return this.invalidBuildingPartSingleAtlas;
     }
 
     public Atlas invalidBuildingPartsDisparateAtlas()
@@ -394,39 +349,14 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
         return this.invalidBuildingPartsDisparateAtlas;
     }
 
-    public Atlas validBuildingPartsEnclosePartAtlas()
+    public Atlas invalidBuildingPartsIntersectAtlas()
     {
-        return this.validBuildingPartsEnclosePartAtlas;
+        return this.invalidBuildingPartsIntersectAtlas;
     }
 
-    public Atlas validBuildingPartsEncloseNeighborAtlas()
+    public Atlas invalidBuildingPartsManyFloatAtlas()
     {
-        return this.validBuildingPartsEncloseNeighborAtlas;
-    }
-
-    public Atlas validBuildingPartsStackedAtlas()
-    {
-        return this.validBuildingPartsStackedAtlas;
-    }
-
-    public Atlas validBuildingPartsStackedMixedTagsAtlas()
-    {
-        return this.validBuildingPartsStackedMixedTagsAtlas;
-    }
-
-    public Atlas validBuildingAndPartStackedAtlas()
-    {
-        return this.validBuildingAndPartStackedAtlas;
-    }
-
-    public Atlas invalidBuildingAndPartStackedAtlas()
-    {
-        return this.invalidBuildingAndPartStackedAtlas;
-    }
-
-    public Atlas validBuildingRelationAndPartStackedAtlas()
-    {
-        return this.validBuildingRelationAndPartStackedAtlas;
+        return this.invalidBuildingPartsManyFloatAtlas;
     }
 
     public Atlas invalidBuildingRelationAndPartStackedAtlas()
@@ -439,24 +369,79 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
         return this.invalidBuildingsStackedAtlas;
     }
 
+    public Atlas invalidFloatingHeightBuildingAtlas()
+    {
+        return this.invalidFloatingHeightBuildingAtlas;
+    }
+
+    public Atlas invalidFloatingLevelBuildingAtlas()
+    {
+        return this.invalidFloatingLevelBuildingAtlas;
+    }
+
+    public Atlas invalidFloatingLevelRelationBuildingAtlas()
+    {
+        return this.invalidFloatingLevelRelationBuildingAtlas;
+    }
+
     public Atlas invalidUntaggedAreasStackedAtlas()
     {
         return this.invalidUntaggedAreasStackedAtlas;
     }
 
-    public Atlas validUntaggedAreasStackedBuildingRelationAtlas()
+    public Atlas validBuildingAndPartStackedAtlas()
     {
-        return this.validUntaggedAreasStackedBuildingRelationAtlas;
+        return this.validBuildingAndPartStackedAtlas;
     }
 
-    public Atlas invalidBuildingPartsManyFloatAtlas()
+    public Atlas validBuildingAtlas()
     {
-        return this.invalidBuildingPartsManyFloatAtlas;
+        return this.validBuildingAtlas;
     }
 
-    public Atlas invalidBuildingPartSingleAtlas()
+    public Atlas validBuildingBadMinAtlas()
     {
-        return this.invalidBuildingPartSingleAtlas;
+        return this.validBuildingBadMinAtlas;
+    }
+
+    public Atlas validBuildingPartsEncloseNeighborAtlas()
+    {
+        return this.validBuildingPartsEncloseNeighborAtlas;
+    }
+
+    public Atlas validBuildingPartsEnclosePartAtlas()
+    {
+        return this.validBuildingPartsEnclosePartAtlas;
+    }
+
+    public Atlas validBuildingPartsIntersectAtlas()
+    {
+        return this.validBuildingPartsIntersectAtlas;
+    }
+
+    public Atlas validBuildingPartsStackedAtlas()
+    {
+        return this.validBuildingPartsStackedAtlas;
+    }
+
+    public Atlas validBuildingPartsStackedMixedTagsAtlas()
+    {
+        return this.validBuildingPartsStackedMixedTagsAtlas;
+    }
+
+    public Atlas validBuildingPartsTouchAtlas()
+    {
+        return this.validBuildingPartsTouchAtlas;
+    }
+
+    public Atlas validBuildingPartsTouchGroundAtlas()
+    {
+        return this.validBuildingPartsTouchGroundAtlas;
+    }
+
+    public Atlas validBuildingPartsTouchHeightFeetInchesAtlas()
+    {
+        return this.validBuildingPartsTouchHeightFeetInchesAtlas;
     }
 
     public Atlas validBuildingPartsTouchHeightMetersAtlas()
@@ -464,8 +449,23 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
         return this.validBuildingPartsTouchHeightMetersAtlas;
     }
 
-    public Atlas validBuildingPartsTouchHeightFeetInchesAtlas()
+    public Atlas validBuildingRelationAndPartStackedAtlas()
     {
-        return this.validBuildingPartsTouchHeightFeetInchesAtlas;
+        return this.validBuildingRelationAndPartStackedAtlas;
+    }
+
+    public Atlas validBuildingRoofAtlas()
+    {
+        return this.validBuildingRoofAtlas;
+    }
+
+    public Atlas validFloatingLevelRelationBuildingAtlas()
+    {
+        return this.validFloatingLevelRelationBuildingAtlas;
+    }
+
+    public Atlas validUntaggedAreasStackedBuildingRelationAtlas()
+    {
+        return this.validUntaggedAreasStackedBuildingRelationAtlas;
     }
 }

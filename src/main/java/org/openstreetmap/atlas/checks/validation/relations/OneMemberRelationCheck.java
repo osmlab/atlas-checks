@@ -32,12 +32,7 @@ public class OneMemberRelationCheck extends BaseCheck
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(OMR_INSTRUCTIONS,
             MULTIPOLYGON_OMR_INSTRUCTIONS, MEMBER_RELATION_INSTRUCTIONS);
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
+    private static final long serialVersionUID = -4435597321329026191L;
 
     public OneMemberRelationCheck(final Configuration configuration)
     {
@@ -75,6 +70,12 @@ public class OneMemberRelationCheck extends BaseCheck
                     this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**

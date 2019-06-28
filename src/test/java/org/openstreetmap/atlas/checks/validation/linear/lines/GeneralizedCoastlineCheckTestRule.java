@@ -123,19 +123,9 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
                     @Loc(value = GENERALIZED_TWENTYFOUR), @Loc(value = GENERALIZED_TWENTYFIVE) }) })
     private Atlas oneLineGeneralizedOneLineNotGeneralized;
 
-    public Atlas getWithSingleRelationGeneralized()
+    public Atlas getExactThresholdGeneralized()
     {
-        return this.withSingleRelationGeneralized;
-    }
-
-    public Atlas getWithNestedRelationGeneralized()
-    {
-        return this.withNestedRelationGeneralized;
-    }
-
-    public Atlas getMoreThanThresholdGeneralized()
-    {
-        return this.moreThanThresholdGeneralized;
+        return this.exactThresholdGeneralized;
     }
 
     public Atlas getLessThanThresholdNotGeneralized()
@@ -143,9 +133,14 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
         return this.lessThanThresholdNotGeneralized;
     }
 
-    public Atlas getExactThresholdGeneralized()
+    public Atlas getMoreThanThresholdGeneralized()
     {
-        return this.exactThresholdGeneralized;
+        return this.moreThanThresholdGeneralized;
+    }
+
+    public Atlas getOneLineGeneralizedOneLineNotGeneralized()
+    {
+        return this.oneLineGeneralizedOneLineNotGeneralized;
     }
 
     public Atlas getOneLineSegmentGeneralized()
@@ -158,9 +153,14 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
         return this.oneLineSegmentNotGeneralized;
     }
 
-    public Atlas getOneLineGeneralizedOneLineNotGeneralized()
+    public Atlas getWithNestedRelationGeneralized()
     {
-        return this.oneLineGeneralizedOneLineNotGeneralized;
+        return this.withNestedRelationGeneralized;
+    }
+
+    public Atlas getWithSingleRelationGeneralized()
+    {
+        return this.withSingleRelationGeneralized;
     }
 
 }

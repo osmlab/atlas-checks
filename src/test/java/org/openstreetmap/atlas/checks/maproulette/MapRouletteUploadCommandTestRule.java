@@ -30,6 +30,16 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
                     "iso_country_code=CAN" }) })
     private Atlas basicAtlas;
 
+    public CheckFlagEvent getAnotherBasicFlag()
+    {
+        return this.getBasicFlag(IDENTIFIER_2, this.basicAtlas.point(2L), CHALLENGE_2);
+    }
+
+    public CheckFlagEvent getOneBasicFlag()
+    {
+        return this.getBasicFlag(IDENTIFIER_1, this.basicAtlas.point(1L), CHALLENGE_1);
+    }
+
     private CheckFlagEvent getBasicFlag(final String identifier, final AtlasObject object,
             final String challenge)
     {
@@ -38,15 +48,5 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
         flag.addInstruction(INSTRUCTIONS);
 
         return new CheckFlagEvent(challenge, flag);
-    }
-
-    public CheckFlagEvent getOneBasicFlag()
-    {
-        return this.getBasicFlag(IDENTIFIER_1, this.basicAtlas.point(1L), CHALLENGE_1);
-    }
-
-    public CheckFlagEvent getAnotherBasicFlag()
-    {
-        return this.getBasicFlag(IDENTIFIER_2, this.basicAtlas.point(2L), CHALLENGE_2);
     }
 }

@@ -23,16 +23,20 @@ public class MapRouletteConfigurationTest
     private static final String BAD_CONFIG = "server:123:project";
 
     @Test
-    public void testParse()
+    public void testBadParse()
     {
-        final MapRouletteConfiguration configuration = MapRouletteConfiguration.parse(CONFIG);
-        Assert.assertNotNull(configuration);
-        Assert.assertEquals(SCHEME, configuration.getScheme());
-        Assert.assertEquals(SERVER, configuration.getServer());
-        Assert.assertEquals(PORT, configuration.getPort());
-        Assert.assertEquals(PROJECT_NAME, configuration.getProjectName());
-        Assert.assertEquals(API_KEY, configuration.getApiKey());
-        Assert.assertEquals(PROJECT_NAME, configuration.getProjectConfiguration().getName());
+        try
+        {
+            final MapRouletteConfiguration configuration = MapRouletteConfiguration
+                    .parse(BAD_CONFIG);
+        }
+        catch (final Exception exception)
+        {
+            if (!(exception instanceof CoreException))
+            {
+                Assert.fail();
+            }
+        }
     }
 
     @Test
@@ -49,19 +53,15 @@ public class MapRouletteConfigurationTest
     }
 
     @Test
-    public void testBadParse()
+    public void testParse()
     {
-        try
-        {
-            final MapRouletteConfiguration configuration = MapRouletteConfiguration
-                    .parse(BAD_CONFIG);
-        }
-        catch (final Exception exception)
-        {
-            if (!(exception instanceof CoreException))
-            {
-                Assert.fail();
-            }
-        }
+        final MapRouletteConfiguration configuration = MapRouletteConfiguration.parse(CONFIG);
+        Assert.assertNotNull(configuration);
+        Assert.assertEquals(SCHEME, configuration.getScheme());
+        Assert.assertEquals(SERVER, configuration.getServer());
+        Assert.assertEquals(PORT, configuration.getPort());
+        Assert.assertEquals(PROJECT_NAME, configuration.getProjectName());
+        Assert.assertEquals(API_KEY, configuration.getApiKey());
+        Assert.assertEquals(PROJECT_NAME, configuration.getProjectConfiguration().getName());
     }
 }

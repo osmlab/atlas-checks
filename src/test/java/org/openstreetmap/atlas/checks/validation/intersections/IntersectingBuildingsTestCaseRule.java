@@ -91,6 +91,11 @@ public class IntersectingBuildingsTestCaseRule extends CoreTestRule
                     @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes" }) })
     private Atlas containsBuildingAtlas;
 
+    public Atlas containsBuildingAtlas()
+    {
+        return this.containsBuildingAtlas;
+    }
+
     public Atlas duplicateBuildingsAtlas()
     {
         return this.duplicateBuildingsAtlas;
@@ -119,10 +124,5 @@ public class IntersectingBuildingsTestCaseRule extends CoreTestRule
     public Atlas smallIntersectionBuildingsAtlas()
     {
         return this.smallIntersectionBuildingsAtlas;
-    }
-
-    public Atlas containsBuildingAtlas()
-    {
-        return this.containsBuildingAtlas;
     }
 }

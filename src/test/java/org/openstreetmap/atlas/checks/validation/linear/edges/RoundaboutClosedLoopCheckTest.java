@@ -20,6 +20,17 @@ public class RoundaboutClosedLoopCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void masterRoundaboutEdgeWithValence1NodesAtlas()
+    {
+        this.verifier.actual(this.setup.masterRoundaboutEdgeWithValence1NodesAtlas(),
+                new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyNotNull();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains(RoundaboutClosedLoopCheck.MINIMUM_VALENCE_INSTRUCTION)));
+    }
+
+    @Test
     public void masterRoundaboutEdgesWithMiniRoundaboutTagAtlas()
     {
         this.verifier.actual(this.setup.masterRoundaboutEdgesWithMiniRoundaboutTagAtlas(),
@@ -49,17 +60,6 @@ public class RoundaboutClosedLoopCheckTest
         this.verifier.actual(this.setup.masterRoundaboutEdgesWithTurningLoopTagAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void masterRoundaboutEdgeWithValence1NodesAtlas()
-    {
-        this.verifier.actual(this.setup.masterRoundaboutEdgeWithValence1NodesAtlas(),
-                new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains(RoundaboutClosedLoopCheck.MINIMUM_VALENCE_INSTRUCTION)));
     }
 
     @Test

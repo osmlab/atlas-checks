@@ -149,6 +149,42 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
     }
 
     /**
+     * Create a new spatial index that pre filters building relations. Pre-filtering drastically
+     * decreases runtime by eliminating very large non-building relations. Copied from
+     * {@link org.openstreetmap.atlas.geography.atlas.AbstractAtlas}.
+     *
+     * @return A newly created spatial index
+     */
+    private SpatialIndex<Relation> buildRelationSpatialIndex(final Atlas atlas)
+    {
+        final SpatialIndex<Relation> index = new PackedSpatialIndex<Relation, Long>(new RTree<>())
+        {
+            private static final long serialVersionUID = -3139831928323333246L;
+
+            @Override
+            protected Long compress(final Relation item)
+            {
+                return item.getIdentifier();
+            }
+
+            @Override
+            protected boolean isValid(final Relation item, final Rectangle bounds)
+            {
+                return item.intersects(bounds);
+            }
+
+            @Override
+            protected Relation restore(final Long packed)
+            {
+                return atlas.relation(packed);
+            }
+        };
+        atlas.relations(relation -> relation.isMultiPolygon() && BuildingTag.isBuilding(relation))
+                .forEach(index::add);
+        return index;
+    }
+
+    /**
      * Uses a BFS to gather all connected building parts. If a part is found that is on the ground,
      * an empty {@link Set} is returned because the parts are not floating.
      *
@@ -192,6 +228,81 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             toCheck.addAll(neighboringParts);
         }
         return connectedParts;
+    }
+
+    /**
+     * Checks if an {@link AtlasObject} has a tag defining the minimum height of a building.
+     *
+     * @param object
+     *            {@link AtlasObject} to check
+     * @return true if {@code object} has a tag defining the minimum height of a building
+     */
+    private boolean hasMinKey(final AtlasObject object)
+    {
+        return Validators.hasValuesFor(object, BuildingMinLevelTag.class)
+                || Validators.hasValuesFor(object, MinHeightTag.class);
+    }
+
+    /**
+     * Checks if an {@link AtlasObject} is a building or building:part that is valid for this check.
+     *
+     * @param object
+     *            {@link AtlasObject} to check
+     * @return true if {@code object} has a {@code building:part=yes} tag
+     */
+    private boolean isBuildingOrPart(final AtlasObject object)
+    {
+        return (BuildingTag.isBuilding(object)
+                // Ignore roofs, as the are often used for items that have supports that are too
+                // small to effectively map (such as a carport)
+                && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF))
+                || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
+    }
+
+    /**
+     * Checks if an {@link AtlasObject} is a outline or part member of a building relation. This is
+     * an equivalent tagging to building=* or building:part=yes.
+     *
+     * @param object
+     *            {@link AtlasObject} to check
+     * @return true if the object is part of any relation where it has role outline or part
+     */
+    private boolean isBuildingRelationMember(final AtlasObject object)
+    {
+        return object instanceof AtlasEntity && ((AtlasEntity) object).relations().stream()
+                .anyMatch(relation -> Validators.isOfType(relation, RelationTypeTag.class,
+                        RelationTypeTag.BUILDING)
+                        && relation.members().stream()
+                                .anyMatch(member -> member.getEntity().equals(object)
+                                        && (member.getRole().equals("outline"))
+                                        || member.getRole().equals("part")));
+    }
+
+    /**
+     * Checks if an {@link AtlasObject} has tags indicating it is off the ground.
+     *
+     * @param object
+     *            {@link AtlasObject} to check
+     * @return true if the area is off the ground
+     */
+    private boolean isOffGround(final AtlasObject object)
+    {
+        Double minHeight;
+        Double minLevel;
+        try
+        {
+            minHeight = Double
+                    .parseDouble(object.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING));
+            minLevel = Double.parseDouble(
+                    object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING));
+        }
+        // We want to flag if there is a bad value
+        catch (final NumberFormatException badTagValue)
+        {
+            minHeight = 1.0;
+            minLevel = 1.0;
+        }
+        return minHeight > 0 || minLevel > 0;
     }
 
     /**
@@ -289,114 +400,5 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
         {
             return false;
         }
-    }
-
-    /**
-     * Checks if an {@link AtlasObject} is a building or building:part that is valid for this check.
-     *
-     * @param object
-     *            {@link AtlasObject} to check
-     * @return true if {@code object} has a {@code building:part=yes} tag
-     */
-    private boolean isBuildingOrPart(final AtlasObject object)
-    {
-        return (BuildingTag.isBuilding(object)
-                // Ignore roofs, as the are often used for items that have supports that are too
-                // small to effectively map (such as a carport)
-                && Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF))
-                || Validators.isNotOfType(object, BuildingPartTag.class, BuildingPartTag.NO);
-    }
-
-    /**
-     * Checks if an {@link AtlasObject} is a outline or part member of a building relation. This is
-     * an equivalent tagging to building=* or building:part=yes.
-     *
-     * @param object
-     *            {@link AtlasObject} to check
-     * @return true if the object is part of any relation where it has role outline or part
-     */
-    private boolean isBuildingRelationMember(final AtlasObject object)
-    {
-        return object instanceof AtlasEntity && ((AtlasEntity) object).relations().stream()
-                .anyMatch(relation -> Validators.isOfType(relation, RelationTypeTag.class,
-                        RelationTypeTag.BUILDING)
-                        && relation.members().stream()
-                                .anyMatch(member -> member.getEntity().equals(object)
-                                        && (member.getRole().equals("outline"))
-                                        || member.getRole().equals("part")));
-    }
-
-    /**
-     * Checks if an {@link AtlasObject} has a tag defining the minimum height of a building.
-     *
-     * @param object
-     *            {@link AtlasObject} to check
-     * @return true if {@code object} has a tag defining the minimum height of a building
-     */
-    private boolean hasMinKey(final AtlasObject object)
-    {
-        return Validators.hasValuesFor(object, BuildingMinLevelTag.class)
-                || Validators.hasValuesFor(object, MinHeightTag.class);
-    }
-
-    /**
-     * Checks if an {@link AtlasObject} has tags indicating it is off the ground.
-     *
-     * @param object
-     *            {@link AtlasObject} to check
-     * @return true if the area is off the ground
-     */
-    private boolean isOffGround(final AtlasObject object)
-    {
-        Double minHeight;
-        Double minLevel;
-        try
-        {
-            minHeight = Double
-                    .parseDouble(object.getOsmTags().getOrDefault(MinHeightTag.KEY, ZERO_STRING));
-            minLevel = Double.parseDouble(
-                    object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING));
-        }
-        // We want to flag if there is a bad value
-        catch (final NumberFormatException badTagValue)
-        {
-            minHeight = 1.0;
-            minLevel = 1.0;
-        }
-        return minHeight > 0 || minLevel > 0;
-    }
-
-    /**
-     * Create a new spatial index that pre filters building relations. Pre-filtering drastically
-     * decreases runtime by eliminating very large non-building relations. Copied from
-     * {@link org.openstreetmap.atlas.geography.atlas.AbstractAtlas}.
-     *
-     * @return A newly created spatial index
-     */
-    private SpatialIndex<Relation> buildRelationSpatialIndex(final Atlas atlas)
-    {
-        final SpatialIndex<Relation> index = new PackedSpatialIndex<Relation, Long>(new RTree<>())
-        {
-            @Override
-            protected Long compress(final Relation item)
-            {
-                return item.getIdentifier();
-            }
-
-            @Override
-            protected boolean isValid(final Relation item, final Rectangle bounds)
-            {
-                return item.intersects(bounds);
-            }
-
-            @Override
-            protected Relation restore(final Long packed)
-            {
-                return atlas.relation(packed);
-            }
-        };
-        atlas.relations(relation -> relation.isMultiPolygon() && BuildingTag.isBuilding(relation))
-                .forEach(index::add);
-        return index;
     }
 }

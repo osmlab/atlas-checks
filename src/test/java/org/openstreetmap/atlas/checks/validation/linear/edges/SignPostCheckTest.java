@@ -18,10 +18,10 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class SignPostCheckTest
 {
-    private static SignPostCheck CHECK = new SignPostCheck(
+    private static final SignPostCheck CHECK = new SignPostCheck(
             ConfigurationResolver.emptyConfiguration());
 
-    private static SignPostCheck CHECK2 = new SignPostCheck(
+    private static final SignPostCheck CHECK2 = new SignPostCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"SignPostCheck.source.filter\":\"highway->motorway,trunk,primary\", \"SignPostCheck.ramp.filter\":\"highway->motorway_link,trunk_link,primary_link\"}"));
 
@@ -54,6 +54,14 @@ public class SignPostCheckTest
     }
 
     @Test
+    public void motorwayMotorwayLinkBranchMissingDestinationTest()
+    {
+        this.verifier.actual(this.setup.motorwayMotorwayLinkBranchMissingDestinationAtlas(), CHECK);
+        this.verifier.verifyExpectedSize(2);
+        this.verifier.verify(flag -> verify(flag, 1, true, false));
+    }
+
+    @Test
     public void motorwayMotorwayLinkMissingJunctionAndDestinationTest()
     {
         this.verifier.actual(this.setup.motorwayMotorwayLinkMissingJunctionAndDestinationAtlas(),
@@ -63,17 +71,37 @@ public class SignPostCheckTest
     }
 
     @Test
-    public void motorwayMotorwayLinkWithJunctionAndDestinationTest()
+    public void motorwayMotorwayLinkTwoWayBranchMissingDestinationNoBranchCheckAtlas()
     {
-        this.verifier.actual(this.setup.motorwayMotorwayLinkWithJunctionAndDestinationAtlas(),
+        this.verifier.actual(this.setup.motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas(),
+                new SignPostCheck(ConfigurationResolver
+                        .inlineConfiguration("{\"SignPostCheck.link.branch.check\":false}")));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verify(flag, 1, true, false));
+    }
+
+    @Test
+    public void motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationTest()
+    {
+        this.verifier.actual(
+                this.setup.motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationAtlas(),
                 CHECK);
-        this.verifier.verifyEmpty();
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verify(flag, 1, true, false));
     }
 
     @Test
     public void motorwayMotorwayLinkWithJunctionAndDestinationRefTest()
     {
         this.verifier.actual(this.setup.motorwayMotorwayLinkWithJunctionAndDestinationRefAtlas(),
+                CHECK);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void motorwayMotorwayLinkWithJunctionAndDestinationTest()
+    {
+        this.verifier.actual(this.setup.motorwayMotorwayLinkWithJunctionAndDestinationAtlas(),
                 CHECK);
         this.verifier.verifyEmpty();
     }
@@ -189,42 +217,6 @@ public class SignPostCheckTest
     }
 
     @Test
-    public void unclassifiedPrimaryLinkMissingJunctionAndDestinationTest()
-    {
-        this.verifier.actual(this.setup.unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas(),
-                CHECK);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void motorwayMotorwayLinkBranchMissingDestinationTest()
-    {
-        this.verifier.actual(this.setup.motorwayMotorwayLinkBranchMissingDestinationAtlas(), CHECK);
-        this.verifier.verifyExpectedSize(2);
-        this.verifier.verify(flag -> verify(flag, 1, true, false));
-    }
-
-    @Test
-    public void motorwayMotorwayLinkTwoWayBranchMissingDestinationNoBranchCheckAtlas()
-    {
-        this.verifier.actual(this.setup.motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas(),
-                new SignPostCheck(ConfigurationResolver
-                        .inlineConfiguration("{\"SignPostCheck.link.branch.check\":false}")));
-        this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> verify(flag, 1, true, false));
-    }
-
-    @Test
-    public void motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationTest()
-    {
-        this.verifier.actual(
-                this.setup.motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationAtlas(),
-                CHECK);
-        this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> verify(flag, 1, true, false));
-    }
-
-    @Test
     public void twoWayTrunksUTurnMissingJunctionAndDestinationTest()
     {
         this.verifier.actual(this.setup.twoWayTrunksUTurnMissingJunctionAndDestinationAtlas(),
@@ -232,5 +224,13 @@ public class SignPostCheckTest
                         "{\"SignPostCheck.link.length.minimum.meters\":10.0}")));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> verify(flag, 3, true, true));
+    }
+
+    @Test
+    public void unclassifiedPrimaryLinkMissingJunctionAndDestinationTest()
+    {
+        this.verifier.actual(this.setup.unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas(),
+                CHECK);
+        this.verifier.verifyEmpty();
     }
 }

@@ -20,17 +20,9 @@ public class SingleSegmentMotorwayCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void validMotorwaySegmentsTest()
+    public void invalidMotorwaySegmentOneConnectionRoundaboutTest()
     {
-        this.verifier.actual(this.setup.validMotorwaySegmentsAtlas(),
-                new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void invalidPrimaryMotorwayPrimarySegmentTest()
-    {
-        this.verifier.actual(this.setup.invalidPrimaryMotorwayPrimarySegmentAtlas(),
+        this.verifier.actual(this.setup.invalidMotorwaySegmentOneConnectionRoundaboutAtlas(),
                 new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -44,6 +36,14 @@ public class SingleSegmentMotorwayCheckTest
     }
 
     @Test
+    public void invalidPrimaryMotorwayPrimarySegmentTest()
+    {
+        this.verifier.actual(this.setup.invalidPrimaryMotorwayPrimarySegmentAtlas(),
+                new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void validMotorwaySegmentOneConnectionTest()
     {
         this.verifier.actual(this.setup.validMotorwaySegmentOneConnectionAtlas(),
@@ -52,11 +52,11 @@ public class SingleSegmentMotorwayCheckTest
     }
 
     @Test
-    public void invalidMotorwaySegmentOneConnectionRoundaboutTest()
+    public void validMotorwaySegmentsTest()
     {
-        this.verifier.actual(this.setup.invalidMotorwaySegmentOneConnectionRoundaboutAtlas(),
+        this.verifier.actual(this.setup.validMotorwaySegmentsAtlas(),
                 new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
 }

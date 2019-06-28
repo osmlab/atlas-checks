@@ -19,26 +19,11 @@ public class GeneralizedCoastlineCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void oneRelationGeneralized()
+    public void exactThresholdGeneralized()
     {
-        this.verifier.actual(this.setup.getWithSingleRelationGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyExpectedSize(2);
-    }
-
-    @Test
-    public void nestedRelationGeneralized()
-    {
-        this.verifier.actual(this.setup.getWithNestedRelationGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyExpectedSize(2);
-    }
-
-    @Test
-    public void moreThanThresholdGeneralized()
-    {
-        this.verifier.actual(this.setup.getMoreThanThresholdGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.setup.getExactThresholdGeneralized(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"GeneralizedCoastlineCheck\":{\"generalizedCoastline.node.minimum.threshold\":33.33}}")));
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -51,11 +36,26 @@ public class GeneralizedCoastlineCheckTest
     }
 
     @Test
-    public void exactThresholdGeneralized()
+    public void moreThanThresholdGeneralized()
     {
-        this.verifier.actual(this.setup.getExactThresholdGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"GeneralizedCoastlineCheck\":{\"generalizedCoastline.node.minimum.threshold\":33.33}}")));
+        this.verifier.actual(this.setup.getMoreThanThresholdGeneralized(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void nestedRelationGeneralized()
+    {
+        this.verifier.actual(this.setup.getWithNestedRelationGeneralized(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(2);
+    }
+
+    @Test
+    public void oneLineGeneralizedOneLineNotGeneralized()
+    {
+        this.verifier.actual(this.setup.getOneLineGeneralizedOneLineNotGeneralized(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -76,11 +76,11 @@ public class GeneralizedCoastlineCheckTest
     }
 
     @Test
-    public void oneLineGeneralizedOneLineNotGeneralized()
+    public void oneRelationGeneralized()
     {
-        this.verifier.actual(this.setup.getOneLineGeneralizedOneLineNotGeneralized(),
+        this.verifier.actual(this.setup.getWithSingleRelationGeneralized(),
                 new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyExpectedSize(1);
+        this.verifier.verifyExpectedSize(2);
     }
 
 }

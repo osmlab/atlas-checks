@@ -20,22 +20,6 @@ public class DuplicateWaysCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void duplicateEdgeCompleteCoverageTwoEdges()
-    {
-        this.verifier.actual(this.setup.duplicateEdgeCompleteCoverageTwoEdges(),
-                new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void duplicateEdgeCompleteCoverageTwoEdgesArea()
-    {
-        this.verifier.actual(this.setup.duplicateEdgeCompleteCoverageTwoEdgesArea(),
-                new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
     public void duplicateEdgeCompleteCoverageThreeEdges()
     {
         this.verifier.actual(this.setup.duplicateEdgeCompleteCoverageThreeEdges(),
@@ -60,11 +44,28 @@ public class DuplicateWaysCheckTest
     }
 
     @Test
-    public void duplicateEdgePartialCoverageTwoEdges()
+    public void duplicateEdgeCompleteCoverageTwoEdges()
     {
-        this.verifier.actual(this.setup.duplicateEdgePartialCoverageTwoEdges(),
+        this.verifier.actual(this.setup.duplicateEdgeCompleteCoverageTwoEdges(),
                 new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void duplicateEdgeCompleteCoverageTwoEdgesArea()
+    {
+        this.verifier.actual(this.setup.duplicateEdgeCompleteCoverageTwoEdgesArea(),
+                new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void duplicateEdgeNoCoverageTwoEdges()
+    {
+        this.verifier.actual(this.setup.duplicateEdgeNoCoverageTwoEdges(),
+                new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+
     }
 
     @Test
@@ -77,11 +78,10 @@ public class DuplicateWaysCheckTest
     }
 
     @Test
-    public void duplicateEdgeNoCoverageTwoEdges()
+    public void duplicateEdgePartialCoverageTwoEdges()
     {
-        this.verifier.actual(this.setup.duplicateEdgeNoCoverageTwoEdges(),
+        this.verifier.actual(this.setup.duplicateEdgePartialCoverageTwoEdges(),
                 new DuplicateWaysCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 }
