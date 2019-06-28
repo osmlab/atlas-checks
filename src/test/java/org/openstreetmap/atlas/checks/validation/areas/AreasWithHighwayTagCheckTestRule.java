@@ -113,9 +113,14 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
         return this.areaNoHighwayTagAtlas;
     }
 
-    public Atlas validHighwayPedestrianTagAtlas()
+    public Atlas connectedEdgesBadTags()
     {
-        return this.validHighwayPedestrianTagAtlas;
+        return this.connectedEdgesBadTags;
+    }
+
+    public Atlas invalidAreaHighwayFootwayTagAtlas()
+    {
+        return this.invalidAreaHighwayFootwayTagAtlas;
     }
 
     public Atlas invalidAreaHighwayPrimaryTagAtlas()
@@ -123,9 +128,9 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
         return this.invalidAreaHighwayPrimaryTagAtlas;
     }
 
-    public Atlas invalidAreaHighwayFootwayTagAtlas()
+    public Atlas invalidEdgeHighwaySecondary()
     {
-        return this.invalidAreaHighwayFootwayTagAtlas;
+        return this.invalidEdgeHighwaySecondary;
     }
 
     public Atlas invalidHighwayPedestrianNoAreaTagAtlas()
@@ -138,29 +143,24 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
         return this.validAreaHighwayPlatform;
     }
 
-    public Atlas invalidEdgeHighwaySecondary()
+    public Atlas validAreaHighwayPrimaryNoAreaTag()
     {
-        return invalidEdgeHighwaySecondary;
+        return this.validAreaHighwayPrimaryNoAreaTag;
     }
 
     public Atlas validEdgeHighwayService()
     {
-        return validEdgeHighwayService;
+        return this.validEdgeHighwayService;
     }
 
     public Atlas validEdgeNoAreaTag()
     {
-        return validEdgeNoAreaTag;
+        return this.validEdgeNoAreaTag;
     }
 
-    public Atlas validAreaHighwayPrimaryNoAreaTag()
+    public Atlas validHighwayPedestrianTagAtlas()
     {
-        return validAreaHighwayPrimaryNoAreaTag;
-    }
-
-    public Atlas connectedEdgesBadTags()
-    {
-        return connectedEdgesBadTags;
+        return this.validHighwayPedestrianTagAtlas;
     }
 
 }

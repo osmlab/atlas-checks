@@ -161,11 +161,11 @@ public class CheckResourceLoader
         {
             final ClassPath classPath = ClassPath
                     .from(Thread.currentThread().getContextClassLoader());
-            packages.forEach(packageName -> classPath.getTopLevelClassesRecursive(packageName)
+            this.packages.forEach(packageName -> classPath.getTopLevelClassesRecursive(packageName)
                     .forEach(classInfo ->
                     {
                         final Class<?> checkClass = classInfo.load();
-                        if (checkType.isAssignableFrom(checkClass)
+                        if (this.checkType.isAssignableFrom(checkClass)
                                 && !Modifier.isAbstract(checkClass.getModifiers())
                                 && isEnabled.test(checkClass)
                                 && this.checkWhiteList.map(
@@ -210,10 +210,10 @@ public class CheckResourceLoader
         catch (final IOException oops)
         {
             throw new CoreException("Failed to discover {} classes on classpath",
-                    checkType.getSimpleName());
+                    this.checkType.getSimpleName());
         }
 
-        logger.info("Loaded {} {} in {}", checks.size(), checkType.getSimpleName(),
+        logger.info("Loaded {} {} in {}", checks.size(), this.checkType.getSimpleName(),
                 time.elapsedSince());
         return checks;
     }
@@ -246,7 +246,7 @@ public class CheckResourceLoader
     private boolean isEnabledByConfiguration(final Configuration configuration,
             final Class checkClass)
     {
-        final String key = String.format(enabledKeyTemplate, checkClass.getSimpleName());
-        return configuration.get(key, enabledByDefault).value();
+        final String key = String.format(this.enabledKeyTemplate, checkClass.getSimpleName());
+        return configuration.get(key, this.enabledByDefault).value();
     }
 }

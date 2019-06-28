@@ -171,74 +171,74 @@ public class AddressPointMatchCheckTestRule extends CoreTestRule
                             "name=Jones" }) })
     private Atlas pointWithEmptyStreetNameEdgeCandidatesDuplicateNames;
 
-    public Atlas pointWithStreetNameStreetNumberAndAssociatedStreet()
+    public Atlas pointWithEmptyStreetNameEdgeCandidatesDuplicateNames()
     {
-        return pointWithStreetNameStreetNumberAndAssociatedStreet;
-    }
-
-    public Atlas pointWithNoStreetNameStreetNumberAndAssociatedStreet()
-    {
-        return pointWithNoStreetNameStreetNumberAndAssociatedStreet;
-    }
-
-    public Atlas pointWithNoStreetNameStreetNumberAndNoAssociatedStreet()
-    {
-        return pointWithNoStreetNameStreetNumberAndNoAssociatedStreet;
-    }
-
-    public Atlas pointWithStreetNameStreetNumber()
-    {
-        return pointWithStreetNameStreetNumber;
-    }
-
-    public Atlas pointWithStreetNameNoStreetNumberNoCandidates()
-    {
-        return pointWithStreetNameNoStreetNumberNoCandidates;
-    }
-
-    public Atlas pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates()
-    {
-        return pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates;
-    }
-
-    public Atlas pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates()
-    {
-        return pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates;
-    }
-
-    public Atlas pointWithStreetNameNoStreetNumberPointCandidatesDuplicateNames()
-    {
-        return pointWithStreetNameNoStreetNumberPointCandidatesDuplicateNames;
-    }
-
-    public Atlas pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames()
-    {
-        return pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames;
-    }
-
-    public Atlas pointWithEmptyStreetNameNoStreetNumberNoCandidates()
-    {
-        return pointWithEmptyStreetNameNoCandidates;
-    }
-
-    public Atlas pointWithEmptyStreetNamePointCandidatesNoDuplicates()
-    {
-        return pointWithEmptyStreetNamePointCandidatesNoDuplicates;
+        return this.pointWithEmptyStreetNameEdgeCandidatesDuplicateNames;
     }
 
     public Atlas pointWithEmptyStreetNameEdgeCandidatesNoDuplicates()
     {
-        return pointWithEmptyStreetNameEdgeCandidatesNoDuplicates;
+        return this.pointWithEmptyStreetNameEdgeCandidatesNoDuplicates;
+    }
+
+    public Atlas pointWithEmptyStreetNameNoStreetNumberNoCandidates()
+    {
+        return this.pointWithEmptyStreetNameNoCandidates;
     }
 
     public Atlas pointWithEmptyStreetNamePointCandidatesDuplicateNames()
     {
-        return pointWithEmptyStreetNamePointCandidatesDuplicateNames;
+        return this.pointWithEmptyStreetNamePointCandidatesDuplicateNames;
     }
 
-    public Atlas pointWithEmptyStreetNameEdgeCandidatesDuplicateNames()
+    public Atlas pointWithEmptyStreetNamePointCandidatesNoDuplicates()
     {
-        return pointWithEmptyStreetNameEdgeCandidatesDuplicateNames;
+        return this.pointWithEmptyStreetNamePointCandidatesNoDuplicates;
+    }
+
+    public Atlas pointWithNoStreetNameStreetNumberAndAssociatedStreet()
+    {
+        return this.pointWithNoStreetNameStreetNumberAndAssociatedStreet;
+    }
+
+    public Atlas pointWithNoStreetNameStreetNumberAndNoAssociatedStreet()
+    {
+        return this.pointWithNoStreetNameStreetNumberAndNoAssociatedStreet;
+    }
+
+    public Atlas pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames()
+    {
+        return this.pointWithStreetNameNoStreetNumberEdgeCandidatesDuplicateNames;
+    }
+
+    public Atlas pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates()
+    {
+        return this.pointWithStreetNameNoStreetNumberEdgeCandidatesNoDuplicates;
+    }
+
+    public Atlas pointWithStreetNameNoStreetNumberNoCandidates()
+    {
+        return this.pointWithStreetNameNoStreetNumberNoCandidates;
+    }
+
+    public Atlas pointWithStreetNameNoStreetNumberPointCandidatesDuplicateNames()
+    {
+        return this.pointWithStreetNameNoStreetNumberPointCandidatesDuplicateNames;
+    }
+
+    public Atlas pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates()
+    {
+        return this.pointWithStreetNameNoStreetNumberPointCandidatesNoDuplicates;
+    }
+
+    public Atlas pointWithStreetNameStreetNumber()
+    {
+        return this.pointWithStreetNameStreetNumber;
+    }
+
+    public Atlas pointWithStreetNameStreetNumberAndAssociatedStreet()
+    {
+        return this.pointWithStreetNameStreetNumberAndAssociatedStreet;
     }
 
 }

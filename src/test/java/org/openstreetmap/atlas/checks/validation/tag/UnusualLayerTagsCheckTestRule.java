@@ -410,6 +410,11 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
         return this.minusTwoLayerTagTunnelEdgeAtlas;
     }
 
+    public Atlas missingBridgeTagJunctionLayerEdgeAtlas()
+    {
+        return this.missingBridgeTagJunctionLayerEdgeAtlas;
+    }
+
     public Atlas missingLayerTagBridgeEdgeAtlas()
     {
         return this.missingLayerTagBridgeEdgeAtlas;
@@ -520,6 +525,21 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
         return this.plusTwoLayerTagBridgeEdgeAtlas;
     }
 
+    public Atlas validBuildingPassageTunnelLayerEdgeAtlas()
+    {
+        return this.validBuildingPassageTunnelLayerEdgeAtlas;
+    }
+
+    public Atlas validLayerTagRoundaboutEdgeAtlas()
+    {
+        return this.validLayerTagRoundaboutEdgeAtlas;
+    }
+
+    public Atlas whitespaceBridgeRoundaboutLayerTagEdgeAtlas()
+    {
+        return this.whitespaceBridgeRoundaboutLayerTagEdgeAtlas;
+    }
+
     public Atlas whitespaceLayerTagBridgeEdgeAtlas()
     {
         return this.whitespaceLayerTagBridgeEdgeAtlas;
@@ -558,25 +578,5 @@ public class UnusualLayerTagsCheckTestRule extends CoreTestRule
     public Atlas zeroLayerTagTunnelEdgeAtlas()
     {
         return this.zeroLayerTagTunnelEdgeAtlas;
-    }
-
-    public Atlas validLayerTagRoundaboutEdgeAtlas()
-    {
-        return this.validLayerTagRoundaboutEdgeAtlas;
-    }
-
-    public Atlas missingBridgeTagJunctionLayerEdgeAtlas()
-    {
-        return this.missingBridgeTagJunctionLayerEdgeAtlas;
-    }
-
-    public Atlas whitespaceBridgeRoundaboutLayerTagEdgeAtlas()
-    {
-        return whitespaceBridgeRoundaboutLayerTagEdgeAtlas;
-    }
-
-    public Atlas validBuildingPassageTunnelLayerEdgeAtlas()
-    {
-        return validBuildingPassageTunnelLayerEdgeAtlas;
     }
 }

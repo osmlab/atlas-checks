@@ -46,6 +46,6 @@ public class GeoJsonPathFilter implements PathFilter
      */
     public String getExtension()
     {
-        return extension;
+        return this.extension;
     }
 }
