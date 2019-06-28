@@ -97,7 +97,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
         final List<Segment> segments = line.asPolyLine().segments();
         final double innerCount = segments.stream().filter(segment -> segment.length()
                 .isGreaterThanOrEqualTo(this.minimumDistanceBetweenNodes)).count();
-        return segments.size() == 0 ? 0.0 : HUNDRED_PERCENT * (innerCount / segments.size());
+        return segments.isEmpty() ? 0.0 : HUNDRED_PERCENT * (innerCount / segments.size());
     }
 
     /**
