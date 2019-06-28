@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.zookeeper.Op;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
@@ -14,6 +15,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +32,17 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
-    private static final HighwayTag MINIMUM_NAME_PRIORITY = HighwayTag.SERVICE;
-    private static final String FALLBACK_INSTRUCTIONS = "The marked road segments' names are inconsistent with other road segment(s) in the same road";
+    private static final HighwayTag MINIMUM_NAME_PRIORITY_DEFAULT = HighwayTag.SERVICE;
+    private static final double MAXIMUM_SEARCH_DISTANCE_DEFAULT = 100;
+    private static final String FALLBACK_INSTRUCTIONS = "This segment's name is is spelled differently from a similarly named road in the area: {}";
+    private Distance maximumSearchDistance;
+    private int inconsistentCharacterCountThreshold = -2;
     private Logger logger = LoggerFactory.getLogger(RoadNameSpellingConsistencyCheck.class);
 
     public RoadNameSpellingConsistencyCheck(final Configuration configuration)
     {
         super(configuration);
+        this.maximumSearchDistance = this.configurationValue(configuration, "distance.search.maximum", MAXIMUM_SEARCH_DISTANCE_DEFAULT, Distance::meters);
     }
 
     /**
@@ -50,7 +56,7 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge
-                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(MINIMUM_NAME_PRIORITY)
+                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(MINIMUM_NAME_PRIORITY_DEFAULT)
                 && ((Edge) object).isMasterEdge()
                 && !this.isFlagged(object.getOsmIdentifier());
     }
@@ -65,50 +71,26 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck
      *         inconsistencies.
      */
     @Override
-    @SuppressWarnings("squid:S3655")
-    protected Optional<CheckFlag> flag(final AtlasObject object)
-    {
+    protected Optional<CheckFlag> flag(final AtlasObject object) {
+
         final Edge edge = (Edge) object;
 
-        // Collect all Edges in the parent OSM Way
-        final Set<Edge> osmWay = new OsmWayWalker(edge).collectEdges();
-
-        // If the edge is the sole member of the Way, there can't be any spelling inconsistencies
-        if (osmWay.size() < 2)
+        // If this edge's NameTag doesn't exist, it's skipped
+        if(!edge.getName().isPresent())
         {
             return Optional.empty();
         }
 
-        // Get the name of an Edge in the Way
-        final Edge firstEdge = osmWay.stream().filter(segment -> segment.getName().isPresent())
-                .findFirst().orElse(null);
-        if (firstEdge == null)
-        {
-            return Optional.of(this.createFlag(Collections.unmodifiableSet(osmWay),
-                    "Every segment of this road is unnamed"));
-        }
-
-        // NOSONAR: we know this can't throw a NoSuchElementException because of the above filter
-        final String firstEdgeName = firstEdge.getName().get();
-
-        // Collect all of the Edges in the Way that have NameTags that
+        // Collect all of the Edges within a search distance that have NameTags that
         // aren't the same as firstEdgeName
-        final Set<Edge> inconsistentEdgeSet = osmWay.stream()
-                .filter(segment -> segment.getName().isPresent()
-                        && !segment.getName().get().equals(firstEdgeName)
-                        || !segment.getName().isPresent())
-                .collect(Collectors.toSet());
+        final Set<Edge> inconsistentEdgeSet = new RoadNameSpellingConsistencyCheckWalker(edge, this.maximumSearchDistance, this.inconsistentCharacterCountThreshold).collectEdges();
 
-        // this.logger.info("Set size: {}", inconsistentEdgeSet.size());
-        final List<Location> markedSegments = inconsistentEdgeSet.stream()
-                .map(segment -> segment.asPolyLine().middle()).collect(Collectors.toList());
-        if (!inconsistentEdgeSet.isEmpty())
-        {
-            return Optional.of(this.createFlag(Collections.unmodifiableSet(inconsistentEdgeSet),
-                    FALLBACK_INSTRUCTIONS, markedSegments));
+        // If the Walker found any inconsistent NameTag spellings
+        if (inconsistentEdgeSet.size() > 1) {
+            return Optional.of(this.createFlag(inconsistentEdgeSet, FALLBACK_INSTRUCTIONS));
         }
 
-        // All name tags in the way are the same
+        // There are no spelling inconsistencies among the road's segments
         return Optional.empty();
     }
 
