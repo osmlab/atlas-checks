@@ -49,11 +49,14 @@ public class SinkIslandCheckTestRule extends CoreTestRule
 
             edges = {
                     @Edge(id = "160978519000001", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_2) }, tags = { "highway=primary", "oneway=yes" }),
+                            @Loc(value = TEST_2) }, tags = { "highway=primary", "oneway=yes",
+                                    "access=yes", "motor_vehicle=yes" }),
                     @Edge(id = "260978519000001", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_6) }, tags = { "highway=primary", "oneway=yes" }),
+                            @Loc(value = TEST_6) }, tags = { "highway=primary", "oneway=yes",
+                                    "access=yes", "motor_vehicle=yes" }),
                     @Edge(id = "360978519000001", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_7) }, tags = { "highway=primary", "oneway=yes" }),
+                            @Loc(value = TEST_7) }, tags = { "highway=primary", "oneway=yes",
+                                    "access=yes", "motor_vehicle=yes" }),
                     @Edge(id = "460978519000001", coordinates = { @Loc(value = TEST_7),
                             @Loc(value = TEST_4) }, tags = { "highway=primary", "oneway=yes" }),
                     @Edge(id = "560978519000001", coordinates = { @Loc(value = TEST_4),
@@ -74,7 +77,8 @@ public class SinkIslandCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = TEST_7)) },
 
             edges = { @Edge(id = "360978519000001", coordinates = { @Loc(value = TEST_6),
-                    @Loc(value = TEST_7) }, tags = { "highway=primary", "oneway=yes" }) })
+                    @Loc(value = TEST_7) }, tags = { "highway=primary", "oneway=yes", "access=yes",
+                            "vehicle=yes" }) })
     private Atlas singleEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_6)),
@@ -107,25 +111,25 @@ public class SinkIslandCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = TEST_2)),
             @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                            "highway=primary" }),
+                            "highway=primary", "access=yes", "motor_vehicle=yes" }),
                     @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
-                            "highway=track" }) })
+                            "highway=track", "access=yes", "vehicle=yes" }) })
     private Atlas trackAndHighwaySinkIsland;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
             @Node(coordinates = @Loc(value = TEST_2)),
             @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                            "highway=service" }),
+                            "access=yes", "motor_vehicle=yes", "highway=service" }),
                     @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
-                            "highway=service" }) })
+                            "highway=service", "access=yes", "motor_vehicle=yes" }) })
     private Atlas serviceSinkIsland;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
             @Node(coordinates = @Loc(value = TEST_2)),
             @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
-                            "highway=service" }),
+                            "highway=service", "access=yes", "motor_vehicle=yes" }),
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
                             "highway=service", "route=ferry" }),
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
@@ -133,9 +137,9 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                     @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
                             "highway=service", "area=yes" }),
                     @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
-                            "highway=service" }),
+                            "highway=service", "access=yes", "motor_vehicle=yes" }),
                     @Edge(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_1) }, tags = {
-                            "highway=service" }), })
+                            "highway=service", "access=yes", "motor_vehicle=yes" }), })
     private Atlas invalidEdges;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
@@ -165,7 +169,8 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_17) }, tags = { "highway=service",
                                     "access=private" }),
                     @Edge(id = "2", coordinates = { @Loc(value = TEST_16),
-                            @Loc(value = TEST_18) }, tags = { "highway=service" }) })
+                            @Loc(value = TEST_18) }, tags = { "highway=service", "access=yes",
+                                    "motor_vehicle=yes" }) })
     private Atlas nonCarNavigableEdgesAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_19)),
