@@ -51,8 +51,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final String DEFAULT_MINIMUM_HIGHWAY_TYPE = "SERVICE";
     private static final Predicate<AtlasObject> SERVICE_ROAD = object -> Validators.isOfType(object,
             HighwayTag.class, HighwayTag.SERVICE);
-    private static final Predicate<AtlasObject> PUBLIC_ACCESS_HIGHWAYS = object -> HighwayTag
-            .isCarNavigableHighway(object) && !AccessTag.isPrivate(object);
     private static final Predicate<AtlasObject> NAVIGABLE_HIGHWAYS = object -> Validators
             .isOfType(object, MotorVehicleTag.class, MotorVehicleTag.YES)
             || Validators.isOfType(object, MotorcarTag.class, MotorcarTag.YES)
@@ -198,10 +196,12 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private boolean validEdge(final AtlasObject object)
     {
         return object instanceof Edge
-                // Only allow car navigable highways (access not ion private enum set and
+                // Only allow car navigable highways (access = yes and
                 // motorvehicle/motorcar/vehicle = yes)
                 // and ignore ferries
-                && PUBLIC_ACCESS_HIGHWAYS.test(object) && NAVIGABLE_HIGHWAYS.test(object)
+                && HighwayTag
+                .isCarNavigableHighway(object) && Validators.isOfType(object, AccessTag.class,
+                AccessTag.YES) && NAVIGABLE_HIGHWAYS.test(object)
                 && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
