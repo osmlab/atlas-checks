@@ -31,12 +31,6 @@ public class DuplicateWaysCheck extends BaseCheck
             .asList(DUPLICATE_EDGE_INSTRUCTIONS);
     private static final Distance ZERO_DISTANCE = Distance.ZERO;
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
     public DuplicateWaysCheck(final Configuration configuration)
     {
         super(configuration);
@@ -102,5 +96,11 @@ public class DuplicateWaysCheck extends BaseCheck
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

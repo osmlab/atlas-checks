@@ -21,50 +21,27 @@ public class SinkIslandCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void testSingleEdgeAtlas()
+    public void testEdgesWithinAreasWithAmenityTags()
     {
-        this.verifier.actual(this.setup.getSingleEdgeAtlas(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void testSinkDetection()
-    {
-        this.verifier.actual(this.setup.getTestAtlas(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void testSingleEdgeWithAmenity()
-    {
-        this.verifier.actual(this.setup.getSingleEdgeWithAmenityAtlas(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void testTwoEdgesWithAmenity()
-    {
-        this.verifier.actual(this.setup.getTwoEdgesWithAmenityAtlas(), new SinkIslandCheck(
+        this.verifier.actual(this.setup.getEdgeWithinAreaWithAmenityTag(), new SinkIslandCheck(
                 ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testTrackSinkIsland()
+    public void testHighwayImportanceConfiguration()
     {
-        this.verifier.actual(this.setup.getTrackSinkIsland(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.actual(this.setup.getServiceSinkIsland(),
+                new SinkIslandCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"SinkIslandCheck\": {\"tree.size\": 3, \"minimum.highway.type\": \"RESIDENTIAL\"}}")));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testTrackAndPrimarySinkIsland()
+    public void testInvalidEdges()
     {
-        this.verifier.actual(this.setup.getTrackAndPrimarySinkIsland(), new SinkIslandCheck(
-                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.actual(this.setup.getInvalidEdges(),
+                new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
@@ -78,21 +55,11 @@ public class SinkIslandCheckTest
     }
 
     @Test
-    public void testInvalidEdges()
+    public void testSingleEdgeAtlas()
     {
-        this.verifier.actual(this.setup.getInvalidEdges(),
-                new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
-    }
-
-    @Test
-    public void testHighwayImportanceConfiguration()
-    {
-        this.verifier.actual(this.setup.getServiceSinkIsland(),
-                new SinkIslandCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"SinkIslandCheck\": {\"tree.size\": 3, \"minimum.highway.type\": \"RESIDENTIAL\"}}")));
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.getSingleEdgeAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -104,9 +71,42 @@ public class SinkIslandCheckTest
     }
 
     @Test
-    public void testEdgesWithinAreasWithAmenityTags()
+    public void testSingleEdgeWithAmenity()
     {
-        this.verifier.actual(this.setup.getEdgeWithinAreaWithAmenityTag(), new SinkIslandCheck(
+        this.verifier.actual(this.setup.getSingleEdgeWithAmenityAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void testSinkDetection()
+    {
+        this.verifier.actual(this.setup.getTestAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testTrackAndPrimarySinkIsland()
+    {
+        this.verifier.actual(this.setup.getTrackAndPrimarySinkIsland(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testTrackSinkIsland()
+    {
+        this.verifier.actual(this.setup.getTrackSinkIsland(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testTwoEdgesWithAmenity()
+    {
+        this.verifier.actual(this.setup.getTwoEdgesWithAmenityAtlas(), new SinkIslandCheck(
                 ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
         this.verifier.verifyEmpty();
     }

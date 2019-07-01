@@ -47,49 +47,6 @@ public class FlagStatisticsSubCommandTest
     @Rule
     public final FlagStatisticsSubCommandTestRule setup = new FlagStatisticsSubCommandTestRule();
 
-    /**
-     * Generate flag files from {@link CheckFlagEvent}s, into source and target directories. The
-     * files can be compressed.
-     */
-    private void generateLogFilesForCountry(final File directory, final String country,
-            final Map<String, Integer> checkFlagCounts)
-    {
-        final String countryFolderPath = FilenameUtils.concat(directory.getAbsolutePath(), country);
-
-        for (final boolean compression : COMPRESSION_OPTIONS)
-        {
-            final FileProcessor<CheckFlagEvent> fileProcessor = new CheckFlagFileProcessor(
-                    new SparkFileHelper(FILE_SYSTEM_CONFIG), countryFolderPath)
-                            .withCompression(compression);
-            checkFlagCounts.forEach((check, flagCount) ->
-            {
-                for (int count = 0; count < flagCount; count++)
-                {
-                    fileProcessor.process(this.setup.getOneNodeCheckFlagEvent(check));
-                }
-            });
-            fileProcessor.process(new ShutdownEvent());
-        }
-    }
-
-    /**
-     * Generate directories of flag files and gather the path to the first file in each.
-     */
-    private void populateTestData()
-    {
-        if (SOURCE_DIRECTORY.listFilesRecursively().isEmpty())
-        {
-            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_1,
-                    ImmutableMap.of(CHECK_1, 3, CHECK_2, 2));
-            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_2,
-                    ImmutableMap.of(CHECK_1, 2, CHECK_3, 1));
-            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_1,
-                    ImmutableMap.of(CHECK_1, 3, CHECK_2, 1));
-            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_2,
-                    ImmutableMap.of(CHECK_1, 4, CHECK_3, 1));
-        }
-    }
-
     @AfterClass
     public static void deleteLogFiles()
     {
@@ -167,5 +124,48 @@ public class FlagStatisticsSubCommandTest
         Assert.assertEquals(expectedTextDifference, actualTextDifference);
 
         outputFolder.deleteRecursively();
+    }
+
+    /**
+     * Generate flag files from {@link CheckFlagEvent}s, into source and target directories. The
+     * files can be compressed.
+     */
+    private void generateLogFilesForCountry(final File directory, final String country,
+            final Map<String, Integer> checkFlagCounts)
+    {
+        final String countryFolderPath = FilenameUtils.concat(directory.getAbsolutePath(), country);
+
+        for (final boolean compression : COMPRESSION_OPTIONS)
+        {
+            final FileProcessor<CheckFlagEvent> fileProcessor = new CheckFlagFileProcessor(
+                    new SparkFileHelper(FILE_SYSTEM_CONFIG), countryFolderPath)
+                            .withCompression(compression);
+            checkFlagCounts.forEach((check, flagCount) ->
+            {
+                for (int count = 0; count < flagCount; count++)
+                {
+                    fileProcessor.process(this.setup.getOneNodeCheckFlagEvent(check));
+                }
+            });
+            fileProcessor.process(new ShutdownEvent());
+        }
+    }
+
+    /**
+     * Generate directories of flag files and gather the path to the first file in each.
+     */
+    private void populateTestData()
+    {
+        if (SOURCE_DIRECTORY.listFilesRecursively().isEmpty())
+        {
+            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_1,
+                    ImmutableMap.of(CHECK_1, 3, CHECK_2, 2));
+            this.generateLogFilesForCountry(SOURCE_DIRECTORY, COUNTRY_2,
+                    ImmutableMap.of(CHECK_1, 2, CHECK_3, 1));
+            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_1,
+                    ImmutableMap.of(CHECK_1, 3, CHECK_2, 1));
+            this.generateLogFilesForCountry(TARGET_DIRECTORY, COUNTRY_2,
+                    ImmutableMap.of(CHECK_1, 4, CHECK_3, 1));
+        }
     }
 }

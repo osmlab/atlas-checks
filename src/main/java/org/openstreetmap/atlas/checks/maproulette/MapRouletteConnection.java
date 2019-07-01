@@ -58,73 +58,6 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                 .setHost(this.configuration.getServer()).setPort(this.configuration.getPort());
     }
 
-    @Override
-    public String getConnectionInfo()
-    {
-        return this.configuration.toString();
-    }
-
-    public HttpResource setAuth(final HttpResource resource)
-    {
-        resource.setHeader(KEY_API_KEY, this.configuration.getApiKey());
-        return resource;
-    }
-
-    @Override
-    public boolean uploadBatchTasks(final long challengeId, final Set<Task> data)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        final List<Task> uniqueTasks = new ArrayList<>(data.size());
-        uniqueTasks.addAll(data);
-        // MAXIMUM batch size is 5000, so if greater than 5000, we need to make multiple
-        // requests in groups of 5000
-        boolean succeeded = true;
-        int startIndex = 0;
-        int endIndex;
-        do
-        {
-            endIndex = Math.min(startIndex + MAXIMUM_BATCH_SIZE, uniqueTasks.size());
-            final List<Task> uploadList = uniqueTasks.subList(startIndex, endIndex);
-            succeeded &= internalUploadBatchTasks(challengeId, uploadList);
-            startIndex += MAXIMUM_BATCH_SIZE;
-        }
-        while (endIndex != uniqueTasks.size() - 1 && startIndex < uniqueTasks.size());
-        return succeeded;
-    }
-
-    @Override
-    public boolean uploadTask(final long challengeId, final Task task)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        final String challengeName = task.getChallengeName();
-        final String taskIdentifier = task.getTaskIdentifier();
-        logger.debug("Uploading task {} for challenge {}", taskIdentifier, challengeName);
-        return uploadTask(challengeId, Collections.singletonList(task), true);
-    }
-
-    @Override
-    public long createProject(final Project project)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        return create(String.format("/api/v2/projectByName/%s", project.getName()),
-                "/api/v2/project", "/api/v2/project/%s", project.toJson(),
-                String.format("Created/Updated Project with ID {} and name %s", project.getName()));
-    }
-
-    @Override
-    public long createChallenge(final Project project, final Challenge challenge)
-            throws UnsupportedEncodingException, URISyntaxException
-    {
-        final JsonObject challengeJson = challenge.toJson(challenge.getName());
-        final String type = challengeJson.has(Survey.KEY_ANSWERS) ? KEY_SURVEY : KEY_CHALLENGE;
-        return create(
-                String.format("/api/v2/project/%d/challenge/%s", project.getId(),
-                        challenge.getName()),
-                String.format("/api/v2/%s", type), String.format("/api/v2/%s/", type) + "%s",
-                challengeJson, String.format("Created/Updated Challenge with ID {} and name %s",
-                        challenge.getName()));
-    }
-
     /**
      * Will create a challenge if it has not already been created
      *
@@ -201,6 +134,73 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                 createUpdate.close();
             }
         }
+    }
+
+    @Override
+    public long createChallenge(final Project project, final Challenge challenge)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        final JsonObject challengeJson = challenge.toJson(challenge.getName());
+        final String type = challengeJson.has(Survey.KEY_ANSWERS) ? KEY_SURVEY : KEY_CHALLENGE;
+        return create(
+                String.format("/api/v2/project/%d/challenge/%s", project.getId(),
+                        challenge.getName()),
+                String.format("/api/v2/%s", type), String.format("/api/v2/%s/", type) + "%s",
+                challengeJson, String.format("Created/Updated Challenge with ID {} and name %s",
+                        challenge.getName()));
+    }
+
+    @Override
+    public long createProject(final Project project)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        return create(String.format("/api/v2/projectByName/%s", project.getName()),
+                "/api/v2/project", "/api/v2/project/%s", project.toJson(),
+                String.format("Created/Updated Project with ID {} and name %s", project.getName()));
+    }
+
+    @Override
+    public String getConnectionInfo()
+    {
+        return this.configuration.toString();
+    }
+
+    public HttpResource setAuth(final HttpResource resource)
+    {
+        resource.setHeader(KEY_API_KEY, this.configuration.getApiKey());
+        return resource;
+    }
+
+    @Override
+    public boolean uploadBatchTasks(final long challengeId, final Set<Task> data)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        final List<Task> uniqueTasks = new ArrayList<>(data.size());
+        uniqueTasks.addAll(data);
+        // MAXIMUM batch size is 5000, so if greater than 5000, we need to make multiple
+        // requests in groups of 5000
+        boolean succeeded = true;
+        int startIndex = 0;
+        int endIndex;
+        do
+        {
+            endIndex = Math.min(startIndex + MAXIMUM_BATCH_SIZE, uniqueTasks.size());
+            final List<Task> uploadList = uniqueTasks.subList(startIndex, endIndex);
+            succeeded &= internalUploadBatchTasks(challengeId, uploadList);
+            startIndex += MAXIMUM_BATCH_SIZE;
+        }
+        while (endIndex != uniqueTasks.size() - 1 && startIndex < uniqueTasks.size());
+        return succeeded;
+    }
+
+    @Override
+    public boolean uploadTask(final long challengeId, final Task task)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        final String challengeName = task.getChallengeName();
+        final String taskIdentifier = task.getTaskIdentifier();
+        logger.debug("Uploading task {} for challenge {}", taskIdentifier, challengeName);
+        return uploadTask(challengeId, Collections.singletonList(task), true);
     }
 
     private boolean internalUploadBatchTasks(final long parentChallengeId, final List<Task> data)

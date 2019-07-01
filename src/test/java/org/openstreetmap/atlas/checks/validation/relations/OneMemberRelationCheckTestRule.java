@@ -126,11 +126,6 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
                                     "restriction=no_u_turn" }) })
     private Atlas oneMemberRelationRelationAtlas;
 
-    public Atlas getValidRelation()
-    {
-        return this.validRelation;
-    }
-
     public Atlas getOneMemberRelation()
     {
         return this.oneMemberRelation;
@@ -144,6 +139,11 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
     public Atlas getOneMemberRelationMultipolygonOuter()
     {
         return this.oneMemberRelationMultipolygonOuter;
+    }
+
+    public Atlas getValidRelation()
+    {
+        return this.validRelation;
     }
 
     public Atlas getValidRelationMultipolygon()

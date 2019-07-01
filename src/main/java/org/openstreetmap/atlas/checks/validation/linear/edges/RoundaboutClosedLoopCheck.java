@@ -64,12 +64,6 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
                 && HIGHWAY_TAGS_FOR_ROUNDABOUTS.contains(highwayTag.get()));
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
     /**
      * Default constructor
      *
@@ -123,5 +117,11 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

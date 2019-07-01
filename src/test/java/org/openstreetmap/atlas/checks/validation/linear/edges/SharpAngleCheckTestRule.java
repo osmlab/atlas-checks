@@ -45,14 +45,14 @@ public class SharpAngleCheckTestRule extends CoreTestRule
                     @Loc(value = TEST_3) }, tags = { "highway=motorway" }) })
     private Atlas sharpeAnglesAtlas;
 
-    public Atlas sharpeAngleAtlas()
-    {
-        return this.sharpeAngleAtlas;
-    }
-
     public Atlas notSharpeAngleAtlas()
     {
         return this.notSharpeAngleAtlas;
+    }
+
+    public Atlas sharpeAngleAtlas()
+    {
+        return this.sharpeAngleAtlas;
     }
 
     public Atlas sharpeAnglesAtlas()

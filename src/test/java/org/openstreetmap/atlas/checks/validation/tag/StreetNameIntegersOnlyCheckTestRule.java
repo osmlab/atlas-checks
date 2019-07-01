@@ -60,11 +60,6 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
         return this.motorwayWithIntegerNameTagAtlas;
     }
 
-    public Atlas motorwayWithNonIntegerNameTagAtlas()
-    {
-        return this.motorwayWithNonIntegerNameTagAtlas;
-    }
-
     public Atlas motorwayWithMixedNameTagAtlas()
     {
         return this.motorwayWithMixedNameTagAtlas;
@@ -73,5 +68,10 @@ public class StreetNameIntegersOnlyCheckTestRule extends CoreTestRule
     public Atlas motorwayWithMixedNameTagIntegerNameLeftTagAtlas()
     {
         return this.motorwayWithMixedNameTagIntegerNameLeftTagAtlas;
+    }
+
+    public Atlas motorwayWithNonIntegerNameTagAtlas()
+    {
+        return this.motorwayWithNonIntegerNameTagAtlas;
     }
 }

@@ -52,6 +52,62 @@ public class CheckFlagTest
     }
 
     @Test
+    public void testAllFlaggedObjects()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
+        // Tests if both the relations are added to flag
+        Assert.assertEquals(2, flag.getFlaggedRelations().size());
+        // Tests if entities other than relations are also flagged
+        Assert.assertEquals(15, flag.getFlaggedObjects().size());
+    }
+
+    @Test
+    public void testAsGeoJsonFeature()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        flag.addInstruction("first instruction");
+        flag.addInstruction("second instruction");
+        this.setup.getAtlas().entities().forEach(flag::addObject);
+
+        final JsonObject geoJsonFeature = flag.asGeoJsonFeature();
+        final String geoJsonFeatureString = geoJsonFeature.toString();
+
+        Assert.assertEquals(GEO_JSON_FEATURE_STRING, geoJsonFeatureString);
+    }
+
+    @Test
+    public void testFlagToFeature()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
+        Assert.assertEquals(15, CheckFlagEvent.flagToFeature(flag, new HashMap<>())
+                .get("properties").getAsJsonObject().get("feature_count").getAsLong());
+    }
+
+    @Test
+    public void testFlaggedRelations()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        this.setup.getAtlasWithRelations().relations().forEach(flag::addObject);
+        // Tests if both the relations are added to flag
+        Assert.assertEquals(2, flag.getFlaggedRelations().size());
+    }
+
+    @Test
+    public void testMembersOfFlaggedRelations()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
+        // Checks if members of flagged relations are added
+        final FlaggedRelation flaggedRelation = (FlaggedRelation) flag.getFlaggedRelations()
+                .iterator().next();
+        Assert.assertFalse(flaggedRelation.members().isEmpty());
+        // Tests if list of geometriesWithProperties are populated for the flaggedObjects
+        Assert.assertEquals(13, flag.getGeometryWithProperties().size());
+    }
+
+    @Test
     public void testSerializationWithAllFields() throws IOException, ClassNotFoundException
     {
         final CheckFlag flag = new CheckFlag("a-identifier");
@@ -99,61 +155,5 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlas().entities().forEach(flag::addObject);
         testSerialization(flag);
-    }
-
-    @Test
-    public void testAsGeoJsonFeature()
-    {
-        final CheckFlag flag = new CheckFlag("a-identifier");
-        flag.addInstruction("first instruction");
-        flag.addInstruction("second instruction");
-        this.setup.getAtlas().entities().forEach(flag::addObject);
-
-        final JsonObject geoJsonFeature = flag.asGeoJsonFeature();
-        final String geoJsonFeatureString = geoJsonFeature.toString();
-
-        Assert.assertEquals(GEO_JSON_FEATURE_STRING, geoJsonFeatureString);
-    }
-
-    @Test
-    public void testFlaggedRelations()
-    {
-        final CheckFlag flag = new CheckFlag("a-identifier");
-        this.setup.getAtlasWithRelations().relations().forEach(flag::addObject);
-        // Tests if both the relations are added to flag
-        Assert.assertEquals(2, flag.getFlaggedRelations().size());
-    }
-
-    @Test
-    public void testAllFlaggedObjects()
-    {
-        final CheckFlag flag = new CheckFlag("a-identifier");
-        this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
-        // Tests if both the relations are added to flag
-        Assert.assertEquals(2, flag.getFlaggedRelations().size());
-        // Tests if entities other than relations are also flagged
-        Assert.assertEquals(15, flag.getFlaggedObjects().size());
-    }
-
-    @Test
-    public void testMembersOfFlaggedRelations()
-    {
-        final CheckFlag flag = new CheckFlag("a-identifier");
-        this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
-        // Checks if members of flagged relations are added
-        final FlaggedRelation flaggedRelation = (FlaggedRelation) flag.getFlaggedRelations()
-                .iterator().next();
-        Assert.assertFalse(flaggedRelation.members().isEmpty());
-        // Tests if list of geometriesWithProperties are populated for the flaggedObjects
-        Assert.assertEquals(13, flag.getGeometryWithProperties().size());
-    }
-
-    @Test
-    public void testFlagToFeature()
-    {
-        final CheckFlag flag = new CheckFlag("a-identifier");
-        this.setup.getAtlasWithRelations().entities().forEach(flag::addObject);
-        Assert.assertEquals(15, CheckFlagEvent.flagToFeature(flag, new HashMap<>())
-                .get("properties").getAsJsonObject().get("feature_count").getAsLong());
     }
 }

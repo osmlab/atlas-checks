@@ -16,27 +16,14 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class CountryTest
 {
     /**
-     * Test that if you supply an empty country whitelist, that the option is essentially ignored
-     * and all countries are allowed.
+     * Test to make sure both the keys "countries" and "countries.whitelist" work for the whitelist
+     * option
      */
     @Test
-    public void testNoCountries()
+    public void testBackwardsCompatibility()
     {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[]}}";
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries\":[]}}";
         this.testConfiguration(countryConfig, "AIA", true);
-    }
-
-    /**
-     * Test that only countries included in the whitelist are used, and any countries not included
-     * in the whitelist are ignored.
-     */
-    @Test
-    public void testWhitelistCountries()
-    {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[\"AIA\",\"DOM\"]}}";
-        this.testConfiguration(countryConfig, "AIA", true);
-        this.testConfiguration(countryConfig, "DOM", true);
-        this.testConfiguration(countryConfig, "IRN", false);
     }
 
     /**
@@ -71,14 +58,27 @@ public class CountryTest
     }
 
     /**
-     * Test to make sure both the keys "countries" and "countries.whitelist" work for the whitelist
-     * option
+     * Test that if you supply an empty country whitelist, that the option is essentially ignored
+     * and all countries are allowed.
      */
     @Test
-    public void testBackwardsCompatibility()
+    public void testNoCountries()
     {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries\":[]}}";
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[]}}";
         this.testConfiguration(countryConfig, "AIA", true);
+    }
+
+    /**
+     * Test that only countries included in the whitelist are used, and any countries not included
+     * in the whitelist are ignored.
+     */
+    @Test
+    public void testWhitelistCountries()
+    {
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[\"AIA\",\"DOM\"]}}";
+        this.testConfiguration(countryConfig, "AIA", true);
+        this.testConfiguration(countryConfig, "DOM", true);
+        this.testConfiguration(countryConfig, "IRN", false);
     }
 
     /**

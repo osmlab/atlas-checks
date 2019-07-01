@@ -17,19 +17,6 @@ public final class GeometryValidator
     private static final JtsPolygonConverter POLYGON_CONVERTER = new JtsPolygonConverter();
 
     /**
-     * Tests that the {@link Polygon}'s geometry is valid
-     *
-     * @param polygon
-     *            the {@link Polygon} to test
-     * @return {@code true} if the {@link Polygon} has valid geometry, otherwise {@code false}
-     */
-    public static boolean isValidPolygon(final Polygon polygon)
-    {
-        final org.locationtech.jts.geom.Polygon jtsPolygon = POLYGON_CONVERTER.convert(polygon);
-        return jtsPolygon.isSimple();
-    }
-
-    /**
      * Tests that the {@link PolyLine}'s geometry is valid
      *
      * @param polyline
@@ -40,6 +27,19 @@ public final class GeometryValidator
     {
         final LineString lineString = POLYLINE_CONVERTER.convert(polyline);
         return lineString.isSimple();
+    }
+
+    /**
+     * Tests that the {@link Polygon}'s geometry is valid
+     *
+     * @param polygon
+     *            the {@link Polygon} to test
+     * @return {@code true} if the {@link Polygon} has valid geometry, otherwise {@code false}
+     */
+    public static boolean isValidPolygon(final Polygon polygon)
+    {
+        final org.locationtech.jts.geom.Polygon jtsPolygon = POLYGON_CONVERTER.convert(polygon);
+        return jtsPolygon.isSimple();
     }
 
     private GeometryValidator()

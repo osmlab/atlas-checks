@@ -10,6 +10,7 @@ import java.io.Serializable;
  */
 public class ProjectConfiguration implements Serializable
 {
+    private static final long serialVersionUID = 7825943800619520476L;
     private final String name;
     private final String description;
     private final String displayName;
@@ -60,11 +61,6 @@ public class ProjectConfiguration implements Serializable
         return new Project(this.name, this.description, this.displayName, this.enabled);
     }
 
-    public String getName()
-    {
-        return this.name;
-    }
-
     public String getDescription()
     {
         return this.description;
@@ -73,6 +69,11 @@ public class ProjectConfiguration implements Serializable
     public String getDisplayName()
     {
         return this.displayName;
+    }
+
+    public String getName()
+    {
+        return this.name;
     }
 
     public boolean isEnabled()

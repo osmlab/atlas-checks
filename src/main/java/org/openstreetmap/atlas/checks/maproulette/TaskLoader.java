@@ -17,6 +17,36 @@ import org.openstreetmap.atlas.checks.maproulette.data.Task;
 public interface TaskLoader
 {
     /**
+     * Creates a new challenge with the given {@link Challenge}, if already exists then will attempt
+     * to update
+     *
+     * @param project
+     *            The parent project object of the challenge
+     * @param challenge
+     *            The challenge to create or update
+     * @return The id for the challenge
+     * @throws UnsupportedEncodingException
+     *             if json data for API payload cannot be encoded correctly
+     * @throws URISyntaxException
+     *             if the URI for getting/creating/updating project is incorrectly generated
+     */
+    long createChallenge(Project project, Challenge challenge)
+            throws UnsupportedEncodingException, URISyntaxException;
+
+    /**
+     * Creates a new project with the {@link Project}, if already exists then will attempt to update
+     *
+     * @param project
+     *            The project object containing name and description
+     * @return The id for the project
+     * @throws UnsupportedEncodingException
+     *             if json data for API payload cannot be encoded correctly
+     * @throws URISyntaxException
+     *             if the URI for getting/creating/updating project is incorrectly generated
+     */
+    long createProject(Project project) throws UnsupportedEncodingException, URISyntaxException;
+
+    /**
      * Retrieve the connection info for this connection
      *
      * @return A string
@@ -53,35 +83,5 @@ public interface TaskLoader
      *             if the URI cannot be built correctly
      */
     boolean uploadTask(long challengeId, Task task)
-            throws UnsupportedEncodingException, URISyntaxException;
-
-    /**
-     * Creates a new project with the {@link Project}, if already exists then will attempt to update
-     * 
-     * @param project
-     *            The project object containing name and description
-     * @return The id for the project
-     * @throws UnsupportedEncodingException
-     *             if json data for API payload cannot be encoded correctly
-     * @throws URISyntaxException
-     *             if the URI for getting/creating/updating project is incorrectly generated
-     */
-    long createProject(Project project) throws UnsupportedEncodingException, URISyntaxException;
-
-    /**
-     * Creates a new challenge with the given {@link Challenge}, if already exists then will attempt
-     * to update
-     *
-     * @param project
-     *            The parent project object of the challenge
-     * @param challenge
-     *            The challenge to create or update
-     * @return The id for the challenge
-     * @throws UnsupportedEncodingException
-     *             if json data for API payload cannot be encoded correctly
-     * @throws URISyntaxException
-     *             if the URI for getting/creating/updating project is incorrectly generated
-     */
-    long createChallenge(Project project, Challenge challenge)
             throws UnsupportedEncodingException, URISyntaxException;
 }
