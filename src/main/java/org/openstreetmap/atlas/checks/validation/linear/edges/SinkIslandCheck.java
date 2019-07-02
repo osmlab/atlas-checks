@@ -87,8 +87,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return this.validEdge(object) && !this.isFlagged(object.getIdentifier()) && ((Edge) object)
                 .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType)
-        // Edge should not be within an area with any of the excluded amenity tags, end in
-        // a building or should not be within an airport polygon
                 && !(SERVICE_ROAD.test(object)
                         && (this.isWithinAreasWithExcludedAmenityTags((Edge) object)
                                 || this.intersectsAirportOrBuilding((Edge) object)));
@@ -199,10 +197,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Only allow car navigable highways (access = yes and
                 // motorvehicle/motorcar/vehicle = yes)
                 // and ignore ferries
-                && HighwayTag
-                .isCarNavigableHighway(object) && Validators.isOfType(object, AccessTag.class,
-                AccessTag.YES) && NAVIGABLE_HIGHWAYS.test(object)
-                && !RouteTag.isFerry(object)
+                && HighwayTag.isCarNavigableHighway(object)
+                && Validators.isOfType(object, AccessTag.class, AccessTag.YES)
+                && NAVIGABLE_HIGHWAYS.test(object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
     }
@@ -291,11 +288,13 @@ public class SinkIslandCheck extends BaseCheck<Long>
      */
     private boolean intersectsAirportOrBuilding(final Edge edge)
     {
-        return StreamSupport.stream(edge.getAtlas()
-                .areasIntersecting(edge.bounds(),
-                        area -> Validators.hasValuesFor(area, AmenityTag.class)
-                                || BuildingTag.isBuilding(area)
-                                || Validators.hasValuesFor(area, AerowayTag.class))
-                .spliterator(), false).count() > 0;
+        return StreamSupport
+                .stream(edge.getAtlas()
+                        .areasIntersecting(edge.bounds(),
+                                area -> Validators.hasValuesFor(area, AmenityTag.class)
+                                        || BuildingTag.isBuilding(area)
+                                        || Validators.hasValuesFor(area, AerowayTag.class))
+                        .spliterator(), false)
+                .anyMatch(area -> area.asPolygon().overlaps(edge.asPolyLine()));
     }
 }
