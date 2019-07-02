@@ -196,7 +196,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
     {
         return object instanceof Edge
                 // Only allow car navigable highways (access = yes and
-                // motorvehicle/motorcar/vehicle = yes)
+                // motor_vehicle/motorcar/vehicle = yes)
                 // and ignore ferries
                 && HighwayTag.isCarNavigableHighway(object) && this.isAccessible((Edge) object)
                 && this.isNavigable((Edge) object) && !RouteTag.isFerry(object)
@@ -317,7 +317,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
     /**
      * Checks if the edge is publicly accessible. An edge is considered accessible to the public if
-     * the {@link AccessTag} is not explicitly given or if present, its value equals YES.
+     * the {@link AccessTag} is not present or if present, is not one of the values in
+     * the PRIVATE_ACCESS set in {@link AccessTag}.
      * 
      * @param edge
      * @return
@@ -325,6 +326,6 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private boolean isAccessible(final Edge edge)
     {
         return !Validators.hasValuesFor(edge, AccessTag.class)
-                || Validators.isOfType(edge, AccessTag.class, AccessTag.YES);
+                || !AccessTag.isPrivate(edge);
     }
 }
