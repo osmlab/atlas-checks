@@ -9,6 +9,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.OneWayTag;
@@ -105,7 +106,8 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
         if (!edge.isMasterEdge() || OneWayTag.isExplicitlyTwoWay(edge))
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(object, this.getLocalizedInstruction(0)));
+            return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+                    this.getLocalizedInstruction(0)));
         }
 
         // Rule: a roundabout edge should never originate/terminate at a valence-1 node
@@ -113,7 +115,8 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
         if (aConnectedNodeHasValenceLessThan(edge, MINIMUM_VALENCE))
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(object, this.getLocalizedInstruction(1)));
+            return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+                    this.getLocalizedInstruction(1)));
         }
 
         return Optional.empty();
