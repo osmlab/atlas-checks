@@ -11,8 +11,10 @@ import java.util.regex.Pattern;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.names.NameTag;
@@ -23,7 +25,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author bbreithaupt
  */
-public class MixedCaseNameCheck extends BaseCheck
+public class MixedCaseNameCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 7109483897229499466L;
@@ -164,10 +166,19 @@ public class MixedCaseNameCheck extends BaseCheck
         if (!mixedCaseNameTags.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
+
             // Instruction includes type of OSM object and list of flagged tags
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object instanceof LocationItem ? "Node" : "Way",
-                            object.getOsmIdentifier(), String.join(", ", mixedCaseNameTags))));
+            final String instruction = this.getLocalizedInstruction(0,
+                    object instanceof LocationItem ? "Node" : "Way", object.getOsmIdentifier(),
+                    String.join(", ", mixedCaseNameTags));
+
+            // Generate the flag
+            if (object instanceof Edge)
+            {
+                return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                        instruction));
+            }
+            return Optional.of(this.createFlag(object, instruction));
         }
         return Optional.empty();
     }
