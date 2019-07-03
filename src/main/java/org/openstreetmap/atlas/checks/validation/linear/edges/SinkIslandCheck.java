@@ -317,15 +317,15 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
     /**
      * Checks if the edge is publicly accessible. An edge is considered accessible to the public if
-     * the {@link AccessTag} is not present or if present, is not one of the values in
-     * the PRIVATE_ACCESS set in {@link AccessTag}.
+     * the {@link AccessTag} is not present or if present, is not one of the values in the
+     * PRIVATE_ACCESS set in {@link AccessTag}.
      * 
      * @param edge
-     * @return
+     *            any Edge
+     * @return true if the edge is accessible
      */
     private boolean isAccessible(final Edge edge)
     {
-        return !Validators.hasValuesFor(edge, AccessTag.class)
-                || !AccessTag.isPrivate(edge);
+        return !Validators.hasValuesFor(edge, AccessTag.class) || !AccessTag.isPrivate(edge);
     }
 }
