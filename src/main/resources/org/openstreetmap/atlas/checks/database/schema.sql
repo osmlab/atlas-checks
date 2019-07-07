@@ -30,7 +30,7 @@ CREATE TABLE feature (
   geom geometry not null,
   osm_id bigint,
   atlas_id bigint,
-  iso_country_code varchar(3),
+  iso_country_code text,
   tags hstore,
   date_created timestamp,
   date_modified timestamp,

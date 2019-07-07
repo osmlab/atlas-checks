@@ -11,6 +11,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlagDeserializer;
+import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
@@ -100,12 +101,12 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                                 statement.get().execute();
 
                                 PreparedStatement sql = databaseConnection.prepareStatement(String
-                                        .format("INSERT INTO feature (flag_id, geom, osm_id, atlas_id) VALUES (%s,%s,?,?);",
+                                        .format("INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code) VALUES (%s,%s,?,?,?);",
                                                 "(SELECT id FROM flag WHERE flag_id = ? LIMIT 1)",
                                                 "ST_GeomFromGeoJSON(?)"));
 
                                 StreamSupport.stream(features.spliterator(), false)
-                                        .forEach(feature -> this.executeFlagFeatureStatement(sql,
+                                        .forEach(feature -> this.batchFlagFeatureStatement(sql,
                                                 flag, feature.getAsJsonObject()));
 
                                 sql.executeBatch();
@@ -252,22 +253,20 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         return Optional.empty();
     }
 
-    private void executeFlagFeatureStatement(PreparedStatement sql, CheckFlag flag,
-            JsonObject feature)
+    private void batchFlagFeatureStatement(PreparedStatement sql, CheckFlag flag, JsonObject feature)
     {
 
         final JsonObject properties = feature.get("properties").getAsJsonObject();
 
         try
         {
-
             sql.setString(1, flag.getIdentifier());
             sql.setString(2, feature.get("geometry").toString());
             sql.setLong(3, properties.get("osmIdentifier").getAsLong());
             sql.setLong(4, properties.get("identifier").getAsLong());
+            sql.setString(5, properties.has("iso_country_code") ? properties.get("iso_country_code").getAsString() : "NA");
 
             sql.addBatch();
-
         }
         catch (SQLException error)
         {
@@ -287,7 +286,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private boolean createDatabaseSchema(DatabaseConnection databaseConnection)
     {
         final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(DatabaseContext.class.getResourceAsStream("schema.sql")));
+                new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
         final LineNumberReader lnReader = new LineNumberReader(reader);
         String query;
         try
