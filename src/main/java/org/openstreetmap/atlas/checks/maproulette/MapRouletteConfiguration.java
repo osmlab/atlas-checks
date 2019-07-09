@@ -102,6 +102,11 @@ public class MapRouletteConfiguration implements Serializable
         return this.port;
     }
 
+    public ProjectConfiguration getProjectConfiguration()
+    {
+        return this.projectConfiguration;
+    }
+
     public String getProjectName()
     {
         return this.projectConfiguration.getName();
@@ -115,11 +120,6 @@ public class MapRouletteConfiguration implements Serializable
     public String getServer()
     {
         return this.server;
-    }
-
-    public ProjectConfiguration getProjectConfiguration()
-    {
-        return this.projectConfiguration;
     }
 
     @Override

@@ -1,14 +1,18 @@
 package org.openstreetmap.atlas.checks.commands;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
+import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
+import org.openstreetmap.atlas.checks.event.ShutdownEvent;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.File;
 
 /**
@@ -19,52 +23,21 @@ import org.openstreetmap.atlas.streaming.resource.File;
  */
 public class AtlasChecksGeoJSONDiffSubCommandTest
 {
+    // An empty HashMap as an empty Spark configuration
+    private static final Map<String, String> FILE_SYSTEM_CONFIG = new HashMap<>();
+
+    // Temp directories
     private static final File SOURCE_DIRECTORY = File.temporaryFolder();
     private static final File TARGET_DIRECTORY = File.temporaryFolder();
     private static final File GZ_SOURCE_DIRECTORY = File.temporaryFolder();
     private static final File GZ_TARGET_DIRECTORY = File.temporaryFolder();
-    private static final String GEO_11 = AtlasChecksGeoJSONDiffSubCommandTest.class
-            .getResource("geo_11.geojson").getPath();
-    private static final String GEO_21 = AtlasChecksGeoJSONDiffSubCommandTest.class
-            .getResource("geo_21.geojson").getPath();
-    private static final String GEO_11_GZ = AtlasChecksGeoJSONDiffSubCommandTest.class
-            .getResource("geo_11.geojson.gz").getPath();
-    private static final String GEO_21_GZ = AtlasChecksGeoJSONDiffSubCommandTest.class
-            .getResource("geo_21.geojson.gz").getPath();
-
-    @BeforeClass
-    public static void copyLogFiles() throws IOException
-    {
-        Files.copy(Paths.get(
-                AtlasChecksGeoJSONDiffSubCommandTest.class.getResource("geo_11.geojson").getPath()),
-                Paths.get(SOURCE_DIRECTORY.getPath() + "/geo_11.geojson"));
-        Files.copy(Paths.get(
-                AtlasChecksGeoJSONDiffSubCommandTest.class.getResource("geo_12.geojson").getPath()),
-                Paths.get(SOURCE_DIRECTORY.getPath() + "/geo_12.geojson"));
-        Files.copy(Paths.get(
-                AtlasChecksGeoJSONDiffSubCommandTest.class.getResource("geo_21.geojson").getPath()),
-                Paths.get(TARGET_DIRECTORY.getPath() + "/geo_21.geojson"));
-        Files.copy(Paths.get(
-                AtlasChecksGeoJSONDiffSubCommandTest.class.getResource("geo_22.geojson").getPath()),
-                Paths.get(TARGET_DIRECTORY.getPath() + "/geo_22.geojson"));
-        // Add gzipped files to source and target directories
-        Files.copy(
-                Paths.get(AtlasChecksGeoJSONDiffSubCommandTest.class
-                        .getResource("geo_11.geojson.gz").getPath()),
-                Paths.get(GZ_SOURCE_DIRECTORY.getPath() + "/geo_11.geojson.gz"));
-        Files.copy(
-                Paths.get(AtlasChecksGeoJSONDiffSubCommandTest.class
-                        .getResource("geo_12.geojson.gz").getPath()),
-                Paths.get(GZ_SOURCE_DIRECTORY.getPath() + "/geo_12.geojson.gz"));
-        Files.copy(
-                Paths.get(AtlasChecksGeoJSONDiffSubCommandTest.class
-                        .getResource("geo_21.geojson.gz").getPath()),
-                Paths.get(GZ_TARGET_DIRECTORY.getPath() + "/geo_21.geojson.gz"));
-        Files.copy(
-                Paths.get(AtlasChecksGeoJSONDiffSubCommandTest.class
-                        .getResource("geo_22.geojson.gz").getPath()),
-                Paths.get(GZ_TARGET_DIRECTORY.getPath() + "/geo_22.geojson.gz"));
-    }
+    @Rule
+    public final JSONFlagDiffSubCommandTestRule setup = new JSONFlagDiffSubCommandTestRule();
+    // Temp Files
+    private String sourceFile;
+    private String targetFile;
+    private String sourceFileGZ;
+    private String targetFileGZ;
 
     @AfterClass
     public static void deleteLogFiles()
@@ -76,56 +49,35 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
     }
 
     @Test
-    public void fileCreationFromFileTest()
-    {
-        final File temp = File.temporaryFolder();
-
-        // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", GEO_11),
-                String.format("-target=%s", GEO_21), String.format("-output=%s", temp.getPath()) };
-        new AtlasChecksCommand(args).runWithoutQuitting(args);
-
-        final List<File> outputFiles = temp.listFilesRecursively();
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
-
-        temp.deleteRecursively();
-    }
-
-    @Test
     public void fileCreationFromDirectoryTest()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", SOURCE_DIRECTORY),
-                String.format("-target=%s", TARGET_DIRECTORY),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", SOURCE_DIRECTORY),
+                String.format("-input=%s", TARGET_DIRECTORY),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-2.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-3.geojson")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.geojson")));
 
         temp.deleteRecursively();
     }
 
     @Test
-    public void testFileCreationFromGZippedFile()
+    public void fileCreationFromFileTest()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", GEO_11_GZ),
-                String.format("-target=%s", GEO_21_GZ),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", this.sourceFile),
+                String.format("-input=%s", this.targetFile),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -133,28 +85,43 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
 
         temp.deleteRecursively();
+    }
+
+    /**
+     * Generate directories of flag files and gather the path to the first file in each.
+     */
+    public void populateTestData()
+    {
+        if (this.sourceFile == null)
+        {
+            this.generateLogFiles(SOURCE_DIRECTORY, TARGET_DIRECTORY, false);
+            this.generateLogFiles(GZ_SOURCE_DIRECTORY, GZ_TARGET_DIRECTORY, true);
+
+            this.sourceFile = this.getFirstGeojsonPath(SOURCE_DIRECTORY);
+            this.targetFile = this.getFirstGeojsonPath(TARGET_DIRECTORY);
+            this.sourceFileGZ = this.getFirstGeojsonPath(GZ_SOURCE_DIRECTORY);
+            this.targetFileGZ = this.getFirstGeojsonPath(GZ_TARGET_DIRECTORY);
+        }
     }
 
     @Test
     public void testFileCreationFromGZippedAndUnZippedFiles()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", GEO_11_GZ),
-                String.format("-target=%s", GEO_21), String.format("-output=%s", temp.getPath()) };
+        final String[] args = { "geojson-diff", String.format("-reference=%s", this.sourceFileGZ),
+                String.format("-input=%s", this.targetFile),
+                String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-1.geojson")));
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
 
@@ -164,11 +131,33 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
     @Test
     public void testFileCreationFromGZippedDirectory()
     {
+        this.populateTestData();
         final File temp = File.temporaryFolder();
 
         // Run AtlasJoinerSubCommand
-        final String[] args = { "geojson-diff", String.format("-source=%s", GZ_SOURCE_DIRECTORY),
-                String.format("-target=%s", GZ_TARGET_DIRECTORY),
+        final String[] args = { "geojson-diff", String.format("-reference=%s", GZ_SOURCE_DIRECTORY),
+                String.format("-input=%s", GZ_TARGET_DIRECTORY),
+                String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.geojson")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.geojson")));
+
+        temp.deleteRecursively();
+    }
+
+    @Test
+    public void testFileCreationFromGZippedFile()
+    {
+        this.populateTestData();
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "geojson-diff", String.format("-reference=%s", this.sourceFileGZ),
+                String.format("-input=%s", this.targetFileGZ),
                 String.format("-output=%s", temp.getPath()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
@@ -176,10 +165,56 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         Assert.assertTrue(outputFiles.stream()
                 .anyMatch(file -> file.getName().matches("additions-\\d+-1.geojson")));
         Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("changes-\\d+-2.geojson")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-3.geojson")));
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.geojson")));
 
         temp.deleteRecursively();
+    }
+
+    /**
+     * Generate flag files from {@link CheckFlagEvent}s, into source and target directories. The
+     * files can be compressed.
+     *
+     * @param sourceDirectory
+     *            a {@link File} resource for a source directory
+     * @param targetDirectory
+     *            a {@link File} resource for a target directory
+     * @param compression
+     *            a boolean for whether the files should be compressed
+     */
+    private void generateLogFiles(final File sourceDirectory, final File targetDirectory,
+            final boolean compression)
+    {
+
+        final CheckFlagGeoJsonProcessor sourceProcessor = new CheckFlagGeoJsonProcessor(
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePath())
+                        .withBatchSizeOverride(2).withCompression(compression);
+        sourceProcessor.process(this.setup.getConstantCheckFlagEvent());
+        sourceProcessor.process(this.setup.getSubtractionCheckFlagEvent());
+        sourceProcessor.process(this.setup.getPreChangeCheckFlagEvent());
+        sourceProcessor.process(new ShutdownEvent());
+
+        final CheckFlagGeoJsonProcessor targetProcessor = new CheckFlagGeoJsonProcessor(
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePath())
+                        .withBatchSizeOverride(2).withCompression(compression);
+        targetProcessor.process(this.setup.getConstantCheckFlagEvent());
+        targetProcessor.process(this.setup.getAdditionCheckFlagEvent());
+        targetProcessor.process(this.setup.getPostChangeCheckFlagEvent());
+        targetProcessor.process(new ShutdownEvent());
+    }
+
+    /**
+     * Finds the first geojson or gzipped geojson file from an alpha-numeric sorting of a directory,
+     * and returns its path.
+     *
+     * @param directory
+     *            The directory to get a path from
+     * @return a {@link String} path of the first geojson file
+     */
+    private String getFirstGeojsonPath(final File directory)
+    {
+        return directory.listFilesRecursively().stream()
+                .filter(file -> file.getName().endsWith(".geojson")
+                        || file.getName().endsWith(".geojson.gz"))
+                .sorted().collect(Collectors.toList()).get(0).getPath();
     }
 }

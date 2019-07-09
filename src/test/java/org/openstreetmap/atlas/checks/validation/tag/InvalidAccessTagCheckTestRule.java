@@ -270,30 +270,20 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
     private Atlas accessNoInHighwayEdgesPublicTransportYes;
 
+    public Atlas accessNoInHighwayEdgeLineEdge()
+    {
+        return this.accessNoInHighwayEdgeLineEdge;
+    }
+
     // In Highway Tests
     public Atlas accessNoInHighwayEdges()
     {
         return this.accessNoInHighwayEdges;
     }
 
-    public Atlas accessNoInHighwayLines()
+    public Atlas accessNoInHighwayEdgesPublicTransportYes()
     {
-        return this.accessNoInHighwayLines;
-    }
-
-    public Atlas accessNoInHighwayEdgeLineEdge()
-    {
-        return this.accessNoInHighwayEdgeLineEdge;
-    }
-
-    public Atlas accessNoInHighwayLineEdgeLine()
-    {
-        return this.accessNoInHighwayLineEdgeLine;
-    }
-
-    public Atlas accessNoInHighwayEdgesTrack()
-    {
-        return this.accessNoInHighwayEdgesTrack;
+        return this.accessNoInHighwayEdgesPublicTransportYes;
     }
 
     public Atlas accessNoInHighwayEdgesSameFeature()
@@ -306,19 +296,9 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
         return this.accessNoInHighwayEdgesSameFeatureSquare;
     }
 
-    public Atlas getAccessNoInHighwayEdgesLanduseMilitary()
+    public Atlas accessNoInHighwayEdgesTrack()
     {
-        return this.accessNoInHighwayEdgesLanduseMilitary;
-    }
-
-    public Atlas getAccessNoInHighwayEdgesLanduseMilitaryRelation()
-    {
-        return this.accessNoInHighwayEdgesLanduseMilitaryRelation;
-    }
-
-    public Atlas getAccessNoInHighwayEdgesInRelation()
-    {
-        return this.accessNoInHighwayEdgesInRelation;
+        return this.accessNoInHighwayEdgesTrack;
     }
 
     // Config Tests
@@ -327,9 +307,29 @@ public class InvalidAccessTagCheckTestRule extends CoreTestRule
         return this.accessNoInHighwayEdgesVehicleNo;
     }
 
-    public Atlas accessNoInHighwayEdgesPublicTransportYes()
+    public Atlas accessNoInHighwayLineEdgeLine()
     {
-        return this.accessNoInHighwayEdgesPublicTransportYes;
+        return this.accessNoInHighwayLineEdgeLine;
+    }
+
+    public Atlas accessNoInHighwayLines()
+    {
+        return this.accessNoInHighwayLines;
+    }
+
+    public Atlas getAccessNoInHighwayEdgesInRelation()
+    {
+        return this.accessNoInHighwayEdgesInRelation;
+    }
+
+    public Atlas getAccessNoInHighwayEdgesLanduseMilitary()
+    {
+        return this.accessNoInHighwayEdgesLanduseMilitary;
+    }
+
+    public Atlas getAccessNoInHighwayEdgesLanduseMilitaryRelation()
+    {
+        return this.accessNoInHighwayEdgesLanduseMilitaryRelation;
     }
 
 }

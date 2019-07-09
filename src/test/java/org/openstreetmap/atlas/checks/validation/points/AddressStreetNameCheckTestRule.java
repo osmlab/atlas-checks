@@ -64,9 +64,9 @@ public class AddressStreetNameCheckTestRule extends CoreTestRule
                             "highway=residential", "name=2nd st" }) })
     private Atlas invalidAddressStreetTagAtlas;
 
-    public Atlas validAddressStreetTagAtlas()
+    public Atlas invalidAddressStreetTagAtlas()
     {
-        return this.validAddressStreetTagAtlas;
+        return this.invalidAddressStreetTagAtlas;
     }
 
     public Atlas validAddressStreetLocalizedTagAtlas()
@@ -74,8 +74,8 @@ public class AddressStreetNameCheckTestRule extends CoreTestRule
         return this.validAddressStreetLocalizedTagAtlas;
     }
 
-    public Atlas invalidAddressStreetTagAtlas()
+    public Atlas validAddressStreetTagAtlas()
     {
-        return this.invalidAddressStreetTagAtlas;
+        return this.validAddressStreetTagAtlas;
     }
 }

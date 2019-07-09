@@ -39,10 +39,8 @@ public class InvalidAccessTagCheck extends BaseCheck
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RESIDENTIAL.toString();
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "This way {0,number,#} has an invalid access tag value, resulting from improper tag combinations. Investigate ground truth and properly correct them.");
-
-    private final HighwayTag minimumHighwayType;
-
     private static final long serialVersionUID = 5197703822744690835L;
+    private final HighwayTag minimumHighwayType;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -95,6 +93,12 @@ public class InvalidAccessTagCheck extends BaseCheck
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -155,11 +159,5 @@ public class InvalidAccessTagCheck extends BaseCheck
         final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
         return result.isPresent()
                 && result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 }

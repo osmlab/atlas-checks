@@ -210,21 +210,6 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
                     "name:en=Test of Test", "name=tEst TeSt" }) })
     private Atlas validNamePointChnAtlas;
 
-    public Atlas invalidNamePointAtlas()
-    {
-        return this.invalidNamePointAtlas;
-    }
-
-    public Atlas invalidNameNodeAtlas()
-    {
-        return this.invalidNameNodeAtlas;
-    }
-
-    public Atlas invalidNameLineAtlas()
-    {
-        return this.invalidNameLineAtlas;
-    }
-
     public Atlas invalidNameAreaAtlas()
     {
         return this.invalidNameAreaAtlas;
@@ -235,29 +220,14 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
         return this.invalidNameEdgeAtlas;
     }
 
-    public Atlas invalidNamePointOneWordAtlas()
+    public Atlas invalidNameLineAtlas()
     {
-        return this.invalidNamePointOneWordAtlas;
+        return this.invalidNameLineAtlas;
     }
 
-    public Atlas validNamePointHyphenAtlas()
+    public Atlas invalidNameNodeAtlas()
     {
-        return this.validNamePointHyphenAtlas;
-    }
-
-    public Atlas validNamePointNumberAtlas()
-    {
-        return this.validNamePointNumberAtlas;
-    }
-
-    public Atlas invalidNamePointHyphenAtlas()
-    {
-        return this.invalidNamePointHyphenAtlas;
-    }
-
-    public Atlas validNamePointAffixAtlas()
-    {
-        return this.validNamePointAffixAtlas;
+        return this.invalidNameNodeAtlas;
     }
 
     public Atlas invalidNamePointAffixAtlas()
@@ -265,69 +235,19 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
         return this.invalidNamePointAffixAtlas;
     }
 
-    public Atlas validNamePointApostropheAtlas()
-    {
-        return this.validNamePointApostropheAtlas;
-    }
-
-    public Atlas validNamePointApostropheLowerAtlas()
-    {
-        return this.validNamePointApostropheLowerAtlas;
-    }
-
-    public Atlas validNamePointApostropheAllCapsAtlas()
-    {
-        return this.validNamePointApostropheAllCapsAtlas;
-    }
-
-    public Atlas validNamePointCapsApostropheAtlas()
-    {
-        return this.validNamePointCapsApostropheAtlas;
-    }
-
-    public Atlas validNamePointCapsLowerApostropheAtlas()
-    {
-        return this.validNamePointCapsLowerApostropheAtlas;
-    }
-
     public Atlas invalidNamePointApostropheAtlas()
     {
         return this.invalidNamePointApostropheAtlas;
     }
 
-    public Atlas validNamePointAllCapsAtlas()
+    public Atlas invalidNamePointAtlas()
     {
-        return this.validNamePointAllCapsAtlas;
+        return this.invalidNamePointAtlas;
     }
 
-    public Atlas validNamePointNoCapsAtlas()
+    public Atlas invalidNamePointChnAtlas()
     {
-        return this.validNamePointNoCapsAtlas;
-    }
-
-    public Atlas validNamePointLowerCasePrepositionAtlas()
-    {
-        return this.validNamePointLowerCasePrepositionAtlas;
-    }
-
-    public Atlas validNamePointLowerCaseArticleAtlas()
-    {
-        return this.validNamePointLowerCaseArticleAtlas;
-    }
-
-    public Atlas validNamePointLowerCaseArticleStartAtlas()
-    {
-        return this.validNamePointLowerCaseArticleStartAtlas;
-    }
-
-    public Atlas invalidNamePointLowerCaseArticleStartAtlas()
-    {
-        return this.invalidNamePointLowerCaseArticleStartAtlas;
-    }
-
-    public Atlas validNamePointMixedCaseUnitAtlas()
-    {
-        return this.validNamePointMixedCaseUnitAtlas;
+        return this.invalidNamePointChnAtlas;
     }
 
     public Atlas invalidNamePointEnAtlas()
@@ -340,14 +260,69 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
         return this.invalidNamePointGreekAtlas;
     }
 
-    public Atlas validNamePointGreekAtlas()
-    {
-        return this.validNamePointGreekAtlas;
-    }
-
     public Atlas invalidNamePointGreekElAtlas()
     {
         return this.invalidNamePointGreekElAtlas;
+    }
+
+    public Atlas invalidNamePointHyphenAtlas()
+    {
+        return this.invalidNamePointHyphenAtlas;
+    }
+
+    public Atlas invalidNamePointLowerCaseArticleStartAtlas()
+    {
+        return this.invalidNamePointLowerCaseArticleStartAtlas;
+    }
+
+    public Atlas invalidNamePointOneWordAtlas()
+    {
+        return this.invalidNamePointOneWordAtlas;
+    }
+
+    public Atlas validNamePointAffixAtlas()
+    {
+        return this.validNamePointAffixAtlas;
+    }
+
+    public Atlas validNamePointAllCapsAtlas()
+    {
+        return this.validNamePointAllCapsAtlas;
+    }
+
+    public Atlas validNamePointApostropheAllCapsAtlas()
+    {
+        return this.validNamePointApostropheAllCapsAtlas;
+    }
+
+    public Atlas validNamePointApostropheAtlas()
+    {
+        return this.validNamePointApostropheAtlas;
+    }
+
+    public Atlas validNamePointApostropheLowerAtlas()
+    {
+        return this.validNamePointApostropheLowerAtlas;
+    }
+
+    public Atlas validNamePointCapsApostropheAtlas()
+    {
+        return this.validNamePointCapsApostropheAtlas;
+    }
+
+    public Atlas validNamePointCapsLowerApostropheAtlas()
+    {
+        return this.validNamePointCapsLowerApostropheAtlas;
+    }
+
+    public Atlas validNamePointChnAtlas()
+    {
+        return this.validNamePointChnAtlas;
+    }
+
+    public Atlas validNamePointGreekAtlas()
+    {
+        return this.validNamePointGreekAtlas;
     }
 
     public Atlas validNamePointGreekElAtlas()
@@ -355,13 +330,38 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
         return this.validNamePointGreekElAtlas;
     }
 
-    public Atlas invalidNamePointChnAtlas()
+    public Atlas validNamePointHyphenAtlas()
     {
-        return this.invalidNamePointChnAtlas;
+        return this.validNamePointHyphenAtlas;
     }
 
-    public Atlas validNamePointChnAtlas()
+    public Atlas validNamePointLowerCaseArticleAtlas()
     {
-        return this.validNamePointChnAtlas;
+        return this.validNamePointLowerCaseArticleAtlas;
+    }
+
+    public Atlas validNamePointLowerCaseArticleStartAtlas()
+    {
+        return this.validNamePointLowerCaseArticleStartAtlas;
+    }
+
+    public Atlas validNamePointLowerCasePrepositionAtlas()
+    {
+        return this.validNamePointLowerCasePrepositionAtlas;
+    }
+
+    public Atlas validNamePointMixedCaseUnitAtlas()
+    {
+        return this.validNamePointMixedCaseUnitAtlas;
+    }
+
+    public Atlas validNamePointNoCapsAtlas()
+    {
+        return this.validNamePointNoCapsAtlas;
+    }
+
+    public Atlas validNamePointNumberAtlas()
+    {
+        return this.validNamePointNumberAtlas;
     }
 }

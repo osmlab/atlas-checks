@@ -93,58 +93,58 @@ public class ConflictingAreaTagCombinationCheckTestRule extends CoreTestRule
                     "area=no", "natural=water", "landuse=port" }) })
     private Atlas areaNoNaturalLandUseTagAtlas;
 
-    public Atlas getBuildingNaturalTagAtlas()
+    public Atlas getAreaNoNaturalLandUseTagAtlas()
     {
-        return buildingNaturalTagAtlas;
-    }
-
-    public Atlas getBuildingHighwayTagAtlas()
-    {
-        return buildingHighwayTagAtlas;
+        return this.areaNoNaturalLandUseTagAtlas;
     }
 
     public Atlas getBuildingHighwayServicesAtlas()
     {
-        return buildingHighwayServicesAtlas;
+        return this.buildingHighwayServicesAtlas;
     }
 
-    public Atlas getNaturalManMadeTagAtlas()
+    public Atlas getBuildingHighwayTagAtlas()
     {
-        return naturalManMadeTagAtlas;
+        return this.buildingHighwayTagAtlas;
     }
 
-    public Atlas getNaturalHighwayTagAtlas()
+    public Atlas getBuildingNaturalTagAtlas()
     {
-        return naturalHighwayTagAtlas;
-    }
-
-    public Atlas getNaturalLeisureTagAtlas()
-    {
-        return naturalLeisureTagAtlas;
-    }
-
-    public Atlas getWaterLandUseTagAtlas()
-    {
-        return waterLandUseTagAtlas;
-    }
-
-    public Atlas getWaterLandUseAquacultureAtlas()
-    {
-        return waterLandUseAquacultureAtlas;
-    }
-
-    public Atlas getWaterManMadeChimneyAtlas()
-    {
-        return waterManMadeChimneyAtlas;
+        return this.buildingNaturalTagAtlas;
     }
 
     public Atlas getLandUseHighwayAtlas()
     {
-        return landUseHighwayAtlas;
+        return this.landUseHighwayAtlas;
     }
 
-    public Atlas getAreaNoNaturalLandUseTagAtlas()
+    public Atlas getNaturalHighwayTagAtlas()
     {
-        return areaNoNaturalLandUseTagAtlas;
+        return this.naturalHighwayTagAtlas;
+    }
+
+    public Atlas getNaturalLeisureTagAtlas()
+    {
+        return this.naturalLeisureTagAtlas;
+    }
+
+    public Atlas getNaturalManMadeTagAtlas()
+    {
+        return this.naturalManMadeTagAtlas;
+    }
+
+    public Atlas getWaterLandUseAquacultureAtlas()
+    {
+        return this.waterLandUseAquacultureAtlas;
+    }
+
+    public Atlas getWaterLandUseTagAtlas()
+    {
+        return this.waterLandUseTagAtlas;
+    }
+
+    public Atlas getWaterManMadeChimneyAtlas()
+    {
+        return this.waterManMadeChimneyAtlas;
     }
 }

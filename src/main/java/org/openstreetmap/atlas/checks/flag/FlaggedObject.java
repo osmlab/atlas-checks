@@ -6,7 +6,6 @@ import java.util.Objects;
 
 import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 
 import com.google.gson.JsonObject;
@@ -28,6 +27,15 @@ public abstract class FlaggedObject implements Serializable, Located
     protected static final String NODE_TAG = "Node";
     protected static final String POINT_TAG = "Point";
     private static final long serialVersionUID = -2898518269816777421L;
+
+    /**
+     * A GeoJSON representation of the flagged object.
+     *
+     * @param flagIdentifier
+     *            We always will want to know the id of the flag assocaited with this flag object.
+     * @return GeoJSON representation of the flagged object.
+     */
+    public abstract JsonObject asGeoJsonFeature(String flagIdentifier);
 
     @Override
     public boolean equals(final Object other)
@@ -65,21 +73,6 @@ public abstract class FlaggedObject implements Serializable, Located
      * @return flag key-value property map
      */
     public abstract Map<String, String> getProperties();
-
-    /**
-     * A GeoJSON representation of the flagged object.
-     *
-     * @param flagIdentifier
-     *            We always will want to know the id of the flag assocaited with this flag object.
-     * @return GeoJSON representation of the flagged object.
-     */
-    public abstract JsonObject asGeoJsonFeature(String flagIdentifier);
-
-    /**
-     * @return The bounds of the object.
-     */
-    @Override
-    public abstract Rectangle bounds();
 
     /**
      * @return {@code true} if the flagged object has a country code property

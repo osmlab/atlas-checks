@@ -1,10 +1,12 @@
 package org.openstreetmap.atlas.checks.commands;
 
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,7 +19,6 @@ import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.runtime.FlexibleSubCommand;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -27,87 +28,76 @@ import com.google.gson.JsonObject;
  */
 public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 {
-    private static final Command.Switch<File> SOURCE_FILE_PARAMETER = new Command.Switch<>("source",
-            "A file or directory of files containing atlas-checks flags to compare changes from.",
+    static final String CHECK_COUNT_FORMAT = "%s: %d%n";
+    // Atlas Checks' GeoJSON strings
+    static final String FEATURE_PROPERTIES = "feature_properties";
+    static final String GENERATOR = "generator";
+    static final String NAME = "name";
+    private static final Command.Switch<File> REFERENCE_FILE_PARAMETER = new Command.Switch<>(
+            "reference",
+            "A file or directory of files containing atlas-checks flags to use as a baseline for comparison.",
             File::new, Command.Optionality.REQUIRED);
-
-    private static final Command.Switch<File> TARGET_FILE_PARAMETER = new Command.Switch<>("target",
-            "A file or directory of files containing atlas-checks flags to compare changes to.",
+    private static final Command.Switch<File> INPUT_FILE_PARAMETER = new Command.Switch<>("input",
+            "A file or directory of files containing atlas-checks flags to compare changes from the baseline.",
             File::new, Command.Optionality.REQUIRED);
-
     private static final Command.Switch<String> OUTPUT_FOLDER_PARAMETER = new Command.Switch<>(
             "output",
             "A directory to place output log files in. If not included no outputs files will be written.",
             String::new, Command.Optionality.OPTIONAL);
-
-    // JSON strings
-    static final String FEATURE_COLLECTION = "FeatureCollection";
-    static final String FEATURE_PROPERTIES = "feature_properties";
-    static final String FEATURES = "features";
-    static final String GENERATOR = "generator";
-    static final String ID = "id";
-    static final String ITEM_ID = "ItemId";
-    static final String PROPERTIES = "properties";
-    static final String TYPE = "type";
-
     private final Gson gson = new Gson();
-    private final HashMap source = new HashMap();
-    private final HashMap target = new HashMap();
+    private Map<String, Map<Set<String>, JsonObject>> reference = new HashMap<>();
+    private Map<String, Map<Set<String>, JsonObject>> input = new HashMap<>();
 
-    private String name;
-    private String description;
-    private String fileExtension;
-
-    /**
-     * Expected returns from {@link #getDiff(HashMap, HashMap, DiffReturn)}.
-     */
-    protected enum DiffReturn
-    {
-        MISSING,
-        CHANGED,
-    }
-
-    /**
-     * Helper class for storing diff results.
-     */
-    protected class JSONFlagDiff
-    {
-        private final HashSet<JsonObject> missing = new HashSet<>();
-        private final HashSet<JsonObject> changed = new HashSet<>();
-
-        public void addMissing(final JsonObject object)
-        {
-            this.missing.add(object);
-        }
-
-        public void addChanged(final JsonObject object)
-        {
-            this.changed.add(object);
-        }
-
-        public HashSet<JsonObject> getMissing()
-        {
-            return missing;
-        }
-
-        public HashSet<JsonObject> getChanged()
-        {
-            return changed;
-        }
-    }
+    private final String commandName;
+    private final String description;
+    private final String fileExtension;
 
     public JSONFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
     {
-        this.name = name;
+        this.commandName = name;
         this.description = description;
         this.fileExtension = fileExtension;
     }
 
     @Override
-    public String getName()
+    // Allow System.out for clean printing.
+    @SuppressWarnings({ "squid:S106", "squid:S2234" })
+    public int execute(final CommandMap command)
     {
-        return this.name;
+        // Get files and parse to maps
+        this.getFilesOfType((File) command.get(REFERENCE_FILE_PARAMETER)).forEach(
+                path -> this.reference = this.mergeMaps(this.mapFeatures(path), this.reference));
+        this.getFilesOfType((File) command.get(INPUT_FILE_PARAMETER))
+                .forEach(path -> this.input = this.mergeMaps(this.mapFeatures(path), this.input));
+
+        // Get changes from reference to input
+        final Map<String, Set<JsonObject>> additions = this.getDiff(this.input, this.reference);
+        final Map<String, Set<JsonObject>> subtractions = this.getDiff(this.reference, this.input);
+
+        // Write outputs
+        System.out.printf("%nTotal Items: %d%n",
+                this.getReferenceSize() + this.countMapValues(additions));
+        System.out.printf("%nAdditions: %d%n", this.countMapValues(additions));
+        additions.forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
+        System.out.printf("%nSubtractions: %d%n", this.countMapValues(subtractions));
+        subtractions
+                .forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
+
+        final Optional output = command.getOption(OUTPUT_FOLDER_PARAMETER);
+        if (output.isPresent())
+        {
+            writeSetToGeoJSON(additions,
+                    new File(String.format("%s/additions-%d-%d.%s", output.get(),
+                            new Date().getTime(), this.countMapValues(additions),
+                            this.fileExtension)));
+            writeSetToGeoJSON(subtractions,
+                    new File(String.format("%s/subtractions-%d-%d.%s", output.get(),
+                            new Date().getTime(), this.countMapValues(subtractions),
+                            this.fileExtension)));
+        }
+
+        return 0;
     }
 
     @Override
@@ -117,9 +107,15 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     @Override
+    public String getName()
+    {
+        return this.commandName;
+    }
+
+    @Override
     public Command.SwitchList switches()
     {
-        return new Command.SwitchList().with(SOURCE_FILE_PARAMETER, TARGET_FILE_PARAMETER,
+        return new Command.SwitchList().with(REFERENCE_FILE_PARAMETER, INPUT_FILE_PARAMETER,
                 OUTPUT_FOLDER_PARAMETER);
     }
 
@@ -127,63 +123,108 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     public void usage(final PrintStream writer)
     {
         writer.print(
-                "-source=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from\n");
+                "-reference=path/to/first/flag/file,path/to/second/flag/file : file of flags to use as a baseline\n");
         writer.print(
-                "-target=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes to\n");
+                "-input=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from the baseline\n");
         writer.print(
                 "-output=path/to/output/folder : optional directory to write output files to\n");
     }
 
-    @Override
-    public int execute(final CommandMap command)
+    /**
+     * Takes two 2d {@link HashMap}s containing atlas-checks flags mapped by id mapped by check.
+     * Finds missing elements in the input based on ids.
+     *
+     * @param reference
+     *            {@link HashMap} of the flags to compare from
+     * @param input
+     *            {@link HashMap} of the flags to compare to
+     * @return a {@link Map} of {@link JsonObject} by check
+     */
+    protected Map<String, Set<JsonObject>> getDiff(
+            final Map<String, Map<Set<String>, JsonObject>> reference,
+            final Map<String, Map<Set<String>, JsonObject>> input)
     {
-        // Get files and parse to maps
-        getFilesOfType((File) command.get(SOURCE_FILE_PARAMETER))
-                .forEach(path -> this.mapFeatures(path, this.source));
-        getFilesOfType((File) command.get(TARGET_FILE_PARAMETER))
-                .forEach(path -> this.mapFeatures(path, this.target));
-
-        // Get changes from source to target
-        final HashSet<JsonObject> additions = this
-                .getDiff(this.target, this.source, DiffReturn.MISSING).getMissing();
-        final JSONFlagDiff subAndChange = this.getDiff(this.source, this.target,
-                DiffReturn.CHANGED);
-        final HashSet<JsonObject> subtractions = subAndChange.getMissing();
-        final HashSet<JsonObject> changes = subAndChange.getChanged();
-
-        // Write outputs
-        System.out.printf(
-                "\n Total Items: %d\n   Additions: %d\n     Changes: %d\nSubtractions: %d\n",
-                getSourceSize() + additions.size(), additions.size(), changes.size(),
-                subtractions.size());
-        final Optional output = command.getOption(OUTPUT_FOLDER_PARAMETER);
-        if (output.isPresent())
+        final Map<String, Set<JsonObject>> diff = new HashMap<>();
+        reference.forEach((check, flags) -> flags.forEach((identifier, flag) ->
         {
-            writeSetToGeoJSON(additions, new File(String.format("%s/additions-%d-%d.%s",
-                    output.get(), new Date().getTime(), additions.size(), this.fileExtension)));
-            writeSetToGeoJSON(changes, new File(String.format("%s/changes-%d-%d.%s", output.get(),
-                    new Date().getTime(), changes.size(), this.fileExtension)));
-            writeSetToGeoJSON(subtractions, new File(String.format("%s/subtractions-%d-%d.%s",
-                    output.get(), new Date().getTime(), subtractions.size(), this.fileExtension)));
-        }
-
-        return 0;
+            // Get missing
+            if (!input.containsKey(check) || !input.get(check).containsKey(identifier))
+            {
+                diff.putIfAbsent(check, new HashSet<>());
+                diff.get(check).add(flag);
+            }
+        }));
+        return diff;
     }
 
-    private Set<File> getFilesOfType(final File file)
+    /**
+     * Getter for {@link #gson}
+     *
+     * @return {@link Gson}
+     */
+    protected Gson getGson()
     {
-        final String fileName = file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
-                : file.getName();
-        if (FilenameUtils.getExtension(fileName).equalsIgnoreCase(this.fileExtension))
+        return this.gson;
+    }
+
+    /**
+     * Getter for {@link #input}
+     *
+     * @return {@link HashMap}
+     */
+    protected Map<String, Map<Set<String>, JsonObject>> getInput()
+    {
+        return this.input;
+    }
+
+    /**
+     * Getter for {@link #reference}
+     *
+     * @return {@link HashMap}
+     */
+    protected Map<String, Map<Set<String>, JsonObject>> getReference()
+    {
+        return this.reference;
+    }
+
+    /**
+     * A getter for the number of flags in {@link #reference}
+     *
+     * @return {@code int}
+     */
+    protected int getReferenceSize()
+    {
+        int sourceSize = 0;
+        for (final String check : getReference().keySet())
         {
-            return Collections.singleton(file);
+            sourceSize += getReference().get(check).size();
         }
-        else if (file.isDirectory())
-        {
-            return file.listFilesRecursively().stream().filter(this::checkFileExtension)
-                    .collect(Collectors.toSet());
-        }
-        return new HashSet<>();
+        return sourceSize;
+    }
+
+    /**
+     * Parses an atlas-checks flag file and maps each flag to its id.
+     *
+     * @param file
+     *            {@link File} containing the flags
+     * @return a 2d {@link HashMap} containing a {@link HashMap} of {@link JsonObject}s mapped to
+     *         {@link String} feature ids, mapped to {@link String} check names.
+     */
+    protected abstract Map<String, Map<Set<String>, JsonObject>> mapFeatures(File file);
+
+    /**
+     * Writes a Set of geoJSON atlas-checks flags to a file.
+     *
+     * @param flags
+     *            {@link Set} of {@link JsonObject}s representing geoJSON flags
+     * @param output
+     *            {@link File} to output to
+     */
+    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
+    {
+        final JsonWriter writer = new JsonWriter(output);
+        flags.values().stream().flatMap(Collection::stream).forEach(writer::writeLine);
+        writer.close();
     }
 
     /**
@@ -201,103 +242,61 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
-     * Parses an atlas-checks flag file and maps each flag to its id.
+     * Gets a count of the {@link JsonObject}s a {@link Map} of {@link Set}s of {@link JsonObject}s.
+     *
+     * @param map
+     *            a {@link Map} of {@link Set}s of {@link JsonObject}s
+     * @return long count of {@link JsonObject}s
+     */
+    private long countMapValues(final Map<String, Set<JsonObject>> map)
+    {
+        return map.values().stream().mapToLong(Collection::size).sum();
+    }
+
+    /**
+     * Given a folder, gathers all files that have a file extension matching {@link #fileExtension}.
      *
      * @param file
-     *            {@link File} containing the flags
-     * @param map
-     *            {@link HashMap} to store the mapped flags
+     *            a folder with the files to gather.
+     * @return a {@link Set} of {@link File}s
      */
-    protected void mapFeatures(final File file, final HashMap map)
+    private Set<File> getFilesOfType(final File file)
     {
+        final String fileName = file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
+                : file.getName();
+        if (FilenameUtils.getExtension(fileName).equalsIgnoreCase(this.fileExtension))
+        {
+            return Collections.singleton(file);
+        }
+        else if (file.isDirectory())
+        {
+            return file.listFilesRecursively().stream().filter(this::checkFileExtension)
+                    .collect(Collectors.toSet());
+        }
+        return new HashSet<>();
     }
 
     /**
-     * Takes two {@link HashMap}s containing atlas-checks flags mapped by id. Finds missing elements
-     * in the target based on keys. Optionally computes changes in the AtlasObject ids found in each
-     * flag.
+     * Merges one 2d check and flags {@link HashMap} into another.
      *
-     * @param source
-     *            {@link HashMap} of the flags to compare from
-     * @param target
-     *            {@link HashMap} of the flags to compare to
-     * @param returnType
-     *            {@link DiffReturn}; If this is {@code CHANGED} the {@code changed} attribute of
-     *            the returned {@link JSONFlagDiff} will be populated.
-     * @return an {@link JSONFlagDiff}
+     * @param put
+     *            a 2d check and flags {@link HashMap} that will be put into {@code place} to form
+     *            the output
+     * @param place
+     *            2d check and flags {@link HashMap} that will have {@code put} placed into it to
+     *            form the output
+     * @return a merged 2d check and flags {@link HashMap}
      */
-    protected JSONFlagDiff getDiff(final HashMap source, final HashMap target,
-            final DiffReturn returnType)
+    private Map<String, Map<Set<String>, JsonObject>> mergeMaps(
+            final Map<String, Map<Set<String>, JsonObject>> put,
+            final Map<String, Map<Set<String>, JsonObject>> place)
     {
-        return new JSONFlagDiff();
-    }
-
-    /**
-     * Helper function for {@code getMissingAndChanged} to check for changes in Atlas ids.
-     *
-     * @param sourceArray
-     *            {@code feature} {@link JsonArray} to check from
-     * @param targetArray
-     *            {@code feature} {@link JsonArray} to check to
-     * @return true if all Atlas ids in {@code source} are present in {@code target}, and visa versa
-     */
-    protected boolean identicalFeatureIds(final JsonArray sourceArray, final JsonArray targetArray)
-    {
-        return true;
-    }
-
-    /**
-     * Writes a Set of geoJSON atlas-checks flags to a file.
-     *
-     * @param flags
-     *            {@link Set} of {@link JsonObject}s representing geoJSON flags
-     * @param output
-     *            {@link File} to output to
-     */
-    protected void writeSetToGeoJSON(final Set<JsonObject> flags, final File output)
-    {
-        final JsonWriter writer = new JsonWriter(output);
-        flags.forEach(writer::writeLine);
-        writer.close();
-    }
-
-    /**
-     * A getter for the number of flags in {@link #source}
-     *
-     * @return {@code int}
-     */
-    protected int getSourceSize()
-    {
-        return this.source.size();
-    }
-
-    /**
-     * Getter for {@link #gson}
-     *
-     * @return {@link Gson}
-     */
-    protected Gson getGson()
-    {
-        return this.gson;
-    }
-
-    /**
-     * Getter for {@link #source}
-     *
-     * @return {@link HashMap}
-     */
-    protected HashMap getSource()
-    {
-        return this.source;
-    }
-
-    /**
-     * Getter for {@link #target}
-     *
-     * @return {@link HashMap}
-     */
-    protected HashMap getTarget()
-    {
-        return this.target;
+        final Map<String, Map<Set<String>, JsonObject>> mergedMap = new HashMap<>(place);
+        put.forEach((check, flags) ->
+        {
+            mergedMap.putIfAbsent(check, new HashMap<>());
+            mergedMap.get(check).putAll(flags);
+        });
+        return mergedMap;
     }
 }

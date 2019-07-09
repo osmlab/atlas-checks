@@ -22,6 +22,24 @@ public class ChallengeSerializationTest
     private static final String CHECKIN_COMMENT = "#maproulette";
 
     /**
+     * Tests that a challenge with no defaultPriority specified gets loaded as defaultPriority=LOW.
+     */
+    @Test
+    public void serializationNoDefaultPrioritySpecified()
+    {
+        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge4.json");
+
+        Assert.assertEquals(DESCRIPTION, deserializedChallenge.getDescription());
+        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
+        Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
+        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
+        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
+        Assert.assertNull(deserializedChallenge.getHighPriorityRule());
+        Assert.assertNull(deserializedChallenge.getMediumPriorityRule());
+        Assert.assertNull(deserializedChallenge.getLowPriorityRule());
+    }
+
+    /**
      * Test if a challange can be deserialized from a test JSON file. The challenge resource json
      * contains no MapRoulette priority information.
      */
@@ -110,38 +128,8 @@ public class ChallengeSerializationTest
     }
 
     /**
-     * Tests that a challenge with no defaultPriority specified gets loaded as defaultPriority=LOW.
-     */
-    @Test
-    public void serializationNoDefaultPrioritySpecified()
-    {
-        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge4.json");
-
-        Assert.assertEquals(DESCRIPTION, deserializedChallenge.getDescription());
-        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
-        Assert.assertEquals(INSTRUCTION, deserializedChallenge.getInstruction());
-        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
-        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
-        Assert.assertNull(deserializedChallenge.getHighPriorityRule());
-        Assert.assertNull(deserializedChallenge.getMediumPriorityRule());
-        Assert.assertNull(deserializedChallenge.getLowPriorityRule());
-    }
-
-    /**
-     * Helper function to get a valid {@link Gson} component with the Challenge deserializer
-     * registered as a type adapter.
-     * 
-     * @return {@link Gson} object
-     */
-    private Gson getGson()
-    {
-        return new GsonBuilder().disableHtmlEscaping()
-                .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
-    }
-
-    /**
      * Helper function that converts the resource file into a {@link Challenge}
-     * 
+     *
      * @param resource
      *            The path to the resource file
      * @return A {@link Challenge} object representing the provided resource.
@@ -151,5 +139,17 @@ public class ChallengeSerializationTest
         final ClassResource challengeResource = new ClassResource(resource);
         final JsonObject challengeJSON = challengeResource.getJSONResourceObject(JsonObject.class);
         return getGson().fromJson(challengeJSON, Challenge.class);
+    }
+
+    /**
+     * Helper function to get a valid {@link Gson} component with the Challenge deserializer
+     * registered as a type adapter.
+     *
+     * @return {@link Gson} object
+     */
+    private Gson getGson()
+    {
+        return new GsonBuilder().disableHtmlEscaping()
+                .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
     }
 }

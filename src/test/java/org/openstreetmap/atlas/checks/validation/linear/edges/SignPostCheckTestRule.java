@@ -573,9 +573,24 @@ public class SignPostCheckTestRule extends CoreTestRule
         return this.motorroadPrimaryLinkMissingJunctionAndDestinationAtlas;
     }
 
+    public Atlas motorwayMotorwayLinkBranchMissingDestinationAtlas()
+    {
+        return this.motorwayMotorwayLinkBranchMissingDestinationAtlas;
+    }
+
     public Atlas motorwayMotorwayLinkMissingJunctionAndDestinationAtlas()
     {
         return this.motorwayMotorwayLinkMissingJunctionAndDestinationAtlas;
+    }
+
+    public Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas()
+    {
+        return this.motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas;
+    }
+
+    public Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationAtlas()
+    {
+        return this.motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationAtlas;
     }
 
     public Atlas motorwayMotorwayLinkWithJunctionAndDestinationAtlas()
@@ -653,28 +668,13 @@ public class SignPostCheckTestRule extends CoreTestRule
         return this.trunkTrunkLinkMissingJunctionAndDestinationAtlas;
     }
 
-    public Atlas unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas()
-    {
-        return this.unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas;
-    }
-
-    public Atlas motorwayMotorwayLinkBranchMissingDestinationAtlas()
-    {
-        return this.motorwayMotorwayLinkBranchMissingDestinationAtlas;
-    }
-
-    public Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas()
-    {
-        return this.motorwayMotorwayLinkTwoWayBranchMissingDestinationAtlas;
-    }
-
-    public Atlas motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationAtlas()
-    {
-        return this.motorwayMotorwayLinkTwoWayBranchMissingDestinationRelationAtlas;
-    }
-
     public Atlas twoWayTrunksUTurnMissingJunctionAndDestinationAtlas()
     {
         return this.twoWayTrunksUTurnMissingJunctionAndDestinationAtlas;
+    }
+
+    public Atlas unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas()
+    {
+        return this.unclassifiedPrimaryLinkMissingJunctionAndDestinationAtlas;
     }
 }
