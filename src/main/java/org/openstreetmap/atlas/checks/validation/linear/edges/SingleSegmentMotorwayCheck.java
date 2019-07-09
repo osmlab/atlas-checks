@@ -8,6 +8,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
@@ -67,12 +68,13 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (((Edge) object).connectedEdges().stream().filter(Edge::isMasterEdge)
+        final Edge edge = (Edge) object;
+        if (edge.connectedEdges().stream().filter(Edge::isMasterEdge)
                 .noneMatch(this::isMotorwayNotRoundabout))
         {
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            this.markAsFlagged(edge.getOsmIdentifier());
+            return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
+                    this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
         return Optional.empty();
     }

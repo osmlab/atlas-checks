@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
@@ -33,7 +34,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author bbreithaupt
  */
 
-public class InvalidAccessTagCheck extends BaseCheck
+public class InvalidAccessTagCheck extends BaseCheck<Long>
 {
 
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.RESIDENTIAL.toString();
@@ -89,8 +90,15 @@ public class InvalidAccessTagCheck extends BaseCheck
         if (!isInMilitaryArea((LineItem) object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+
+            // If this is an Edge, grab all edges from the original way.
+            final String instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
+            if (object instanceof Edge)
+            {
+                return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                        instruction));
+            }
+            return Optional.of(this.createFlag(object, instruction));
         }
         return Optional.empty();
     }
