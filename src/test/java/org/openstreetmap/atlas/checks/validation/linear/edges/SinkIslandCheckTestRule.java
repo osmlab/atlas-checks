@@ -41,76 +41,6 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     private static final String TEST_8 = "37.324233,-122.003467";
     private static final String TEST_9 = "56.3097870, 9.1207824";
 
-    public Atlas getEdgeConnectedToPedestrianNetwork()
-    {
-        return this.pedestrianNetwork;
-    }
-
-    public Atlas getEdgeWithinAreaWithAmenityTag()
-    {
-        return this.edgeWithinAreaWithAmenityTag;
-    }
-
-    public Atlas getEdgesEndingInBuilding()
-    {
-        return this.edgesEndingInBuildingAtlas;
-    }
-
-    public Atlas getEdgesWithinAirport()
-    {
-        return this.edgesWithinAirportAtlas;
-    }
-
-    public Atlas getInvalidEdges()
-    {
-        return this.invalidEdges;
-    }
-
-    public Atlas getNonCarNavigableEdges()
-    {
-        return this.nonCarNavigableEdgesAtlas;
-    }
-
-    public Atlas getParkingGarageEntranceOrExit()
-    {
-        return this.parkingGarageEntranceOrExitAtlas;
-    }
-
-    public Atlas getServiceSinkIsland()
-    {
-        return this.serviceSinkIsland;
-    }
-
-    public Atlas getSingleEdgeAtlas()
-    {
-        return this.singleEdgeAtlas;
-    }
-
-    public Atlas getSingleEdgeWithAmenityAtlas()
-    {
-        return this.singleEdgeWithAmenityAtlas;
-    }
-
-    public Atlas getTestAtlas()
-    {
-        return this.testAtlas;
-    }
-
-    public Atlas getTrackAndPrimarySinkIsland()
-    {
-        return this.trackAndHighwaySinkIsland;
-    }
-
-    public Atlas getTrackSinkIsland()
-    {
-        return this.trackSinkIsland;
-    }
-
-    public Atlas getTwoEdgesWithAmenityAtlas()
-    {
-        return this.twoEdgesWithAmenityAtlas;
-    }
-
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_3)),
             @Node(coordinates = @Loc(value = TEST_2)), @Node(coordinates = @Loc(value = TEST_6)),
             @Node(coordinates = @Loc(value = TEST_7)), @Node(coordinates = @Loc(value = TEST_4)),
@@ -259,4 +189,74 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                             @Edge(id = "1", coordinates = { @Loc(value = TEST_13),
                                     @Loc(value = TEST_14) }, tags = { "highway=service" }) })
     private Atlas edgesWithinAirportAtlas;
+
+    public Atlas getEdgeConnectedToPedestrianNetwork()
+    {
+        return this.pedestrianNetwork;
+    }
+
+    public Atlas getEdgeWithinAreaWithAmenityTag()
+    {
+        return this.edgeWithinAreaWithAmenityTag;
+    }
+
+    public Atlas getEdgesEndingInBuilding()
+    {
+        return this.edgesEndingInBuildingAtlas;
+    }
+
+    public Atlas getEdgesWithinAirport()
+    {
+        return this.edgesWithinAirportAtlas;
+    }
+
+    public Atlas getInvalidEdges()
+    {
+        return this.invalidEdges;
+    }
+
+    public Atlas getNonCarNavigableEdges()
+    {
+        return this.nonCarNavigableEdgesAtlas;
+    }
+
+    public Atlas getParkingGarageEntranceOrExit()
+    {
+        return this.parkingGarageEntranceOrExitAtlas;
+    }
+
+    public Atlas getServiceSinkIsland()
+    {
+        return this.serviceSinkIsland;
+    }
+
+    public Atlas getSingleEdgeAtlas()
+    {
+        return this.singleEdgeAtlas;
+    }
+
+    public Atlas getSingleEdgeWithAmenityAtlas()
+    {
+        return this.singleEdgeWithAmenityAtlas;
+    }
+
+    public Atlas getTestAtlas()
+    {
+        return this.testAtlas;
+    }
+
+    public Atlas getTrackAndPrimarySinkIsland()
+    {
+        return this.trackAndHighwaySinkIsland;
+    }
+
+    public Atlas getTrackSinkIsland()
+    {
+        return this.trackSinkIsland;
+    }
+
+    public Atlas getTwoEdgesWithAmenityAtlas()
+    {
+        return this.twoEdgesWithAmenityAtlas;
+    }
 }

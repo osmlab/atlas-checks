@@ -56,6 +56,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
             HighwayTag.class, HighwayTag.SERVICE);
     private static final long TREE_SIZE_DEFAULT = 50;
     private static final long serialVersionUID = -1432150496331502258L;
+    private final HighwayTag minimumHighwayType;
+    private final int storeSize;
+    private final int treeSize;
 
     /**
      * Default constructor
@@ -324,8 +327,4 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
     }
-
-    private final int storeSize;
-    private final int treeSize;
-    private final HighwayTag minimumHighwayType;
 }
