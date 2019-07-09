@@ -25,12 +25,6 @@ public class DuplicatePointCheck extends BaseCheck<Location>
             .asList("Nodes {0} are duplicates at {1}");
     private static final long serialVersionUID = 8624313405718452123L;
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
     /**
      * Default constructor
      *
@@ -66,5 +60,11 @@ public class DuplicatePointCheck extends BaseCheck<Location>
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 }

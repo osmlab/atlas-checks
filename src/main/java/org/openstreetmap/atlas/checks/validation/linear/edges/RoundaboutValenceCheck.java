@@ -43,12 +43,6 @@ public class RoundaboutValenceCheck extends BaseCheck
     private static final double LOWER_VALENCE_THRESHOLD_DEFAULT = 2.0;
     private final double minimumValence;
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
     public RoundaboutValenceCheck(final Configuration configuration)
     {
         super(configuration);
@@ -133,6 +127,12 @@ public class RoundaboutValenceCheck extends BaseCheck
             return Optional.of(flag);
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**

@@ -25,14 +25,14 @@ public class DuplicatePointCheckTestRule extends CoreTestRule
                     @Point(id = "3", coordinates = @Loc(value = TEST_1)) })
     private Atlas duplicatePointAtlas;
 
-    public Atlas singlePointAtlas()
-    {
-        return this.singlePointAtlas;
-    }
-
     public Atlas duplicatePointAtlas()
     {
         return this.duplicatePointAtlas;
+    }
+
+    public Atlas singlePointAtlas()
+    {
+        return this.singlePointAtlas;
     }
 
 }

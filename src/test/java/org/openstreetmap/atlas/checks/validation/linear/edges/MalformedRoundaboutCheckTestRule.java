@@ -516,9 +516,29 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
         return this.clockwiseRoundaboutLeftDrivingAtlas;
     }
 
+    public Atlas clockwiseRoundaboutLeftDrivingConcaveAtlas()
+    {
+        return this.clockwiseRoundaboutLeftDrivingConcaveAtlas;
+    }
+
+    public Atlas clockwiseRoundaboutLeftDrivingMissingTagAtlas()
+    {
+        return this.clockwiseRoundaboutLeftDrivingMissingTagAtlas;
+    }
+
     public Atlas clockwiseRoundaboutRightDrivingAtlas()
     {
         return this.clockwiseRoundaboutRightDrivingAtlas;
+    }
+
+    public Atlas counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas()
+    {
+        return this.counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas;
+    }
+
+    public Atlas counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas()
+    {
+        return this.counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas;
     }
 
     public Atlas counterClockwiseRoundaboutLeftDrivingAtlas()
@@ -531,34 +551,9 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
         return this.counterClockwiseRoundaboutRightDrivingAtlas;
     }
 
-    public Atlas multiDirectionalRoundaboutAtlas()
+    public Atlas counterClockwiseRoundaboutRightDrivingCyclewayAtlas()
     {
-        return this.multiDirectionalRoundaboutAtlas;
-    }
-
-    public Atlas clockwiseRoundaboutLeftDrivingMissingTagAtlas()
-    {
-        return this.clockwiseRoundaboutLeftDrivingMissingTagAtlas;
-    }
-
-    public Atlas counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas()
-    {
-        return this.counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas;
-    }
-
-    public Atlas counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas()
-    {
-        return this.counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas;
-    }
-
-    public Atlas counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas()
-    {
-        return this.counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas;
-    }
-
-    public Atlas counterClockwiseRoundaboutRightDrivingEnclosedPathAtlas()
-    {
-        return this.counterClockwiseRoundaboutRightDrivingEnclosedPathAtlas;
+        return this.counterClockwiseRoundaboutRightDrivingCyclewayAtlas;
     }
 
     public Atlas counterClockwiseRoundaboutRightDrivingEnclosedBridgeAtlas()
@@ -566,19 +561,9 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
         return this.counterClockwiseRoundaboutRightDrivingEnclosedBridgeAtlas;
     }
 
-    public Atlas counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas()
+    public Atlas counterClockwiseRoundaboutRightDrivingEnclosedPathAtlas()
     {
-        return this.counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas;
-    }
-
-    public Atlas counterClockwiseRoundaboutRightDrivingOneWayNoAtlas()
-    {
-        return this.counterClockwiseRoundaboutRightDrivingOneWayNoAtlas;
-    }
-
-    public Atlas clockwiseRoundaboutLeftDrivingConcaveAtlas()
-    {
-        return this.clockwiseRoundaboutLeftDrivingConcaveAtlas;
+        return this.counterClockwiseRoundaboutRightDrivingEnclosedPathAtlas;
     }
 
     public Atlas counterClockwiseRoundaboutRightDrivingNonCarNavigableAtlas()
@@ -586,8 +571,23 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
         return this.counterClockwiseRoundaboutRightDrivingNonCarNavigableAtlas;
     }
 
-    public Atlas counterClockwiseRoundaboutRightDrivingCyclewayAtlas()
+    public Atlas counterClockwiseRoundaboutRightDrivingOneWayNoAtlas()
     {
-        return this.counterClockwiseRoundaboutRightDrivingCyclewayAtlas;
+        return this.counterClockwiseRoundaboutRightDrivingOneWayNoAtlas;
+    }
+
+    public Atlas counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas()
+    {
+        return this.counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas;
+    }
+
+    public Atlas counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas()
+    {
+        return this.counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas;
+    }
+
+    public Atlas multiDirectionalRoundaboutAtlas()
+    {
+        return this.multiDirectionalRoundaboutAtlas;
     }
 }

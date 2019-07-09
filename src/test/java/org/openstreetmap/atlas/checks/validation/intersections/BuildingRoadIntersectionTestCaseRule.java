@@ -257,9 +257,34 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
                             @Loc(value = TEST_6) }, tags = { "highway=steps", "building=house" }) })
     private Atlas corewayIntersectionAtlas;
 
+    public Atlas getAtlas()
+    {
+        return this.atlas;
+    }
+
     public Atlas getCorewayIntersectionAtlas()
     {
         return this.corewayIntersectionAtlas;
+    }
+
+    public Atlas getCoveredAtlas()
+    {
+        return this.coveredAtlas;
+    }
+
+    public Atlas getEdgeAreaYesAtlas()
+    {
+        return this.edgeAreaYesAtlas;
+    }
+
+    public Atlas getEdgeHighWayServiceAtlas()
+    {
+        return this.edgeHighWayServiceAtlas;
+    }
+
+    public Atlas getEdgeIndoorYesAtlas()
+    {
+        return this.edgeIndoorYesAtlas;
     }
 
     public Atlas getIgnoredNodesWithinEdgeAtlas()
@@ -272,38 +297,13 @@ public class BuildingRoadIntersectionTestCaseRule extends CoreTestRule
         return this.ignoredPointsWithinBuildingAtlas;
     }
 
-    public Atlas getAtlas()
-    {
-        return this.atlas;
-    }
-
-    public Atlas getCoveredAtlas()
-    {
-        return this.coveredAtlas;
-    }
-
-    public Atlas getTunnelBuildingIntersect()
-    {
-        return this.tunnelBuildingIntersect;
-    }
-
     public Atlas getLayeredAtlas()
     {
         return this.layered;
     }
 
-    public Atlas getEdgeAreaYesAtlas()
+    public Atlas getTunnelBuildingIntersect()
     {
-        return this.edgeAreaYesAtlas;
-    }
-
-    public Atlas getEdgeIndoorYesAtlas()
-    {
-        return this.edgeIndoorYesAtlas;
-    }
-
-    public Atlas getEdgeHighWayServiceAtlas()
-    {
-        return this.edgeHighWayServiceAtlas;
+        return this.tunnelBuildingIntersect;
     }
 }

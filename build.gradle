@@ -41,7 +41,7 @@ repositories
 
 configurations
 {
-    all
+    compile
     {
         resolutionStrategy
         {
@@ -53,13 +53,27 @@ configurations
             force 'org.xerial.snappy:snappy-java:1.1.1.6'
 
             // Force the version compatible with the latest version
-            // of Spark brought in by atlas generator 
+            // of Spark brought in by atlas generator
             force 'com.fasterxml.jackson.core:jackson-core:2.9.8'
             force 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
         }
     }
     shaded
     {
+        resolutionStrategy
+        {
+            force packages.atlas
+            force packages.atlas_generator
+
+            // Snappy 1.1.1.6 is the one that has the proper .so libs.
+            // https://github.com/xerial/snappy-java/issues/6
+            force 'org.xerial.snappy:snappy-java:1.1.1.6'
+
+            // Force the version compatible with the latest version
+            // of Spark brought in by atlas generator
+            force 'com.fasterxml.jackson.core:jackson-core:2.9.8'
+            force 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+        }
         // Hadoop and Spark are way too fat.
         exclude group: 'org.apache.hadoop'
         exclude group: 'org.apache.spark'
@@ -78,6 +92,9 @@ dependencies
     compile packages.postgis
     compile packages.postgres
     compile packages.spring
+
+    checkstyle packages.checkstyle
+    checkstyle packages.atlas_checkstyle
 
     shaded project.configurations.getByName('compile')
 }

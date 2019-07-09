@@ -35,6 +35,23 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     private static final EnumSet<HighwayTag> VALID_HIGHWAY_TAGS = EnumSet.of(HighwayTag.SERVICES,
             HighwayTag.SERVICE, HighwayTag.REST_AREA, HighwayTag.PEDESTRIAN, HighwayTag.PLATFORM);
 
+    /**
+     * An object is not allowed to have a highway tag that is not in VALID_HIGHWAY_TAGS if it also
+     * has an area=yes tag
+     *
+     * @param object
+     *            the object in question
+     * @param tag
+     *            the object's highway tag
+     * @return true if the object has an invalid highway tag and an area=yes tag
+     */
+    static boolean isUnacceptableAreaHighwayTagCombination(final AtlasObject object,
+            final HighwayTag tag)
+    {
+        return !VALID_HIGHWAY_TAGS.contains(tag)
+                && Validators.isOfType(object, AreaTag.class, AreaTag.YES);
+    }
+
     public AreasWithHighwayTagCheck(final Configuration configuration)
     {
         super(configuration);
@@ -89,22 +106,5 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
-    }
-
-    /**
-     * An object is not allowed to have a highway tag that is not in VALID_HIGHWAY_TAGS if it also
-     * has an area=yes tag
-     * 
-     * @param object
-     *            the object in question
-     * @param tag
-     *            the object's highway tag
-     * @return true if the object has an invalid highway tag and an area=yes tag
-     */
-    static boolean isUnacceptableAreaHighwayTagCombination(final AtlasObject object,
-            final HighwayTag tag)
-    {
-        return !VALID_HIGHWAY_TAGS.contains(tag)
-                && Validators.isOfType(object, AreaTag.class, AreaTag.YES);
     }
 }
