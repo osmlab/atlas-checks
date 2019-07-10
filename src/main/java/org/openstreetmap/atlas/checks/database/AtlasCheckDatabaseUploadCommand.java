@@ -11,7 +11,6 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlagDeserializer;
-import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
@@ -26,10 +25,11 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import com.google.gson.*;
 
 /**
- * Given a directory of log files created by atlas-checks, upload those files to MapRoulette.
  *
- * @author nachtm
- * @author bbreithaupt
+ * Upload Atlas Checks flags into a Postgres database.
+ *
+ * @author danielbaah
+ *
  */
 public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsCommand
 {
@@ -298,6 +298,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
             try
             {
                 databaseConnection.getDatabaseConnection().createStatement().execute(query);
+                logger.info("Successfully created database schema.");
             }
             catch (SQLException error)
             {
