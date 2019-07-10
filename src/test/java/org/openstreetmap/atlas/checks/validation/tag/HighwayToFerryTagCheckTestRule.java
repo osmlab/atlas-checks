@@ -139,11 +139,6 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
 
     private Atlas minimumHighwayAtlas;
 
-    public Atlas getSameFerryHighwayAtlas()
-    {
-        return this.sameFerryHighwayTagsAtlas;
-    }
-
     public Atlas getDifferentFerryHighwayAtlas()
     {
         return this.differentFerryHighwayTagsAtlas;
@@ -154,13 +149,18 @@ public class HighwayToFerryTagCheckTestRule extends CoreTestRule
         return this.highwayAtlas;
     }
 
-    public Atlas getValidAtlas()
-    {
-        return this.validAtlas;
-    }
-
     public Atlas getMinimumHighwayAtlas()
     {
         return this.minimumHighwayAtlas;
+    }
+
+    public Atlas getSameFerryHighwayAtlas()
+    {
+        return this.sameFerryHighwayTagsAtlas;
+    }
+
+    public Atlas getValidAtlas()
+    {
+        return this.validAtlas;
     }
 }

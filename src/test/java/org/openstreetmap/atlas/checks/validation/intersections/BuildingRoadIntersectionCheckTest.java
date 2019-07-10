@@ -51,6 +51,60 @@ public class BuildingRoadIntersectionCheckTest
         this.verifier.verifyExpectedSize(0);
     }
 
+    @Test
+    public void testEdgeAreaYesAtlas()
+    {
+        this.verifier.actual(this.setup.getEdgeAreaYesAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testEdgeHighWayServiceAtlas()
+    {
+        this.verifier.actual(this.setup.getEdgeHighWayServiceAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testEdgeIndoorYesAtlas()
+    {
+        this.verifier.actual(this.setup.getEdgeIndoorYesAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testHighwayFilterConfig()
+    {
+        this.verifier.actual(this.setup.getCorewayIntersectionAtlas(), highwayFilterCheck);
+        this.verifier.verifyExpectedSize(2);
+    }
+
+    @Test
+    public void testIgnoredNodesWithinEdgeAtlas()
+    {
+        this.verifier.actual(this.setup.getIgnoredNodesWithinEdgeAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testIgnoredPointsWithinBuildingAtlas()
+    {
+        this.verifier.actual(this.setup.getIgnoredPointsWithinBuildingAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    /**
+     * Unit test to make sure that when layer tag is used on highways that they are handled
+     * properly. And so if highway layer tag = -1 then it does not intersect with the building. As
+     * in this particular case it goes under it.
+     */
+    @Test
+    public void testLayered()
+    {
+        this.verifier.actual(this.setup.getLayeredAtlas(), check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
     /**
      * Test to confirm the locality functionality of the check. Changing the instruction to spanish.
      */
@@ -77,59 +131,5 @@ public class BuildingRoadIntersectionCheckTest
     {
         this.verifier.actual(this.setup.getTunnelBuildingIntersect(), check);
         this.verifier.verifyExpectedSize(0);
-    }
-
-    /**
-     * Unit test to make sure that when layer tag is used on highways that they are handled
-     * properly. And so if highway layer tag = -1 then it does not intersect with the building. As
-     * in this particular case it goes under it.
-     */
-    @Test
-    public void testLayered()
-    {
-        this.verifier.actual(this.setup.getLayeredAtlas(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testEdgeAreaYesAtlas()
-    {
-        this.verifier.actual(this.setup.getEdgeAreaYesAtlas(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testEdgeIndoorYesAtlas()
-    {
-        this.verifier.actual(this.setup.getEdgeIndoorYesAtlas(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testEdgeHighWayServiceAtlas()
-    {
-        this.verifier.actual(this.setup.getEdgeHighWayServiceAtlas(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testIgnoredPointsWithinBuildingAtlas()
-    {
-        this.verifier.actual(this.setup.getIgnoredPointsWithinBuildingAtlas(), check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testIgnoredNodesWithinEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.getIgnoredNodesWithinEdgeAtlas(), check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testHighwayFilterConfig()
-    {
-        this.verifier.actual(this.setup.getCorewayIntersectionAtlas(), highwayFilterCheck);
-        this.verifier.verifyExpectedSize(2);
     }
 }

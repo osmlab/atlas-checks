@@ -27,17 +27,18 @@ public class OneMemberRelationCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void testValidRelation()
-    {
-        this.verifier.actual(this.setup.getValidRelation(), check);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
     public void testOneMemberRelation()
     {
         this.verifier.actual(this.setup.getOneMemberRelation(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testOneMemberRelationMultipolygonConfig()
+    {
+        this.verifier.actual(this.setup.getOneMemberRelationMultipolygonOuter(),
+                noPeopleOrMultipolygons);
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -55,13 +56,6 @@ public class OneMemberRelationCheckTest
     }
 
     @Test
-    public void testValidRelationMultipolygon()
-    {
-        this.verifier.actual(this.setup.getValidRelationMultipolygon(), check);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
     public void testOneMemberRelationRelation()
     {
         this.verifier.actual(this.setup.oneMemberRelationRelationAtlas(), check);
@@ -70,11 +64,17 @@ public class OneMemberRelationCheckTest
     }
 
     @Test
-    public void testOneMemberRelationMultipolygonConfig()
+    public void testValidRelation()
     {
-        this.verifier.actual(this.setup.getOneMemberRelationMultipolygonOuter(),
-                noPeopleOrMultipolygons);
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.getValidRelation(), check);
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void testValidRelationMultipolygon()
+    {
+        this.verifier.actual(this.setup.getValidRelationMultipolygon(), check);
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
 }

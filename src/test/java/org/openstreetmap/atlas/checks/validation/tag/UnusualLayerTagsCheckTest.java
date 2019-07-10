@@ -42,6 +42,18 @@ public class UnusualLayerTagsCheckTest
     }
 
     @Test
+    public void testInvalidBridgeTunnelTagLayerEdgeAtlas()
+    {
+        this.verifier.actual(this.setup.whitespaceBridgeRoundaboutLayerTagEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(
+                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
+        });
+    }
+
+    @Test
     public void testInvalidJunctionLayerTagEdge()
     {
         this.verifier.actual(this.setup.invalidLayerTagJunctionEdgeAtlas(), check);
@@ -208,6 +220,18 @@ public class UnusualLayerTagsCheckTest
     {
         this.verifier.actual(this.setup.missingLayerTagBridgeEdgeAtlas(), check);
         this.verifier.verifyNotEmpty();
+    }
+
+    @Test
+    public void testMissingBridgeTagJunctionLayerEdgeAtlas()
+    {
+        this.verifier.actual(this.setup.missingBridgeTagJunctionLayerEdgeAtlas(), check);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(
+                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
+        });
     }
 
     @Test
@@ -411,6 +435,20 @@ public class UnusualLayerTagsCheckTest
     }
 
     @Test
+    public void testValidBuildingPassageTunnelLayerEdgeAtlas()
+    {
+        this.verifier.actual(this.setup.validBuildingPassageTunnelLayerEdgeAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidLayerTagRoundaboutEdgeAtlas()
+    {
+        this.verifier.actual(this.setup.validLayerTagRoundaboutEdgeAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testWhitespaceBridgeLayerTagEdge()
     {
         this.verifier.actual(this.setup.whitespaceLayerTagBridgeEdgeAtlas(), check);
@@ -503,43 +541,5 @@ public class UnusualLayerTagsCheckTest
             Assert.assertTrue(
                     flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
         });
-    }
-
-    @Test
-    public void testValidLayerTagRoundaboutEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.validLayerTagRoundaboutEdgeAtlas(), check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testMissingBridgeTagJunctionLayerEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.missingBridgeTagJunctionLayerEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testInvalidBridgeTunnelTagLayerEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.whitespaceBridgeRoundaboutLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testValidBuildingPassageTunnelLayerEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.validBuildingPassageTunnelLayerEdgeAtlas(), check);
-        this.verifier.verifyEmpty();
     }
 }

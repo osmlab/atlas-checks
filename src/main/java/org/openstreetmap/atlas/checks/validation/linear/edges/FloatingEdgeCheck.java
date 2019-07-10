@@ -38,12 +38,12 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList("Way {0,number,#} is floating. It has no incoming or outgoing ways.");
     private static final long serialVersionUID = -6867668561001117411L;
+    // The default value for the minimum highway type
+    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
     // class variable to store the maximum distance for the floating road
     private final Distance maximumDistance;
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
-    // The default value for the minimum highway type
-    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
     private final HighwayTag highwayMinimum;
 
     /**
@@ -155,22 +155,6 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * A {@link SyntheticBoundaryNodeTag} is a special tag that is placed on any tag that has been
-     * cut on the border of the particular Atlas file or shard that you are processing. The cutting
-     * process has the potential to create floating edges at the border that are in reality not
-     * floating edges.
-     *
-     * @param edge
-     *            the edge that is currently be processed
-     * @return {@code true} if the edge contains a synthetic boundary tag
-     */
-    private boolean isNotOnSyntheticBoundary(final Edge edge)
-    {
-        return !(SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
-                || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end()));
-    }
-
-    /**
      * Checks if highway tag of given {@link AtlasObject} is of greater or equal priority than the
      * minimum highway type given in the configurable. If no value is given in configurable, the
      * default highway type of "SERVICE" will be set as minimum.
@@ -185,5 +169,21 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         final Optional<HighwayTag> highwayTagOfObject = HighwayTag.highwayTag(object);
         return highwayTagOfObject.isPresent()
                 && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.highwayMinimum);
+    }
+
+    /**
+     * A {@link SyntheticBoundaryNodeTag} is a special tag that is placed on any tag that has been
+     * cut on the border of the particular Atlas file or shard that you are processing. The cutting
+     * process has the potential to create floating edges at the border that are in reality not
+     * floating edges.
+     *
+     * @param edge
+     *            the edge that is currently be processed
+     * @return {@code true} if the edge contains a synthetic boundary tag
+     */
+    private boolean isNotOnSyntheticBoundary(final Edge edge)
+    {
+        return !(SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
+                || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end()));
     }
 }

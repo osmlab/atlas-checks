@@ -29,18 +29,12 @@ public class StreetNameIntegersOnlyCheckTest
     }
 
     @Test
-    public void motorwayWithNonIntegerNameTagTest()
+    public void motorwayWithMixedNameTagIntegerNameLeftTagOnlyCheckNameTest()
     {
-        this.verifier.actual(this.setup.motorwayWithNonIntegerNameTagAtlas(),
-                new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
-    }
-
-    @Test
-    public void motorwayWithMixedNameTagTest()
-    {
-        this.verifier.actual(this.setup.motorwayWithMixedNameTagAtlas(),
-                new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTagAtlas(),
+                new StreetNameIntegersOnlyCheck(ConfigurationResolver
+                        .inlineConfiguration("{\"StreetNameIntegersOnlyCheck\": {\n"
+                                + "    \"name.keys.filter\":[\"name\"]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -53,12 +47,18 @@ public class StreetNameIntegersOnlyCheckTest
     }
 
     @Test
-    public void motorwayWithMixedNameTagIntegerNameLeftTagOnlyCheckNameTest()
+    public void motorwayWithMixedNameTagTest()
     {
-        this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTagAtlas(),
-                new StreetNameIntegersOnlyCheck(ConfigurationResolver
-                        .inlineConfiguration("{\"StreetNameIntegersOnlyCheck\": {\n"
-                                + "    \"name.keys.filter\":[\"name\"]}}")));
+        this.verifier.actual(this.setup.motorwayWithMixedNameTagAtlas(),
+                new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void motorwayWithNonIntegerNameTagTest()
+    {
+        this.verifier.actual(this.setup.motorwayWithNonIntegerNameTagAtlas(),
+                new StreetNameIntegersOnlyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }

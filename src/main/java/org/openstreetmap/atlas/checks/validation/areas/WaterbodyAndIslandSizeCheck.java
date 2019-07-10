@@ -35,13 +35,13 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
 {
 
     private static final long serialVersionUID = 4105386144665109331L;
-    private static String WATERBODY_INSTRUCTION = "Waterbody with OSM ID {0,number,#} has a surface"
+    private static final String WATERBODY_INSTRUCTION = "Waterbody with OSM ID {0,number,#} has a surface"
             + " area of {1,number,#.##} meters squared, which is outside of the expected surface area"
             + " range of {2} square meters to {3} square kilometers.";
-    private static String ISLAND_INSTRUCTION = "Island with OSM ID {0,number,#} has a surface area"
+    private static final String ISLAND_INSTRUCTION = "Island with OSM ID {0,number,#} has a surface area"
             + " of {1,number,#.##} meters squared, which is outside of the expected surface area "
             + "range of {2} square meters to {3} square kilometers.";
-    private static String ISLET_INSTRUCTION = "Islet with OSM ID {0,number,#} has an surface area "
+    private static final String ISLET_INSTRUCTION = "Islet with OSM ID {0,number,#} has an surface area "
             + "of {1,number,#.##} meters squared, which is outside of the expected surface area range"
             + " of {2} square meters to {3} square kilometers. Islets greater than {3} square "
             + "kilometers should likely be tagged as place=ISLAND.";
@@ -64,20 +64,14 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
     private static final Predicate<AtlasObject> IS_MULTIPOLYGON_WATER_RELATION = object -> Validators
             .isOfType(object, RelationTypeTag.class, RelationTypeTag.MULTIPOLYGON)
             && (Validators.isOfType(object, NaturalTag.class, NaturalTag.WATER));
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WATERBODY_INSTRUCTION,
+            ISLAND_INSTRUCTION, ISLET_INSTRUCTION);
     private final double waterbodyMinimumArea;
     private final double waterbodyMaximumArea;
     private final double islandMinimumArea;
     private final double islandMaximumArea;
     private final double isletMinimumArea;
     private final double isletMaximumArea;
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WATERBODY_INSTRUCTION,
-            ISLAND_INSTRUCTION, ISLET_INSTRUCTION);
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -205,22 +199,10 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
         return Optional.empty();
     }
 
-    /**
-     * Helper function for filtering invalid Relation members. Each Relation member must be an Area,
-     * have either an inner or outer role, and the inner role must not contain the natural=rock tag.
-     *
-     * @param member
-     *            - RelationMember
-     * @return true if member is valid
-     */
-    private boolean isValidMultiPolygonRelationMember(final RelationMember member)
+    @Override
+    protected List<String> getFallbackInstructions()
     {
-        return member.getEntity() instanceof Area
-                && !this.isFlagged(member.getEntity().getIdentifier())
-                && (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER)
-                        || (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_INNER)
-                                && !Validators.isOfType(member.getEntity(), NaturalTag.class,
-                                        NaturalTag.ROCK)));
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -271,5 +253,23 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck
         }
 
         return !flag.getFlaggedObjects().isEmpty() ? Optional.of(flag) : Optional.empty();
+    }
+
+    /**
+     * Helper function for filtering invalid Relation members. Each Relation member must be an Area,
+     * have either an inner or outer role, and the inner role must not contain the natural=rock tag.
+     *
+     * @param member
+     *            - RelationMember
+     * @return true if member is valid
+     */
+    private boolean isValidMultiPolygonRelationMember(final RelationMember member)
+    {
+        return member.getEntity() instanceof Area
+                && !this.isFlagged(member.getEntity().getIdentifier())
+                && (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER)
+                        || (member.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_INNER)
+                                && !Validators.isOfType(member.getEntity(), NaturalTag.class,
+                                        NaturalTag.ROCK)));
     }
 }

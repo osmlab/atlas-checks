@@ -140,6 +140,11 @@ public class DuplicateWaysCheckTestRule extends CoreTestRule
 
     private Atlas duplicateEdgeNoCoverageTwoEdges;
 
+    public Atlas duplicateEdgeCompleteCoverageThreeEdges()
+    {
+        return this.duplicateEdgeCompleteCoverageThreeEdges;
+    }
+
     public Atlas duplicateEdgeCompleteCoverageTwoEdges()
     {
         return this.duplicateEdgeCompleteCoverageTwoEdges;
@@ -150,9 +155,19 @@ public class DuplicateWaysCheckTestRule extends CoreTestRule
         return this.duplicateEdgeCompleteCoverageTwoEdgesArea;
     }
 
-    public Atlas duplicateEdgeCompleteCoverageThreeEdges()
+    public Atlas duplicateEdgeNoCoverageTwoEdges()
     {
-        return this.duplicateEdgeCompleteCoverageThreeEdges;
+        return this.duplicateEdgeNoCoverageTwoEdges;
+    }
+
+    public Atlas duplicateEdgePartialCoverageThreeEdges()
+    {
+        return this.duplicateEdgePartialCoverageThreeEdges;
+    }
+
+    public Atlas duplicateEdgePartialCoverageTwoEdges()
+    {
+        return this.duplicateEdgePartialCoverageTwoEdges;
     }
 
     public Atlas getDuplicateEdgeCompleteCoverageThreeEdgesAreaOneTag()
@@ -163,21 +178,6 @@ public class DuplicateWaysCheckTestRule extends CoreTestRule
     public Atlas getDuplicateEdgeCompleteCoverageThreeEdgesAreaTwoTag()
     {
         return this.duplicateEdgeCompleteCoverageThreeEdgesAreaTwoTag;
-    }
-
-    public Atlas duplicateEdgePartialCoverageTwoEdges()
-    {
-        return this.duplicateEdgePartialCoverageTwoEdges;
-    }
-
-    public Atlas duplicateEdgePartialCoverageThreeEdges()
-    {
-        return this.duplicateEdgePartialCoverageThreeEdges;
-    }
-
-    public Atlas duplicateEdgeNoCoverageTwoEdges()
-    {
-        return this.duplicateEdgeNoCoverageTwoEdges;
     }
 
 }

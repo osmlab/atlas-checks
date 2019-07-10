@@ -132,14 +132,9 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), tags = "highway=mini_roundabout") })
     private Atlas noRoadsAtlas;
 
-    public Atlas getTurningCircleAtlas()
+    public Atlas getNoRoadsAtlas()
     {
-        return this.turningCircleAtlas;
-    }
-
-    public Atlas getNotEnoughValenceAtlas()
-    {
-        return this.notEnoughValenceAtlas;
+        return this.noRoadsAtlas;
     }
 
     public Atlas getNoTurnsAtlas()
@@ -147,9 +142,14 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
         return this.noTurnsAtlas;
     }
 
-    public Atlas getValidRoundaboutAtlas()
+    public Atlas getNoTurnsWithDirectionAtlas()
     {
-        return this.validRoundaboutAtlas;
+        return this.noTurnsWithDirectionAtlas;
+    }
+
+    public Atlas getNotEnoughValenceAtlas()
+    {
+        return this.notEnoughValenceAtlas;
     }
 
     public Atlas getPedestrianRoundaboutAtlas()
@@ -157,18 +157,18 @@ public class InvalidMiniRoundaboutCheckTestRule extends CoreTestRule
         return this.pedestrianRoundaboutAtlas;
     }
 
-    public Atlas getNoRoadsAtlas()
+    public Atlas getTurningCircleAtlas()
     {
-        return this.noRoadsAtlas;
-    }
-
-    public Atlas getNoTurnsWithDirectionAtlas()
-    {
-        return this.noTurnsWithDirectionAtlas;
+        return this.turningCircleAtlas;
     }
 
     public Atlas getTurningCircleWithDirectionAtlas()
     {
         return this.turningCircleWithDirectionAtlas;
+    }
+
+    public Atlas getValidRoundaboutAtlas()
+    {
+        return this.validRoundaboutAtlas;
     }
 }

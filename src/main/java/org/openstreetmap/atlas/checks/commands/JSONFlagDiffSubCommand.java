@@ -28,6 +28,11 @@ import com.google.gson.JsonObject;
  */
 public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
 {
+    static final String CHECK_COUNT_FORMAT = "%s: %d%n";
+    // Atlas Checks' GeoJSON strings
+    static final String FEATURE_PROPERTIES = "feature_properties";
+    static final String GENERATOR = "generator";
+    static final String NAME = "name";
     private static final Command.Switch<File> REFERENCE_FILE_PARAMETER = new Command.Switch<>(
             "reference",
             "A file or directory of files containing atlas-checks flags to use as a baseline for comparison.",
@@ -39,21 +44,13 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
             "output",
             "A directory to place output log files in. If not included no outputs files will be written.",
             String::new, Command.Optionality.OPTIONAL);
-
-    static final String CHECK_COUNT_FORMAT = "%s: %d%n";
-
-    // Atlas Checks' GeoJSON strings
-    static final String FEATURE_PROPERTIES = "feature_properties";
-    static final String GENERATOR = "generator";
-    static final String NAME = "name";
-
     private final Gson gson = new Gson();
     private Map<String, Map<Set<String>, JsonObject>> reference = new HashMap<>();
     private Map<String, Map<Set<String>, JsonObject>> input = new HashMap<>();
 
-    private String commandName;
-    private String description;
-    private String fileExtension;
+    private final String commandName;
+    private final String description;
+    private final String fileExtension;
 
     public JSONFlagDiffSubCommand(final String name, final String description,
             final String fileExtension)
@@ -61,36 +58,6 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
         this.commandName = name;
         this.description = description;
         this.fileExtension = fileExtension;
-    }
-
-    @Override
-    public String getName()
-    {
-        return this.commandName;
-    }
-
-    @Override
-    public String getDescription()
-    {
-        return this.description;
-    }
-
-    @Override
-    public Command.SwitchList switches()
-    {
-        return new Command.SwitchList().with(REFERENCE_FILE_PARAMETER, INPUT_FILE_PARAMETER,
-                OUTPUT_FOLDER_PARAMETER);
-    }
-
-    @Override
-    public void usage(final PrintStream writer)
-    {
-        writer.print(
-                "-reference=path/to/first/flag/file,path/to/second/flag/file : file of flags to use as a baseline\n");
-        writer.print(
-                "-input=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from the baseline\n");
-        writer.print(
-                "-output=path/to/output/folder : optional directory to write output files to\n");
     }
 
     @Override
@@ -133,88 +100,35 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
         return 0;
     }
 
-    /**
-     * Given a folder, gathers all files that have a file extension matching {@link #fileExtension}.
-     *
-     * @param file
-     *            a folder with the files to gather.
-     * @return a {@link Set} of {@link File}s
-     */
-    private Set<File> getFilesOfType(final File file)
+    @Override
+    public String getDescription()
     {
-        final String fileName = file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
-                : file.getName();
-        if (FilenameUtils.getExtension(fileName).equalsIgnoreCase(this.fileExtension))
-        {
-            return Collections.singleton(file);
-        }
-        else if (file.isDirectory())
-        {
-            return file.listFilesRecursively().stream().filter(this::checkFileExtension)
-                    .collect(Collectors.toSet());
-        }
-        return new HashSet<>();
+        return this.description;
     }
 
-    /**
-     * Checks the file extension of the input file
-     *
-     * @param file
-     *            Input file
-     * @return true if the file has the given extension
-     */
-    private boolean checkFileExtension(final File file)
+    @Override
+    public String getName()
     {
-        return FilenameUtils.getExtension(
-                file.isGzipped() ? FilenameUtils.getBaseName(file.getName()) : file.getName())
-                .equalsIgnoreCase(this.fileExtension);
+        return this.commandName;
     }
 
-    /**
-     * Merges one 2d check and flags {@link HashMap} into another.
-     *
-     * @param put
-     *            a 2d check and flags {@link HashMap} that will be put into {@code place} to form
-     *            the output
-     * @param place
-     *            2d check and flags {@link HashMap} that will have {@code put} placed into it to
-     *            form the output
-     * @return a merged 2d check and flags {@link HashMap}
-     */
-    private Map<String, Map<Set<String>, JsonObject>> mergeMaps(
-            final Map<String, Map<Set<String>, JsonObject>> put,
-            final Map<String, Map<Set<String>, JsonObject>> place)
+    @Override
+    public Command.SwitchList switches()
     {
-        final Map<String, Map<Set<String>, JsonObject>> mergedMap = new HashMap<>(place);
-        put.forEach((check, flags) ->
-        {
-            mergedMap.putIfAbsent(check, new HashMap<>());
-            mergedMap.get(check).putAll(flags);
-        });
-        return mergedMap;
+        return new Command.SwitchList().with(REFERENCE_FILE_PARAMETER, INPUT_FILE_PARAMETER,
+                OUTPUT_FOLDER_PARAMETER);
     }
 
-    /**
-     * Gets a count of the {@link JsonObject}s a {@link Map} of {@link Set}s of {@link JsonObject}s.
-     *
-     * @param map
-     *            a {@link Map} of {@link Set}s of {@link JsonObject}s
-     * @return long count of {@link JsonObject}s
-     */
-    private long countMapValues(final Map<String, Set<JsonObject>> map)
+    @Override
+    public void usage(final PrintStream writer)
     {
-        return map.values().stream().mapToLong(Collection::size).sum();
+        writer.print(
+                "-reference=path/to/first/flag/file,path/to/second/flag/file : file of flags to use as a baseline\n");
+        writer.print(
+                "-input=path/to/first/flag/file,path/to/second/flag/file : file of flags to compare changes from the baseline\n");
+        writer.print(
+                "-output=path/to/output/folder : optional directory to write output files to\n");
     }
-
-    /**
-     * Parses an atlas-checks flag file and maps each flag to its id.
-     *
-     * @param file
-     *            {@link File} containing the flags
-     * @return a 2d {@link HashMap} containing a {@link HashMap} of {@link JsonObject}s mapped to
-     *         {@link String} feature ids, mapped to {@link String} check names.
-     */
-    protected abstract Map<String, Map<Set<String>, JsonObject>> mapFeatures(File file);
 
     /**
      * Takes two 2d {@link HashMap}s containing atlas-checks flags mapped by id mapped by check.
@@ -244,18 +158,33 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
-     * Writes a Set of geoJSON atlas-checks flags to a file.
+     * Getter for {@link #gson}
      *
-     * @param flags
-     *            {@link Set} of {@link JsonObject}s representing geoJSON flags
-     * @param output
-     *            {@link File} to output to
+     * @return {@link Gson}
      */
-    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
+    protected Gson getGson()
     {
-        final JsonWriter writer = new JsonWriter(output);
-        flags.values().stream().flatMap(Collection::stream).forEach(writer::writeLine);
-        writer.close();
+        return this.gson;
+    }
+
+    /**
+     * Getter for {@link #input}
+     *
+     * @return {@link HashMap}
+     */
+    protected Map<String, Map<Set<String>, JsonObject>> getInput()
+    {
+        return this.input;
+    }
+
+    /**
+     * Getter for {@link #reference}
+     *
+     * @return {@link HashMap}
+     */
+    protected Map<String, Map<Set<String>, JsonObject>> getReference()
+    {
+        return this.reference;
     }
 
     /**
@@ -274,32 +203,100 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     }
 
     /**
-     * Getter for {@link #gson}
+     * Parses an atlas-checks flag file and maps each flag to its id.
      *
-     * @return {@link Gson}
+     * @param file
+     *            {@link File} containing the flags
+     * @return a 2d {@link HashMap} containing a {@link HashMap} of {@link JsonObject}s mapped to
+     *         {@link String} feature ids, mapped to {@link String} check names.
      */
-    protected Gson getGson()
+    protected abstract Map<String, Map<Set<String>, JsonObject>> mapFeatures(File file);
+
+    /**
+     * Writes a Set of geoJSON atlas-checks flags to a file.
+     *
+     * @param flags
+     *            {@link Set} of {@link JsonObject}s representing geoJSON flags
+     * @param output
+     *            {@link File} to output to
+     */
+    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
     {
-        return this.gson;
+        final JsonWriter writer = new JsonWriter(output);
+        flags.values().stream().flatMap(Collection::stream).forEach(writer::writeLine);
+        writer.close();
     }
 
     /**
-     * Getter for {@link #reference}
+     * Checks the file extension of the input file
      *
-     * @return {@link HashMap}
+     * @param file
+     *            Input file
+     * @return true if the file has the given extension
      */
-    protected Map<String, Map<Set<String>, JsonObject>> getReference()
+    private boolean checkFileExtension(final File file)
     {
-        return this.reference;
+        return FilenameUtils.getExtension(
+                file.isGzipped() ? FilenameUtils.getBaseName(file.getName()) : file.getName())
+                .equalsIgnoreCase(this.fileExtension);
     }
 
     /**
-     * Getter for {@link #input}
+     * Gets a count of the {@link JsonObject}s a {@link Map} of {@link Set}s of {@link JsonObject}s.
      *
-     * @return {@link HashMap}
+     * @param map
+     *            a {@link Map} of {@link Set}s of {@link JsonObject}s
+     * @return long count of {@link JsonObject}s
      */
-    protected Map<String, Map<Set<String>, JsonObject>> getInput()
+    private long countMapValues(final Map<String, Set<JsonObject>> map)
     {
-        return this.input;
+        return map.values().stream().mapToLong(Collection::size).sum();
+    }
+
+    /**
+     * Given a folder, gathers all files that have a file extension matching {@link #fileExtension}.
+     *
+     * @param file
+     *            a folder with the files to gather.
+     * @return a {@link Set} of {@link File}s
+     */
+    private Set<File> getFilesOfType(final File file)
+    {
+        final String fileName = file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
+                : file.getName();
+        if (FilenameUtils.getExtension(fileName).equalsIgnoreCase(this.fileExtension))
+        {
+            return Collections.singleton(file);
+        }
+        else if (file.isDirectory())
+        {
+            return file.listFilesRecursively().stream().filter(this::checkFileExtension)
+                    .collect(Collectors.toSet());
+        }
+        return new HashSet<>();
+    }
+
+    /**
+     * Merges one 2d check and flags {@link HashMap} into another.
+     *
+     * @param put
+     *            a 2d check and flags {@link HashMap} that will be put into {@code place} to form
+     *            the output
+     * @param place
+     *            2d check and flags {@link HashMap} that will have {@code put} placed into it to
+     *            form the output
+     * @return a merged 2d check and flags {@link HashMap}
+     */
+    private Map<String, Map<Set<String>, JsonObject>> mergeMaps(
+            final Map<String, Map<Set<String>, JsonObject>> put,
+            final Map<String, Map<Set<String>, JsonObject>> place)
+    {
+        final Map<String, Map<Set<String>, JsonObject>> mergedMap = new HashMap<>(place);
+        put.forEach((check, flags) ->
+        {
+            mergedMap.putIfAbsent(check, new HashMap<>());
+            mergedMap.get(check).putAll(flags);
+        });
+        return mergedMap;
     }
 }
