@@ -1,13 +1,19 @@
 package org.openstreetmap.atlas.checks.database;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 public class DatabaseConnection
 {
@@ -26,7 +32,7 @@ public class DatabaseConnection
         {
             Class.forName("org.postgresql.Driver");
             this.databaseConnection = this.createConnectionUrl(databaseConnectionUrl);
-
+            this.createDatabaseSchema();
         }
         catch (ClassNotFoundException error)
         {
@@ -77,5 +83,34 @@ public class DatabaseConnection
     public String getSchema()
     {
         return schema;
+    }
+    
+    private boolean createDatabaseSchema()
+    {
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
+        final LineNumberReader lnReader = new LineNumberReader(reader);
+        String query;
+        try
+        {
+            query = ScriptUtils.readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
+                    ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
+            query = query.replace("{schema}", databaseConnection.getSchema().replace("-", "_"));
+            
+            Statement statement = this.databaseConnection.createStatement();
+            statement.execute(query);
+            logger.info("Successfully created database schema.");
+            
+            return true;
+        }
+        catch (final IOException e)
+        {
+            logger.error("Error thrown reading schema.sql", e);
+            return false;
+        }
+        catch (final SQLException error)
+        {
+            throw new CoreException("Error executing create schema script.", error);
+        }
     }
 }
