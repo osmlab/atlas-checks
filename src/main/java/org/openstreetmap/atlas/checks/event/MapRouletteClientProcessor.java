@@ -1,8 +1,9 @@
 package org.openstreetmap.atlas.checks.event;
 
 import java.util.HashMap;
+import java.util.Objects;
 
-import org.openstreetmap.atlas.checks.base.BaseCheck;
+import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
@@ -47,12 +48,14 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
      * Processor to add tasks to clients and send at the end
      * 
      * @param configuration
+     *            configuration for the MR connection
      * @param checks
+     *            potential CheckFlag source checks
      */
     public MapRouletteClientProcessor(final MapRouletteConfiguration configuration,
-            final Iterable<BaseCheck> checks)
+            final Iterable<? extends Check> checks)
     {
-        for (final BaseCheck check : checks)
+        for (final Check check : checks)
         {
             this.checkToClient.put(check.getCheckName(), MapRouletteClient.instance(configuration));
             this.checkToChallenge.put(check.getCheckName(), check.getChallenge());
@@ -65,9 +68,12 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
     {
         try
         {
-            this.checkToClient.get(event.getCheckName()).addTask(
-                    this.checkToChallenge.get(event.getCheckName()),
-                    event.getCheckFlag().getMapRouletteTask());
+            if (Objects.nonNull(this.checkToClient.get(event.getCheckName())))
+            {
+                this.checkToClient.get(event.getCheckName()).addTask(
+                        this.checkToChallenge.get(event.getCheckName()),
+                        event.getCheckFlag().getMapRouletteTask());
+            }
         }
         catch (final Exception e)
         {
@@ -123,9 +129,12 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
                     .format("MR upload pool for %s", String.join(",", this.checkToClient.keySet())),
                     timeNeeded))
             {
-                for (MapRouletteClient client : this.checkToClient.values())
+                for (final MapRouletteClient client : this.checkToClient.values())
                 {
-                    uploadPool.queue(() -> client.uploadTasks());
+                    if (Objects.nonNull(client))
+                    {
+                        uploadPool.queue(() -> client.uploadTasks());
+                    }
                 }
             }
             catch (final Exception e)

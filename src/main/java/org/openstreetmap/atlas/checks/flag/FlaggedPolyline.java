@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
@@ -108,6 +109,12 @@ public class FlaggedPolyline extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
+    }
+
+    @Override
+    protected Optional<AtlasObject> getObject()
+    {
+        return Optional.ofNullable(this.atlasItem);
     }
 
     private String initCountry(final AtlasObject object)

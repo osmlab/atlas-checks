@@ -6,6 +6,11 @@ import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.utility.ShardGroup;
 import org.openstreetmap.atlas.event.EventService;
 
+/**
+ * Meta data holder for sharded flag generation task
+ *
+ * @author jklamer
+ */
 public class ShardedCheckFlagsTask
 {
     private final String country;

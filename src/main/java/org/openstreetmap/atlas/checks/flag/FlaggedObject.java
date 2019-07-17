@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.flag;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
@@ -76,6 +77,7 @@ public abstract class FlaggedObject implements Serializable, Located
      */
     public abstract Iterable<Location> getGeometry();
 
+    protected abstract Optional<AtlasObject> getObject();
     /**
      * @return flag key-value property map
      */

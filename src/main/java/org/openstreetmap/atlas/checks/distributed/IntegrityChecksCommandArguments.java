@@ -32,6 +32,11 @@ import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Handles arguments and base functionality for integrity check sparkjobs generating commands
+ *
+ * @author jklamer
+ */
 public abstract class IntegrityChecksCommandArguments extends SparkJob
 {
 
@@ -51,6 +56,12 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
     private static final Pattern PBF_FILENAME_PATTERN = Pattern
             .compile("^([0-9]+)-([0-9]+)-([0-9]+)");
+    // Outputs
+    protected static final String OUTPUT_FLAG_FOLDER = "flag";
+    protected static final String OUTPUT_GEOJSON_FOLDER = "geojson";
+    protected static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
+    protected static final String OUTPUT_ATLAS_FOLDER = "atlas";
+    protected static final String OUTPUT_METRIC_FOLDER = "metric";
 
     @Deprecated
     protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
