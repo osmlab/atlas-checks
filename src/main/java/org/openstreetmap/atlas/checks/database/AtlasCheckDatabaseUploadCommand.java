@@ -8,11 +8,9 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
@@ -20,16 +18,13 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlagDeserializer;
-import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
-import org.openstreetmap.atlas.utilities.command.abstractcommand.CommandOutputDelegate;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
 import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
 import org.openstreetmap.atlas.utilities.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,19 +49,28 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int FIVE = 5;
-    private static final String DEFAULT_DB_SCHEMA = "public";
-    private static final String DEFAULT_DB_USER = "postgres";
-    private static final String DEFAULT_DB_PASSWORD = "";
+    
+    /**
+     * An enum containing the different types of input files that we can handle.
+     */
+    private enum OutputFileType
+    {
+        LOG,
+        COMPRESSED_LOG
+    }
     
     private static final Logger logger = LoggerFactory
             .getLogger(AtlasCheckDatabaseUploadCommand.class);
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
-    private final CommandOutputDelegate outputDelegate;
+    
+    public static void main(final String[] args)
+    {
+        new AtlasCheckDatabaseUploadCommand().runSubcommandAndExit(args);
+    }
     
     public AtlasCheckDatabaseUploadCommand()
     {
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
-        this.outputDelegate = this.getCommandOutputDelegate();
     }
 
     @Override
@@ -103,13 +107,14 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                         final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
 
                         final Optional<PreparedStatement> statement = this
-                                .executeFlagStatement(databaseConnection, flag);
+                                .getFlagStatement(databaseConnection, flag);
 
                         if (statement.isPresent())
                         {
                             try
                             {
                                 statement.get().execute();
+                                statement.get().close();
                                 final PreparedStatement sql = databaseConnection.prepareStatement(String
                                         .format("INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code) VALUES (%s,%s,?,?,?);",
                                                 "(SELECT id FROM flag WHERE flag_id = ? LIMIT 1)",
@@ -180,16 +185,62 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                 "A folder to output results to.", OptionOptionality.OPTIONAL, CHECKS_INPUT);
         super.registerOptionsAndArguments();
     }
-
-    /**
-     * An enum containing the different types of input files that we can handle.
-     */
-    private enum OutputFileType
+    
+    private void batchFlagFeatureStatement(final PreparedStatement sql, final CheckFlag flag,
+            final JsonObject feature)
     {
-        LOG,
-        COMPRESSED_LOG
+        
+        final JsonObject properties = feature.get(PROPERTIES).getAsJsonObject();
+        
+        try
+        {
+            sql.setString(1, flag.getIdentifier());
+            sql.setString(2, feature.get("geometry").toString());
+            sql.setLong(THREE, properties.get("osmIdentifier").getAsLong());
+            sql.setLong(FOUR, properties.get("identifier").getAsLong());
+            sql.setString(FIVE,
+                    properties.has("iso_country_code")
+                            ? properties.get("iso_country_code").getAsString()
+                            : "NA");
+            
+            sql.addBatch();
+        }
+        catch (final SQLException error)
+        {
+            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
+        }
+        
     }
-
+    
+    private Optional<PreparedStatement> getFlagStatement(final Connection database,
+            final CheckFlag flag)
+    {
+        try
+        {
+            final PreparedStatement sql = database.prepareStatement(
+                    "INSERT INTO flag(flag_id, check_name, instructions) VALUES (?,?,?);");
+            sql.setString(1, flag.getIdentifier());
+            sql.setString(2, flag.getChallengeName().orElse(""));
+            sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
+            
+            return Optional.of(sql);
+        }
+        catch (final SQLException error)
+        {
+            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
+        }
+        
+        return Optional.empty();
+    }
+    
+    private JsonArray filterOutPointsFromGeojson(final JsonArray features)
+    {
+        return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
+                .filter(feature -> feature.has(PROPERTIES)
+                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+    
     /**
      * Determine whether or not this file is something we can handle, and classify it accordingly.
      *
@@ -235,65 +286,5 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         }
         return new BufferedReader(new InputStreamReader(
                 new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
-    }
-
-    public static void main(final String[] args)
-    {
-        new AtlasCheckDatabaseUploadCommand().runSubcommandAndExit(args);
-    }
-
-    private Optional<PreparedStatement> executeFlagStatement(final Connection database,
-            final CheckFlag flag)
-    {
-        try
-        {
-            final PreparedStatement sql = database.prepareStatement(
-                    "INSERT INTO flag(flag_id, check_name, instructions) VALUES (?,?,?);");
-            sql.setString(1, flag.getIdentifier());
-            sql.setString(2, flag.getChallengeName().orElse(""));
-            sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
-
-            return Optional.of(sql);
-        }
-        catch (final SQLException error)
-        {
-            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
-        }
-
-        return Optional.empty();
-    }
-
-    private void batchFlagFeatureStatement(final PreparedStatement sql, final CheckFlag flag,
-            final JsonObject feature)
-    {
-
-        final JsonObject properties = feature.get(PROPERTIES).getAsJsonObject();
-
-        try
-        {
-            sql.setString(1, flag.getIdentifier());
-            sql.setString(2, feature.get("geometry").toString());
-            sql.setLong(THREE, properties.get("osmIdentifier").getAsLong());
-            sql.setLong(FOUR, properties.get("identifier").getAsLong());
-            sql.setString(FIVE,
-                    properties.has("iso_country_code")
-                            ? properties.get("iso_country_code").getAsString()
-                            : "NA");
-            
-            sql.addBatch();
-        }
-        catch (final SQLException error)
-        {
-            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
-        }
-
-    }
-
-    private JsonArray filterOutPointsFromGeojson(final JsonArray features)
-    {
-        return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
-                .filter(feature -> feature.has(PROPERTIES)
-                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
-                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 }
