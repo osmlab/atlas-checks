@@ -1,23 +1,30 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.atlas.CountrySpecificAtlasFilePathFilter;
+import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.SlippyTile;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
+import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.conversion.StringConverter;
@@ -160,5 +167,17 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
         });
 
         return countryShardMap;
+    }
+
+    protected static Iterable<AtlasObject> objectsToCheck(final Atlas atlas, final Check check)
+    {
+        return objectsToCheck(atlas, check, atlasEntity -> true);
+    }
+
+    protected static Iterable<AtlasObject> objectsToCheck(final Atlas atlas, final Check check,
+            final Predicate<AtlasEntity> geoFilter)
+    {
+        return new MultiIterable<AtlasObject>(Iterables.filter(atlas.entities(), geoFilter),
+                check.finder().map(finder -> finder.find(atlas)).orElse(Collections.emptyList()));
     }
 }

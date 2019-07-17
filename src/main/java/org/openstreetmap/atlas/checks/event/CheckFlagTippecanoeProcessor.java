@@ -46,7 +46,7 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
 
     @Override
     @Subscribe
-    public void process(final ShutdownEvent event)
+    public void process(final org.openstreetmap.atlas.event.ShutdownEvent event)
     {
         try
         {

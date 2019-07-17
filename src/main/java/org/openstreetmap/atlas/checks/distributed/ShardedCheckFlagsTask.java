@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.utility.ShardGroup;
+import org.openstreetmap.atlas.event.EventService;
 
 public class ShardedCheckFlagsTask
 {
@@ -22,6 +23,16 @@ public class ShardedCheckFlagsTask
     public String getCountry()
     {
         return this.country;
+    }
+
+    public String getUniqueTaskIdentifier()
+    {
+        return this.country + "_" + this.shardGroup.getName();
+    }
+
+    public EventService getEventService()
+    {
+        return EventService.get(this.getUniqueTaskIdentifier());
     }
 
     public ShardGroup getShardGroup()

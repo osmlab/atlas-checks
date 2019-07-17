@@ -38,7 +38,6 @@ import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.Finder;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
-import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
@@ -72,7 +71,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
             + FileSuffix.GZIP.toString();
     private static final String OUTPUT_METRIC_FOLDER = "metric";
 
-    private static final String METRICS_FILENAME = "check-run-time.csv";
+    public static final String METRICS_FILENAME = "check-run-time.csv";
     private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
 
     private static final long serialVersionUID = 2990087219645942330L;
@@ -112,9 +111,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 POOL_DURATION_BEFORE_KILL);
         checksToRun.stream().filter(check -> check.validCheckForCountry(country))
                 .forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
-                        new MultiIterable<>(atlas.items(), atlas.relations(),
-                                findComplexEntities(check, atlas)),
-                        MapRouletteClient.instance(configuration))));
+                        objectsToCheck(atlas, check), MapRouletteClient.instance(configuration))));
         checkExecutionPool.close();
     }
 
@@ -127,7 +124,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
      *            An {@link Atlas} object
      * @return An {@link Iterable} of {@link ComplexEntity}s
      */
-    private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
+    protected static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
             final Atlas atlas)
     {
         if (check.finder().isPresent())

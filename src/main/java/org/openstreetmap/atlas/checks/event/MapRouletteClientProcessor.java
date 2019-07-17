@@ -1,9 +1,8 @@
 package org.openstreetmap.atlas.checks.event;
 
-import com.codahale.metrics.Metric;
-import com.google.common.eventbus.Subscribe;
+import java.util.HashMap;
+
 import org.openstreetmap.atlas.checks.base.BaseCheck;
-import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
@@ -14,10 +13,11 @@ import org.openstreetmap.atlas.utilities.threads.Pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import com.google.common.eventbus.Subscribe;
 
 /**
- * A class that will handle the MapRouletteClient for every check that it is constructed with and will guarantee an attemped upload
+ * A class that will handle the MapRouletteClient for every check that it is constructed with and
+ * will guarantee an attemped upload
  *
  * @author jklamer
  */
@@ -45,10 +45,12 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
 
     /**
      * Processor to add tasks to clients and send at the end
+     * 
      * @param configuration
      * @param checks
      */
-    public MapRouletteClientProcessor(final MapRouletteConfiguration configuration, final Iterable<BaseCheck> checks)
+    public MapRouletteClientProcessor(final MapRouletteConfiguration configuration,
+            final Iterable<BaseCheck> checks)
     {
         for (final BaseCheck check : checks)
         {
@@ -63,7 +65,9 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
     {
         try
         {
-            this.checkToClient.get(event.getCheckName()).addTask(this.checkToChallenge.get(event.getCheckName()), event.getCheckFlag().getMapRouletteTask());
+            this.checkToClient.get(event.getCheckName()).addTask(
+                    this.checkToChallenge.get(event.getCheckName()),
+                    event.getCheckFlag().getMapRouletteTask());
         }
         catch (final Exception e)
         {
@@ -95,7 +99,6 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
             logger.trace(
                     "Ignoring upload to MapRoulette. Client was never initialized correctly. See beginning of log for more details.");
         }
-
     }
 
     @Subscribe
@@ -110,17 +113,25 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
      */
     protected void uploadAllRemainingTasks()
     {
-        if(!this.checkToClient.isEmpty())
+        if (!this.checkToClient.isEmpty())
         {
-            try (Pool uploadPool = new Pool(1,
-                    String.format("MR upload pool for %s (%s)", metricEvent.getName()),
-                    maxDurationForBatch()))
+            final Duration timeNeeded = this.checkToClient.values().stream()
+                    .map(MapRouletteClient::getCurrentBatchSize)
+                    .map(MapRouletteClientProcessor::maxDurationForBatch).reduce(Duration::add)
+                    .get();
+            try (Pool uploadPool = new Pool(this.checkToClient.values().size(), String
+                    .format("MR upload pool for %s", String.join(",", this.checkToClient.keySet())),
+                    timeNeeded))
             {
-                uploadPool.queue(() -> client.uploadTasks());
+                for (MapRouletteClient client : this.checkToClient.values())
+                {
+                    uploadPool.queue(() -> client.uploadTasks());
+                }
             }
             catch (final Exception e)
             {
-                logger.error("Failed to upload tasks to MapRoulette clients {}.", this.checkToClient.values(), e);
+                logger.error("Failed to upload tasks to MapRoulette clients {}.",
+                        this.checkToClient.values(), e);
             }
         }
     }
