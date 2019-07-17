@@ -9,7 +9,7 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * A {@link Processor} for {@link CheckFlagEvent}s to write them into line delimited GeoJson files
+ * A {@link } for {@link CheckFlagEvent}s to write them into line delimited GeoJson files
  *
  * @author mkalender
  */

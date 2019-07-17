@@ -7,7 +7,6 @@ import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.event.MetricEvent;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
@@ -35,8 +34,6 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
      *            check that is being executed
      * @param objects
      *            {@link AtlasObject}s that are going to be executed
-     * @param configuration
-     *            {@link MapRouletteConfiguration} that will upload the tasks to MapRoulette
      */
     public RunnableCheck(final String country, final Check check,
             final Iterable<AtlasObject> objects, final EventService eventService)
@@ -59,7 +56,7 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
                 final Optional<CheckFlag> flag = this.getCheck().check(object);
                 if (flag.isPresent())
                 {
-                    this.addTask(flag.get());
+                    // this.addTask(flag.get());
                     this.getEventService().post(new CheckFlagEvent(this.getName(), flag.get()));
                 }
             });
