@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.flag;
 
+import java.awt.datatransfer.FlavorEvent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import org.junit.Test;
 import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 
 import com.google.gson.JsonObject;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 
 /**
  * Test for {@link CheckFlag}.
@@ -155,5 +157,25 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlas().entities().forEach(flag::addObject);
         testSerialization(flag);
+    }
+
+    @Test
+    public void testMakeComplete()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        flag.addInstruction("first instruction");
+        flag.addInstruction("second instruction");
+        this.setup.getAtlas().entities().forEach(flag::addObject);
+
+        flag.makeComplete();
+
+        flag.getFlaggedObjects().stream().forEach(flaggedObject ->
+        {
+            Assert.assertTrue(flaggedObject.getObject().isPresent());
+            flaggedObject.getObject().ifPresent(object ->
+            {
+                Assert.assertTrue(object instanceof CompleteEntity);
+            });
+        });
     }
 }

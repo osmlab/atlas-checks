@@ -35,6 +35,8 @@ public abstract class RunnableCheckBase<T extends Check>
      *            check that is being executed
      * @param objects
      *            {@link AtlasObject}s that are going to be executed
+     * @param eventService
+     *            event service to send events to
      */
     public RunnableCheckBase(final String country, final T check,
             final Iterable<AtlasObject> objects, final EventService eventService)

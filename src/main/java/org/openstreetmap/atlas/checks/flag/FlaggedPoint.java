@@ -2,9 +2,13 @@ package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteNode;
+import org.openstreetmap.atlas.geography.atlas.complete.CompletePoint;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
@@ -26,7 +30,7 @@ public class FlaggedPoint extends FlaggedObject
     private final Location point;
     private final Map<String, String> properties;
 
-    private final LocationItem locationItem;
+    private LocationItem locationItem;
 
     @SuppressWarnings("unchecked")
     public FlaggedPoint(final Location point)
@@ -52,6 +56,13 @@ public class FlaggedPoint extends FlaggedObject
     @Override
     public FlaggedObject getAsCompleteFlaggedObject()
     {
+        if(this.locationItem instanceof Point)
+        {
+            this.locationItem = CompletePoint.from((Point) this.locationItem);
+        }else if(this.locationItem instanceof Node)
+        {
+            this.locationItem = CompleteNode.from((Node) this.locationItem);
+        }
         return this;
     }
 
@@ -100,6 +111,12 @@ public class FlaggedPoint extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
+    }
+
+    @Override
+    protected Optional<AtlasObject> getObject()
+    {
+        return Optional.ofNullable(this.locationItem);
     }
 
     @SuppressWarnings("unchecked")

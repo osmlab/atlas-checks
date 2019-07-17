@@ -25,16 +25,6 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
 {
     private static final Logger logger = LoggerFactory.getLogger(RunnableCheck.class);
 
-    /**
-     * Default constructor
-     *
-     * @param country
-     *            country that is being processed
-     * @param check
-     *            check that is being executed
-     * @param objects
-     *            {@link AtlasObject}s that are going to be executed
-     */
     public RunnableCheck(final String country, final Check check,
             final Iterable<AtlasObject> objects, final EventService eventService)
     {

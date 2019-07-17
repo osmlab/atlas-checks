@@ -256,12 +256,13 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return Rectangle.forLocated(new MultiIterable<>(this.getShapes()));
     }
 
-    public void makeComplete()
+    public CheckFlag makeComplete()
     {
         final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();
         this.flaggedObjects.forEach(flaggedObject -> completeFlaggedObjects
                 .add(flaggedObject.getAsCompleteFlaggedObject()));
         this.flaggedObjects = completeFlaggedObjects;
+        return this;
     }
 
     @Override

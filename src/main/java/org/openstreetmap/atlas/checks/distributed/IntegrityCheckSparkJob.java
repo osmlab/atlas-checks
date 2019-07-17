@@ -21,10 +21,11 @@ import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
-import org.openstreetmap.atlas.checks.event.EventService;
+import org.openstreetmap.atlas.checks.event.MapRouletteClientProcessor;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
+import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
@@ -62,14 +63,9 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
-    // Outputs
-    private static final String OUTPUT_FLAG_FOLDER = "flag";
-    private static final String OUTPUT_GEOJSON_FOLDER = "geojson";
-    private static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
-    private static final String OUTPUT_ATLAS_FOLDER = "atlas";
+
     private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
             + FileSuffix.GZIP.toString();
-    private static final String OUTPUT_METRIC_FOLDER = "metric";
 
     public static final String METRICS_FILENAME = "check-run-time.csv";
     private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
@@ -111,7 +107,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 POOL_DURATION_BEFORE_KILL);
         checksToRun.stream().filter(check -> check.validCheckForCountry(country))
                 .forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
-                        objectsToCheck(atlas, check), MapRouletteClient.instance(configuration))));
+                        objectsToCheck(atlas, check), EventService.get(country))));
         checkExecutionPool.close();
     }
 
@@ -164,7 +160,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         return "Integrity Check Spark Job";
     }
 
-    @SuppressWarnings({ "rawtypes" })
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void start(final CommandMap commandMap)
     {
@@ -323,6 +319,9 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
             {
                 tippecanoeOutput = null;
             }
+
+            EventService.get(country)
+                    .register(new MapRouletteClientProcessor(mapRouletteConfiguration, checks));
 
             final Consumer<Atlas> intermediateAtlasHandler;
             if (saveIntermediateAtlas)

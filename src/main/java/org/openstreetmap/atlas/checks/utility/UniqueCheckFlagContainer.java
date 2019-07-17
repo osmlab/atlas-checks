@@ -5,8 +5,14 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 
+/**
+ * A container that will deduplicate check flags based on source and ID
+ *
+ * @author jklamer
+ */
 public class UniqueCheckFlagContainer implements Serializable
 {
 
@@ -33,21 +39,28 @@ public class UniqueCheckFlagContainer implements Serializable
         this.uniqueFlags = flags;
     }
 
-    public void add(String flagSource, final CheckFlag flag)
+    public void add(final String flagSource, final CheckFlag flag)
     {
         this.uniqueFlags.putIfAbsent(flagSource, new ConcurrentHashMap<>());
         this.uniqueFlags.get(flagSource).putIfAbsent(flag.getIdentifier(), flag);
     }
 
-    public void addAll(String flagSource, final Iterable<CheckFlag> flags)
+    public void addAll(final String flagSource, final Iterable<CheckFlag> flags)
     {
         flags.forEach(flag -> this.add(flagSource, flag));
 
     }
 
-    private Stream<CheckFlag> stream()
+    public Stream<CheckFlag> stream()
     {
         return this.uniqueFlags.values().stream().map(ConcurrentHashMap::values)
                 .flatMap(Collection::stream);
+    }
+
+    public Stream<CheckFlagEvent> reconstructEvents()
+    {
+        return this.uniqueFlags.keySet().stream()
+                .flatMap(checkName -> this.uniqueFlags.get(checkName).values().stream()
+                        .map(checkFlag -> new CheckFlagEvent(checkName, checkFlag)));
     }
 }
