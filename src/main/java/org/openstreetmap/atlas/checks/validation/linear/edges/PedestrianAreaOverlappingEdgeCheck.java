@@ -18,6 +18,7 @@ import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +26,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ *
  * @author sayana_saithu
  */
 public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "Pedestrian area {0,number,#} is overlapping way id(s) {1}.");
     /**
      * Default constructor
@@ -50,20 +52,23 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      */
     @Override public boolean validCheckForObject(AtlasObject object)
     {
-        return object instanceof Area && this.isPedestrianArea(object) && !isFlagged(object.getOsmIdentifier());
+        // Valid object for the check is a pedestrian area that has not been flagged
+        return object instanceof Area &&
+                this.isPedestrianArea(object)
+                && !isFlagged(object.getOsmIdentifier());
     }
 
     @Override protected Optional<CheckFlag> flag(AtlasObject object)
     {
         final Area area = (Area) object;
-
         // All segments of the area
         final List<Segment> segments = area.asPolygon().segments();
+        // Get all start and end locations of all segments in the area
         final Set<Location> locationsInSegments = new HashSet<>();
-        segments.stream().forEach(segment-> {
+        segments.forEach(segment-> {
             locationsInSegments.add(segment.start());
             locationsInSegments.add(segment.end());});
-        // Valid intersecting edges
+        // Filter and collect all valid intersecting edges
         final Set<Edge> filteredIntersectingEdges = Iterables
                 .stream(area.getAtlas().edgesIntersecting(area.asPolygon()))
                 .filter(edge -> this.isValidIntersectingEdge(edge, area)).collectToSet();
@@ -146,9 +151,14 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      */
     private boolean isValidIntersectingEdge(final Edge intersectingEdge, final Area area)
     {
-        return
-                intersectingEdge.getOsmIdentifier()!=area.getOsmIdentifier() && intersectingEdge.isMasterEdge() && Validators.hasValuesFor(intersectingEdge,HighwayTag.class) &&
-                        Validators.isNotOfType(intersectingEdge,HighwayTag.class,HighwayTag.FOOTWAY,HighwayTag.PATH) && !isPedestrianArea(intersectingEdge) &&
+        return // We do not want any pedestrian edges that are also pedestrian areas. Currently,
+                // pedestrian ways are ingested as both edges and as areas.
+                intersectingEdge.getOsmIdentifier()!=area.getOsmIdentifier()
+                && intersectingEdge.isMasterEdge()
+                // Edge should have a highway class other than footways a
+                        && Validators.hasValuesFor(intersectingEdge,HighwayTag.class) &&
+                        Validators.isNotOfType(intersectingEdge,HighwayTag.class,HighwayTag.FOOTWAY,HighwayTag.PATH, HighwayTag.PEDESTRIAN, HighwayTag.STEPS)
+                        && !isPedestrianArea(intersectingEdge) &&
                         area.getTag(LayerTag.KEY).orElse("").equals(intersectingEdge.getTag(LayerTag.KEY).orElse("")) && area.getTag(
                         LocationTag.KEY).orElse("").equals(intersectingEdge.getTag(LocationTag.KEY).orElse(""));
     }
