@@ -1,5 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
@@ -17,28 +24,21 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
- *
  * @author sayana_saithu
  */
 public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "Pedestrian area {0,number,#} is overlapping way id(s) {1}.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList("Pedestrian area {0,number,#} is overlapping way id(s) {1}.");
+
     /**
      * Default constructor
      *
-     * @param configuration {@link Configuration} required to construct any Check
+     * @param configuration
+     *            {@link Configuration} required to construct any Check
      */
-    public PedestrianAreaOverlappingEdgeCheck(
-            Configuration configuration)
+    public PedestrianAreaOverlappingEdgeCheck(Configuration configuration)
     {
         super(configuration);
     }
@@ -46,18 +46,20 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     /**
      * Checks to see whether the supplied object class type is valid for this particular check
      *
-     * @param object The {@link AtlasObject} you are checking
+     * @param object
+     *            The {@link AtlasObject} you are checking
      * @return true if it is
      */
-    @Override public boolean validCheckForObject(AtlasObject object)
+    @Override
+    public boolean validCheckForObject(AtlasObject object)
     {
         // Valid object for the check is a pedestrian area that has not been flagged
-        return object instanceof Area &&
-                this.isPedestrianArea(object)
+        return object instanceof Area && this.isPedestrianArea(object)
                 && !isFlagged(object.getOsmIdentifier());
     }
 
-    @Override protected Optional<CheckFlag> flag(AtlasObject object)
+    @Override
+    protected Optional<CheckFlag> flag(AtlasObject object)
     {
         final Area area = (Area) object;
         // All segments of the area
@@ -70,7 +72,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
                 .filter(edge -> this.isValidIntersectingEdge(edge, area)).collectToSet();
         Set<AtlasObject> overlappingEdges = new HashSet<>();
         final Polygon areaPolygon = area.asPolygon();
-        for(Edge edge: filteredIntersectingEdges)
+        for (Edge edge : filteredIntersectingEdges)
         {
             final Location edgeStartLocation = edge.start().getLocation();
             final Location edgeEndLocation = edge.end().getLocation();
@@ -80,34 +82,38 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
             final boolean intersectsAtEnd = locationsInSegments.contains(edgeEndLocation);
             // Filter the segments with the intersecting points
             final Set<Segment> filteredSegments = segments.stream()
-                    .filter(segment -> edgeStartLocation.equals(segment.start())||edgeStartLocation.equals(segment.end())
-                                    || edgeEndLocation.equals(segment.start())|| edgeEndLocation.equals(segment.end())
-                    )
+                    .filter(segment -> edgeStartLocation.equals(segment.start())
+                            || edgeStartLocation.equals(segment.end())
+                            || edgeEndLocation.equals(segment.start())
+                            || edgeEndLocation.equals(segment.end()))
                     .collect(Collectors.toSet());
-            // If both ends of the edge intersects the area, check if it is properly snapped by checking
+            // If both ends of the edge intersects the area, check if it is properly snapped by
+            // checking
             // if both the intersecting points are on the same segment.
             // If none of the filtered segments have both the start and end nodes, then add the
             // edge and all its connected edges that are within the area to flag them.
-            if((intersectsAtStart && intersectsAtEnd && this.isNotSnappedToSegments
-                    (filteredSegments, edgeStartLocation, edgeEndLocation)) ||
-                    // If any one of the end of the connected edge is fully enclosed within the area,
+            if ((intersectsAtStart && intersectsAtEnd && this
+                    .isNotSnappedToSegments(filteredSegments, edgeStartLocation, edgeEndLocation))
+                    ||
+                    // If any one of the end of the connected edge is fully enclosed within the
+                    // area,
                     // flag the edge and all its connected edges that are within the area.
-                    (intersectsAtStart && !intersectsAtEnd && areaPolygon
-                    .fullyGeometricallyEncloses(edgeEndLocation)) || ( intersectsAtEnd && !intersectsAtStart &&
-                    areaPolygon.
-                    fullyGeometricallyEncloses(edgeStartLocation)))
-                {
-                    // Collect all connected edges that are within the pedestrian area
-                    edge.connectedEdges().stream().filter(connectedEdge-> connectedEdge.isMasterEdge() &&
-                            areaPolygon.fullyGeometricallyEncloses(connectedEdge.asPolyLine())).forEach(
-                            overlappingEdges::add);
-                    // Add the intersecting edge as well to the set
-                    overlappingEdges.add(edge);
-                }
-
+                    (intersectsAtStart && !intersectsAtEnd
+                            && areaPolygon.fullyGeometricallyEncloses(edgeEndLocation))
+                    || (intersectsAtEnd && !intersectsAtStart
+                            && areaPolygon.fullyGeometricallyEncloses(edgeStartLocation)))
+            {
+                // Collect all connected edges that are within the pedestrian area
+                edge.connectedEdges().stream()
+                        .filter(connectedEdge -> connectedEdge.isMasterEdge() && areaPolygon
+                                .fullyGeometricallyEncloses(connectedEdge.asPolyLine()))
+                        .forEach(overlappingEdges::add);
+                // Add the intersecting edge as well to the set
+                overlappingEdges.add(edge);
+            }
 
         }
-        if(!overlappingEdges.isEmpty())
+        if (!overlappingEdges.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
             final CheckFlag flag = this.createFlag(overlappingEdges,
@@ -122,7 +128,8 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     /**
      * Collects all atlas identifiers of given set of {@link AtlasObject}s
      *
-     * @param objects set of {@link AtlasObject}s
+     * @param objects
+     *            set of {@link AtlasObject}s
      * @return {@link Iterable<String>} containing the atlas identifiers of input objects
      */
     private Iterable<String> getIdentifiers(final Set<AtlasObject> objects)
@@ -135,20 +142,23 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      * Checks if an intersecting edge has a different osm id than the area, does not have pedestrian
      * highway tags and is of the same level or layer as the area.
      *
-     * @param intersectingEdge any intersecting edge
-     * @param area Area
+     * @param intersectingEdge
+     *            any intersecting edge
+     * @param area
+     *            Area
      * @return true if the edge is a valid intersecting edge
      */
     private boolean isValidIntersectingEdge(final Edge intersectingEdge, final Area area)
     {
         return // We do not want any pedestrian edges that are also pedestrian areas. Currently,
-                // pedestrian ways are ingested as both edges and as areas.
-                intersectingEdge.getOsmIdentifier()!=area.getOsmIdentifier()
+               // pedestrian ways are ingested as both edges and as areas.
+        intersectingEdge.getOsmIdentifier() != area.getOsmIdentifier()
                 && intersectingEdge.isMasterEdge()
-                // Valid edge should have a highway class other than foot way, path, pedestrian or steps
-                        && this.isNotPedestrianHighway(intersectingEdge)
-                        // and should have the same layer or level tag if any, as the area
-                        && this.isOfSameElevation(intersectingEdge,area);
+                // Valid edge should have a highway class other than foot way, path, pedestrian or
+                // steps
+                && this.isNotPedestrianHighway(intersectingEdge)
+                // and should have the same layer or level tag if any, as the area
+                && this.isOfSameElevation(intersectingEdge, area);
     }
 
     @Override
@@ -161,59 +171,63 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      * Checks if given {@link AtlasObject} is a pedestrian area or not. A pedestrian area is an
      * {@link AtlasObject} with "area=yes" and "highway=pedestrian" tags.
      *
-     * @param object any {@link AtlasObject}
+     * @param object
+     *            any {@link AtlasObject}
      * @return true if the object is a pedestrian area
      */
     private boolean isPedestrianArea(final AtlasObject object)
     {
-        return Validators.isOfType(object,
-                AreaTag.class, AreaTag.YES) &&
-                Validators.isOfType(object, HighwayTag.class, HighwayTag.PEDESTRIAN);
+        return Validators.isOfType(object, AreaTag.class, AreaTag.YES)
+                && Validators.isOfType(object, HighwayTag.class, HighwayTag.PEDESTRIAN);
     }
 
     /**
      * Checks if the given edge is not a pedestrian way by checking its highway classification.
      *
-     * @param edge any given edge
+     * @param edge
+     *            any given edge
      * @return true if the edge is not a pedestrian way, false otherwise
      */
     private boolean isNotPedestrianHighway(final Edge edge)
     {
-        return Validators.hasValuesFor(edge,HighwayTag.class) &&
-                Validators.isNotOfType(edge,HighwayTag.class,HighwayTag.FOOTWAY,
+        return Validators.hasValuesFor(edge, HighwayTag.class)
+                && Validators.isNotOfType(edge, HighwayTag.class, HighwayTag.FOOTWAY,
                         HighwayTag.PATH, HighwayTag.PEDESTRIAN, HighwayTag.STEPS);
     }
 
     /**
      * Checks if the given edge and area have the same elevation or not.
      *
-     * @param edge any given edge
-     * @param area any given area
+     * @param edge
+     *            any given edge
+     * @param area
+     *            any given area
      * @return true if the edge and area have the same Layer and Location tag values
      */
     private boolean isOfSameElevation(final Edge edge, final Area area)
     {
         return area.getTag(LayerTag.KEY).orElse("").equals(edge.getTag(LayerTag.KEY).orElse(""))
-                && area.getTag(
-                LocationTag.KEY).orElse("").equals(edge.getTag(LocationTag.KEY).orElse(""));
+                && area.getTag(LocationTag.KEY).orElse("")
+                        .equals(edge.getTag(LocationTag.KEY).orElse(""));
     }
 
     /**
      * Checks if the locations are not snapped to the edges or not. If snapped, both the locations
      * should lie on the same segment.
      *
-     * @param segments Set of segments
-     * @param locationOne any location
-     * @param locationTwo any location
+     * @param segments
+     *            Set of segments
+     * @param locationOne
+     *            any location
+     * @param locationTwo
+     *            any location
      * @return true if none of the segments have both the locations in it.
      */
-    private boolean isNotSnappedToSegments(final Set<Segment> segments,
-            final Location locationOne, final Location locationTwo)
+    private boolean isNotSnappedToSegments(final Set<Segment> segments, final Location locationOne,
+            final Location locationTwo)
     {
-        return segments.stream().noneMatch(segment ->
-                (locationOne.equals(segment.start())  ||
-                        locationOne.equals(segment.end()))
-                        && (locationTwo.equals(segment.start()) || locationTwo.equals(segment
-                        .end()) ));
+        return segments.stream().noneMatch(segment -> (locationOne.equals(segment.start())
+                || locationOne.equals(segment.end()))
+                && (locationTwo.equals(segment.start()) || locationTwo.equals(segment.end())));
     }
 }

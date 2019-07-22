@@ -449,5 +449,7 @@
       "difficulty": "EASY",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "PedestrianAreaOverlappingEdgeCheck": {
   }
 }
