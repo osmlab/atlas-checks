@@ -158,54 +158,54 @@ public class WaterbodyAndIslandSizeTestRule extends CoreTestRule
                             "type=multipolygon", "natural=water" }) })
     private Atlas smallMultiPolygonWaterbodyMemberAtlas;
 
-    public Atlas getLargeIsletAtlas()
+    public Atlas getInvalidMultiPolygonNoNaturalWaterTagRelationAtlas()
     {
-        return largeIsletAtlas;
+        return this.invalidMultiPolygonNoNaturalWaterTagRelationAtlas;
     }
 
-    public Atlas getValidSizeIslandAtlas()
+    public Atlas getLargeIsletAtlas()
     {
-        return validSizeIslandAtlas;
-
+        return this.largeIsletAtlas;
     }
 
     public Atlas getSmallArchipelagoAtlas()
     {
-        return smallArchipelagoAtlas;
-    }
-
-    public Atlas getSmallWaterbodyAtlas()
-    {
-        return smallWaterbodyAtlas;
-    }
-
-    public Atlas getSmallIsletAtlas()
-    {
-        return smallIsletAtlas;
-    }
-
-    public Atlas getSmallMultiPolygonIslandAtlas()
-    {
-        return smallMultiPolygonIslandAtlas;
-    }
-
-    public Atlas getSmallRockMultiPolygonIslandAtlas()
-    {
-        return smallRockMultiPolygonIslandAtlas;
+        return this.smallArchipelagoAtlas;
     }
 
     public Atlas getSmallIslandMultiPolygonDuplicateAtlas()
     {
-        return smallIslandMultiPolygonDuplicateAtlas;
+        return this.smallIslandMultiPolygonDuplicateAtlas;
     }
 
-    public Atlas getInvalidMultiPolygonNoNaturalWaterTagRelationAtlas()
+    public Atlas getSmallIsletAtlas()
     {
-        return invalidMultiPolygonNoNaturalWaterTagRelationAtlas;
+        return this.smallIsletAtlas;
+    }
+
+    public Atlas getSmallMultiPolygonIslandAtlas()
+    {
+        return this.smallMultiPolygonIslandAtlas;
     }
 
     public Atlas getSmallMultiPolygonWaterbodyMemberAtlas()
     {
-        return smallMultiPolygonWaterbodyMemberAtlas;
+        return this.smallMultiPolygonWaterbodyMemberAtlas;
+    }
+
+    public Atlas getSmallRockMultiPolygonIslandAtlas()
+    {
+        return this.smallRockMultiPolygonIslandAtlas;
+    }
+
+    public Atlas getSmallWaterbodyAtlas()
+    {
+        return this.smallWaterbodyAtlas;
+    }
+
+    public Atlas getValidSizeIslandAtlas()
+    {
+        return this.validSizeIslandAtlas;
+
     }
 }

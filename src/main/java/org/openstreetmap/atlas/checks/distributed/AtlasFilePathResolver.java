@@ -68,8 +68,8 @@ public final class AtlasFilePathResolver implements Serializable
     public String resolvePath(final String basePath, final String country)
     {
         final URI uri = URI.create(basePath);
-        final String template = Optional.ofNullable(uri.getScheme()).map(pathTemplate::get)
-                .orElse(pathTemplate.getOrDefault("default", DEFAULT_PATH_TEMPLATE));
+        final String template = Optional.ofNullable(uri.getScheme()).map(this.pathTemplate::get)
+                .orElse(this.pathTemplate.getOrDefault("default", DEFAULT_PATH_TEMPLATE));
 
         return String.format(template, basePath, country);
     }

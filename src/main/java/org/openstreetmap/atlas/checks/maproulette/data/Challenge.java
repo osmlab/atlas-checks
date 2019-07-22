@@ -43,7 +43,7 @@ public class Challenge implements Serializable
             .create();
 
     @SuppressWarnings("checkstyle:memberName")
-    private long id = -1;
+    private long identifier = -1;
     private long parent = -1;
     private final String blurb;
     private final String description;
@@ -91,39 +91,14 @@ public class Challenge implements Serializable
         this.checkinComment = "#maproulette";
     }
 
-    public String getCheckinComment()
-    {
-        return this.checkinComment;
-    }
-
-    public void setCheckinComment(final String checkinComment)
-    {
-        this.checkinComment = checkinComment;
-    }
-
-    public long getId()
-    {
-        return this.id;
-    }
-
-    public void setId(final long identifier)
-    {
-        this.id = identifier;
-    }
-
-    public long getParentIdentifier()
-    {
-        return this.parent;
-    }
-
-    public void setParentIdentifier(final long identifier)
-    {
-        this.parent = identifier;
-    }
-
     public String getBlurb()
     {
         return this.blurb;
+    }
+
+    public String getCheckinComment()
+    {
+        return this.checkinComment;
     }
 
     public ChallengePriority getDefaultPriority()
@@ -146,6 +121,11 @@ public class Challenge implements Serializable
         return this.highPriorityRule;
     }
 
+    public long getId()
+    {
+        return this.identifier;
+    }
+
     public String getInstruction()
     {
         return this.instruction;
@@ -166,14 +146,34 @@ public class Challenge implements Serializable
         return this.name;
     }
 
+    public long getParentIdentifier()
+    {
+        return this.parent;
+    }
+
+    public String getTags()
+    {
+        return this.tags;
+    }
+
+    public void setCheckinComment(final String checkinComment)
+    {
+        this.checkinComment = checkinComment;
+    }
+
+    public void setId(final long identifier)
+    {
+        this.identifier = identifier;
+    }
+
     public void setName(final String name)
     {
         this.name = name;
     }
 
-    public String getTags()
+    public void setParentIdentifier(final long identifier)
     {
-        return tags;
+        this.parent = identifier;
     }
 
     public JsonObject toJson(final String challengeName)

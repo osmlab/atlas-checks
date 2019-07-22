@@ -32,15 +32,144 @@ public class AtlasChecksLogDiffSubCommandTest
     private static final File TARGET_DIRECTORY = File.temporaryFolder();
     private static final File GZ_SOURCE_DIRECTORY = File.temporaryFolder();
     private static final File GZ_TARGET_DIRECTORY = File.temporaryFolder();
-
+    @Rule
+    public final JSONFlagDiffSubCommandTestRule setup = new JSONFlagDiffSubCommandTestRule();
     // Temp Files
     private String sourceFile;
     private String targetFile;
     private String sourceFileGZ;
     private String targetFileGZ;
 
-    @Rule
-    public final JSONFlagDiffSubCommandTestRule setup = new JSONFlagDiffSubCommandTestRule();
+    @AfterClass
+    public static void deleteLogFiles()
+    {
+        SOURCE_DIRECTORY.deleteRecursively();
+        TARGET_DIRECTORY.deleteRecursively();
+        GZ_SOURCE_DIRECTORY.deleteRecursively();
+        GZ_TARGET_DIRECTORY.deleteRecursively();
+    }
+
+    @Test
+    public void fileCreationFromDirectoryTest()
+    {
+        this.populateTestData();
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "log-diff", String.format("-reference=%s", SOURCE_DIRECTORY),
+                String.format("-input=%s", TARGET_DIRECTORY),
+                String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.log")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.log")));
+
+        temp.deleteRecursively();
+    }
+
+    @Test
+    public void fileCreationFromFileTest()
+    {
+        this.populateTestData();
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "log-diff", String.format("-reference=%s", this.sourceFile),
+                String.format("-input=%s", this.targetFile),
+                String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
+
+        temp.deleteRecursively();
+    }
+
+    /**
+     * Generate directories of flag files and gather the path to the first file in each.
+     */
+    public void populateTestData()
+    {
+        if (this.sourceFile == null)
+        {
+            this.generateLogFiles(SOURCE_DIRECTORY, TARGET_DIRECTORY, false);
+            this.generateLogFiles(GZ_SOURCE_DIRECTORY, GZ_TARGET_DIRECTORY, true);
+
+            this.sourceFile = this.getFirstGeojsonPath(SOURCE_DIRECTORY);
+            this.targetFile = this.getFirstGeojsonPath(TARGET_DIRECTORY);
+            this.sourceFileGZ = this.getFirstGeojsonPath(GZ_SOURCE_DIRECTORY);
+            this.targetFileGZ = this.getFirstGeojsonPath(GZ_TARGET_DIRECTORY);
+        }
+    }
+
+    @Test
+    public void testFileCreationFromGZippedAndUnZippedFiles()
+    {
+        this.populateTestData();
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "log-diff", String.format("-reference=%s", this.sourceFileGZ),
+                String.format("-input=%s", this.targetFile),
+                String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
+
+        temp.deleteRecursively();
+    }
+
+    @Test
+    public void testFileCreationFromGZippedDirectory()
+    {
+        this.populateTestData();
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "log-diff", String.format("-reference=%s", GZ_SOURCE_DIRECTORY),
+                String.format("-input=%s", GZ_TARGET_DIRECTORY),
+                String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-2.log")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.log")));
+
+        temp.deleteRecursively();
+    }
+
+    @Test
+    public void testFileCreationFromGZippedFile()
+    {
+        this.populateTestData();
+        final File temp = File.temporaryFolder();
+
+        // Run AtlasJoinerSubCommand
+        final String[] args = { "log-diff", String.format("-reference=%s", this.sourceFileGZ),
+                String.format("-input=%s", this.targetFileGZ),
+                String.format("-output=%s", temp.getPath()) };
+        new AtlasChecksCommand(args).runWithoutQuitting(args);
+
+        final List<File> outputFiles = temp.listFilesRecursively();
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
+        Assert.assertTrue(outputFiles.stream()
+                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
+
+        temp.deleteRecursively();
+    }
 
     /**
      * Generate flag files from {@link CheckFlagEvent}s, into source and target directories. The
@@ -102,136 +231,5 @@ public class AtlasChecksLogDiffSubCommandTest
                 .filter(file -> file.getName().endsWith(".log")
                         || file.getName().endsWith(".log.gz"))
                 .sorted().collect(Collectors.toList()).get(0).getPath();
-    }
-
-    /**
-     * Generate directories of flag files and gather the path to the first file in each.
-     */
-    public void populateTestData()
-    {
-        if (sourceFile == null)
-        {
-            this.generateLogFiles(SOURCE_DIRECTORY, TARGET_DIRECTORY, false);
-            this.generateLogFiles(GZ_SOURCE_DIRECTORY, GZ_TARGET_DIRECTORY, true);
-
-            sourceFile = this.getFirstGeojsonPath(SOURCE_DIRECTORY);
-            targetFile = this.getFirstGeojsonPath(TARGET_DIRECTORY);
-            sourceFileGZ = this.getFirstGeojsonPath(GZ_SOURCE_DIRECTORY);
-            targetFileGZ = this.getFirstGeojsonPath(GZ_TARGET_DIRECTORY);
-        }
-    }
-
-    @AfterClass
-    public static void deleteLogFiles()
-    {
-        SOURCE_DIRECTORY.deleteRecursively();
-        TARGET_DIRECTORY.deleteRecursively();
-        GZ_SOURCE_DIRECTORY.deleteRecursively();
-        GZ_TARGET_DIRECTORY.deleteRecursively();
-    }
-
-    @Test
-    public void fileCreationFromFileTest()
-    {
-        this.populateTestData();
-        final File temp = File.temporaryFolder();
-
-        // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-reference=%s", sourceFile),
-                String.format("-input=%s", targetFile),
-                String.format("-output=%s", temp.getPath()) };
-        new AtlasChecksCommand(args).runWithoutQuitting(args);
-
-        final List<File> outputFiles = temp.listFilesRecursively();
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
-
-        temp.deleteRecursively();
-    }
-
-    @Test
-    public void fileCreationFromDirectoryTest()
-    {
-        this.populateTestData();
-        final File temp = File.temporaryFolder();
-
-        // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-reference=%s", SOURCE_DIRECTORY),
-                String.format("-input=%s", TARGET_DIRECTORY),
-                String.format("-output=%s", temp.getPath()) };
-        new AtlasChecksCommand(args).runWithoutQuitting(args);
-
-        final List<File> outputFiles = temp.listFilesRecursively();
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-2.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.log")));
-
-        temp.deleteRecursively();
-    }
-
-    @Test
-    public void testFileCreationFromGZippedFile()
-    {
-        this.populateTestData();
-        final File temp = File.temporaryFolder();
-
-        // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-reference=%s", sourceFileGZ),
-                String.format("-input=%s", targetFileGZ),
-                String.format("-output=%s", temp.getPath()) };
-        new AtlasChecksCommand(args).runWithoutQuitting(args);
-
-        final List<File> outputFiles = temp.listFilesRecursively();
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
-
-        temp.deleteRecursively();
-    }
-
-    @Test
-    public void testFileCreationFromGZippedAndUnZippedFiles()
-    {
-        this.populateTestData();
-        final File temp = File.temporaryFolder();
-
-        // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-reference=%s", sourceFileGZ),
-                String.format("-input=%s", targetFile),
-                String.format("-output=%s", temp.getPath()) };
-        new AtlasChecksCommand(args).runWithoutQuitting(args);
-
-        final List<File> outputFiles = temp.listFilesRecursively();
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-1.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-1.log")));
-
-        temp.deleteRecursively();
-    }
-
-    @Test
-    public void testFileCreationFromGZippedDirectory()
-    {
-        this.populateTestData();
-        final File temp = File.temporaryFolder();
-
-        // Run AtlasJoinerSubCommand
-        final String[] args = { "log-diff", String.format("-reference=%s", GZ_SOURCE_DIRECTORY),
-                String.format("-input=%s", GZ_TARGET_DIRECTORY),
-                String.format("-output=%s", temp.getPath()) };
-        new AtlasChecksCommand(args).runWithoutQuitting(args);
-
-        final List<File> outputFiles = temp.listFilesRecursively();
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("additions-\\d+-2.log")));
-        Assert.assertTrue(outputFiles.stream()
-                .anyMatch(file -> file.getName().matches("subtractions-\\d+-2.log")));
-
-        temp.deleteRecursively();
     }
 }

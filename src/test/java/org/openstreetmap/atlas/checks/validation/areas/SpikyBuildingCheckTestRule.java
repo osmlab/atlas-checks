@@ -97,43 +97,43 @@ public class SpikyBuildingCheckTestRule extends CoreTestRule
             @Loc(value = L), @Loc(value = N) }, tags = "building=yes") })
     private Atlas twoShortConsecutiveCurvesBuilding;
 
-    public Atlas getSpikyBuilding()
-    {
-        return spikyBuilding;
-    }
-
-    public Atlas getNormalBuilding()
-    {
-        return normalBuilding;
-    }
-
-    public Atlas getRoundNumbersSpiky()
-    {
-        return roundNumbersSpiky;
-    }
-
-    public Atlas getNormalRound()
-    {
-        return normalRound;
-    }
-
     public Atlas badCase()
     {
-        return badCase;
+        return this.badCase;
     }
 
     public Atlas badCase2()
     {
-        return badCase2;
+        return this.badCase2;
     }
 
     public Atlas circleBuilding()
     {
-        return circleBuilding;
+        return this.circleBuilding;
+    }
+
+    public Atlas getNormalBuilding()
+    {
+        return this.normalBuilding;
+    }
+
+    public Atlas getNormalRound()
+    {
+        return this.normalRound;
+    }
+
+    public Atlas getRoundNumbersSpiky()
+    {
+        return this.roundNumbersSpiky;
+    }
+
+    public Atlas getSpikyBuilding()
+    {
+        return this.spikyBuilding;
     }
 
     public Atlas twoShortConsecutiveCurvesBuilding()
     {
-        return twoShortConsecutiveCurvesBuilding;
+        return this.twoShortConsecutiveCurvesBuilding;
     }
 }

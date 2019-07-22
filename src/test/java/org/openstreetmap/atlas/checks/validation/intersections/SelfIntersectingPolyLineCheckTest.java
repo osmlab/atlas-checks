@@ -13,6 +13,10 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class SelfIntersectingPolyLineCheckTest
 {
+    @Rule
+    public SelfIntersectingPolylineTestCaseRule setup = new SelfIntersectingPolylineTestCaseRule();
+    @Rule
+    public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
     private final SelfIntersectingPolylineCheck check = new SelfIntersectingPolylineCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"SelfIntersectingPolylineCheck\":{\"tags.filter\":\"highway->!proposed&highway->!construction&highway->!footway&highway->!path\"}}"));
@@ -20,114 +24,88 @@ public class SelfIntersectingPolyLineCheckTest
             ConfigurationResolver.inlineConfiguration(
                     "{\"SelfIntersectingPolylineCheck\":{\"minimum.highway.type\":\"service\"}}"));
 
-    @Rule
-    public SelfIntersectingPolylineTestCaseRule setup = new SelfIntersectingPolylineTestCaseRule();
-
-    @Rule
-    public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
-
     @Test
-    public void testValidLineNoSelfIntersection()
+    public void testHighPriorityEdgeIntersection()
     {
-        this.verifier.actual(this.setup.getValidLineNoSelfIntersection(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testInvalidLineNonShapeSelfIntersection()
-    {
-        this.verifier.actual(this.setup.getInvalidLineNonShapeSelfIntersection(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testInvalidLineShapePointSelfIntersection()
-    {
-        this.verifier.actual(this.setup.getInvalidLineShapePointSelfIntersection(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testInvalidLineGeometryWaterwayTag()
-    {
-        this.verifier.actual(this.setup.getInvalidLineGeometryWaterwayTag(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testInvalidLineGeometryHighwayFootwayTag()
-    {
-        this.verifier.actual(this.setup.getInvalidLineGeometryHighwayFootwayTag(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testValidEdgeNoSelfIntersection()
-    {
-        this.verifier.actual(this.setup.getValidEdgeNoSelfIntersection(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testInvalidEdgeNonShapeIntersection()
-    {
-        this.verifier.actual(this.setup.getInvalidEdgeNonShapeIntersection(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testInvalidEdgeShapeIntersection()
-    {
-        this.verifier.actual(this.setup.getInvalidEdgeShapeIntersection(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testInvalidEdgeGeometryHighwayPrimaryTag()
-    {
-        this.verifier.actual(this.setup.getInvalidEdgeGeometryHighwayPrimaryTag(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testInvalidEdgeGeometryBuildingTag()
-    {
-        this.verifier.actual(this.setup.getInvalidEdgeGeometryBuildingTag(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testValidAreaNoSelfIntersection()
-    {
-        this.verifier.actual(this.setup.getValidAreaNoSelfIntersection(), check);
-        this.verifier.verifyExpectedSize(0);
-    }
-
-    @Test
-    public void testInvalidAreaNonShapeSelfIntersection()
-    {
-        this.verifier.actual(this.setup.getInvalidAreaNonShapeSelfIntersection(), check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testInvalidAreaShapeIntersection()
-    {
-        this.verifier.actual(this.setup.getInvalidAreaShapeIntersection(), check);
+        this.verifier.actual(this.setup.getInvalidEdgeShapeIntersection(),
+                this.minimumHighwayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
     @Test
     public void testInvalidAreaBuildTag()
     {
-        this.verifier.actual(this.setup.getInvalidAreaBuildingTag(), check);
+        this.verifier.actual(this.setup.getInvalidAreaBuildingTag(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testHighPriorityEdgeIntersection()
+    public void testInvalidAreaNonShapeSelfIntersection()
     {
-        this.verifier.actual(this.setup.getInvalidEdgeShapeIntersection(), minimumHighwayCheck);
+        this.verifier.actual(this.setup.getInvalidAreaNonShapeSelfIntersection(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidAreaShapeIntersection()
+    {
+        this.verifier.actual(this.setup.getInvalidAreaShapeIntersection(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidEdgeGeometryBuildingTag()
+    {
+        this.verifier.actual(this.setup.getInvalidEdgeGeometryBuildingTag(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidEdgeGeometryHighwayPrimaryTag()
+    {
+        this.verifier.actual(this.setup.getInvalidEdgeGeometryHighwayPrimaryTag(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidEdgeNonShapeIntersection()
+    {
+        this.verifier.actual(this.setup.getInvalidEdgeNonShapeIntersection(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidEdgeShapeIntersection()
+    {
+        this.verifier.actual(this.setup.getInvalidEdgeShapeIntersection(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidLineGeometryHighwayFootwayTag()
+    {
+        this.verifier.actual(this.setup.getInvalidLineGeometryHighwayFootwayTag(), this.check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testInvalidLineGeometryWaterwayTag()
+    {
+        this.verifier.actual(this.setup.getInvalidLineGeometryWaterwayTag(), this.check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testInvalidLineNonShapeSelfIntersection()
+    {
+        this.verifier.actual(this.setup.getInvalidLineNonShapeSelfIntersection(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testInvalidLineShapePointSelfIntersection()
+    {
+        this.verifier.actual(this.setup.getInvalidLineShapePointSelfIntersection(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -135,7 +113,28 @@ public class SelfIntersectingPolyLineCheckTest
     public void testLowPriorityEdgeIntersection()
     {
         this.verifier.actual(this.setup.getLowPriorityInvalidEdgeIntersection(),
-                minimumHighwayCheck);
+                this.minimumHighwayCheck);
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidAreaNoSelfIntersection()
+    {
+        this.verifier.actual(this.setup.getValidAreaNoSelfIntersection(), this.check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testValidEdgeNoSelfIntersection()
+    {
+        this.verifier.actual(this.setup.getValidEdgeNoSelfIntersection(), this.check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void testValidLineNoSelfIntersection()
+    {
+        this.verifier.actual(this.setup.getValidLineNoSelfIntersection(), this.check);
+        this.verifier.verifyExpectedSize(0);
     }
 }

@@ -51,9 +51,9 @@ public class CheckFlagGeoJsonProcessorTestRule extends CoreTestRule
     public CheckFlagEvent getCheckFlagEvent()
     {
         final CheckFlag flag = new CheckFlag("Test check flag");
-        flag.addObject(Iterables.head(atlas.nodes()), "Flagged Node");
-        flag.addObject(Iterables.head(atlas.edges()), "Flagged Edge");
-        flag.addObject(Iterables.head(atlas.areas()), "Flagged Area");
+        flag.addObject(Iterables.head(this.atlas.nodes()), "Flagged Node");
+        flag.addObject(Iterables.head(this.atlas.edges()), "Flagged Edge");
+        flag.addObject(Iterables.head(this.atlas.areas()), "Flagged Area");
 
         final CheckFlagEvent event = new CheckFlagEvent("sample-name", flag);
         event.getCheckFlag().addInstruction("First instruction");
