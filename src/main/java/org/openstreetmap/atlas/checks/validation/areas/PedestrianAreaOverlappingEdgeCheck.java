@@ -38,7 +38,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      * @param configuration
      *            {@link Configuration} required to construct any Check
      */
-    public PedestrianAreaOverlappingEdgeCheck(Configuration configuration)
+    public PedestrianAreaOverlappingEdgeCheck(final Configuration configuration)
     {
         super(configuration);
     }
@@ -51,7 +51,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      * @return true if it is
      */
     @Override
-    public boolean validCheckForObject(AtlasObject object)
+    public boolean validCheckForObject(final AtlasObject object)
     {
         // Valid object for the check is a pedestrian area that has not been flagged
         return object instanceof Area && this.isPedestrianArea(object)
@@ -59,7 +59,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     }
 
     @Override
-    protected Optional<CheckFlag> flag(AtlasObject object)
+    protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Area area = (Area) object;
         // All segments of the area
@@ -70,9 +70,9 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         final Set<Edge> filteredIntersectingEdges = Iterables
                 .stream(area.getAtlas().edgesIntersecting(area.asPolygon()))
                 .filter(edge -> this.isValidIntersectingEdge(edge, area)).collectToSet();
-        Set<AtlasObject> overlappingEdges = new HashSet<>();
+        final Set<AtlasObject> overlappingEdges = new HashSet<>();
         final Polygon areaPolygon = area.asPolygon();
-        for (Edge edge : filteredIntersectingEdges)
+        for (final Edge edge : filteredIntersectingEdges)
         {
             final Location edgeStartLocation = edge.start().getLocation();
             final Location edgeEndLocation = edge.end().getLocation();
@@ -125,6 +125,12 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
     /**
      * Collects all atlas identifiers of given set of {@link AtlasObject}s
      *
@@ -139,49 +145,6 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if an intersecting edge has a different osm id than the area, does not have pedestrian
-     * highway tags and is of the same level or layer as the area.
-     *
-     * @param intersectingEdge
-     *            any intersecting edge
-     * @param area
-     *            Area
-     * @return true if the edge is a valid intersecting edge
-     */
-    private boolean isValidIntersectingEdge(final Edge intersectingEdge, final Area area)
-    {
-        return // We do not want any pedestrian edges that are also pedestrian areas. Currently,
-               // pedestrian ways are ingested as both edges and as areas.
-        intersectingEdge.getOsmIdentifier() != area.getOsmIdentifier()
-                && intersectingEdge.isMasterEdge()
-                // Valid edge should have a highway class other than foot way, path, pedestrian or
-                // steps
-                && this.isNotPedestrianHighway(intersectingEdge)
-                // and should have the same layer or level tag if any, as the area
-                && this.isOfSameElevation(intersectingEdge, area);
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
-    /**
-     * Checks if given {@link AtlasObject} is a pedestrian area or not. A pedestrian area is an
-     * {@link AtlasObject} with "area=yes" and "highway=pedestrian" tags.
-     *
-     * @param object
-     *            any {@link AtlasObject}
-     * @return true if the object is a pedestrian area
-     */
-    private boolean isPedestrianArea(final AtlasObject object)
-    {
-        return Validators.isOfType(object, AreaTag.class, AreaTag.YES)
-                && Validators.isOfType(object, HighwayTag.class, HighwayTag.PEDESTRIAN);
-    }
-
-    /**
      * Checks if the given edge is not a pedestrian way by checking its highway classification.
      *
      * @param edge
@@ -193,22 +156,6 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         return Validators.hasValuesFor(edge, HighwayTag.class)
                 && Validators.isNotOfType(edge, HighwayTag.class, HighwayTag.FOOTWAY,
                         HighwayTag.PATH, HighwayTag.PEDESTRIAN, HighwayTag.STEPS);
-    }
-
-    /**
-     * Checks if the given edge and area have the same elevation or not.
-     *
-     * @param edge
-     *            any given edge
-     * @param area
-     *            any given area
-     * @return true if the edge and area have the same Layer and Location tag values
-     */
-    private boolean isOfSameElevation(final Edge edge, final Area area)
-    {
-        return area.getTag(LayerTag.KEY).orElse("").equals(edge.getTag(LayerTag.KEY).orElse(""))
-                && area.getTag(LocationTag.KEY).orElse("")
-                        .equals(edge.getTag(LocationTag.KEY).orElse(""));
     }
 
     /**
@@ -229,5 +176,59 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         return segments.stream().noneMatch(segment -> (locationOne.equals(segment.start())
                 || locationOne.equals(segment.end()))
                 && (locationTwo.equals(segment.start()) || locationTwo.equals(segment.end())));
+    }
+
+    /**
+     * Checks if the given edge and area have the same elevation or not.
+     *
+     * @param edge
+     *            any given edge
+     * @param area
+     *            any given area
+     * @return true if the edge and area have the same Layer and Location tag values
+     */
+    private boolean isOfSameElevation(final Edge edge, final Area area)
+    {
+        return area.getTag(LayerTag.KEY).orElse("").equals(edge.getTag(LayerTag.KEY).orElse(""))
+                && area.getTag(LocationTag.KEY).orElse("")
+                        .equals(edge.getTag(LocationTag.KEY).orElse(""));
+    }
+
+    /**
+     * Checks if given {@link AtlasObject} is a pedestrian area or not. A pedestrian area is an
+     * {@link AtlasObject} with "area=yes" and "highway=pedestrian" tags.
+     *
+     * @param object
+     *            any {@link AtlasObject}
+     * @return true if the object is a pedestrian area
+     */
+    private boolean isPedestrianArea(final AtlasObject object)
+    {
+        return Validators.isOfType(object, AreaTag.class, AreaTag.YES)
+                && Validators.isOfType(object, HighwayTag.class, HighwayTag.PEDESTRIAN);
+    }
+
+    /**
+     * Checks if an intersecting edge has a different osm id than the area, does not have pedestrian
+     * highway tags and is of the same level or layer as the area.
+     *
+     * @param intersectingEdge
+     *            any intersecting edge
+     * @param area
+     *            Area
+     * @return true if the edge is a valid intersecting edge
+     */
+    private boolean isValidIntersectingEdge(final Edge intersectingEdge, final Area area)
+    {
+        return
+        // We do not want any pedestrian edges that are also pedestrian areas.
+        // Currently, pedestrian ways are ingested as both edges and as areas.
+        intersectingEdge.getOsmIdentifier() != area.getOsmIdentifier()
+                && intersectingEdge.isMasterEdge()
+                // Valid edge should have a highway class other than foot way, path, pedestrian or
+                // steps
+                && this.isNotPedestrianHighway(intersectingEdge)
+                // and should have the same layer or level tag if any, as the area
+                && this.isOfSameElevation(intersectingEdge, area);
     }
 }

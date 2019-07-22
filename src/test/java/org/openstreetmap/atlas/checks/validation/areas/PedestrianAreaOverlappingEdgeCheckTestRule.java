@@ -152,6 +152,11 @@ public class PedestrianAreaOverlappingEdgeCheckTestRule extends CoreTestRule
         return this.correctlySnappedAtlas;
     }
 
+    public Atlas getEdgesWithDifferentElevation()
+    {
+        return this.edgesWithDifferentElevation;
+    }
+
     public Atlas getInCorrectlySnappedAtlas()
     {
         return this.inCorrectlySnappedAtlas;
@@ -160,10 +165,5 @@ public class PedestrianAreaOverlappingEdgeCheckTestRule extends CoreTestRule
     public Atlas getIntersectingEdgeEndingInsideArea()
     {
         return this.intersectingEdgeEndingInsideArea;
-    }
-
-    public Atlas getEdgesWithDifferentElevation()
-    {
-        return this.edgesWithDifferentElevation;
     }
 }
