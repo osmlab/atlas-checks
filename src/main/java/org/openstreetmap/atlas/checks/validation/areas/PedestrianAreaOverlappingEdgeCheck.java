@@ -25,7 +25,15 @@ import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * @author sayana_saithu
+ * This check flags pedestrian areas that are not properly snapped to its valid
+ * intersecting/overlapping edges. A pedestrian area is an {@link Area} with {@link HighwayTag} =
+ * "pedestrian" tag. Valid intersecting edges are edges with the same elevation(same
+ * {@link LayerTag}, {@link LocationTag}) as the area, and highway tag value not equal to foot way,
+ * pedestrian, steps and path. The pedestrian area and any valid intersecting/ overlapping edge that
+ * is not snapped to the area are flagged along with its connected edges that are within the
+ * pedestrian area.
+ *
+ * @author sayas01
  */
 public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
 {

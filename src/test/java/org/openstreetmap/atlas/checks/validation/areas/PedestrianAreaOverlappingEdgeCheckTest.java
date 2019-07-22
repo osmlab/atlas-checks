@@ -28,6 +28,14 @@ public class PedestrianAreaOverlappingEdgeCheckTest
     }
 
     @Test
+    public void testEdgesWithDifferentElevation()
+    {
+        this.verifier.actual(this.setup.getEdgesWithDifferentElevation(),
+                new PedestrianAreaOverlappingEdgeCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testInCorrectlySnappedEdge()
     {
         this.verifier.actual(this.setup.getInCorrectlySnappedAtlas(),
@@ -43,13 +51,5 @@ public class PedestrianAreaOverlappingEdgeCheckTest
                 new PedestrianAreaOverlappingEdgeCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
-    }
-
-    @Test
-    public void testEdgesWithDifferentElevation()
-    {
-        this.verifier.actual(this.setup.getEdgesWithDifferentElevation(),
-                new PedestrianAreaOverlappingEdgeCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
     }
 }
