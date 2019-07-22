@@ -56,10 +56,11 @@ public class FlaggedPoint extends FlaggedObject
     @Override
     public FlaggedObject getAsCompleteFlaggedObject()
     {
-        if(this.locationItem instanceof Point)
+        if (this.locationItem instanceof Point)
         {
             this.locationItem = CompletePoint.from((Point) this.locationItem);
-        }else if(this.locationItem instanceof Node)
+        }
+        else if (this.locationItem instanceof Node)
         {
             this.locationItem = CompleteNode.from((Node) this.locationItem);
         }
