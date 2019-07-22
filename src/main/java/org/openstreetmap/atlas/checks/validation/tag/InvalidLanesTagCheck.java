@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.BarrierTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LanesTag;
@@ -24,7 +25,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author bbreithaupt
  */
-public class InvalidLanesTagCheck extends BaseCheck
+public class InvalidLanesTagCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = -1459761692833694715L;
 
@@ -83,7 +84,9 @@ public class InvalidLanesTagCheck extends BaseCheck
         if (this.isChecked.contains(object.getIdentifier()) || !partOfTollBooth(object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
+
+            // We know that object is an edge from validCheckForObject
+            return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         return Optional.empty();

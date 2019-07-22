@@ -7,6 +7,8 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
+ * Unit tests for {@link SinkIslandCheck}
+ *
  * @author matthieun
  * @author gpogulsky
  * @author nachtm
@@ -19,6 +21,22 @@ public class SinkIslandCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void testEdgesEndingInBuilding()
+    {
+        this.verifier.actual(this.setup.getEdgesEndingInBuilding(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testEdgesWithinAirport()
+    {
+        this.verifier.actual(this.setup.getEdgesWithinAirport(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
+    }
 
     @Test
     public void testEdgesWithinAreasWithAmenityTags()
@@ -43,7 +61,23 @@ public class SinkIslandCheckTest
         this.verifier.actual(this.setup.getInvalidEdges(),
                 new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testNonCarNavigableEdges()
+    {
+        this.verifier.actual(this.setup.getNonCarNavigableEdges(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testParkingGarageEntranceOrExit()
+    {
+        this.verifier.actual(this.setup.getParkingGarageEntranceOrExit(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
     }
 
     @Test

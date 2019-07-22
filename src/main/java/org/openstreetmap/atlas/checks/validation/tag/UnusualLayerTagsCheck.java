@@ -3,12 +3,14 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
@@ -105,12 +107,14 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         // mark osm id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
 
+        // Gather all edges from the original way
+        final Set<Edge> osmWay = new OsmWayWalker((Edge) object).collectEdges();
         // Rule: tunnel edges must have a layer tag value in [-5, -1]
         if (TunnelTag.isTunnel(object)
                 && (!isTagValueValid || layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE
                         || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE))
         {
-            return Optional.of(createFlag(object, this.getLocalizedInstruction(0)));
+            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(0)));
         }
 
         // Rule: bridge edges must have no layer tag or a layer tag value in [1, 5]
@@ -118,14 +122,14 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
                 && (!isTagValueValid || layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
                         || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE))
         {
-            return Optional.of(createFlag(object, this.getLocalizedInstruction(2)));
+            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(2)));
         }
 
         // Rule: Junction edges with valid layer must include bridge or tunnel tag
         if (JunctionTag.isRoundabout(object) && isTagValueValid && layerTagValue.get() != 0L
                 && !(TunnelTag.isTunnel(object) || BridgeTag.isBridge(object)))
         {
-            return Optional.of(createFlag(object, this.getLocalizedInstruction(1)));
+            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(1)));
         }
 
         // Verify that if layer tag is present it should have a valid long value
@@ -133,7 +137,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         // checks create a more specific flag
         if (!isTagValueValid)
         {
-            return Optional.of(createFlag(object, this.getLocalizedInstruction(THREE)));
+            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(THREE)));
         }
 
         return Optional.empty();

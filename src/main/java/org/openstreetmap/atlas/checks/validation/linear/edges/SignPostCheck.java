@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -169,7 +170,7 @@ public class SignPostCheck extends BaseCheck<String>
                         RelationTypeTag.class, RelationTypeTag.DESTINATION_SIGN)))
         {
             flag.addInstruction(this.getLocalizedInstruction(1, edge.getOsmIdentifier()));
-            flag.addObject(edge);
+            flag.addObjects(new OsmWayWalker(edge).collectEdges());
         }
 
         // Return the flag if it has any flagged objects in it
