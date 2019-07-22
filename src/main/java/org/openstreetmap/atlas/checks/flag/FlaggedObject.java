@@ -78,6 +78,7 @@ public abstract class FlaggedObject implements Serializable, Located
     public abstract Iterable<Location> getGeometry();
 
     protected abstract Optional<AtlasObject> getObject();
+
     /**
      * @return flag key-value property map
      */
