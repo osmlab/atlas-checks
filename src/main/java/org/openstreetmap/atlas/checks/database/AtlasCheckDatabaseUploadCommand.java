@@ -11,7 +11,9 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
 
@@ -49,7 +51,8 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int FIVE = 5;
-    
+    private static final int BATCH_SIZE = 1000;
+
     /**
      * An enum containing the different types of input files that we can handle.
      */
@@ -58,16 +61,16 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         LOG,
         COMPRESSED_LOG
     }
-    
+
     private static final Logger logger = LoggerFactory
             .getLogger(AtlasCheckDatabaseUploadCommand.class);
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
-    
+
     public static void main(final String[] args)
     {
         new AtlasCheckDatabaseUploadCommand().runSubcommandAndExit(args);
     }
-    
+
     public AtlasCheckDatabaseUploadCommand()
     {
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
@@ -81,9 +84,9 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         final DatabaseConnection database = new DatabaseConnection(
                 this.optionAndArgumentDelegate.getOptionArgument(DATABASE_URL_INPUT).get());
         final Connection databaseConnection = database.getDatabaseConnection();
-        final String inputPath = this.optionAndArgumentDelegate
-                .getOptionArgument(FLAG_PATH_INPUT).get();
-        
+        final String inputPath = this.optionAndArgumentDelegate.getOptionArgument(FLAG_PATH_INPUT)
+                .get();
+
         new File(inputPath).listFilesRecursively().parallelStream().forEach(file ->
         {
             // If this file is something we handle, read and upload the tasks contained within
@@ -94,46 +97,62 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                 try (BufferedReader reader = this.getReader(file, outputFileType))
                 {
 
-                    reader.lines().forEach(line ->
+                    try
                     {
-                        final JsonObject parsedFlag = new JsonParser().parse(line)
-                                .getAsJsonObject();
-                        final JsonArray features = this.filterOutPointsFromGeojson(
-                                parsedFlag.get(FEATURES).getAsJsonArray());
+                        final PreparedStatement flagSqlStatement = databaseConnection
+                                .prepareStatement(
+                                        "INSERT INTO flag(flag_id, check_name, instructions) VALUES (?,?,?);");
 
-                        final Gson gson = new GsonBuilder()
-                                .registerTypeAdapter(CheckFlag.class, new FlagDeserializer())
-                                .create();
-                        final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
+                        final PreparedStatement featureSqlStatement = databaseConnection
+                                .prepareStatement(String.format(
+                                        "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code) VALUES (%s,%s,?,?,?);",
+                                        "(SELECT id FROM flag WHERE flag_id = ? LIMIT 1)",
+                                        "ST_GeomFromGeoJSON(?)"));
 
-                        final Optional<PreparedStatement> statement = this
-                                .getFlagStatement(databaseConnection, flag);
+                        List<String> lines = reader.lines().collect(Collectors.toList());
 
-                        if (statement.isPresent())
+                        int startIndex = 0;
+                        int endIndex;
+
+                        do
                         {
-                            try
+                            endIndex = Math.min(startIndex + BATCH_SIZE, lines.size());
+                            List<String> batchLines = lines.subList(startIndex, endIndex);
+
+                            batchLines.forEach(line ->
                             {
-                                statement.get().execute();
-                                statement.get().close();
-                                final PreparedStatement sql = databaseConnection.prepareStatement(String
-                                        .format("INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code) VALUES (%s,%s,?,?,?);",
-                                                "(SELECT id FROM flag WHERE flag_id = ? LIMIT 1)",
-                                                "ST_GeomFromGeoJSON(?)"));
+                                final JsonObject parsedFlag = new JsonParser().parse(line)
+                                        .getAsJsonObject();
+                                final JsonArray features = this.filterOutPointsFromGeojson(
+                                        parsedFlag.get(FEATURES).getAsJsonArray());
+                                final Gson gson = new GsonBuilder().registerTypeAdapter(
+                                        CheckFlag.class, new FlagDeserializer()).create();
+                                final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
+
+                                this.batchFlagStatement(flagSqlStatement, flag);
 
                                 StreamSupport.stream(features.spliterator(), false)
-                                        .forEach(feature -> this.batchFlagFeatureStatement(sql,
-                                                flag, feature.getAsJsonObject()));
+                                        .forEach(feature -> this.batchFlagFeatureStatement(
+                                                featureSqlStatement, flag,
+                                                feature.getAsJsonObject()));
+                            });
 
-                                sql.executeBatch();
-                                sql.close();
-                            }
-                            catch (final SQLException error)
-                            {
-                                logger.error("Error creating flag {}", flag.getIdentifier(), error);
-                            }
+                            flagSqlStatement.executeBatch();
+                            featureSqlStatement.executeBatch();
+
+                            logger.debug("Start index {} end index {}", startIndex, endIndex);
+                            startIndex = startIndex + BATCH_SIZE;
                         }
+                        while (endIndex != lines.size() - 1 && startIndex < lines.size());
 
-                    });
+                        featureSqlStatement.close();
+                        flagSqlStatement.close();
+
+                    }
+                    catch (final SQLException error)
+                    {
+                        logger.error("Exception batch executing flag statements", error);
+                    }
 
                 }
                 catch (final IOException error)
@@ -181,17 +200,17 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         this.registerOptionWithRequiredArgument(COUNTRIES_INPUT, 'i',
                 "List of iso3 country codes to filter by", OptionOptionality.OPTIONAL,
                 COUNTRIES_INPUT);
-        this.registerOptionWithRequiredArgument(CHECKS_INPUT, 'c',
-                "A folder to output results to.", OptionOptionality.OPTIONAL, CHECKS_INPUT);
+        this.registerOptionWithRequiredArgument(CHECKS_INPUT, 'c', "A folder to output results to.",
+                OptionOptionality.OPTIONAL, CHECKS_INPUT);
         super.registerOptionsAndArguments();
     }
-    
+
     private void batchFlagFeatureStatement(final PreparedStatement sql, final CheckFlag flag,
             final JsonObject feature)
     {
-        
+
         final JsonObject properties = feature.get(PROPERTIES).getAsJsonObject();
-        
+
         try
         {
             sql.setString(1, flag.getIdentifier());
@@ -202,37 +221,33 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                     properties.has("iso_country_code")
                             ? properties.get("iso_country_code").getAsString()
                             : "NA");
-            
+
             sql.addBatch();
         }
         catch (final SQLException error)
         {
             logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
         }
-        
+
     }
-    
-    private Optional<PreparedStatement> getFlagStatement(final Connection database,
-            final CheckFlag flag)
+
+    private void batchFlagStatement(final PreparedStatement sql, final CheckFlag flag)
     {
         try
         {
-            final PreparedStatement sql = database.prepareStatement(
-                    "INSERT INTO flag(flag_id, check_name, instructions) VALUES (?,?,?);");
             sql.setString(1, flag.getIdentifier());
             sql.setString(2, flag.getChallengeName().orElse(""));
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
-            
-            return Optional.of(sql);
+
+            sql.addBatch();
+
         }
         catch (final SQLException error)
         {
             logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
         }
-        
-        return Optional.empty();
     }
-    
+
     private JsonArray filterOutPointsFromGeojson(final JsonArray features)
     {
         return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
@@ -240,7 +255,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                         && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
-    
+
     /**
      * Determine whether or not this file is something we can handle, and classify it accordingly.
      *

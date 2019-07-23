@@ -16,7 +16,7 @@ CREATE TABLE flag (
 DROP TABLE IF EXISTS feature CASCADE;
 CREATE TABLE feature (
   id serial primary key,
-  flag_id bigint references flag(id),
+  flag_id bigint,
   geom geometry not null,
   osm_id bigint,
   atlas_id bigint,
