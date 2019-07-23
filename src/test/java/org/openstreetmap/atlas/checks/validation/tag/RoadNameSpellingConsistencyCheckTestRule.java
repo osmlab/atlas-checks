@@ -113,7 +113,7 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aroad" }),
                     @Edge(id = "1000000003", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=aroa∂" }) })
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=a®oad" }) })
     private Atlas oneSegmentInconsistentSpellingAccent;
 
     @TestAtlas(
@@ -139,9 +139,9 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=aroa∂" }) })
     private Atlas allSegmentsInconsistentSpelling;
 
-    public Atlas getOneSegmentInconsistentSpelling()
+    public Atlas getAllSegmentsInconsistentSpelling()
     {
-        return this.oneSegmentInconsistentSpelling;
+        return this.allSegmentsInconsistentSpelling;
     }
 
     public Atlas getMoreThanOneSegmentInconsistentSpelling()
@@ -154,13 +154,14 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
         return this.noSegmentsInconsistentSpelling;
     }
 
+    public Atlas getOneSegmentInconsistentSpelling()
+    {
+        return this.oneSegmentInconsistentSpelling;
+    }
+
     public Atlas getOneSegmentInconsistentSpellingAccent()
     {
         return this.oneSegmentInconsistentSpellingAccent;
     }
 
-    public Atlas getAllSegmentsInconsistentSpelling()
-    {
-        return this.allSegmentsInconsistentSpelling;
-    }
 }

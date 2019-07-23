@@ -8,6 +8,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 
 /**
  * {@link RoadNameSpellingConsistencyCheck} unit tests
+ * Note: More than one road may be contained in a single flag.
  *
  * @author seancoulter
  */
@@ -21,9 +22,9 @@ public class RoadNameSpellingConsistencyCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void oneSegmentInconsistentSpelling()
+    public void allSegmentsInconsistentSpelling()
     {
-        this.verifier.actual(this.setup.getOneSegmentInconsistentSpelling(),
+        this.verifier.actual(this.setup.getAllSegmentsInconsistentSpelling(),
                 new RoadNameSpellingConsistencyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -37,9 +38,17 @@ public class RoadNameSpellingConsistencyCheckTest
     }
 
     @Test
-    public void allSegmentsInconsistentSpelling()
+    public void noSegmentsInconsistentSpelling()
     {
-        this.verifier.actual(this.setup.getAllSegmentsInconsistentSpelling(),
+        this.verifier.actual(this.setup.getNoSegmentsInconsistentSpelling(),
+                new RoadNameSpellingConsistencyCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void oneSegmentInconsistentSpelling()
+    {
+        this.verifier.actual(this.setup.getOneSegmentInconsistentSpelling(),
                 new RoadNameSpellingConsistencyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -50,14 +59,6 @@ public class RoadNameSpellingConsistencyCheckTest
         this.verifier.actual(this.setup.getOneSegmentInconsistentSpellingAccent(),
                 new RoadNameSpellingConsistencyCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void noSegmentsInconsistentSpelling()
-    {
-        this.verifier.actual(this.setup.getNoSegmentsInconsistentSpelling(),
-                new RoadNameSpellingConsistencyCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
     }
 
 }
