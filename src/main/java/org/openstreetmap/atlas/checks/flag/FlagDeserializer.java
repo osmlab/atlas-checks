@@ -16,7 +16,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-
 /**
  * Deserializes a line from a line-delimited geojson log file into into a Task object, given a
  * particular project name.
@@ -40,7 +39,7 @@ public class FlagDeserializer implements JsonDeserializer<CheckFlag>
 
     @Override
     public CheckFlag deserialize(final JsonElement json, final Type typeOfT,
-                                 final JsonDeserializationContext context)
+            final JsonDeserializationContext context)
     {
         final JsonObject full = json.getAsJsonObject();
         final JsonObject properties = full.get(PROPERTIES).getAsJsonObject();
