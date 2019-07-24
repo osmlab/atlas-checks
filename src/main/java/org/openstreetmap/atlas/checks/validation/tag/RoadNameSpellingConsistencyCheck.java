@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -24,9 +25,9 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 1L;
 
     private static final HighwayTag MINIMUM_NAME_PRIORITY_DEFAULT = HighwayTag.SERVICE;
-    private static final double MAXIMUM_SEARCH_DISTANCE_DEFAULT = 1000.0;
+    private static final double MAXIMUM_SEARCH_DISTANCE_DEFAULT = 300.0;
     private static final double MAXIMUM_CHARACTER_DIFFERENCES_DEFAULT = 1;
-    private static final String FALLBACK_INSTRUCTIONS = "These road segments have spelling inconsistencies. One spelling is: %s. Examine all flagged road segments to determine the best spelling, and apply this spelling to all flagged segments.";
+    private static final String FALLBACK_INSTRUCTIONS = "These road segments have spelling inconsistencies. One spelling is: %s. Examine all flagged road segments to determine the best spelling, and apply this spelling to all of those segments.";
 
     private final Distance maximumSearchDistance;
     private final double inconsistentCharacterCountThreshold;
@@ -51,8 +52,8 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge
-                && ((Edge) object).highwayTag()
-                        .isMoreImportantThanOrEqualTo(MINIMUM_NAME_PRIORITY_DEFAULT)
+                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(
+                        MINIMUM_NAME_PRIORITY_DEFAULT)
                 && ((Edge) object).isMasterEdge() && !this.isFlagged(object.getIdentifier())
                 && ((Edge) object).getName().isPresent();
     }
@@ -79,17 +80,23 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
             return Optional.empty();
         }
 
-        // Collect all of the Edges within a search distance that have NameTags that
-        // aren't the same as firstEdgeName
+        // Collect all of the Edges within a search distance, then filter those that have NameTags
+        // that are slightly different than edge
         final Set<Edge> inconsistentEdgeSet = new RoadNameSpellingConsistencyCheckWalker(edge,
-                this.maximumSearchDistance, this.inconsistentCharacterCountThreshold)
-                        .collectEdges();
+                this.maximumSearchDistance)
+                        .collectEdges().stream()
+                        .filter(RoadNameSpellingConsistencyCheckWalker.getCandidateEdges(edge,
+                                (int) inconsistentCharacterCountThreshold))
+                        .filter(incomingEdge -> !this.isFlagged(incomingEdge.getIdentifier()))
+                        .collect(Collectors.toSet());
 
         // If the Walker found any inconsistent NameTag spellings
         if (inconsistentEdgeSet.size() > 1)
         {
-            // inconsistentEdgeSet.forEach(inconsistentEdge -> this.markAsFlagged(inconsistentEdge.getIdentifier()));
-            return Optional.of(this.createFlag(edge, String.format(FALLBACK_INSTRUCTIONS, "\"" + edge.getName().get() + "\"")));
+            inconsistentEdgeSet.forEach(
+                    inconsistentEdge -> this.markAsFlagged(inconsistentEdge.getIdentifier()));
+            return Optional.of(this.createFlag(inconsistentEdgeSet,
+                    String.format(FALLBACK_INSTRUCTIONS, "\"" + edge.getName().get() + "\"")));
         }
 
         // There are no spelling inconsistencies among the road's segments

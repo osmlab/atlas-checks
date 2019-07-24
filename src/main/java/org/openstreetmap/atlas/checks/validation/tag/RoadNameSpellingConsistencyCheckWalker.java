@@ -22,7 +22,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 {
 
     /**
-     * Direction character, sometimes appended to start/end of road name
+     * Directional character, sometimes appended to start/end of road name (e.g. Banana Ave W)
      */
     enum Direction
     {
@@ -38,6 +38,28 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static final int NINE = 9;
 
     private static final int ZERO = 0;
+
+    // ASCII character to digit offset
+    private static final int ASCII_OFFSET = 48;
+
+    /**
+     * @param startEdge
+     *            the edge from which the search started
+     * @param maximumAllowedDifferences
+     *            the number of Levenshtein edits allowed
+     * @return edges that are in the search area and whose names are at most the desired Levenshtein
+     *         distance from the start edge's
+     */
+    static Predicate<Edge> getCandidateEdges(final Edge startEdge,
+            final int maximumAllowedDifferences)
+    {
+        // evaluate name tag of startEdge vs incoming Edge
+        return incomingEdge ->
+        {
+            final int similarityIndex = similarityIndex(incomingEdge, startEdge);
+            return similarityIndex <= maximumAllowedDifferences && similarityIndex > 0;
+        };
+    }
 
     /**
      * @param first
@@ -80,25 +102,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * @param startEdge
-     *            the edge from which the search started
-     * @param maximumAllowedDifferences
-     *            the number of Levenshtein edits allowed
-     * @return edges that are in the search area and whose names are at most the desired Levenshtein
-     *         distance from the start edge's
-     */
-    private static Predicate<Edge> getCandidateEdges(final Edge startEdge,
-            final int maximumAllowedDifferences)
-    {
-        // evaluate name tag of startEdge vs incoming Edge
-        return incomingEdge ->
-        {
-            final int similarityIndex = similarityIndex(incomingEdge, startEdge);
-            return similarityIndex <= maximumAllowedDifferences && similarityIndex > 0;
-        };
-    }
-
-    /**
      * @param oneCharacterString
      *            the string to be converted to a character
      * @return a char representation of the parameter String
@@ -109,8 +112,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Compute the Levenshtein distance between two road names
-     * Code used to calculate Levenshtein distance is adapted from https://www.baeldung.com/java-levenshtein-distance
+     * Compute the Levenshtein distance between two road names. Code used to calculate Levenshtein
+     * distance is adapted from https://www.baeldung.com/java-levenshtein-distance
      *
      * @param incomingEdgeName
      *            the name of the next edge in the search area
@@ -118,9 +121,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *            the name of the edge from which the search started
      * @return the Levenshtein distance between two edge's names
      */
-    private static int getLevenshteinDistance(final String incomingEdgeName, final String startingEdgeName)
+    private static int getLevenshteinDistance(final String incomingEdgeName,
+            final String startingEdgeName)
     {
-        final int[][] results = new int[incomingEdgeName.length() + 1][startingEdgeName.length() + 1];
+        final int[][] results = new int[incomingEdgeName.length() + 1][startingEdgeName.length()
+                + 1];
 
         // Roads differ by one directional character (N,S,E, or W) in their name strings
         boolean possibleDirectionalDifference = false;
@@ -132,16 +137,23 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         {
             for (int j = 0; j <= startingEdgeName.length(); j++)
             {
-                // Handles one directional character differences between roads. Meant to capture differences in directionality; e.g. in Pie St. N vs. Pie St. S, neither should be flagged as being inconsistent with one another.
-                if(!possibleDirectionalDifference && i == j && i < incomingEdgeName.length())
+                // Handles one directional character differences between roads. Meant to capture
+                // differences in directionality; e.g. in Pie St. N vs. Pie St. S, neither should be
+                // flagged as being inconsistent with one another.
+                if (!possibleDirectionalDifference && i == j && i < incomingEdgeName.length()
+                        && j < startingEdgeName.length())
                 {
-                    possibleDirectionalDifference = hasDirectionalCharacterDifference(incomingEdgeName.charAt(i), startingEdgeName.charAt(j));
+                    possibleDirectionalDifference = hasDirectionalCharacterDifference(
+                            incomingEdgeName.charAt(i), startingEdgeName.charAt(j));
                 }
 
-                // Handles one number character differences between roads. Records if the startingEdgeName and incomingEdgeName differ by one number in their name strings.
-                if(!singleNumericalDifference && i == j && i < incomingEdgeName.length())
+                // Handles one number character differences between roads. Records if the
+                // startingEdgeName and incomingEdgeName differ by one number in their name strings.
+                if (!singleNumericalDifference && i == j && i < incomingEdgeName.length()
+                        && j < startingEdgeName.length())
                 {
-                    singleNumericalDifference = hasNumericalCharacterDifference(incomingEdgeName.charAt(i), startingEdgeName.charAt(j));
+                    singleNumericalDifference = hasNumericalCharacterDifference(
+                            incomingEdgeName.charAt(i), startingEdgeName.charAt(j));
                 }
 
                 if (i == 0)
@@ -163,31 +175,45 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
                 }
             }
         }
-        // If there's only a single character difference and that character is a directional OR numerical character, we consider both roads to be different and so we don't flag them.
+        // If there's only a single character difference and that character is a directional OR
+        // numerical character, we consider both roads to be different and so we don't flag them.
         // Else we return the Levenshtein distance as usual.
-        return (possibleDirectionalDifference || singleNumericalDifference) && results[incomingEdgeName.length()][startingEdgeName.length()] == 1 ? -1 : results[incomingEdgeName.length()][startingEdgeName.length()];
+        return (possibleDirectionalDifference || singleNumericalDifference)
+                && results[incomingEdgeName.length()][startingEdgeName.length()] == 1 ? -1
+                        : results[incomingEdgeName.length()][startingEdgeName.length()];
     }
 
     /**
-     *
-     * @param incomingEdgeCharacter the incoming Edge's character
-     * @param startingEdgeCharacter the starting Edge's character
-     * @return true if the parameter characters are both directional (members of Direction enum) AND they are different from one another
+     * @param incomingEdgeCharacter
+     *            the incoming Edge's character
+     * @param startingEdgeCharacter
+     *            the starting Edge's character
+     * @return true if the parameter characters are both directional (members of Direction enum) AND
+     *         they are different from one another
      */
-    private static boolean hasDirectionalCharacterDifference(final char incomingEdgeCharacter, final char startingEdgeCharacter)
+    private static boolean hasDirectionalCharacterDifference(final char incomingEdgeCharacter,
+            final char startingEdgeCharacter)
     {
-        return DIRECTIONS.stream().map(Enum::toString).filter(equalCharacter(incomingEdgeCharacter).or(equalCharacter(startingEdgeCharacter))).count() >= 2;
+        return DIRECTIONS.stream().map(Enum::toString).filter(
+                equalCharacter(incomingEdgeCharacter).or(equalCharacter(startingEdgeCharacter)))
+                .count() >= 2;
     }
 
     /**
-     *
-     * @param incomingEdgeCharacter the incoming Edge's character
-     * @param startingEdgeCharacter the starting Edge's character
+     * @param incomingEdgeCharacter
+     *            the incoming Edge's character
+     * @param startingEdgeCharacter
+     *            the starting Edge's character
      * @return true if both parameter characters are different numbers in [0,9], false otherwise
      */
-    private static boolean hasNumericalCharacterDifference(final char incomingEdgeCharacter, final char startingEdgeCharacter)
+    private static boolean hasNumericalCharacterDifference(final char incomingEdgeCharacter,
+            final char startingEdgeCharacter)
     {
-        return Character.isDigit(incomingEdgeCharacter) && Character.isDigit(startingEdgeCharacter) ? IntStream.range(ZERO, NINE).filter(number -> number == incomingEdgeCharacter || number == startingEdgeCharacter).count() >= 2 : false;
+        return Character.isDigit(incomingEdgeCharacter) && Character.isDigit(startingEdgeCharacter)
+                && IntStream.range(ZERO, NINE)
+                        .filter(number -> number == (incomingEdgeCharacter - ASCII_OFFSET)
+                                || number == (startingEdgeCharacter - ASCII_OFFSET))
+                        .count() >= 2;
     }
 
     /**
@@ -236,14 +262,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      * @param maximumSearchDistance
      *            the maximum distance from the end of the incoming edge to the start of the
      *            starting edge
-     * @param maximumAllowedDifferences
-     *            the number of Levenshtein edits allowed
      */
     RoadNameSpellingConsistencyCheckWalker(final Edge startEdge,
-            final Distance maximumSearchDistance, final double maximumAllowedDifferences)
+            final Distance maximumSearchDistance)
     {
-        super(startEdge, getCandidateEdges(startEdge, (int) maximumAllowedDifferences),
-                edgesWithinMaximumSearchDistance(startEdge, maximumSearchDistance));
+        super(startEdge, edgesWithinMaximumSearchDistance(startEdge, maximumSearchDistance));
     }
 
 }
