@@ -16,9 +16,12 @@ import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.AreaTag;
+import org.openstreetmap.atlas.tags.FootTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.tags.LocationTag;
+import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
@@ -113,8 +116,9 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
             {
                 // Collect all connected edges that are within the pedestrian area
                 edge.connectedEdges().stream()
-                        .filter(connectedEdge -> connectedEdge.isMasterEdge() && areaPolygon
-                                .fullyGeometricallyEncloses(connectedEdge.asPolyLine()))
+                        .filter(connectedEdge -> this.isValidIntersectingEdge(connectedEdge, area)
+                                && areaPolygon
+                                        .fullyGeometricallyEncloses(connectedEdge.asPolyLine()))
                         .forEach(overlappingEdges::add);
                 // Add the intersecting edge as well to the set
                 overlappingEdges.add(edge);
@@ -153,20 +157,6 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if the given edge is not a pedestrian way by checking its highway classification.
-     *
-     * @param edge
-     *            any given edge
-     * @return true if the edge is not a pedestrian way, false otherwise
-     */
-    private boolean isNotPedestrianHighway(final Edge edge)
-    {
-        return Validators.hasValuesFor(edge, HighwayTag.class)
-                && Validators.isNotOfType(edge, HighwayTag.class, HighwayTag.FOOTWAY,
-                        HighwayTag.PATH, HighwayTag.PEDESTRIAN, HighwayTag.STEPS);
-    }
-
-    /**
      * Checks if the locations are not snapped to the edges or not. If snapped, both the locations
      * should lie on the same segment.
      *
@@ -199,7 +189,9 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     {
         return area.getTag(LayerTag.KEY).orElse("").equals(edge.getTag(LayerTag.KEY).orElse(""))
                 && area.getTag(LocationTag.KEY).orElse("")
-                        .equals(edge.getTag(LocationTag.KEY).orElse(""));
+                        .equals(edge.getTag(LocationTag.KEY).orElse(""))
+                && area.getTag(LevelTag.KEY).orElse("")
+                        .equals(edge.getTag(LevelTag.KEY).orElse(""));
     }
 
     /**
@@ -218,25 +210,30 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
 
     /**
      * Checks if an intersecting edge has a different osm id than the area, does not have pedestrian
-     * highway tags and is of the same level or layer as the area.
+     * highway tags, is car navigable and is of the same level or layer as the area.
      *
-     * @param intersectingEdge
+     * @param edge
      *            any intersecting edge
      * @param area
      *            Area
      * @return true if the edge is a valid intersecting edge
      */
-    private boolean isValidIntersectingEdge(final Edge intersectingEdge, final Area area)
+    private boolean isValidIntersectingEdge(final Edge edge, final Area area)
     {
         return
         // We do not want any pedestrian edges that are also pedestrian areas.
         // Currently, pedestrian ways are ingested as both edges and as areas.
-        intersectingEdge.getOsmIdentifier() != area.getOsmIdentifier()
-                && intersectingEdge.isMasterEdge()
-                // Valid edge should have a highway class other than foot way, path, pedestrian or
-                // steps
-                && this.isNotPedestrianHighway(intersectingEdge)
+        edge.getOsmIdentifier() != area.getOsmIdentifier() && edge.isMasterEdge()
+                && !HighwayTag.isPedestrianNavigableHighway(edge)
+                // Valid edge should be a car navigable highway
+                && (HighwayTag.isCarNavigableHighway(edge)
+                        // or a cycleway with no foot access
+                        || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.CYCLEWAY)
+                                && Validators.isNotOfType(edge, FootTag.class, FootTag.NO))
+                        // or a service road that is not a yard, siding, spur or crossover
+                        || Validators.isNotOfType(edge, ServiceTag.class, ServiceTag.YARD,
+                                ServiceTag.SIDING, ServiceTag.SPUR, ServiceTag.CROSSOVER))
                 // and should have the same layer or level tag if any, as the area
-                && this.isOfSameElevation(intersectingEdge, area);
+                && this.isOfSameElevation(edge, area);
     }
 }
