@@ -43,17 +43,19 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static final int ASCII_OFFSET = 48;
 
     /**
+     * Evaluate the {@link org.openstreetmap.atlas.tags.names.NameTag}s of the startingEdge and an
+     * incomingEdge to see if their spellings are inconsistent with one another.
+     *
      * @param startEdge
      *            the edge from which the search started
      * @param maximumAllowedDifferences
      *            the number of Levenshtein edits allowed
-     * @return edges that are in the search area and whose names are at most the desired Levenshtein
-     *         distance from the start edge's
+     * @return true if incomingEdge's name is at most the desired Levenshtein distance from the
+     *         start edge's name
      */
-    static Predicate<Edge> getCandidateEdges(final Edge startEdge,
+    static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge,
             final int maximumAllowedDifferences)
     {
-        // evaluate name tag of startEdge vs incoming Edge
         return incomingEdge ->
         {
             final int similarityIndex = similarityIndex(incomingEdge, startEdge);
@@ -62,6 +64,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Determine the cost of substituting two characters in the Levenshtein distance calculation.
+     *
      * @param first
      *            a character to examine for equality with second
      * @param second
@@ -74,6 +78,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * The function used to collect {@link Edge}s that fall within the search area.
+     *
      * @param startEdge
      *            the edge from which the search started
      * @param maximumSearchDistance
@@ -92,6 +98,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Check two characters to see if they're equal.
+     *
      * @param evaluateEdgeCharacter
      *            the character being checked for equality with the lambda parameter
      * @return true if the incoming character is the same as the parameter character
@@ -102,6 +110,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Get the character representation of a one-character String.
+     *
      * @param oneCharacterString
      *            the string to be converted to a character
      * @return a char representation of the parameter String
@@ -113,7 +123,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 
     /**
      * Compute the Levenshtein distance between two road names. Code used to calculate Levenshtein
-     * distance is adapted from https://www.baeldung.com/java-levenshtein-distance
+     * distance is adapted from https://www.baeldung.com/java-levenshtein-distance.
      *
      * @param incomingEdgeName
      *            the name of the next edge in the search area
@@ -130,48 +140,57 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         // Roads differ by one directional character (N,S,E, or W) in their name strings
         boolean possibleDirectionalDifference = false;
 
-        // Roads differ by one number character (1-9) in their name strings
+        // Roads differ by one digit character (1-9) in their name strings
         boolean singleNumericalDifference = false;
 
-        for (int i = 0; i <= incomingEdgeName.length(); i++)
+        for (int incomingEdgeNameIndex = 0; incomingEdgeNameIndex <= incomingEdgeName
+                .length(); incomingEdgeNameIndex++)
         {
-            for (int j = 0; j <= startingEdgeName.length(); j++)
+            for (int startingEdgeNameIndex = 0; startingEdgeNameIndex <= startingEdgeName
+                    .length(); startingEdgeNameIndex++)
             {
                 // Handles one directional character differences between roads. Meant to capture
                 // differences in directionality; e.g. in Pie St. N vs. Pie St. S, neither should be
                 // flagged as being inconsistent with one another.
-                if (!possibleDirectionalDifference && i == j && i < incomingEdgeName.length()
-                        && j < startingEdgeName.length())
+                if (!possibleDirectionalDifference && incomingEdgeNameIndex == startingEdgeNameIndex
+                        && incomingEdgeNameIndex < incomingEdgeName.length()
+                        && startingEdgeNameIndex < startingEdgeName.length())
                 {
                     possibleDirectionalDifference = hasDirectionalCharacterDifference(
-                            incomingEdgeName.charAt(i), startingEdgeName.charAt(j));
+                            incomingEdgeName.charAt(incomingEdgeNameIndex),
+                            startingEdgeName.charAt(startingEdgeNameIndex));
                 }
 
                 // Handles one number character differences between roads. Records if the
                 // startingEdgeName and incomingEdgeName differ by one number in their name strings.
-                if (!singleNumericalDifference && i == j && i < incomingEdgeName.length()
-                        && j < startingEdgeName.length())
+                if (!singleNumericalDifference && incomingEdgeNameIndex == startingEdgeNameIndex
+                        && incomingEdgeNameIndex < incomingEdgeName.length()
+                        && startingEdgeNameIndex < startingEdgeName.length())
                 {
                     singleNumericalDifference = hasNumericalCharacterDifference(
-                            incomingEdgeName.charAt(i), startingEdgeName.charAt(j));
+                            incomingEdgeName.charAt(incomingEdgeNameIndex),
+                            startingEdgeName.charAt(startingEdgeNameIndex));
                 }
 
-                if (i == 0)
+                if (incomingEdgeNameIndex == 0)
                 {
-                    results[i][j] = j;
+                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = startingEdgeNameIndex;
                 }
 
-                else if (j == 0)
+                else if (startingEdgeNameIndex == 0)
                 {
-                    results[i][j] = i;
+                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = incomingEdgeNameIndex;
                 }
 
                 else
                 {
-                    results[i][j] = min(
-                            results[i - 1][j - 1] + costOfSubstitution(
-                                    incomingEdgeName.charAt(i - 1), startingEdgeName.charAt(j - 1)),
-                            results[i - 1][j] + 1, results[i][j - 1] + 1);
+                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = min(
+                            results[incomingEdgeNameIndex - 1][startingEdgeNameIndex - 1]
+                                    + costOfSubstitution(
+                                            incomingEdgeName.charAt(incomingEdgeNameIndex - 1),
+                                            startingEdgeName.charAt(startingEdgeNameIndex - 1)),
+                            results[incomingEdgeNameIndex - 1][startingEdgeNameIndex] + 1,
+                            results[incomingEdgeNameIndex][startingEdgeNameIndex - 1] + 1);
                 }
             }
         }
@@ -184,12 +203,14 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Check if the parameter characters are different directional characters.
+     *
      * @param incomingEdgeCharacter
      *            the incoming Edge's character
      * @param startingEdgeCharacter
      *            the starting Edge's character
      * @return true if the parameter characters are both directional (members of Direction enum) AND
-     *         they are different from one another
+     *         they are different from one another, false otherwise
      */
     private static boolean hasDirectionalCharacterDifference(final char incomingEdgeCharacter,
             final char startingEdgeCharacter)
@@ -200,6 +221,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Check if the parameter characters are different numerical characters.
+     *
      * @param incomingEdgeCharacter
      *            the incoming Edge's character
      * @param startingEdgeCharacter
@@ -217,6 +240,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Retrieve the minimum value out of parameter numbers.
+     *
      * @param numbers
      *            the numbers on which to operate
      * @return the minimum of those numbers
@@ -227,8 +252,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Wrapper for getLevenshteinDistance(). Handles cases where the incoming Edge doesn't have a
-     * name and where the incoming edge has the same name as the starting Edge before computing the
+     * Wrapper for getLevenshteinDistance(). Handles cases where the incomingEdge doesn't have a
+     * name and where the incomingEdge has the same name as the startingEdge before computing the
      * Levenshtein distance.
      *
      * @param incomingEdge
@@ -257,6 +282,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
+     * Walker for {@link RoadNameSpellingConsistencyCheck}.
+     *
      * @param startEdge
      *            the edge from which the search started
      * @param maximumSearchDistance

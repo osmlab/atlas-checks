@@ -7,8 +7,9 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
- * {@link RoadNameSpellingConsistencyCheck} unit tests Note: More than one road may be contained in
- * a single flag.
+ * {@link RoadNameSpellingConsistencyCheck} unit tests. Note: More than one
+ * {@link org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge} may be contained in a single
+ * flag.
  *
  * @author seancoulter
  */

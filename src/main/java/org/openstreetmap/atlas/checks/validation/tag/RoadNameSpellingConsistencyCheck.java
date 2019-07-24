@@ -13,9 +13,9 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
- * Flags road segments that have no name tag or a name tag with a different spelling from other
- * segments of the same road. This check is primarily meant to catch small errors in spelling such
- * as a missing letter or letter accent.
+ * Flags road segments that have no {@link org.openstreetmap.atlas.tags.names.NameTag} or a NameTag
+ * with a different spelling from other segments of the same road. This check is primarily meant to
+ * catch small errors in spelling, such as a missing letter or letter accent mixups.
  *
  * @author seancoulter
  */
@@ -74,19 +74,14 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
 
         final Edge edge = (Edge) object;
 
-        // If this edge's NameTag doesn't exist, it's skipped
-        if (!edge.getName().isPresent())
-        {
-            return Optional.empty();
-        }
-
         // Collect all of the Edges within a search distance, then filter those that have NameTags
         // that are slightly different than edge
         final Set<Edge> inconsistentEdgeSet = new RoadNameSpellingConsistencyCheckWalker(edge,
                 this.maximumSearchDistance)
                         .collectEdges().stream()
-                        .filter(RoadNameSpellingConsistencyCheckWalker.getCandidateEdges(edge,
-                                (int) inconsistentCharacterCountThreshold))
+                        .filter(RoadNameSpellingConsistencyCheckWalker
+                                .isEdgeWithInconsistentSpelling(edge,
+                                        (int) inconsistentCharacterCountThreshold))
                         .filter(incomingEdge -> !this.isFlagged(incomingEdge.getIdentifier()))
                         .collect(Collectors.toSet());
 
