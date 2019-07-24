@@ -14,6 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
+/**
+ * Connect and create the Checks Flags database.
+ *
+ * @author danielbaah
+ */
 public class DatabaseConnection
 {
 
@@ -24,42 +29,42 @@ public class DatabaseConnection
      * Default constructor takes in a url of the form host[:port]/database. Port and additional
      * query params are optional; i.e, localhost/database would default to port 5432. Also,
      * additional query parameters can be appended to the database name; i.e.
-     * localhost/database?user=postgres&currentSchema=public&password=private.
+     * {@code localhost/database?user=postgres&currentSchema=public&password=private}
      * 
      * @see <a href="https://jdbc.postgresql.org/documentation/head/connect.html">JDBC connection
      *      parameters</a>
      * @param connectionUrl
      *            a database url
      */
-    public DatabaseConnection(String connectionUrl)
+    public DatabaseConnection(final String connectionUrl)
     {
         try
         {
             Class.forName("org.postgresql.Driver");
-            URI connectionURI = this.createConnectionURI(connectionUrl);
+            final URI connectionURI = this.createConnectionURI(connectionUrl);
 
             this.databaseConnection = DriverManager
                     .getConnection(String.format("jdbc:%s", connectionURI.toString()));
             this.createDatabaseSchema();
         }
-        catch (ClassNotFoundException error)
+        catch (final ClassNotFoundException error)
         {
             logger.error("Postgres Driver class not found", error);
         }
-        catch (SQLException error)
+        catch (final SQLException error)
         {
             throw new CoreException("Invalid connection string. host[:port]/database", error);
         }
     }
 
-    private URI createConnectionURI(String connectionString)
-    {
-        return URI.create(String.format("postgresql://%s", connectionString));
-    }
-
     public Connection getDatabaseConnection()
     {
-        return databaseConnection;
+        return this.databaseConnection;
+    }
+
+    private URI createConnectionURI(final String connectionString)
+    {
+        return URI.create(String.format("postgresql://%s", connectionString));
     }
 
     private boolean createDatabaseSchema()
@@ -69,19 +74,19 @@ public class DatabaseConnection
         final LineNumberReader lnReader = new LineNumberReader(reader);
         try
         {
-            String query = ScriptUtils
+            final String query = ScriptUtils
                     .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
                             ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
-                    .replace("{schema}", databaseConnection.getSchema());
+                    .replace("{schema}", this.databaseConnection.getSchema());
 
             this.databaseConnection.createStatement().execute(query);
             logger.info("Successfully created database schema.");
 
             return true;
         }
-        catch (final IOException e)
+        catch (final IOException error)
         {
-            logger.error("Error thrown reading schema.sql", e);
+            logger.error("Error thrown reading schema.sql", error);
             return false;
         }
         catch (final SQLException error)

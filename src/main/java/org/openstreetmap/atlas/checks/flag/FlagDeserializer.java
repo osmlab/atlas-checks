@@ -10,7 +10,12 @@ import org.openstreetmap.atlas.geography.Latitude;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 
 /**
  * Deserializes a line from a line-delimited geojson log file into into a Task object, given a
@@ -35,7 +40,7 @@ public class FlagDeserializer implements JsonDeserializer<CheckFlag>
 
     @Override
     public CheckFlag deserialize(final JsonElement json, final Type typeOfT,
-            final JsonDeserializationContext context)
+                                 final JsonDeserializationContext context)
     {
         final JsonObject full = json.getAsJsonObject();
         final JsonObject properties = full.get(PROPERTIES).getAsJsonObject();
