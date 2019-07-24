@@ -4,11 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
@@ -18,61 +17,44 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 public class DatabaseConnection
 {
 
-    private static String DEFAULT_DB_SCHEMA = "public";
-    private static String DEFAULT_DB_USER = "postgres";
-    private static String DEFAULT_DB_PASSWORD = "";
     private Connection databaseConnection;
-    private String schema;
-
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConnection.class);
 
-    public DatabaseConnection(String databaseConnectionUrl)
+    /**
+     * Default constructor takes in a url of the form host[:port]/database. Port and additional
+     * query params are optional; i.e, localhost/database would default to port 5432. Also,
+     * additional query parameters can be appended to the database name; i.e.
+     * localhost/database?user=postgres&currentSchema=public&password=private.
+     * 
+     * @see <a href="https://jdbc.postgresql.org/documentation/head/connect.html">JDBC connection
+     *      parameters</a>
+     * @param connectionUrl
+     *            a database url
+     */
+    public DatabaseConnection(String connectionUrl)
     {
         try
         {
             Class.forName("org.postgresql.Driver");
-            this.databaseConnection = this.createConnectionUrl(databaseConnectionUrl);
+            URI connectionURI = this.createConnectionURI(connectionUrl);
+
+            this.databaseConnection = DriverManager
+                    .getConnection(String.format("jdbc:%s", connectionURI.toString()));
             this.createDatabaseSchema();
         }
         catch (ClassNotFoundException error)
         {
             logger.error("Postgres Driver class not found", error);
         }
-    }
-
-    private Connection createConnectionUrl(String connectionString)
-    {
-
-        final String[] values = connectionString.split(":");
-        final int minimumSize = 3;
-        if (values.length < minimumSize)
-        {
-            throw new CoreException("DB connection url must have at least host:port:database");
-        }
-
-        this.schema = values.length > minimumSize ? values[3] : DEFAULT_DB_SCHEMA;
-        Properties properties = new Properties();
-        properties.setProperty("host", values[0]);
-        properties.setProperty("port", values[1]);
-        properties.setProperty("database", values[2]);
-
-        properties.setProperty("currentSchema", this.schema);
-        properties.setProperty("password",
-                values.length > minimumSize ? values[4] : DEFAULT_DB_PASSWORD);
-
-        try
-        {
-            return DriverManager
-                    .getConnection(
-                            String.format("jdbc:postgresql://%s:%s/%s", properties.get("host"),
-                                    properties.get("port"), properties.get("database")),
-                            properties);
-        }
         catch (SQLException error)
         {
-            throw new CoreException("Invalid Connection String", error);
+            throw new CoreException("Invalid connection string. host[:port]/database", error);
         }
+    }
 
+    private URI createConnectionURI(String connectionString)
+    {
+        return URI.create(String.format("postgresql://%s", connectionString));
     }
 
     public Connection getDatabaseConnection()
@@ -80,27 +62,21 @@ public class DatabaseConnection
         return databaseConnection;
     }
 
-    public String getSchema()
-    {
-        return schema;
-    }
-    
     private boolean createDatabaseSchema()
     {
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
         final LineNumberReader lnReader = new LineNumberReader(reader);
-        String query;
         try
         {
-            query = ScriptUtils.readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
-                    ScriptUtils.DEFAULT_STATEMENT_SEPARATOR);
-            query = query.replace("{schema}", databaseConnection.getSchema().replace("-", "_"));
-            
-            Statement statement = this.databaseConnection.createStatement();
-            statement.execute(query);
+            String query = ScriptUtils
+                    .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
+                            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
+                    .replace("{schema}", databaseConnection.getSchema());
+
+            this.databaseConnection.createStatement().execute(query);
             logger.info("Successfully created database schema.");
-            
+
             return true;
         }
         catch (final IOException e)
