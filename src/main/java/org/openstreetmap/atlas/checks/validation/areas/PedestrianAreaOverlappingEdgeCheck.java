@@ -73,16 +73,16 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Area area = (Area) object;
+        final Polygon areaPolygon = area.asPolygon();
         // All segments of the area
-        final List<Segment> segments = area.asPolygon().segments();
+        final List<Segment> segments = areaPolygon.segments();
         // Get all start and end locations of all segments in the area
         final List<Location> locationsInSegments = Segment.asList(segments);
         // Filter and collect all valid intersecting edges
         final Set<Edge> filteredIntersectingEdges = Iterables
-                .stream(area.getAtlas().edgesIntersecting(area.asPolygon()))
+                .stream(area.getAtlas().edgesIntersecting(areaPolygon))
                 .filter(edge -> this.isValidIntersectingEdge(edge, area)).collectToSet();
         final Set<AtlasObject> overlappingEdges = new HashSet<>();
-        final Polygon areaPolygon = area.asPolygon();
         for (final Edge edge : filteredIntersectingEdges)
         {
             final Location edgeStartLocation = edge.start().getLocation();
@@ -99,16 +99,14 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
                             || edgeEndLocation.equals(segment.end()))
                     .collect(Collectors.toSet());
             // If both ends of the edge intersects the area, check if it is properly snapped by
-            // checking
-            // if both the intersecting points are on the same segment.
+            // checking if both the intersecting points are on the same segment.
             // If none of the filtered segments have both the start and end nodes, then add the
             // edge and all its connected edges that are within the area to flag them.
             if ((intersectsAtStart && intersectsAtEnd && this
                     .isNotSnappedToSegments(filteredSegments, edgeStartLocation, edgeEndLocation))
                     ||
                     // If any one of the end of the connected edge is fully enclosed within the
-                    // area,
-                    // flag the edge and all its connected edges that are within the area.
+                    // area, flag the edge and all its connected edges that are within the area.
                     (intersectsAtStart && !intersectsAtEnd
                             && areaPolygon.fullyGeometricallyEncloses(edgeEndLocation))
                     || (intersectsAtEnd && !intersectsAtStart
