@@ -83,7 +83,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         final Time timer = Time.now();
         final DatabaseConnection database = new DatabaseConnection(
                 this.optionAndArgumentDelegate.getOptionArgument(DATABASE_URL_INPUT).get());
-        final Connection databaseConnection = database.getDatabaseConnection();
+        final Connection databaseConnection = database.getConnection();
         final String inputPath = this.optionAndArgumentDelegate.getOptionArgument(FLAG_PATH_INPUT)
                 .get();
 

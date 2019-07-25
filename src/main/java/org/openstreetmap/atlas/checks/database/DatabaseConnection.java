@@ -8,6 +8,7 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
@@ -15,14 +16,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 /**
- * Connect and create the Checks Flags database.
+ * Connect and create schema for CheckFlag database
  *
  * @author danielbaah
  */
 public class DatabaseConnection
 {
 
-    private Connection databaseConnection;
+    private Connection connection;
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConnection.class);
 
     /**
@@ -40,16 +41,11 @@ public class DatabaseConnection
     {
         try
         {
-            Class.forName("org.postgresql.Driver");
             final URI connectionURI = this.createConnectionURI(connectionUrl);
 
-            this.databaseConnection = DriverManager
+            this.connection = DriverManager
                     .getConnection(String.format("jdbc:%s", connectionURI.toString()));
             this.createDatabaseSchema();
-        }
-        catch (final ClassNotFoundException error)
-        {
-            logger.error("Postgres Driver class not found", error);
         }
         catch (final SQLException error)
         {
@@ -57,9 +53,9 @@ public class DatabaseConnection
         }
     }
 
-    public Connection getDatabaseConnection()
+    public Connection getConnection()
     {
-        return this.databaseConnection;
+        return this.connection;
     }
 
     private URI createConnectionURI(final String connectionString)
@@ -77,9 +73,9 @@ public class DatabaseConnection
             final String query = ScriptUtils
                     .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
                             ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
-                    .replace("{schema}", this.databaseConnection.getSchema());
-
-            this.databaseConnection.createStatement().execute(query);
+                    .replace("{schema}", this.connection.getSchema());
+    
+            this.connection.createStatement().execute(query);
             logger.info("Successfully created database schema.");
 
             return true;
