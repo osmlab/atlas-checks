@@ -80,7 +80,7 @@ public class PedestrianAreaOverlappingEdgeCheckTestRule extends CoreTestRule
                                     @Edge(id = "2000000001", coordinates = {
                                             @Loc(value = AREA_LOC_2),
                                             @Loc(value = LOC_1_WITHIN_AREA) }, tags = {
-                                                    "highway=residential" }),
+                                                    "highway=cycleway", "foot=yes" }),
                                     @Edge(id = "2500000001", coordinates = {
                                             @Loc(value = LOC_1_WITHIN_AREA),
                                             @Loc(value = LOC_2_WITHIN_AREA) }, tags = {

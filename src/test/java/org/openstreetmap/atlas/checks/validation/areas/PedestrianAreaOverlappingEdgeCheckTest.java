@@ -41,7 +41,7 @@ public class PedestrianAreaOverlappingEdgeCheckTest
         this.verifier.actual(this.setup.getInCorrectlySnappedAtlas(),
                 new PedestrianAreaOverlappingEdgeCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test

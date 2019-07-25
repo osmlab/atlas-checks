@@ -39,6 +39,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
 {
+    private static final long serialVersionUID = 1861527706740836635L;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList("Pedestrian area {0,number,#} is overlapping way id(s) {1}.");
 
@@ -218,10 +219,11 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
                 && (HighwayTag.isCarNavigableHighway(edge)
                         // or a cycleway with no foot access
                         || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.CYCLEWAY)
-                                && Validators.isNotOfType(edge, FootTag.class, FootTag.NO))
+                                && Validators.isOfType(edge, FootTag.class, FootTag.NO))
                         // or a service road that is not a yard, siding, spur or crossover
-                        || Validators.isNotOfType(edge, ServiceTag.class, ServiceTag.YARD,
-                                ServiceTag.SIDING, ServiceTag.SPUR, ServiceTag.CROSSOVER))
+                        || Validators.isOfType(edge, ServiceTag.class, ServiceTag.ALLEY,
+                                ServiceTag.PARKING_AISLE, ServiceTag.DRIVEWAY,
+                                ServiceTag.EMERGENCY_ACCESS, ServiceTag.DRIVE_THROUGH))
                 // and should have the same layer or level tag if any, as the area
                 && this.isOfSameElevation(edge, area);
     }
