@@ -14,8 +14,8 @@ this check will flag pedestrian areas overlapping with unsnapped roads along wit
 
 #### Live Examples
 
-1. Line [id:223986287](https://www.openstreetmap.org/way/223986287) is is not snapped to the road with which it overlaps.
-2. Line [id:575511688](https://www.openstreetmap.org/way/575511688) is is not snapped to the road with which it overlaps.
+1. Line [id:223986287](https://www.openstreetmap.org/way/223986287) is not snapped to the road with which it overlaps.
+2. Line [id:575511688](https://www.openstreetmap.org/way/575511688) is not snapped to the road with which it overlaps.
 
 #### Code Review
 
