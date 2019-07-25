@@ -91,19 +91,12 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
             final boolean intersectsAtStart = locationsInSegments.contains(edgeStartLocation);
             // Checks if intersection is at end of the edge
             final boolean intersectsAtEnd = locationsInSegments.contains(edgeEndLocation);
-            // Filter the segments with the intersecting points
-            final Set<Segment> filteredSegments = segments.stream()
-                    .filter(segment -> edgeStartLocation.equals(segment.start())
-                            || edgeStartLocation.equals(segment.end())
-                            || edgeEndLocation.equals(segment.start())
-                            || edgeEndLocation.equals(segment.end()))
-                    .collect(Collectors.toSet());
             // If both ends of the edge intersects the area, check if it is properly snapped by
             // checking if both the intersecting points are on the same segment.
             // If none of the filtered segments have both the start and end nodes, then add the
             // edge and all its connected edges that are within the area to flag them.
             if ((intersectsAtStart && intersectsAtEnd && this
-                    .isNotSnappedToSegments(filteredSegments, edgeStartLocation, edgeEndLocation))
+                    .isNotSnappedToSegments(segments, edgeStartLocation, edgeEndLocation))
                     ||
                     // If any one of the end of the connected edge is fully enclosed within the
                     // area, flag the edge and all its connected edges that are within the area.
@@ -166,7 +159,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      *            any location
      * @return true if none of the segments have both the locations in it.
      */
-    private boolean isNotSnappedToSegments(final Set<Segment> segments, final Location locationOne,
+    private boolean isNotSnappedToSegments(final List<Segment> segments, final Location locationOne,
             final Location locationTwo)
     {
         return segments.stream().noneMatch(segment -> (locationOne.equals(segment.start())
