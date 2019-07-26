@@ -220,7 +220,8 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
                         // or a cycleway with no foot access
                         || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.CYCLEWAY)
                                 && Validators.isOfType(edge, FootTag.class, FootTag.NO))
-                        // or a service road that is not a yard, siding, spur or crossover
+                        // or a service road that is an alley, parking aisle, driveway, emergency
+                        // access or drive through
                         || Validators.isOfType(edge, ServiceTag.class, ServiceTag.ALLEY,
                                 ServiceTag.PARKING_AISLE, ServiceTag.DRIVEWAY,
                                 ServiceTag.EMERGENCY_ACCESS, ServiceTag.DRIVE_THROUGH))
