@@ -19,7 +19,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.checks.flag.FlagDeserializer;
+import org.openstreetmap.atlas.checks.flag.serializer.CheckFlagDeserializer;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
@@ -121,9 +121,8 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                                     .getAsJsonObject();
                             final JsonArray features = this.filterOutPointsFromGeojson(
                                     parsedFlag.get(FEATURES).getAsJsonArray());
-                            final Gson gson = new GsonBuilder()
-                                    .registerTypeAdapter(CheckFlag.class, new FlagDeserializer())
-                                    .create();
+                            final Gson gson = new GsonBuilder().registerTypeAdapter(CheckFlag.class,
+                                    new CheckFlagDeserializer()).create();
                             final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
 
                             this.batchFlagStatement(flagSqlStatement, flag);

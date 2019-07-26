@@ -8,7 +8,6 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
@@ -74,7 +73,7 @@ public class DatabaseConnection
                     .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
                             ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
                     .replace("{schema}", this.connection.getSchema());
-    
+
             this.connection.createStatement().execute(query);
             logger.info("Successfully created database schema.");
 
