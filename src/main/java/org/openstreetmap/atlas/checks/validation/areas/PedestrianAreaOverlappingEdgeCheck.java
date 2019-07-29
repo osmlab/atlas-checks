@@ -85,35 +85,37 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         final Set<AtlasObject> overlappingEdges = new HashSet<>();
         for (final Edge edge : filteredIntersectingEdges)
         {
-            final Location edgeStartLocation = edge.start().getLocation();
-            final Location edgeEndLocation = edge.end().getLocation();
-            // Checks if intersection is at start of the edge
-            final boolean intersectsAtStart = locationsInSegments.contains(edgeStartLocation);
-            // Checks if intersection is at end of the edge
-            final boolean intersectsAtEnd = locationsInSegments.contains(edgeEndLocation);
-            // If both ends of the edge intersects the area, check if it is properly snapped by
-            // checking if both the intersecting points are on the same segment.
-            // If none of the filtered segments have both the start and end nodes, then add the
-            // edge and all its connected edges that are within the area to flag them.
-            if ((intersectsAtStart && intersectsAtEnd
-                    && this.isNotSnappedToSegments(segments, edgeStartLocation, edgeEndLocation))
-                    // If any one of the end of the connected edge is fully enclosed within the
-                    // area, flag the edge and all its connected edges that are within the area.
-                    || (intersectsAtStart && !intersectsAtEnd
-                            && areaPolygon.fullyGeometricallyEncloses(edgeEndLocation))
-                    || (intersectsAtEnd && !intersectsAtStart
-                            && areaPolygon.fullyGeometricallyEncloses(edgeStartLocation)))
+            edge.asPolyLine().segments().forEach(segment ->
             {
-                // Collect all connected edges that are within the pedestrian area
-                edge.connectedEdges().stream()
-                        .filter(connectedEdge -> this.isValidIntersectingEdge(connectedEdge, area)
-                                && areaPolygon
-                                        .fullyGeometricallyEncloses(connectedEdge.asPolyLine()))
-                        .forEach(overlappingEdges::add);
-                // Add the intersecting edge as well to the set
-                overlappingEdges.add(edge);
-            }
-
+                final Location edgeStartLocation = edge.start().getLocation();
+                final Location edgeEndLocation = edge.end().getLocation();
+                // Checks if intersection is at start of the edge
+                final boolean intersectsAtStart = locationsInSegments.contains(edgeStartLocation);
+                // Checks if intersection is at end of the edge
+                final boolean intersectsAtEnd = locationsInSegments.contains(edgeEndLocation);
+                // If both ends of the edge intersects the area, check if it is properly snapped by
+                // checking if both the intersecting points are on the same segment.
+                // If none of the filtered segments have both the start and end nodes, then add the
+                // edge and all its connected edges that are within the area to flag them.
+                if ((intersectsAtStart && intersectsAtEnd
+                        && this.isNotSnappedToSegments(segments, edgeStartLocation,
+                                edgeEndLocation))
+                        // If any one of the end of the connected edge is fully enclosed within the
+                        // area, flag the edge and all its connected edges that are within the area.
+                        || (intersectsAtStart && !intersectsAtEnd
+                                && areaPolygon.fullyGeometricallyEncloses(edgeEndLocation))
+                        || (intersectsAtEnd && !intersectsAtStart
+                                && areaPolygon.fullyGeometricallyEncloses(edgeStartLocation)))
+                {
+                    // Collect all connected edges that are within the pedestrian area
+                    edge.connectedEdges().stream().filter(connectedEdge -> this
+                            .isValidIntersectingEdge(connectedEdge, area)
+                            && areaPolygon.fullyGeometricallyEncloses(connectedEdge.asPolyLine()))
+                            .forEach(overlappingEdges::add);
+                    // Add the intersecting edge as well to the set
+                    overlappingEdges.add(edge);
+                }
+            });
         }
         if (!overlappingEdges.isEmpty())
         {
