@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +60,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private static final int FIVE = 5;
     private static final int SIX = 6;
     private static final int BATCH_SIZE = 1000;
+    private Timestamp timestamp;
 
     /**
      * An enum containing the different types of input files that we can handle.
@@ -92,6 +95,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         final Connection databaseConnection = database.getConnection();
         final String inputPath = this.optionAndArgumentDelegate.getOptionArgument(FLAG_PATH_INPUT)
                 .get();
+        this.timestamp = new Timestamp(Instant.now().toEpochMilli());
 
         new File(inputPath).listFilesRecursively().parallelStream().forEach(file ->
         {
@@ -104,13 +108,12 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                 {
 
                     final PreparedStatement flagSqlStatement = databaseConnection.prepareStatement(
-                            "INSERT INTO flag(flag_id, check_name, instructions) VALUES (?,?,?);");
+                            "INSERT INTO flag(flag_id, check_name, instructions, date_created) VALUES (?,?,?,?);");
 
                     final PreparedStatement featureSqlStatement = databaseConnection
                             .prepareStatement(String.format(
-                                    "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags) VALUES (%s,%s,?,?,?);",
-                                    "(SELECT id FROM flag WHERE flag_id = ? LIMIT 1)",
-                                    "ST_GeomFromGeoJSON(?), ?"));
+                                    "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES (?,%s,?,?,?,?);",
+                                    "ST_GeomFromGeoJSON(?), ?, ?"));
 
                     final List<String> lines = reader.lines().collect(Collectors.toList());
                     int startIndex = 0;
@@ -228,6 +231,8 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                             ? properties.get(ISO_COUNTRY_CODE).getAsString()
                             : "NA");
             sql.setObject(SIX, this.getTags(properties));
+            sql.setString(7, properties.get("itemType").getAsString());
+            sql.setObject(8, this.timestamp );
 
             sql.addBatch();
         }
@@ -253,6 +258,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
             sql.setString(1, flag.getIdentifier());
             sql.setString(2, flag.getChallengeName().orElse(""));
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
+            sql.setObject(FOUR, this.timestamp);
 
             sql.addBatch();
         }
@@ -347,20 +353,21 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
      *            CheckFlag properties
      * @return hstore string
      */
-    private Map<String, JsonElement> getTags(final JsonObject properties)
+    private Map<String, String> getTags(final JsonObject properties)
     {
-
-        final Map<String, JsonElement> hstore = new HashMap<>();
+        final Map<String, String> hstore = new HashMap<>();
         final Set<String> blacklistKeys = new HashSet<>();
         blacklistKeys.add("itemType");
         blacklistKeys.add("identifier");
         blacklistKeys.add("osmid");
         blacklistKeys.add("osmIdentifier");
+        blacklistKeys.add("relations");
+        blacklistKeys.add("members");
         blacklistKeys.add(ISO_COUNTRY_CODE);
 
         properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
                 .map(Map.Entry::getKey)
-                .forEach(key -> hstore.put(key, properties.get(key)));
+                .forEach(key -> hstore.put(key, properties.get(key).getAsString()));
 
         return hstore;
     }

@@ -9,22 +9,22 @@ CREATE TABLE flag (
 	flag_id text not null,
 	check_name text not null,
 	instructions text not null,
-	run_id text,
-	integrity_version varchar(8)
+	run_uri text,
+	integrity_version varchar(8),
+	date_created timestamp
 );
 
 DROP TABLE IF EXISTS feature CASCADE;
 CREATE TABLE feature (
   id serial primary key,
-  flag_id bigint,
+  flag_id text not null,
   geom geometry not null,
-  osm_id bigint,
-  atlas_id bigint,
+  osm_id bigint not null,
+  atlas_id bigint not null,
   iso_country_code text,
+  item_type text not null,
   tags hstore,
-  date_created timestamp,
-  date_modified timestamp,
-  active boolean default true
+  date_created timestamp
 );
 
 DROP INDEX IF EXISTS feature_geom_idx;
