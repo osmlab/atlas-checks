@@ -11,8 +11,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
@@ -48,9 +47,11 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private static final String DATABASE_URL_INPUT = "database_url";
     private static final String LOG_EXTENSION = "log";
     private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
+    private static final String ISO_COUNTRY_CODE = "iso_country_code";
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int FIVE = 5;
+    private static final int SIX = 6;
     private static final int BATCH_SIZE = 1000;
 
     /**
@@ -102,9 +103,9 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
 
                     final PreparedStatement featureSqlStatement = databaseConnection
                             .prepareStatement(String.format(
-                                    "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code) VALUES (%s,%s,?,?,?);",
+                                    "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags) VALUES (%s,%s,?,?,?);",
                                     "(SELECT id FROM flag WHERE flag_id = ? LIMIT 1)",
-                                    "ST_GeomFromGeoJSON(?)"));
+                                    "ST_GeomFromGeoJSON(?), ?"));
 
                     final List<String> lines = reader.lines().collect(Collectors.toList());
                     int startIndex = 0;
@@ -215,12 +216,13 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         {
             sql.setString(1, flag.getIdentifier());
             sql.setString(2, feature.get("geometry").toString());
-            sql.setLong(THREE, properties.get("osmIdentifier").getAsLong());
+            sql.setLong(THREE, this.getOsmIdentifier(properties));
             sql.setLong(FOUR, properties.get("identifier").getAsLong());
             sql.setString(FIVE,
-                    properties.has("iso_country_code")
-                            ? properties.get("iso_country_code").getAsString()
+                    properties.has(ISO_COUNTRY_CODE)
+                            ? properties.get(ISO_COUNTRY_CODE).getAsString()
                             : "NA");
+            sql.setObject(SIX, this.getTags(properties));
 
             sql.addBatch();
         }
@@ -315,5 +317,47 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         }
         return new BufferedReader(new InputStreamReader(
                 new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
+    }
+
+    /**
+     * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
+     * "osmid" to "osmIdentifier"
+     * {@link <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>}
+     *
+     * @param properties
+     *            CheckFlag properties
+     * @return OSM identifier
+     */
+    private long getOsmIdentifier(JsonObject properties)
+    {
+        return properties.get("osmid") == null ? properties.get("osmIdentifier").getAsLong()
+                : properties.get("osm_id").getAsLong();
+    }
+
+    /**
+     * Filters non OSM tag in CheckFlag properties and converts into Map object for PostgreSQL
+     * hstore
+     *
+     * @param properties
+     *            CheckFlag properties
+     * @return hstore string
+     */
+    private Map<String, String> getTags(JsonObject properties)
+    {
+
+        Map<String, String> hstore = new HashMap<>();
+        HashSet<String> blacklistKeys = new HashSet<>();
+
+        blacklistKeys.add("itemType");
+        blacklistKeys.add("identifier");
+        blacklistKeys.add("osmid");
+        blacklistKeys.add("osmIdentifier");
+        blacklistKeys.add(ISO_COUNTRY_CODE);
+
+        properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
+                .map(Map.Entry::getKey)
+                .forEach(key -> hstore.put(key, properties.get(key).getAsString()));
+
+        return hstore;
     }
 }
