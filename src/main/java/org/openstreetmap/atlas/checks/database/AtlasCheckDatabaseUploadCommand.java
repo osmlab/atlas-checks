@@ -11,7 +11,12 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
@@ -294,6 +299,21 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         }
         return Optional.empty();
     }
+    
+    /**
+     * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
+     * "osmid" to "osmIdentifier"
+     * {@link <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>}
+     *
+     * @param properties
+     *            CheckFlag properties
+     * @return OSM identifier
+     */
+    private long getOsmIdentifier(final JsonObject properties)
+    {
+        return properties.get("osmid") == null ? properties.get("osmIdentifier").getAsLong()
+                : properties.get("osm_id").getAsLong();
+    }
 
     /**
      * Read a file that we know we should be able to handle
@@ -320,21 +340,6 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     }
 
     /**
-     * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
-     * "osmid" to "osmIdentifier"
-     * {@link <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>}
-     *
-     * @param properties
-     *            CheckFlag properties
-     * @return OSM identifier
-     */
-    private long getOsmIdentifier(JsonObject properties)
-    {
-        return properties.get("osmid") == null ? properties.get("osmIdentifier").getAsLong()
-                : properties.get("osm_id").getAsLong();
-    }
-
-    /**
      * Filters non OSM tag in CheckFlag properties and converts into Map object for PostgreSQL
      * hstore
      *
@@ -342,12 +347,11 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
      *            CheckFlag properties
      * @return hstore string
      */
-    private Map<String, String> getTags(JsonObject properties)
+    private Map<String, JsonElement> getTags(final JsonObject properties)
     {
 
-        Map<String, String> hstore = new HashMap<>();
-        HashSet<String> blacklistKeys = new HashSet<>();
-
+        final Map<String, JsonElement> hstore = new HashMap<>();
+        final Set<String> blacklistKeys = new HashSet<>();
         blacklistKeys.add("itemType");
         blacklistKeys.add("identifier");
         blacklistKeys.add("osmid");
@@ -356,7 +360,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
 
         properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
                 .map(Map.Entry::getKey)
-                .forEach(key -> hstore.put(key, properties.get(key).getAsString()));
+                .forEach(key -> hstore.put(key, properties.get(key)));
 
         return hstore;
     }
