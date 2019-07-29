@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.Segment;
+import org.openstreetmap.atlas.geography.Snapper.SnappedLocation;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -25,6 +27,7 @@ import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * This check flags pedestrian areas that are not properly snapped to its valid
@@ -42,6 +45,8 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 1861527706740836635L;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList("Pedestrian area {0,number,#} is overlapping way id(s) {1}.");
+    private static final Predicate<Distance> DISTANCE_GREATER_THAN_ONE_METER = distance -> distance
+            .isGreaterThanOrEqualTo(Distance.ONE_METER);
 
     /**
      * Default constructor
@@ -87,25 +92,38 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         {
             edge.asPolyLine().segments().forEach(segment ->
             {
-                final Location edgeStartLocation = edge.start().getLocation();
-                final Location edgeEndLocation = edge.end().getLocation();
+                final Location edgeSegmentStartLocation = segment.start();
+                final Location edgeSegmentEndLocation = segment.end();
+                // Snapped start location
+                final SnappedLocation snappedStartLoc = edgeSegmentStartLocation
+                        .snapTo(areaPolygon);
+                // Snapped end location
+                final SnappedLocation snappedEndLoc = edgeSegmentEndLocation.snapTo(areaPolygon);
+                // Distance of original start location to the snapped location
+                final Distance startLocDistance = snappedStartLoc.getDistance();
+                // Distance of original end location to the snapped location
+                final Distance endLocDistance = snappedEndLoc.getDistance();
                 // Checks if intersection is at start of the edge
-                final boolean intersectsAtStart = locationsInSegments.contains(edgeStartLocation);
+                final boolean intersectsAtStart = locationsInSegments
+                        .contains(edgeSegmentStartLocation);
                 // Checks if intersection is at end of the edge
-                final boolean intersectsAtEnd = locationsInSegments.contains(edgeEndLocation);
+                final boolean intersectsAtEnd = locationsInSegments
+                        .contains(edgeSegmentEndLocation);
                 // If both ends of the edge intersects the area, check if it is properly snapped by
                 // checking if both the intersecting points are on the same segment.
                 // If none of the filtered segments have both the start and end nodes, then add the
                 // edge and all its connected edges that are within the area to flag them.
                 if ((intersectsAtStart && intersectsAtEnd
-                        && this.isNotSnappedToSegments(segments, edgeStartLocation,
-                                edgeEndLocation))
+                        && this.isNotSnappedToSegments(segments, segment))
                         // If any one of the end of the connected edge is fully enclosed within the
                         // area, flag the edge and all its connected edges that are within the area.
                         || (intersectsAtStart && !intersectsAtEnd
-                                && areaPolygon.fullyGeometricallyEncloses(edgeEndLocation))
+                                && DISTANCE_GREATER_THAN_ONE_METER.test(endLocDistance)
+                                && areaPolygon.fullyGeometricallyEncloses(edgeSegmentEndLocation))
                         || (intersectsAtEnd && !intersectsAtStart
-                                && areaPolygon.fullyGeometricallyEncloses(edgeStartLocation)))
+                                && DISTANCE_GREATER_THAN_ONE_METER.test(startLocDistance)
+                                && areaPolygon
+                                        .fullyGeometricallyEncloses(edgeSegmentStartLocation)))
                 {
                     // Collect all connected edges that are within the pedestrian area
                     edge.connectedEdges().stream().filter(connectedEdge -> this
@@ -149,23 +167,17 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if the locations are not snapped to the edges or not. If snapped, both the locations
-     * should lie on the same segment.
+     * Checks if the given segment overlaps any of the segments in the given set
      *
      * @param segments
-     *            Set of segments
-     * @param locationOne
-     *            any location
-     * @param locationTwo
-     *            any location
-     * @return true if none of the segments have both the locations in it.
+     *            set of segments
+     * @param segment
+     *            any given segment
+     * @return true if the given segment overlaps any of the segments in the set
      */
-    private boolean isNotSnappedToSegments(final List<Segment> segments, final Location locationOne,
-            final Location locationTwo)
+    private boolean isNotSnappedToSegments(final List<Segment> segments, final Segment segment)
     {
-        return segments.stream().noneMatch(segment -> (locationOne.equals(segment.start())
-                || locationOne.equals(segment.end()))
-                && (locationTwo.equals(segment.start()) || locationTwo.equals(segment.end())));
+        return segments.stream().noneMatch(areaSegment -> areaSegment.overlapsShapeOf(segment));
     }
 
     /**
