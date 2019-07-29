@@ -59,9 +59,10 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private static final int FOUR = 4;
     private static final int FIVE = 5;
     private static final int SIX = 6;
+    private static final int SEVEN = 7;
+    private static final int EIGHT = 8;
     private static final int BATCH_SIZE = 1000;
-    private Timestamp timestamp;
-
+    
     /**
      * An enum containing the different types of input files that we can handle.
      */
@@ -70,10 +71,10 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         LOG,
         COMPRESSED_LOG
     }
-
     private static final Logger logger = LoggerFactory
             .getLogger(AtlasCheckDatabaseUploadCommand.class);
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
+    private Timestamp timestamp;
 
     public static void main(final String[] args)
     {
@@ -231,8 +232,8 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                             ? properties.get(ISO_COUNTRY_CODE).getAsString()
                             : "NA");
             sql.setObject(SIX, this.getTags(properties));
-            sql.setString(7, properties.get("itemType").getAsString());
-            sql.setObject(8, this.timestamp );
+            sql.setString(SEVEN, properties.get("itemType").getAsString());
+            sql.setObject(EIGHT, this.timestamp );
 
             sql.addBatch();
         }
