@@ -62,7 +62,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     private static final int SEVEN = 7;
     private static final int EIGHT = 8;
     private static final int BATCH_SIZE = 1000;
-    
+
     /**
      * An enum containing the different types of input files that we can handle.
      */
@@ -71,6 +71,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         LOG,
         COMPRESSED_LOG
     }
+
     private static final Logger logger = LoggerFactory
             .getLogger(AtlasCheckDatabaseUploadCommand.class);
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
@@ -233,7 +234,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
                             : "NA");
             sql.setObject(SIX, this.getTags(properties));
             sql.setString(SEVEN, properties.get("itemType").getAsString());
-            sql.setObject(EIGHT, this.timestamp );
+            sql.setObject(EIGHT, this.timestamp);
 
             sql.addBatch();
         }
@@ -306,7 +307,7 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
         }
         return Optional.empty();
     }
-    
+
     /**
      * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
      * "osmid" to "osmIdentifier"
