@@ -9,7 +9,7 @@ highway=steps, highway=footway, and highway=pedestrian tag, which
 are too narrow to allow vehicle access.  This check only applies to pedestrian areas 
 where all points of intersection with roads are not snapped.  To be considered overlapping,
 pedestrian areas and roads must be at the same elevation, meaning, both the area and edge should have
-the same *LayerTag* and same *LocationTag*, if any. If these conditions are true, 
+the same *LayerTag* and same *LevelTag*, if any. If these conditions are true, 
 this check will flag pedestrian areas overlapping with unsnapped roads along with the unsnapped roads.
 
 #### Live Examples

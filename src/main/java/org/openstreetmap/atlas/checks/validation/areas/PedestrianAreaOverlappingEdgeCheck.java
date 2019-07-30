@@ -21,7 +21,6 @@ import org.openstreetmap.atlas.tags.FootTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.LevelTag;
-import org.openstreetmap.atlas.tags.LocationTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -33,10 +32,10 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  * This check flags pedestrian areas that are not properly snapped to its valid
  * intersecting/overlapping edges. A pedestrian area is an {@link Area} with {@link HighwayTag} =
  * "pedestrian" tag. Valid intersecting edges are edges with the same elevation(same
- * {@link LayerTag}, {@link LocationTag}, {@link LevelTag}) as the area, and highway tag value not
- * equal to foot way, pedestrian, steps and path. The pedestrian area and any valid intersecting/
- * overlapping edge that is not snapped to the area are flagged along with its connected edges that
- * are within the pedestrian area.
+ * {@link LayerTag}, {@link LevelTag}) as the area, and highway tag value not equal to foot way,
+ * pedestrian, steps and path. The pedestrian area and any valid intersecting/ overlapping edge that
+ * is not snapped to the area are flagged along with its connected edges that are within the
+ * pedestrian area.
  *
  * @author sayas01
  */
@@ -47,6 +46,8 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
             "Pedestrian area {0,number,#} is overlapping way id(s) {1} and is not snapped at all points of intersections.");
     private static final Predicate<Distance> DISTANCE_GREATER_THAN_ONE_METER = distance -> distance
             .isGreaterThanOrEqualTo(Distance.ONE_METER);
+    private static final String ZERO = "0";
+    private static final Long ZERO_LONG = 0L;
 
     /**
      * Default constructor
@@ -187,15 +188,14 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
      *            any given edge
      * @param area
      *            any given area
-     * @return true if the edge and area have the same Layer and Location tag values
+     * @return true if the edge and area have the same Layer and Level tag values
      */
     private boolean isOfSameElevation(final Edge edge, final Area area)
     {
-        return area.getTag(LayerTag.KEY).orElse("").equals(edge.getTag(LayerTag.KEY).orElse(""))
-                && area.getTag(LocationTag.KEY).orElse("")
-                        .equals(edge.getTag(LocationTag.KEY).orElse(""))
-                && area.getTag(LevelTag.KEY).orElse("")
-                        .equals(edge.getTag(LevelTag.KEY).orElse(""));
+        return LevelTag.getTaggedOrImpliedValue(area, ZERO)
+                .equals(LevelTag.getTaggedOrImpliedValue(edge, ZERO))
+                && LayerTag.getTaggedOrImpliedValue(area, ZERO_LONG)
+                        .equals(LayerTag.getTaggedOrImpliedValue(edge, ZERO_LONG));
     }
 
     /**
