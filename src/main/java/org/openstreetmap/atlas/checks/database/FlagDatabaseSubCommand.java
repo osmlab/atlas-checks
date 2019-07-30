@@ -53,6 +53,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private static final String LOG_EXTENSION = "log";
     private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
     private static final String ISO_COUNTRY_CODE = "iso_country_code";
+    private static final String OSM_ID_LEGACY = "osmid";
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int FIVE = 5;
@@ -79,7 +80,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         blacklistKeys.add("itemType");
         blacklistKeys.add("identifier");
-        blacklistKeys.add("osmid");
+        blacklistKeys.add(OSM_ID_LEGACY);
         blacklistKeys.add("osmIdentifier");
         blacklistKeys.add("relations");
         blacklistKeys.add("members");
@@ -214,6 +215,9 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     /**
+     *
+     * Add CheckFlag feature values to parameterized sql INSERT statement
+     *
      * @param sql
      *            PreparedStatement to add parameterized values to
      * @param flag
@@ -324,8 +328,8 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
      */
     private long getOsmIdentifier(final JsonObject properties)
     {
-        return properties.get("osmid") == null ? properties.get("osmIdentifier").getAsLong()
-                : properties.get("osmid").getAsLong();
+        return properties.get(OSM_ID_LEGACY) == null ? properties.get("osmIdentifier").getAsLong()
+                : properties.get(OSM_ID_LEGACY).getAsLong();
     }
 
     /**
