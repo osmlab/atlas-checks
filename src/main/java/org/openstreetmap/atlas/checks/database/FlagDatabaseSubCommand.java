@@ -72,8 +72,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         COMPRESSED_LOG
     }
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(FlagDatabaseSubCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(FlagDatabaseSubCommand.class);
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
     private Timestamp timestamp;
 
