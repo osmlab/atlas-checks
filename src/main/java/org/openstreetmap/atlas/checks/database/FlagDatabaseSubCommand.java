@@ -71,8 +71,23 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         LOG,
         COMPRESSED_LOG
     }
-
+    
+    private static final Gson gson = new GsonBuilder().registerTypeAdapter(CheckFlag.class,
+            new CheckFlagDeserializer()).create();
     private static final Logger logger = LoggerFactory.getLogger(FlagDatabaseSubCommand.class);
+    private static final Set<String> blacklistKeys = new HashSet<>();
+    
+    static
+    {
+        blacklistKeys.add("itemType");
+        blacklistKeys.add("identifier");
+        blacklistKeys.add("osmid");
+        blacklistKeys.add("osmIdentifier");
+        blacklistKeys.add("relations");
+        blacklistKeys.add("members");
+        blacklistKeys.add(ISO_COUNTRY_CODE);
+    }
+    
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
     private Timestamp timestamp;
 
@@ -131,8 +146,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                                     .getAsJsonObject();
                             final JsonArray features = this.filterOutPointsFromGeojson(
                                     parsedFlag.get(FEATURES).getAsJsonArray());
-                            final Gson gson = new GsonBuilder().registerTypeAdapter(CheckFlag.class,
-                                    new CheckFlagDeserializer()).create();
                             final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
 
                             this.batchFlagStatement(flagSqlStatement, flag);
@@ -357,14 +370,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private Map<String, String> getTags(final JsonObject properties)
     {
         final Map<String, String> hstore = new HashMap<>();
-        final Set<String> blacklistKeys = new HashSet<>();
-        blacklistKeys.add("itemType");
-        blacklistKeys.add("identifier");
-        blacklistKeys.add("osmid");
-        blacklistKeys.add("osmIdentifier");
-        blacklistKeys.add("relations");
-        blacklistKeys.add("members");
-        blacklistKeys.add(ISO_COUNTRY_CODE);
 
         properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
                 .map(Map.Entry::getKey)
