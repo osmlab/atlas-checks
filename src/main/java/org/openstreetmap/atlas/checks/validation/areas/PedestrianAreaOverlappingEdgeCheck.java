@@ -43,8 +43,8 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = 1861527706740836635L;
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
-            .singletonList("Pedestrian area {0,number,#} is overlapping way id(s) {1}.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
+            "Pedestrian area {0,number,#} is overlapping way id(s) {1} and is not snapped at all points of intersections.");
     private static final Predicate<Distance> DISTANCE_GREATER_THAN_ONE_METER = distance -> distance
             .isGreaterThanOrEqualTo(Distance.ONE_METER);
 
