@@ -332,7 +332,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private long getOsmIdentifier(final JsonObject properties)
     {
         return properties.get("osmid") == null ? properties.get("osmIdentifier").getAsLong()
-                : properties.get("osm_id").getAsLong();
+                : properties.get("osmid").getAsLong();
     }
 
     /**
