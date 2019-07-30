@@ -215,7 +215,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     /**
-     *
      * Add CheckFlag feature values to parameterized sql INSERT statement
      *
      * @param sql
