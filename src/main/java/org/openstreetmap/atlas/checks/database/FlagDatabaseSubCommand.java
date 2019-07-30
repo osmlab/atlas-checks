@@ -46,7 +46,7 @@ import com.google.gson.JsonParser;
  *
  * @author danielbaah
  */
-public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsCommand
+public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String FLAG_PATH_INPUT = "flag_path";
     private static final String COUNTRIES_INPUT = "countries";
@@ -73,16 +73,16 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     }
 
     private static final Logger logger = LoggerFactory
-            .getLogger(AtlasCheckDatabaseUploadCommand.class);
+            .getLogger(FlagDatabaseSubCommand.class);
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
     private Timestamp timestamp;
 
     public static void main(final String[] args)
     {
-        new AtlasCheckDatabaseUploadCommand().runSubcommandAndExit(args);
+        new FlagDatabaseSubCommand().runSubcommandAndExit(args);
     }
 
-    public AtlasCheckDatabaseUploadCommand()
+    public FlagDatabaseSubCommand()
     {
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
     }
@@ -186,9 +186,9 @@ public class AtlasCheckDatabaseUploadCommand extends AbstractAtlasShellToolsComm
     @Override
     public void registerManualPageSections()
     {
-        this.addManualPageSection("DESCRIPTION", AtlasCheckDatabaseUploadCommand.class
+        this.addManualPageSection("DESCRIPTION", FlagDatabaseSubCommand.class
                 .getResourceAsStream("FlagDatabaseSubCommandDescriptionSection.txt"));
-        this.addManualPageSection("EXAMPLES", AtlasCheckDatabaseUploadCommand.class
+        this.addManualPageSection("EXAMPLES", FlagDatabaseSubCommand.class
                 .getResourceAsStream("FlagDatabaseSubCommandExamplesSection.txt"));
     }
 
