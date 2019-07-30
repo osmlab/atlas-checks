@@ -270,7 +270,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     /**
-     * Fet all geojson features which do contain a properties field from a {@link JsonArray}.
+     * Get all geojson features which do contain a properties field from a {@link JsonArray}.
      *
      * @param features
      *            a {@link JsonArray} of geojson features
@@ -352,7 +352,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
      *
      * @param properties
      *            CheckFlag properties
-     * @return hstore string
+     * @return hstore Map object
      */
     private Map<String, String> getTags(final JsonObject properties)
     {
