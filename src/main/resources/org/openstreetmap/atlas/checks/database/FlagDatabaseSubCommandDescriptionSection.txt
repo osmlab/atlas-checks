@@ -1,5 +1,5 @@
 Load Atlas Checks flags into a postgres database.
 The input folder is a directory of line delimited log file flag output for atlas-checks.
 These log files can be compressed or decompressed.
-Two require inputs are the path to your line delimited log files, and the postgres database
+Two required inputs are the path to your line delimited log files, and the postgres database
 connection string.

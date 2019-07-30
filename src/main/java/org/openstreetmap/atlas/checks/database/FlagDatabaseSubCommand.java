@@ -49,8 +49,6 @@ import com.google.gson.JsonParser;
 public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String FLAG_PATH_INPUT = "flag_path";
-    private static final String COUNTRIES_INPUT = "countries";
-    private static final String CHECKS_INPUT = "checks";
     private static final String DATABASE_URL_INPUT = "database_url";
     private static final String LOG_EXTENSION = "log";
     private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
@@ -71,12 +69,12 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         LOG,
         COMPRESSED_LOG
     }
-    
-    private static final Gson gson = new GsonBuilder().registerTypeAdapter(CheckFlag.class,
-            new CheckFlagDeserializer()).create();
+
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(CheckFlag.class, new CheckFlagDeserializer()).create();
     private static final Logger logger = LoggerFactory.getLogger(FlagDatabaseSubCommand.class);
     private static final Set<String> blacklistKeys = new HashSet<>();
-    
+
     static
     {
         blacklistKeys.add("itemType");
@@ -87,7 +85,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         blacklistKeys.add("members");
         blacklistKeys.add(ISO_COUNTRY_CODE);
     }
-    
+
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
     private Timestamp timestamp;
 
@@ -212,11 +210,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                 OptionOptionality.REQUIRED, FLAG_PATH_INPUT);
         this.registerOptionWithRequiredArgument(DATABASE_URL_INPUT, 't',
                 "Database connection string", OptionOptionality.REQUIRED, DATABASE_URL_INPUT);
-        this.registerOptionWithRequiredArgument(COUNTRIES_INPUT, 'i',
-                "List of iso3 country codes to filter by", OptionOptionality.OPTIONAL,
-                COUNTRIES_INPUT);
-        this.registerOptionWithRequiredArgument(CHECKS_INPUT, 'c', "A folder to output results to.",
-                OptionOptionality.OPTIONAL, CHECKS_INPUT);
         super.registerOptionsAndArguments();
     }
 

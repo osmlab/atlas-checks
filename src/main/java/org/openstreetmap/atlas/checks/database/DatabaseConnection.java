@@ -8,6 +8,7 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
@@ -62,27 +63,24 @@ public class DatabaseConnection
         return URI.create(String.format("postgresql://%s", connectionString));
     }
 
-    private boolean createDatabaseSchema()
+    private void createDatabaseSchema()
     {
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
         final LineNumberReader lnReader = new LineNumberReader(reader);
-        try
+        try (Statement sql = this.connection.createStatement())
         {
             final String query = ScriptUtils
                     .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
                             ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
                     .replace("{schema}", this.connection.getSchema());
 
-            this.connection.createStatement().execute(query);
+            sql.execute(query);
             logger.info("Successfully created database schema.");
-
-            return true;
         }
         catch (final IOException error)
         {
-            logger.error("Error thrown reading schema.sql", error);
-            return false;
+            throw new CoreException("Error reading schema.sql", error);
         }
         catch (final SQLException error)
         {
