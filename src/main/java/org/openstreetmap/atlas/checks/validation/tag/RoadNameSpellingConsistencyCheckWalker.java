@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -35,12 +34,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static final EnumSet<Direction> DIRECTIONS = EnumSet.of(Direction.N, Direction.S,
             Direction.E, Direction.W);
 
-    private static final int NINE = 9;
-
-    private static final int ZERO = 0;
-
-    // ASCII character to digit offset
-    private static final int ASCII_OFFSET = 48;
+    private static final String ALPHANUMERIC_IDENTIFIER_STRING_REGEX = ".*[0-9]+.*";
+    private static final String WHITESPACE_REGEX = "\\s+";
 
     /**
      * Evaluate the {@link org.openstreetmap.atlas.tags.names.NameTag}s of the startingEdge and an
@@ -140,9 +135,22 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         // Roads differ by one directional character (N,S,E, or W) in their name strings
         boolean possibleDirectionalDifference = false;
 
-        // Roads differ by one digit character (1-9) in their name strings
-        boolean singleNumericalDifference = false;
+        final Stream<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
+                .stream(incomingEdgeName.split(WHITESPACE_REGEX))
+                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX));
+        final Stream<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
+                .stream(startingEdgeName.split(WHITESPACE_REGEX))
+                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX));
 
+        // If the two street names have different alphanumeric identifier strings anywhere in their
+        // names, they're classified as being from different roads.
+        if (Stream.concat(incomingEdgeNameAlphanumericIdentifierStrings,
+                startingEdgeNameAlphanumericIdentifierStrings).distinct().count() > 1)
+        {
+            return -1;
+        }
+
+        // We now know that the street names have the same numbers, or no numbers at all
         for (int incomingEdgeNameIndex = 0; incomingEdgeNameIndex <= incomingEdgeName
                 .length(); incomingEdgeNameIndex++)
         {
@@ -151,23 +159,12 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             {
                 // Handles one directional character differences between roads. Meant to capture
                 // differences in directionality; e.g. in Pie St. N vs. Pie St. S, neither should be
-                // flagged as being inconsistent with one another.
+                // flagged as being inconsistent with the other.
                 if (!possibleDirectionalDifference && incomingEdgeNameIndex == startingEdgeNameIndex
                         && incomingEdgeNameIndex < incomingEdgeName.length()
                         && startingEdgeNameIndex < startingEdgeName.length())
                 {
                     possibleDirectionalDifference = hasDirectionalCharacterDifference(
-                            incomingEdgeName.charAt(incomingEdgeNameIndex),
-                            startingEdgeName.charAt(startingEdgeNameIndex));
-                }
-
-                // Handles one number character differences between roads. Records if the
-                // startingEdgeName and incomingEdgeName differ by one number in their name strings.
-                if (!singleNumericalDifference && incomingEdgeNameIndex == startingEdgeNameIndex
-                        && incomingEdgeNameIndex < incomingEdgeName.length()
-                        && startingEdgeNameIndex < startingEdgeName.length())
-                {
-                    singleNumericalDifference = hasNumericalCharacterDifference(
                             incomingEdgeName.charAt(incomingEdgeNameIndex),
                             startingEdgeName.charAt(startingEdgeNameIndex));
                 }
@@ -194,10 +191,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
                 }
             }
         }
-        // If there's only a single character difference and that character is a directional OR
-        // numerical character, we consider both roads to be different and so we don't flag them.
-        // Else we return the Levenshtein distance as usual.
-        return (possibleDirectionalDifference || singleNumericalDifference)
+
+        // If there's only a single character difference and that character is a directional
+        // character, we consider both roads to be different and so we don't flag them. Else we
+        // return the Levenshtein distance as usual.
+        return possibleDirectionalDifference
                 && results[incomingEdgeName.length()][startingEdgeName.length()] == 1 ? -1
                         : results[incomingEdgeName.length()][startingEdgeName.length()];
     }
@@ -218,25 +216,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         return DIRECTIONS.stream().map(Enum::toString).filter(
                 equalCharacter(incomingEdgeCharacter).or(equalCharacter(startingEdgeCharacter)))
                 .count() >= 2;
-    }
-
-    /**
-     * Check if the parameter characters are different numerical characters.
-     *
-     * @param incomingEdgeCharacter
-     *            the incoming Edge's character
-     * @param startingEdgeCharacter
-     *            the starting Edge's character
-     * @return true if both parameter characters are different numbers in [0,9], false otherwise
-     */
-    private static boolean hasNumericalCharacterDifference(final char incomingEdgeCharacter,
-            final char startingEdgeCharacter)
-    {
-        return Character.isDigit(incomingEdgeCharacter) && Character.isDigit(startingEdgeCharacter)
-                && IntStream.range(ZERO, NINE)
-                        .filter(number -> number == (incomingEdgeCharacter - ASCII_OFFSET)
-                                || number == (startingEdgeCharacter - ASCII_OFFSET))
-                        .count() >= 2;
     }
 
     /**
