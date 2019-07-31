@@ -176,8 +176,8 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
             });
         });
 
-        logger.info("Atlas Checks database upload command finished in {} seconds.",
-                timer.elapsedSince().asSeconds());
+        logger.info("Atlas Checks database upload command finished in {}.",
+                timer.elapsedSince());
 
         return 0;
     }
