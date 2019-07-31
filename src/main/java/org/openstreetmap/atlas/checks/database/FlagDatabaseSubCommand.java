@@ -112,7 +112,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                 .get();
         this.timestamp = new Timestamp(Instant.now().toEpochMilli());
 
-        new File(inputPath).listFilesRecursively().parallelStream().forEach(file ->
+        new File(inputPath).listFilesRecursively().forEach(file ->
         {
             // If this file is something we handle, read and upload the tasks contained within
             final Optional<OutputFileType> optionalHandledFileType = getOptionalOutputType(file);
