@@ -52,7 +52,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     {
         return incomingEdge ->
         {
-            // NOSONAR because we've filtered out Edges without names
+            if (!incomingEdge.getName().isPresent())
+            {
+                return false;
+            }
+            // NOSONAR because we've filtered out startEdges without names
             final String startEdgeName = startEdge.getName().get();
             final String incomingEdgeName = incomingEdge.getName().get();
             final int similarityIndex = similarityIndex(incomingEdgeName, startEdgeName);
@@ -90,8 +94,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         return incomingEdge -> incomingEdge.end().getLocation()
                 .distanceTo(startEdge.start().getLocation())
                 .isLessThanOrEqualTo(maximumSearchDistance)
-                        ? incomingEdge.connectedEdges().stream()
-                                .filter(edge -> edge.isMasterEdge() && edge.getName().isPresent())
+                        ? incomingEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
                         : Stream.empty();
     }
 
