@@ -186,7 +186,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      * @return the Levenshtein distance between two edge's names, or -1 if the incoming edge doesn't
      *         have a name, or 0 if the names are the same
      */
-
     private static int similarityIndex(final String incomingEdgeName, final String startEdgeName)
     {
         return startEdgeName.equals(incomingEdgeName) ? 0
