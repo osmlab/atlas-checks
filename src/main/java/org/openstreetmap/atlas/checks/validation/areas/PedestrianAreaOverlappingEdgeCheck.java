@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -44,10 +43,11 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 1861527706740836635L;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "Pedestrian area {0,number,#} is overlapping way id(s) {1} and is not snapped at all points of intersections.");
-    private static final Predicate<Distance> DISTANCE_GREATER_THAN_ONE_METER = distance -> distance
-            .isGreaterThanOrEqualTo(Distance.ONE_METER);
     private static final String ZERO = "0";
     private static final Long ZERO_LONG = 0L;
+    // Default minimum distance between two points to be considered not overlapping.
+    private static final double DISTANCE_MINIMUM_METERS_DEFAULT = 1.0;
+    private final Distance minimumDistance;
 
     /**
      * Default constructor
@@ -58,6 +58,8 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     public PedestrianAreaOverlappingEdgeCheck(final Configuration configuration)
     {
         super(configuration);
+        this.minimumDistance = this.configurationValue(configuration, "distance.minimum.meters",
+                DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
     }
 
     /**
@@ -119,10 +121,10 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
                         // If any one of the end of the connected edge is fully enclosed within the
                         // area, flag the edge and all its connected edges that are within the area.
                         || (intersectsAtStart && !intersectsAtEnd
-                                && DISTANCE_GREATER_THAN_ONE_METER.test(endLocDistance)
+                                && endLocDistance.isGreaterThanOrEqualTo(this.minimumDistance)
                                 && areaPolygon.fullyGeometricallyEncloses(edgeSegmentEndLocation))
                         || (intersectsAtEnd && !intersectsAtStart
-                                && DISTANCE_GREATER_THAN_ONE_METER.test(startLocDistance)
+                                && startLocDistance.isGreaterThanOrEqualTo(this.minimumDistance)
                                 && areaPolygon
                                         .fullyGeometricallyEncloses(edgeSegmentStartLocation)))
                 {

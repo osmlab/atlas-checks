@@ -451,6 +451,7 @@
     }
   },
   "PedestrianAreaOverlappingEdgeCheck": {
+    "distance.minimum.meters": 1.0,
     "challenge": {
       "description": "Tasks contain pedestrian areas overlapping car navigable ways that are not properly snapped to those ways.",
       "blurb": "Pedestrian areas overlapping car navigable ways.",
