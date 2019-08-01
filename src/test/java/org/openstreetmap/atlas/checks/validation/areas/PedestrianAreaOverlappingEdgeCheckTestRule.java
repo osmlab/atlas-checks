@@ -22,7 +22,6 @@ public class PedestrianAreaOverlappingEdgeCheckTestRule extends CoreTestRule
     private static final String AREA_LOC_5 = "34.0623169, -4.9726083";
     private static final String AREA_LOC_6 = "34.0623146, -4.9727816";
     private static final String AREA_LOC_7 = "34.0623136, -4.9729020";
-
     private static final String LOC_1_WITHIN_AREA = "34.0620432, -4.9728769";
     private static final String LOC_2_WITHIN_AREA = "34.0621669, -4.9728356";
     private static final String LOC_OUTSIDE_AREA = "34.0618719, -4.9729555";
