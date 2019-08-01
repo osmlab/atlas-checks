@@ -42,7 +42,7 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "highway=motorway", "name=aroad" }),
                     @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aro4d" }),
+                            @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aroåd" }),
                     @Edge(id = "1000000003", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=aroad" }) })
     private Atlas oneSegmentInconsistentSpelling;
@@ -63,9 +63,9 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000000", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=aroad" }),
                     @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway", "name=4road" }),
+                            @Loc(value = TEST_3) }, tags = { "highway=motorway", "name=Åroad" }),
                     @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aro4d" }),
+                            @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aroåd" }),
                     @Edge(id = "1000000003", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=aroad" }) })
     private Atlas moreThanOneSegmentInconsistentSpelling;
@@ -113,7 +113,7 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aroad" }),
                     @Edge(id = "1000000003", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=a®oad" }) })
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=arøad" }) })
     private Atlas oneSegmentInconsistentSpellingAccent;
 
     @TestAtlas(
@@ -132,9 +132,9 @@ public class RoadNameSpellingConsistencyCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000000", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=aroad" }),
                     @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=motorway", "name=4road" }),
+                            @Loc(value = TEST_3) }, tags = { "highway=motorway", "name=åroad" }),
                     @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aro4d" }),
+                            @Loc(value = TEST_4) }, tags = { "highway=motorway", "name=aroAd" }),
                     @Edge(id = "1000000003", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "highway=motorway", "name=aroa∂" }) })
     private Atlas allSegmentsInconsistentSpelling;

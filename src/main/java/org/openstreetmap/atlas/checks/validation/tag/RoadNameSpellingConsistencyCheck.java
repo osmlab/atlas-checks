@@ -12,13 +12,14 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
- * Flags road segments that have no {@link org.openstreetmap.atlas.tags.names.NameTag} or a NameTag
- * with a different spelling from other segments of the same road. This check is primarily meant to
- * catch small errors in spelling, such as a missing letter or letter accent mixups.
+ * Flags road segments that have a {@link NameTag} with a different spelling from other segments of
+ * the same road. This check is primarily meant to catch small errors in spelling, such as a missing
+ * letter or letter accent mixups.
  *
  * @author seancoulter
  */
@@ -32,7 +33,6 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
     private static final double MAXIMUM_CHARACTER_DIFFERENCES_DEFAULT = 1;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "These road segments have spelling inconsistencies. Spellings are: {0}. Examine all flagged road segments to determine the best spelling, and apply this spelling to all of those segments.");
-
     private final Distance maximumSearchDistance;
     private final double inconsistentCharacterCountThreshold;
 

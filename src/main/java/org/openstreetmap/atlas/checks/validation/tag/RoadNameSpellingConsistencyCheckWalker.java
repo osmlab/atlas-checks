@@ -1,14 +1,17 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
+import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.spark_project.guava.primitives.Ints;
 
 /**
  * A RoadNameSpellingConsistencyCheckWalker can be used to collect all edges that have NameTag
@@ -20,26 +23,21 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 {
 
-    /**
-     * Directional character, sometimes appended to start/end of road name (e.g. Banana Ave W)
-     */
-    enum Direction
-    {
-        N,
-        S,
-        E,
-        W
-    }
+    // Matches identifiers sometimes found in road names. E.g. the 'A' in Road A, the "12c" in 12c
+    // Street, and the "Y6" in Y6 Drive.
+    // Identifiers are defined to be any space-delimited string that either contains at least one
+    // digit OR contains a single character which may be preceded or followed by a single
+    // punctuation character.
+    // We consider names with different identifiers to be from different roads, and as such we don't
+    // flag for spelling inconsistencies between identifiers.
+    private static final String ALPHANUMERIC_IDENTIFIER_STRING_REGEX = ".*\\p{Nd}+.*";
+    private static final String CHARACTER_IDENTIFIER_STRING_REGEX = "\\p{P}.\\p{P}|.\\p{P}|\\p{P}.|^.$";
 
-    private static final EnumSet<Direction> DIRECTIONS = EnumSet.of(Direction.N, Direction.S,
-            Direction.E, Direction.W);
-
-    private static final String ALPHANUMERIC_IDENTIFIER_STRING_REGEX = ".*[0-9]+.*";
     private static final String WHITESPACE_REGEX = "\\s+";
 
     /**
-     * Evaluate the {@link org.openstreetmap.atlas.tags.names.NameTag}s of the startingEdge and an
-     * incomingEdge to see if their spellings are inconsistent with one another.
+     * Evaluate the {@link NameTag}s of the startingEdge and an incomingEdge to see if their
+     * spellings are inconsistent with one another.
      *
      * @param startEdge
      *            the edge from which the search started
@@ -48,12 +46,16 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      * @return true if incomingEdge's name is at most the desired Levenshtein distance from the
      *         start edge's name
      */
+    @SuppressWarnings("squid:S3655")
     static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge,
             final int maximumAllowedDifferences)
     {
         return incomingEdge ->
         {
-            final int similarityIndex = similarityIndex(incomingEdge, startEdge);
+            // NOSONAR because we've filtered out Edges without names
+            final String startEdgeName = startEdge.getName().get();
+            final String incomingEdgeName = incomingEdge.getName().get();
+            final int similarityIndex = similarityIndex(incomingEdgeName, startEdgeName);
             return similarityIndex <= maximumAllowedDifferences && similarityIndex > 0;
         };
     }
@@ -88,32 +90,9 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         return incomingEdge -> incomingEdge.end().getLocation()
                 .distanceTo(startEdge.start().getLocation())
                 .isLessThanOrEqualTo(maximumSearchDistance)
-                        ? incomingEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
+                        ? incomingEdge.connectedEdges().stream()
+                                .filter(edge -> edge.isMasterEdge() && edge.getName().isPresent())
                         : Stream.empty();
-    }
-
-    /**
-     * Check two characters to see if they're equal.
-     *
-     * @param evaluateEdgeCharacter
-     *            the character being checked for equality with the lambda parameter
-     * @return true if the incoming character is the same as the parameter character
-     */
-    private static Predicate<String> equalCharacter(final char evaluateEdgeCharacter)
-    {
-        return directionCharacter -> evaluateEdgeCharacter == getCharacter(directionCharacter);
-    }
-
-    /**
-     * Get the character representation of a one-character String.
-     *
-     * @param oneCharacterString
-     *            the string to be converted to a character
-     * @return a char representation of the parameter String
-     */
-    private static char getCharacter(final String oneCharacterString)
-    {
-        return oneCharacterString.charAt(0);
     }
 
     /**
@@ -132,42 +111,41 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         final int[][] results = new int[incomingEdgeName.length() + 1][startingEdgeName.length()
                 + 1];
 
-        // Roads differ by one directional character (N,S,E, or W) in their name strings
-        boolean possibleDirectionalDifference = false;
-
-        final Stream<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
+        final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(incomingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX));
-        final Stream<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
+                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
+                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX))
+                .collect(Collectors.toList());
+        final List<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(startingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX));
+                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
+                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX))
+                .collect(Collectors.toList());
 
         // If the two street names have different alphanumeric identifier strings anywhere in their
         // names, they're classified as being from different roads.
-        if (Stream.concat(incomingEdgeNameAlphanumericIdentifierStrings,
-                startingEdgeNameAlphanumericIdentifierStrings).distinct().count() > 1)
+        final long incomingEdgeNameIdentifierCount = incomingEdgeNameAlphanumericIdentifierStrings
+                .size();
+        final long startingEdgeNameIdentifierCount = startingEdgeNameAlphanumericIdentifierStrings
+                .size();
+        final long combinedIdentifierCount = Stream
+                .concat(incomingEdgeNameAlphanumericIdentifierStrings.stream(),
+                        startingEdgeNameAlphanumericIdentifierStrings.stream())
+                .distinct().count();
+        if (combinedIdentifierCount > incomingEdgeNameIdentifierCount
+                || combinedIdentifierCount > startingEdgeNameIdentifierCount)
         {
             return -1;
         }
 
-        // We now know that the street names have the same numbers, or no numbers at all
+        // We now know that the street names have the same identifiers or no identifiers at all.
+        // Compute Levenshtein distance as usual
         for (int incomingEdgeNameIndex = 0; incomingEdgeNameIndex <= incomingEdgeName
                 .length(); incomingEdgeNameIndex++)
         {
             for (int startingEdgeNameIndex = 0; startingEdgeNameIndex <= startingEdgeName
                     .length(); startingEdgeNameIndex++)
             {
-                // Handles one directional character differences between roads. Meant to capture
-                // differences in directionality; e.g. in Pie St. N vs. Pie St. S, neither should be
-                // flagged as being inconsistent with the other.
-                if (!possibleDirectionalDifference && incomingEdgeNameIndex == startingEdgeNameIndex
-                        && incomingEdgeNameIndex < incomingEdgeName.length()
-                        && startingEdgeNameIndex < startingEdgeName.length())
-                {
-                    possibleDirectionalDifference = hasDirectionalCharacterDifference(
-                            incomingEdgeName.charAt(incomingEdgeNameIndex),
-                            startingEdgeName.charAt(startingEdgeNameIndex));
-                }
 
                 if (incomingEdgeNameIndex == 0)
                 {
@@ -181,7 +159,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 
                 else
                 {
-                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = min(
+                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = Ints.min(
                             results[incomingEdgeNameIndex - 1][startingEdgeNameIndex - 1]
                                     + costOfSubstitution(
                                             incomingEdgeName.charAt(incomingEdgeNameIndex - 1),
@@ -191,73 +169,25 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
                 }
             }
         }
-
-        // If there's only a single character difference and that character is a directional
-        // character, we consider both roads to be different and so we don't flag them. Else we
-        // return the Levenshtein distance as usual.
-        return possibleDirectionalDifference
-                && results[incomingEdgeName.length()][startingEdgeName.length()] == 1 ? -1
-                        : results[incomingEdgeName.length()][startingEdgeName.length()];
+        return results[incomingEdgeName.length()][startingEdgeName.length()];
     }
 
     /**
-     * Check if the parameter characters are different directional characters.
+     * Wrapper for getLevenshteinDistance(). Handles case where the incomingEdge has the same name
+     * as the startingEdge before computing the Levenshtein distance.
      *
-     * @param incomingEdgeCharacter
-     *            the incoming Edge's character
-     * @param startingEdgeCharacter
-     *            the starting Edge's character
-     * @return true if the parameter characters are both directional (members of Direction enum) AND
-     *         they are different from one another, false otherwise
-     */
-    private static boolean hasDirectionalCharacterDifference(final char incomingEdgeCharacter,
-            final char startingEdgeCharacter)
-    {
-        return DIRECTIONS.stream().map(Enum::toString).filter(
-                equalCharacter(incomingEdgeCharacter).or(equalCharacter(startingEdgeCharacter)))
-                .count() >= 2;
-    }
-
-    /**
-     * Retrieve the minimum value out of parameter numbers.
-     *
-     * @param numbers
-     *            the numbers on which to operate
-     * @return the minimum of those numbers
-     */
-    private static int min(final int... numbers)
-    {
-        return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
-    }
-
-    /**
-     * Wrapper for getLevenshteinDistance(). Handles cases where the incomingEdge doesn't have a
-     * name and where the incomingEdge has the same name as the startingEdge before computing the
-     * Levenshtein distance.
-     *
-     * @param incomingEdge
+     * @param incomingEdgeName
      *            the next edge in the search area
-     * @param startEdge
+     * @param startEdgeName
      *            the edge from which the search started
      * @return the Levenshtein distance between two edge's names, or -1 if the incoming edge doesn't
      *         have a name, or 0 if the names are the same
      */
-    @SuppressWarnings("squid:S3655")
-    private static int similarityIndex(final Edge incomingEdge, final Edge startEdge)
+
+    private static int similarityIndex(final String incomingEdgeName, final String startEdgeName)
     {
-        if (!incomingEdge.getName().isPresent())
-        {
-            // Always skipped
-            return -1;
-        }
-        // NOSONAR because isPresent() was checked in the calling class
-        final String startEdgeName = startEdge.getName().get();
-        final String incomingEdgeName = incomingEdge.getName().get();
-        if (startEdgeName.equals(incomingEdgeName))
-        {
-            return 0;
-        }
-        return getLevenshteinDistance(incomingEdgeName, startEdgeName);
+        return startEdgeName.equals(incomingEdgeName) ? 0
+                : getLevenshteinDistance(incomingEdgeName, startEdgeName);
     }
 
     /**
