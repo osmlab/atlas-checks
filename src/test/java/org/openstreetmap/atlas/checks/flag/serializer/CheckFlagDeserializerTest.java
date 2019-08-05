@@ -16,6 +16,8 @@ import com.google.gson.GsonBuilder;
 
 /**
  * Tests if CheckFlag can be read from json resource
+ *
+ * @author danielbaah
  */
 public class CheckFlagDeserializerTest
 {
@@ -27,7 +29,7 @@ public class CheckFlagDeserializerTest
     public void deserializationTest() throws IOException
     {
 
-        List<String> flags = this.getResource("checkflags1.log");
+        final List<String> flags = this.getResource("checkflags1.log");
 
         flags.forEach(flag ->
         {
@@ -39,32 +41,33 @@ public class CheckFlagDeserializerTest
     @Test
     public void checkNameDeserializationTest() throws IOException
     {
-        String flag = this.getResource("checkflags2.log").get(0);
-        CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
-        String checkName = checkFlag.getChallengeName().isPresent()
+        final String flag = this.getResource("checkflags2.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+        final String checkName = checkFlag.getChallengeName().isPresent()
                 ? checkFlag.getChallengeName().get()
                 : null;
         Assert.assertEquals("BuildingRoadIntersectionCheck", checkName);
     }
-    
+
     @Test
     public void instructionsDeserializationTest() throws IOException
     {
-        String flag = this.getResource("checkflags2.log").get(0);
-        CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
-        String instructions = checkFlag.getInstructions();
+        final String flag = this.getResource("checkflags2.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+        final String instructions = checkFlag.getInstructions();
         Assert.assertNotEquals(0, instructions.length());
     }
-    
+
     /**
-     *
-     * @param resource resource filename
+     * @param resource
+     *            resource filename
      * @return A List of lines in .log file as string
-     * @throws IOException IOException
+     * @throws IOException
+     *             IOException
      */
     private List<String> getResource(final String resource) throws IOException
     {
-        BufferedReader reader = new BufferedReader(
+        final BufferedReader reader = new BufferedReader(
                 new FileReader(CheckFlagTest.class.getResource(resource).getFile()));
         return reader.lines().collect(Collectors.toList());
     }
