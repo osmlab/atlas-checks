@@ -1,29 +1,23 @@
 package org.openstreetmap.atlas.checks.database;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
+import java.io.Closeable;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import org.openstreetmap.atlas.exception.CoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 /**
- * Connect and create schema for CheckFlag database
+ * Create a PostgreSQL database connection
  *
  * @author danielbaah
  */
-public class DatabaseConnection
+public class DatabaseConnection implements Closeable
 {
 
-    private Connection connection;
+    private URI connectionURI;
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConnection.class);
 
     /**
@@ -39,52 +33,30 @@ public class DatabaseConnection
      */
     public DatabaseConnection(final String connectionUrl)
     {
+        this.connectionURI = this.createConnectionURI(connectionUrl);
+    }
+
+    @Override
+    public void close()
+    {
         try
         {
-            final URI connectionURI = this.createConnectionURI(connectionUrl);
-
-            this.connection = DriverManager
-                    .getConnection(String.format("jdbc:%s", connectionURI.toString()));
-            this.createDatabaseSchema();
+            this.getConnection().close();
         }
         catch (final SQLException error)
         {
-            throw new CoreException("Invalid connection string. host[:port]/database", error);
+            logger.error("Error closing jdbc connection.", error);
         }
     }
 
-    public Connection getConnection()
+    public Connection getConnection() throws SQLException
     {
-        return this.connection;
+        return DriverManager.getConnection(String.format("jdbc:%s", this.connectionURI.toString()));
+
     }
 
     private URI createConnectionURI(final String connectionString)
     {
         return URI.create(String.format("postgresql://%s", connectionString));
-    }
-
-    private void createDatabaseSchema()
-    {
-        final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
-        final LineNumberReader lnReader = new LineNumberReader(reader);
-        try (Statement sql = this.connection.createStatement())
-        {
-            final String query = ScriptUtils
-                    .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
-                            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
-                    .replace("{schema}", this.connection.getSchema());
-
-            sql.execute(query);
-            logger.info("Successfully created database schema.");
-        }
-        catch (final IOException error)
-        {
-            throw new CoreException("Error reading schema.sql", error);
-        }
-        catch (final SQLException error)
-        {
-            throw new CoreException("Error executing create schema script.", error);
-        }
     }
 }

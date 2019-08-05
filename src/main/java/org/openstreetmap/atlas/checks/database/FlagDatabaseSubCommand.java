@@ -8,9 +8,11 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.serializer.CheckFlagDeserializer;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.OptionAndArgumentDelegate;
@@ -33,6 +36,7 @@ import org.openstreetmap.atlas.utilities.command.parsing.OptionOptionality;
 import org.openstreetmap.atlas.utilities.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,6 +58,10 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private static final String ZIPPED_LOG_EXTENSION = ".log.gz";
     private static final String ISO_COUNTRY_CODE = "iso_country_code";
     private static final String OSM_ID_LEGACY = "osmid";
+    private static final String CREATE_FLAG_SQL = "INSERT INTO flag(flag_id, check_name, instructions, date_created) VALUES (?,?,?,?);";
+    private static final String CREATE_FEATURE_SQL = String.format(
+            "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES (?,%s,?,?,?,?);",
+            "ST_GeomFromGeoJSON(?), ?, ?");
     private static final int THREE = 3;
     private static final int FOUR = 4;
     private static final int FIVE = 5;
@@ -105,76 +113,78 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     public int execute()
     {
         final Time timer = Time.now();
-        final DatabaseConnection database = new DatabaseConnection(
+        try (DatabaseConnection database = new DatabaseConnection(
                 this.optionAndArgumentDelegate.getOptionArgument(DATABASE_URL_INPUT).get());
-        final Connection databaseConnection = database.getConnection();
-        final String inputPath = this.optionAndArgumentDelegate.getOptionArgument(FLAG_PATH_INPUT)
-                .get();
-        this.timestamp = new Timestamp(Instant.now().toEpochMilli());
-
-        new File(inputPath).listFilesRecursively().forEach(file ->
+                Connection databaseConnection = database.getConnection())
         {
-            // If this file is something we handle, read and upload the tasks contained within
-            final Optional<OutputFileType> optionalHandledFileType = getOptionalOutputType(file);
-            optionalHandledFileType.ifPresent(outputFileType ->
+            final String inputPath = this.optionAndArgumentDelegate
+                    .getOptionArgument(FLAG_PATH_INPUT).get();
+            this.timestamp = new Timestamp(Instant.now().toEpochMilli());
+            this.createDatabaseSchema(databaseConnection);
+
+            new File(inputPath).listFilesRecursively().forEach(file ->
             {
-
-                try (BufferedReader reader = this.getReader(file, outputFileType))
+                // If this file is something we handle, read and upload the tasks contained within
+                final Optional<OutputFileType> optionalHandledFileType = getOptionalOutputType(
+                        file);
+                optionalHandledFileType.ifPresent(outputFileType ->
                 {
 
-                    final PreparedStatement flagSqlStatement = databaseConnection.prepareStatement(
-                            "INSERT INTO flag(flag_id, check_name, instructions, date_created) VALUES (?,?,?,?);");
-
-                    final PreparedStatement featureSqlStatement = databaseConnection
-                            .prepareStatement(String.format(
-                                    "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES (?,%s,?,?,?,?);",
-                                    "ST_GeomFromGeoJSON(?), ?, ?"));
-
-                    final List<String> lines = reader.lines().collect(Collectors.toList());
-                    int startIndex = 0;
-                    int endIndex;
-
-                    do
+                    try (BufferedReader reader = this.getReader(file, outputFileType);
+                            PreparedStatement flagSqlStatement = databaseConnection
+                                    .prepareStatement(CREATE_FLAG_SQL);
+                            PreparedStatement featureSqlStatement = databaseConnection
+                                    .prepareStatement(CREATE_FEATURE_SQL))
                     {
-                        endIndex = Math.min(startIndex + BATCH_SIZE, lines.size());
-                        final List<String> batchLines = lines.subList(startIndex, endIndex);
 
-                        batchLines.forEach(line ->
+                        final List<String> lines = reader.lines().collect(Collectors.toList());
+                        int startIndex = 0;
+                        int endIndex;
+
+                        do
                         {
-                            final JsonObject parsedFlag = new JsonParser().parse(line)
-                                    .getAsJsonObject();
-                            final JsonArray features = this.filterOutPointsFromGeojson(
-                                    parsedFlag.get(FEATURES).getAsJsonArray());
-                            final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
+                            endIndex = Math.min(startIndex + BATCH_SIZE, lines.size());
+                            final List<String> batchLines = lines.subList(startIndex, endIndex);
 
-                            this.batchFlagStatement(flagSqlStatement, flag);
+                            batchLines.forEach(line ->
+                            {
+                                final JsonObject parsedFlag = new JsonParser().parse(line)
+                                        .getAsJsonObject();
+                                final JsonArray features = this.filterOutPointsFromGeojson(
+                                        parsedFlag.get(FEATURES).getAsJsonArray());
+                                final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
 
-                            StreamSupport.stream(features.spliterator(), false).forEach(
-                                    feature -> this.batchFlagFeatureStatement(featureSqlStatement,
-                                            flag, feature.getAsJsonObject()));
-                        });
+                                this.batchFlagStatement(flagSqlStatement, flag);
 
-                        flagSqlStatement.executeBatch();
-                        featureSqlStatement.executeBatch();
+                                StreamSupport.stream(features.spliterator(), false)
+                                        .forEach(feature -> this.batchFlagFeatureStatement(
+                                                featureSqlStatement, flag,
+                                                feature.getAsJsonObject()));
+                            });
 
-                        startIndex = startIndex + BATCH_SIZE;
+                            flagSqlStatement.executeBatch();
+                            featureSqlStatement.executeBatch();
+
+                            startIndex = startIndex + BATCH_SIZE;
+                        }
+                        while (endIndex != lines.size() - 1 && startIndex < lines.size());
                     }
-                    while (endIndex != lines.size() - 1 && startIndex < lines.size());
-
-                    featureSqlStatement.close();
-                    flagSqlStatement.close();
-
-                }
-                catch (final IOException error)
-                {
-                    logger.error("Exception while reading {}:", file, error);
-                }
-                catch (final SQLException error)
-                {
-                    logger.error("Exception batch executing flag statements", error);
-                }
+                    catch (final IOException error)
+                    {
+                        logger.error("Exception while reading {}:", file, error);
+                    }
+                    catch (final SQLException error)
+                    {
+                        logger.error("Exception batch executing flag statements", error);
+                    }
+                });
             });
-        });
+        }
+        catch (final SQLException error)
+        {
+            logger.error("Invalid connection string. host[:port]/database", error);
+            return 1;
+        }
 
         logger.info("Atlas Checks database upload command finished in {}.", timer.elapsedSince());
 
@@ -274,6 +284,37 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         catch (final SQLException error)
         {
             logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
+        }
+    }
+
+    /***
+     * Create database schema from schema.sql resource file.
+     *
+     * @param connection
+     *            jdbc Connection object
+     */
+    private void createDatabaseSchema(final Connection connection)
+    {
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
+        final LineNumberReader lnReader = new LineNumberReader(reader);
+        try (Statement sql = connection.createStatement())
+        {
+            final String query = ScriptUtils
+                    .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
+                            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
+                    .replace("{schema}", connection.getSchema());
+
+            sql.execute(query);
+            logger.info("Successfully created database schema.");
+        }
+        catch (final IOException error)
+        {
+            throw new CoreException("Error reading schema.sql", error);
+        }
+        catch (final SQLException error)
+        {
+            throw new CoreException("Error executing create schema script.", error);
         }
     }
 
