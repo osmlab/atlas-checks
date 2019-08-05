@@ -24,7 +24,7 @@ public class CheckFlagDeserializerTest
 
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(CheckFlag.class, new CheckFlagDeserializer()).create();
-    
+
     @Test
     public void checkNameDeserializationTest() throws IOException
     {
@@ -35,7 +35,7 @@ public class CheckFlagDeserializerTest
                 : null;
         Assert.assertEquals("BuildingRoadIntersectionCheck", checkName);
     }
-    
+
     @Test
     public void deserializationTest() throws IOException
     {
