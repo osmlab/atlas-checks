@@ -24,20 +24,7 @@ public class CheckFlagDeserializerTest
 
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(CheckFlag.class, new CheckFlagDeserializer()).create();
-
-    @Test
-    public void deserializationTest() throws IOException
-    {
-
-        final List<String> flags = this.getResource("checkflags1.log");
-
-        flags.forEach(flag ->
-        {
-            CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
-            Assert.assertNotNull(checkFlag);
-        });
-    }
-
+    
     @Test
     public void checkNameDeserializationTest() throws IOException
     {
@@ -47,6 +34,19 @@ public class CheckFlagDeserializerTest
                 ? checkFlag.getChallengeName().get()
                 : null;
         Assert.assertEquals("BuildingRoadIntersectionCheck", checkName);
+    }
+    
+    @Test
+    public void deserializationTest() throws IOException
+    {
+
+        final List<String> flags = this.getResource("checkflags1.log");
+
+        flags.forEach(flag ->
+        {
+            final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+            Assert.assertNotNull(checkFlag);
+        });
     }
 
     @Test
