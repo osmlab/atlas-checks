@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
@@ -46,6 +47,34 @@ public class FlagDatabaseSubCommandTest
     private Connection connection = Mockito.mock(Connection.class);
     @Mock
     private Statement statement = Mockito.mock(Statement.class);
+    @Mock
+    private PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+
+    @Test
+    public void batchFeatureStatementTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final String flag = this.getResource("checkflags1.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+        final JsonElement feature = new JsonParser().parse(flag).getAsJsonObject().get("features");
+
+        command.batchFlagFeatureStatement(this.preparedStatement, checkFlag,
+                feature.getAsJsonArray().get(0).getAsJsonObject());
+
+        Mockito.verify(this.preparedStatement).addBatch();
+    }
+
+    @Test
+    public void batchFlagStatementTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final String flag = this.getResource("checkflags1.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+
+        command.batchFlagStatement(this.preparedStatement, checkFlag);
+
+        Mockito.verify(this.preparedStatement).addBatch();
+    }
 
     @Test
     public void commandFailedExitCodeTest()

@@ -108,6 +108,70 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
     }
 
+    /**
+     * Add CheckFlag feature values to parameterized sql INSERT statement
+     *
+     * @param sql
+     *            PreparedStatement to add parameterized values to
+     * @param flag
+     *            CheckFlag to associate with feature
+     * @param feature
+     *            - Flagged AtlasItem
+     */
+    public void batchFlagFeatureStatement(final PreparedStatement sql, final CheckFlag flag,
+            final JsonObject feature)
+    {
+
+        final JsonObject properties = feature.get(PROPERTIES).getAsJsonObject();
+
+        try
+        {
+            sql.setString(1, flag.getIdentifier());
+            sql.setString(2, feature.get("geometry").toString());
+            sql.setLong(THREE, this.getOsmIdentifier(properties));
+            sql.setLong(FOUR, properties.get("identifier").getAsLong());
+            sql.setString(FIVE,
+                    properties.has(ISO_COUNTRY_CODE)
+                            ? properties.get(ISO_COUNTRY_CODE).getAsString()
+                            : "NA");
+            sql.setObject(SIX, this.getTags(properties));
+            sql.setString(SEVEN, properties.get("itemType").getAsString());
+            sql.setObject(EIGHT, this.timestamp);
+
+            sql.addBatch();
+        }
+        catch (final SQLException error)
+        {
+            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
+        }
+
+    }
+
+    /**
+     * Add CheckFlag values to parameterized sql INSERT statement
+     *
+     * @param sql
+     *            - PreparedStatement to add parameterized values to
+     * @param flag
+     *            - CheckFlag to insert into flag table
+     */
+    public void batchFlagStatement(final PreparedStatement sql, final CheckFlag flag)
+    {
+        try
+        {
+            sql.setString(1, flag.getIdentifier());
+            sql.setString(2, flag.getChallengeName().orElse(""));
+            sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
+            sql.setObject(FOUR, this.timestamp);
+
+            sql.addBatch();
+        }
+        catch (final SQLException error)
+        {
+            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
+        }
+    }
+
     /***
      * Create database schema from schema.sql resource file.
      *
@@ -286,70 +350,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         this.registerOptionWithRequiredArgument(DATABASE_URL_INPUT, 't',
                 "Database connection string", OptionOptionality.REQUIRED, DATABASE_URL_INPUT);
         super.registerOptionsAndArguments();
-    }
-
-    /**
-     * Add CheckFlag feature values to parameterized sql INSERT statement
-     *
-     * @param sql
-     *            PreparedStatement to add parameterized values to
-     * @param flag
-     *            CheckFlag to associate with feature
-     * @param feature
-     *            - Flagged AtlasItem
-     */
-    private void batchFlagFeatureStatement(final PreparedStatement sql, final CheckFlag flag,
-            final JsonObject feature)
-    {
-
-        final JsonObject properties = feature.get(PROPERTIES).getAsJsonObject();
-
-        try
-        {
-            sql.setString(1, flag.getIdentifier());
-            sql.setString(2, feature.get("geometry").toString());
-            sql.setLong(THREE, this.getOsmIdentifier(properties));
-            sql.setLong(FOUR, properties.get("identifier").getAsLong());
-            sql.setString(FIVE,
-                    properties.has(ISO_COUNTRY_CODE)
-                            ? properties.get(ISO_COUNTRY_CODE).getAsString()
-                            : "NA");
-            sql.setObject(SIX, this.getTags(properties));
-            sql.setString(SEVEN, properties.get("itemType").getAsString());
-            sql.setObject(EIGHT, this.timestamp);
-
-            sql.addBatch();
-        }
-        catch (final SQLException error)
-        {
-            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
-        }
-
-    }
-
-    /**
-     * Add CheckFlag values to parameterized sql INSERT statement
-     *
-     * @param sql
-     *            - PreparedStatement to add parameterized values to
-     * @param flag
-     *            - CheckFlag to insert into flag table
-     */
-    private void batchFlagStatement(final PreparedStatement sql, final CheckFlag flag)
-    {
-        try
-        {
-            sql.setString(1, flag.getIdentifier());
-            sql.setString(2, flag.getChallengeName().orElse(""));
-            sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
-            sql.setObject(FOUR, this.timestamp);
-
-            sql.addBatch();
-        }
-        catch (final SQLException error)
-        {
-            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
-        }
     }
 
     /**
