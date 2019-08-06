@@ -101,7 +101,7 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
         }
         else
         {
-            // setting as trace otherwise will just through
+            // setting as trace otherwise all null clients will trip.
             logger.trace(
                     "Ignoring upload to MapRoulette. Client was never initialized correctly. See beginning of log for more details.");
         }

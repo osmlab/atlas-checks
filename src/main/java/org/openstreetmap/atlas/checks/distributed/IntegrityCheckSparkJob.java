@@ -323,8 +323,11 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 tippecanoeOutput = null;
             }
 
-            EventService.get(country)
-                    .register(new MapRouletteClientProcessor(mapRouletteConfiguration, checks));
+            if (Objects.nonNull(mapRouletteConfiguration))
+            {
+                EventService.get(country)
+                        .register(new MapRouletteClientProcessor(mapRouletteConfiguration, checks));
+            }
 
             final Consumer<Atlas> intermediateAtlasHandler;
             if (saveIntermediateAtlas)
