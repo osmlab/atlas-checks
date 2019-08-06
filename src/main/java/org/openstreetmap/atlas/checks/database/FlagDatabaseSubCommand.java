@@ -108,6 +108,37 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         this.optionAndArgumentDelegate = this.getOptionAndArgumentDelegate();
     }
 
+    /***
+     * Create database schema from schema.sql resource file.
+     *
+     * @param connection
+     *            jdbc Connection object
+     */
+    public void createDatabaseSchema(final Connection connection)
+    {
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
+        final LineNumberReader lnReader = new LineNumberReader(reader);
+        try (Statement sql = connection.createStatement())
+        {
+            final String query = ScriptUtils
+                    .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
+                            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
+                    .replace("{schema}", connection.getSchema());
+
+            sql.execute(query);
+            logger.info("Successfully created database schema.");
+        }
+        catch (final IOException error)
+        {
+            throw new CoreException("Error reading schema.sql", error);
+        }
+        catch (final SQLException error)
+        {
+            throw new CoreException("Error executing create schema script.", error);
+        }
+    }
+
     @Override
     @SuppressWarnings("squid:S3655")
     public int execute()
@@ -197,10 +228,44 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         return "flag-database";
     }
 
+    /**
+     * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
+     * "osmid" to "osmIdentifier"
+     * {@link <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>}
+     *
+     * @param properties
+     *            CheckFlag properties
+     * @return OSM identifier
+     */
+    public long getOsmIdentifier(final JsonObject properties)
+    {
+        return properties.get(OSM_ID_LEGACY) == null ? properties.get("osmIdentifier").getAsLong()
+                : properties.get(OSM_ID_LEGACY).getAsLong();
+    }
+
     @Override
     public String getSimpleDescription()
     {
         return "Upload Atlas Checks flags into a Postgres database";
+    }
+
+    /**
+     * Filters non OSM tag in CheckFlag properties and converts into Map object for PostgreSQL
+     * hstore
+     *
+     * @param properties
+     *            CheckFlag properties
+     * @return hstore Map object
+     */
+    public Map<String, String> getTags(final JsonObject properties)
+    {
+        final Map<String, String> hstore = new HashMap<>();
+
+        properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
+                .map(Map.Entry::getKey)
+                .forEach(key -> hstore.put(key, properties.get(key).getAsString()));
+
+        return hstore;
     }
 
     @Override
@@ -287,37 +352,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         }
     }
 
-    /***
-     * Create database schema from schema.sql resource file.
-     *
-     * @param connection
-     *            jdbc Connection object
-     */
-    private void createDatabaseSchema(final Connection connection)
-    {
-        final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
-        final LineNumberReader lnReader = new LineNumberReader(reader);
-        try (Statement sql = connection.createStatement())
-        {
-            final String query = ScriptUtils
-                    .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
-                            ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
-                    .replace("{schema}", connection.getSchema());
-
-            sql.execute(query);
-            logger.info("Successfully created database schema.");
-        }
-        catch (final IOException error)
-        {
-            throw new CoreException("Error reading schema.sql", error);
-        }
-        catch (final SQLException error)
-        {
-            throw new CoreException("Error executing create schema script.", error);
-        }
-    }
-
     /**
      * Get all geojson features which do contain a properties field from a {@link JsonArray}.
      *
@@ -357,21 +391,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     /**
-     * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
-     * "osmid" to "osmIdentifier"
-     * {@link <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>}
-     *
-     * @param properties
-     *            CheckFlag properties
-     * @return OSM identifier
-     */
-    private long getOsmIdentifier(final JsonObject properties)
-    {
-        return properties.get(OSM_ID_LEGACY) == null ? properties.get("osmIdentifier").getAsLong()
-                : properties.get(OSM_ID_LEGACY).getAsLong();
-    }
-
-    /**
      * Read a file that we know we should be able to handle
      *
      * @param inputFile
@@ -393,24 +412,5 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         }
         return new BufferedReader(new InputStreamReader(
                 new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
-    }
-
-    /**
-     * Filters non OSM tag in CheckFlag properties and converts into Map object for PostgreSQL
-     * hstore
-     *
-     * @param properties
-     *            CheckFlag properties
-     * @return hstore Map object
-     */
-    public Map<String, String> getTags(final JsonObject properties)
-    {
-        final Map<String, String> hstore = new HashMap<>();
-
-        properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
-                .map(Map.Entry::getKey)
-                .forEach(key -> hstore.put(key, properties.get(key).getAsString()));
-
-        return hstore;
     }
 }

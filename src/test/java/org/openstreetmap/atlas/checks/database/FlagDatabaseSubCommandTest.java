@@ -5,6 +5,9 @@ import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERT
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,10 @@ public class FlagDatabaseSubCommandTest
 
     @Mock
     private DatabaseConnection dbConnection = Mockito.mock(DatabaseConnection.class);
+    @Mock
+    private Connection connection = Mockito.mock(Connection.class);
+    @Mock
+    private Statement statement = Mockito.mock(Statement.class);
 
     @Test
     public void commandFailedExitCodeTest()
@@ -49,6 +56,46 @@ public class FlagDatabaseSubCommandTest
         final int command = new FlagDatabaseSubCommand().runSubcommand(arguments);
 
         Assert.assertEquals(1, command);
+    }
+
+    @Test
+    public void createDatabaseSchemaTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        Mockito.when(this.dbConnection.getConnection()).thenReturn(this.connection);
+        Mockito.when(this.connection.createStatement()).thenReturn(this.statement);
+        Mockito.when(this.connection.getSchema()).thenReturn("");
+        Mockito.when(this.statement.execute(Mockito.anyString())).thenReturn(true);
+
+        command.createDatabaseSchema(this.connection);
+
+        // Verifies that createDatabaseSchema statements are called
+        Mockito.verify(this.connection).createStatement();
+        Mockito.verify(this.connection).getSchema();
+        Mockito.verify(this.statement).execute(Mockito.anyString());
+    }
+
+    @Test
+    public void getOsmIdentifierTest() throws IOException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+
+        final String flag1 = this.getResource("checkflags2.log").get(0);
+        final String flag2 = this.getResource("checkflags2.log").get(1);
+        final JsonElement flag1feature = new JsonParser().parse(flag1).getAsJsonObject()
+                .get("features").getAsJsonArray().get(0);
+        final JsonElement flag2feature = new JsonParser().parse(flag2).getAsJsonObject()
+                .get("features").getAsJsonArray().get(0);
+        final JsonObject flag1featureProperties = flag1feature.getAsJsonObject().get(PROPERTIES)
+                .getAsJsonObject();
+        final JsonObject flag2featureProperties = flag2feature.getAsJsonObject().get(PROPERTIES)
+                .getAsJsonObject();
+
+        final long osmId1 = command.getOsmIdentifier(flag1featureProperties);
+        final long osmId2 = command.getOsmIdentifier(flag2featureProperties);
+
+        Assert.assertEquals(221079243, osmId1);
+        Assert.assertEquals(167709671, osmId2);
     }
 
     @Test
@@ -63,6 +110,12 @@ public class FlagDatabaseSubCommandTest
         final Map<String, String> tags = command.getTags(properties);
 
         Assert.assertEquals("yes", tags.get("building"));
+        Assert.assertNull(tags.get("osmIdentifier"));
+        Assert.assertNull(tags.get("osmId"));
+        Assert.assertNull(tags.get("identifier"));
+        Assert.assertNull(tags.get("relations"));
+        Assert.assertNull(tags.get("members"));
+        Assert.assertNull(tags.get("iso_country_code"));
     }
 
     /**
