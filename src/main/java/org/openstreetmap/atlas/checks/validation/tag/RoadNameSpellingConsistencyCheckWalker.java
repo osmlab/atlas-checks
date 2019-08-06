@@ -11,7 +11,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
-import org.spark_project.guava.primitives.Ints;
 
 /**
  * A RoadNameSpellingConsistencyCheckWalker can be used to collect all edges that have NameTag
@@ -41,14 +40,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *
      * @param startEdge
      *            the edge from which the search started
-     * @param maximumAllowedDifferences
-     *            the number of Levenshtein edits allowed
      * @return true if incomingEdge's name is at most the desired Levenshtein distance from the
      *         start edge's name
      */
     @SuppressWarnings("squid:S3655")
-    static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge,
-            final int maximumAllowedDifferences)
+    static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge)
     {
         return incomingEdge ->
         {
@@ -59,23 +55,33 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             // NOSONAR because we've filtered out startEdges without names
             final String startEdgeName = startEdge.getName().get();
             final String incomingEdgeName = incomingEdge.getName().get();
-            final int similarityIndex = similarityIndex(incomingEdgeName, startEdgeName);
-            return similarityIndex <= maximumAllowedDifferences && similarityIndex > 0;
+            return checkBeforeEditDistance(incomingEdgeName, startEdgeName);
         };
     }
 
     /**
-     * Determine the cost of substituting two characters in the Levenshtein distance calculation.
+     * Wrapper for editDistanceIsOne(). Handles cases where the incomingEdge has the same name as
+     * the startingEdge and where the edit distance between the two names is greater than one before
+     * analyzing the edit distance.
      *
-     * @param first
-     *            a character to examine for equality with second
-     * @param second
-     *            a character to examine for equality with first
-     * @return 0 if first & second are equal, 1 otherwise
+     * @param incomingEdgeName
+     *            the next edge in the search area
+     * @param startEdgeName
+     *            the edge from which the search started
+     * @return true if the edit distance between two edge's names is 1; false otherwise
      */
-    private static int costOfSubstitution(final char first, final char second)
+    private static boolean checkBeforeEditDistance(final String incomingEdgeName,
+            final String startEdgeName)
     {
-        return first == second ? 0 : 1;
+        if (Math.abs(incomingEdgeName.length() - startEdgeName.length()) > 1)
+        {
+            return false;
+        }
+        if (incomingEdgeName.equals(startEdgeName))
+        {
+            return false;
+        }
+        return editDistanceIsOne(incomingEdgeName, startEdgeName);
     }
 
     /**
@@ -99,8 +105,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Compute the Levenshtein distance between two road names. Code used to calculate Levenshtein
-     * distance is adapted from https://www.baeldung.com/java-levenshtein-distance.
+     * Compute the edit distance between two road names. Should only take in Strings that are the
+     * same length, or whose lengths are off by a single character.
      *
      * @param incomingEdgeName
      *            the name of the next edge in the search area
@@ -108,12 +114,9 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *            the name of the edge from which the search started
      * @return the Levenshtein distance between two edge's names
      */
-    private static int getLevenshteinDistance(final String incomingEdgeName,
+    private static boolean editDistanceIsOne(final String incomingEdgeName,
             final String startingEdgeName)
     {
-        final int[][] results = new int[incomingEdgeName.length() + 1][startingEdgeName.length()
-                + 1];
-
         final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(incomingEdgeName.split(WHITESPACE_REGEX))
                 .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
@@ -138,58 +141,68 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         if (combinedIdentifierCount > incomingEdgeNameIdentifierCount
                 || combinedIdentifierCount > startingEdgeNameIdentifierCount)
         {
-            return -1;
+            return false;
         }
 
         // We now know that the street names have the same identifiers or no identifiers at all.
-        // Compute Levenshtein distance as usual
-        for (int incomingEdgeNameIndex = 0; incomingEdgeNameIndex <= incomingEdgeName
-                .length(); incomingEdgeNameIndex++)
+        // Check edit distance as usual.
+        int editDistance = 0;
+        // Check edit distance between 2 different strings of the same length
+        if (incomingEdgeName.length() == startingEdgeName.length())
         {
-            for (int startingEdgeNameIndex = 0; startingEdgeNameIndex <= startingEdgeName
-                    .length(); startingEdgeNameIndex++)
+            for (int index = 0; index < incomingEdgeName.length(); ++index)
             {
-
-                if (incomingEdgeNameIndex == 0)
+                if (incomingEdgeName.charAt(index) != startingEdgeName.charAt(index))
                 {
-                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = startingEdgeNameIndex;
-                }
-
-                else if (startingEdgeNameIndex == 0)
-                {
-                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = incomingEdgeNameIndex;
-                }
-
-                else
-                {
-                    results[incomingEdgeNameIndex][startingEdgeNameIndex] = Ints.min(
-                            results[incomingEdgeNameIndex - 1][startingEdgeNameIndex - 1]
-                                    + costOfSubstitution(
-                                            incomingEdgeName.charAt(incomingEdgeNameIndex - 1),
-                                            startingEdgeName.charAt(startingEdgeNameIndex - 1)),
-                            results[incomingEdgeNameIndex - 1][startingEdgeNameIndex] + 1,
-                            results[incomingEdgeNameIndex][startingEdgeNameIndex - 1] + 1);
+                    // If > 1 substitutions are required for the strings to match, then they're not
+                    // edit distance of 1
+                    if (++editDistance > 1)
+                    {
+                        return false;
+                    }
                 }
             }
         }
-        return results[incomingEdgeName.length()][startingEdgeName.length()];
-    }
 
-    /**
-     * Wrapper for getLevenshteinDistance(). Handles case where the incomingEdge has the same name
-     * as the startingEdge before computing the Levenshtein distance.
-     *
-     * @param incomingEdgeName
-     *            the next edge in the search area
-     * @param startEdgeName
-     *            the edge from which the search started
-     * @return the Levenshtein distance between two edge's names, or -1 if the incoming edge doesn't
-     *         have a name, or 0 if the names are the same
-     */
-    private static int similarityIndex(final String incomingEdgeName, final String startEdgeName)
-    {
-        return startEdgeName.equals(incomingEdgeName) ? 0
-                : getLevenshteinDistance(incomingEdgeName, startEdgeName);
+        // Check edit distance between 2 different strings with lengths off by one
+        else
+        {
+            final boolean incomingEdgeNameIsLonger = incomingEdgeName.length() > startingEdgeName
+                    .length();
+            final int endIndex = incomingEdgeNameIsLonger ? startingEdgeName.length()
+                    : incomingEdgeName.length();
+            int incomingEdgePointer = 0;
+            int startingEdgePointer = 0;
+            while (startingEdgePointer < endIndex)
+            {
+                if (incomingEdgeName.charAt(incomingEdgePointer) != startingEdgeName
+                        .charAt(startingEdgePointer))
+                {
+                    if (++editDistance > 1)
+                    {
+                        return false;
+                    }
+                    if (incomingEdgeNameIsLonger)
+                    {
+                        ++incomingEdgePointer;
+                    }
+                    else
+                    {
+                        ++startingEdgePointer;
+                    }
+                    if (incomingEdgeName.charAt(incomingEdgePointer) != startingEdgeName
+                            .charAt(startingEdgePointer))
+                    {
+                        return false;
+                    }
+                }
+                ++incomingEdgePointer;
+                ++startingEdgePointer;
+            }
+        }
+        // The road names are at an edit distance of one, also meaning their spellings are
+        // inconsistent
+        return true;
     }
 
     /**
