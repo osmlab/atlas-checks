@@ -403,7 +403,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
      *            CheckFlag properties
      * @return hstore Map object
      */
-    private Map<String, String> getTags(final JsonObject properties)
+    public Map<String, String> getTags(final JsonObject properties)
     {
         final Map<String, String> hstore = new HashMap<>();
 
