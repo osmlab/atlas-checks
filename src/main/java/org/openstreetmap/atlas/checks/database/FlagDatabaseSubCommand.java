@@ -231,8 +231,8 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     /**
      * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
      * "osmid" to "osmIdentifier"
-     * {@link <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>}
-     *
+     * 
+     * @see <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>
      * @param properties
      *            CheckFlag properties
      * @return OSM identifier
