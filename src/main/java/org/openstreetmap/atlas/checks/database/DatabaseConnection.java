@@ -1,24 +1,19 @@
 package org.openstreetmap.atlas.checks.database;
 
-import java.io.Closeable;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Create a PostgreSQL database connection
  *
  * @author danielbaah
  */
-public class DatabaseConnection implements Closeable
+public class DatabaseConnection implements AutoCloseable
 {
 
     private URI connectionURI;
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseConnection.class);
 
     /**
      * Default constructor takes in a url of the form host[:port]/database. Port and additional
@@ -37,22 +32,19 @@ public class DatabaseConnection implements Closeable
     }
 
     @Override
-    public void close()
+    public void close() throws SQLException
     {
-        try
-        {
-            this.getConnection().close();
-        }
-        catch (final SQLException error)
-        {
-            logger.error("Error closing jdbc connection.", error);
-        }
+        this.getConnection().close();
     }
 
     public Connection getConnection() throws SQLException
     {
         return DriverManager.getConnection(String.format("jdbc:%s", this.connectionURI.toString()));
+    }
 
+    public URI getConnectionURI()
+    {
+        return this.connectionURI;
     }
 
     private URI createConnectionURI(final String connectionString)

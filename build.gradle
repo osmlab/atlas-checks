@@ -92,6 +92,7 @@ dependencies
     compile packages.postgis
     compile packages.postgres
     compile packages.spring
+    compile packages.mockito
 
     checkstyle packages.checkstyle
     checkstyle packages.atlas_checkstyle
