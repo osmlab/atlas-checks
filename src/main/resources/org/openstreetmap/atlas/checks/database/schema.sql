@@ -1,10 +1,8 @@
-DROP SCHEMA IF EXISTS {schema} CASCADE;
 CREATE SCHEMA IF NOT EXISTS {schema};
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS hstore;
 
-DROP TABLE IF EXISTS flag CASCADE;
-CREATE TABLE flag (
+CREATE TABLE IF NOT EXISTS flag (
 	id serial primary key,
 	flag_id text not null,
 	check_name text not null,
@@ -14,8 +12,7 @@ CREATE TABLE flag (
 	date_created timestamp
 );
 
-DROP TABLE IF EXISTS feature CASCADE;
-CREATE TABLE feature (
+CREATE TABLE IF NOT EXISTS feature (
   id serial primary key,
   flag_id text not null,
   geom geometry not null,
@@ -27,7 +24,6 @@ CREATE TABLE feature (
   date_created timestamp
 );
 
-DROP INDEX IF EXISTS feature_geom_idx;
-CREATE INDEX feature_geom_idx
+CREATE INDEX IF NOT EXISTS feature_geom_idx
   ON feature
   USING GIST (geom);
