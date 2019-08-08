@@ -14,13 +14,46 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * A RoadNameSpellingConsistencyCheckWalker can be used to collect all edges that have NameTag
- * values that are at some Levenshtein distance (configurable) from the starting edge's NameTag
- * value. Collected edges are within some linear search area (configurable).
+ * values that are at an edit distance of 1 from the starting edge's {@link NameTag} value. Collected edges
+ * are within some linear search area (configurable).
  *
  * @author seancoulter
  */
 class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 {
+
+    /**
+     * Holds the unicode representation of CJK (Chinese, Japanese, Korean) Unified Ideograph numbers
+     * (e.g. 四) These numbers are not contained in {Nd} so we create separate storage for them
+     */
+    enum CJKNumbers
+    {
+        CJK_ZERO(0x3007),
+        CJK_ONE(0x4E00),
+        CJK_TWO(0x4E8C),
+        CJK_THREE(0x4E09),
+        CJK_FOUR(0x56DB),
+        CJK_FIVE(0x4E94),
+        CJK_SIX(0x516D),
+        CJK_SEVEN(0x4E03),
+        CJK_EIGHT(0x516B),
+        CJK_NINE(0x4E5D),
+        CJK_TEN(0x5341),
+        CJK_ELEVEN(0x5EFF),
+        CJK_TWELVE(0x5345);
+
+        private final int value;
+
+        CJKNumbers(final int value)
+        {
+            this.value = value;
+        }
+
+        public int getValue()
+        {
+            return this.value;
+        }
+    }
 
     // Matches identifiers sometimes found in road names. E.g. the 'A' in Road A, the "12c" in 12c
     // Street, and the "Y6" in Y6 Drive.
@@ -40,8 +73,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *
      * @param startEdge
      *            the edge from which the search started
-     * @return true if incomingEdge's name is at most the desired Levenshtein distance from the
-     *         start edge's name
+     * @return true if incomingEdge's name exists and is at an edit distance of 1 from the start edge's name; false otherwise
      */
     @SuppressWarnings("squid:S3655")
     static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge)
@@ -112,7 +144,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *            the name of the next edge in the search area
      * @param startingEdgeName
      *            the name of the edge from which the search started
-     * @return the Levenshtein distance between two edge's names
+     * @return true if the edit distance between two edge's names is 1; false otherwise
      */
     private static boolean editDistanceIsOne(final String incomingEdgeName,
             final String startingEdgeName)
@@ -120,12 +152,18 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(incomingEdgeName.split(WHITESPACE_REGEX))
                 .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX))
+                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                        || Stream.of(CJKNumbers.values())
+                                .anyMatch(cjkNumber -> substring.contains(
+                                        new String(Character.toChars(cjkNumber.getValue())))))
                 .collect(Collectors.toList());
         final List<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(startingEdgeName.split(WHITESPACE_REGEX))
                 .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX))
+                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                        || Stream.of(CJKNumbers.values())
+                                .anyMatch(cjkNumber -> substring.contains(
+                                        new String(Character.toChars(cjkNumber.getValue())))))
                 .collect(Collectors.toList());
 
         // If the two street names have different alphanumeric identifier strings anywhere in their

@@ -1,6 +1,6 @@
 # Road name spelling consistency check
 
-This is a new check that's designed to flag road segments whose Name tags have slightly different spellings. "Slightly different spelling" is understood to mean a Levenshtein distance of 1 between two Name tags, where 1 is by default. The goal is to bring attention to areas of a road with spelling mixups so that editors can create a uniform spelling for the entire road.
+This is a new check that's designed to flag road segments whose Name tags have slightly different spellings. "Slightly different spelling" is understood to mean an edit distance of 1 between two Name tags. The goal is to bring attention to areas of a road with spelling mixups so that editors can create a uniform spelling for the entire road.
 
 This check should flag road segments whose Name tags contain:
 1. Accented character inconsistencies
@@ -17,7 +17,7 @@ The check provides the user with a collection of flagged road segments and their
 
 ### Code Review
 
-The check starts by ensuring a given AtlasObject is a named Master Edge that has not been flagged and is of a high enough HighwayTag priority. The check then collects all Edges that have a common connection to the starting Edge and are also within a configurable search area. The collected Edges are filtered for those that have names that are at a Levenshtein edit distance of 1 from the starting Edge's name. However, there are exceptions in this process. If two Edges' names contain different numbers or space-delimited characters, they are not considered to have inconsistent spelling with one another and are not flagged.
+The check starts by ensuring a given AtlasObject is a named Master Edge that has not been flagged and is of a high enough HighwayTag priority. The check then collects all Edges that have a common connection to the starting Edge and are also within a configurable search area. The collected Edges are filtered for those that have names that are at an edit distance of 1 from the starting Edge's name. However, there are exceptions in this process. If two Edges' names contain different numbers or space-delimited characters, they are not considered to have inconsistent spelling with one another and are not flagged.
 Any Edges whose names are within 1 edit distance of each other are flagged.
 
 For the source code for this check, please refer to [RoadNameSpellingConsistencyCheck](https://github.com/seancoulter/atlas-checks/blob/RoadNameSpellingConsistencyCheck/src/main/java/org/openstreetmap/atlas/checks/validation/tag/RoadNameSpellingConsistencyCheck.java)
