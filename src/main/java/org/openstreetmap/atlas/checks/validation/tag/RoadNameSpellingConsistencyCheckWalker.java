@@ -14,8 +14,8 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * A RoadNameSpellingConsistencyCheckWalker can be used to collect all edges that have NameTag
- * values that are at an edit distance of 1 from the starting edge's {@link NameTag} value. Collected edges
- * are within some linear search area (configurable).
+ * values that are at an edit distance of 1 from the starting edge's {@link NameTag} value.
+ * Collected edges are within some linear search area (configurable).
  *
  * @author seancoulter
  */
@@ -39,8 +39,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         CJK_EIGHT(0x516B),
         CJK_NINE(0x4E5D),
         CJK_TEN(0x5341),
-        CJK_ELEVEN(0x5EFF),
-        CJK_TWELVE(0x5345);
+        CJK_TWENTY(0x5EFF),
+        CJK_THIRTY(0x5345);
 
         private final int value;
 
@@ -73,7 +73,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *
      * @param startEdge
      *            the edge from which the search started
-     * @return true if incomingEdge's name exists and is at an edit distance of 1 from the start edge's name; false otherwise
+     * @return true if incomingEdge's name exists and is at an edit distance of 1 from the start
+     *         edge's name; false otherwise
      */
     @SuppressWarnings("squid:S3655")
     static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge)
