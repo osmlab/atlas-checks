@@ -269,7 +269,13 @@
     }
   },
   "RoadNameSpellingConsistencyCheck": {
-
+    "distance.search.maximum": "500.0",
+    "challenge": {
+      "description": "Segments of a given road should all have the same, correct spelling.",
+      "blurb": "Edit the name tags of flagged road segments so they're consistent with one another.",
+      "instruction": "Open your favorite editor and edit the name tags of the flagged way(s) so they're consistent with those of other ways of the same road.",
+      "difficulty": "EASY"
+    }
   },
   "RoundaboutClosedLoopCheck": {
     "challenge": {
