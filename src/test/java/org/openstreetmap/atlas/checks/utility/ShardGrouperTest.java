@@ -33,9 +33,12 @@ public class ShardGrouperTest
     {
         final Queue<SlippyTile> shards = new LinkedList<>();
         SlippyTile.allTiles(3).forEach(shards::offer);
-        final Rectangle slippyTileMax = Rectangle.forCorners(
+        final Rectangle slippyTileMaxLeft = Rectangle.forCorners(
                 new Location(Latitude.degrees(-85.0511288), Longitude.MINIMUM),
-                new Location(Latitude.degrees(85.0511288), Longitude.MAXIMUM));
+                new Location(Latitude.degrees(85.0511288), Longitude.ZERO));
+        final Rectangle slippyTileMaxRight = Rectangle.forCorners(
+                new Location(Latitude.degrees(-85.0511288), Longitude.ZERO),
+                new Location(Latitude.degrees(85.0511288), Longitude.dm7(Longitude.MAXIMUM_DM7)));
         final AtomicLong atomicLong = new AtomicLong();
         random.ints(64, 6, 10).forEach(zoomLevel ->
         {
@@ -53,7 +56,10 @@ public class ShardGrouperTest
         Assert.assertEquals(groups.size(),
                 groups.stream().map(ShardGroup::getName).distinct().count());
         Assert.assertEquals(atomicLong.get(), groups.stream().mapToInt(ArrayList::size).sum());
-        Assert.assertEquals(slippyTileMax.surface().asMeterSquared(),
+        System.out.println(Rectangle.MAXIMUM.surface());
+        System.out.println(groups.stream().flatMap(ArrayList::stream).map(Shard::bounds)
+                .map(Rectangle::surface).reduce(Surface::add).get().asMeterSquared());
+        Assert.assertEquals(slippyTileMaxLeft.surface().add(slippyTileMaxRight.surface()).asMeterSquared(),
                 groups.stream().flatMap(ArrayList::stream).map(Shard::bounds)
                         .map(Rectangle::surface).reduce(Surface::add).get().asMeterSquared(),
                 0.0);

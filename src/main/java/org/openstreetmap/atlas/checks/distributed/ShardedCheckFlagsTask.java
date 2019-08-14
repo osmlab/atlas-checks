@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.distributed;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.openstreetmap.atlas.checks.base.Check;
@@ -11,7 +12,7 @@ import org.openstreetmap.atlas.event.EventService;
  *
  * @author jklamer
  */
-public class ShardedCheckFlagsTask
+public class ShardedCheckFlagsTask implements Serializable
 {
     private final String country;
     private final ShardGroup shardGroup;

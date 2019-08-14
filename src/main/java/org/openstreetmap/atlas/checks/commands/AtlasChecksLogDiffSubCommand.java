@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
+import com.google.gson.Gson;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.slf4j.Logger;
@@ -64,6 +66,10 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                     // Add the check name as a key
                     checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                     // Add the geoJSON as a value
+                    if(checkFeatureMap.get(checkName).containsKey(this.getAtlasIdentifiers(source.get(FEATURES).getAsJsonArray())))
+                    {
+                        logger.info("Duplicate flag found in {}: {}", file.getAbsolutePath(), source);
+                    }
                     checkFeatureMap.get(checkName).put(
                             this.getAtlasIdentifiers(source.get(FEATURES).getAsJsonArray()),
                             source);
@@ -88,9 +94,11 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     {
         return Iterables.stream(features)
                 .filter(object -> object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
-                        .has(IDENTIFIER))
-                .map(object -> object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
-                        .get(IDENTIFIER).getAsString())
+                        .has(IDENTIFIER) || object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .has("ItemId"))
+                .map(object -> Optional.ofNullable(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get(IDENTIFIER)).orElse(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                        .get("ItemId")).getAsString())
                 .collectToSet();
     }
 }
