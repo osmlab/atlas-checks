@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Timer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -42,6 +44,7 @@ import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
 import org.openstreetmap.atlas.geography.atlas.dynamic.DynamicAtlas;
 import org.openstreetmap.atlas.geography.atlas.dynamic.policy.DynamicAtlasPolicy;
+import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.Sharding;
 import org.openstreetmap.atlas.utilities.collections.StringList;
@@ -53,6 +56,7 @@ import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.openstreetmap.atlas.utilities.threads.Pool;
+import org.openstreetmap.atlas.utilities.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +88,11 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
     private final MultiMap<String, Check> countryChecks = new MultiMap<>();
 
+    public static void main(String[] args)
+    {
+        new ShardedIntegrityChecksSparkJob().run(args);
+    }
+
     @Override
     public String getName()
     {
@@ -93,6 +102,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     public void start(final CommandMap commandMap)
     {
+        final Time start = Time.now();
         final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
         final String input = Optional.ofNullable(input(commandMap)).orElse(atlasDirectory);
         final String shardingPathInAtlas = "dynamic@"
@@ -186,23 +196,30 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         }
 
         this.getContext().parallelize(tasks, unitsOfWork)
-                .mapToPair(produceFlags(input, output, fileHelper, shardingBroadcast))
+                .mapToPair(produceFlags(input, output, this.configurationMap(), fileHelper, shardingBroadcast, distanceToLoadShards))
                 .reduceByKey(UniqueCheckFlagContainer::combine)
                 .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
+
+        logger.info("Sharded checks completed in {}", start.elapsedSince());
     }
 
     @SuppressWarnings("unchecked")
     private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
-            final String input, final String output, final SparkFileHelper fileHelper,
-            final Broadcast<Sharding> sharding)
+            final String input, final String output, final Map<String, String> configurationMap, final SparkFileHelper fileHelper,
+            final Broadcast<Sharding> sharding, final Distance shardDistanceExpansion)
     {
         return task ->
         {
             final Function<Shard, Optional<Atlas>> fetcher = this.atlasFetcher(input,
-                    task.getCountry(), this.configurationMap());
-            final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher, sharding.getValue(),
-                    new HashSet<>(task.getShardGroup()), Rectangle.MAXIMUM);
-            final Atlas atlas = new DynamicAtlas(policy);
+                    task.getCountry(), configurationMap);
+
+//            final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher, sharding.getValue(),
+//                    new HashSet<>(task.getShardGroup()), Rectangle.forLocated(task.getShardGroup()).bounds().expand(shardDistanceExpansion)).withDeferredLoading(true).withAggressivelyExploreRelations(false).withExtendIndefinitely(false);
+//            final Atlas atlas = new DynamicAtlas(policy);
+            final ShardGroup shardGroup = task.getShardGroup();
+            final Rectangle expansionBounds = Rectangle.forLocated(shardGroup).expand(shardDistanceExpansion);
+            final MultiAtlas atlas = new MultiAtlas(StreamSupport.stream(sharding.getValue().shards(expansionBounds).spliterator(), true).map(fetcher).filter(Optional::isPresent).map(Optional::get).collect(
+                    Collectors.toList()));
             final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
                     .geometricSurfaces(task.getShardGroup().stream().map(Shard::bounds)
                             .collect(Collectors.toList()));
@@ -258,26 +275,26 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             if (outputFormats.contains(OutputFormats.FLAGS))
             {
                 eventService.register(new CheckFlagFileProcessor(fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_FLAG_FOLDER)));
+                        SparkFileHelper.combine(output, OUTPUT_FLAG_FOLDER, country)));
             }
 
             if (outputFormats.contains(OutputFormats.GEOJSON))
             {
 
                 eventService.register(new CheckFlagGeoJsonProcessor(fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER)));
+                        SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER, country)));
             }
 
             if (outputFormats.contains(OutputFormats.METRICS))
             {
                 eventService.register(new MetricFileGenerator(METRICS_FILENAME, fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_METRIC_FOLDER)));
+                        SparkFileHelper.combine(output, OUTPUT_METRIC_FOLDER, country)));
             }
 
             if (outputFormats.contains(OutputFormats.TIPPECANOE))
             {
                 eventService.register(new CheckFlagTippecanoeProcessor(fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER)));
+                        SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
             }
 
             if (Objects.nonNull(mapRouletteConfiguration))
