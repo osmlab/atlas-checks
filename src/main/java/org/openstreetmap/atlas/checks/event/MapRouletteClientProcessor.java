@@ -24,9 +24,11 @@ import com.google.common.eventbus.Subscribe;
  */
 public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
 {
-    private static final Logger logger = LoggerFactory.getLogger(MapRouletteClientProcessor.class);
-    private static final int MINIMUM_DURATION_SECONDS = 5;
     private static final int MINIMUM_DURATION_RATIO = 10;
+    private static final int MINIMUM_DURATION_SECONDS = 5;
+    private static final Logger logger = LoggerFactory.getLogger(MapRouletteClientProcessor.class);
+    private final HashMap<String, Challenge> checkToChallenge = new HashMap<>();
+    private final HashMap<String, MapRouletteClient> checkToClient = new HashMap<>();
 
     /**
      * Calculates max {@link Duration} timeout for given batch size
@@ -40,9 +42,6 @@ public class MapRouletteClientProcessor implements Processor<CheckFlagEvent>
         return Duration
                 .seconds(Math.max(MINIMUM_DURATION_SECONDS, batchSize / MINIMUM_DURATION_RATIO));
     }
-
-    private final HashMap<String, MapRouletteClient> checkToClient = new HashMap<>();
-    private final HashMap<String, Challenge> checkToChallenge = new HashMap<>();
 
     /**
      * Processor to add tasks to clients and send at the end

@@ -51,15 +51,13 @@ import com.google.gson.JsonObject;
  */
 public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
-    private static final long serialVersionUID = -1287808902452203852L;
-    private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
-
     private static final Distance TEN_METERS = Distance.meters(10);
-
-    private final String identifier;
+    private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
+    private static final long serialVersionUID = -1287808902452203852L;
     private String challengeName = null;
-    private final List<String> instructions = new ArrayList<>();
     private Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
+    private final String identifier;
+    private final List<String> instructions = new ArrayList<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -256,15 +254,6 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return Rectangle.forLocated(new MultiIterable<>(this.getShapes()));
     }
 
-    public CheckFlag makeComplete()
-    {
-        final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();
-        this.flaggedObjects.forEach(flaggedObject -> completeFlaggedObjects
-                .add(flaggedObject.getAsCompleteFlaggedObject()));
-        this.flaggedObjects = completeFlaggedObjects;
-        return this;
-    }
-
     @Override
     public boolean equals(final Object other)
     {
@@ -458,6 +447,15 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public Iterator<Location> iterator()
     {
         return new MultiIterable<>(getShapes()).iterator();
+    }
+
+    public CheckFlag makeComplete()
+    {
+        final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();
+        this.flaggedObjects.forEach(flaggedObject -> completeFlaggedObjects
+                .add(flaggedObject.getAsCompleteFlaggedObject()));
+        this.flaggedObjects = completeFlaggedObjects;
+        return this;
     }
 
     /**

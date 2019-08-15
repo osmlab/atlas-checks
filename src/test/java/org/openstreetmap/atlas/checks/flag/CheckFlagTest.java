@@ -96,6 +96,39 @@ public class CheckFlagTest
     }
 
     @Test
+    public void testMakeComplete()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        flag.addInstruction("first instruction");
+        flag.addInstruction("second instruction");
+        this.setup.getAtlas().entities().forEach(flag::addObject);
+
+        final CheckFlag otherFlag = new CheckFlag("a-identifier");
+        this.setup.getAtlasWithRelations().entities().forEach(otherFlag::addObject);
+
+        flag.makeComplete();
+        otherFlag.makeComplete();
+
+        flag.getFlaggedObjects().stream().forEach(flaggedObject ->
+        {
+            Assert.assertTrue(flaggedObject.getObject().isPresent());
+            flaggedObject.getObject().ifPresent(object ->
+            {
+                Assert.assertTrue(object instanceof CompleteEntity);
+            });
+        });
+
+        otherFlag.getFlaggedObjects().stream().forEach(flaggedObject ->
+        {
+            Assert.assertTrue(flaggedObject.getObject().isPresent());
+            flaggedObject.getObject().ifPresent(object ->
+            {
+                Assert.assertTrue(object instanceof CompleteEntity);
+            });
+        });
+    }
+
+    @Test
     public void testMembersOfFlaggedRelations()
     {
         final CheckFlag flag = new CheckFlag("a-identifier");
@@ -156,38 +189,5 @@ public class CheckFlagTest
         final CheckFlag flag = new CheckFlag("a-identifier");
         this.setup.getAtlas().entities().forEach(flag::addObject);
         testSerialization(flag);
-    }
-
-    @Test
-    public void testMakeComplete()
-    {
-        final CheckFlag flag = new CheckFlag("a-identifier");
-        flag.addInstruction("first instruction");
-        flag.addInstruction("second instruction");
-        this.setup.getAtlas().entities().forEach(flag::addObject);
-
-        final CheckFlag other_flag = new CheckFlag("a-identifier");
-        this.setup.getAtlasWithRelations().entities().forEach(other_flag::addObject);
-
-        flag.makeComplete();
-        other_flag.makeComplete();
-
-        flag.getFlaggedObjects().stream().forEach(flaggedObject ->
-        {
-            Assert.assertTrue(flaggedObject.getObject().isPresent());
-            flaggedObject.getObject().ifPresent(object ->
-            {
-                Assert.assertTrue(object instanceof CompleteEntity);
-            });
-        });
-
-        other_flag.getFlaggedObjects().stream().forEach(flaggedObject ->
-        {
-            Assert.assertTrue(flaggedObject.getObject().isPresent());
-            flaggedObject.getObject().ifPresent(object ->
-            {
-                Assert.assertTrue(object instanceof CompleteEntity);
-            });
-        });
     }
 }

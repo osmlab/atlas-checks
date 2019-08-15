@@ -19,25 +19,9 @@ public class ShardGroup extends ArrayList<Shard>
 {
     private final String name;
 
-    public ShardGroup(final Collection<? extends Shard> collection, final String name)
-    {
-        super(collection);
-        this.name = name;
-    }
-
-    public ShardGroup(final Collection<? extends Shard> collection)
-    {
-        this(collection, nameForSlippyTiles(collection));
-    }
-
-    public String getName()
-    {
-        return this.name;
-    }
-
     /**
      * Returns the lowest common parent name of all the shards
-     * 
+     *
      * @param shards
      *            the shards
      * @return the result of {@link SlippyTile}.getName() on the Lowest common parent of all shards
@@ -70,5 +54,21 @@ public class ShardGroup extends ArrayList<Shard>
             throw new CoreException(
                     " Unable to create compressed name for group of shards that aren't slippy tiles");
         }
+    }
+
+    public ShardGroup(final Collection<? extends Shard> collection, final String name)
+    {
+        super(collection);
+        this.name = name;
+    }
+
+    public ShardGroup(final Collection<? extends Shard> collection)
+    {
+        this(collection, nameForSlippyTiles(collection));
+    }
+
+    public String getName()
+    {
+        return this.name;
     }
 }

@@ -26,11 +26,16 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class ShardGrouper extends ShardBucketCollection<Shard, HashSet<Shard>>
 {
     private static final long serialVersionUID = 2227293668916525220L;
-    private final IncompleteSharding myShards;
-    private final int maxShardLoad;
-    private final int zoomLevel;
     private final Distance expandDistance;
+    private final int maxShardLoad;
+    private final IncompleteSharding myShards;
     private List<ShardGroup> resultingGroups;
+    private final int zoomLevel;
+
+    public static Rectangle boundsForShards(final Iterable<? extends Shard> shards)
+    {
+        return Rectangle.forLocated(shards);
+    }
 
     public ShardGrouper(final Iterable<? extends Shard> shards, final int maxShardLoad,
             final Distance expandDistance)
@@ -55,41 +60,28 @@ public class ShardGrouper extends ShardBucketCollection<Shard, HashSet<Shard>>
         shards.forEach(this::add);
     }
 
-    @Override
-    protected boolean allowMultipleBucketInsertion()
+    public List<GeoJsonObject> asGeojsonFeatureCollections()
     {
-        return false;
-    }
-
-    @Override
-    protected HashSet<Shard> initializeBucketCollection()
-    {
-        return new HashSet<>();
-    }
-
-    @Override
-    protected Shard resolveShard(final Shard item, final List<? extends Shard> possibleBuckets)
-    {
-        final Rectangle shardBounds = item.bounds();
-        for (final Shard bucket : possibleBuckets)
+        if (Objects.isNull(this.resultingGroups))
         {
-            final Rectangle bucketBounds = bucket.bounds();
-            if (bucketBounds.fullyGeometricallyEncloses(shardBounds))
-            {
-                return bucket;
-            }
+            this.getGroups();
         }
-        throw new CoreException("This grouper works with slippy tile shards only");
-    }
-
-    public static Rectangle boundsForShards(final Iterable<? extends Shard> shards)
-    {
-        return Rectangle.forLocated(shards);
+        final List<GeoJsonObject> groups = new ArrayList<>();
+        this.resultingGroups.forEach(group ->
+        {
+            final MultiMap<Polygon, Polygon> outersToInners = new MultiMap<>();
+            for (final Shard shard : group)
+            {
+                outersToInners.put(shard.bounds(), new ArrayList<>());
+            }
+            groups.add(new MultiPolygon(outersToInners).asGeoJsonFeatureCollection());
+        });
+        return groups;
     }
 
     /**
      * Return the shard groupings for this run. All groups should have a unique name
-     * 
+     *
      * @return shards groups
      */
     public List<ShardGroup> getGroups()
@@ -142,23 +134,31 @@ public class ShardGrouper extends ShardBucketCollection<Shard, HashSet<Shard>>
         return builder.toString();
     }
 
-    public List<GeoJsonObject> asGeojsonFeatureCollections()
+    @Override
+    protected boolean allowMultipleBucketInsertion()
     {
-        if (Objects.isNull(this.resultingGroups))
+        return false;
+    }
+
+    @Override
+    protected HashSet<Shard> initializeBucketCollection()
+    {
+        return new HashSet<>();
+    }
+
+    @Override
+    protected Shard resolveShard(final Shard item, final List<? extends Shard> possibleBuckets)
+    {
+        final Rectangle shardBounds = item.bounds();
+        for (final Shard bucket : possibleBuckets)
         {
-            this.getGroups();
-        }
-        final List<GeoJsonObject> groups = new ArrayList<>();
-        this.resultingGroups.forEach(group ->
-        {
-            final MultiMap<Polygon, Polygon> outersToInners = new MultiMap<>();
-            for (final Shard shard : group)
+            final Rectangle bucketBounds = bucket.bounds();
+            if (bucketBounds.fullyGeometricallyEncloses(shardBounds))
             {
-                outersToInners.put(shard.bounds(), new ArrayList<>());
+                return bucket;
             }
-            groups.add(new MultiPolygon(outersToInners).asGeoJsonFeatureCollection());
-        });
-        return groups;
+        }
+        throw new CoreException("This grouper works with slippy tile shards only");
     }
 
 }

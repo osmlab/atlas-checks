@@ -61,19 +61,15 @@ import scala.Tuple2;
 public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 {
 
+    public static final String METRICS_FILENAME = "check-run-time.csv";
     // Indicator key for ignored countries
     private static final String IGNORED_KEY = "Ignored";
-
     private static final String INTERMEDIATE_ATLAS_EXTENSION = FileSuffix.ATLAS.toString()
             + FileSuffix.GZIP.toString();
-
-    public static final String METRICS_FILENAME = "check-run-time.csv";
-    private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
-
-    private static final long serialVersionUID = 2990087219645942330L;
-
     // Thread pool settings
     private static final Duration POOL_DURATION_BEFORE_KILL = Duration.minutes(300);
+    private static final Logger logger = LoggerFactory.getLogger(IntegrityCheckSparkJob.class);
+    private static final long serialVersionUID = 2990087219645942330L;
 
     /**
      * Main entry point for the Spark job
@@ -84,6 +80,26 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     public static void main(final String[] args)
     {
         new IntegrityCheckSparkJob().run(args);
+    }
+
+    /**
+     * Gets complex entities
+     *
+     * @param check
+     *            A {@link BaseCheck} object
+     * @param atlas
+     *            An {@link Atlas} object
+     * @return An {@link Iterable} of {@link ComplexEntity}s
+     */
+    protected static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
+            final Atlas atlas)
+    {
+        if (check.finder().isPresent())
+        {
+            return Iterables.stream(check.finder().get().find(atlas));
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -109,26 +125,6 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 .forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
                         objectsToCheck(atlas, check), EventService.get(country))));
         checkExecutionPool.close();
-    }
-
-    /**
-     * Gets complex entities
-     *
-     * @param check
-     *            A {@link BaseCheck} object
-     * @param atlas
-     *            An {@link Atlas} object
-     * @return An {@link Iterable} of {@link ComplexEntity}s
-     */
-    protected static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
-            final Atlas atlas)
-    {
-        if (check.finder().isPresent())
-        {
-            return Iterables.stream(check.finder().get().find(atlas));
-        }
-
-        return Collections.emptyList();
     }
 
     private static SparkFilePath initializeOutput(final String output, final TaskContext context,
