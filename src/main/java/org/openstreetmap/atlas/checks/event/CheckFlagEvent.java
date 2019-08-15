@@ -29,8 +29,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 /**
- * Wraps a {@link CheckFlag} for submission to the {@link EventService} for handling {@link Check}
- * results
+ * Wraps a {@link CheckFlag} for submission to the
+ * {@link org.openstreetmap.atlas.event.EventService} for handling {@link Check} results
  *
  * @author mkalender, bbreithaupt
  */

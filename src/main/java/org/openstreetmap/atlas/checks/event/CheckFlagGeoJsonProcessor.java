@@ -18,7 +18,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * A {@link Processor} for {@link CheckFlagEvent}s to write them into GeoJson files
+ * A {@link org.openstreetmap.atlas.event.Processor} for {@link CheckFlagEvent}s to write them into
+ * GeoJson files
  *
  * @author brian_l_davis
  */
