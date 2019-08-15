@@ -28,6 +28,12 @@ public class ShardGrouperTest
 {
     private final Random random = new Random();
 
+    @Test(expected = CoreException.class)
+    public void testMaxLoad()
+    {
+        new ShardGrouper(SlippyTile.allTiles(1), 1, Distance.ONE_METER).getGroups();
+    }
+
     @Test
     public void testRandomShards()
     {
@@ -40,7 +46,7 @@ public class ShardGrouperTest
                 new Location(Latitude.degrees(-85.0511288), Longitude.ZERO),
                 new Location(Latitude.degrees(85.0511288), Longitude.dm7(Longitude.MAXIMUM_DM7)));
         final AtomicLong atomicLong = new AtomicLong();
-        random.ints(64, 6, 10).forEach(zoomLevel ->
+        this.random.ints(64, 6, 10).forEach(zoomLevel ->
         {
             final SlippyTile original = shards.poll();
             SlippyTile.allTiles(zoomLevel, original.bounds().contract(Distance.ONE_METER))
@@ -59,15 +65,10 @@ public class ShardGrouperTest
         System.out.println(Rectangle.MAXIMUM.surface());
         System.out.println(groups.stream().flatMap(ArrayList::stream).map(Shard::bounds)
                 .map(Rectangle::surface).reduce(Surface::add).get().asMeterSquared());
-        Assert.assertEquals(slippyTileMaxLeft.surface().add(slippyTileMaxRight.surface()).asMeterSquared(),
+        Assert.assertEquals(
+                slippyTileMaxLeft.surface().add(slippyTileMaxRight.surface()).asMeterSquared(),
                 groups.stream().flatMap(ArrayList::stream).map(Shard::bounds)
                         .map(Rectangle::surface).reduce(Surface::add).get().asMeterSquared(),
                 0.0);
-    }
-
-    @Test(expected = CoreException.class)
-    public void testMaxLoad()
-    {
-        new ShardGrouper(SlippyTile.allTiles(1), 1, Distance.ONE_METER).getGroups();
     }
 }

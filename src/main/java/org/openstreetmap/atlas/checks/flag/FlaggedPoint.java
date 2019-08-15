@@ -25,12 +25,11 @@ import com.google.gson.JsonObject;
  */
 public class FlaggedPoint extends FlaggedObject
 {
-    private static final long serialVersionUID = -5912453173756416690L;
     private static final Logger logger = LoggerFactory.getLogger(FlaggedPoint.class);
+    private static final long serialVersionUID = -5912453173756416690L;
+    private LocationItem locationItem;
     private final Location point;
     private final Map<String, String> properties;
-
-    private LocationItem locationItem;
 
     @SuppressWarnings("unchecked")
     public FlaggedPoint(final Location point)
@@ -51,20 +50,6 @@ public class FlaggedPoint extends FlaggedObject
         this.locationItem = locationItem;
         this.point = locationItem.getLocation();
         this.properties = initProperties(locationItem);
-    }
-
-    @Override
-    public FlaggedObject getAsCompleteFlaggedObject()
-    {
-        if (this.locationItem instanceof Point)
-        {
-            this.locationItem = CompletePoint.from((Point) this.locationItem);
-        }
-        else if (this.locationItem instanceof Node)
-        {
-            this.locationItem = CompleteNode.from((Node) this.locationItem);
-        }
-        return this;
     }
 
     @Override
@@ -99,6 +84,20 @@ public class FlaggedPoint extends FlaggedObject
         {
             return this.point.bounds();
         }
+    }
+
+    @Override
+    public FlaggedObject getAsCompleteFlaggedObject()
+    {
+        if (this.locationItem instanceof Point)
+        {
+            this.locationItem = CompletePoint.from((Point) this.locationItem);
+        }
+        else if (this.locationItem instanceof Node)
+        {
+            this.locationItem = CompleteNode.from((Node) this.locationItem);
+        }
+        return this;
     }
 
     @Override

@@ -24,10 +24,9 @@ import com.google.gson.JsonObject;
 public class FlaggedRelation extends FlaggedObject
 {
     private static final long serialVersionUID = 81887932468503688L;
-
-    private final Relation relation;
-    private final Map<String, String> properties;
     private final String country;
+    private final Map<String, String> properties;
+    private final Relation relation;
 
     public FlaggedRelation(final Relation relation)
     {
@@ -94,12 +93,6 @@ public class FlaggedRelation extends FlaggedObject
         return null;
     }
 
-    @Override
-    protected Optional<AtlasObject> getObject()
-    {
-        return Optional.of(this.relation);
-    }
-
     /**
      * @return flag key-value property map
      */
@@ -132,6 +125,12 @@ public class FlaggedRelation extends FlaggedObject
     public RelationMemberList members()
     {
         return this.relation.members();
+    }
+
+    @Override
+    protected Optional<AtlasObject> getObject()
+    {
+        return Optional.of(this.relation);
     }
 
     private String initCountry(final AtlasObject object)

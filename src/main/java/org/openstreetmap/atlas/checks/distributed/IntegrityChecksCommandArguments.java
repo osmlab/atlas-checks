@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class IntegrityChecksCommandArguments extends SparkJob
 {
-
     /**
      * @author brian_l_davis
      */
@@ -51,22 +50,9 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
         TIPPECANOE
     }
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(IntegrityChecksCommandArguments.class);
-    private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
-    private static final Pattern PBF_FILENAME_PATTERN = Pattern
-            .compile("^([0-9]+)-([0-9]+)-([0-9]+)");
-    // Outputs
-    protected static final String OUTPUT_FLAG_FOLDER = "flag";
-    protected static final String OUTPUT_GEOJSON_FOLDER = "geojson";
-    protected static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
-    protected static final String OUTPUT_ATLAS_FOLDER = "atlas";
-    protected static final String OUTPUT_METRIC_FOLDER = "metric";
-
-    @Deprecated
-    protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
-            "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
-            Optionality.OPTIONAL);
+    static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
+            "Comma-separated list of checks to run",
+            checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
     // Configuration
     static final Switch<StringList> CONFIGURATION_FILES = new Switch<>("configFiles",
             "Comma-separated list of configuration datasources.",
@@ -79,12 +65,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     static final Switch<MapRouletteConfiguration> MAP_ROULETTE = new Switch<>("maproulette",
             "Map roulette server information, format <Host>:<Port>:<ProjectName>:<ApiKey>, projectName is optional.",
             MapRouletteConfiguration::parse, Optionality.OPTIONAL);
-    static final Switch<Rectangle> PBF_BOUNDING_BOX = new Switch<>("pbfBoundingBox",
-            "OSM protobuf data will be loaded only in this bounding box", Rectangle::forString,
-            Optionality.OPTIONAL);
-    static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
-            "Saves intermediate atlas files created when processing OSM protobuf data.",
-            Boolean::valueOf, Optionality.OPTIONAL, "false");
     static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
             String.format(
                     "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe)."),
@@ -92,34 +72,27 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
             Optionality.OPTIONAL, "flags,metrics");
-    static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
-            "Comma-separated list of checks to run",
-            checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
-
-    @Override
-    protected SwitchList switches()
-    {
-        return super.switches().with(ATLAS_FOLDER, MAP_ROULETTE, COUNTRIES, CONFIGURATION_FILES,
-                CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS,
-                CHECK_FILTER);
-    }
-
-    /**
-     * Gets the {@link AtlasDataSource} object to load the Atlas from
-     *
-     * @param sparkContext
-     *            The Spark context
-     * @param checksConfiguration
-     *            configuration for all the checks
-     * @param pbfBoundary
-     *            The pbf boundary of type {@link Rectangle}
-     * @return A {@link AtlasDataSource}
-     */
-    protected AtlasDataSource getAtlasDataSource(final Map<String, String> sparkContext,
-            final Configuration checksConfiguration, final Rectangle pbfBoundary)
-    {
-        return new AtlasDataSource(sparkContext, checksConfiguration, pbfBoundary);
-    }
+    static final Switch<Rectangle> PBF_BOUNDING_BOX = new Switch<>("pbfBoundingBox",
+            "OSM protobuf data will be loaded only in this bounding box", Rectangle::forString,
+            Optionality.OPTIONAL);
+    static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
+            "Saves intermediate atlas files created when processing OSM protobuf data.",
+            Boolean::valueOf, Optionality.OPTIONAL, "false");
+    @Deprecated
+    protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
+            "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
+            Optionality.OPTIONAL);
+    protected static final String OUTPUT_ATLAS_FOLDER = "atlas";
+    // Outputs
+    protected static final String OUTPUT_FLAG_FOLDER = "flag";
+    protected static final String OUTPUT_GEOJSON_FOLDER = "geojson";
+    protected static final String OUTPUT_METRIC_FOLDER = "metric";
+    protected static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
+    private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
+    private static final Pattern PBF_FILENAME_PATTERN = Pattern
+            .compile("^([0-9]+)-([0-9]+)-([0-9]+)");
+    private static final Logger logger = LoggerFactory
+            .getLogger(IntegrityChecksCommandArguments.class);
 
     /**
      * Creates a map from country name to {@link List} of {@link Shard} definitions from
@@ -190,5 +163,30 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     {
         return new MultiIterable<AtlasObject>(Iterables.filter(atlas.entities(), geoFilter),
                 check.finder().map(finder -> finder.find(atlas)).orElse(Collections.emptyList()));
+    }
+
+    /**
+     * Gets the {@link AtlasDataSource} object to load the Atlas from
+     *
+     * @param sparkContext
+     *            The Spark context
+     * @param checksConfiguration
+     *            configuration for all the checks
+     * @param pbfBoundary
+     *            The pbf boundary of type {@link Rectangle}
+     * @return A {@link AtlasDataSource}
+     */
+    protected AtlasDataSource getAtlasDataSource(final Map<String, String> sparkContext,
+            final Configuration checksConfiguration, final Rectangle pbfBoundary)
+    {
+        return new AtlasDataSource(sparkContext, checksConfiguration, pbfBoundary);
+    }
+
+    @Override
+    protected SwitchList switches()
+    {
+        return super.switches().with(ATLAS_FOLDER, MAP_ROULETTE, COUNTRIES, CONFIGURATION_FILES,
+                CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS,
+                CHECK_FILTER);
     }
 }

@@ -3,14 +3,12 @@ package org.openstreetmap.atlas.checks.distributed;
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Timer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,8 +40,6 @@ import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
-import org.openstreetmap.atlas.geography.atlas.dynamic.DynamicAtlas;
-import org.openstreetmap.atlas.geography.atlas.dynamic.policy.DynamicAtlasPolicy;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.Sharding;
@@ -75,20 +71,19 @@ import scala.Tuple2;
 public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArguments
 {
 
-    private static final String SHARDING_FILE = "sharding.txt";
-    private static final Logger logger = LoggerFactory
-            .getLogger(ShardedIntegrityChecksSparkJob.class);
     private static final Switch<Distance> EXPANSION_DISTANCE = new Switch<>("shardBufferDistance",
             "Distance to expand the bounds of the shard group to create a network in kilometers",
             distanceString -> Distance.kilometers(Double.valueOf(distanceString)),
             Optionality.OPTIONAL, "10.0");
+    private static final String SHARDING_FILE = "sharding.txt";
     private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad",
             "The maximum amount of shards loaded into memory per executor", Integer::valueOf,
             Optionality.OPTIONAL, "45");
-
+    private static final Logger logger = LoggerFactory
+            .getLogger(ShardedIntegrityChecksSparkJob.class);
     private final MultiMap<String, Check> countryChecks = new MultiMap<>();
 
-    public static void main(String[] args)
+    public static void main(final String[] args)
     {
         new ShardedIntegrityChecksSparkJob().run(args);
     }
@@ -192,72 +187,32 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     maxShardLoad, distanceToLoadShards).getGroups();
             unitsOfWork += groupsForCountry.size();
             groupsForCountry.stream().map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
-                    group, countryChecks.get(countryShard.getKey()))).forEach(tasks::add);
+                    group, this.countryChecks.get(countryShard.getKey()))).forEach(tasks::add);
         }
 
         this.getContext().parallelize(tasks, unitsOfWork)
-                .mapToPair(produceFlags(input, output, this.configurationMap(), fileHelper, shardingBroadcast, distanceToLoadShards))
+                .mapToPair(produceFlags(input, output, this.configurationMap(), fileHelper,
+                        shardingBroadcast, distanceToLoadShards))
                 .reduceByKey(UniqueCheckFlagContainer::combine)
                 .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
 
         logger.info("Sharded checks completed in {}", start.elapsedSince());
     }
 
-    @SuppressWarnings("unchecked")
-    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
-            final String input, final String output, final Map<String, String> configurationMap, final SparkFileHelper fileHelper,
-            final Broadcast<Sharding> sharding, final Distance shardDistanceExpansion)
+    @Override
+    protected SwitchList switches()
     {
-        return task ->
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE);
+    }
+
+    private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
+            final Map<String, String> configuration)
+    {
+        final HadoopAtlasFileCache cache = new HadoopAtlasFileCache(input, configuration);
+        final AtlasResourceLoader loader = new AtlasResourceLoader();
+        return (Function<Shard, Optional<Atlas>> & Serializable) shard ->
         {
-            final Function<Shard, Optional<Atlas>> fetcher = this.atlasFetcher(input,
-                    task.getCountry(), configurationMap);
-
-//            final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher, sharding.getValue(),
-//                    new HashSet<>(task.getShardGroup()), Rectangle.forLocated(task.getShardGroup()).bounds().expand(shardDistanceExpansion)).withDeferredLoading(true).withAggressivelyExploreRelations(false).withExtendIndefinitely(false);
-//            final Atlas atlas = new DynamicAtlas(policy);
-            final ShardGroup shardGroup = task.getShardGroup();
-            final Rectangle expansionBounds = Rectangle.forLocated(shardGroup).expand(shardDistanceExpansion);
-            final MultiAtlas atlas = new MultiAtlas(StreamSupport.stream(sharding.getValue().shards(expansionBounds).spliterator(), true).map(fetcher).filter(Optional::isPresent).map(Optional::get).collect(
-                    Collectors.toList()));
-            final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
-                    .geometricSurfaces(task.getShardGroup().stream().map(Shard::bounds)
-                            .collect(Collectors.toList()));
-            final EventService eventService = task.getEventService();
-            final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer();
-            eventService.register(new Processor<CheckFlagEvent>()
-            {
-                @Override
-                public void process(final ShutdownEvent event)
-                {
-                    // no-op
-                }
-
-                @Override
-                @Subscribe
-                @AllowConcurrentEvents
-                public void process(final CheckFlagEvent event)
-                {
-                    container.add(event.getCheckName(), event.getCheckFlag().makeComplete());
-                }
-            });
-
-            final MetricFileGenerator metricFileGenerator = new MetricFileGenerator(
-                    task.getShardGroup().getName() + "_" + METRICS_FILENAME, fileHelper, output);
-            eventService.register(metricFileGenerator);
-
-            try (Pool checkPool = new Pool(task.getChecks().size(),
-                    "Sharded Checks Execution Pool"))
-            {
-                for (final Check check : task.getChecks())
-                {
-                    checkPool.queue(new RunnableCheck(task.getCountry(), check,
-                            objectsToCheck(atlas, check, boundaryFilter), eventService));
-                }
-            }
-
-            eventService.complete();
-            return new Tuple2<>(task.getCountry(), container);
+            return cache.get(country, shard).map(loader::load);
         };
     }
 
@@ -309,20 +264,68 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         };
     }
 
-    private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
-            final Map<String, String> configuration)
+    @SuppressWarnings("unchecked")
+    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
+            final String input, final String output, final Map<String, String> configurationMap,
+            final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
+            final Distance shardDistanceExpansion)
     {
-        final HadoopAtlasFileCache cache = new HadoopAtlasFileCache(input, configuration);
-        final AtlasResourceLoader loader = new AtlasResourceLoader();
-        return (Function<Shard, Optional<Atlas>> & Serializable) shard ->
+        return task ->
         {
-            return cache.get(country, shard).map(loader::load);
-        };
-    }
+            final Function<Shard, Optional<Atlas>> fetcher = this.atlasFetcher(input,
+                    task.getCountry(), configurationMap);
 
-    @Override
-    protected SwitchList switches()
-    {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE);
+            // final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher,
+            // sharding.getValue(),
+            // new HashSet<>(task.getShardGroup()),
+            // Rectangle.forLocated(task.getShardGroup()).bounds().expand(shardDistanceExpansion)).withDeferredLoading(true).withAggressivelyExploreRelations(false).withExtendIndefinitely(false);
+            // final Atlas atlas = new DynamicAtlas(policy);
+            final ShardGroup shardGroup = task.getShardGroup();
+            final Rectangle expansionBounds = Rectangle.forLocated(shardGroup)
+                    .expand(shardDistanceExpansion);
+            final MultiAtlas atlas = new MultiAtlas(StreamSupport
+                    .stream(sharding.getValue().shards(expansionBounds).spliterator(), true)
+                    .map(fetcher).filter(Optional::isPresent).map(Optional::get)
+                    .collect(Collectors.toList()));
+            final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
+                    .geometricSurfaces(task.getShardGroup().stream().map(Shard::bounds)
+                            .collect(Collectors.toList()));
+            final EventService eventService = task.getEventService();
+            final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer();
+            eventService.register(new Processor<CheckFlagEvent>()
+            {
+                @Override
+                public void process(final ShutdownEvent event)
+                {
+                    // no-op
+                }
+
+                @Override
+                @Subscribe
+                @AllowConcurrentEvents
+                public void process(final CheckFlagEvent event)
+                {
+                    container.add(event.getCheckName(), event.getCheckFlag().makeComplete());
+                }
+            });
+
+            final MetricFileGenerator metricFileGenerator = new MetricFileGenerator(
+                    task.getShardGroup().getName() + "_" + METRICS_FILENAME, fileHelper,
+                    SparkFileHelper.combine(output, OUTPUT_METRIC_FOLDER, task.getCountry()));
+            eventService.register(metricFileGenerator);
+
+            try (Pool checkPool = new Pool(task.getChecks().size(),
+                    "Sharded Checks Execution Pool"))
+            {
+                for (final Check check : task.getChecks())
+                {
+                    checkPool.queue(new RunnableCheck(task.getCountry(), check,
+                            objectsToCheck(atlas, check, boundaryFilter), eventService));
+                }
+            }
+
+            eventService.complete();
+            return new Tuple2<>(task.getCountry(), container);
+        };
     }
 }

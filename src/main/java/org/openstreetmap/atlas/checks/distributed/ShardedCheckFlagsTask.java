@@ -14,9 +14,9 @@ import org.openstreetmap.atlas.event.EventService;
  */
 public class ShardedCheckFlagsTask implements Serializable
 {
+    private final List<Check> checks;
     private final String country;
     private final ShardGroup shardGroup;
-    private final List<Check> checks;
 
     public ShardedCheckFlagsTask(final String country, final ShardGroup shardGroup,
             final List<Check> checks)
@@ -26,14 +26,14 @@ public class ShardedCheckFlagsTask implements Serializable
         this.checks = checks;
     }
 
+    public List<Check> getChecks()
+    {
+        return this.checks;
+    }
+
     public String getCountry()
     {
         return this.country;
-    }
-
-    public String getUniqueTaskIdentifier()
-    {
-        return this.country + "_" + this.shardGroup.getName();
     }
 
     public EventService getEventService()
@@ -46,8 +46,8 @@ public class ShardedCheckFlagsTask implements Serializable
         return this.shardGroup;
     }
 
-    public List<Check> getChecks()
+    public String getUniqueTaskIdentifier()
     {
-        return this.checks;
+        return this.country + "_" + this.shardGroup.getName();
     }
 }

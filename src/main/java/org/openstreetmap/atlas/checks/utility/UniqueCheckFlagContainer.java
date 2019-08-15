@@ -16,6 +16,8 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 public class UniqueCheckFlagContainer implements Serializable
 {
 
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> uniqueFlags;
+
     public static UniqueCheckFlagContainer combine(final UniqueCheckFlagContainer container1,
             final UniqueCheckFlagContainer container2)
     {
@@ -25,8 +27,6 @@ public class UniqueCheckFlagContainer implements Serializable
         });
         return container1;
     }
-
-    private final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> uniqueFlags;
 
     public UniqueCheckFlagContainer()
     {
@@ -51,16 +51,16 @@ public class UniqueCheckFlagContainer implements Serializable
 
     }
 
-    public Stream<CheckFlag> stream()
-    {
-        return this.uniqueFlags.values().stream().map(ConcurrentHashMap::values)
-                .flatMap(Collection::stream);
-    }
-
     public Stream<CheckFlagEvent> reconstructEvents()
     {
         return this.uniqueFlags.keySet().stream()
                 .flatMap(checkName -> this.uniqueFlags.get(checkName).values().stream()
                         .map(checkFlag -> new CheckFlagEvent(checkName, checkFlag)));
+    }
+
+    public Stream<CheckFlag> stream()
+    {
+        return this.uniqueFlags.values().stream().map(ConcurrentHashMap::values)
+                .flatMap(Collection::stream);
     }
 }
