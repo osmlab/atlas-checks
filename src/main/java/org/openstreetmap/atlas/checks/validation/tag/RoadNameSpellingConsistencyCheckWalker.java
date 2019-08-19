@@ -210,7 +210,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             {
                 // If > 1 substitutions are required for the strings to match, then they're not
                 // edit distance of 1
-                if (incomingEdgeName.charAt(index) != startingEdgeName.charAt(index) && ++editDistance > 1)
+                if (incomingEdgeName.charAt(index) != startingEdgeName.charAt(index)
+                        && ++editDistance > 1)
                 {
                     return false;
                 }
