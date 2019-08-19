@@ -61,15 +61,15 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
 
     /**
      * This is the actual function that will check to see whether the object needs to be flagged.
-     * squid:S3655 is suppressed because this method returns upon receiving an empty Optional
+     * squid:S3655 is suppressed because edges without names are filtered out by the walker.
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return an optional {@link CheckFlag} object that flags an OSM way for spelling
      *         inconsistencies.
      */
-    @SuppressWarnings("3655")
     @Override
+    @SuppressWarnings("squid:S3655")
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;

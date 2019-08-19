@@ -69,7 +69,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 
     /**
      * Evaluate the {@link NameTag}s of the startingEdge and an incomingEdge to see if their
-     * spellings are inconsistent with one another.
+     * spellings are inconsistent with one another. NOSONAR because startingEdges are guaranteed to
+     * have a name by way of validCheckForObject.
      *
      * @param startEdge
      *            the edge from which the search started
@@ -85,7 +86,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             {
                 return false;
             }
-            // NOSONAR because we've filtered out startEdges without names
             final String startEdgeName = startEdge.getName().get();
             final String incomingEdgeName = incomingEdge.getName().get();
             return checkBeforeEditDistance(incomingEdgeName, startEdgeName);
@@ -138,8 +138,10 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Compute the edit distance between two road names. Should only take in Strings that are the
-     * same length, or whose lengths are off by a single character.
+     * Check the road names for identifier substring differences. If they have any return false. If
+     * they have none, we compute the edit distance in editDistanceIsOneHelper. This method should
+     * only take in Strings that are the same length, or whose lengths are off by a single
+     * character.
      *
      * @param incomingEdgeName
      *            the name of the next edge in the search area
@@ -150,6 +152,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static boolean editDistanceIsOne(final String incomingEdgeName,
             final String startingEdgeName)
     {
+        // Gather identifier substrings from both road names
         final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(incomingEdgeName.split(WHITESPACE_REGEX))
                 .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
@@ -182,23 +185,34 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         {
             return false;
         }
-
         // We now know that the street names have the same identifiers or no identifiers at all.
-        // Check edit distance as usual.
+        // Compute edit distance as usual.
+        return editDistanceIsOneHelper(incomingEdgeName, startingEdgeName);
+    }
+
+    /**
+     * Compute the edit distances between two strings, character by character.
+     *
+     * @param incomingEdgeName
+     *            the name of the next edge in the search area
+     * @param startingEdgeName
+     *            the name of the edge from which the search started
+     * @return true if the edit distance between two edge's names is 1; false otherwise
+     */
+    private static boolean editDistanceIsOneHelper(final String incomingEdgeName,
+            final String startingEdgeName)
+    {
         int editDistance = 0;
         // Check edit distance between 2 different strings of the same length
         if (incomingEdgeName.length() == startingEdgeName.length())
         {
             for (int index = 0; index < incomingEdgeName.length(); ++index)
             {
-                if (incomingEdgeName.charAt(index) != startingEdgeName.charAt(index))
+                // If > 1 substitutions are required for the strings to match, then they're not
+                // edit distance of 1
+                if (incomingEdgeName.charAt(index) != startingEdgeName.charAt(index) && ++editDistance > 1)
                 {
-                    // If > 1 substitutions are required for the strings to match, then they're not
-                    // edit distance of 1
-                    if (++editDistance > 1)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
         }
