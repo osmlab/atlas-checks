@@ -93,7 +93,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Wrapper for editDistanceIsOne(). Handles cases where the incomingEdge has the same name as
+     * Wrapper for identifierSubstringsAreEqual(). Handles cases where the incomingEdge has the same name as
      * the startingEdge and where the edit distance between the two names is greater than one before
      * analyzing the edit distance.
      *
@@ -101,7 +101,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *            the next edge in the search area
      * @param startEdgeName
      *            the edge from which the search started
-     * @return true if the edit distance between two edge's names is 1; false otherwise
+     * @return true if the edit distance between two edges' names is 1 and both of their identifier substrings are the same; false otherwise
      */
     private static boolean checkBeforeEditDistance(final String incomingEdgeName,
             final String startEdgeName)
@@ -114,7 +114,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         {
             return false;
         }
-        return editDistanceIsOne(incomingEdgeName, startEdgeName);
+        return identifierSubstringsAreEqual(incomingEdgeName, startEdgeName);
     }
 
     /**
@@ -139,7 +139,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
 
     /**
      * Check the road names for identifier substring differences. If they have any return false. If
-     * they have none, we compute the edit distance in editDistanceIsOneHelper. This method should
+     * they have none, we compute the edit distance in editDistanceIsOne. This method should
      * only take in Strings that are the same length, or whose lengths are off by a single
      * character.
      *
@@ -147,9 +147,9 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *            the name of the next edge in the search area
      * @param startingEdgeName
      *            the name of the edge from which the search started
-     * @return true if the edit distance between two edge's names is 1; false otherwise
+     * @return true if the edit distance between two edges' names is 1 and both of their identifier substrings are the same; false otherwise
      */
-    private static boolean editDistanceIsOne(final String incomingEdgeName,
+    private static boolean identifierSubstringsAreEqual(final String incomingEdgeName,
             final String startingEdgeName)
     {
         // Gather identifier substrings from both road names
@@ -187,7 +187,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         }
         // We now know that the street names have the same identifiers or no identifiers at all.
         // Compute edit distance as usual.
-        return editDistanceIsOneHelper(incomingEdgeName, startingEdgeName);
+        return editDistanceIsOne(incomingEdgeName, startingEdgeName);
     }
 
     /**
@@ -199,7 +199,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      *            the name of the edge from which the search started
      * @return true if the edit distance between two edge's names is 1; false otherwise
      */
-    private static boolean editDistanceIsOneHelper(final String incomingEdgeName,
+    private static boolean editDistanceIsOne(final String incomingEdgeName,
             final String startingEdgeName)
     {
         int editDistance = 0;
