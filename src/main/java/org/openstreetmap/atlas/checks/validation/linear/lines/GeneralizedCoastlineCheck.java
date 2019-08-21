@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.lines;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +17,9 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Angle;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
  * Flags generalized coastlines-- that is, OSM ways with the tag natural=coastline where x% or more
@@ -27,15 +31,19 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline. The midpoint of generalized segments is dotted for convenience.");
+    private static final String BASIC_INSTRUCTIONS = "This coastline is generalized, as {0}% of node pairs are {1} or more apart. To fix, add more nodes to this coastline. The midpoints of generalized segments are dotted for convenience.";
+    private static final String SHARP_ANGLE_INSTRUCTIONS = "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. There are also sharp angles exceeding {2} degrees. To fix, add more nodes to smooth angles and break up long segments of coastline. Suggested areas to add nodes are dotted.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(BASIC_INSTRUCTIONS,
+            SHARP_ANGLE_INSTRUCTIONS);
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
+    private static final double SHARP_ANGLE_THRESHOLD_DEFAULT = 31.0;
 
     private static final double HUNDRED_PERCENT = 100.0;
     private static final long serialVersionUID = 1576217971819771231L;
     private final double percentageThreshold;
     private final Distance minimumDistanceBetweenNodes;
+    private final Angle sharpAngleThreshold;
 
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
@@ -44,6 +52,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE);
         this.minimumDistanceBetweenNodes = this.configurationValue(configuration,
                 "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
+        this.sharpAngleThreshold = Angle.degrees(this.configurationValue(configuration,
+                "angle.minimum.threshold", SHARP_ANGLE_THRESHOLD_DEFAULT));
     }
 
     /**
@@ -75,19 +85,42 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final double generalizedSegments = this.getGeneralizedSegmentPercentage((LineItem) object);
-        final List<Location> pointsForFlagging = this.getPointsForFlagging((LineItem) object);
-        return generalizedSegments >= this.percentageThreshold
-                ? Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(0, generalizedSegments,
-                                this.minimumDistanceBetweenNodes),
-                        pointsForFlagging))
-                : Optional.empty();
+        if (generalizedSegments >= this.percentageThreshold)
+        {
+            // Contains midpoints and sharp angle locations
+            final List<Location> pointsForFlagging = this.getPointsForFlagging((LineItem) object);
+            // If there were sharp angles
+            if (pointsForFlagging.addAll(this.getSharpAngleLocations((LineItem) object)))
+            {
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(1, generalizedSegments,
+                                this.minimumDistanceBetweenNodes,
+                                this.sharpAngleThreshold.asDegrees()),
+                        pointsForFlagging));
+            }
+            // No sharp angles
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                    generalizedSegments, this.minimumDistanceBetweenNodes), pointsForFlagging));
+        }
+        return Optional.empty();
     }
 
     @Override
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * @param angleTuples
+     *            a
+     * @return a
+     */
+    private List<Location> buildLocationList(final List<Tuple<Angle, Location>> angleTuples)
+    {
+        final List<Location> resultList = new ArrayList<>();
+        angleTuples.forEach(tuple -> resultList.add(tuple.getSecond()));
+        return resultList;
     }
 
     /**
@@ -116,9 +149,26 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private List<Location> getPointsForFlagging(final LineItem line)
     {
         return line.asPolyLine().segments().stream()
-                .filter(segment -> segment.length().asMeters() >= MINIMUM_DISTANCE_BETWEEN_NODES)
+                .filter(segment -> segment.length().asMeters() >= this.minimumDistanceBetweenNodes
+                        .asMeters())
                 .map(segment -> segment.start().midPoint(segment.end()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * @param coast
+     *            a
+     * @return a
+     */
+    private List<Location> getSharpAngleLocations(final LineItem coast)
+    {
+        final List<Tuple<Angle, Location>> offendingAngles = coast.asPolyLine()
+                .anglesGreaterThanOrEqualTo(this.sharpAngleThreshold);
+        if (!offendingAngles.isEmpty())
+        {
+            return buildLocationList(offendingAngles);
+        }
+        return Collections.emptyList();
     }
 
 }

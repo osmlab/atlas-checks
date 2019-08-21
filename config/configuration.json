@@ -147,10 +147,11 @@
   "GeneralizedCoastlineCheck": {
     "node.minimum.distance": 100.0,
     "node.minimum.threshold": 30.0,
+    "angle.minimum.threshold": 31.0,
     "challenge": {
-      "description": "Coastlines whose nodes are too far apart.",
+      "description": "Coastlines whose nodes are too far apart, and which may have too sharp of angles.",
       "blurb": "Ways",
-      "instruction": "Open your favorite editor and add more nodes to the coastline.",
+      "instruction": "Open your favorite editor and add more nodes to the coastline to increase the resolution of the coastline's geometry.",
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "tags":"coastline"
