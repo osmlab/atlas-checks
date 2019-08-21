@@ -449,5 +449,15 @@
       "difficulty": "EASY",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "PedestrianAreaOverlappingEdgeCheck": {
+    "distance.minimum.meters": 1.0,
+    "challenge": {
+      "description": "Tasks contain pedestrian areas overlapping car navigable ways that are not properly snapped to those ways.",
+      "blurb": "Pedestrian areas overlapping car navigable ways.",
+      "instruction": "Open your favorite editor and check the instruction for the task and then properly snap all points of intersection of the pedestrian area to the overlapping car navigable ways.",
+      "difficulty": "MEDIUM",
+      "defaultPriority": "MEDIUM"
+    }
   }
 }
