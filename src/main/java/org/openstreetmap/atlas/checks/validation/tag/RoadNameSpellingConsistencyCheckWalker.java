@@ -93,15 +93,16 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Wrapper for identifierSubstringsAreEqual(). Handles cases where the incomingEdge has the same name as
-     * the startingEdge and where the edit distance between the two names is greater than one before
-     * analyzing the edit distance.
+     * Wrapper for identifierSubstringsAreEqual(). Handles cases where the incomingEdge has the same
+     * name as the startingEdge and where the edit distance between the two names is greater than
+     * one before analyzing the edit distance.
      *
      * @param incomingEdgeName
      *            the next edge in the search area
      * @param startEdgeName
      *            the edge from which the search started
-     * @return true if the edit distance between two edges' names is 1 and both of their identifier substrings are the same; false otherwise
+     * @return true if the edit distance between two edges' names is 1 and both of their identifier
+     *         substrings are the same; false otherwise
      */
     private static boolean checkBeforeEditDistance(final String incomingEdgeName,
             final String startEdgeName)
@@ -135,59 +136,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
                 .isLessThanOrEqualTo(maximumSearchDistance)
                         ? incomingEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
                         : Stream.empty();
-    }
-
-    /**
-     * Check the road names for identifier substring differences. If they have any return false. If
-     * they have none, we compute the edit distance in editDistanceIsOne. This method should
-     * only take in Strings that are the same length, or whose lengths are off by a single
-     * character.
-     *
-     * @param incomingEdgeName
-     *            the name of the next edge in the search area
-     * @param startingEdgeName
-     *            the name of the edge from which the search started
-     * @return true if the edit distance between two edges' names is 1 and both of their identifier substrings are the same; false otherwise
-     */
-    private static boolean identifierSubstringsAreEqual(final String incomingEdgeName,
-            final String startingEdgeName)
-    {
-        // Gather identifier substrings from both road names
-        final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
-                .stream(incomingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
-                        || Stream.of(CJKNumbers.values())
-                                .anyMatch(cjkNumber -> substring.contains(
-                                        new String(Character.toChars(cjkNumber.getValue())))))
-                .collect(Collectors.toList());
-        final List<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
-                .stream(startingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
-                        || Stream.of(CJKNumbers.values())
-                                .anyMatch(cjkNumber -> substring.contains(
-                                        new String(Character.toChars(cjkNumber.getValue())))))
-                .collect(Collectors.toList());
-
-        // If the two street names have different alphanumeric identifier strings anywhere in their
-        // names, they're classified as being from different roads.
-        final long incomingEdgeNameIdentifierCount = incomingEdgeNameAlphanumericIdentifierStrings
-                .size();
-        final long startingEdgeNameIdentifierCount = startingEdgeNameAlphanumericIdentifierStrings
-                .size();
-        final long combinedIdentifierCount = Stream
-                .concat(incomingEdgeNameAlphanumericIdentifierStrings.stream(),
-                        startingEdgeNameAlphanumericIdentifierStrings.stream())
-                .distinct().count();
-        if (combinedIdentifierCount > incomingEdgeNameIdentifierCount
-                || combinedIdentifierCount > startingEdgeNameIdentifierCount)
-        {
-            return false;
-        }
-        // We now know that the street names have the same identifiers or no identifiers at all.
-        // Compute edit distance as usual.
-        return editDistanceIsOne(incomingEdgeName, startingEdgeName);
     }
 
     /**
@@ -257,6 +205,59 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         // The road names are at an edit distance of one, also meaning their spellings are
         // inconsistent
         return true;
+    }
+
+    /**
+     * Check the road names for identifier substring differences. If they have any return false. If
+     * they have none, we compute the edit distance in editDistanceIsOne. This method should only
+     * take in Strings that are the same length, or whose lengths are off by a single character.
+     *
+     * @param incomingEdgeName
+     *            the name of the next edge in the search area
+     * @param startingEdgeName
+     *            the name of the edge from which the search started
+     * @return true if the edit distance between two edges' names is 1 and both of their identifier
+     *         substrings are the same; false otherwise
+     */
+    private static boolean identifierSubstringsAreEqual(final String incomingEdgeName,
+            final String startingEdgeName)
+    {
+        // Gather identifier substrings from both road names
+        final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
+                .stream(incomingEdgeName.split(WHITESPACE_REGEX))
+                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
+                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                        || Stream.of(CJKNumbers.values())
+                                .anyMatch(cjkNumber -> substring.contains(
+                                        new String(Character.toChars(cjkNumber.getValue())))))
+                .collect(Collectors.toList());
+        final List<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
+                .stream(startingEdgeName.split(WHITESPACE_REGEX))
+                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
+                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                        || Stream.of(CJKNumbers.values())
+                                .anyMatch(cjkNumber -> substring.contains(
+                                        new String(Character.toChars(cjkNumber.getValue())))))
+                .collect(Collectors.toList());
+
+        // If the two street names have different alphanumeric identifier strings anywhere in their
+        // names, they're classified as being from different roads.
+        final long incomingEdgeNameIdentifierCount = incomingEdgeNameAlphanumericIdentifierStrings
+                .size();
+        final long startingEdgeNameIdentifierCount = startingEdgeNameAlphanumericIdentifierStrings
+                .size();
+        final long combinedIdentifierCount = Stream
+                .concat(incomingEdgeNameAlphanumericIdentifierStrings.stream(),
+                        startingEdgeNameAlphanumericIdentifierStrings.stream())
+                .distinct().count();
+        if (combinedIdentifierCount > incomingEdgeNameIdentifierCount
+                || combinedIdentifierCount > startingEdgeNameIdentifierCount)
+        {
+            return false;
+        }
+        // We now know that the street names have the same identifiers or no identifiers at all.
+        // Compute edit distance as usual.
+        return editDistanceIsOne(incomingEdgeName, startingEdgeName);
     }
 
     /**
