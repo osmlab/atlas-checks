@@ -269,7 +269,7 @@
     }
   },
   "RoadNameSpellingConsistencyCheck": {
-    "distance.search.maximum": "500.0",
+    "distance.search.maximum": 500.0,
     "challenge": {
       "description": "Segments of a given road should all have the same, correct spelling.",
       "blurb": "Edit the name tags of flagged road segments so they're consistent with one another.",
