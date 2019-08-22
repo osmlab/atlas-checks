@@ -75,7 +75,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
      * @param startEdge
      *            the edge from which the search started
      * @return true if incomingEdge's name exists and is at an edit distance of 1 from the start
-     *         edge's name; false otherwise
+     *         edge's name (discounting identifier substrings); false otherwise
      */
     @SuppressWarnings("squid:S3655")
     static Predicate<Edge> isEdgeWithInconsistentSpelling(final Edge startEdge)
@@ -88,34 +88,10 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             }
             final String startEdgeName = startEdge.getName().get();
             final String incomingEdgeName = incomingEdge.getName().get();
-            return checkBeforeEditDistance(incomingEdgeName, startEdgeName);
+            return similarLengthDifferentCharacters(incomingEdgeName, startEdgeName)
+                    && identifierSubstringsAreEqual(incomingEdgeName, startEdgeName)
+                    && editDistanceIsOne(incomingEdgeName, startEdgeName);
         };
-    }
-
-    /**
-     * Wrapper for identifierSubstringsAreEqual(). Handles cases where the incomingEdge has the same
-     * name as the startingEdge and where the edit distance between the two names is greater than
-     * one before analyzing the edit distance.
-     *
-     * @param incomingEdgeName
-     *            the next edge in the search area
-     * @param startEdgeName
-     *            the edge from which the search started
-     * @return true if the edit distance between two edges' names is 1 and both of their identifier
-     *         substrings are the same; false otherwise
-     */
-    private static boolean checkBeforeEditDistance(final String incomingEdgeName,
-            final String startEdgeName)
-    {
-        if (Math.abs(incomingEdgeName.length() - startEdgeName.length()) > 1)
-        {
-            return false;
-        }
-        if (incomingEdgeName.equals(startEdgeName))
-        {
-            return false;
-        }
-        return identifierSubstringsAreEqual(incomingEdgeName, startEdgeName);
     }
 
     /**
@@ -208,16 +184,15 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     }
 
     /**
-     * Check the road names for identifier substring differences. If they have any return false. If
-     * they have none, we compute the edit distance in editDistanceIsOne. This method should only
-     * take in Strings that are the same length, or whose lengths are off by a single character.
+     * Check the road names for identifier substring differences. This method should only take in
+     * Strings that are the same length, or whose lengths are off by a single character.
      *
      * @param incomingEdgeName
      *            the name of the next edge in the search area
      * @param startingEdgeName
      *            the name of the edge from which the search started
-     * @return true if the edit distance between two edges' names is 1 and both of their identifier
-     *         substrings are the same; false otherwise
+     * @return true if both of the strings' identifier substrings are the same (or both don't
+     *         exist); false otherwise
      */
     private static boolean identifierSubstringsAreEqual(final String incomingEdgeName,
             final String startingEdgeName)
@@ -250,14 +225,26 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
                 .concat(incomingEdgeNameAlphanumericIdentifierStrings.stream(),
                         startingEdgeNameAlphanumericIdentifierStrings.stream())
                 .distinct().count();
-        if (combinedIdentifierCount > incomingEdgeNameIdentifierCount
-                || combinedIdentifierCount > startingEdgeNameIdentifierCount)
-        {
-            return false;
-        }
-        // We now know that the street names have the same identifiers or no identifiers at all.
-        // Compute edit distance as usual.
-        return editDistanceIsOne(incomingEdgeName, startingEdgeName);
+        return !(combinedIdentifierCount > incomingEdgeNameIdentifierCount
+                || combinedIdentifierCount > startingEdgeNameIdentifierCount);
+    }
+
+    /**
+     * Handles cases where the incomingEdge has the same name as the startingEdge and where the edit
+     * distance between the two names is guaranteed to be greater than one.
+     *
+     * @param incomingEdgeName
+     *            the next edge in the search area
+     * @param startEdgeName
+     *            the edge from which the search started
+     * @return true if the two strings differ in length by at most 1 and are not equal; false
+     *         otherwise
+     */
+    private static boolean similarLengthDifferentCharacters(final String incomingEdgeName,
+            final String startEdgeName)
+    {
+        return !incomingEdgeName.equals(startEdgeName)
+                && (Math.abs(incomingEdgeName.length() - startEdgeName.length()) <= 1);
     }
 
     /**
