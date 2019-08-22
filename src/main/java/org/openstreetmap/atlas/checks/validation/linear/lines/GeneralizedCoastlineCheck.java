@@ -32,7 +32,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
 public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 {
     private static final String BASIC_INSTRUCTIONS = "This coastline is generalized, as {0}% of node pairs are {1} or more apart. To fix, add more nodes to this coastline. The midpoints of generalized segments are dotted for convenience.";
-    private static final String SHARP_ANGLE_INSTRUCTIONS = "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. There are also sharp angles exceeding {2} degrees. To fix, add more nodes to smooth angles and break up long segments of coastline. Suggested areas to add nodes are dotted.";
+    private static final String SHARP_ANGLE_INSTRUCTIONS = "This coastline is generalized, as {0}% of node pairs are {1} or more apart. There are also sharp angles exceeding {2} degrees. To fix, add more nodes to smooth angles and break up long segments of coastline. Suggested areas to add nodes are dotted.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(BASIC_INSTRUCTIONS,
             SHARP_ANGLE_INSTRUCTIONS);
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
@@ -112,21 +112,6 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
-     * Pulls out the {@link Location}s from the parameter List.
-     *
-     * @param angleTuples
-     *            where the offending {@link Angle}s and their {@link Location}s are found
-     * @return a List contatining only the {@link Location}s of offending {@link Angle}s from the
-     *         parameter List
-     */
-    private List<Location> buildLocationList(final List<Tuple<Angle, Location>> angleTuples)
-    {
-        final List<Location> resultList = new ArrayList<>();
-        angleTuples.forEach(tuple -> resultList.add(tuple.getSecond()));
-        return resultList;
-    }
-
-    /**
      * This method calculates the percentage of {@link Segment}s in the {@link LineItem} whose
      * lengths are greater than or equal to the minimumDistanceBetweenNodes configuration value
      *
@@ -174,7 +159,9 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 .anglesGreaterThanOrEqualTo(this.sharpAngleThreshold);
         if (!offendingAngles.isEmpty())
         {
-            return buildLocationList(offendingAngles);
+            final List<Location> resultList = new ArrayList<>();
+            offendingAngles.forEach(tuple -> resultList.add(tuple.getSecond()));
+            return resultList;
         }
         return Collections.emptyList();
     }
