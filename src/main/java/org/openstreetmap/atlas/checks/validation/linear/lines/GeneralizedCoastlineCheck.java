@@ -37,7 +37,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             SHARP_ANGLE_INSTRUCTIONS);
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
-    private static final double SHARP_ANGLE_THRESHOLD_DEFAULT = 31.0;
+    private static final double SHARP_ANGLE_THRESHOLD_DEFAULT = 83.0;
 
     private static final double HUNDRED_PERCENT = 100.0;
     private static final long serialVersionUID = 1576217971819771231L;
@@ -112,9 +112,12 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
+     * Pulls out the {@link Location}s from the parameter List.
+     *
      * @param angleTuples
-     *            a
-     * @return a
+     *            where the offending {@link Angle}s and their {@link Location}s are found
+     * @return a List contatining only the {@link Location}s of offending {@link Angle}s from the
+     *         parameter List
      */
     private List<Location> buildLocationList(final List<Tuple<Angle, Location>> angleTuples)
     {
@@ -141,6 +144,9 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
+     * Retrieve a list of {@link Location}s along a coastline, which can be used to indicate where
+     * downstream editing should happen.
+     *
      * @param line
      *            The LineItem whose midpoints are flagged
      * @return A {@link List} of {@link Location}s, each element of the list being the midpoint of
@@ -156,9 +162,11 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
+     * Given a coastline {@link LineItem}, extract the {@link Location}s of offending {@link Angle}s
+     *
      * @param coast
-     *            a
-     * @return a
+     *            The {@link LineItem} from which offending angle locations are extracted
+     * @return A List of {@link Location}s of offending angles if any; else an empty list
      */
     private List<Location> getSharpAngleLocations(final LineItem coast)
     {

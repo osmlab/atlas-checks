@@ -147,7 +147,7 @@
   "GeneralizedCoastlineCheck": {
     "node.minimum.distance": 100.0,
     "node.minimum.threshold": 30.0,
-    "angle.minimum.threshold": 31.0,
+    "angle.minimum.threshold": 97.0,
     "challenge": {
       "description": "Coastlines whose nodes are too far apart, and which may have too sharp of angles.",
       "blurb": "Ways",
