@@ -162,7 +162,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Gson gson = new GsonBuilder().disableHtmlEscaping()
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
-            result.setName(checkName);
+            result.setName(result.getName().isEmpty() ? checkName : result.getName());
             return result;
         });
     }
