@@ -177,59 +177,9 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
                             @Loc(value = FIVE), @Loc(value = FOUR) }, tags = { "highway=track" }) })
     private Atlas lowPriorityInvalidEdgeIntersection;
 
-    public Atlas getValidLineNoSelfIntersection()
+    public Atlas getInvalidAreaBuildingTag()
     {
-        return this.validLineNoSelfIntersection;
-    }
-
-    public Atlas getInvalidLineNonShapeSelfIntersection()
-    {
-        return this.invalidLineNonShapeSelfIntersection;
-    }
-
-    public Atlas getInvalidLineShapePointSelfIntersection()
-    {
-        return this.invalidLineShapePointSelfIntersection;
-    }
-
-    public Atlas getInvalidLineGeometryWaterwayTag()
-    {
-        return this.invalidLineGeometryWaterwayTag;
-    }
-
-    public Atlas getInvalidLineGeometryHighwayFootwayTag()
-    {
-        return this.invalidLineGeometryHighwayFootwayTag;
-    }
-
-    public Atlas getValidEdgeNoSelfIntersection()
-    {
-        return this.validEdgeNoSelfIntersection;
-    }
-
-    public Atlas getInvalidEdgeNonShapeIntersection()
-    {
-        return this.invalidEdgeNonShapeIntersection;
-    }
-
-    public Atlas getInvalidEdgeShapeIntersection()
-    {
-        return this.invalidEdgeShapeIntersection;
-    }
-
-    public Atlas getInvalidEdgeGeometryHighwayPrimaryTag()
-    {
-        return this.invalidEdgeGeometryHighwayPrimaryTag;
-    }
-
-    public Atlas getInvalidEdgeGeometryBuildingTag()
-    {
-        return this.invalidEdgeGeometryBuildingTag;
-    }
-
-    public Atlas getValidAreaNoSelfIntersection()
-    {
-        return this.validAreaNoSelfIntersection;
+        return this.invalidAreaBuildingTag;
     }
 
     public Atlas getInvalidAreaNonShapeSelfIntersection()
@@ -242,13 +192,63 @@ public class SelfIntersectingPolylineTestCaseRule extends CoreTestRule
         return this.invalidAreaShapeIntersection;
     }
 
-    public Atlas getInvalidAreaBuildingTag()
+    public Atlas getInvalidEdgeGeometryBuildingTag()
     {
-        return this.invalidAreaBuildingTag;
+        return this.invalidEdgeGeometryBuildingTag;
+    }
+
+    public Atlas getInvalidEdgeGeometryHighwayPrimaryTag()
+    {
+        return this.invalidEdgeGeometryHighwayPrimaryTag;
+    }
+
+    public Atlas getInvalidEdgeNonShapeIntersection()
+    {
+        return this.invalidEdgeNonShapeIntersection;
+    }
+
+    public Atlas getInvalidEdgeShapeIntersection()
+    {
+        return this.invalidEdgeShapeIntersection;
+    }
+
+    public Atlas getInvalidLineGeometryHighwayFootwayTag()
+    {
+        return this.invalidLineGeometryHighwayFootwayTag;
+    }
+
+    public Atlas getInvalidLineGeometryWaterwayTag()
+    {
+        return this.invalidLineGeometryWaterwayTag;
+    }
+
+    public Atlas getInvalidLineNonShapeSelfIntersection()
+    {
+        return this.invalidLineNonShapeSelfIntersection;
+    }
+
+    public Atlas getInvalidLineShapePointSelfIntersection()
+    {
+        return this.invalidLineShapePointSelfIntersection;
     }
 
     public Atlas getLowPriorityInvalidEdgeIntersection()
     {
         return this.lowPriorityInvalidEdgeIntersection;
+    }
+
+    public Atlas getValidAreaNoSelfIntersection()
+    {
+        return this.validAreaNoSelfIntersection;
+    }
+
+    public Atlas getValidEdgeNoSelfIntersection()
+    {
+        return this.validEdgeNoSelfIntersection;
+    }
+
+    public Atlas getValidLineNoSelfIntersection()
+    {
+        return this.validLineNoSelfIntersection;
     }
 }

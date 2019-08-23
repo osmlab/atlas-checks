@@ -289,9 +289,14 @@ public class RoundaboutValenceCheckTestRule extends CoreTestRule
                                     "highway=cycleway" }) })
     private Atlas roundaboutWithValenceZeroCyclewayAtlas;
 
-    public Atlas roundaboutWithValenceZeroAtlas()
+    public Atlas roundaboutWithValenceFiveAtlas()
     {
-        return this.roundaboutWithValenceZeroAtlas;
+        return this.roundaboutWithValenceFiveAtlas;
+    }
+
+    public Atlas roundaboutWithValenceFourAtlas()
+    {
+        return this.roundaboutWithValenceFourAtlas;
     }
 
     public Atlas roundaboutWithValenceOneAtlas()
@@ -304,14 +309,9 @@ public class RoundaboutValenceCheckTestRule extends CoreTestRule
         return this.roundaboutWithValenceTwoAtlas;
     }
 
-    public Atlas roundaboutWithValenceFourAtlas()
+    public Atlas roundaboutWithValenceZeroAtlas()
     {
-        return this.roundaboutWithValenceFourAtlas;
-    }
-
-    public Atlas roundaboutWithValenceFiveAtlas()
-    {
-        return this.roundaboutWithValenceFiveAtlas;
+        return this.roundaboutWithValenceZeroAtlas;
     }
 
     public Atlas roundaboutWithValenceZeroCyclewayAtlas()

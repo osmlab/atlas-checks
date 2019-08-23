@@ -3,12 +3,14 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.FerryTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RouteTag;
@@ -34,6 +36,7 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             FERRY_TAG_IF_DIFFERENT_FROM_HIGHWAY_INSTRUCTION,
             FERRY_TAG_IF_SAME_AS_HIGHWAY_INSTRUCTION, FERRY_TAG_IF_ABSENT_INSTRUCTION);
+    private static final long serialVersionUID = 2166377913919285833L;
 
     private final HighwayTag minimumHighwayType;
 
@@ -72,19 +75,40 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
         this.markAsFlagged(object.getOsmIdentifier());
         final boolean hasSameHighwayClassification = this.hasSameClassificationAsHighwayTag(object);
 
+        // Gather all edges that originated from the same OSM way as this edge
+        final Set<Edge> edges = new OsmWayWalker((Edge) object).collectEdges();
+
         // If the object has a Ferry Tag, it is flagged based on the ferry tag value and highway tag
         // value
         if (Validators.hasValuesFor(object, FerryTag.class))
         {
             final int instructionIndex = hasSameHighwayClassification ? 1 : 0;
-            return Optional.of(this.createFlag(object,
+            return Optional.of(this.createFlag(edges,
                     this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())));
         }
         else
         {
-            return Optional.of(this.createFlag(object,
+            return Optional.of(this.createFlag(edges,
                     this.getLocalizedInstruction(2, object.getOsmIdentifier())));
         }
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Verifies if the {@link FerryTag} value is the same as the {@link HighwayTag} value
+     *
+     * @param object
+     *            {@link AtlasObject} whose tag values need to be verified
+     * @return true if the {@link FerryTag} value is the same as the {@link HighwayTag} value
+     */
+    private boolean hasSameClassificationAsHighwayTag(final AtlasObject object)
+    {
+        return object.getTag(FerryTag.KEY).equals(object.getTag(HighwayTag.KEY));
     }
 
     /**
@@ -100,23 +124,5 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
         return HighwayTag.highwayTag(object)
                 .map(highwayTag -> highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType))
                 .orElse(false);
-    }
-
-    /**
-     * Verifies if the {@link FerryTag} value is the same as the {@link HighwayTag} value
-     *
-     * @param object
-     *            {@link AtlasObject} whose tag values need to be verified
-     * @return true if the {@link FerryTag} value is the same as the {@link HighwayTag} value
-     */
-    private boolean hasSameClassificationAsHighwayTag(final AtlasObject object)
-    {
-        return object.getTag(FerryTag.KEY).equals(object.getTag(HighwayTag.KEY));
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 }

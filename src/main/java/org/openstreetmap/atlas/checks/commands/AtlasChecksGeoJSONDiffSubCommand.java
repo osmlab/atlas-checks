@@ -86,6 +86,20 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
         return checkFeatureMap;
     }
 
+    @Override
+    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
+    {
+        final JsonArray featureArray = new JsonArray();
+        flags.values().stream().flatMap(Collection::stream).forEach(featureArray::add);
+        final JsonObject featureCollection = new JsonObject();
+        featureCollection.add(TYPE, new JsonPrimitive(FEATURE_COLLECTION.toString()));
+        featureCollection.add(FEATURES, featureArray);
+
+        final JsonWriter writer = new JsonWriter(output);
+        writer.writeLine(featureCollection);
+        writer.close();
+    }
+
     /**
      * Get the atlas ids from an array of feature properties.
      *
@@ -99,19 +113,5 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
                 .filter(object -> object.getAsJsonObject().has(IDENTIFIER))
                 .map(object -> object.getAsJsonObject().get(IDENTIFIER).getAsString())
                 .collectToSet();
-    }
-
-    @Override
-    protected void writeSetToGeoJSON(final Map<String, Set<JsonObject>> flags, final File output)
-    {
-        final JsonArray featureArray = new JsonArray();
-        flags.values().stream().flatMap(Collection::stream).forEach(featureArray::add);
-        final JsonObject featureCollection = new JsonObject();
-        featureCollection.add(TYPE, new JsonPrimitive(FEATURE_COLLECTION.toString()));
-        featureCollection.add(FEATURES, featureArray);
-
-        final JsonWriter writer = new JsonWriter(output);
-        writer.writeLine(featureCollection);
-        writer.close();
     }
 }

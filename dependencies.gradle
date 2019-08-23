@@ -1,13 +1,16 @@
 project.ext.versions = [
     checkstyle: '8.18',
     jacoco: '0.8.3',
-    atlas: '5.6.7',
+    atlas: '5.7.1',
     commons:'2.6',
-    atlas_generator: '4.3.3',
+    atlas_generator: '4.3.5',
+    atlas_checkstyle: '5.6.9',
 ]
 
 project.ext.packages = [
     atlas: "org.openstreetmap.atlas:atlas:${versions.atlas}",
     commons: "commons-lang:commons-lang:${versions.commons}",
     atlas_generator: "org.openstreetmap.atlas:atlas-generator:${versions.atlas_generator}",
+    checkstyle: "com.puppycrawl.tools:checkstyle:${versions.checkstyle}",
+    atlas_checkstyle: "org.openstreetmap.atlas:atlas:${versions.atlas_checkstyle}",
 ]

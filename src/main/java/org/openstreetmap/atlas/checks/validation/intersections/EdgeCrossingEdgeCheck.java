@@ -33,6 +33,18 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 {
+    /**
+     * A simple {@link EdgeWalker} that filters using nextCandidates.
+     */
+    private class EdgeCrossingEdgeWalker extends EdgeWalker
+    {
+        EdgeCrossingEdgeWalker(final Edge startingEdge,
+                final Function<Edge, Stream<Edge>> nextCandidates)
+        {
+            super(startingEdge, nextCandidates);
+        }
+    }
+
     private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
@@ -43,7 +55,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private static final long serialVersionUID = 2146863485833228593L;
-
     private final HighwayTag minimumHighwayType;
 
     /**
@@ -121,31 +132,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Validates given {@link AtlasObject} (assumed to be an {@link Edge}) whether it is a valid
-     * crossing edge or not
-     *
-     * @param object
-     *            {@link AtlasObject} to test
-     * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
-     */
-    private boolean isValidCrossingEdge(final AtlasObject object)
-    {
-        if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object) && !this.isFlagged(object.getIdentifier()))
-        {
-            final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
-            if (highway.isPresent())
-            {
-                final HighwayTag highwayTag = highway.get();
-                return HighwayTag.isCarNavigableHighway(highwayTag)
-                        && !HighwayTag.CROSSING.equals(highwayTag)
-                        && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType);
-            }
-        }
-        return false;
-    }
-
-    /**
      * A {@link Function} for an {@link EdgeWalker} that collects all connected invalid crossings.
      *
      * @return a {@link Set} of invalid crossing {@link Edge}s
@@ -192,14 +178,27 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * A simple {@link EdgeWalker} that filters using nextCandidates.
+     * Validates given {@link AtlasObject} (assumed to be an {@link Edge}) whether it is a valid
+     * crossing edge or not
+     *
+     * @param object
+     *            {@link AtlasObject} to test
+     * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
      */
-    private class EdgeCrossingEdgeWalker extends EdgeWalker
+    private boolean isValidCrossingEdge(final AtlasObject object)
     {
-        EdgeCrossingEdgeWalker(final Edge startingEdge,
-                final Function<Edge, Stream<Edge>> nextCandidates)
+        if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                && !TagPredicates.IS_AREA.test(object) && !this.isFlagged(object.getIdentifier()))
         {
-            super(startingEdge, nextCandidates);
+            final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
+            if (highway.isPresent())
+            {
+                final HighwayTag highwayTag = highway.get();
+                return HighwayTag.isCarNavigableHighway(highwayTag)
+                        && !HighwayTag.CROSSING.equals(highwayTag)
+                        && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+            }
         }
+        return false;
     }
 }

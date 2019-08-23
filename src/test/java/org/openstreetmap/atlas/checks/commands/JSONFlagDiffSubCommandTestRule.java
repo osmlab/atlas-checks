@@ -31,6 +31,38 @@ public class JSONFlagDiffSubCommandTestRule extends CoreTestRule
             @Node(id = "4000000", coordinates = @Loc(value = TEST_4)) })
     private Atlas atlas;
 
+    public CheckFlagEvent getAdditionCheckFlagEvent()
+    {
+        return this.getSimpleCheckFlagEvent(this.atlas.node(2000000L), TEST_CHECK_1);
+    }
+
+    public CheckFlagEvent getConstantCheckFlagEvent()
+    {
+        final CheckFlagEvent event = this.getSimpleCheckFlagEvent(this.atlas.node(1000000L),
+                TEST_CHECK_1);
+        event.getCheckFlag().addObject(this.atlas.node(2000000L));
+        event.getCheckFlag().addPoint(this.atlas.node(3000000L).getLocation());
+        return event;
+    }
+
+    public CheckFlagEvent getPostChangeCheckFlagEvent()
+    {
+        return this.getSimpleCheckFlagEvent(this.atlas.node(3000000L), TEST_CHECK_1);
+    }
+
+    public CheckFlagEvent getPreChangeCheckFlagEvent()
+    {
+        final CheckFlagEvent event = this.getSimpleCheckFlagEvent(this.atlas.node(3000000L),
+                TEST_CHECK_1);
+        event.getCheckFlag().addObject(this.atlas.node(4000000L));
+        return event;
+    }
+
+    public CheckFlagEvent getSubtractionCheckFlagEvent()
+    {
+        return this.getSimpleCheckFlagEvent(this.atlas.node(1000000L), TEST_CHECK_2);
+    }
+
     /**
      * Help to generate simple {@link CheckFlagEvent}s, that have one object and use a test
      * instruction.
@@ -48,37 +80,5 @@ public class JSONFlagDiffSubCommandTestRule extends CoreTestRule
         flag.addInstruction(TEST_INSTRUCTION);
 
         return new CheckFlagEvent(checkName, flag);
-    }
-
-    public CheckFlagEvent getConstantCheckFlagEvent()
-    {
-        final CheckFlagEvent event = this.getSimpleCheckFlagEvent(this.atlas.node(1000000L),
-                TEST_CHECK_1);
-        event.getCheckFlag().addObject(this.atlas.node(2000000L));
-        event.getCheckFlag().addPoint(this.atlas.node(3000000L).getLocation());
-        return event;
-    }
-
-    public CheckFlagEvent getSubtractionCheckFlagEvent()
-    {
-        return this.getSimpleCheckFlagEvent(this.atlas.node(1000000L), TEST_CHECK_2);
-    }
-
-    public CheckFlagEvent getAdditionCheckFlagEvent()
-    {
-        return this.getSimpleCheckFlagEvent(this.atlas.node(2000000L), TEST_CHECK_1);
-    }
-
-    public CheckFlagEvent getPreChangeCheckFlagEvent()
-    {
-        final CheckFlagEvent event = this.getSimpleCheckFlagEvent(this.atlas.node(3000000L),
-                TEST_CHECK_1);
-        event.getCheckFlag().addObject(this.atlas.node(4000000L));
-        return event;
-    }
-
-    public CheckFlagEvent getPostChangeCheckFlagEvent()
-    {
-        return this.getSimpleCheckFlagEvent(this.atlas.node(3000000L), TEST_CHECK_1);
     }
 }
