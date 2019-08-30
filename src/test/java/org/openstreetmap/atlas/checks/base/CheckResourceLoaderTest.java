@@ -1,12 +1,14 @@
 package org.openstreetmap.atlas.checks.base;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.base.checks.CheckResourceLoaderTestCheck;
+import org.openstreetmap.atlas.checks.base.checks.ContextAwareTestCheck;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -239,5 +241,32 @@ public class CheckResourceLoaderTest
         Assert.assertEquals(1,
                 checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName)
                         .filter(name -> name.startsWith("CheckResource")).distinct().count());
+    }
+
+    @Test
+    public void testSubclassWithSpecialConstructor()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"BaseTestCheck\":{\"enabled\":true}, \"ContextAwareTestCheck\":{\"enabled\":true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        final List<Class<?>[]> constructorArgumentTypes = CheckResourceLoader.arrayifyInnerList(Arrays.asList(
+                Arrays.asList(Configuration.class, Integer.TYPE),
+                Collections.singletonList(Configuration.class),
+                Collections.emptyList()), new Class<?>[0]);
+        final List<Object[]> constructorArguments = CheckResourceLoader.arrayifyInnerList(Arrays.asList(
+                Arrays.asList(configuration, 12),
+                Collections.singletonList(configuration),
+                Collections.emptyList()), new Object[0]);
+
+        final Set<Check> checks = checkResourceLoader.loadChecksUsingConstructors(constructorArgumentTypes, constructorArguments);
+        Assert.assertEquals(2, checks.size());
+        checks.forEach(check ->
+        {
+            if (check instanceof ContextAwareTestCheck)
+            {
+                Assert.assertEquals(12, ((ContextAwareTestCheck) check).getData());
+            }
+        });
     }
 }

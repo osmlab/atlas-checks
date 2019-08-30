@@ -1,8 +1,10 @@
 package org.openstreetmap.atlas.checks.base;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +12,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.google.common.collect.Streams;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -140,20 +145,25 @@ public class CheckResourceLoader
         return loadChecks(this::isEnabledByConfiguration, configuration);
     }
 
+    public <T extends Check> Set<T> loadChecksUsingConstructors(final List<Class<?>[]> constructorArgumentTypes,
+            final List<Object[]> constructorArguments)
+    {
+        return this.loadChecksUsingConstructors(this::isEnabledByConfiguration, constructorArgumentTypes, constructorArguments);
+    }
+
     /**
-     * Loads checks that are enabled by some other means, defined by {@code isEnabled}
-     *
+     * Given a list of corresponding types and arguments, try to initialize each enabled check using
+     * each constructor in order.
      * @param isEnabled
      *            {@link Predicate} used to determine if a check is enabled
-     * @param configuration
-     *            {@link Configuration} used to loadChecks {@link CheckResourceLoader}
+     * @param constructorArgumentTypes
+     *            {@}
+     * @param constructorArguments
      * @param <T>
-     *            check type
-     * @return a {@link Set} of checks
+     * @return A set of enabled, initialized checks.
      */
-    @SuppressWarnings("unchecked")
-    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled,
-            final Configuration configuration)
+    public <T extends Check> Set<T> loadChecksUsingConstructors(final Predicate<Class> isEnabled,
+            final List<Class<?>[]> constructorArgumentTypes, final List<Object[]> constructorArguments)
     {
         final Set<T> checks = new HashSet<>();
         final Time time = Time.now();
@@ -169,41 +179,18 @@ public class CheckResourceLoader
                                 && !Modifier.isAbstract(checkClass.getModifiers())
                                 && isEnabled.test(checkClass)
                                 && this.checkWhiteList.map(
-                                        whitelist -> whitelist.contains(checkClass.getSimpleName()))
-                                        .orElse(true)
+                                whitelist -> whitelist.contains(checkClass.getSimpleName()))
+                                .orElse(true)
                                 && this.checkBlackList.map(blacklist -> !blacklist
-                                        .contains(checkClass.getSimpleName())).orElse(true))
+                                .contains(checkClass.getSimpleName())).orElse(true))
                         {
-                            try
-                            {
-                                Object check;
-                                try
-                                {
-                                    check = checkClass.getConstructor(Configuration.class)
-                                            .newInstance(configuration);
-                                }
-                                catch (final InvocationTargetException oops)
-                                {
-                                    throw new CoreException(
-                                            "Unable to create a configurable instance of {}",
-                                            checkClass.getSimpleName(), oops);
-                                }
-                                catch (final NoSuchMethodException oops)
-                                {
-                                    check = checkClass.newInstance();
-                                }
-
-                                if (check != null)
-                                {
-                                    checks.add((T) check);
-                                }
-                            }
-                            catch (final ClassCastException | InstantiationException
-                                    | IllegalAccessException oops)
-                            {
-                                logger.error("Failed to instantiate {}, ignoring. Reason: {}",
-                                        checkClass.getName(), oops.getMessage());
-                            }
+                            Streams.zip(constructorArgumentTypes.stream(),
+                                    constructorArguments.stream(),
+                                    (argTypes, args) -> this.initializeCheckWithArguments((Class<T>) checkClass, argTypes, args))
+                                    .filter(Optional::isPresent)
+                                    .map(Optional::get)
+                                    .findFirst()
+                                    .ifPresent(checks::add);
                         }
                     }));
         }
@@ -216,6 +203,62 @@ public class CheckResourceLoader
         logger.info("Loaded {} {} in {}", checks.size(), this.checkType.getSimpleName(),
                 time.elapsedSince());
         return checks;
+    }
+
+    private <T extends Check> Optional<T> initializeCheckWithArguments(final Class<T> checkClass, final Class<?>[] constructorArgumentTypes, final Object[] constructorArguments)
+    {
+        try
+        {
+            final Constructor<T> constructor = checkClass.getConstructor(constructorArgumentTypes);
+            final T result = constructor.newInstance(constructorArguments);
+            return Optional.of(result);
+        }
+        catch (final NoSuchMethodException oops)
+        {
+            logger.info("No method found for {} with arguments {}", checkClass.toString(),
+                    Stream.of(constructorArgumentTypes).map(Class::toString).collect(Collectors.joining(",")));
+        }
+        catch (final InvocationTargetException oops)
+        {
+            logger.error("Unable to create a configurable instance of {}. Reason {}", checkClass.getSimpleName(), oops.getMessage());
+        }
+        catch (final ClassCastException | InstantiationException
+                | IllegalAccessException oops)
+        {
+            logger.error("Failed to instantiate {}, ignoring. Reason: {}",
+                    checkClass.getName(), oops.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    public static <T> List<T[]> arrayifyInnerList(final List<List<T>> input, final T[] newArray)
+    {
+        return input.stream()
+                .map(innerList -> innerList.toArray(newArray))
+                .collect(Collectors.toList());
+    }
+    /**
+     * Loads checks that are enabled by some other means, defined by {@code isEnabled}
+     *
+     * @param isEnabled
+     *            {@link Predicate} used to determine if a check is enabled
+     * @param configuration
+     *            {@link Configuration} used to loadChecks {@link CheckResourceLoader}
+     * @param <T>
+     *            check type
+     * @return a {@link Set} of checks
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled,
+            final Configuration configuration)
+    {
+        final List<Class<?>[]> constructorArgumentTypes = arrayifyInnerList(Arrays.asList(
+                Collections.singletonList(Configuration.class),
+                Collections.emptyList()), new Class<?>[0]);
+        final List<Object[]> constructorArguments = arrayifyInnerList(Arrays.asList(
+                Collections.singletonList(configuration),
+                Collections.emptyList()), new Object[0]);
+        return this.loadChecksUsingConstructors(isEnabled, constructorArgumentTypes, constructorArguments);
     }
 
     /**
