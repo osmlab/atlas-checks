@@ -1,7 +1,6 @@
 package org.openstreetmap.atlas.checks.base;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -197,6 +196,30 @@ public class CheckResourceLoaderTest
     }
 
     @Test
+    public void testSubclassWithSpecialConstructor()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"BaseTestCheck\":{\"enabled\":true}, \"ContextAwareTestCheck\":{\"enabled\":true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        final Class<?>[][] constructorArgumentTypes = new Class<?>[][] {
+                { Configuration.class, Integer.TYPE }, { Configuration.class }, {} };
+        final Object[][] constructorArguments = new Object[][] { { configuration, 12 },
+                { configuration }, {} };
+
+        final Set<Check> checks = checkResourceLoader
+                .loadChecksUsingConstructors(constructorArgumentTypes, constructorArguments);
+        Assert.assertEquals(2, checks.size());
+        checks.forEach(check ->
+        {
+            if (check instanceof ContextAwareTestCheck)
+            {
+                Assert.assertEquals(12, ((ContextAwareTestCheck) check).getData());
+            }
+        });
+    }
+
+    @Test
     public void testWhitelistCountrySpecific()
     {
         final String configSource = "{\"CheckResourceLoader.checks.whitelist\": [\"CheckResourceLoaderTestCheck\"], \"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"override.ABC.enabled\": false}, \"BaseTestCheck\":{\"enabled\": false, \"override.ABC.enabled\": true}}";
@@ -241,32 +264,5 @@ public class CheckResourceLoaderTest
         Assert.assertEquals(1,
                 checkResourceLoader.loadChecksForCountry("DEF").stream().map(Check::getCheckName)
                         .filter(name -> name.startsWith("CheckResource")).distinct().count());
-    }
-
-    @Test
-    public void testSubclassWithSpecialConstructor()
-    {
-        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"BaseTestCheck\":{\"enabled\":true}, \"ContextAwareTestCheck\":{\"enabled\":true}}";
-        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
-        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
-
-        final List<Class<?>[]> constructorArgumentTypes = CheckResourceLoader.arrayifyInnerList(Arrays.asList(
-                Arrays.asList(Configuration.class, Integer.TYPE),
-                Collections.singletonList(Configuration.class),
-                Collections.emptyList()), new Class<?>[0]);
-        final List<Object[]> constructorArguments = CheckResourceLoader.arrayifyInnerList(Arrays.asList(
-                Arrays.asList(configuration, 12),
-                Collections.singletonList(configuration),
-                Collections.emptyList()), new Object[0]);
-
-        final Set<Check> checks = checkResourceLoader.loadChecksUsingConstructors(constructorArgumentTypes, constructorArguments);
-        Assert.assertEquals(2, checks.size());
-        checks.forEach(check ->
-        {
-            if (check instanceof ContextAwareTestCheck)
-            {
-                Assert.assertEquals(12, ((ContextAwareTestCheck) check).getData());
-            }
-        });
     }
 }
