@@ -144,6 +144,15 @@ public class MalformedRoundaboutCheckTest
     }
 
     @Test
+    public void testCounterClockwiseRoundaboutRightDrivingMadeLeftAtlas()
+    {
+        this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"traffic.countries.left\":[\"USA\"]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testMultiDirectionalRoundaboutAtlas()
     {
         this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(),

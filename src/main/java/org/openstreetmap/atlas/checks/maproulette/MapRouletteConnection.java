@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.maproulette;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -144,7 +145,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         final String type = challengeJson.has(Survey.KEY_ANSWERS) ? KEY_SURVEY : KEY_CHALLENGE;
         return create(
                 String.format("/api/v2/project/%d/challenge/%s", project.getId(),
-                        challenge.getName()),
+                        URLEncoder.encode(challenge.getName(), "UTF-8")),
                 String.format("/api/v2/%s", type), String.format("/api/v2/%s/", type) + "%s",
                 challengeJson, String.format("Created/Updated Challenge with ID {} and name %s",
                         challenge.getName()));
