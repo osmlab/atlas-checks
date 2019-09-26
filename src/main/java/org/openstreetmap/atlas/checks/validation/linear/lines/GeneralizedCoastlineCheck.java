@@ -130,7 +130,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 
     /**
      * Retrieve a list of {@link Location}s along a coastline, which can be used to indicate where
-     * downstream editing should happen.
+     * editing should happen.
      *
      * @param line
      *            The LineItem whose midpoints are flagged
