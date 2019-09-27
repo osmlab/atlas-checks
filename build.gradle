@@ -159,6 +159,10 @@ dependencies
     compile packages.commons
     compile packages.atlas
     compile packages.atlas_generator
+    compile packages.postgis
+    compile packages.postgres
+    compile packages.spring
+    compile packages.mockito
 
     checkstyle packages.checkstyle
     checkstyle packages.atlas_checkstyle

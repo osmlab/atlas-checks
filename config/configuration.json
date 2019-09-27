@@ -268,6 +268,15 @@
       "difficulty": "HARD"
     }
   },
+  "RoadNameSpellingConsistencyCheck": {
+    "distance.search.maximum": 500.0,
+    "challenge": {
+      "description": "Segments of a given road should all have the same, correct spelling.",
+      "blurb": "Edit the name tags of flagged road segments so they're consistent with one another.",
+      "instruction": "Open your favorite editor and edit the name tags of the flagged way(s) so they're consistent with those of other ways of the same road.",
+      "difficulty": "EASY"
+    }
+  },
   "RoundaboutClosedLoopCheck": {
     "challenge": {
       "description": "A roundabout should be formed by one-way edges with no dead-end nodes.",
@@ -447,6 +456,16 @@
       "blurb": "Improper tags for Ferry routes.",
       "instruction": "Open your favorite editor and check the instruction for the task and then create or modify the Ferry Tag and delete the Highway Tag.",
       "difficulty": "EASY",
+      "defaultPriority": "MEDIUM"
+    }
+  },
+  "PedestrianAreaOverlappingEdgeCheck": {
+    "distance.minimum.meters": 1.0,
+    "challenge": {
+      "description": "Tasks contain pedestrian areas overlapping car navigable ways that are not properly snapped to those ways.",
+      "blurb": "Pedestrian areas overlapping car navigable ways.",
+      "instruction": "Open your favorite editor and check the instruction for the task and then properly snap all points of intersection of the pedestrian area to the overlapping car navigable ways.",
+      "difficulty": "MEDIUM",
       "defaultPriority": "MEDIUM"
     }
   }
