@@ -6,6 +6,7 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
@@ -21,6 +22,16 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
 
     private static final String LOCATION_1 = "1.11,1.11";
     private static final String LOCATION_2 = "1.12,1.12";
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+            @Node(coordinates = @Loc(value = TEST_2)), @Node(coordinates = @Loc(value = TEST_3)),
+            @Node(coordinates = @Loc(value = LOCATION_1)),
+            @Node(coordinates = @Loc(value = LOCATION_2)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=SECONDARY" }) }, areas = {
+                                    @Area(coordinates = { @Loc(value = TEST_1),
+                                            @Loc(value = TEST_2) }, tags = { "aeroway=taxiway" }) })
+    private Atlas airportAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
             @Node(coordinates = @Loc(value = TEST_2)),
@@ -64,6 +75,11 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=SECONDARY" }) })
     private Atlas mixedAtlas;
 
+    public Atlas airportAtlas()
+    {
+        return this.airportAtlas;
+    }
+
     public Atlas connectedEdgeAtlas()
     {
         return this.connectedEdgeAtlas;
@@ -88,4 +104,5 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
     {
         return this.syntheticBorderAtlas;
     }
+
 }

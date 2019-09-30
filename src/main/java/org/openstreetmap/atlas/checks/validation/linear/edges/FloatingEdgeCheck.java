@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -10,8 +11,10 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
+import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -45,6 +48,23 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
     private final HighwayTag highwayMinimum;
+
+    /**
+     * Checks if the {@link Edge} intersects with/is within an airport.
+     *
+     * @param edge
+     *            the Edge being checked
+     * @return true if the edge intersects with an airport; false otherwise
+     */
+    private static boolean intersectsAirport(final Edge edge)
+    {
+        return StreamSupport
+                .stream(edge.getAtlas()
+                        .areasIntersecting(edge.bounds(),
+                                area -> Validators.hasValuesFor(area, AerowayTag.class))
+                        .spliterator(), false)
+                .anyMatch(area -> area.asPolygon().overlaps(edge.asPolyLine()));
+    }
 
     /**
      * Default constructor defined by the {@link BaseCheck} required to instantiate the Check within
@@ -93,7 +113,8 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     {
         // Consider navigable master edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object);
+                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object)
+                && !intersectsAirport((Edge) object);
     }
 
     /**
