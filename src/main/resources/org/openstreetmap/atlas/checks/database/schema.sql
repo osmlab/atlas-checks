@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS flag (
 	flag_id text not null,
 	check_name text not null,
 	instructions text not null,
-	generator text,
+	run_uri text,
 	software_version varchar(8),
 	date_created timestamp
 );
