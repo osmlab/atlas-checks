@@ -7,14 +7,14 @@ CREATE TABLE IF NOT EXISTS flag (
 	flag_id text not null,
 	check_name text not null,
 	instructions text not null,
-	run_uri text,
-	integrity_version varchar(8),
+	generator text,
+	software_version varchar(8),
 	date_created timestamp
 );
 
 CREATE TABLE IF NOT EXISTS feature (
   id serial primary key,
-  flag_id text not null,
+  flag_id integer references flag(id),
   geom geometry not null,
   osm_id bigint not null,
   atlas_id bigint not null,
