@@ -19,13 +19,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
- * This check will look for any edges that do not contain any incoming or outgoing edges. The
- * appearance on the map would be that of a road simply floating in the middle of nowhere. No way
- * for any navigation, no ability to enter the {@link Edge} (road) from any point and no way to exit
- * it. To resolve the issue a mapper would either remove the edge as invalid or connect it to a
- * connected set of edges.
+ * This check will look for any edges outside of airport boundaries that do not contain any incoming
+ * or outgoing edges. The appearance on the map would be that of a road simply floating in the
+ * middle of nowhere. No way for any navigation, no ability to enter the {@link Edge} (road) from
+ * any point and no way to exit it. To resolve the issue a mapper would either remove the edge as
+ * invalid or connect it to a connected set of edges.
  *
- * @author cuthbertm, gpogulsky
+ * @author cuthbertm, gpogulsky, seancoulter
  */
 public class FloatingEdgeCheck extends BaseCheck<Long>
 {
