@@ -24,8 +24,9 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
 /**
  * Flags generalized coastlines-- that is, OSM ways with the tag natural=coastline where x% or more
  * node pairs are y or more meters apart. X and y can be specified in a {@link Configuration}.
- * Coastlines can be represented in Atlas by {@link LineItem}s and may be members of
- * {@link Relation}s.
+ * Additionally flags sharp angle locations according to the angle.minimum.threshold
+ * {@link Configuration} value if it's greater than -1. Coastlines can be represented in Atlas by
+ * {@link LineItem}s and may be members of {@link Relation}s.
  *
  * @author seancoulter
  */
@@ -38,6 +39,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
     private static final double SHARP_ANGLE_THRESHOLD_DEFAULT = 83.0;
+    private static final double DO_NOT_EVALUATE_DEFAULT_CAP = -1;
 
     private static final double HUNDRED_PERCENT = 100.0;
     private static final long serialVersionUID = 1576217971819771231L;
@@ -90,7 +92,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             // Contains midpoints and sharp angle locations
             final List<Location> pointsForFlagging = this.getPointsForFlagging((LineItem) object);
             // If there were sharp angles
-            if (pointsForFlagging.addAll(this.getSharpAngleLocations((LineItem) object)))
+            if (pointsForFlagging.addAll(this.getSharpAngleLocations((LineItem) object))
+                    && this.sharpAngleThreshold.asDegrees() > DO_NOT_EVALUATE_DEFAULT_CAP)
             {
                 return Optional.of(this.createFlag(object,
                         this.getLocalizedInstruction(1, generalizedSegments,
