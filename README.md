@@ -38,13 +38,48 @@ See [Development docs](docs/dev.md) for more information about developing and be
 
 ## Currently Available Checks
 
-- [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
-- [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md)
-- [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md)
+### Areas
+- [OverlappingAOIPolygonCheck](docs/checks/overlappingAOIPolygonCheck.md)
+
+### Highways
 - [FloatingEdgeCheck](docs/checks/floatingEdgeCheck.md)
-- [RoundAboutClosedLoopCheck](docs/checks/roundaboutClosedLoopCheck.md)
+- [MalformedRoundaboutCheck](docs/checks/malformedRoundaboutCheck.md)
+- [RoundaboutClosedLoopCheck (Deprecated)](docs/checks/roundaboutClosedLoopCheck.md)
+- [RoundaboutValenceCheck](docs/checks/roundaboutValenceCheck.md)
 - [SharpAngleCheck](docs/checks/sharpAngleCheck.md)
+- [SingleSegmentMotorwayCheck](docs/checks/singleSegmentMotorwayCheck.md)
 - [SinkIslandCheck](docs/tutorials/tutorial3-SinkIslandCheck.md)
 - [SnakeRoadCheck](docs/checks/snakeRoadCheck.md)
+
+### Nodes
+- [AddressPointMatch](dev/docs/checks/addressPointMatch.md)
+- [AddressStreetNameCheck](docs/checks/addressStreetNameCheck.md)
 - [DuplicateNodeCheck](docs/checks/duplicateNodeCheck.md)
+- [InvalidMiniRoundaboutCheck](docs/checks/invalidMiniRoundaboutCheck.md)
 - [OrphanNodeCheck](docs/tutorials/tutorial2-OrphanNodeCheck.md)
+
+### Points
+- [DuplicatePointCheck](docs/checks/duplicatePointCheck.md)
+
+### Relations
+- [InvalidTurnRestrictionCheck](docs/checks/invalidTurnRestrictionCheck.md)
+- [OneMemberRelationCheck](docs/checks/oneMemberRelationCheck.md)
+
+### Tags
+- [ConflictingAreaTagCombination](docs/checks/conflictingAreaTagCombination.md)
+- [HighwayToFerryTagCheck](docs/checks/highwayToFerryTagCheck.md)
+- [InvalidAccessTagCheck](docs/checks/invalidAccessTagCheck.md)
+- [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md)
+- [MixedCaseNameCheck](docs/checks/mixedCaseNameCheck.md)
+- [RoadNameSpellingConsistencyCheck](docs/checks/RoadNameSpellingConsistencyCheck.md)
+- [StreetNameIntegersOnlyCheck](docs/checks/streetNameIntegersOnlyCheck.md)
+
+### Ways
+- [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md)
+- [DuplicateWaysCheck (Deprecated)](docs/checks/duplicateWaysCheck.md)
+- [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md)
+- [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
+- [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md)
+- [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md)
+- [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md)
+- [WaterbodyAndIslandSizeCheck](docs/checks/waterbodyAndIslandSizeCheck.md)
