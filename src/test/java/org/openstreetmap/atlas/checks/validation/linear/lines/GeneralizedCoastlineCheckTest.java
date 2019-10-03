@@ -68,6 +68,31 @@ public class GeneralizedCoastlineCheckTest
     }
 
     @Test
+    public void oneLineSegmentGeneralizedNoSource()
+    {
+        this.verifier.actual(this.setup.getOneLineSegmentGeneralizedNoSource(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"GeneralizedCoastlineCheck\":{\"PGSfilter\": false}}")));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void oneLineSegmentGeneralizedSourcePGS()
+    {
+        this.verifier.actual(this.setup.getOneLineSegmentGeneralizedSourcePGS(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void oneLineSegmentGeneralizedSourceSurvey()
+    {
+        this.verifier.actual(this.setup.getOneLineSegmentGeneralizedSourceSurvey(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void oneLineSegmentNotGeneralized()
     {
         this.verifier.actual(this.setup.getOneLineSegmentNotGeneralized(),
