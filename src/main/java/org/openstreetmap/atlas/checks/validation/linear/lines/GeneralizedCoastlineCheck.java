@@ -32,7 +32,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline. The midpoint of generalized segments is dotted for convenience.");
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
-    private static final boolean PGS_FILTER = true;
+    private static final boolean PGS_FILTER_DEFAULT = true;
 
     private static final double HUNDRED_PERCENT = 100.0;
     private static final long serialVersionUID = 1576217971819771231L;
@@ -47,7 +47,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE);
         this.minimumDistanceBetweenNodes = this.configurationValue(configuration,
                 "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
-        this.PGSfilter = this.configurationValue(configuration, "PGSfilter", PGS_FILTER);
+        this.PGSfilter = this.configurationValue(configuration, "PGSfilter", PGS_FILTER_DEFAULT);
     }
 
     /**
@@ -61,8 +61,13 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof LineItem && ((isCoastline(object) && isSourcePGS(object))
-                || (hasCoastlineRelationMembers(object) && hasSourcePGSRelationMembers(object)));
+        final Predicate<Relation> memberIsCoastline = relation -> isCoastline(relation);
+        final Predicate<Relation> memberIsSourcePGS = relation -> isSourcePGS(relation);
+
+        return object instanceof LineItem
+                && ((isCoastline(object) && (isSourcePGS(object) || !PGSfilter))
+                        || (hasRelationMembers(object, memberIsCoastline)
+                                && (hasRelationMembers(object, memberIsSourcePGS) || !PGSfilter)));
     }
 
     /**
@@ -124,44 +129,18 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
-     * This method validates if the relation members have the tag natural=coastline
+     * This method checks if a {@link AtlasObject} has relation members and satisfies the predicate.
      *
      * @param object
      *            The {@link AtlasObject} being checked.
-     * @return true if the {@link AtlasObject} has the tag natural=coastline
-     */
-    private boolean hasCoastlineRelationMembers(final AtlasObject object)
-    {
-        final Predicate<Relation> relationPredicate = relation -> isCoastline(relation);
-        return hasRelationMembers((LineItem) object, relationPredicate);
-    }
-
-    /**
-     * This method checks if a {@link LineItem} has relation members and satisfies the predicate.
-     *
-     * @param object
-     *            The {@link LineItem} being checked.
      * @param relationPredicate
      *            Predicate used to filter the relation.
-     * @return true if the {@link LineItem} has relation members and satisfies the predicate.
+     * @return true if the {@link AtlasObject} has relation members and satisfies the predicate.
      */
-    private boolean hasRelationMembers(final LineItem object,
+    private boolean hasRelationMembers(final AtlasObject object,
             final Predicate<Relation> relationPredicate)
     {
-        return object.relations().stream().anyMatch(relationPredicate);
-    }
-
-    /**
-     * This method validates if the relation members have the tag source=PGS.
-     *
-     * @param object
-     *            The {@link AtlasObject} being checked.
-     * @return true if the {@link AtlasObject} has the tag source=PGS.
-     */
-    private boolean hasSourcePGSRelationMembers(final AtlasObject object)
-    {
-        final Predicate<Relation> relationPredicate = relation -> isSourcePGS(relation);
-        return hasRelationMembers((LineItem) object, relationPredicate);
+        return ((LineItem) object).relations().stream().anyMatch(relationPredicate);
     }
 
     /**
@@ -177,24 +156,16 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     }
 
     /**
-     * This method checks if the {@link AtlasObject} has the tag source=PGS. If PGSfilter is set to
-     * false then this will always return true.
+     * This method checks if the {@link AtlasObject} has the tag source=PGS.
      *
      * @param object
      *            The {@link AtlasObject} being checked
-     * @return true if the PGSfilter is set to true and if the {@link AtlasObject} has the tag
-     *         source=PGS. If the PGSfilter is set to false then this always returns true.
+     * @return true if the {@link AtlasObject} has the tag source=PGS.
      */
     private boolean isSourcePGS(final AtlasObject object)
     {
-        boolean isAtlasObjectSourcePGS = false;
         final Optional<String> tagValue = object.getTag("source");
-        if (tagValue.isPresent() && tagValue.get().equals("PGS"))
-        {
-            isAtlasObjectSourcePGS = true;
-        }
-
-        return this.PGSfilter ? isAtlasObjectSourcePGS : true;
+        return tagValue.isPresent() && tagValue.get().equals("PGS");
     }
 
 }
