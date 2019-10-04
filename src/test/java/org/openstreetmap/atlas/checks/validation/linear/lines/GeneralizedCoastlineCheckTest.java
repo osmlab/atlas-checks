@@ -72,7 +72,7 @@ public class GeneralizedCoastlineCheckTest
     {
         this.verifier.actual(this.setup.getOneLineSegmentGeneralizedNoSource(),
                 new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"GeneralizedCoastlineCheck\":{\"PGSfilter\": false}}")));
+                        "{\"GeneralizedCoastlineCheck\":{\"coastline.tags.filters\": \"\"}}")));
         this.verifier.verifyExpectedSize(1);
     }
 

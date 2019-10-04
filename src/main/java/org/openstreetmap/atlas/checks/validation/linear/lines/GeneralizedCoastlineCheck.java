@@ -15,6 +15,7 @@ import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -32,13 +33,13 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             "This coastline is generalized, as {0}% of node pairs are {1} or more meters apart. To fix, increase the number of nodes along this coastline. The midpoint of generalized segments is dotted for convenience.");
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
-    private static final boolean PGS_FILTER_DEFAULT = true;
+    private static final String COASTLINE_TAG_FILTER_DEFAULT = "source->PGS";
 
     private static final double HUNDRED_PERCENT = 100.0;
     private static final long serialVersionUID = 1576217971819771231L;
     private final double percentageThreshold;
     private final Distance minimumDistanceBetweenNodes;
-    private static boolean PGSfilter;
+    private static TaggableFilter coastlineTagFilter;
 
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
@@ -47,7 +48,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE);
         this.minimumDistanceBetweenNodes = this.configurationValue(configuration,
                 "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
-        this.PGSfilter = this.configurationValue(configuration, "PGSfilter", PGS_FILTER_DEFAULT);
+        this.coastlineTagFilter = this.configurationValue(configuration, "coastline.tags.filters",
+                COASTLINE_TAG_FILTER_DEFAULT, TaggableFilter::forDefinition);
     }
 
     /**
@@ -62,12 +64,13 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         final Predicate<Relation> memberIsCoastline = relation -> isCoastline(relation);
-        final Predicate<Relation> memberIsSourcePGS = relation -> isSourcePGS(relation);
+        final Predicate<Relation> memberIsSourcePGS = relation -> this.coastlineTagFilter
+                .test(relation);
 
         return object instanceof LineItem
-                && ((isCoastline(object) && (isSourcePGS(object) || !PGSfilter))
-                        || (hasRelationMembers(object, memberIsCoastline)
-                                && (hasRelationMembers(object, memberIsSourcePGS) || !PGSfilter)));
+                && (isCoastline(object) && this.coastlineTagFilter.test(object)
+                        || hasRelationMembers(object, memberIsCoastline)
+                                && hasRelationMembers(object, memberIsSourcePGS));
     }
 
     /**
@@ -153,19 +156,6 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private boolean isCoastline(final AtlasObject object)
     {
         return Validators.isOfType(object, NaturalTag.class, NaturalTag.COASTLINE);
-    }
-
-    /**
-     * This method checks if the {@link AtlasObject} has the tag source=PGS.
-     *
-     * @param object
-     *            The {@link AtlasObject} being checked
-     * @return true if the {@link AtlasObject} has the tag source=PGS.
-     */
-    private boolean isSourcePGS(final AtlasObject object)
-    {
-        final Optional<String> tagValue = object.getTag("source");
-        return tagValue.isPresent() && tagValue.get().equals("PGS");
     }
 
 }

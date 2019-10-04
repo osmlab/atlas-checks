@@ -147,7 +147,7 @@
   "GeneralizedCoastlineCheck": {
     "node.minimum.distance": 100.0,
     "node.minimum.threshold": 30.0,
-    "PGSfilter": true,
+    "coastline.tags.filters": "source->PGS",
     "challenge": {
       "description": "Coastlines whose nodes are too far apart.",
       "blurb": "Ways",
