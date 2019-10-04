@@ -39,7 +39,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 1576217971819771231L;
     private final double percentageThreshold;
     private final Distance minimumDistanceBetweenNodes;
-    private static TaggableFilter coastlineTagFilter;
+    private final TaggableFilter coastlineTagFilter;
 
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
@@ -63,9 +63,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        final Predicate<Relation> memberIsCoastline = relation -> isCoastline(relation);
-        final Predicate<Relation> memberIsSourcePGS = relation -> this.coastlineTagFilter
-                .test(relation);
+        final Predicate<Relation> memberIsCoastline = this::isCoastline;
+        final Predicate<Relation> memberIsSourcePGS = this.coastlineTagFilter::test;
 
         return object instanceof LineItem
                 && (isCoastline(object) && this.coastlineTagFilter.test(object)
