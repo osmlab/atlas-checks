@@ -39,7 +39,10 @@ See [Development docs](docs/dev.md) for more information about developing and be
 ## Currently Available Checks
 
 ### Areas
+- [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
 - [OverlappingAOIPolygonCheck](docs/checks/overlappingAOIPolygonCheck.md)
+- [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md)
+- [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md)
 
 ### Highways
 - [FloatingEdgeCheck](docs/checks/floatingEdgeCheck.md)
@@ -78,8 +81,5 @@ See [Development docs](docs/dev.md) for more information about developing and be
 - [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md)
 - [DuplicateWaysCheck (Deprecated)](docs/checks/duplicateWaysCheck.md)
 - [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md)
-- [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
 - [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md)
-- [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md)
-- [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md)
 - [WaterbodyAndIslandSizeCheck](docs/checks/waterbodyAndIslandSizeCheck.md)
