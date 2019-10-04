@@ -38,48 +38,37 @@ See [Development docs](docs/dev.md) for more information about developing and be
 
 ## Currently Available Checks
 
-### Areas
-- [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
-- [OverlappingAOIPolygonCheck](docs/checks/overlappingAOIPolygonCheck.md)
-- [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md)
-- [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md)
-
-### Highways
-- [FloatingEdgeCheck](docs/checks/floatingEdgeCheck.md)
-- [MalformedRoundaboutCheck](docs/checks/malformedRoundaboutCheck.md)
-- [RoundaboutClosedLoopCheck (Deprecated)](docs/checks/roundaboutClosedLoopCheck.md)
-- [RoundaboutValenceCheck](docs/checks/roundaboutValenceCheck.md)
-- [SharpAngleCheck](docs/checks/sharpAngleCheck.md)
-- [SingleSegmentMotorwayCheck](docs/checks/singleSegmentMotorwayCheck.md)
-- [SinkIslandCheck](docs/tutorials/tutorial3-SinkIslandCheck.md)
-- [SnakeRoadCheck](docs/checks/snakeRoadCheck.md)
-
-### Nodes
-- [AddressPointMatch](dev/docs/checks/addressPointMatch.md)
-- [AddressStreetNameCheck](docs/checks/addressStreetNameCheck.md)
-- [DuplicateNodeCheck](docs/checks/duplicateNodeCheck.md)
-- [InvalidMiniRoundaboutCheck](docs/checks/invalidMiniRoundaboutCheck.md)
-- [OrphanNodeCheck](docs/tutorials/tutorial2-OrphanNodeCheck.md)
-
-### Points
-- [DuplicatePointCheck](docs/checks/duplicatePointCheck.md)
-
-### Relations
-- [InvalidTurnRestrictionCheck](docs/checks/invalidTurnRestrictionCheck.md)
-- [OneMemberRelationCheck](docs/checks/oneMemberRelationCheck.md)
-
-### Tags
-- [ConflictingAreaTagCombination](docs/checks/conflictingAreaTagCombination.md)
-- [HighwayToFerryTagCheck](docs/checks/highwayToFerryTagCheck.md)
-- [InvalidAccessTagCheck](docs/checks/invalidAccessTagCheck.md)
-- [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md)
-- [MixedCaseNameCheck](docs/checks/mixedCaseNameCheck.md)
-- [RoadNameSpellingConsistencyCheck](docs/checks/RoadNameSpellingConsistencyCheck.md)
-- [StreetNameIntegersOnlyCheck](docs/checks/streetNameIntegersOnlyCheck.md)
-
-### Ways
-- [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md)
-- [DuplicateWaysCheck (Deprecated)](docs/checks/duplicateWaysCheck.md)
-- [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md)
-- [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md)
-- [WaterbodyAndIslandSizeCheck](docs/checks/waterbodyAndIslandSizeCheck.md)
+| Check Type | Check Name | Check Description |
+| :--------: | :--------: | :---------------: |
+| Areas | [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md) |  |
+| Areas | [OverlappingAOIPolygonCheck](docs/checks/overlappingAOIPolygonCheck.md) | The purpose of this check is to identify areas of interest (AOIs) that are overlapping one another. |
+| Areas | [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
+| Areas | [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md) | The purpose of this check is to identify buildings with extremely sharp angles in their geometry. |
+| Highways | [FloatingEdgeCheck](docs/checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
+| Highways | [MalformedRoundaboutCheck](docs/checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are three types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, and 3. Roundabouts with poor geometry. |
+| Highways | [RoundaboutClosedLoopCheck (Deprecated)](docs/checks/roundaboutClosedLoopCheck.md) | The purpose of this check is to identify Roundabout Edges that are bi-directional or have an end Node with less than 2 connections. |
+| Highways | [RoundaboutValenceCheck](docs/checks/roundaboutValenceCheck.md) | The purpose of this check is to identify OpenStreetMap (OSM) tagged roundabouts that have an unusual number of edges connected to them. |
+| Highways | [SharpAngleCheck](docs/checks/sharpAngleCheck.md) | The purpose of this check is to identify roads with angles that are too sharp. Sharp angles may indicate inaccurate digitization once a certain threshold is exceeded. |
+| Highways | [SingleSegmentMotorwayCheck](docs/checks/singleSegmentMotorwayCheck.md) | The purpose of this check is to identify ways tagged with highway=motorway that are not connected to any ways tagged the same. |
+| Highways | [SinkIslandCheck](docs/tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
+| Highways | [SnakeRoadCheck](docs/checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
+| Nodes | [AddressPointMatch](dev/docs/checks/addressPointMatch.md) | The purpose of this check is to identify improperly tagged street names (addr:street) on features that already have an addr:housenumber tag. This includes cases where the addr:street tag doesn't exist or is null. |
+| Nodes | [AddressStreetNameCheck](docs/checks/addressStreetNameCheck.md) | The purpose of this check is to identify nodes with addr:street names that don't match the surrounding roads. |
+| Nodes | [DuplicateNodeCheck](docs/checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
+| Nodes | [InvalidMiniRoundaboutCheck](docs/checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
+| Nodes | [OrphanNodeCheck](docs/tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
+| Points | [DuplicatePointCheck](docs/checks/duplicatePointCheck.md) | The purpose of this check is to identify ﻿Points﻿ in OSM that are in the same location. |
+| Relations | [InvalidTurnRestrictionCheck](docs/checks/invalidTurnRestrictionCheck.md) | The purpose of this check is to identify invalid turn restrictions in OSM. Invalid turn restrictions occur in a variety of ways from invalid members, Edge geometry issues, not being routable, or wrong topology. |
+| Relations | [OneMemberRelationCheck](docs/checks/oneMemberRelationCheck.md) | The purpose of this check is to identify Relations in OSM which only have one Member. |
+| Tags | [ConflictingAreaTagCombination](docs/checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |
+| Tags | [HighwayToFerryTagCheck](docs/checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
+| Tags | [InvalidAccessTagCheck](docs/checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |
+| Tags | [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md) | The purpose of this check is to identify highways in OSM with an invalid lanes tag value. |
+| Tags | [MixedCaseNameCheck](docs/checks/mixedCaseNameCheck.md) | The purpose of this check is to identify names that contain invalid mixed cases so that they can be edited to be the standard format. |
+| Tags | [RoadNameSpellingConsistencyCheck](docs/checks/RoadNameSpellingConsistencyCheck.md) | The purpose of this check is to identify road segments that have a name Tag with a different spelling from that of other segments of the same road. This check is primarily meant to catch small errors in spelling, such as a missing letter, letter accent mixups, or capitalization errors. |
+| Tags | [StreetNameIntegersOnlyCheck](docs/checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
+| Ways | [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md) | The purpose of this check is to identify buildings that intersect/overlap roads. |
+| Ways | [DuplicateWaysCheck (Deprecated)](docs/checks/duplicateWaysCheck.md) | The purpose of this check is to identify Ways that have either had their entire length or a segment of their length duplicated or drawn multiple times. |
+| Ways | [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md) | The purpose of this check is to identify pedestrian areas overlapping with roads that are not snapped to car navigable edges. |
+| Ways | [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
+| Ways | [WaterbodyAndIslandSizeCheck](docs/checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
