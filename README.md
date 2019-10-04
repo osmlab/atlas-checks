@@ -39,7 +39,7 @@ See [Development docs](docs/dev.md) for more information about developing and be
 ## Currently Available Checks
 
 | Check Type | Check Name | Check Description |
-| :--------: | :--------: | :---------------: |
+| :--------: | :--------- | :---------------- |
 | Areas | [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md) | The purpose of this check is to identify pools that are larger than 5,000,000 square meters or smaller than 5 square meters.  This check was created to be used as a tutorial for developing new checks. |
 | Areas | [OverlappingAOIPolygonCheck](docs/checks/overlappingAOIPolygonCheck.md) | The purpose of this check is to identify areas of interest (AOIs) that are overlapping one another. |
 | Areas | [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
