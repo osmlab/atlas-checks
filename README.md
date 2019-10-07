@@ -37,4 +37,4 @@ Atlas Checks have been developed to take advantage of distributed computing by r
 See [Development docs](docs/dev.md) for more information about developing and best practices for new Atlas Checks.
 
 ## Currently Available Checks
-See [Currently available checks](docs/currently-available-checks.md) for a table of descriptions and links to documentation for each check.
+A document with a list of tables for [Currently available checks](docs/currently-available-checks.md) is available and includes descriptions and links to documentation for each check.  Each table is organized by check type.
