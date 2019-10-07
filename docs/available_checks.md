@@ -7,6 +7,7 @@ This document is a list of tables with a description and link to documentation f
 | AreasWithHighwayTagCheck | The purpose of this check is to identify Areas attributed with highway tags. |
 | [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md) | The purpose of this check is to identify pools that are larger than 5,000,000 square meters or smaller than 5 square meters.  This check was created to be used as a tutorial for developing new checks. |
 | [OverlappingAOIPolygonCheck](docs/checks/overlappingAOIPolygonCheck.md) | The purpose of this check is to identify areas of interest (AOIs) that are overlapping one another. |
+| [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md) | The purpose of this check is to identify pedestrian areas overlapping with roads that are not snapped to car navigable edges. |
 | [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
 | [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md) | The purpose of this check is to identify buildings with extremely sharp angles in their geometry. |
 
@@ -64,6 +65,5 @@ This document is a list of tables with a description and link to documentation f
 | [~~DuplicateWaysCheck~~ (Deprecated)](docs/checks/duplicateWaysCheck.md) | The purpose of this check is to identify Ways that have either had their entire length or a segment of their length duplicated or drawn multiple times. **This check has been deprecated and is no longer active.** |
 | [GeneralizedCoastlineCheck](https://github.com/osmlab/atlas-checks/blob/dev/docs/checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart. |
 | IntersectingBuildingsCheck | The purpose of this check is to identify buildings that intersect other buildings. |
-| [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md) | The purpose of this check is to identify pedestrian areas overlapping with roads that are not snapped to car navigable edges. |
 | [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
 | [WaterbodyAndIslandSizeCheck](docs/checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
