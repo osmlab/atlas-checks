@@ -45,6 +45,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     private final double percentageThreshold;
     private final Distance minimumDistanceBetweenNodes;
     private final Angle sharpAngleThreshold;
+    private final double sharpAngleDegrees;
 
     public GeneralizedCoastlineCheck(final Configuration configuration)
     {
@@ -55,8 +56,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
         // If the below is not set in the configuration, the sharp angle logic in this check will be
         // disregarded
-        this.sharpAngleThreshold = Angle.degrees(this.configurationValue(configuration,
-                "angle.minimum.threshold", SHARP_ANGLE_THRESHOLD_DEFAULT));
+        this.sharpAngleDegrees = this.configurationValue(configuration, "angle.minimum.threshold", SHARP_ANGLE_THRESHOLD_DEFAULT);
+        this.sharpAngleThreshold = Angle.degrees(sharpAngleDegrees);
     }
 
     /**
@@ -92,10 +93,11 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
         {
             // Contains midpoints and sharp angle locations
             final List<Location> pointsForFlagging = this.getPointsForFlagging((LineItem) object);
+            final List<Location> sharpAngles = this.getSharpAngleLocations((LineItem) object);
             // If there were sharp angles
-            if (pointsForFlagging.addAll(this.getSharpAngleLocations((LineItem) object))
-                    && this.sharpAngleThreshold.asDegrees() != SHARP_ANGLE_THRESHOLD_DEFAULT)
+            if (!sharpAngles.isEmpty() && this.sharpAngleDegrees != SHARP_ANGLE_THRESHOLD_DEFAULT)
             {
+                pointsForFlagging.addAll(sharpAngles);
                 return Optional.of(this.createFlag(object,
                         this.getLocalizedInstruction(1, generalizedSegments,
                                 this.minimumDistanceBetweenNodes,
