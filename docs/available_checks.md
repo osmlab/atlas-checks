@@ -1,4 +1,4 @@
-# Currently Available Checks
+# Available Checks
 This document is a list of tables with a description and link to documentation for each check.  Each table is organized by check type.
 
 ## Areas
@@ -37,7 +37,7 @@ This document is a list of tables with a description and link to documentation f
 ## Points
 | Check Name | Check Description |
 | :--------- | :---------------- |
-| [DuplicatePointCheck](docs/checks/duplicatePointCheck.md) | The purpose of this check is to identify ﻿Points﻿ in OSM that are in the same location. |
+| [DuplicatePointCheck](docs/checks/duplicatePointCheck.md) | The purpose of this check is to identify Points in OSM that are in the same location. |
 
 
 ## Relations
