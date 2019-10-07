@@ -1,4 +1,7 @@
-# Areas
+# Currently Available Checks
+This document is a list of tables with a description and link to documentation for each check.  Each table is organized by check type.
+
+## Areas
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md) | The purpose of this check is to identify pools that are larger than 5,000,000 square meters or smaller than 5 square meters.  This check was created to be used as a tutorial for developing new checks. |
@@ -6,7 +9,7 @@
 | [ShadowDetectionCheck](docs/checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
 | [SpikyBuildingCheck](docs/checks/spikyBuildingCheck.md) | The purpose of this check is to identify buildings with extremely sharp angles in their geometry. |
 
-# Highways
+## Highways
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [FloatingEdgeCheck](docs/checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
@@ -18,7 +21,7 @@
 | [SinkIslandCheck](docs/tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](docs/checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
 
-# Nodes
+## Nodes
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [AddressPointMatch](dev/docs/checks/addressPointMatch.md) | The purpose of this check is to identify improperly tagged street names (addr:street) on features that already have an addr:housenumber tag. This includes cases where the addr:street tag doesn't exist or is null. |
@@ -27,19 +30,19 @@
 | [InvalidMiniRoundaboutCheck](docs/checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
 | [OrphanNodeCheck](docs/tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
 
-# Points
+## Points
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [DuplicatePointCheck](docs/checks/duplicatePointCheck.md) | The purpose of this check is to identify ﻿Points﻿ in OSM that are in the same location. |
 
 
-# Relations
+## Relations
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [InvalidTurnRestrictionCheck](docs/checks/invalidTurnRestrictionCheck.md) | The purpose of this check is to identify invalid turn restrictions in OSM. Invalid turn restrictions occur in a variety of ways from invalid members, Edge geometry issues, not being routable, or wrong topology. |
 | [OneMemberRelationCheck](docs/checks/oneMemberRelationCheck.md) | The purpose of this check is to identify Relations in OSM which only have one Member. |
 
-# Tags
+## Tags
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [ConflictingAreaTagCombination](docs/checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |
@@ -50,7 +53,7 @@
 | [RoadNameSpellingConsistencyCheck](docs/checks/RoadNameSpellingConsistencyCheck.md) | The purpose of this check is to identify road segments that have a name Tag with a different spelling from that of other segments of the same road. This check is primarily meant to catch small errors in spelling, such as a missing letter, letter accent mixups, or capitalization errors. |
 | [StreetNameIntegersOnlyCheck](docs/checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
 
-# Ways
+## Ways
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md) | The purpose of this check is to identify buildings that intersect/overlap roads. |
