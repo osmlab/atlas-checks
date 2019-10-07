@@ -58,6 +58,7 @@ This document is a list of tables with a description and link to documentation f
 | :--------- | :---------------- |
 | [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md) | The purpose of this check is to identify buildings that intersect/overlap roads. |
 | [~~DuplicateWaysCheck~~ (Deprecated)](docs/checks/duplicateWaysCheck.md) | The purpose of this check is to identify Ways that have either had their entire length or a segment of their length duplicated or drawn multiple times. **This check has been deprecated and is no longer active.** |
+| [GeneralizedCoastlineCheck](https://github.com/osmlab/atlas-checks/blob/dev/docs/checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart. |
 | [PedestrianAreaOverlappingEdgeCheck](docs/checks/pedestrianAreaOverlappingEdgeCheck.md) | The purpose of this check is to identify pedestrian areas overlapping with roads that are not snapped to car navigable edges. |
 | [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
 | [WaterbodyAndIslandSizeCheck](docs/checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
