@@ -90,18 +90,22 @@ public class GeneralizedCoastlineCheckTest
     }
 
     @Test
-    public void testSharpAngleYesFilter()
+    public void testSharpAngleNoFilter()
     {
         this.verifier.actual(this.setup.getWithSharpAngle(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration("{\"GeneralizedCoastlineCheck\":{\"angle.minimum.threshold\":97.0}}")));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getPoints().stream().anyMatch(angle -> angle.equals(Location.forString(sharpAngleLocation)))));
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getPoints().stream()
+                .noneMatch(angle -> angle.equals(Location.forString(sharpAngleLocation)))));
     }
 
     @Test
-    public void testSharpAngleNoFilter()
+    public void testSharpAngleYesFilter()
     {
-        this.verifier.actual(this.setup.getWithSharpAngle(), new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getPoints().stream().noneMatch(angle -> angle.equals(Location.forString(sharpAngleLocation)))));
+        this.verifier.actual(this.setup.getWithSharpAngle(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"GeneralizedCoastlineCheck\":{\"angle.minimum.threshold\":97.0}}")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getPoints().stream()
+                .anyMatch(angle -> angle.equals(Location.forString(sharpAngleLocation)))));
     }
 
 }

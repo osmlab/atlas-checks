@@ -56,8 +56,9 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
         // If the below is not set in the configuration, the sharp angle logic in this check will be
         // disregarded
-        this.sharpAngleDegrees = this.configurationValue(configuration, "angle.minimum.threshold", SHARP_ANGLE_THRESHOLD_DEFAULT);
-        this.sharpAngleThreshold = Angle.degrees(sharpAngleDegrees);
+        this.sharpAngleDegrees = this.configurationValue(configuration, "angle.minimum.threshold",
+                SHARP_ANGLE_THRESHOLD_DEFAULT);
+        this.sharpAngleThreshold = Angle.degrees(this.sharpAngleDegrees);
     }
 
     /**
