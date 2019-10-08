@@ -129,7 +129,6 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
                     @Loc(value = GENERALIZED_TWENTYFOUR), @Loc(value = GENERALIZED_TWENTYFIVE) }) })
     private Atlas oneLineGeneralizedOneLineNotGeneralized;
 
-
     @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
             @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
     private Atlas oneLineSegmentGeneralizedSourcePGS;
@@ -146,7 +145,6 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
             @Loc(value = GENERALIZED_TWENTYSIX), @Loc(value = GENERALIZED_TWENTYSEVEN),
             @Loc(value = GENERALIZED_TWENTYEIGHT) }) })
     private Atlas withSharpAngle;
-
 
     public Atlas getExactThresholdGeneralized()
     {

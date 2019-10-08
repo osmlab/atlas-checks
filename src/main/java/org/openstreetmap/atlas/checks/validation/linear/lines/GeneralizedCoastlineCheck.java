@@ -161,8 +161,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 .map(segment -> segment.start().midPoint(segment.end()))
                 .collect(Collectors.toList());
     }
-    
-     /**
+
+    /**
      * Given a coastline {@link LineItem}, extract the {@link Location}s of offending {@link Angle}s
      *
      * @param coast
@@ -180,7 +180,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             return resultList;
         }
         return Collections.emptyList();
-    }    
+    }
 
     /**
      * This method checks if a {@link AtlasObject} has relation members and satisfies the predicate.
