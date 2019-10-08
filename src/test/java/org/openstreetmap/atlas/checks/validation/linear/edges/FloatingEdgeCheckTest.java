@@ -53,6 +53,13 @@ public class FloatingEdgeCheckTest
     }
 
     @Test
+    public void testFloatingEdgeContainedInAirportPolygon()
+    {
+        this.verifier.actual(this.setup.floatingEdgeInAirportPolygon(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testInlineConfigFloatingEdge()
     {
         this.verifier.actual(this.setup.floatingEdgeAtlas(), this.minimumHighwayCheck);
