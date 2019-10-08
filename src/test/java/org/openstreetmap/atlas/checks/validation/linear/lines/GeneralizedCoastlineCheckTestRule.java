@@ -47,6 +47,10 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
     private static final String GENERALIZED_TWENTYFOUR = "-21.072356700897217, 63.83826549528443";
     private static final String GENERALIZED_TWENTYFIVE = "-21.070640087127686, 63.83778298895231";
 
+    private static final String GENERALIZED_TWENTYSIX = "47.6035, -122.3184";
+    private static final String GENERALIZED_TWENTYSEVEN = "47.5998, -122.3182";
+    private static final String GENERALIZED_TWENTYEIGHT = "47.6029, -122.3153";
+
     @TestAtlas(
             // One generalized coastline, one noisy line
             lines = {
@@ -125,6 +129,7 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
                     @Loc(value = GENERALIZED_TWENTYFOUR), @Loc(value = GENERALIZED_TWENTYFIVE) }) })
     private Atlas oneLineGeneralizedOneLineNotGeneralized;
 
+
     @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
             @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
     private Atlas oneLineSegmentGeneralizedSourcePGS;
@@ -136,6 +141,12 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
     @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
             @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
     private Atlas oneLineSegmentGeneralizedNoSource;
+
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
+            @Loc(value = GENERALIZED_TWENTYSIX), @Loc(value = GENERALIZED_TWENTYSEVEN),
+            @Loc(value = GENERALIZED_TWENTYEIGHT) }) })
+    private Atlas withSharpAngle;
+
 
     public Atlas getExactThresholdGeneralized()
     {
@@ -185,6 +196,11 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
     public Atlas getWithNestedRelationGeneralized()
     {
         return this.withNestedRelationGeneralized;
+    }
+
+    public Atlas getWithSharpAngle()
+    {
+        return this.withSharpAngle;
     }
 
     public Atlas getWithSingleRelationGeneralized()
