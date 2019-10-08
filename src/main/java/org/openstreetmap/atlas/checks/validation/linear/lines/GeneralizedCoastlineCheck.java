@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -16,6 +17,7 @@ import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
@@ -28,7 +30,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * {@link Configuration} value if it's greater than -1. Coastlines can be represented in Atlas by
  * {@link LineItem}s and may be members of {@link Relation}s.
  *
- * @author seancoulter
+ * @author seancoulter, a-molis
  */
 public class GeneralizedCoastlineCheck extends BaseCheck<Long>
 {
@@ -38,12 +40,14 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             SHARP_ANGLE_INSTRUCTIONS);
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
+    private static final String COASTLINE_TAG_FILTER_DEFAULT = "source->PGS";
     private static final double SHARP_ANGLE_THRESHOLD_DEFAULT = Integer.MAX_VALUE;
 
     private static final double HUNDRED_PERCENT = 100.0;
     private static final long serialVersionUID = 1576217971819771231L;
     private final double percentageThreshold;
     private final Distance minimumDistanceBetweenNodes;
+    private final TaggableFilter coastlineTagFilter;
     private final Angle sharpAngleThreshold;
     private final double sharpAngleDegrees;
 
@@ -54,6 +58,8 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE);
         this.minimumDistanceBetweenNodes = this.configurationValue(configuration,
                 "node.minimum.distance", MINIMUM_DISTANCE_BETWEEN_NODES, Distance::meters);
+        this.coastlineTagFilter = this.configurationValue(configuration, "coastline.tags.filters",
+                COASTLINE_TAG_FILTER_DEFAULT, TaggableFilter::forDefinition);
         // If the below is not set in the configuration, the sharp angle logic in this check will be
         // disregarded
         this.sharpAngleDegrees = this.configurationValue(configuration, "angle.minimum.threshold",
@@ -72,10 +78,13 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
+        final Predicate<Relation> memberIsCoastline = this::isCoastline;
+        final Predicate<Relation> memberIsSourcePGS = this.coastlineTagFilter::test;
+
         return object instanceof LineItem
-                && (Validators.isOfType(object, NaturalTag.class, NaturalTag.COASTLINE)
-                        || ((LineItem) object).relations().stream().anyMatch(relation -> Validators
-                                .isOfType(relation, NaturalTag.class, NaturalTag.COASTLINE)));
+                && (isCoastline(object) && this.coastlineTagFilter.test(object)
+                        || hasRelationMembers(object, memberIsCoastline)
+                                && hasRelationMembers(object, memberIsSourcePGS));
     }
 
     /**
@@ -171,6 +180,33 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             return resultList;
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * This method checks if a {@link AtlasObject} has relation members and satisfies the predicate.
+     *
+     * @param object
+     *            The {@link AtlasObject} being checked.
+     * @param relationPredicate
+     *            Predicate used to filter the relation.
+     * @return true if the {@link AtlasObject} has relation members and satisfies the predicate.
+     */
+    private boolean hasRelationMembers(final AtlasObject object,
+            final Predicate<Relation> relationPredicate)
+    {
+        return ((LineItem) object).relations().stream().anyMatch(relationPredicate);
+    }
+
+    /**
+     * This method checks if the AtlasObject has the tag natural=coastline.
+     *
+     * @param object
+     *            The {@link AtlasObject} being checked
+     * @return true if the {@link AtlasObject} has the tag natural=coastline.
+     */
+    private boolean isCoastline(final AtlasObject object)
+    {
+        return Validators.isOfType(object, NaturalTag.class, NaturalTag.COASTLINE);
     }
 
 }
