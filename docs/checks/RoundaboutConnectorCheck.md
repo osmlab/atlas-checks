@@ -49,3 +49,6 @@ headings are those that form the intersection, the initial heading of one Edge a
 Depending on whether the connector is a one or two way road, the difference in the angles is compared to one of the two 
 thresholds. If it meets or exceeds that threshold the Edge is flagged (along with all other Edges that made up the 
 original way). 
+
+To learn more about the code, please look at the comments in the source code for the check:  
+[RoundaboutConnectorCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/RoundaboutConnectorCheck.java)
