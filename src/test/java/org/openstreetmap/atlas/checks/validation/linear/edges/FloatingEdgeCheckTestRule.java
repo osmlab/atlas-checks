@@ -66,10 +66,13 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_4)),
             @Node(coordinates = @Loc(value = TEST_5)), @Node(coordinates = @Loc(value = TEST_6)),
-            @Node(coordinates = @Loc(value = TEST_7)), @Node(coordinates = @Loc(value = TEST_8)), @Node(coordinates = @Loc(value = TEST_9)) }, edges = {
-            @Edge(coordinates = { @Loc(value = TEST_8), @Loc(value = TEST_9) }, tags = {
-                    "highway=SECONDARY" }) }, areas = {
-            @Area(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_5), @Loc(value = TEST_6), @Loc(value = TEST_7) }, tags = { "aeroway=taxiway" }) })
+            @Node(coordinates = @Loc(value = TEST_7)), @Node(coordinates = @Loc(value = TEST_8)),
+            @Node(coordinates = @Loc(value = TEST_9)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_8), @Loc(value = TEST_9) }, tags = {
+                            "highway=SECONDARY" }) }, areas = {
+                                    @Area(coordinates = { @Loc(value = TEST_4),
+                                            @Loc(value = TEST_5), @Loc(value = TEST_6),
+                                            @Loc(value = TEST_7) }, tags = { "aeroway=taxiway" }) })
     private Atlas floatingEdgeInAirportAtlas;
 
     @TestAtlas(nodes = {
@@ -96,11 +99,6 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
         return this.airportAtlas;
     }
 
-    public Atlas floatingEdgeInAirportPolygon()
-    {
-        return this.floatingEdgeInAirportAtlas;
-    }
-
     public Atlas connectedEdgeAtlas()
     {
         return this.connectedEdgeAtlas;
@@ -114,6 +112,11 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
     public Atlas floatingEdgeAtlas()
     {
         return this.floatingEdgeAtlas;
+    }
+
+    public Atlas floatingEdgeInAirportPolygon()
+    {
+        return this.floatingEdgeInAirportAtlas;
     }
 
     public Atlas mixedAtlas()
