@@ -7,6 +7,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.base.checks.CheckResourceLoaderTestCheck;
+import org.openstreetmap.atlas.checks.base.checks.ContextAwareTestCheck;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -192,6 +193,30 @@ public class CheckResourceLoaderTest
         Assert.assertEquals("Bye", country1Var2);
         Assert.assertEquals("Hi", country2Var2);
         Assert.assertEquals("Bye", country3Var2);
+    }
+
+    @Test
+    public void testSubclassWithSpecialConstructor()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"], \"BaseTestCheck\":{\"enabled\":true}, \"ContextAwareTestCheck\":{\"enabled\":true}}";
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        final Class<?>[][] constructorArgumentTypes = new Class<?>[][] {
+                { Configuration.class, Integer.TYPE }, { Configuration.class }, {} };
+        final Object[][] constructorArguments = new Object[][] { { configuration, 12 },
+                { configuration }, {} };
+
+        final Set<Check> checks = checkResourceLoader
+                .loadChecksUsingConstructors(constructorArgumentTypes, constructorArguments);
+        Assert.assertEquals(2, checks.size());
+        checks.forEach(check ->
+        {
+            if (check instanceof ContextAwareTestCheck)
+            {
+                Assert.assertEquals(12, ((ContextAwareTestCheck) check).getData());
+            }
+        });
     }
 
     @Test

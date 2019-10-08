@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.base;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -19,6 +22,7 @@ import org.openstreetmap.atlas.utilities.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Streams;
 import com.google.common.reflect.ClassPath;
 
 /**
@@ -155,67 +159,11 @@ public class CheckResourceLoader
     public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled,
             final Configuration configuration)
     {
-        final Set<T> checks = new HashSet<>();
-        final Time time = Time.now();
-        try
-        {
-            final ClassPath classPath = ClassPath
-                    .from(Thread.currentThread().getContextClassLoader());
-            this.packages.forEach(packageName -> classPath.getTopLevelClassesRecursive(packageName)
-                    .forEach(classInfo ->
-                    {
-                        final Class<?> checkClass = classInfo.load();
-                        if (this.checkType.isAssignableFrom(checkClass)
-                                && !Modifier.isAbstract(checkClass.getModifiers())
-                                && isEnabled.test(checkClass)
-                                && this.checkWhiteList.map(
-                                        whitelist -> whitelist.contains(checkClass.getSimpleName()))
-                                        .orElse(true)
-                                && this.checkBlackList.map(blacklist -> !blacklist
-                                        .contains(checkClass.getSimpleName())).orElse(true))
-                        {
-                            try
-                            {
-                                Object check;
-                                try
-                                {
-                                    check = checkClass.getConstructor(Configuration.class)
-                                            .newInstance(configuration);
-                                }
-                                catch (final InvocationTargetException oops)
-                                {
-                                    throw new CoreException(
-                                            "Unable to create a configurable instance of {}",
-                                            checkClass.getSimpleName(), oops);
-                                }
-                                catch (final NoSuchMethodException oops)
-                                {
-                                    check = checkClass.newInstance();
-                                }
-
-                                if (check != null)
-                                {
-                                    checks.add((T) check);
-                                }
-                            }
-                            catch (final ClassCastException | InstantiationException
-                                    | IllegalAccessException oops)
-                            {
-                                logger.error("Failed to instantiate {}, ignoring. Reason: {}",
-                                        checkClass.getName(), oops.getMessage());
-                            }
-                        }
-                    }));
-        }
-        catch (final IOException oops)
-        {
-            throw new CoreException("Failed to discover {} classes on classpath",
-                    this.checkType.getSimpleName());
-        }
-
-        logger.info("Loaded {} {} in {}", checks.size(), this.checkType.getSimpleName(),
-                time.elapsedSince());
-        return checks;
+        final Class<?>[][] constructorArgumentTypes = new Class<?>[][] { { Configuration.class },
+                {} };
+        final Object[][] constructorArguments = new Object[][] { { configuration }, {} };
+        return this.loadChecksUsingConstructors(isEnabled, constructorArgumentTypes,
+                constructorArguments);
     }
 
     /**
@@ -236,6 +184,119 @@ public class CheckResourceLoader
         return loadChecks(
                 checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass),
                 countryConfiguration);
+    }
+
+    public <T extends Check> Set<T> loadChecksUsingConstructors(
+            final Class<?>[][] constructorArgumentTypes, final Object[][] constructorArguments)
+    {
+        return this.loadChecksUsingConstructors(this::isEnabledByConfiguration,
+                constructorArgumentTypes, constructorArguments);
+    }
+
+    /**
+     * Given a list of corresponding types and arguments, try to initialize each enabled check using
+     * each constructor in order.
+     *
+     * @param isEnabled
+     *            {@link Predicate} used to determine if a check is enabled
+     * @param constructorArgumentTypes
+     *            {@link List} containing arrays of classes. Each array corresponds to one
+     *            constructor call. For example, to try a constructor that takes in two doubles but
+     *            fall back to a constructor that takes in one double, constructorArgumentTypes
+     *            would look like this: [[Double.TYPE, Double.TYPE], [Double.TYPE]]. An empty
+     *            constructor is denoted by an empty array.
+     * @param constructorArguments
+     *            {@link List} containing arrays of objects. This MUST have the same shape as
+     *            constructorArgumentTypes and the values MUST be the same types and in the same
+     *            order as constructorArgumentTypes. For example, given constructorArgumentTypes of
+     *            [[Double.TYPE, Boolean.TYPE], [Boolean.TYPE, Integer.TYPE], []],
+     *            constructorArguments needs to look like [[double, boolean], [boolean, int], []].
+     * @param <T>
+     *            Any class that extends Check.
+     * @return A set of enabled, initialized checks.
+     */
+    public <T extends Check> Set<T> loadChecksUsingConstructors(final Predicate<Class> isEnabled,
+            final Class<?>[][] constructorArgumentTypes, final Object[][] constructorArguments)
+    {
+        final Set<T> checks = new HashSet<>();
+        final Time time = Time.now();
+        try
+        {
+            final ClassPath classPath = ClassPath
+                    .from(Thread.currentThread().getContextClassLoader());
+            this.packages.forEach(packageName -> classPath.getTopLevelClassesRecursive(packageName)
+                    .forEach(classInfo ->
+                    {
+                        final Class<?> checkClass = classInfo.load();
+                        if (this.checkType.isAssignableFrom(checkClass)
+                                && !Modifier.isAbstract(checkClass.getModifiers())
+                                && isEnabled.test(checkClass)
+                                && this.checkWhiteList.map(
+                                        whitelist -> whitelist.contains(checkClass.getSimpleName()))
+                                        .orElse(true)
+                                && this.checkBlackList.map(blacklist -> !blacklist
+                                        .contains(checkClass.getSimpleName())).orElse(true))
+                        {
+                            Streams.zip(Stream.of(constructorArgumentTypes),
+                                    Stream.of(constructorArguments),
+                                    (argTypes, args) -> this.initializeCheckWithArguments(
+                                            (Class<T>) checkClass, argTypes, args))
+                                    .filter(Optional::isPresent).map(Optional::get).findFirst()
+                                    .ifPresent(checks::add);
+                        }
+                    }));
+        }
+        catch (final IOException oops)
+        {
+            throw new CoreException("Failed to discover {} classes on classpath",
+                    this.checkType.getSimpleName());
+        }
+
+        logger.info("Loaded {} {} in {}", checks.size(), this.checkType.getSimpleName(),
+                time.elapsedSince());
+        return checks;
+    }
+
+    /**
+     * Utility method to try to initialize a given check using a particular constructor.
+     * 
+     * @param checkClass
+     *            the class we want to initialize
+     * @param constructorArgumentTypes
+     *            the signature for the constructor we want to call
+     * @param constructorArguments
+     *            the arguments we want to pass to the constructor
+     * @param <T>
+     *            the type of the class we want to initialize
+     * @return an {@link Optional} containing the initialized check if the call was a success, or
+     *         empty if something went wrong.
+     */
+    private <T extends Check> Optional<T> initializeCheckWithArguments(final Class<T> checkClass,
+            final Class<?>[] constructorArgumentTypes, final Object[] constructorArguments)
+    {
+        try
+        {
+            final Constructor<T> constructor = checkClass.getConstructor(constructorArgumentTypes);
+            final T result = constructor.newInstance(constructorArguments);
+            return Optional.of(result);
+        }
+        catch (final NoSuchMethodException oops)
+        {
+            logger.info("No method found for {} with arguments {}", checkClass.toString(),
+                    Stream.of(constructorArgumentTypes).map(Class::toString)
+                            .collect(Collectors.joining(",")));
+        }
+        catch (final InvocationTargetException oops)
+        {
+            logger.error("Unable to create a configurable instance of {}. Reason {}",
+                    checkClass.getSimpleName(), oops.getMessage());
+        }
+        catch (final ClassCastException | InstantiationException | IllegalAccessException oops)
+        {
+            logger.error("Failed to instantiate {}, ignoring. Reason: {}", checkClass.getName(),
+                    oops.getMessage());
+        }
+        return Optional.empty();
     }
 
     private boolean isEnabledByConfiguration(final Class checkClass)

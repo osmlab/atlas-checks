@@ -1,9 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.linear.lines;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * GeneralizedCoastlineCheck tests
@@ -18,12 +21,15 @@ public class GeneralizedCoastlineCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    private static final Configuration CONFIG_DEFAULT = ConfigurationResolver.emptyConfiguration();
+    private static final String sharpAngleLocation = "47.5998, -122.3182";
+
     @Test
     public void exactThresholdGeneralized()
     {
         this.verifier.actual(this.setup.getExactThresholdGeneralized(),
                 new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"GeneralizedCoastlineCheck\":{\"generalizedCoastline.node.minimum.threshold\":33.33}}")));
+                        "{\"GeneralizedCoastlineCheck\":{\"node.minimum.threshold\":33.33}}")));
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -31,7 +37,7 @@ public class GeneralizedCoastlineCheckTest
     public void lessThanThresholdNotGeneralized()
     {
         this.verifier.actual(this.setup.getLessThanThresholdNotGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyEmpty();
     }
 
@@ -39,7 +45,7 @@ public class GeneralizedCoastlineCheckTest
     public void moreThanThresholdGeneralized()
     {
         this.verifier.actual(this.setup.getMoreThanThresholdGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -47,7 +53,7 @@ public class GeneralizedCoastlineCheckTest
     public void nestedRelationGeneralized()
     {
         this.verifier.actual(this.setup.getWithNestedRelationGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyExpectedSize(2);
     }
 
@@ -55,7 +61,7 @@ public class GeneralizedCoastlineCheckTest
     public void oneLineGeneralizedOneLineNotGeneralized()
     {
         this.verifier.actual(this.setup.getOneLineGeneralizedOneLineNotGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -63,7 +69,7 @@ public class GeneralizedCoastlineCheckTest
     public void oneLineSegmentGeneralized()
     {
         this.verifier.actual(this.setup.getOneLineSegmentGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -71,7 +77,7 @@ public class GeneralizedCoastlineCheckTest
     public void oneLineSegmentNotGeneralized()
     {
         this.verifier.actual(this.setup.getOneLineSegmentNotGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyEmpty();
     }
 
@@ -79,8 +85,27 @@ public class GeneralizedCoastlineCheckTest
     public void oneRelationGeneralized()
     {
         this.verifier.actual(this.setup.getWithSingleRelationGeneralized(),
-                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+                new GeneralizedCoastlineCheck(CONFIG_DEFAULT));
         this.verifier.verifyExpectedSize(2);
+    }
+
+    @Test
+    public void testSharpAngleNoFilter()
+    {
+        this.verifier.actual(this.setup.getWithSharpAngle(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getPoints().stream()
+                .noneMatch(angle -> angle.equals(Location.forString(sharpAngleLocation)))));
+    }
+
+    @Test
+    public void testSharpAngleYesFilter()
+    {
+        this.verifier.actual(this.setup.getWithSharpAngle(),
+                new GeneralizedCoastlineCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"GeneralizedCoastlineCheck\":{\"angle.minimum.threshold\":97.0}}")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getPoints().stream()
+                .anyMatch(angle -> angle.equals(Location.forString(sharpAngleLocation)))));
     }
 
 }
