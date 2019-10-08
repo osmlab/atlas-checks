@@ -56,7 +56,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private static final String OSM_ID_LEGACY = "osmid";
     private static final String CREATE_FLAG_SQL = "INSERT INTO flag(flag_id, check_name, instructions, date_created) VALUES (?,?,?,?);";
     private static final String CREATE_FEATURE_SQL = String.format(
-            "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES (?,%s,?,?,?,?);",
+            "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES ((SELECT id FROM flag WHERE flag_id = ? LIMIT 1),%s,?,?,?,?);",
             "ST_GeomFromGeoJSON(?), ?, ?");
     private static final int THREE = 3;
     private static final int FOUR = 4;
