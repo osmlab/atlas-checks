@@ -162,7 +162,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
     }
 
-   /**
+    /**
      * Given a coastline {@link LineItem}, extract the {@link Location}s of offending {@link Angle}s
      *
      * @param coast
