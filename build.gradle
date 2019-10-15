@@ -94,8 +94,6 @@ dependencies
     compile packages.spring
     compile packages.mockito
 
-    compile files('/Users/critigenuser/tryouts/PAOR/atlas/build/libs/atlas-5.8.2-SNAPSHOT.jar')
-
     checkstyle packages.checkstyle
     checkstyle packages.atlas_checkstyle
 
