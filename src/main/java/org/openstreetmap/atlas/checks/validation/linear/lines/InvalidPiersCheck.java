@@ -170,7 +170,8 @@ public class InvalidPiersCheck extends BaseCheck<Long>
      * 
      * @param edgesFormingOSMWay
      *            set of edges
-     * @param originalEdge originalEdge
+     * @param originalEdge
+     *            originalEdge
      * @return true if the input edges form a polygon geometry,
      */
     private boolean hasPolygonalGeometry(final Set<Edge> edgesFormingOSMWay,
@@ -222,7 +223,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                                         && this.areOnSameLevel(intersectingArea, originalEdge)
                                         && this.areOnSameLayer(intersectingArea, originalEdge)
                                         && (BuildingTag.isBuilding(intersectingArea)
-                                        || IS_FERRY_TERMINAL.test(intersectingArea))))
+                                                || IS_FERRY_TERMINAL.test(intersectingArea))))
                         .iterator().hasNext());
         if (isPolygonal)
         {
@@ -233,14 +234,15 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                             && this.areOnSameLevel(intersectingArea, originalEdge)
                             && this.areOnSameLayer(intersectingArea, originalEdge)
                             && (BuildingTag.isBuilding(intersectingArea)
-                            || IS_FERRY_TERMINAL.test(intersectingArea))))
+                                    || IS_FERRY_TERMINAL.test(intersectingArea))))
                     .iterator().hasNext());
         }
 
         return intersectsFerryRoute || intersectsBuilding;
     }
 
-    private boolean linearPierOverlapsHighway(final Edge intersectingEdge, final Set<Edge> edgesFormingOSMWay)
+    private boolean linearPierOverlapsHighway(final Edge intersectingEdge,
+            final Set<Edge> edgesFormingOSMWay)
     {
         return edgesFormingOSMWay.stream().anyMatch(connectedEdge -> connectedEdge.asPolyLine()
                 .overlapsShapeOf(intersectingEdge.asPolyLine()));
@@ -257,9 +259,10 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                         && this.areOnSameLevel(originalEdge, intersectingEdge)
                         // should not just be intersecting
                         && (isPolygonal
-                        ? this.polygonalPierOverlapsHighway(intersectingEdge,
-                        osmWayAsPolygon)
-                        : this.linearPierOverlapsHighway(intersectingEdge, edgesFormingOSMWay)));
+                                ? this.polygonalPierOverlapsHighway(intersectingEdge,
+                                        osmWayAsPolygon)
+                                : this.linearPierOverlapsHighway(intersectingEdge,
+                                        edgesFormingOSMWay)));
     }
 
     private boolean polygonalPierOverlapsHighway(final Edge intersectingEdge,
@@ -267,6 +270,6 @@ public class InvalidPiersCheck extends BaseCheck<Long>
     {
         return intersectingEdge.asPolyLine().overlapsShapeOf(osmWayAsPolygon)
                 || intersectingEdge.asPolyLine().segments().stream()
-                .anyMatch(osmWayAsPolygon::fullyGeometricallyEncloses);
+                        .anyMatch(osmWayAsPolygon::fullyGeometricallyEncloses);
     }
 }
