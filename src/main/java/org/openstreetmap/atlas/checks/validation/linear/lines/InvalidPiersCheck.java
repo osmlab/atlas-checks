@@ -50,6 +50,8 @@ public class InvalidPiersCheck extends BaseCheck<Long>
             .isOfType(atlasObject, AreaTag.class, AreaTag.YES);
     private static final Predicate<AtlasObject> IS_FERRY_TERMINAL = atlasObject -> Validators
             .isOfType(atlasObject, AmenityTag.class, AmenityTag.FERRY_TERMINAL);
+    private static final Predicate<AtlasObject> IS_BUILDING = atlasObject -> Validators
+            .hasValuesFor(atlasObject, BuildingTag.class);
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -120,9 +122,11 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         // A pier is valid if it either has a highway tag or it overlaps a highway or is connected
         // to a building or ferry route
         final boolean isValidPier = HighwayTag.highwayTag(edge).isPresent() || overlapsHighway
-                || isConnectedToFerryOrBuilding;
+                || isConnectedToFerryOrBuilding || (isPolygonal && IS_BUILDING.test(edge))
+                || (isPolygonal && IS_FERRY_TERMINAL.test(edge));
         if (!isValidPier)
         {
+            this.markAsFlagged(edge.getOsmIdentifier());
             return Optional.empty();
         }
         final int instructionIndex = isPolygonal ? 1 : 0;
@@ -222,7 +226,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                                         .intersects(eachEdge.asPolyLine())
                                         && this.areOnSameLevel(intersectingArea, originalEdge)
                                         && this.areOnSameLayer(intersectingArea, originalEdge)
-                                        && (BuildingTag.isBuilding(intersectingArea)
+                                        && (IS_BUILDING.test(intersectingArea)
                                                 || IS_FERRY_TERMINAL.test(intersectingArea))))
                         .iterator().hasNext());
         if (isPolygonal)
@@ -233,7 +237,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                             || intersectingArea.asPolygon().intersects(eachEdge.asPolyLine()))
                             && this.areOnSameLevel(intersectingArea, originalEdge)
                             && this.areOnSameLayer(intersectingArea, originalEdge)
-                            && (BuildingTag.isBuilding(intersectingArea)
+                            && (IS_BUILDING.test(intersectingArea)
                                     || IS_FERRY_TERMINAL.test(intersectingArea))))
                     .iterator().hasNext());
         }
