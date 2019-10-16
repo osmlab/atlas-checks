@@ -72,7 +72,7 @@ public class RoundaboutConnectorCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
                 && !JunctionTag.isRoundabout(object)
-                && ((Edge) object).highwayTag().isMoreImportantThan(minimumHighwayType);
+                && ((Edge) object).highwayTag().isMoreImportantThan(this.minimumHighwayType);
     }
 
     /**
