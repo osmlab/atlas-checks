@@ -29,7 +29,7 @@ public class RoundaboutConnectorCheck extends BaseCheck<Long>
 
     private static final Double ONE_WAY_THRESHOLD_DEFAULT = 100.0;
     private static final Double TWO_WAY_THRESHOLD_DEFAULT = 130.0;
-    private static final String ONE_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp and angle.";
+    private static final String ONE_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp and angle. It may be digitized backwards";
     private static final String TWO_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp and angle to be a two way road.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(ONE_WAY_INSTRUCTION,
             TWO_WAY_INSTRUCTION);

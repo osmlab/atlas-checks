@@ -299,8 +299,8 @@
   },
   "RoundaboutConnectorCheck": {
     "threshold": {
-      "one-way": 100.0,
-      "two-way": 130.0
+      "one_way": 100.0,
+      "two_way": 130.0
     },
     "challenge": {
       "description": "Roads connected to roundabouts at too sharp an angle.",

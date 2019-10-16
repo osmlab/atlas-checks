@@ -7,8 +7,8 @@ Other map errors found by this check are poorly digitized connector roads (poorl
 incorrectly labeled or formed roundabouts, and missing roads or networks.
 
 The sharpness of flagged angles can be altered using the two configurable values:  
-`threshold.one-way`: maximum degrees of intersection for a one way road; defaults to 100°  
-`threshold.two-way`: maximum degrees of intersection for a two way road; defaults to 130°  
+`threshold.one_way`: maximum degrees of intersection for a one way road; defaults to 100°  
+`threshold.two_way`: maximum degrees of intersection for a two way road; defaults to 130°  
 <br>
 ```
  1| \____/
