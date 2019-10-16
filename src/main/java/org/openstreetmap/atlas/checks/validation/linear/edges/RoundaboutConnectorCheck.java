@@ -29,15 +29,17 @@ public class RoundaboutConnectorCheck extends BaseCheck<Long>
 
     private static final Double ONE_WAY_THRESHOLD_DEFAULT = 100.0;
     private static final Double TWO_WAY_THRESHOLD_DEFAULT = 130.0;
-    private static final String ONE_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp and angle. It may be digitized backwards";
-    private static final String TWO_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp and angle to be a two way road.";
+    private static final String ONE_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp an angle. It may be digitized backwards";
+    private static final String TWO_WAY_INSTRUCTION = "This way, id:{0,number,#}, is connected to a roundabout at too sharp an angle to be a two way road.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(ONE_WAY_INSTRUCTION,
             TWO_WAY_INSTRUCTION);
+    private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.SERVICE.toString();
 
     // Maximum angle for a turn in or out of a roundabout from a one way road.
     private final Angle oneWayThreshold;
     // Maximum angle for a turn in or out of a roundabout from a two way road.
     private final Angle twoWayThreshold;
+    private final HighwayTag minimumHighwayType;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -54,6 +56,8 @@ public class RoundaboutConnectorCheck extends BaseCheck<Long>
                 ONE_WAY_THRESHOLD_DEFAULT, Angle::degrees);
         this.twoWayThreshold = this.configurationValue(configuration, "threshold.two-way",
                 TWO_WAY_THRESHOLD_DEFAULT, Angle::degrees);
+        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
+                MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
     }
 
     /**
@@ -68,7 +72,7 @@ public class RoundaboutConnectorCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
                 && !JunctionTag.isRoundabout(object)
-                && ((Edge) object).highwayTag().isMoreImportantThan(HighwayTag.SERVICE);
+                && ((Edge) object).highwayTag().isMoreImportantThan(minimumHighwayType);
     }
 
     /**

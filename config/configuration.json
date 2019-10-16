@@ -298,13 +298,14 @@
     }
   },
   "RoundaboutConnectorCheck": {
+    "minimum.highway.type": "service",
     "threshold": {
       "one_way": 100.0,
       "two_way": 130.0
     },
     "challenge": {
       "description": "Roads connected to roundabouts at too sharp an angle.",
-      "blurb": "Sharp intersections between roundabouts and connecting roads are often digitization/navigation errors. Adjust these intersections to create smoother transitions in an out of roundabouts.",
+      "blurb": "Sharp intersections between roundabouts and connecting roads are often digitization/navigation errors. Adjust these intersections to create smoother transitions in and out of roundabouts.",
       "instruction": "Open your favorite editor and edit the flagged ways and/or the surrounding network to make smooth connection from the connector to the roundabout.",
       "difficulty": "HARD",
       "tags": "highway,junction,roundabout"

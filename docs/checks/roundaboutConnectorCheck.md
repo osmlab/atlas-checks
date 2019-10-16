@@ -3,7 +3,7 @@
 This check flags roads that connect to a roundabout at too sharp an angle. 
 
 This is usually indicative of one way roads that have been drawn backwards, or two way roads that should be one way.   
-Other map errors found by this check are poorly digitized connector roads (poorly drawn but don't brake routing), 
+Other map errors found by this check are poorly digitized connector roads (poorly drawn but don't break routing), 
 incorrectly labeled or formed roundabouts, and missing roads or networks.
 
 The sharpness of flagged angles can be altered using the two configurable values:  
