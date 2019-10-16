@@ -54,7 +54,7 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
     @TestAtlas(
             // One generalized coastline, one noisy line
             lines = {
-                    @Line(id = "1", tags = "natural=coastline", coordinates = {
+                    @Line(id = "1", tags = { "natural=coastline", "source=PGS" }, coordinates = {
                             @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }),
                     @Line(id = "2", tags = "natural=scrub", coordinates = {
                             @Loc(value = GENERALIZED_TWENTYTWO), @Loc(value = GENERALIZED_SIX) }) },
@@ -62,7 +62,7 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
             nodes = { @Node(id = "3", coordinates = @Loc(value = GENERALIZED_EIGHT)),
                     @Node(id = "4") },
             // Relation containing all the lines and nodes in this test atlas
-            relations = { @Relation(tags = { "natural=coastline" }, members = {
+            relations = { @Relation(tags = { "natural=coastline", "source=PGS" }, members = {
                     @Member(id = "1", role = "na", type = "line"),
                     @Member(id = "2", role = "na", type = "line"),
                     @Member(id = "3", role = "na", type = "node"),
@@ -70,64 +70,78 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
     private Atlas withSingleRelationGeneralized;
 
     @TestAtlas(lines = {
-            @Line(id = "1", tags = "natural=coastline", coordinates = {
+            @Line(id = "1", tags = { "natural=coastline", "source=PGS" }, coordinates = {
                     @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }),
-            @Line(id = "2", tags = "natural=coastline", coordinates = {
+            @Line(id = "2", tags = { "natural=coastline", "source=PGS" }, coordinates = {
                     @Loc(value = GENERALIZED_TEN), @Loc(value = GENERALIZED_TWELVE) }) },
             // Noisy nodes
             nodes = { @Node(id = "3", coordinates = @Loc(value = GENERALIZED_EIGHT)),
                     @Node(id = "4") }, relations = {
                             // Nested relation
-                            @Relation(id = "123", tags = { "natural=coastline" }, members = {
-                                    @Member(id = "1", role = "na", type = "line"),
-                                    @Member(id = "2", role = "na", type = "line"),
-                                    @Member(id = "3", role = "na", type = "node"),
-                                    @Member(id = "4", role = "na", type = "node") }),
+                            @Relation(id = "123", tags = { "natural=coastline",
+                                    "source=PGS" }, members = {
+                                            @Member(id = "1", role = "na", type = "line"),
+                                            @Member(id = "2", role = "na", type = "line"),
+                                            @Member(id = "3", role = "na", type = "node"),
+                                            @Member(id = "4", role = "na", type = "node") }),
 
                             // Outer relation
-                            @Relation(tags = { "natural=coastline" }, members = {
+                            @Relation(tags = { "natural=coastline", "source=PGS" }, members = {
                                     @Member(id = "123", role = "na", type = "relation") }) })
     private Atlas withNestedRelationGeneralized;
 
-    @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
             @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
     private Atlas oneLineSegmentGeneralized;
 
-    @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
             @Loc(value = GENERALIZED_THREE), @Loc(value = GENERALIZED_FOUR) }) })
     private Atlas oneLineSegmentNotGeneralized;
 
-    @TestAtlas(lines = {
-            @Line(coordinates = { @Loc(value = GENERALIZED_FIVE), @Loc(value = GENERALIZED_SIX),
-                    @Loc(value = GENERALIZED_SEVEN), @Loc(value = GENERALIZED_EIGHT),
-                    @Loc(value = GENERALIZED_NINE), @Loc(value = GENERALIZED_TEN),
-                    @Loc(value = GENERALIZED_ELEVEN) }, tags = { "natural=coastline" }) })
+    @TestAtlas(lines = { @Line(coordinates = { @Loc(value = GENERALIZED_FIVE),
+            @Loc(value = GENERALIZED_SIX), @Loc(value = GENERALIZED_SEVEN),
+            @Loc(value = GENERALIZED_EIGHT), @Loc(value = GENERALIZED_NINE),
+            @Loc(value = GENERALIZED_TEN),
+            @Loc(value = GENERALIZED_ELEVEN) }, tags = { "natural=coastline", "source=PGS" }) })
     private Atlas moreThanThresholdGeneralized;
 
-    @TestAtlas(lines = {
-            @Line(tags = { "natural=coastline" }, coordinates = { @Loc(value = GENERALIZED_TWELVE),
-                    @Loc(value = GENERALIZED_THIRTEEN), @Loc(value = GENERALIZED_FOURTEEN),
-                    @Loc(value = GENERALIZED_FIFTEEN), @Loc(value = GENERALIZED_SIXTEEN),
-                    @Loc(value = GENERALIZED_SEVENTEEN), @Loc(value = GENERALIZED_EIGHTEEN),
-                    @Loc(value = GENERALIZED_NINETEEN), @Loc(value = GENERALIZED_TWENTY) }) })
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
+            @Loc(value = GENERALIZED_TWELVE), @Loc(value = GENERALIZED_THIRTEEN),
+            @Loc(value = GENERALIZED_FOURTEEN), @Loc(value = GENERALIZED_FIFTEEN),
+            @Loc(value = GENERALIZED_SIXTEEN), @Loc(value = GENERALIZED_SEVENTEEN),
+            @Loc(value = GENERALIZED_EIGHTEEN), @Loc(value = GENERALIZED_NINETEEN),
+            @Loc(value = GENERALIZED_TWENTY) }) })
     private Atlas lessThanThresholdNotGeneralized;
 
-    @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
             @Loc(value = GENERALIZED_TWENTYONE), @Loc(value = GENERALIZED_TWENTYTWO),
             @Loc(value = GENERALIZED_TWENTYTHREE) }) })
     private Atlas exactThresholdGeneralized;
 
     @TestAtlas(lines = {
-            @Line(tags = { "natural=coastline" }, coordinates = { @Loc(value = GENERALIZED_TWELVE),
-                    @Loc(value = GENERALIZED_THIRTEEN), @Loc(value = GENERALIZED_FOURTEEN),
-                    @Loc(value = GENERALIZED_FIFTEEN), @Loc(value = GENERALIZED_SIXTEEN),
-                    @Loc(value = GENERALIZED_SEVENTEEN), @Loc(value = GENERALIZED_EIGHTEEN),
-                    @Loc(value = GENERALIZED_NINETEEN), @Loc(value = GENERALIZED_TWENTY) }),
-            @Line(tags = { "natural=coastline" }, coordinates = {
+            @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
+                    @Loc(value = GENERALIZED_TWELVE), @Loc(value = GENERALIZED_THIRTEEN),
+                    @Loc(value = GENERALIZED_FOURTEEN), @Loc(value = GENERALIZED_FIFTEEN),
+                    @Loc(value = GENERALIZED_SIXTEEN), @Loc(value = GENERALIZED_SEVENTEEN),
+                    @Loc(value = GENERALIZED_EIGHTEEN), @Loc(value = GENERALIZED_NINETEEN),
+                    @Loc(value = GENERALIZED_TWENTY) }),
+            @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
                     @Loc(value = GENERALIZED_TWENTYFOUR), @Loc(value = GENERALIZED_TWENTYFIVE) }) })
     private Atlas oneLineGeneralizedOneLineNotGeneralized;
 
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
+            @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
+    private Atlas oneLineSegmentGeneralizedSourcePGS;
+
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=survey" }, coordinates = {
+            @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
+    private Atlas oneLineSegmentGeneralizedSourceSurvey;
+
     @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
+            @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
+    private Atlas oneLineSegmentGeneralizedNoSource;
+
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
             @Loc(value = GENERALIZED_TWENTYSIX), @Loc(value = GENERALIZED_TWENTYSEVEN),
             @Loc(value = GENERALIZED_TWENTYEIGHT) }) })
     private Atlas withSharpAngle;
@@ -155,6 +169,21 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
     public Atlas getOneLineSegmentGeneralized()
     {
         return this.oneLineSegmentGeneralized;
+    }
+
+    public Atlas getOneLineSegmentGeneralizedNoSource()
+    {
+        return this.oneLineSegmentGeneralizedNoSource;
+    }
+
+    public Atlas getOneLineSegmentGeneralizedSourcePGS()
+    {
+        return this.oneLineSegmentGeneralizedSourcePGS;
+    }
+
+    public Atlas getOneLineSegmentGeneralizedSourceSurvey()
+    {
+        return this.oneLineSegmentGeneralizedSourceSurvey;
     }
 
     public Atlas getOneLineSegmentNotGeneralized()
