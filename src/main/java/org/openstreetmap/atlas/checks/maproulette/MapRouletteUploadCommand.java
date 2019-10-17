@@ -124,7 +124,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                         .getChallenge(task.getChallengeName(), instructions);
                                 // Prepend the challenge name with the ISO country code, if one
                                 // exists. Then try to add the task for upload
-                                countryCode.ifPresent(iso -> challenge.setName(String.join("_",
+                                countryCode.ifPresent(iso -> challenge.setName(String.join(" - ",
                                         countryCode.get(), task.getChallengeName())));
                                 this.addTask(challenge, task);
                             }
