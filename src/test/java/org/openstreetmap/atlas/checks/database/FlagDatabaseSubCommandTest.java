@@ -58,7 +58,7 @@ public class FlagDatabaseSubCommandTest
         final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
         final JsonElement feature = new JsonParser().parse(flag).getAsJsonObject().get("features");
 
-        command.batchFlagFeatureStatement(this.preparedStatement, checkFlag,
+        command.batchFlagFeatureStatement(this.preparedStatement, checkFlag, 1,
                 feature.getAsJsonArray().get(0).getAsJsonObject());
 
         Mockito.verify(this.preparedStatement).addBatch();
@@ -73,7 +73,7 @@ public class FlagDatabaseSubCommandTest
 
         command.batchFlagStatement(this.preparedStatement, checkFlag);
 
-        Mockito.verify(this.preparedStatement).addBatch();
+        Mockito.verify(this.preparedStatement).executeUpdate();
     }
 
     @Test

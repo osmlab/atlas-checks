@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -56,7 +57,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private static final String OSM_ID_LEGACY = "osmid";
     private static final String CREATE_FLAG_SQL = "INSERT INTO flag(flag_id, check_name, instructions, date_created) VALUES (?,?,?,?);";
     private static final String CREATE_FEATURE_SQL = String.format(
-            "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES ((SELECT id FROM flag WHERE flag_id = ? LIMIT 1),%s,?,?,?,?);",
+            "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES (?,%s,?,?,?,?);",
             "ST_GeomFromGeoJSON(?), ?, ?");
     private static final int THREE = 3;
     private static final int FOUR = 4;
@@ -102,18 +103,20 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
      *            PreparedStatement to add parameterized values to
      * @param flag
      *            CheckFlag to associate with feature
+     * @param flagIdentifier
+     *            Flag table record unique identifier
      * @param feature
      *            - Flagged AtlasItem
      */
     public void batchFlagFeatureStatement(final PreparedStatement sql, final CheckFlag flag,
-            final JsonObject feature)
+            final int flagIdentifier, final JsonObject feature)
     {
 
         final JsonObject properties = feature.get(PROPERTIES).getAsJsonObject();
 
         try
         {
-            sql.setString(1, flag.getIdentifier());
+            sql.setInt(1, flagIdentifier);
             sql.setString(2, feature.get("geometry").toString());
             sql.setLong(THREE, this.getOsmIdentifier(properties));
             sql.setLong(FOUR, properties.get("identifier").getAsLong());
@@ -151,11 +154,11 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
             sql.setObject(FOUR, this.timestamp);
 
-            sql.addBatch();
+            sql.executeUpdate();
         }
         catch (final SQLException error)
         {
-            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier());
+            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier(), error);
         }
     }
 
@@ -214,42 +217,56 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 
                     try (BufferedReader reader = FileUtility.getReader(file, logOutputFileType);
                             PreparedStatement flagSqlStatement = databaseConnection
-                                    .prepareStatement(CREATE_FLAG_SQL);
+                                    .prepareStatement(CREATE_FLAG_SQL,
+                                            Statement.RETURN_GENERATED_KEYS);
                             PreparedStatement featureSqlStatement = databaseConnection
                                     .prepareStatement(CREATE_FEATURE_SQL))
                     {
 
                         final List<String> lines = reader.lines().collect(Collectors.toList());
-                        int startIndex = 0;
-                        int endIndex;
+                        // This counter is used to batch feature records
+                        int counter = 0;
 
-                        do
+                        for (final String line : lines)
                         {
-                            endIndex = Math.min(startIndex + BATCH_SIZE, lines.size());
-                            final List<String> batchLines = lines.subList(startIndex, endIndex);
+                            final JsonObject parsedFlag = new JsonParser().parse(line)
+                                    .getAsJsonObject();
+                            final JsonArray features = this.filterOutPointsFromGeojson(
+                                    parsedFlag.get(FEATURES).getAsJsonArray());
+                            final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
 
-                            batchLines.forEach(line ->
+                            this.batchFlagStatement(flagSqlStatement, flag);
+                            final int flagRecordId;
+                            counter += features.size();
+
+                            try
                             {
-                                final JsonObject parsedFlag = new JsonParser().parse(line)
-                                        .getAsJsonObject();
-                                final JsonArray features = this.filterOutPointsFromGeojson(
-                                        parsedFlag.get(FEATURES).getAsJsonArray());
-                                final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
+                                final ResultSet resultSet = flagSqlStatement.getGeneratedKeys();
+                                if (resultSet.next())
+                                {
+                                    flagRecordId = resultSet.getInt(1);
 
-                                this.batchFlagStatement(flagSqlStatement, flag);
-
-                                StreamSupport.stream(features.spliterator(), false)
-                                        .forEach(feature -> this.batchFlagFeatureStatement(
-                                                featureSqlStatement, flag,
-                                                feature.getAsJsonObject()));
-                            });
-
-                            flagSqlStatement.executeBatch();
-                            featureSqlStatement.executeBatch();
-
-                            startIndex = startIndex + BATCH_SIZE;
+                                    StreamSupport.stream(features.spliterator(), false)
+                                            .forEach(feature -> this.batchFlagFeatureStatement(
+                                                    featureSqlStatement, flag, flagRecordId,
+                                                    feature.getAsJsonObject()));
+                                }
+                                if (counter >= BATCH_SIZE)
+                                {
+                                    featureSqlStatement.executeBatch();
+                                    logger.debug("Batching {} features.", counter);
+                                    counter = 0;
+                                }
+                            }
+                            catch (final SQLException failure)
+                            {
+                                logger.error("Error creating Flag record.", failure);
+                            }
                         }
-                        while (endIndex != lines.size() - 1 && startIndex < lines.size());
+
+                        featureSqlStatement.executeBatch();
+                        logger.debug("Batching the remaining {} features.", counter);
+
                     }
                     catch (final IOException error)
                     {
@@ -282,7 +299,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     /**
      * Returns the OSM identifier for a given JsonObject. Atlas Checks OSM identifier changed from
      * "osmid" to "osmIdentifier"
-     * 
+     *
      * @see <a href="https://github.com/osmlab/atlas-checks/pull/116/files">here</a>
      * @param properties
      *            CheckFlag properties
