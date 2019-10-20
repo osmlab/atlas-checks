@@ -197,10 +197,8 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                             PreparedStatement featureSqlStatement = databaseConnection
                                     .prepareStatement(CREATE_FEATURE_SQL))
                     {
-
                         final List<String> lines = reader.lines().collect(Collectors.toList());
                         this.processCheckFlags(lines, flagSqlStatement, featureSqlStatement);
-
                     }
                     catch (final IOException error)
                     {
@@ -344,7 +342,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
             final PreparedStatement flagSqlStatement, final PreparedStatement featureSqlStatement)
     {
         int counter = 0;
-
         try
         {
             for (final String line : lines)
@@ -383,11 +380,9 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 
                 }
             }
-
             // Execute the remaining features
             featureSqlStatement.executeBatch();
             logger.debug("Batching the remaining {} features.", counter);
-
         }
         catch (final SQLException failure)
         {
