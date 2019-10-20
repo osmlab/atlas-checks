@@ -137,31 +137,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 
     }
 
-    /**
-     * Add CheckFlag values to parameterized sql INSERT statement
-     *
-     * @param sql
-     *            - PreparedStatement to add parameterized values to
-     * @param flag
-     *            - CheckFlag to insert into flag table
-     */
-    public void batchFlagStatement(final PreparedStatement sql, final CheckFlag flag)
-    {
-        try
-        {
-            sql.setString(1, flag.getIdentifier());
-            sql.setString(2, flag.getChallengeName().orElse(""));
-            sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
-            sql.setObject(FOUR, this.timestamp);
-
-            sql.executeUpdate();
-        }
-        catch (final SQLException error)
-        {
-            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier(), error);
-        }
-    }
-
     /***
      * Create database schema from schema.sql resource file.
      *
@@ -224,48 +199,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                     {
 
                         final List<String> lines = reader.lines().collect(Collectors.toList());
-                        // This counter is used to batch feature records
-                        int counter = 0;
-
-                        for (final String line : lines)
-                        {
-                            final JsonObject parsedFlag = new JsonParser().parse(line)
-                                    .getAsJsonObject();
-                            final JsonArray features = this.filterOutPointsFromGeojson(
-                                    parsedFlag.get(FEATURES).getAsJsonArray());
-                            final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
-
-                            this.batchFlagStatement(flagSqlStatement, flag);
-                            final int flagRecordId;
-                            counter += features.size();
-
-                            try
-                            {
-                                final ResultSet resultSet = flagSqlStatement.getGeneratedKeys();
-                                if (resultSet.next())
-                                {
-                                    flagRecordId = resultSet.getInt(1);
-
-                                    StreamSupport.stream(features.spliterator(), false)
-                                            .forEach(feature -> this.batchFlagFeatureStatement(
-                                                    featureSqlStatement, flag, flagRecordId,
-                                                    feature.getAsJsonObject()));
-                                }
-                                if (counter >= BATCH_SIZE)
-                                {
-                                    featureSqlStatement.executeBatch();
-                                    logger.debug("Batching {} features.", counter);
-                                    counter = 0;
-                                }
-                            }
-                            catch (final SQLException failure)
-                            {
-                                logger.error("Error creating Flag record.", failure);
-                            }
-                        }
-
-                        featureSqlStatement.executeBatch();
-                        logger.debug("Batching the remaining {} features.", counter);
+                        this.processCheckFlags(lines, flagSqlStatement, featureSqlStatement);
 
                     }
                     catch (final IOException error)
@@ -288,6 +222,31 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         logger.info("Atlas Checks database upload command finished in {}.", timer.elapsedSince());
 
         return 0;
+    }
+
+    /**
+     * Add CheckFlag values to parameterized sql INSERT statement
+     *
+     * @param sql
+     *            - PreparedStatement to add parameterized values to
+     * @param flag
+     *            - CheckFlag to insert into flag table
+     */
+    public void executeFlagStatement(final PreparedStatement sql, final CheckFlag flag)
+    {
+        try
+        {
+            sql.setString(1, flag.getIdentifier());
+            sql.setString(2, flag.getChallengeName().orElse(""));
+            sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
+            sql.setObject(FOUR, this.timestamp);
+
+            sql.executeUpdate();
+        }
+        catch (final SQLException error)
+        {
+            logger.error("Unable to create Flag {} SQL statement", flag.getIdentifier(), error);
+        }
     }
 
     @Override
@@ -369,5 +328,70 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                 .filter(feature -> feature.has(PROPERTIES)
                         && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    }
+
+    /**
+     * This function handles parsing each CheckFlag, and batching flag features into the database
+     * 
+     * @param lines
+     *            a List of stringified CheckFlags read in from line-delimited json
+     * @param flagSqlStatement
+     *            Flag PreparedStatement
+     * @param featureSqlStatement
+     *            Feature PreparedStatement
+     */
+    private void processCheckFlags(final List<String> lines,
+            final PreparedStatement flagSqlStatement, final PreparedStatement featureSqlStatement)
+    {
+        int counter = 0;
+
+        try
+        {
+            for (final String line : lines)
+            {
+                final JsonObject parsedFlag = new JsonParser().parse(line).getAsJsonObject();
+                final JsonArray features = this
+                        .filterOutPointsFromGeojson(parsedFlag.get(FEATURES).getAsJsonArray());
+                final CheckFlag flag = gson.fromJson(line, CheckFlag.class);
+                final int flagRecordId;
+
+                // First check if the number of features in our batch is less than the maximum
+                if (counter + features.size() > BATCH_SIZE)
+                {
+                    featureSqlStatement.executeBatch();
+                    logger.debug("Batching {} features.", counter);
+                    counter = 0;
+                }
+
+                // Add flag record to database
+                this.executeFlagStatement(flagSqlStatement, flag);
+
+                try (ResultSet resultSet = flagSqlStatement.getGeneratedKeys())
+                {
+                    if (resultSet.next())
+                    {
+                        // Save flag record unique id to use for feature record
+                        flagRecordId = resultSet.getInt(1);
+
+                        StreamSupport.stream(features.spliterator(), false)
+                                .forEach(feature -> this.batchFlagFeatureStatement(
+                                        featureSqlStatement, flag, flagRecordId,
+                                        feature.getAsJsonObject()));
+
+                        counter += features.size();
+                    }
+
+                }
+            }
+
+            // Execute the remaining features
+            featureSqlStatement.executeBatch();
+            logger.debug("Batching the remaining {} features.", counter);
+
+        }
+        catch (final SQLException failure)
+        {
+            logger.error("Error creating Flag record.", failure);
+        }
     }
 }

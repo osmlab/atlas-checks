@@ -71,7 +71,7 @@ public class FlagDatabaseSubCommandTest
         final String flag = this.getResource("checkflags1.log").get(0);
         final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
 
-        command.batchFlagStatement(this.preparedStatement, checkFlag);
+        command.executeFlagStatement(this.preparedStatement, checkFlag);
 
         Mockito.verify(this.preparedStatement).executeUpdate();
     }
