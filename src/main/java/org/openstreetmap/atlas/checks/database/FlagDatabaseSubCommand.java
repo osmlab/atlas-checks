@@ -377,7 +377,6 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 
                         counter += features.size();
                     }
-
                 }
             }
             // Execute the remaining features
