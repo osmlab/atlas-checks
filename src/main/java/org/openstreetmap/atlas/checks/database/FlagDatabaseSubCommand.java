@@ -293,44 +293,9 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         return hstore;
     }
 
-    @Override
-    public void registerManualPageSections()
-    {
-        this.addManualPageSection("DESCRIPTION", FlagDatabaseSubCommand.class
-                .getResourceAsStream("FlagDatabaseSubCommandDescriptionSection.txt"));
-        this.addManualPageSection("EXAMPLES", FlagDatabaseSubCommand.class
-                .getResourceAsStream("FlagDatabaseSubCommandExamplesSection.txt"));
-    }
-
-    @Override
-    public void registerOptionsAndArguments()
-    {
-        this.registerOptionWithRequiredArgument(FLAG_PATH_INPUT, 'f',
-                "A directory of folders containing atlas-checks log files.",
-                OptionOptionality.REQUIRED, FLAG_PATH_INPUT);
-        this.registerOptionWithRequiredArgument(DATABASE_URL_INPUT, 't',
-                "Database connection string", OptionOptionality.REQUIRED, DATABASE_URL_INPUT);
-        super.registerOptionsAndArguments();
-    }
-
-    /**
-     * Get all geojson features which do contain a properties field from a {@link JsonArray}.
-     *
-     * @param features
-     *            a {@link JsonArray} of geojson features
-     * @return a JsonArray containing all Check flag features
-     */
-    private JsonArray filterOutPointsFromGeojson(final JsonArray features)
-    {
-        return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
-                .filter(feature -> feature.has(PROPERTIES)
-                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
-                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-    }
-
     /**
      * This function handles parsing each CheckFlag, and batching flag features into the database
-     * 
+     *
      * @param lines
      *            a List of stringified CheckFlags read in from line-delimited json
      * @param flagSqlStatement
@@ -387,5 +352,40 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
         {
             logger.error("Error creating Flag record.", failure);
         }
+    }
+
+    @Override
+    public void registerManualPageSections()
+    {
+        this.addManualPageSection("DESCRIPTION", FlagDatabaseSubCommand.class
+                .getResourceAsStream("FlagDatabaseSubCommandDescriptionSection.txt"));
+        this.addManualPageSection("EXAMPLES", FlagDatabaseSubCommand.class
+                .getResourceAsStream("FlagDatabaseSubCommandExamplesSection.txt"));
+    }
+
+    @Override
+    public void registerOptionsAndArguments()
+    {
+        this.registerOptionWithRequiredArgument(FLAG_PATH_INPUT, 'f',
+                "A directory of folders containing atlas-checks log files.",
+                OptionOptionality.REQUIRED, FLAG_PATH_INPUT);
+        this.registerOptionWithRequiredArgument(DATABASE_URL_INPUT, 't',
+                "Database connection string", OptionOptionality.REQUIRED, DATABASE_URL_INPUT);
+        super.registerOptionsAndArguments();
+    }
+
+    /**
+     * Get all geojson features which do contain a properties field from a {@link JsonArray}.
+     *
+     * @param features
+     *            a {@link JsonArray} of geojson features
+     * @return a JsonArray containing all Check flag features
+     */
+    private JsonArray filterOutPointsFromGeojson(final JsonArray features)
+    {
+        return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
+                .filter(feature -> feature.has(PROPERTIES)
+                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 }

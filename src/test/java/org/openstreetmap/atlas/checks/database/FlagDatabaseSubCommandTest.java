@@ -67,29 +67,6 @@ public class FlagDatabaseSubCommandTest
     }
 
     @Test
-    public void executeFlagStatementTest() throws IOException, SQLException
-    {
-        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
-        final String flag = this.getResource("checkflags1.log").get(0);
-        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
-
-        command.executeFlagStatement(this.preparedStatement, checkFlag);
-
-        Mockito.verify(this.preparedStatement).executeUpdate();
-    }
-    
-    @Test
-    public void processCheckFlagsTest() throws IOException, SQLException
-    {
-        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
-        final List<String> flags = this.getResource("checkflags1.log");
-        command.processCheckFlags(flags, this.preparedStatement, this.preparedStatement2);
-        
-        Mockito.verify(this.preparedStatement, Mockito.times(2)).executeUpdate();
-        Mockito.verify(this.preparedStatement2).executeBatch();
-    }
-
-    @Test
     public void commandFailedExitCodeTest()
     {
         final String[] arguments = { String.format("--flag_path=%s", this.flag1),
@@ -118,6 +95,18 @@ public class FlagDatabaseSubCommandTest
     }
 
     @Test
+    public void executeFlagStatementTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final String flag = this.getResource("checkflags1.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+
+        command.executeFlagStatement(this.preparedStatement, checkFlag);
+
+        Mockito.verify(this.preparedStatement).executeUpdate();
+    }
+
+    @Test
     public void getOsmIdentifierTest() throws IOException
     {
         final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
@@ -138,6 +127,17 @@ public class FlagDatabaseSubCommandTest
 
         Assert.assertEquals(221079243, osmId1);
         Assert.assertEquals(167709671, osmId2);
+    }
+
+    @Test
+    public void processCheckFlagsTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final List<String> flags = this.getResource("checkflags1.log");
+        command.processCheckFlags(flags, this.preparedStatement, this.preparedStatement2);
+
+        Mockito.verify(this.preparedStatement, Mockito.times(2)).executeUpdate();
+        Mockito.verify(this.preparedStatement2).executeBatch();
     }
 
     @Test
