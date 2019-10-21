@@ -338,7 +338,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
      * @param featureSqlStatement
      *            Feature PreparedStatement
      */
-    private void processCheckFlags(final List<String> lines,
+    public void processCheckFlags(final List<String> lines,
             final PreparedStatement flagSqlStatement, final PreparedStatement featureSqlStatement)
     {
         int counter = 0;
@@ -365,7 +365,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 
                 try (ResultSet resultSet = flagSqlStatement.getGeneratedKeys())
                 {
-                    if (resultSet.next())
+                    if (resultSet != null && resultSet.next())
                     {
                         // Save flag record unique id to use for feature record
                         flagRecordId = resultSet.getInt(1);

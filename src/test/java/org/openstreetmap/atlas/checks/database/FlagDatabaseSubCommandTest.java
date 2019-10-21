@@ -49,6 +49,8 @@ public class FlagDatabaseSubCommandTest
     private Statement statement = Mockito.mock(Statement.class);
     @Mock
     private PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+    @Mock
+    private PreparedStatement preparedStatement2 = Mockito.mock(PreparedStatement.class);
 
     @Test
     public void batchFeatureStatementTest() throws IOException, SQLException
@@ -65,7 +67,7 @@ public class FlagDatabaseSubCommandTest
     }
 
     @Test
-    public void batchFlagStatementTest() throws IOException, SQLException
+    public void executeFlagStatementTest() throws IOException, SQLException
     {
         final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
         final String flag = this.getResource("checkflags1.log").get(0);
@@ -74,6 +76,17 @@ public class FlagDatabaseSubCommandTest
         command.executeFlagStatement(this.preparedStatement, checkFlag);
 
         Mockito.verify(this.preparedStatement).executeUpdate();
+    }
+    
+    @Test
+    public void processCheckFlagsTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final List<String> flags = this.getResource("checkflags1.log");
+        command.processCheckFlags(flags, this.preparedStatement, this.preparedStatement2);
+        
+        Mockito.verify(this.preparedStatement, Mockito.times(2)).executeUpdate();
+        Mockito.verify(this.preparedStatement2).executeBatch();
     }
 
     @Test
