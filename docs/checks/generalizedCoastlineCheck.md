@@ -9,10 +9,10 @@ Generalized coastlines may cause a few problems:
 
 Poor local accuracy on segments of a coastline results in cartographic problems. Users on the ground near a coastline that are provided with a generalized representation of that coastline may encounter hazardous inaccuracies. Boundaries (country, state, etc.) that rely on precisely mapped coastlines may find that maps with generalized coastlines create problems when carrying out coastal or shipping activities.
 
-This check exists to address the above problems with generalized coastlines. Editors who encounter flagged generalized coastlines may resolve the issue by increasing the number of nodes along a long line segment of the coastline to "break it up."
+This check exists to address the above problems with generalized coastlines. Editors who encounter flagged generalized coastlines may resolve the issue by increasing the number of nodes along a long line segment of the coastline "break it up" and near its sharp angles to smooth it.
 
 The check itself flags any LineItem that has the `natural=coastline` tag, and also has a percentage of [Segment](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/)s
-that are longer than a configured value that surpasses some threshold percentage.
+that are longer than a configured value that surpasses some threshold percentage. If a sharp angle configurable is provided, locations of sharp angles of an already flagged coastline are marked.
 
 #### Live Examples
 
@@ -24,6 +24,6 @@ the configured distance of 100 meters.
 
 The check ensures that the Atlas object being evaluated is a [LineItem](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/LineItem.java). Then, it examines the LineItem's Segments. It
 calculates the percentage of Segments whose lengths are greater than some configured value. Then it flags the item if
-this percentage is greater than some configured value.
+this percentage is greater than some configured value. If a sharp angle threshold is provided, then angles between segments that exceed that threshold are marked for editing too.
 
 Please see source code for the GeneralizedCoastlineCheck here: [GeneralizedCoastlineCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/lines)
