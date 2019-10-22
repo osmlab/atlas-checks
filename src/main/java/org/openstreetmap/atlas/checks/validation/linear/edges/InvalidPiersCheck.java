@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.linear.lines;
+package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +34,10 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 /**
  * This check identifies piers (OSM ways with man_made = Pier tag) that have either a linear
  * geometry and no area = Yes tag, or a polygonal geometry and no area=Yes tag. A pier must also
- * have (i) a highway Tag or (ii) a highway overlapping the pier or (iii) be connected to a ferry
- * route/amenity = Ferry_Terminal or (iv) be connected to a building.
+ * have (i) a highway Tag or (ii) a highway overlapping the pier at the same level/layer as the pier
+ * or (iii) be connected to a ferry route/amenity = Ferry_Terminal or (iv) be connected to a
+ * building at the same level/layer as the pier. A polygonal pier with a building tag or amenity=ferry_terminal
+ * is also valid for the check.
  *
  * @author sayas01
  */
