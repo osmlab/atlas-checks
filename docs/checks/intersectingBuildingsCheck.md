@@ -17,7 +17,7 @@ Each pair of intersecting buildings will only be flagged once (i.e. A intersecti
  An Atlas object must meet the following criteria to be considered a building:
 
 - It must have at least 3 points.
-- It must have a building Tag and has a value that's defined in the BuildingTag.java.
+- It must have a building Tag and has a value that's defined in the [BuildingTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/BuildingTag.java).
 
 Intersecting buildings are either flagged as 'intersect' or 'overlap':
 
@@ -31,6 +31,5 @@ Intersecting buildings are either flagged as 'intersect' or 'overlap':
         - The proportion of the intersection area compared to the smaller building area >= overlapLowerLimit
         - Output instruction = 'building A is overlapped by another building B'
 
-To learn more about the code, please look at the comments in the source code for the check at
-[IntersectingBuildingsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectingBuildingsCheck.java).
-Please also refer to [BuildingTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/BuildingTag.java).
+To learn more about the code, please look at the comments in the source code for the check.
+[IntersectingBuildingsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectingBuildingsCheck.java)
