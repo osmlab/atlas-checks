@@ -6,7 +6,7 @@ The purpose of this check is to identify buildings that intersect other building
 
 #### Live Examples
 
-1. Line [id:172116389](https://www.openstreetmap.org/way/172116389) and [id:172116424](https://www.openstreetmap.org/way/172116424) have _building=YES_ Tags and do not fully contain one another, so they are flagged as `intersect`.
+1. Line [id:172116389](https://www.openstreetmap.org/way/172116389) and [id:172116424](https://www.openstreetmap.org/way/172116424) have _building=YES_ Tags and do not fully contain one another, so they are flagged as 'intersect'.
 2. Line [id:525062338](https://www.openstreetmap.org/way/525062338) fully contains [id:525062342](https://www.openstreetmap.org/way/525062342) and both have _building=YES_ Tags.
 3. Line [id:334111739](https://www.openstreetmap.org/way/334111739) with _building=COMMERCIAL_ Tag fully contains [id:463063324](https://www.openstreetmap.org/way/463063324) with _building=RESIDENTIAL_ Tag.
 
