@@ -2,7 +2,7 @@
 
 #### Description
 
-The purpose of this check is to identify Edges intersecting another Edge(s) that do not share the same Node (meaning they are not well-connected) nor have proper layer tagging on one of these Edge(s) (meaning there should be a layer tag for one of the Edges).
+The purpose of this check is to identify Edges intersecting another Edge(s) that do not share the same Node (meaning they are not well-connected) nor have proper layer tagging on one of these Edge(s) (meaning there should be a _layer_ Tag for one of the Edges).
 
 #### Live Examples
 
@@ -13,7 +13,7 @@ The purpose of this check is to identify Edges intersecting another Edge(s) that
 
 #### Code Review
 
-The check ensures that the Atlas object being evaluated is a car-navigable Edge. The check flags Edges that cross each other if they do not share the same node of intersection, or if none of the Edges have a _Layer_ Tag. In addition, this check flags all Edges that cross the "candidate edge" Edge that is currently inspected by the check). The check inspects every Edge, creating duplicated flags when there are multiple Edges invalidly crossing each other.
+The check ensures that the Atlas object being evaluated is a car-navigable Edge. The check flags Edges that cross each other if they do not share the same node of intersection, or if none of the Edges have a _layer_ Tag. In addition, this check flags all Edges that cross the "candidate edge" Edge that is currently inspected by the check). The check inspects every Edge, creating duplicated flags when there are multiple Edges invalidly crossing each other.
 
 To learn more about the code, please look at the comments in the source code for the check.
 [EdgeCrossingEdgeCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/EdgeCrossingEdgeCheck.java)

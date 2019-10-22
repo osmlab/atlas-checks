@@ -2,23 +2,35 @@
 
 #### Description
 
-The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags.
+The purpose of this check is to identify _layer_ Tag values when accompanied by invalid _tunnel_ and _bridge_ Tags.
 
 #### Live Examples
 
-1. Line [id:521569767](https://www.openstreetmap.org/way/521569767) has _Layer_ Tag > 0, and is within tunnel=BUILDING_PASSAGE.
-2. Line [id:479328850](https://www.openstreetmap.org/way/479328850) has _Layer_ Tag < 0, and crosses bridge=YES.
+1. Line [id:521569767](https://www.openstreetmap.org/way/521569767) has _Layer_ Tag > 0, and is within _tunnel=BUILDING\_PASSAGE_.
+2. Line [id:479328850](https://www.openstreetmap.org/way/479328850) has _Layer_ Tag < 0, and crosses _bridge=YES_.
 
 #### Code Review
 
-This check is intended to validate layer tag values when accompanied by tunnel and bridge tags which meet any of the following four requirements.
+This check is intended to validate _layer_ Tag values when accompanied by _tunnel_ and _bridge_ Tags which meet any of the following four requirements.
 
- 1. Layer tag value should be an integer, ranging from -5 to 5, excluding 0 [LayerTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/LayerTag.java)
- 2. Ways passed above other Ways with valid layer tag (above), accompanied by the bridge tag containing one of the following values:
-        * YES, VIADUCT, AQUEDUCT, BOARDWALK, MOVABLE, SUSPENSION, CULVERT, ABANDONED, LOW_WATER_CROSSING, SIMPLE_BRUNNEL, COVERED [BridgeTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/BridgeTag.java)
- 3. Ways passed above other Ways with valid layer tag, accompanied by a tunnel tag containing one of the following values:
-        * YES, CULVERT, BUILDING_PASSAGE [TunnelTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/TunnelTag.java)
- 4. Ways with junction=ROUNDABOUT tag must not contain layer tag [JunctionTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/JunctionTag.java)
+ 1. The _layer_ Tag value should be an integer, ranging from -5 to 5, and excluding 0 (per [LayerTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/LayerTag.java))
+ 2. Ways passing above other Ways with valid _layer_ Tags (see item 1), that are accompanied by a _bridge_ Tag containing any of the following values (per [BridgeTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/BridgeTag.java)):
+    * _YES_,
+    * _VIADUCT_,
+    * _AQUEDUCT_,
+    * _BOARDWALK_,
+    * _MOVABLE_,
+    * _SUSPENSION_,
+    * _CULVERT_,
+    * _ABANDONED_,
+    * _LOW\_WATER\_CROSSING_,
+    * _SIMPLE\_BRUNNEL_,
+    * or _COVERED_
+ 3. Ways passing above other Ways with valid _layer_ Tags, that are accompanied by a _tunnel_ Tag containing any of the following values (per [TunnelTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/TunnelTag.java)):
+    * _YES_,
+    * _CULVERT_,
+    * or _BUILDING\_PASSAGE_
+ 4. Ways with a _junction=ROUNDABOUT_ Tag must not contain a _layer_ Tag (per [JunctionTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/JunctionTag.java))
 
 To learn more about the code, please look at the comments in the source code for the check.
 [UnusualLayerTagsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/UnusualLayerTagsCheck.java)
