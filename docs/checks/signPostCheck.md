@@ -4,11 +4,6 @@
 
 The purpose of this check is to identify On-/Off-Ramps in motorways and trunk highways that are not relaying information from their respective sign posts.
 
-#### What is Not Supported
-
-- Sign posts used for things other than highway entrances or exits should have a different tagging mechanism (Relation).
-- The tag, `exit_to=*`, has been used in the past for a Node containing highway=MOTORWAY_JUNCTION. The tag has been superseded by the destination tag. This tag is not currently supported by this check and should be corrected as per [OSM wiki](https://wiki.openstreetmap.org/wiki/Key:exit_to).
-
 #### Live Examples
 
 1. Line [id:124741413](https://www.openstreetmap.org/way/124741413) represents the Edge on the Off-Ramp that should have a destination tag, which is currently missing.

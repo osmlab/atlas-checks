@@ -4,12 +4,6 @@
 
 The purpose of this check is to identify Edges intersecting another Edge(s) that do not share the same Node (meaning they are not well-connected) nor have proper layer tagging on one of these Edge(s) (meaning there should be a layer tag for one of the Edges).
 
-#### What is Not Supported
-
-1. Other types of navigable networks (waterway, railway, ferry) have invalid crossings as well.
-2. These invalid crossings can be fixed frequently, so the edit history could be newer than the data ran for this analysis. Some flags might have already been fixed by public OSM users.
-3. A number of OSM Polygons were ingested improperly as Edges in Atlas because some specific highway tag value is present. This check will not support this type of ingestion issue.
-
 #### Live Examples
 
 1. Line [id:245574716](https://www.openstreetmap.org/way/245574716) and [id:245574709](https://www.openstreetmap.org/way/245574709) do not share a node of intersection.

@@ -31,5 +31,6 @@ Intersecting buildings are either flagged as 'intersect' or 'overlap':
         - The proportion of the intersection area compared to the smaller building area >= overlapLowerLimit
         - Output instruction = 'building A is overlapped by another building B'
 
-To learn more about the code, please look at the comments in the source code for the check.
-[IntersectingBuildingsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectingBuildingsCheck.java)
+To learn more about the code, please look at the comments in the source code for the check at
+[IntersectingBuildingsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectingBuildingsCheck.java).
+Please also refer to [BuildingTag.java](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/BuildingTag.java).
