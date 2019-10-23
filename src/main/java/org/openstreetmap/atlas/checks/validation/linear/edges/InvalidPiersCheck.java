@@ -115,10 +115,14 @@ public class InvalidPiersCheck extends BaseCheck<Long>
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return an optional {@link CheckFlag} object that
      */
+    @SuppressWarnings("squid:S3655")
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
+        // We will mark the edge as flagged as we will only be looking at all way sectioned edges of
+        // a way once
+        this.markAsFlagged(edge.getOsmIdentifier());
         // Collect all master edges that form the OSM way
         final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
                 .filter(Edge::isMasterEdge).collect(Collectors.toSet());
@@ -133,8 +137,6 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         // Check if the OSM way has linear geometry or polygonal geometry
         final boolean isPolygonal = this.hasPolygonalGeometry(listOfEdgesFormingOSMWay, edge);
         final int instructionIndex = isPolygonal ? 1 : 0;
-        // We will mark
-        this.markAsFlagged(edge.getOsmIdentifier());
         // We can flag the edge if it has a highway tag with the right priority or is a polygonal
         // pier with building tag or is a polygonal pier with amenity=ferry_terminal
         if ((HighwayTag.highwayTag(edge).isPresent() && HighwayTag.highwayTag(edge).get()
