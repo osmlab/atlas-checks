@@ -8,7 +8,7 @@ have an area=Yes Tag.  A pier must: (A) have a highway Tag or (B) have an overla
 same level and same layer as the pier or (C) be connected to  a ferry route at the same layer and 
 same level as the pier or (D) be connected to or overlapping a building/amenity=Ferry_Terminal at 
 the same layer and same level as the pier.  In addition, if a pier is polygonal, then it will also 
-be considered a valid correction candidate if it has building and/or amenity=Ferry_Terminal Tags.  
+be considered a valid check candidate if it has building and/or amenity=Ferry_Terminal Tags.  
 If a pier does not meet one or more of these criteria, this check will 
 not flag the pier. 
 
