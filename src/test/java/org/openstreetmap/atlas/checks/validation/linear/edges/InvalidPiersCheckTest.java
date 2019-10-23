@@ -20,15 +20,6 @@ public class InvalidPiersCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void testLinearPierWithHighwayTag()
-    {
-        this.verifier.actual(this.setup.getLinearPierWithHighwayTag(),
-                new InvalidPiersCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void testLinearPierConnectedToBuilding()
     {
         this.verifier.actual(this.setup.getLinearPierConnectedToBuildingAtlas(),
@@ -38,11 +29,29 @@ public class InvalidPiersCheckTest
     }
 
     @Test
-    public void testPolygonalPierOverlappingHighway()
+    public void testLinearPierConnectedToFerry()
     {
-        this.verifier.actual(this.setup.getPolygonalPierOverlappingHighwayAtlas(),
+        this.verifier.actual(this.setup.getLinearPierConnectedToFerryAtlas(),
                 new InvalidPiersCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotNull();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testLinearPierWithHighwayTag()
+    {
+        this.verifier.actual(this.setup.getLinearPierWithHighwayTag(),
+                new InvalidPiersCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyNotNull();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testMinimumHighwayConfiguration()
+    {
+        this.verifier.actual(this.setup.getLinearPierWithHighwayTag(),
+                new InvalidPiersCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidPiersCheck\":{\"highway.type.minimum.pier\":\"footway\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -50,6 +59,15 @@ public class InvalidPiersCheckTest
     public void testPolygonalPierConnectedToBuilding()
     {
         this.verifier.actual(this.setup.getPolygonalPierConnectedToBuildingAtlas(),
+                new InvalidPiersCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyNotNull();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testPolygonalPierOverlappingHighway()
+    {
+        this.verifier.actual(this.setup.getPolygonalPierOverlappingHighwayAtlas(),
                 new InvalidPiersCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotNull();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));

@@ -486,6 +486,10 @@
     }
   },
   "InvalidPiersCheck": {
+    "highway.type.minimum": {
+      "overlapping": "toll_gantry",
+      "pier": "toll_gantry"
+    },
     "challenge": {
       "description": "Piers should have polygon geometry and tags man_made=pier and area=yes",
       "blurb": "Verify invalid piers.",

@@ -36,14 +36,14 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  * geometry and no area = Yes tag, or a polygonal geometry and no area=Yes tag. A pier must also
  * have (i) a highway Tag or (ii) a highway overlapping the pier at the same level/layer as the pier
  * or (iii) be connected to a ferry route/amenity = Ferry_Terminal or (iv) be connected to a
- * building at the same level/layer as the pier. A polygonal pier with a building tag or amenity=ferry_terminal
- * is also valid for the check.
+ * building at the same level/layer as the pier. A polygonal pier with a building tag or
+ * amenity=ferry_terminal is also valid for the check.
  *
  * @author sayas01
  */
 public class InvalidPiersCheck extends BaseCheck<Long>
 {
-    private static final long serialVersionUID = 6L;
+    private static final long serialVersionUID = 6011101860745289836L;
     private static final String LINEAR_WITH_PIER_TAG = "This way {0,number,#} has a \"man_made=pier\" tag but has a linear geometry. "
             + "Please make necessary changes to convert its geometry to a polygon and add tag, \"area=yes\".";
     private static final String POLYGON_WITH_NO_AREA_TAG = "This way {0,number,#} has a \"man_made=pier\" and a polygon geometry, "
@@ -56,6 +56,12 @@ public class InvalidPiersCheck extends BaseCheck<Long>
             .isOfType(atlasObject, AmenityTag.class, AmenityTag.FERRY_TERMINAL);
     private static final Predicate<AtlasObject> IS_BUILDING = atlasObject -> Validators
             .hasValuesFor(atlasObject, BuildingTag.class);
+    private static final String MINIMUM_HIGHWAY_TYPE_OVERLAPPING_EDGE_DEFAULT = HighwayTag.TOLL_GANTRY
+            .toString();
+    private static final String MINIMUM_HIGHWAY_TYPE_PIER_DEFAULT = HighwayTag.TOLL_GANTRY
+            .toString();
+    private final HighwayTag minimumHighwayTypeOverlappingEdge;
+    private final HighwayTag minimumHighwayTypePier;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -68,6 +74,12 @@ public class InvalidPiersCheck extends BaseCheck<Long>
     public InvalidPiersCheck(final Configuration configuration)
     {
         super(configuration);
+        this.minimumHighwayTypeOverlappingEdge = this.configurationValue(configuration,
+                "highway.type.minimum.overlapping", MINIMUM_HIGHWAY_TYPE_OVERLAPPING_EDGE_DEFAULT,
+                configValue -> HighwayTag.valueOf(configValue.toUpperCase()));
+        this.minimumHighwayTypePier = this.configurationValue(configuration,
+                "highway.type.minimum.pier", MINIMUM_HIGHWAY_TYPE_PIER_DEFAULT,
+                configValue -> HighwayTag.valueOf(configValue.toUpperCase()));
     }
 
     /**
@@ -111,6 +123,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
                 .filter(Edge::isMasterEdge).collect(Collectors.toSet());
         final List<Edge> listOfEdgesFormingOSMWay = new ArrayList<>(edgesFormingOSMWay);
+        // We need to sort the edges to build the geometry of the OSM way in a deterministic manner
         listOfEdgesFormingOSMWay.sort(Comparator.comparingLong(AtlasObject::getIdentifier));
         // Build a polygon using the locations in the edges
         final Set<Location> locationsInOsmWay = new HashSet<>();
@@ -119,17 +132,19 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         final Polygon osmWayAsPolygon = new Polygon(locationsInOsmWay);
         // Check if the OSM way has linear geometry or polygonal geometry
         final boolean isPolygonal = this.hasPolygonalGeometry(listOfEdgesFormingOSMWay, edge);
-        final Atlas atlas = edge.getAtlas();
+        // Check if the pier has connections to ferry route or buildings
+        final boolean isConnectedToFerryOrBuilding = this.isConnectedToFerryOrBuilding(edge,
+                listOfEdgesFormingOSMWay, isPolygonal, osmWayAsPolygon);
         // Check if the pier overlaps a highway or not
         final boolean overlapsHighway = this.pierOverlapsHighway(edge, listOfEdgesFormingOSMWay,
-                osmWayAsPolygon, atlas, isPolygonal);
-        // Check if the pier has connections to ferry route or buildings
-        final boolean isConnectedToFerryOrBuilding = this.isConnectedToFerryOrBuilding(edge, atlas,
-                listOfEdgesFormingOSMWay, isPolygonal, osmWayAsPolygon);
+                osmWayAsPolygon, isPolygonal);
         // A pier is valid if it either has a highway tag or it overlaps a highway or is connected
-        // to a building or ferry route
-        final boolean isValidPier = HighwayTag.highwayTag(edge).isPresent() || overlapsHighway
-                || isConnectedToFerryOrBuilding || (isPolygonal && IS_BUILDING.test(edge))
+        // to a building or ferry route or is a building with polygonal geometry or is a ferry
+        // terminal with polygonal geometry
+        final boolean isValidPier = (HighwayTag.highwayTag(edge).isPresent() && HighwayTag
+                .highwayTag(edge).get().isMoreImportantThanOrEqualTo(this.minimumHighwayTypePier))
+                || overlapsHighway || isConnectedToFerryOrBuilding
+                || (isPolygonal && IS_BUILDING.test(edge))
                 || (isPolygonal && IS_FERRY_TERMINAL.test(edge));
         this.markAsFlagged(edge.getOsmIdentifier());
         if (!isValidPier)
@@ -147,36 +162,24 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private boolean areOnSameLayer(final AtlasObject taggableOne, final AtlasObject taggableTwo)
-    {
-        return LayerTag.getTaggedOrImpliedValue(taggableOne, 0L)
-                .equals(LayerTag.getTaggedOrImpliedValue(taggableTwo, 0L));
-    }
-
     /**
-     * Checks if two atlas objects are on the same level. Since as per
-     * https://wiki.openstreetmap.org/wiki/Key:level, level=0 is not always street level, if level
-     * tag is absent, it is not considered as level=0.
+     * Checks if two {@link AtlasObject} are on the same level and layer as the other.
      *
-     * @param taggableOne
+     * @param objectOne
      *            first object to compare
-     * @param taggableTwo
+     * @param objectTwo
      *            second object to compare
-     * @return true if object one and object two are on the same level
+     * @return true if the level and layer of edgeOne and edgeTwo are the same
      */
-    private boolean areOnSameLevel(final AtlasObject taggableOne, final AtlasObject taggableTwo)
+    private boolean areOnSameLevelOrLayer(final AtlasObject objectOne, final Edge objectTwo)
     {
-        final Optional<String> levelTagEdgeOne = LevelTag.getTaggedValue(taggableOne);
-        final Optional<String> levelTagEdgeTwo = LevelTag.getTaggedValue(taggableTwo);
-        if (levelTagEdgeOne.isPresent() && levelTagEdgeTwo.isPresent())
-        {
-            return levelTagEdgeOne.get().equals(levelTagEdgeTwo.get());
-        }
-        return !levelTagEdgeOne.isPresent() && !levelTagEdgeTwo.isPresent();
+        return LayerTag.areOnSameLayer(objectOne, objectTwo)
+                && LevelTag.areOnSameLevel(objectOne, objectTwo);
     }
 
     /**
-     * Checks if the input edges form a polygon or not.
+     * Checks if the input edges form a polygon or not. We need to traverse the out edges and see if
+     * the edges form a closed loop to verify that the edges form a polygonal geometry.
      * 
      * @param edgesFormingOSMWay
      *            set of edges
@@ -187,14 +190,13 @@ public class InvalidPiersCheck extends BaseCheck<Long>
     private boolean hasPolygonalGeometry(final List<Edge> edgesFormingOSMWay,
             final Edge originalEdge)
     {
-        final HashSet<Long> wayIds = new HashSet<>();
-
         // Captures cases where the single edge has polygonal geometry
         if (edgesFormingOSMWay.size() == 1 && originalEdge.start().equals(originalEdge.end())
                 && originalEdge.length().isGreaterThan(Distance.ZERO))
         {
             return true;
         }
+        final HashSet<Long> wayIds = new HashSet<>();
         Edge nextEdge = originalEdge;
         // Loop through out going edges with the same OSM id
         while (nextEdge != null)
@@ -214,43 +216,68 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         return false;
     }
 
-    private boolean isConnectedToFerryOrBuilding(final Edge originalEdge, final Atlas atlas,
+    /**
+     * Checks if given edge is connected to a ferry/building or overlaps a building. In case of
+     * polygonal piers, buildings that are within the polygon and connected to it are considered
+     * overlapping buildings. In case of linear piers, we only check if the building intersects any
+     * of the edges of the linear pier.
+     *
+     * @param originalEdge
+     *            any edge
+     * @param edgesOfOSMWay
+     *            list of edges forming OSM way
+     * @param isPolygonal
+     *            if true, the OSM way has polygonal geometry else a linear geometry
+     * @param polygon
+     *            polygon formed from the OSM way edges
+     * @return true if the edge is connected to a building/ferry or overlaps a building
+     */
+    private boolean isConnectedToFerryOrBuilding(final Edge originalEdge,
             final List<Edge> edgesOfOSMWay, final boolean isPolygonal, final Polygon polygon)
     {
         final boolean intersectsFerryRoute;
-        boolean intersectsBuilding;
+        final boolean intersectsBuilding;
+        final Atlas atlas = originalEdge.getAtlas();
+        // Checks if the pier is connected to a ferry route
         intersectsFerryRoute = edgesOfOSMWay.stream()
-                .anyMatch(eachEdge -> eachEdge.connectedEdges().stream()
-                        .filter(connectedEdge -> this.areOnSameLayer(connectedEdge, originalEdge)
-                                && this.areOnSameLevel(connectedEdge, originalEdge))
+                .anyMatch(eachEdge -> eachEdge.connectedEdges().stream().filter(
+                        connectedEdge -> this.areOnSameLevelOrLayer(connectedEdge, originalEdge))
                         .anyMatch(RouteTag::isFerry));
-
-        intersectsBuilding = edgesOfOSMWay.stream()
-                .anyMatch(eachEdge -> Iterables
-                        .stream(atlas.areasIntersecting(eachEdge.bounds(),
-                                intersectingArea -> intersectingArea.asPolygon()
-                                        .intersects(eachEdge.asPolyLine())
-                                        && this.areOnSameLevel(intersectingArea, originalEdge)
-                                        && this.areOnSameLayer(intersectingArea, originalEdge)
-                                        && (IS_BUILDING.test(intersectingArea)
-                                                || IS_FERRY_TERMINAL.test(intersectingArea))))
-                        .iterator().hasNext());
         if (isPolygonal)
         {
             intersectsBuilding = edgesOfOSMWay.stream().anyMatch(eachEdge -> Iterables
                     .stream(atlas.areasIntersecting(eachEdge.bounds(), intersectingArea -> (polygon
                             .fullyGeometricallyEncloses(intersectingArea.asPolygon())
                             || intersectingArea.asPolygon().intersects(eachEdge.asPolyLine()))
-                            && this.areOnSameLevel(intersectingArea, originalEdge)
-                            && this.areOnSameLayer(intersectingArea, originalEdge)
+                            && this.areOnSameLevelOrLayer(intersectingArea, originalEdge)
                             && (IS_BUILDING.test(intersectingArea)
                                     || IS_FERRY_TERMINAL.test(intersectingArea))))
                     .iterator().hasNext());
         }
-
+        else
+        {
+            intersectsBuilding = edgesOfOSMWay.stream().anyMatch(eachEdge -> Iterables
+                    .stream(atlas.areasIntersecting(eachEdge.bounds(),
+                            intersectingArea -> intersectingArea.asPolygon()
+                                    .intersects(eachEdge.asPolyLine())
+                                    && this.areOnSameLevelOrLayer(intersectingArea, originalEdge)
+                                    && (IS_BUILDING.test(intersectingArea)
+                                            || IS_FERRY_TERMINAL.test(intersectingArea))))
+                    .iterator().hasNext());
+        }
         return intersectsFerryRoute || intersectsBuilding;
     }
 
+    /**
+     * Checks if the input edge overlaps any of the edges in the input list of edges. We check if
+     * the intersecting edge overlaps any of the given edges and not just intersects the edges.
+     *
+     * @param intersectingEdge
+     *            any edge
+     * @param edgesFormingOSMWay
+     *            all edges that are part of an OSM way
+     * @return true if the edge overlaps any of the edges in the given list of edges
+     */
     private boolean linearPierOverlapsHighway(final Edge intersectingEdge,
             final List<Edge> edgesFormingOSMWay)
     {
@@ -259,16 +286,36 @@ public class InvalidPiersCheck extends BaseCheck<Long>
 
     }
 
-    private boolean pierOverlapsHighway(final Edge originalEdge,
-            final List<Edge> edgesFormingOSMWay, final Polygon osmWayAsPolygon, final Atlas atlas,
+    /**
+     * Checks if the way formed from the input edges overlap a highway or not. We only consider
+     * intersecting edges that have highway tags, are on the same level/layer as the pier and are
+     * master edges.
+     *
+     * @param originalEdge
+     *            input edge
+     * @param edgesFormingOSMWay
+     *            all the edges forming OSM way
+     * @param osmWayAsPolygon
+     *            polygon built from the OSM way edges
+     * @param isPolygonal
+     *            if true, the OSM way has polygonal geometry else a linear geometry
+     * @return true if a highway at the same level/layer overlaps the edges forming the OSM way
+     */
+    private boolean pierOverlapsHighway(final AtlasObject originalEdge,
+            final List<Edge> edgesFormingOSMWay, final Polygon osmWayAsPolygon,
             final boolean isPolygonal)
     {
-        return Iterables.stream(atlas.edgesIntersecting(osmWayAsPolygon))
+        return Iterables.stream(originalEdge.getAtlas().edgesIntersecting(osmWayAsPolygon))
+                .filter(intersectingEdge -> intersectingEdge.getOsmIdentifier() != originalEdge
+                        .getOsmIdentifier())
                 .anyMatch(intersectingEdge -> intersectingEdge.isMasterEdge()
                         && HighwayTag.highwayTag(intersectingEdge).isPresent()
-                        && this.areOnSameLayer(originalEdge, intersectingEdge)
-                        && this.areOnSameLevel(originalEdge, intersectingEdge)
-                        // should not just be intersecting
+                        && HighwayTag.highwayTag(intersectingEdge).get()
+                                .isMoreImportantThanOrEqualTo(
+                                        this.minimumHighwayTypeOverlappingEdge)
+                        && this.areOnSameLevelOrLayer(originalEdge, intersectingEdge)
+                        // Check if the intersectingEdge is not just intersecting but is overlapping
+                        // the pier
                         && (isPolygonal
                                 ? this.polygonalPierOverlapsHighway(intersectingEdge,
                                         osmWayAsPolygon)
@@ -276,10 +323,21 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                                         edgesFormingOSMWay)));
     }
 
+    /**
+     * Checks if the given edge overlaps the given polygon.
+     *
+     * @param intersectingEdge
+     *            any edge
+     * @param osmWayAsPolygon
+     *            any polygon
+     * @return true if the edge overlaps the polygon
+     */
     private boolean polygonalPierOverlapsHighway(final Edge intersectingEdge,
             final Polygon osmWayAsPolygon)
     {
         return intersectingEdge.asPolyLine().overlapsShapeOf(osmWayAsPolygon)
+                // Overlaps a polygon if any of the segments of the intersecting edge lies within
+                // the polygon
                 || intersectingEdge.asPolyLine().segments().stream()
                         .anyMatch(osmWayAsPolygon::fullyGeometricallyEncloses);
     }

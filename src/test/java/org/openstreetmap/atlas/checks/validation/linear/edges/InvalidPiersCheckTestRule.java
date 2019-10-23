@@ -3,9 +3,9 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
-import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
-import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
 /**
  * {@link InvalidPiersCheckTest} test data
@@ -24,33 +24,27 @@ public class InvalidPiersCheckTestRule extends CoreTestRule
     @TestAtlas(
             // Nodes
             nodes = { @Node(coordinates = @TestAtlas.Loc(value = TEST_1)),
-                    @Node(coordinates = @TestAtlas.Loc(value = TEST_2))},
+                    @Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
             // Edges
             edges = { @Edge(id = "1000000", coordinates = { @Loc(value = TEST_1),
-                    @Loc(value = TEST_2) }, tags = { "highway=service","man_made=pier" })})
+                    @Loc(value = TEST_2) }, tags = { "highway=service", "man_made=pier" }) })
     private Atlas linearPierWithHighwayTagAtlas;
 
     @TestAtlas(
             // Nodes
-            nodes = { @Node(coordinates = @TestAtlas.Loc(value = TEST_3)),
-                    @Node(coordinates = @TestAtlas.Loc(value = TEST_4)),
-                    @Node(coordinates = @TestAtlas.Loc(value = TEST_5)),
-                    @Node(coordinates = @TestAtlas.Loc(value = TEST_6))},
+            nodes = { @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)) },
             // Edges
             edges = { @Edge(id = "1000000", coordinates = { @Loc(value = TEST_3),
-                    @Loc(value = TEST_4),   @Loc(value = TEST_5) }, tags = { "man_made=pier" }),
-                    @Edge(id = "2000000", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_6) }, tags = { "route=ferry" }),
-            })
+                    @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = { "man_made=pier" }),
+                    @Edge(id = "2000000", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6) }, tags = { "route=ferry" }), })
     private Atlas linearPierConnectedToFerryAtlas;
 
     @TestAtlas(loadFromTextResource = "InvalidPiersCheck/polygonalPierOverlappingHighwayAtlas.txt")
     private Atlas polygonalPierOverlappingHighwayAtlas;
-
-    public Atlas getPolygonalPierOverlappingHighwayAtlas()
-    {
-        return this.polygonalPierOverlappingHighwayAtlas;
-    }
 
     @TestAtlas(loadFromTextResource = "InvalidPiersCheck/linearPierConnectedToBuildingAtlas.txt")
     private Atlas linearPierConnectedToBuildingAtlas;
@@ -66,6 +60,11 @@ public class InvalidPiersCheckTestRule extends CoreTestRule
         return this.linearPierConnectedToBuildingAtlas;
     }
 
+    public Atlas getLinearPierConnectedToFerryAtlas()
+    {
+        return this.linearPierConnectedToFerryAtlas;
+    }
+
     public Atlas getLinearPierWithHighwayTag()
     {
         return this.linearPierWithHighwayTagAtlas;
@@ -76,13 +75,13 @@ public class InvalidPiersCheckTestRule extends CoreTestRule
         return this.polygonalPierConnectedToBuildingAtlas;
     }
 
+    public Atlas getPolygonalPierOverlappingHighwayAtlas()
+    {
+        return this.polygonalPierOverlappingHighwayAtlas;
+    }
+
     public Atlas getValidPierAtlas()
     {
         return this.validPierAtlas;
-    }
-
-    public Atlas getlinearPierConnectedToFerryAtlas()
-    {
-        return this.linearPierConnectedToFerryAtlas;
     }
 }
