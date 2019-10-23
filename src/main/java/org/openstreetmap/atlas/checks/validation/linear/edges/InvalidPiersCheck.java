@@ -132,28 +132,32 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         final Polygon osmWayAsPolygon = new Polygon(locationsInOsmWay);
         // Check if the OSM way has linear geometry or polygonal geometry
         final boolean isPolygonal = this.hasPolygonalGeometry(listOfEdgesFormingOSMWay, edge);
+        final int instructionIndex = isPolygonal ? 1 : 0;
+        // We will mark
+        this.markAsFlagged(edge.getOsmIdentifier());
+        // We can flag the edge if it has a highway tag with the right priority or is a polygonal
+        // pier with building tag or is a polygonal pier with amenity=ferry_terminal
+        if ((HighwayTag.highwayTag(edge).isPresent() && HighwayTag.highwayTag(edge).get()
+                .isMoreImportantThanOrEqualTo(this.minimumHighwayTypePier))
+                || (isPolygonal && IS_BUILDING.test(edge))
+                || (isPolygonal && IS_FERRY_TERMINAL.test(edge)))
+        {
+            return Optional.of(this.createFlag(edgesFormingOSMWay,
+                    this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())));
+
+        }
         // Check if the pier has connections to ferry route or buildings
         final boolean isConnectedToFerryOrBuilding = this.isConnectedToFerryOrBuilding(edge,
                 listOfEdgesFormingOSMWay, isPolygonal, osmWayAsPolygon);
         // Check if the pier overlaps a highway or not
         final boolean overlapsHighway = this.pierOverlapsHighway(edge, listOfEdgesFormingOSMWay,
                 osmWayAsPolygon, isPolygonal);
-        // A pier is valid if it either has a highway tag or it overlaps a highway or is connected
-        // to a building or ferry route or is a building with polygonal geometry or is a ferry
-        // terminal with polygonal geometry
-        final boolean isValidPier = (HighwayTag.highwayTag(edge).isPresent() && HighwayTag
-                .highwayTag(edge).get().isMoreImportantThanOrEqualTo(this.minimumHighwayTypePier))
-                || overlapsHighway || isConnectedToFerryOrBuilding
-                || (isPolygonal && IS_BUILDING.test(edge))
-                || (isPolygonal && IS_FERRY_TERMINAL.test(edge));
-        this.markAsFlagged(edge.getOsmIdentifier());
-        if (!isValidPier)
-        {
-            return Optional.empty();
-        }
-        final int instructionIndex = isPolygonal ? 1 : 0;
-        return Optional.of(this.createFlag(edgesFormingOSMWay,
-                this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())));
+        // Flag the pier if it overlaps a highway or is connected
+        // to a building or ferry route or overlaps a building
+        return overlapsHighway || isConnectedToFerryOrBuilding
+                ? Optional.of(this.createFlag(edgesFormingOSMWay,
+                        this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())))
+                : Optional.empty();
     }
 
     @Override
