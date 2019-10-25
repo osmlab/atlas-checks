@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -52,6 +53,43 @@ public class DatabaseConnectionTest
         {
             logger.info("Error mocking getConnection().", error);
         }
+    }
+
+    @Test
+    public void getDefaultSchemaTest()
+    {
+        final DatabaseConnection databaseConnection = new DatabaseConnection("localhost/testdb");
+
+        Assert.assertEquals("public", databaseConnection.getSchema());
+    }
+
+    @Test
+    public void getEmptyQueryParamTest()
+    {
+        final DatabaseConnection databaseConnection = new DatabaseConnection("localhost/testdb");
+        final Map<String, String> queryParameters = databaseConnection.getQueryParameters();
+
+        Assert.assertEquals(0, queryParameters.size());
+    }
+
+    @Test
+    public void getQueryParamTest()
+    {
+        final DatabaseConnection databaseConnection = new DatabaseConnection(
+                "localhost/testdb?user=testuser&password=funnypassword");
+        final Map<String, String> queryParameters = databaseConnection.getQueryParameters();
+
+        Assert.assertEquals("testuser", queryParameters.get("user"));
+        Assert.assertEquals("funnypassword", queryParameters.get("password"));
+    }
+
+    @Test
+    public void getSchemaTest()
+    {
+        final DatabaseConnection databaseConnection = new DatabaseConnection(
+                "localhost/testdb?currentSchema=testschema");
+
+        Assert.assertEquals("testschema", databaseConnection.getSchema());
     }
 
     @Test

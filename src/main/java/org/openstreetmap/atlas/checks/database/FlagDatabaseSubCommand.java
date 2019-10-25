@@ -142,8 +142,10 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
      *
      * @param connection
      *            jdbc Connection object
+     * @param schemaName
+     *            Name of database schema
      */
-    public void createDatabaseSchema(final Connection connection)
+    public void createDatabaseSchema(final Connection connection, final String schemaName)
     {
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(DatabaseConnection.class.getResourceAsStream("schema.sql")));
@@ -153,7 +155,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
             final String query = ScriptUtils
                     .readScript(lnReader, ScriptUtils.DEFAULT_COMMENT_PREFIX,
                             ScriptUtils.DEFAULT_STATEMENT_SEPARATOR)
-                    .replace("{schema}", connection.getSchema());
+                    .replace("{schema}", schemaName);
 
             sql.execute(query);
             logger.info("Successfully created database schema.");
@@ -180,7 +182,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
             final String inputPath = this.optionAndArgumentDelegate
                     .getOptionArgument(FLAG_PATH_INPUT).get();
             this.timestamp = new Timestamp(Instant.now().toEpochMilli());
-            this.createDatabaseSchema(databaseConnection);
+            this.createDatabaseSchema(databaseConnection, database.getSchema());
 
             new File(inputPath).listFilesRecursively().forEach(file ->
             {
