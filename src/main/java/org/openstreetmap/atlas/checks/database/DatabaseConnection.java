@@ -48,6 +48,11 @@ public class DatabaseConnection implements AutoCloseable
         return DriverManager.getConnection(String.format("jdbc:%s", this.connectionURI.toString()));
     }
 
+    public URI getConnectionURI()
+    {
+        return this.connectionURI;
+    }
+
     public Map<String, String> getQueryParameters()
     {
         return this.queryParameters;
@@ -59,16 +64,20 @@ public class DatabaseConnection implements AutoCloseable
                 DEFAULT_DATABASE_SCHEMA);
     }
 
-    public URI getConnectionURI()
-    {
-        return this.connectionURI;
-    }
-
     private URI createConnectionURI(final String connectionString)
     {
         return URI.create(String.format("postgresql://%s", connectionString));
     }
 
+    /**
+     * Converts the URI query parameters into a Map<String,String>. For example,
+     * localhost/dbname?username=dan&currentSchema=private would return a map with two elements, 1.
+     * key:username, value:dan 2. key:currentSchema, value:private
+     * 
+     * @param connectionURI
+     *            Database connection URI
+     * @return Connection URI query parameters in a Map.
+     */
     private Map<String, String> uriQueryToMap(final URI connectionURI)
     {
         final Map<String, String> queryMap = new HashMap<>();
