@@ -90,7 +90,7 @@ public class FlagDatabaseSubCommandTest
 
         // Verifies that createDatabaseSchema statements are called
         Mockito.verify(this.connection).createStatement();
-        Mockito.verify(this.connection).getSchema();
+        Mockito.verify(this.dbConnection).getSchema();
         Mockito.verify(this.statement).execute(Mockito.anyString());
     }
 
