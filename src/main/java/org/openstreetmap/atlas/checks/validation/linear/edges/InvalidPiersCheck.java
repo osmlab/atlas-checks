@@ -44,12 +44,18 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class InvalidPiersCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = 6011101860745289836L;
-    private static final String LINEAR_WITH_PIER_TAG = "This way {0,number,#} has a \"man_made=pier\" tag but has a linear geometry. "
+    private static final String LINEAR_GEOMETRY_WITH_HIGHWAY_TAG = "This way {0,number,#} is a linear pier with \"man_made=pier\"tag and a highway tag. "
             + "Please make necessary changes to convert its geometry to a polygon and add tag, \"area=yes\".";
-    private static final String POLYGON_WITH_NO_AREA_TAG = "This way {0,number,#} has a \"man_made=pier\" and a polygon geometry, "
-            + "but is missing \"area=yes\" tag.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(LINEAR_WITH_PIER_TAG,
-            POLYGON_WITH_NO_AREA_TAG);
+    private static final String POLYGONAL_GEOMETRY_WITH_BUILDING_AND_HIGHWAY_TAG = "This way {0,number,#} is a ferry terminal or a building or a highway with \"man_made=pier\" tag and has a polygonal geometry, "
+            + "but is missing \"area=yes\" tag. Please add tag \"area=yes\" to the pier.";
+    private static final String LINEAR_GEOMETRY_WITH_OVERLAPPING_HIGHWAY_AND_BUILDING = "This way {0,number,#} is a linear pier with \"man_made=pier\" tag and has either overlapping highways or buildings or is connected to buildings or ferry routes or both. "
+            + "Please make necessary changes to convert its geometry to a polygon and add tag, \"area=yes\".";
+    private static final String POLYGONAL_GEOMETRY_WITH_OVERLAPPING_HIGHWAY_AND_BUILDING = "This way {0,number,#} is a polygonal pier with \"man_made=pier\" tag and has either overlapping highways or buildings or is connected to buildings or ferry routes or both, "
+            + "but is missing \"area=yes\" tag. Please add tag \"area=yes\" to the pier.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            LINEAR_GEOMETRY_WITH_HIGHWAY_TAG, POLYGONAL_GEOMETRY_WITH_BUILDING_AND_HIGHWAY_TAG,
+            LINEAR_GEOMETRY_WITH_OVERLAPPING_HIGHWAY_AND_BUILDING,
+            POLYGONAL_GEOMETRY_WITH_OVERLAPPING_HIGHWAY_AND_BUILDING);
     private static final Predicate<AtlasObject> HAS_NO_AREA_TAG = atlasObject -> !Validators
             .isOfType(atlasObject, AreaTag.class, AreaTag.YES);
     private static final Predicate<AtlasObject> IS_FERRY_TERMINAL = atlasObject -> Validators
@@ -60,6 +66,10 @@ public class InvalidPiersCheck extends BaseCheck<Long>
             .toString();
     private static final String MINIMUM_HIGHWAY_TYPE_PIER_DEFAULT = HighwayTag.TOLL_GANTRY
             .toString();
+    private static final int INSTRUCTION_INDEX_0 = 0;
+    private static final int INSTRUCTION_INDEX_1 = 1;
+    private static final int INSTRUCTION_INDEX_2 = 2;
+    private static final int INSTRUCTION_INDEX_3 = 3;
     private final HighwayTag minimumHighwayTypeOverlappingEdge;
     private final HighwayTag minimumHighwayTypePier;
 
@@ -136,7 +146,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         final Polygon osmWayAsPolygon = new Polygon(locationsInOsmWay);
         // Check if the OSM way has linear geometry or polygonal geometry
         final boolean isPolygonal = this.hasPolygonalGeometry(listOfEdgesFormingOSMWay, edge);
-        final int instructionIndex = isPolygonal ? 1 : 0;
+        final int instructionIndex;
         // We can flag the edge if it has a highway tag with the right priority or is a polygonal
         // pier with building tag or is a polygonal pier with amenity=ferry_terminal
         if ((HighwayTag.highwayTag(edge).isPresent() && HighwayTag.highwayTag(edge).get()
@@ -144,6 +154,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                 || (isPolygonal && IS_BUILDING.test(edge))
                 || (isPolygonal && IS_FERRY_TERMINAL.test(edge)))
         {
+            instructionIndex = isPolygonal ? INSTRUCTION_INDEX_1 : INSTRUCTION_INDEX_0;
             return Optional.of(this.createFlag(edgesFormingOSMWay,
                     this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())));
 
@@ -156,6 +167,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
                 osmWayAsPolygon, isPolygonal);
         // Flag the pier if it overlaps a highway or is connected
         // to a building or ferry route or overlaps a building
+        instructionIndex = isPolygonal ? INSTRUCTION_INDEX_3 : INSTRUCTION_INDEX_2;
         return overlapsHighway || isConnectedToFerryOrBuilding
                 ? Optional.of(this.createFlag(edgesFormingOSMWay,
                         this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())))
