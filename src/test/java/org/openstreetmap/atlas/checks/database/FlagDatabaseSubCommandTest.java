@@ -83,14 +83,14 @@ public class FlagDatabaseSubCommandTest
         final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
         Mockito.when(this.dbConnection.getConnection()).thenReturn(this.connection);
         Mockito.when(this.connection.createStatement()).thenReturn(this.statement);
-        Mockito.when(this.connection.getSchema()).thenReturn("");
+        Mockito.when(this.dbConnection.getSchema()).thenReturn("");
         Mockito.when(this.statement.execute(Mockito.anyString())).thenReturn(true);
 
-        command.createDatabaseSchema(this.connection);
+        command.createDatabaseSchema(this.connection, this.dbConnection.getSchema());
 
         // Verifies that createDatabaseSchema statements are called
         Mockito.verify(this.connection).createStatement();
-        Mockito.verify(this.connection).getSchema();
+        Mockito.verify(this.dbConnection).getSchema();
         Mockito.verify(this.statement).execute(Mockito.anyString());
     }
 
