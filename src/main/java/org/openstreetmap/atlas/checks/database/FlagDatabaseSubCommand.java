@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.database;
 
+import static org.openstreetmap.atlas.checks.constants.CommonConstants.EMPTY_STRING;
 import static org.openstreetmap.atlas.checks.utility.FileUtility.LogOutputFileType;
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.FEATURES;
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
@@ -53,9 +54,11 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
 {
     private static final String FLAG_PATH_INPUT = "flag_path";
     private static final String DATABASE_URL_INPUT = "database_url";
+    private static final String RUN_URI_INPUT = "run_uri";
+    private static final String SOFTWARE_VERSION_INPUT = "software_version";
     private static final String ISO_COUNTRY_CODE = "iso_country_code";
     private static final String OSM_ID_LEGACY = "osmid";
-    private static final String CREATE_FLAG_SQL = "INSERT INTO flag(flag_id, check_name, instructions, date_created) VALUES (?,?,?,?);";
+    private static final String CREATE_FLAG_SQL = "INSERT INTO flag(flag_id, check_name, instructions, run_uri, software_version, date_created) VALUES (?,?,?,?,?,?);";
     private static final String CREATE_FEATURE_SQL = String.format(
             "INSERT INTO feature (flag_id, geom, osm_id, atlas_id, iso_country_code, tags, item_type, date_created) VALUES (?,%s,?,?,?,?);",
             "ST_GeomFromGeoJSON(?), ?, ?");
@@ -237,7 +240,11 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
             sql.setString(1, flag.getIdentifier());
             sql.setString(2, flag.getChallengeName().orElse(""));
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
-            sql.setObject(FOUR, this.timestamp);
+            sql.setString(FOUR, this.optionAndArgumentDelegate.getOptionArgument(RUN_URI_INPUT)
+                    .orElse(EMPTY_STRING));
+            sql.setString(FIVE, this.optionAndArgumentDelegate
+                    .getOptionArgument(SOFTWARE_VERSION_INPUT).orElse(EMPTY_STRING));
+            sql.setObject(SIX, this.timestamp);
 
             sql.executeUpdate();
         }
@@ -371,6 +378,11 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
                 OptionOptionality.REQUIRED, FLAG_PATH_INPUT);
         this.registerOptionWithRequiredArgument(DATABASE_URL_INPUT, 't',
                 "Database connection string", OptionOptionality.REQUIRED, DATABASE_URL_INPUT);
+        this.registerOptionWithRequiredArgument(RUN_URI_INPUT, 'u', "Flag generation URI",
+                OptionOptionality.OPTIONAL, RUN_URI_INPUT);
+        this.registerOptionWithRequiredArgument(SOFTWARE_VERSION_INPUT, 'v',
+                "Version of the software that generated the flags.", OptionOptionality.OPTIONAL,
+                SOFTWARE_VERSION_INPUT);
         super.registerOptionsAndArguments();
     }
 

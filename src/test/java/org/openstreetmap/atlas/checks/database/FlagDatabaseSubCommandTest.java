@@ -101,6 +101,9 @@ public class FlagDatabaseSubCommandTest
         final String flag = this.getResource("checkflags1.log").get(0);
         final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
 
+        // Run the command with the expectation it will fail, to run the argument parser.
+        command.runSubcommand("--flag_path=/bad/path", "--database_url=none");
+        // Run executeFlagStatement that depends on arguments being parsed.
         command.executeFlagStatement(this.preparedStatement, checkFlag);
 
         Mockito.verify(this.preparedStatement).executeUpdate();
@@ -134,6 +137,10 @@ public class FlagDatabaseSubCommandTest
     {
         final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
         final List<String> flags = this.getResource("checkflags1.log");
+
+        // Run the command with the expectation it will fail, to run the argument parser.
+        command.runSubcommand("--flag_path=/bad/path", "--database_url=none");
+        // Run processCheckFlags that depends on arguments being parsed.
         command.processCheckFlags(flags, this.preparedStatement, this.preparedStatement2);
 
         Mockito.verify(this.preparedStatement, Mockito.times(2)).executeUpdate();
