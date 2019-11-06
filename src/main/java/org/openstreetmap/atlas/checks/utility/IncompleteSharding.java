@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.GeometricSurface;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.index.RTree;
 import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.Sharding;
+import org.openstreetmap.atlas.geography.sharding.SlippyTile;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
@@ -31,7 +33,7 @@ public class IncompleteSharding implements Sharding
     }
 
     @Override
-    public Iterable<? extends Shard> neighbors(final Shard shard)
+    public Iterable<Shard> neighbors(final Shard shard)
     {
         if (this.shardSet.contains(shard))
         {
@@ -42,14 +44,26 @@ public class IncompleteSharding implements Sharding
     }
 
     @Override
-    public Iterable<? extends Shard> shards(final GeometricSurface surface)
+    public Shard shardForName(final String name)
+    {
+        final SlippyTile result = SlippyTile.forName(name);
+
+        if (!this.shardSet.contains(result)){
+            throw new CoreException("This sharding does not include tile {}", name);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Iterable<Shard> shards(final GeometricSurface surface)
     {
         return this.shards.get(surface.bounds()).stream()
                 .filter(shard -> surface.overlaps(shard.bounds())).collect(Collectors.toList());
     }
 
     @Override
-    public Iterable<? extends Shard> shardsCovering(final Location location)
+    public Iterable<Shard> shardsCovering(final Location location)
     {
         return this.shards.get(location.bounds()).stream()
                 .filter(shard -> shard.bounds().fullyGeometricallyEncloses(location))
@@ -57,7 +71,7 @@ public class IncompleteSharding implements Sharding
     }
 
     @Override
-    public Iterable<? extends Shard> shardsIntersecting(final PolyLine polyLine)
+    public Iterable<Shard> shardsIntersecting(final PolyLine polyLine)
     {
         return this.shards.get(polyLine.bounds()).stream()
                 .filter(shard -> shard.bounds().overlaps(polyLine)).collect(Collectors.toList());
