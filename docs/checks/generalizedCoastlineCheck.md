@@ -14,6 +14,8 @@ This check exists to address the above problems with generalized coastlines. Edi
 The check itself flags any LineItem that has the `natural=coastline` tag, and also has a percentage of [Segment](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/)s
 that are longer than a configured value that surpasses some threshold percentage. If a sharp angle configurable is provided, locations of sharp angles of an already flagged coastline are marked.
 
+Optionally and in addition to the above, the check can be configured to flag only those coastlines that have certain tags (default: source=PGS). This and the sharp angle spotting switches can be turned on/off via the configuration specs for the check.
+
 #### Live Examples
 
 1. Line [id:676900620](https://www.openstreetmap.org/way/676900620#map=18/63.77414/-20.81246&layers=T) is longer than

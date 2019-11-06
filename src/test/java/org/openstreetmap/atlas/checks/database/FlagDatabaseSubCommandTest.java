@@ -49,6 +49,8 @@ public class FlagDatabaseSubCommandTest
     private Statement statement = Mockito.mock(Statement.class);
     @Mock
     private PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+    @Mock
+    private PreparedStatement preparedStatement2 = Mockito.mock(PreparedStatement.class);
 
     @Test
     public void batchFeatureStatementTest() throws IOException, SQLException
@@ -58,20 +60,8 @@ public class FlagDatabaseSubCommandTest
         final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
         final JsonElement feature = new JsonParser().parse(flag).getAsJsonObject().get("features");
 
-        command.batchFlagFeatureStatement(this.preparedStatement, checkFlag,
+        command.batchFlagFeatureStatement(this.preparedStatement, checkFlag, 1,
                 feature.getAsJsonArray().get(0).getAsJsonObject());
-
-        Mockito.verify(this.preparedStatement).addBatch();
-    }
-
-    @Test
-    public void batchFlagStatementTest() throws IOException, SQLException
-    {
-        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
-        final String flag = this.getResource("checkflags1.log").get(0);
-        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
-
-        command.batchFlagStatement(this.preparedStatement, checkFlag);
 
         Mockito.verify(this.preparedStatement).addBatch();
     }
@@ -93,15 +83,30 @@ public class FlagDatabaseSubCommandTest
         final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
         Mockito.when(this.dbConnection.getConnection()).thenReturn(this.connection);
         Mockito.when(this.connection.createStatement()).thenReturn(this.statement);
-        Mockito.when(this.connection.getSchema()).thenReturn("");
+        Mockito.when(this.dbConnection.getSchema()).thenReturn("");
         Mockito.when(this.statement.execute(Mockito.anyString())).thenReturn(true);
 
-        command.createDatabaseSchema(this.connection);
+        command.createDatabaseSchema(this.connection, this.dbConnection.getSchema());
 
         // Verifies that createDatabaseSchema statements are called
         Mockito.verify(this.connection).createStatement();
-        Mockito.verify(this.connection).getSchema();
+        Mockito.verify(this.dbConnection).getSchema();
         Mockito.verify(this.statement).execute(Mockito.anyString());
+    }
+
+    @Test
+    public void executeFlagStatementTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final String flag = this.getResource("checkflags1.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+
+        // Run the command with the expectation it will fail, to run the argument parser.
+        command.runSubcommand("--flag_path=/bad/path", "--database_url=none");
+        // Run executeFlagStatement that depends on arguments being parsed.
+        command.executeFlagStatement(this.preparedStatement, checkFlag);
+
+        Mockito.verify(this.preparedStatement).executeUpdate();
     }
 
     @Test
@@ -125,6 +130,21 @@ public class FlagDatabaseSubCommandTest
 
         Assert.assertEquals(221079243, osmId1);
         Assert.assertEquals(167709671, osmId2);
+    }
+
+    @Test
+    public void processCheckFlagsTest() throws IOException, SQLException
+    {
+        final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
+        final List<String> flags = this.getResource("checkflags1.log");
+
+        // Run the command with the expectation it will fail, to run the argument parser.
+        command.runSubcommand("--flag_path=/bad/path", "--database_url=none");
+        // Run processCheckFlags that depends on arguments being parsed.
+        command.processCheckFlags(flags, this.preparedStatement, this.preparedStatement2);
+
+        Mockito.verify(this.preparedStatement, Mockito.times(2)).executeUpdate();
+        Mockito.verify(this.preparedStatement2).executeBatch();
     }
 
     @Test
