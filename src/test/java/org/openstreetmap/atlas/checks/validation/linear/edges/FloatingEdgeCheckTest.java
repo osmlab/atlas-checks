@@ -23,6 +23,13 @@ public class FloatingEdgeCheckTest
                     "{\"FloatingEdgeCheck\":{\"highway.minimum\": \"PRIMARY_LINK\",\"length\":{\"maximum.kilometers\":16.093,\"minimum.meters\": 1.0}}}"));
 
     @Test
+    public void testAirportIntersectingEdge()
+    {
+        this.verifier.actual(this.setup.airportAtlas(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testBidirectionalFloatingEdge()
     {
         this.verifier.actual(this.setup.floatingBidirectionalEdgeAtlas(), this.check);
@@ -43,6 +50,13 @@ public class FloatingEdgeCheckTest
         this.verifier.actual(this.setup.floatingEdgeAtlas(), this.check);
         this.verifier.verifyNotNull();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testFloatingEdgeContainedInAirportPolygon()
+    {
+        this.verifier.actual(this.setup.floatingEdgeInAirportPolygon(), this.check);
+        this.verifier.verifyEmpty();
     }
 
     @Test

@@ -147,10 +147,12 @@
   "GeneralizedCoastlineCheck": {
     "node.minimum.distance": 100.0,
     "node.minimum.threshold": 30.0,
+    "coastline.tags.filters": "source->PGS",
+    "angle.minimum.threshold": 97.0,
     "challenge": {
-      "description": "Coastlines whose nodes are too far apart.",
+      "description": "Coastlines whose nodes are too far apart, and which may have too sharp of angles.",
       "blurb": "Ways",
-      "instruction": "Open your favorite editor and add more nodes to the coastline.",
+      "instruction": "Open your favorite editor and add more nodes to the coastline to increase the resolution of the coastline's geometry.",
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "tags":"coastline"
@@ -293,6 +295,20 @@
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
       },
       "tags":"highway"
+    }
+  },
+  "RoundaboutConnectorCheck": {
+    "minimum.highway.type": "service",
+    "threshold": {
+      "one_way": 100.0,
+      "two_way": 130.0
+    },
+    "challenge": {
+      "description": "Roads connected to roundabouts at too sharp an angle.",
+      "blurb": "Sharp intersections between roundabouts and connecting roads are often digitization/navigation errors. Adjust these intersections to create smoother transitions in and out of roundabouts.",
+      "instruction": "Open your favorite editor and edit the flagged ways and/or the surrounding network to make smooth connection from the connector to the roundabout.",
+      "difficulty": "HARD",
+      "tags": "highway,junction,roundabout"
     }
   },
   "RoundaboutValenceCheck": {

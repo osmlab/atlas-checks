@@ -37,14 +37,4 @@ Atlas Checks have been developed to take advantage of distributed computing by r
 See [Development docs](docs/dev.md) for more information about developing and best practices for new Atlas Checks.
 
 ## Currently Available Checks
-
-- [PoolSizeCheck](docs/tutorials/tutorial1-PoolSizeCheck.md)
-- [BuildingRoadIntersectionCheck](docs/checks/buildingRoadIntersectionCheck.md)
-- [SelfIntersectingPolylineCheck](docs/checks/selfIntersectingPolylineCheck.md)
-- [FloatingEdgeCheck](docs/checks/floatingEdgeCheck.md)
-- [RoundAboutClosedLoopCheck](docs/checks/roundaboutClosedLoopCheck.md)
-- [SharpAngleCheck](docs/checks/sharpAngleCheck.md)
-- [SinkIslandCheck](docs/tutorials/tutorial3-SinkIslandCheck.md)
-- [SnakeRoadCheck](docs/checks/snakeRoadCheck.md)
-- [DuplicateNodeCheck](docs/checks/duplicateNodeCheck.md)
-- [OrphanNodeCheck](docs/tutorials/tutorial2-OrphanNodeCheck.md)
+A document with a list of tables for [Available checks](docs/available_checks.md) is available and includes descriptions and links to documentation for each check.  Each table is organized by check type.
