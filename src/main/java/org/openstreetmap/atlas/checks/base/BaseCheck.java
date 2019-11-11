@@ -498,7 +498,11 @@ public abstract class BaseCheck<T> implements Check, Serializable
     }
 
     /**
-     * @return
+     * Determines if the given AtlasObject has a last_edit_time tag, and the value of that tag is
+     * within the range specified in the configuration file.
+     *
+     * @return true if the last_edit_time tag's value is within the filter range or if it doesn't
+     *         exist, false otherwise
      */
     private boolean isWithinEditTimeRange(final AtlasObject incomingObject)
     {
@@ -513,12 +517,15 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 || this.timeFilterMax == null && objectDate.isMoreThanOrEqualsTo(this.timeFilterMin)
                 || this.timeFilterMin == null && objectDate.isLessThanOrEqualsTo(this.timeFilterMax)
                 || this.timeFilterMax != null && this.timeFilterMin != null
-                && objectDate.isLessThanOrEqualsTo(this.timeFilterMax)
-                && objectDate.isMoreThanOrEqualsTo(this.timeFilterMin);
+                        && objectDate.isLessThanOrEqualsTo(this.timeFilterMax)
+                        && objectDate.isMoreThanOrEqualsTo(this.timeFilterMin);
     }
 
     /**
-     * @return
+     * Given a time string in the form YYY-MM-DD, convert it to a {@link Duration} object. The time
+     * string comes from the configuration file.
+     *
+     * @return a {@link Duration} representing the time string.
      */
     private Function<String, Duration> parseDate()
     {
