@@ -1,7 +1,10 @@
 package org.openstreetmap.atlas.checks.base;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -20,6 +23,7 @@ import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.tags.LastEditTimeTag;
 import org.openstreetmap.atlas.tags.ManMadeTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -27,6 +31,7 @@ import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.collections.OptionalIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.filters.AtlasEntityPolygonsFilter;
+import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +57,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     public static final String PARAMETER_WHITELIST_TAGS = "tags.filter";
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
     private static final String PARAMETER_LOCALE_KEY = "locale";
+    private static final String DEFAULT_TIME_FILTER_MIN = "";
+    private static final String DEFAULT_TIME_FILTER_MAX = "";
+
     private static final Logger logger = LoggerFactory.getLogger(BaseCheck.class);
     private static final long serialVersionUID = 4427673331949586822L;
     private final boolean acceptPiers;
@@ -68,6 +76,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     // geo filter for all checks
     private final AtlasEntityPolygonsFilter globalPolygonFilter;
     private TaggableFilter tagFilter = null;
+    private final Duration timeFilterMin;
+    private final Duration timeFilterMax;
+    private static final DateFormat DATE_FORMAT_USER = new SimpleDateFormat("yyyy-MM-dd");
 
     /**
      * Default constructor
@@ -114,6 +125,11 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 configurationValue(configuration,
                         AtlasEntityPolygonsFilter.EXCLUDED_MULTIPOLYGONS_KEY,
                         Collections.emptyMap()));
+
+        this.timeFilterMin = configuration
+                .get("_TimeFilter.min", DEFAULT_TIME_FILTER_MIN, this.parseDate()).value();
+        this.timeFilterMax = configuration
+                .get("_TimeFilter.max", DEFAULT_TIME_FILTER_MAX, this.parseDate()).value();
     }
 
     @Override
@@ -138,6 +154,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
     public final Predicate<AtlasObject> checkObjectFilter()
     {
         return object -> this.validCheckForObject(object) && this.tagFilter.test(object)
+                && this.isWithinEditTimeRange(object)
                 && (!(object instanceof AtlasEntity)
                         || this.checkPolygonFilter.test((AtlasEntity) object)
                                 && this.globalPolygonFilter.test((AtlasEntity) object))
@@ -478,5 +495,48 @@ public abstract class BaseCheck<T> implements Check, Serializable
     private String formatKey(final String name, final String key)
     {
         return String.format("%s.%s", name, key);
+    }
+
+    /**
+     * @return
+     */
+    private boolean isWithinEditTimeRange(final AtlasObject incomingObject)
+    {
+        final Optional<String> lastEditTimeTag = incomingObject.getTag(LastEditTimeTag.KEY);
+        // If there's no last_edit_time tag, we decide to still evaluate the object downstream.
+        if (!lastEditTimeTag.isPresent() || lastEditTimeTag.get().isEmpty())
+        {
+            return true;
+        }
+        final Duration objectDate = Duration.milliseconds(Long.parseLong(lastEditTimeTag.get()));
+        return this.timeFilterMin == null && this.timeFilterMax == null
+                || this.timeFilterMax == null && objectDate.isMoreThanOrEqualsTo(this.timeFilterMin)
+                || this.timeFilterMin == null && objectDate.isLessThanOrEqualsTo(this.timeFilterMax)
+                || this.timeFilterMax != null && this.timeFilterMin != null
+                && objectDate.isLessThanOrEqualsTo(this.timeFilterMax)
+                && objectDate.isMoreThanOrEqualsTo(this.timeFilterMin);
+    }
+
+    /**
+     * @return
+     */
+    private Function<String, Duration> parseDate()
+    {
+        return input ->
+        {
+            // No time filter specified in config file
+            if (input.isEmpty())
+            {
+                return null;
+            }
+            try
+            {
+                return Duration.milliseconds(DATE_FORMAT_USER.parse(input).getTime());
+            }
+            catch (final ParseException exception)
+            {
+                return null;
+            }
+        };
     }
 }

@@ -6,6 +6,10 @@
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
     "enabled.value.default": true
   },
+  "_TimeFilter": {
+    "min": "2010-01-01",
+    "max": "2015-07-29"
+  },
   "PoolSizeCheck": {
     "surface": {
       "maximum": 1000.0,
