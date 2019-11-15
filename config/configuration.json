@@ -61,6 +61,39 @@
       "tags":"highway,landuse"
     }
   },
+  "BigNodeBadDataCheck": {
+    "max.number.paths.threshold": 25,
+    "max.number.junction.edges.threshold": 2,
+    "highway.type": {
+      "minimum": "toll_gantry",
+      "maximum": "motorway"
+    },
+    "challenge": {
+      "description": "Bad data in intersections can create BigNodes that have incredibly high numbers of paths.",
+      "blurb": "Big Nodes with bad data have too many paths.",
+      "instruction": "Open your favorite editor and edit the intersection.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
+    }
+  },
   "BuildingRoadIntersectionCheck": {
     "car.navigable": true,
     "challenge": {
@@ -85,6 +118,24 @@
       "description": "Task contains Area's with mutually exclusive tag combinations.",
       "blurb": "Conflicting Area Tag Combination",
       "instruction": "Open your favorite editor, check the instruction and modify the tags that are considered conflicting",
+      "difficulty": "EASY"
+    }
+  },
+  "ConflictingTagCombinationCheck": {
+    "tags.conflicting.filters": [
+      "highway->*&building->*||route->ferry||natural->*||landuse->*||place->*",
+      "service->*&highway->!service&highway->!construction&railway->!&waterway->!canal",
+      "motor_vehicle->yes&motorcar->no",
+      "motor_vehicle->no&motorcar->yes",
+      "motor_vehicle->yes&vehicle->no",
+      "motorcar->yes&vehicle->no",
+      "motor_vehicle->no&vehicle->yes",
+      "motorcar->no&vehicle->yes"
+    ],
+    "challenge": {
+      "description": "OSM has numerous tag keys and values. These tags could be combined and used together in the same feature. However, tags might have conflicting values.",
+      "blurb": "Verify conflicting tags.",
+      "instruction": "Open your favorite editor, check the instruction for the task and then modify the tags that are considered conflicting.",
       "difficulty": "EASY"
     }
   },
