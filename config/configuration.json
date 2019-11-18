@@ -169,6 +169,33 @@
       "tags": "highway"
     }
   },
+  "DuplicateLocationInPolyLineCheck": {
+    "challenge": {
+      "description": "Tasks will include locations that have been repeated within a single polyline.",
+      "blurb": "Repeating locations in a polyline",
+      "instruction": "Open your favorite editor and remove the duplicate locations, so that only a single location remains.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
+    }
+  },
   "DuplicateNodeCheck": {
     "challenge": {
       "description": "Tasks contain node locations that have duplicate nodes found.",
