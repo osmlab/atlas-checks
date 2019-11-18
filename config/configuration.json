@@ -139,6 +139,36 @@
       "difficulty": "EASY"
     }
   },
+  "ConnectivityCheck": {
+    "nearby.edge.distance.meters": 2.0,
+    "blacklisted.highway.filter": "highway->no",
+    "challenge": {
+      "description": "Checks if a node should be connected to a nearby node or edge.",
+      "blurb": "Connectivity Check",
+      "instruction": "Open your favorite editor and check if the referenced node should be connected to a nearby node or edge.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
+  },
   "DuplicateNodeCheck": {
     "challenge": {
       "description": "Tasks contain node locations that have duplicate nodes found.",
