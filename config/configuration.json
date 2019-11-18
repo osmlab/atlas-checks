@@ -239,6 +239,72 @@
       "tags":"coastline"
     }
   },
+  "ImproperAndUnknownRoadNameCheck": {
+    "names.improper": [
+      "street",
+      "express",
+      "avenue",
+      "drive"
+    ],
+    "challenge": {
+      "description": "Tasks contain roads named as a road type, form of way, a road surface material or the string \"unknown\". These are common mistake in iD.",
+      "blurb": "Incorrect road names",
+      "instruction": "Open your favorite editor and edit/remove the incorrect names",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
+  },
+  "InconsistentRoadClassificationCheck": {
+    "long.edge.threshold": 1000.0,
+    "minimum.highway.type": "tertiary_link",
+    "maximum.direction.change.degrees": 30.0,
+    "maximum.edge.length": 500.0,
+    "challenge": {
+      "description": "Tasks that identify roads, that transition from one classification to another and then back to the original classification. The initial way will be used as reference to find out inconsistency. This check will skip roundabouts by default. Roundabouts take the type of highest priority way connected. However, if a roundabout is not properly tagged (missing junction=roundabout), then it will probably be flagged by this check. The solution is to add junction=roundabout tag and set the highway tag to the highest priority highway tag connecting to junction. Links need to be tagged similar to roundabouts. By default a link way will not be used as reference way. However, link ways could still cause inconsistencies.",
+      "blurb": "Classifications that transition back and forth over a road going in a direction.",
+      "instruction": "Open your editor and change the classification that is inconsistent. If a roundabout is the cause of inconsistency, then tag it with junction=roundabout.",
+      "difficulty": "HARD",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
+  },
   "IntersectingBuildingsCheck":
   {
     "intersection.lower.limit": 0.01,
