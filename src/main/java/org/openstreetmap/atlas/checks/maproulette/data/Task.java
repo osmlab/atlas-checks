@@ -58,7 +58,9 @@ public class Task
     protected static final String TASK_PARENT_ID = "parent";
     protected static final String TASK_TYPE = "type";
     private static final String KEY_DESCRIPTION = "description";
+    private static final String GENERATOR = "generator";
     private String challengeName;
+    private String checkName;
     private Optional<JsonArray> geoJson = Optional.empty();
     private String instruction;
     private final Set<PointInformation> points = new HashSet<>();
@@ -110,6 +112,11 @@ public class Task
         return this.challengeName;
     }
 
+    public String getCheckName()
+    {
+        return this.checkName;
+    }
+
     public Optional<JsonArray> getGeoJson()
     {
         return this.geoJson;
@@ -145,6 +152,11 @@ public class Task
     public void setChallengeName(final String challengeName)
     {
         this.challengeName = challengeName;
+    }
+
+    public void setCheckName(final String checkName)
+    {
+        this.checkName = checkName;
     }
 
     public void setGeoJson(final Optional<JsonArray> geoJson)
@@ -205,6 +217,10 @@ public class Task
             feature.add(TASK_FEATURE_PROPERTIES, pointInformation);
             features.add(feature);
         });
+
+        final JsonObject name = new JsonObject();
+        name.add(GENERATOR, new JsonPrimitive(this.checkName));
+        features.add(name);
 
         geoJson.ifPresent(json -> json.forEach(features::add));
 

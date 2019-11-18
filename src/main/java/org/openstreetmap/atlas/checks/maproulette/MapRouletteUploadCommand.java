@@ -121,10 +121,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                             try
                             {
                                 final Challenge challenge = this
-                                        .getChallenge(task.getChallengeName(), instructions);
+                                        .getChallenge(task.getCheckName(), instructions);
                                 // Prepend the challenge name with the ISO country code, if one
                                 // exists. Then try to add the task for upload
-                                countryCode.ifPresent(iso -> challenge.setName(String.join(" - ",
+                                countryCode.ifPresent(iso -> challenge.setDisplayName(String.join(" - ",
                                         countryCode.get(), task.getChallengeName())));
                                 this.addTask(challenge, task);
                             }
@@ -165,7 +165,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Gson gson = new GsonBuilder().disableHtmlEscaping()
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
-            result.setName(result.getName().isEmpty() ? checkName : result.getName());
+            result.setDisplayName(result.getName().isEmpty() ? checkName : result.getName());
+            result.setName(checkName);
             return result;
         });
     }

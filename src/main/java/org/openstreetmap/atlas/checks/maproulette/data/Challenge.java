@@ -51,6 +51,7 @@ public class Challenge implements Serializable
     private final String instruction;
     private String checkinComment;
     private String name;
+    private String displayName;
     private final String tags;
     private final ChallengePriority defaultPriority;
     private final String highPriorityRule;
@@ -141,6 +142,11 @@ public class Challenge implements Serializable
         return this.mediumPriorityRule;
     }
 
+    public String getDisplayName()
+    {
+        return this.displayName;
+    }
+
     public String getName()
     {
         return this.name;
@@ -159,6 +165,11 @@ public class Challenge implements Serializable
     public void setCheckinComment(final String checkinComment)
     {
         this.checkinComment = checkinComment;
+    }
+
+    public void setDisplayName(final String displayName)
+    {
+        this.displayName = displayName;
     }
 
     public void setId(final long identifier)
@@ -184,7 +195,7 @@ public class Challenge implements Serializable
         challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(true));
 
         // Do not override the name if it's already set
-        if (this.name.isEmpty())
+        if (this.displayName.isEmpty())
         {
             challengeJson.add(KEY_NAME, new JsonPrimitive(challengeName));
         }
