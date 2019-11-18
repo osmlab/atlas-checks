@@ -13,8 +13,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * Data generator for {@link ConflictingTagCombinationCheckTest}
  *
- * @author mkalender
-<<<<<<< HEAD
+ * @author mkalender <<<<<<< HEAD
  */
 
 public class ConflictingTagCombinationCheckTestRule extends CoreTestRule
@@ -39,8 +38,8 @@ public class ConflictingTagCombinationCheckTestRule extends CoreTestRule
                             @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "service=*",
                                     "highway=motorway" }),
                     @Edge(id = "42345678000000", coordinates = { @Loc(value = STORE),
-                            @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "service=*", "waterway=ditch",
-                                    "highway=secondary" }) })
+                            @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "service=*",
+                                    "waterway=ditch", "highway=secondary" }) })
     private Atlas invalidServiceAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = STORE)),
@@ -115,9 +114,11 @@ public class ConflictingTagCombinationCheckTestRule extends CoreTestRule
                             @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "highway=track",
                                     "route=ferry" }),
                     @Edge(id = "12345678000002", coordinates = { @Loc(value = STORE),
-                            @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "highway=*", "route=ferry" }),
+                            @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "highway=*",
+                                    "route=ferry" }),
                     @Edge(id = "12345678000003", coordinates = { @Loc(value = STORE),
-                            @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "highway=*", "route=ferry" }),
+                            @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "highway=*",
+                                    "route=ferry" }),
                     @Edge(id = "22345678000000", coordinates = { @Loc(value = STORE),
                             @Loc(value = COLLEGE_CAMPUS_2) }, tags = { "highway=unclassified",
                                     "route=ferry" }) })
@@ -202,27 +203,27 @@ public class ConflictingTagCombinationCheckTestRule extends CoreTestRule
     {
         return this.invalidHighwayFerryAtlas;
     }
-    
+
     public Atlas invalidHighwayLanduseTagAtlas()
     {
         return this.invalidHighwayLanduseTagAtlas;
     }
-    
+
     public Atlas invalidHighwayNaturalAtlas()
     {
         return this.invalidHighwayNaturalAtlas;
     }
-    
+
     public Atlas invalidHighwayPlaceTagAtlas()
     {
         return this.invalidHighwayPlaceTagAtlas;
     }
-    
+
     public Atlas invalidServiceAtlas()
     {
         return this.invalidServiceAtlas;
     }
-    
+
     public Atlas invalidServiceTagValueAtlas()
     {
         return this.invalidServiceTagValueAtlas;
@@ -242,17 +243,17 @@ public class ConflictingTagCombinationCheckTestRule extends CoreTestRule
     {
         return this.validHighwayNaturalAtlas;
     }
-    
+
     public Atlas validHighwayServiceTagAtlas()
     {
         return this.validHighwayServiceTagAtlas;
     }
-    
+
     public Atlas validNonNavigableHighwayAtlas()
     {
         return this.validNonNavigableHighwayAtlas;
     }
-    
+
     public Atlas validServiceAtlas()
     {
         return this.validServiceAtlas;

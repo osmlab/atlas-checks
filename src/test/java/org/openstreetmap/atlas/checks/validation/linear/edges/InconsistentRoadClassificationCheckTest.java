@@ -142,7 +142,7 @@ public class InconsistentRoadClassificationCheckTest
                     .filter(object -> object instanceof FlaggedPolyline)
                     .filter(object -> object.getProperties().get("highway").equals("primary"))
                     .count());
-            Assert.assertEquals(1,flaggedObjects.stream()
+            Assert.assertEquals(1, flaggedObjects.stream()
                     .filter(object -> object instanceof FlaggedPolyline)
                     .filter(object -> object.getProperties().get("highway").equals("primary_link"))
                     .count());
@@ -162,7 +162,7 @@ public class InconsistentRoadClassificationCheckTest
         this.verifier.verify(flag ->
         {
             final Set<FlaggedObject> flaggedObjects = flag.getFlaggedObjects();
-            Assert.assertEquals(2,flaggedObjects.stream()
+            Assert.assertEquals(2, flaggedObjects.stream()
                     .filter(object -> object instanceof FlaggedPolyline)
                     .filter(object -> object.getProperties().get("highway").equals("secondary"))
                     .count());
@@ -170,10 +170,11 @@ public class InconsistentRoadClassificationCheckTest
                     flaggedObjects.stream().filter(object -> object instanceof FlaggedPolyline)
                             .filter(object -> object.getProperties().get("highway").equals("trunk"))
                             .count());
-            Assert.assertEquals(1,flaggedObjects.stream()
-                    .filter(object -> object instanceof FlaggedPolyline).filter(object -> object
-                            .getProperties().get("highway").equals("secondary_link"))
-                    .count());
+            Assert.assertEquals(1,
+                    flaggedObjects.stream().filter(object -> object instanceof FlaggedPolyline)
+                            .filter(object -> object.getProperties().get("highway")
+                                    .equals("secondary_link"))
+                            .count());
         });
     }
 
@@ -282,11 +283,11 @@ public class InconsistentRoadClassificationCheckTest
         this.verifier.verify(flag ->
         {
             final Set<FlaggedObject> flaggedObjects = flag.getFlaggedObjects();
-            Assert.assertEquals(2,flaggedObjects.stream()
+            Assert.assertEquals(2, flaggedObjects.stream()
                     .filter(object -> object instanceof FlaggedPolyline)
                     .filter(object -> object.getProperties().get("highway").equals("tertiary"))
                     .count());
-            Assert.assertEquals(1,flaggedObjects.stream()
+            Assert.assertEquals(1, flaggedObjects.stream()
                     .filter(object -> object instanceof FlaggedPolyline)
                     .filter(object -> object.getProperties().get("highway").equals("secondary"))
                     .count());

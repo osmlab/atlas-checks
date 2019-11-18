@@ -83,7 +83,7 @@ public class ConflictingTagCombinationCheckTest
             Assert.assertTrue(flag.getInstructions().contains(HIGHWAY));
         });
     }
-    
+
     @Test
     public void invalidHighwayLanduseTagAtlasTest()
     {
@@ -103,14 +103,14 @@ public class ConflictingTagCombinationCheckTest
             Assert.assertTrue(flag.getInstructions().contains(HIGHWAY));
         });
     }
-    
+
     @Test
     public void invalidHighwayPlaceTagAtlasCheck()
     {
         this.verifier.actual(this.setup.invalidHighwayPlaceTagAtlas(), check);
         this.verifier.verifyNotEmpty();
     }
-    
+
     @Test
     public void invalidHighwayServiceTagAtlasCheck()
     {
@@ -119,7 +119,7 @@ public class ConflictingTagCombinationCheckTest
                         "{\"ConflictingTagCombinationCheck\":{\"tags.conflicting.filters\":[\"service->driveway&highway->construction\"]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidServiceAtlasTest()
     {
@@ -128,7 +128,7 @@ public class ConflictingTagCombinationCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(4, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(SERVICE)));
     }
-    
+
     @Test
     public void invalidServiceTagAtlasTest()
     {
@@ -156,22 +156,21 @@ public class ConflictingTagCombinationCheckTest
         this.verifier.actual(this.setup.validHighwayNaturalAtlas(), check);
         this.verifier.verifyEmpty();
     }
-    
+
     @Test
     public void validHighwayServiceTagAtlasCheck()
     {
         this.verifier.actual(this.setup.validHighwayServiceTagAtlas(), check);
         this.verifier.verifyEmpty();
     }
-    
-    
+
     @Test
     public void validNonNavigableHighwayAtlasTest()
     {
         this.verifier.actual(this.setup.validNonNavigableHighwayAtlas(), check);
         this.verifier.verifyEmpty();
     }
-    
+
     @Test
     public void validServiceAtlasTest()
     {

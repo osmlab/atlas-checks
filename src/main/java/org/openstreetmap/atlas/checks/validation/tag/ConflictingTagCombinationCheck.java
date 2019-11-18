@@ -67,7 +67,7 @@ public class ConflictingTagCombinationCheck extends BaseCheck<String>
 
     private List<TaggableFilter> conflictingTagFilters;
     private List<String> filterKeys;
-    
+
     /**
      * Gathers the keys from a {@link TaggableFilter} using regex.
      *

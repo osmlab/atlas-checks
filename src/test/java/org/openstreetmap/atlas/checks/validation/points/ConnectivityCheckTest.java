@@ -22,7 +22,7 @@ public class ConnectivityCheckTest
     private Configuration blacklistedHighwayFilterConfig = ConfigurationResolver
             .inlineConfiguration(
                     "{\"ConnectivityCheck\":{\"blacklisted.highway.filter\":\"highway->secondary\"}}");
-    
+
     @Test
     public void highwayFilterOnInvalidDisconnectedEdgeCrossingTest()
     {
@@ -30,7 +30,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(this.blacklistedHighwayFilterConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void highwayFilterOnInvalidDisconnectedNodeOnEdgeTest()
     {
@@ -38,7 +38,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(this.blacklistedHighwayFilterConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void highwayFilterOnInvalidDisconnectedNodesTest()
     {
@@ -46,7 +46,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(this.blacklistedHighwayFilterConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void invalidConnectedNodesTest()
     {
@@ -54,7 +54,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedEdgeCrossingTest()
     {
@@ -62,7 +62,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedEdgesTest()
     {
@@ -70,7 +70,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedNodeOnEdgeTest()
     {
@@ -78,7 +78,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedNodesCrossingLayerTest()
     {
@@ -86,7 +86,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedNodesCrossingTest()
     {
@@ -94,7 +94,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedNodesOppositeTest()
     {
@@ -102,7 +102,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void invalidDisconnectedNodesTest()
     {
@@ -110,7 +110,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void validConnectedEdges3Test()
     {
@@ -118,7 +118,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validConnectedEdgesOppositeTest()
     {
@@ -126,7 +126,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validConnectedNodesAndSnapLocationsTest()
     {
@@ -134,7 +134,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validConnectedNodesLinearTest()
     {
@@ -142,7 +142,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validConnectedNodesTest()
     {
@@ -150,7 +150,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgeCrossingBarrierTest()
     {
@@ -158,7 +158,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgeCrossingBridgeTest()
     {
@@ -166,7 +166,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgeCrossingLayerTest()
     {
@@ -174,7 +174,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgeCrossingPedestrianTest()
     {
@@ -182,7 +182,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgeCrossingTunnelTest()
     {
@@ -190,7 +190,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgesBarrierTest()
     {
@@ -198,7 +198,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedEdgesNoExitTest()
     {
@@ -206,7 +206,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedNodesCrossingBridgeTest()
     {
@@ -238,7 +238,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedNodesLayerTest()
     {
@@ -246,7 +246,7 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void validDisconnectedNodesLevelTest()
     {

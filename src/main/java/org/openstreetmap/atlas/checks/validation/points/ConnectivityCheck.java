@@ -243,13 +243,12 @@ public class ConnectivityCheck extends BaseCheck<Long>
             final Edge previousEdge, final Edge lastEdge)
     {
         // Get the location in previousEdge closest to snappedLocation on the connecting route.
-        final Location lastPreviousEdgeLocation = lastEdge.connectedNodes().contains(
-                previousEdge.end()) ?
-                previousEdge.end().getLocation() :
-                previousEdge.start().getLocation();
+        final Location lastPreviousEdgeLocation = lastEdge.connectedNodes()
+                .contains(previousEdge.end()) ? previousEdge.end().getLocation()
+                        : previousEdge.start().getLocation();
         // Get the heading from snappedLocation along the route
         // If snappedLocation and lastPreviousEdgeLocation are the same: use a previousEdge heading
-    
+
         if (lastPreviousEdgeLocation.equals(snappedLocation))
         {
             if (previousEdge.start().getLocation().equals(lastPreviousEdgeLocation))
