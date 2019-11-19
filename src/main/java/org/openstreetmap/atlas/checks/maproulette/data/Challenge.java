@@ -59,7 +59,9 @@ public class Challenge implements Serializable
 
     public Challenge(final Challenge challenge)
     {
-        this(challenge.name, challenge.description, challenge.blurb, challenge.instruction, challenge.difficulty, challenge.defaultPriority, challenge.highPriorityRule, challenge.mediumPriorityRule, challenge.lowPriorityRule, challenge.tags);
+        this(challenge.name, challenge.description, challenge.blurb, challenge.instruction,
+                challenge.difficulty, challenge.defaultPriority, challenge.highPriorityRule,
+                challenge.mediumPriorityRule, challenge.lowPriorityRule, challenge.tags);
     }
 
     public Challenge(final String name, final String description, final String blurb,

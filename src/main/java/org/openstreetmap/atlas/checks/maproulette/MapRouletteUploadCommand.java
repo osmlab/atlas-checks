@@ -43,6 +43,7 @@ import com.google.gson.JsonObject;
  */
 public class MapRouletteUploadCommand extends MapRouletteCommand
 {
+
     private static final Switch<File> INPUT_DIRECTORY = new Switch<>("logfiles",
             "Path to folder containing log files to upload to MapRoulette.", File::new,
             Optionality.REQUIRED);
@@ -123,7 +124,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                 final Challenge mockChallenge = new Challenge(challenge);
                                 // Prepend the challenge name with the ISO country code, if one
                                 // exists. Then try to add the task for upload
-                                countryCode.ifPresent(iso -> mockChallenge.setName(String.join(" - ", countryCode.get(), challenge.getName())));
+                                countryCode.ifPresent(iso -> mockChallenge.setName(String
+                                        .join(" - ", countryCode.get(), challenge.getName())));
                                 this.addTask(mockChallenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
