@@ -43,7 +43,6 @@ import com.google.gson.JsonObject;
  */
 public class MapRouletteUploadCommand extends MapRouletteCommand
 {
-
     private static final Switch<File> INPUT_DIRECTORY = new Switch<>("logfiles",
             "Path to folder containing log files to upload to MapRoulette.", File::new,
             Optionality.REQUIRED);
@@ -120,13 +119,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-                                final Challenge challenge = this
-                                        .getChallenge(task.getCheckName(), instructions);
+                                final Challenge challenge = this.getChallenge(check, instructions);
+                                final Challenge mockChallenge = new Challenge(challenge);
                                 // Prepend the challenge name with the ISO country code, if one
                                 // exists. Then try to add the task for upload
-                                countryCode.ifPresent(iso -> challenge.setDisplayName(String.join(" - ",
-                                        countryCode.get(), task.getChallengeName())));
-                                this.addTask(challenge, task);
+                                countryCode.ifPresent(iso -> mockChallenge.setName(String.join(" - ", countryCode.get(), challenge.getName())));
+                                this.addTask(mockChallenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
                             {
@@ -165,8 +163,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Gson gson = new GsonBuilder().disableHtmlEscaping()
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
-            result.setDisplayName(result.getName().isEmpty() ? checkName : result.getName());
-            result.setName(checkName);
+            result.setName(result.getName().isEmpty() ? checkName : result.getName());
             return result;
         });
     }

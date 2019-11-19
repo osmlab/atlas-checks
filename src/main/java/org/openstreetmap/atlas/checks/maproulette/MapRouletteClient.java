@@ -126,8 +126,6 @@ public class MapRouletteClient implements Serializable
             final Challenge challenge, final Task task)
     {
         task.setProjectName(projectConfiguration.getName());
-        task.setChallengeName(challenge.getDisplayName());
-        task.setCheckName(challenge.getName());
         updateChallengeTaskList(challenge, task, projectConfiguration);
     }
 
@@ -160,10 +158,10 @@ public class MapRouletteClient implements Serializable
         final Map<String, Challenge> challengeMap = this.challenges.getOrDefault(project.getId(),
                 new HashMap<>());
         challenge.setParentIdentifier(project.getId());
-        if (!challengeMap.containsKey(challenge.getDisplayName()))
+        if (!challengeMap.containsKey(challenge.getName()))
         {
             challenge.setId(this.connection.createChallenge(project, challenge));
-            challengeMap.put(challenge.getDisplayName(), challenge);
+            challengeMap.put(challenge.getName(), challenge);
             this.challenges.put(project.getId(), challengeMap);
         }
         return Optional.of(challenge);
@@ -187,7 +185,7 @@ public class MapRouletteClient implements Serializable
             final ProjectConfiguration projectConfiguration) throws CoreException
     {
         final Tuple<String, String> taskKey = new Tuple<>(task.getProjectName(),
-                challenge.getDisplayName());
+                challenge.getName());
         Set<Task> challengeTaskList = this.batch.get(taskKey);
         if (challengeTaskList == null)
         {
@@ -201,7 +199,7 @@ public class MapRouletteClient implements Serializable
         {
             logger.trace(
                     "Attempting to add a duplicate task to the batch with id {}, into Project '{}' and Challenge '{}'",
-                    task.getTaskIdentifier(), task.getProjectName(), challenge.getDisplayName());
+                    task.getTaskIdentifier(), task.getProjectName(), challenge.getName());
         }
         else
         {
@@ -214,7 +212,7 @@ public class MapRouletteClient implements Serializable
             catch (final Exception e)
             {
                 logger.warn(String.format("Failed to create/update project structure for %s/%s.",
-                        task.getProjectName(), challenge.getDisplayName()), e);
+                        task.getProjectName(), challenge.getName()), e);
             }
         }
     }
