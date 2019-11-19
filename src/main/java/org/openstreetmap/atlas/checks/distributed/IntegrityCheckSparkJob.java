@@ -121,8 +121,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     {
         final Pool checkExecutionPool = new Pool(checksToRun.size(), "Check execution pool",
                 POOL_DURATION_BEFORE_KILL);
-        checksToRun.stream().filter(check -> check.validCheckForCountry(country))
-                .forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
+        checksToRun.forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
                         objectsToCheck(atlas, check), EventService.get(country))));
         checkExecutionPool.close();
     }
