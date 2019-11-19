@@ -2,3 +2,5 @@ Load Atlas Checks flags into a locally hosted database named flag_test on port 5
 #$ flag-database --flag_path=/path/to/log/files --database_url=127.0.0.1/flag_test
 Load Atlas Check flags into database server 17.42.121.44 with custom port, username, schema
 #$ flag-database --flag_path=/path/to/log/files --database_url=17.42.121.44:4000/flag?user=postgres&currentSchema=public
+Load Atlas Checks flags into a locally hosted database and provide flag generation meta data
+#$ flag-database --flag_path=/path/to/log/files --database_url=127.0.0.1/flag_test --run_uri=https://run.atlaschecks.fake/run/2145 --software_version=5.1.8
