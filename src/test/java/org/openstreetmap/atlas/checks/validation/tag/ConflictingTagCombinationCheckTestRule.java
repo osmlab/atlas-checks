@@ -13,7 +13,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * Data generator for {@link ConflictingTagCombinationCheckTest}
  *
- * @author mkalender <<<<<<< HEAD
+ * @author mkalender
  */
 
 public class ConflictingTagCombinationCheckTestRule extends CoreTestRule
