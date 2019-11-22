@@ -138,7 +138,7 @@ public class InvalidTagsCheck extends BaseCheck<Tuple<Class, Long>>
 
             // Create a flag with generic instructions
             final String instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
-            // If the object is an edge add the edges with the saem OSM id
+            // If the object is an edge add the edges with the same OSM id
             final CheckFlag flag = (object instanceof Edge)
                     ? this.createFlag(new OsmWayWalker((Edge) object).collectEdges(), instruction)
                     : this.createFlag(object, instruction);
