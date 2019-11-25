@@ -61,6 +61,39 @@
       "tags":"highway,landuse"
     }
   },
+  "BigNodeBadDataCheck": {
+    "max.number.paths.threshold": 25,
+    "max.number.junction.edges.threshold": 2,
+    "highway.type": {
+      "minimum": "toll_gantry",
+      "maximum": "motorway"
+    },
+    "challenge": {
+      "description": "Bad data in intersections can create BigNodes that have incredibly high numbers of paths.",
+      "blurb": "Big Nodes with bad data have too many paths.",
+      "instruction": "Open your favorite editor and edit the intersection.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
+    }
+  },
   "BuildingRoadIntersectionCheck": {
     "car.navigable": true,
     "challenge": {
@@ -86,6 +119,81 @@
       "blurb": "Conflicting Area Tag Combination",
       "instruction": "Open your favorite editor, check the instruction and modify the tags that are considered conflicting",
       "difficulty": "EASY"
+    }
+  },
+  "ConflictingTagCombinationCheck": {
+    "tags.conflicting.filters": [
+      "highway->*&building->*||route->ferry||natural->*||landuse->*||place->*",
+      "service->*&highway->!service&highway->!construction&railway->!&waterway->!canal",
+      "motor_vehicle->yes&motorcar->no",
+      "motor_vehicle->no&motorcar->yes",
+      "motor_vehicle->yes&vehicle->no",
+      "motorcar->yes&vehicle->no",
+      "motor_vehicle->no&vehicle->yes",
+      "motorcar->no&vehicle->yes"
+    ],
+    "challenge": {
+      "description": "OSM has numerous tag keys and values. These tags could be combined and used together in the same feature. However, tags might have conflicting values.",
+      "blurb": "Verify conflicting tags.",
+      "instruction": "Open your favorite editor, check the instruction for the task and then modify the tags that are considered conflicting.",
+      "difficulty": "EASY"
+    }
+  },
+  "ConnectivityCheck": {
+    "nearby.edge.distance.meters": 2.0,
+    "blacklisted.highway.filter": "highway->no",
+    "challenge": {
+      "description": "Checks if a node should be connected to a nearby node or edge.",
+      "blurb": "Connectivity Check",
+      "instruction": "Open your favorite editor and check if the referenced node should be connected to a nearby node or edge.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
+  },
+  "DuplicateLocationInPolyLineCheck": {
+    "challenge": {
+      "description": "Tasks will include locations that have been repeated within a single polyline.",
+      "blurb": "Repeating locations in a polyline",
+      "instruction": "Open your favorite editor and remove the duplicate locations, so that only a single location remains.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
     }
   },
   "DuplicateNodeCheck": {
@@ -156,6 +264,72 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "tags":"coastline"
+    }
+  },
+  "ImproperAndUnknownRoadNameCheck": {
+    "names.improper": [
+      "street",
+      "express",
+      "avenue",
+      "drive"
+    ],
+    "challenge": {
+      "description": "Tasks contain roads named as a road type, form of way, a road surface material or the string \"unknown\". These are common mistake in iD.",
+      "blurb": "Incorrect road names",
+      "instruction": "Open your favorite editor and edit/remove the incorrect names",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
+  },
+  "InconsistentRoadClassificationCheck": {
+    "long.edge.threshold": 1000.0,
+    "minimum.highway.type": "tertiary_link",
+    "maximum.direction.change.degrees": 30.0,
+    "maximum.edge.length": 500.0,
+    "challenge": {
+      "description": "Tasks that identify roads, that transition from one classification to another and then back to the original classification. The initial way will be used as reference to find out inconsistency. This check will skip roundabouts by default. Roundabouts take the type of highest priority way connected. However, if a roundabout is not properly tagged (missing junction=roundabout), then it will probably be flagged by this check. The solution is to add junction=roundabout tag and set the highway tag to the highest priority highway tag connecting to junction. Links need to be tagged similar to roundabouts. By default a link way will not be used as reference way. However, link ways could still cause inconsistencies.",
+      "blurb": "Classifications that transition back and forth over a road going in a direction.",
+      "instruction": "Open your editor and change the classification that is inconsistent. If a roundabout is the cause of inconsistency, then tag it with junction=roundabout.",
+      "difficulty": "HARD",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
     }
   },
   "IntersectingBuildingsCheck":
@@ -366,6 +540,17 @@
       },
       "tags":"highway"
     }
+  },
+  "ShortNameCheck": {
+    "non.latin.countries":["AFG",
+      "ARE", "ARM", "BGD", "BGR", "BHR", "BIH", "BLR", "BRN", "BTN", "CHN", "COM", "CYP",
+      "DJI", "DZA", "EGY", "ERI", "ESH", "ETH", "GEO", "GRC", "HKG", "IND", "IRN", "IRQ",
+      "ISR", "JOR", "JPN", "KAZ", "KGZ", "KHM", "KOR", "KWT", "LAO", "LBN", "LBY", "LKA",
+      "MAC", "MAR", "MDA", "MDV", "MKD", "MMR", "MNE", "MNG", "MRT", "MYS", "NPL", "OMN",
+      "PAK", "PRK", "PSE", "QAT", "RUS", "SAU", "SDN", "SGP", "SOM", "SRB", "SYR", "TCD",
+      "THA", "TJK", "TUN", "TWN", "TZA", "UKR", "YEM"],
+    "length.maximum": 2,
+    "non.latin.length.maximum": 1
   },
   "SignPostCheck": {
     "link":{
