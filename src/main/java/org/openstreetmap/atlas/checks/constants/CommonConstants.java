@@ -9,9 +9,10 @@ public final class CommonConstants
 {
     private CommonConstants()
     {
-        // default constructor to fix the error "Utility classes do have public or default constructor"
+        // default constructor to fix the error "Utility classes do have public or default
+        // constructor"
     }
-    
+
     // Common string literals
     public static final String COMMA = ",";
     public static final String SEMI_COLON = ";";

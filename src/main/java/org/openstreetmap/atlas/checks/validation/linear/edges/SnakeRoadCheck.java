@@ -97,7 +97,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
         this.markAsFlagged(object.getOsmIdentifier());
 
         // Instantiate the network walk with the starting edge
-        SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
+        final SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
 
         // Walk the road
         walkNetwork(edge, walk);
