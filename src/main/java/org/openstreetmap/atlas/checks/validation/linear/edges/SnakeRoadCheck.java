@@ -100,7 +100,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
         SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
 
         // Walk the road
-        walk = walkNetwork(edge, walk);
+        walkNetwork(edge, walk);
 
         // If we've found a snake road, create a flag
         if (networkWalkQualifiesAsSnakeRoad(walk))

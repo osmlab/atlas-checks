@@ -38,7 +38,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
 {
     private static final long serialVersionUID = -6407331424906155431L;
     private Atlas atlas = null;
-    private final Logger logger = LoggerFactory.getLogger(AtlasDataSource.class);
+    private final transient Logger logger = LoggerFactory.getLogger(AtlasDataSource.class);
     private final SparkFileHelper loadHelper;
     private final AtlasFilePathResolver pathResolver;
     private final MultiPolygon polygon;
@@ -160,7 +160,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
             final String directory = this.pathResolver.resolvePath(input, country);
             final List<Resource> atlasResources = this.loadHelper.collectSourceFiles(directory,
                     true, atlasFilter);
-            if (atlasResources.size() > 0)
+            if (!atlasResources.isEmpty())
             {
                 this.atlas = new AtlasResourceLoader().load(atlasResources);
             }
@@ -175,7 +175,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
                             input);
                     final List<Atlas> atlases = pbfResources.parallelStream()
                             .map(dataSource -> this.loadPbf(dataSource, country))
-                            .peek(intermediateAtlasHandler).collect(Collectors.toList());
+                            .collect(Collectors.toList());
                     this.atlas = new MultiAtlas(atlases);
                 }
             }

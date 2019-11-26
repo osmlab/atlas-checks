@@ -11,14 +11,20 @@ import java.util.function.Predicate;
  *
  * @author brian_l_davis
  */
-public interface ValuePredicates
+public final class ValuePredicates
 {
+    private ValuePredicates()
+    {
+        // default constructor to fix the error "Utility classes do have public or default
+        // constructor"
+    }
+
     /**
      * Tests if the {@link String} contains '(' and ')' that are balanced and closed. Balanced
      * meaning there are the same number of open parentheses as closed. Closed meaning that every
      * open parentheses is followed by a closed parentheses.
      */
-    Predicate<String> ARE_PARENTHESES_BALANCED_AND_CLOSED = value ->
+    public static final Predicate<String> ARE_PARENTHESES_BALANCED_AND_CLOSED = value ->
     {
         final Stack<Character> characterStack = new Stack<>();
 

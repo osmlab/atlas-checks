@@ -5,25 +5,30 @@ package org.openstreetmap.atlas.checks.constants;
  *
  * @author mgostintsev
  */
-public interface CommonConstants
+public final class CommonConstants
 {
+    private CommonConstants()
+    {
+        // default constructor to fix the error "Utility classes do have public or default constructor"
+    }
+    
     // Common string literals
-    String COMMA = ",";
-    String SEMI_COLON = ";";
-    String NEW_LINE = "\n";
-    String SINGLE_SPACE = " ";
-    String EMPTY_STRING = "";
-    String PIPE = "|";
-    String PADDED_PIPE = " | ";
-    String DASH = "-";
-    String UNDERSCORE = "_";
-    String EQUALS = "=";
-    String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String COMMA = ",";
+    public static final String SEMI_COLON = ";";
+    public static final String NEW_LINE = "\n";
+    public static final String SINGLE_SPACE = " ";
+    public static final String EMPTY_STRING = "";
+    public static final String PIPE = "|";
+    public static final String PADDED_PIPE = " | ";
+    public static final String DASH = "-";
+    public static final String UNDERSCORE = "_";
+    public static final String EQUALS_TO = "=";
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     // Common characters
-    char OPEN_PARENTHESES_CHAR = '(';
-    char CLOSED_PARENTHESES_CHAR = ')';
+    public static final char OPEN_PARENTHESES_CHAR = '(';
+    public static final char CLOSED_PARENTHESES_CHAR = ')';
 
     // Common file extensions
-    String GEOJSON_FILE_EXTENSION = "geojson";
+    public static final String GEOJSON_FILE_EXTENSION = "geojson";
 }

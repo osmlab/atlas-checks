@@ -25,7 +25,8 @@ public final class TagPredicates
 {
     private TagPredicates()
     {
-        // not called
+        // default constructor to fix the error "Utility classes do have public or default
+        // constructor"
     }
 
     /**
