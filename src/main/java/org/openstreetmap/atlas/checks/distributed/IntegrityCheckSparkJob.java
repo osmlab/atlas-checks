@@ -174,7 +174,7 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
             final Atlas atlas)
     {
-        Optional<Finder> val = check.finder();
+        final Optional<Finder> val = check.finder();
         if (val.isPresent())
         {
             return Iterables.stream(val.get().find(atlas));
@@ -274,8 +274,8 @@ public class IntegrityCheckSparkJob extends SparkJob
                         .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Log countries and integrity
-        String infoMessage1 = countryCheckTuples.stream().map(tuple -> tuple._1).collect(Collectors.joining(","));
-        String infoMessage2 = preOverriddenChecks.stream().map(BaseCheck::getCheckName).collect(Collectors.joining(","));
+        final String infoMessage1 = countryCheckTuples.stream().map(tuple -> tuple._1).collect(Collectors.joining(","));
+        final String infoMessage2 = preOverriddenChecks.stream().map(BaseCheck::getCheckName).collect(Collectors.joining(","));
         logger.info("Initialized countries: {}", infoMessage1);
         logger.info("Initialized checks: {}", infoMessage2);
 
