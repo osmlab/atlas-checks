@@ -95,8 +95,8 @@ public class IntegrityCheckSparkJob extends SparkJob
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format(
-                    "Comma-separated list of output formats %s and %s and %s and %s ", "flags", "metrics", "geoJson", "tippeCanoe"),
+            String.format("Comma-separated list of output formats %s and %s and %s and %s ",
+                    "flags", "metrics", "geoJson", "tippeCanoe"),
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
@@ -274,8 +274,10 @@ public class IntegrityCheckSparkJob extends SparkJob
                         .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Log countries and integrity
-        final String infoMessage1 = countryCheckTuples.stream().map(tuple -> tuple._1).collect(Collectors.joining(","));
-        final String infoMessage2 = preOverriddenChecks.stream().map(BaseCheck::getCheckName).collect(Collectors.joining(","));
+        final String infoMessage1 = countryCheckTuples.stream().map(tuple -> tuple._1)
+                .collect(Collectors.joining(","));
+        final String infoMessage2 = preOverriddenChecks.stream().map(BaseCheck::getCheckName)
+                .collect(Collectors.joining(","));
         logger.info("Initialized countries: {}", infoMessage1);
         logger.info("Initialized checks: {}", infoMessage2);
 

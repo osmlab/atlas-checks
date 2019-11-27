@@ -60,7 +60,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
     private final List<String> countries;
     private final Map<String, List<String>> flagLanguageMap;
     // OSM Identifiers are used to keep track of flagged features
-    private final transient Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
+    private transient Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
     private final Locale locale;
     private final String name = this.getClass().getSimpleName();
     // geo filter specific to this check
@@ -288,7 +288,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected void clearFlaggedIdentifiers()
     {
-        this.flaggedIdentifiers.clear();
+        getFlaggedIdentifiers().clear();
     }
 
     protected final String configurationKey(final Class type, final String key)
@@ -387,6 +387,10 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected Set<T> getFlaggedIdentifiers()
     {
+        if (this.flaggedIdentifiers == null)
+        {
+            this.flaggedIdentifiers = ConcurrentHashMap.newKeySet();
+        }
         return this.flaggedIdentifiers;
     }
 
@@ -454,12 +458,12 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected final boolean isFlagged(final T identifier)
     {
-        return this.flaggedIdentifiers.contains(identifier);
+        return getFlaggedIdentifiers().contains(identifier);
     }
 
     protected final void markAsFlagged(final T identifier)
     {
-        this.flaggedIdentifiers.add(identifier);
+        getFlaggedIdentifiers().add(identifier);
     }
 
     /**
