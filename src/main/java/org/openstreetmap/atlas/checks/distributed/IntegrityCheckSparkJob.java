@@ -72,7 +72,7 @@ public class IntegrityCheckSparkJob extends SparkJob
         METRICS,
         TIPPECANOE
     }
-    
+
     private static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
             "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
             Optionality.OPTIONAL);
