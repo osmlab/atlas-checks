@@ -56,7 +56,7 @@ public final class ValuePredicates
         }
         return characterStack.isEmpty();
     }
-    
+
     private ValuePredicates()
     {
         // default constructor to fix the error "Utility classes do have public or default
