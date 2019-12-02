@@ -4,7 +4,6 @@ import static org.openstreetmap.atlas.checks.constants.CommonConstants.CLOSED_PA
 import static org.openstreetmap.atlas.checks.constants.CommonConstants.OPEN_PARENTHESES_CHAR;
 
 import java.util.Stack;
-import java.util.function.Predicate;
 
 /**
  * Collection of value based predicates
@@ -23,8 +22,12 @@ public final class ValuePredicates
      * Tests if the {@link String} contains '(' and ')' that are balanced and closed. Balanced
      * meaning there are the same number of open parentheses as closed. Closed meaning that every
      * open parentheses is followed by a closed parentheses.
+     * 
+     * @param value
+     *            passed as an argument to check if valid parenthesis
+     * @return true if passed argument is valid parenthesis
      */
-    public static final Predicate<String> ARE_PARENTHESES_BALANCED_AND_CLOSED = value ->
+    public static boolean isValidParenthesis(final String value)
     {
         final Stack<Character> characterStack = new Stack<>();
 
@@ -58,5 +61,5 @@ public final class ValuePredicates
             }
         }
         return characterStack.isEmpty();
-    };
+    }
 }
