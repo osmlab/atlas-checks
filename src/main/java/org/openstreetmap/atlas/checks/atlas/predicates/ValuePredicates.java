@@ -15,22 +15,26 @@ public final class ValuePredicates
      * meaning there are the same number of open parentheses as closed. Closed meaning that every
      * open parentheses is followed by a closed parentheses.
      * 
-     * @param s
+     * @param value
      *            passed as an argument to check if valid parenthesis
      * @return true if passed argument is valid parenthesis
      */
-    public static boolean isValidParenthesis(final String s)
+    public static boolean isValidParenthesis(final String value)
     {
-        final char[] chars = s.toCharArray();
+        final char[] chars = value.toCharArray();
         final Deque<Character> stack = new ArrayDeque<>();
-        for (final char c : chars)
+        for (final char character : chars)
         {
-            if ((c == ')' && (stack.isEmpty() || stack.pop() != '('))
-                    || (c == ']' && (stack.isEmpty() || stack.pop() != '['))
-                    || (c == '}' && (stack.isEmpty() || stack.pop() != '{')))
+            if ((character == ')' && (stack.isEmpty() || stack.pop() != '('))
+                    || (character == ']' && (stack.isEmpty() || stack.pop() != '['))
+                    || (character == '}' && (stack.isEmpty() || stack.pop() != '{')))
+            {
                 return false;
-            if (c == '(' || c == '[' || c == '{')
-                stack.push(c);
+            }
+            if (character == '(' || character == '[' || character == '{')
+            {
+                stack.push(character);
+            }
         }
         return stack.isEmpty();
     }
