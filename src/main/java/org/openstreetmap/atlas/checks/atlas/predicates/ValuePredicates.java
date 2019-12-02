@@ -21,9 +21,9 @@ public final class ValuePredicates
      */
     public static boolean isValidParenthesis(final String s)
     {
-        char[] chars = s.toCharArray();
-        Deque<Character> stack = new ArrayDeque<>();
-        for (char c : chars)
+        final char[] chars = s.toCharArray();
+        final Deque<Character> stack = new ArrayDeque<>();
+        for (final char c : chars)
         {
             if ((c == ')' && (stack.isEmpty() || stack.pop() != '('))
                     || (c == ']' && (stack.isEmpty() || stack.pop() != '['))
