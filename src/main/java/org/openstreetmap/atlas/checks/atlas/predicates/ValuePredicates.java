@@ -12,12 +12,6 @@ import java.util.Stack;
  */
 public final class ValuePredicates
 {
-    private ValuePredicates()
-    {
-        // default constructor to fix the error "Utility classes do have public or default
-        // constructor"
-    }
-
     /**
      * Tests if the {@link String} contains '(' and ')' that are balanced and closed. Balanced
      * meaning there are the same number of open parentheses as closed. Closed meaning that every
@@ -61,5 +55,11 @@ public final class ValuePredicates
             }
         }
         return characterStack.isEmpty();
+    }
+    
+    private ValuePredicates()
+    {
+        // default constructor to fix the error "Utility classes do have public or default
+        // constructor"
     }
 }
