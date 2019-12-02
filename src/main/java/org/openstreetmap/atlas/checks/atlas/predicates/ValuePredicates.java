@@ -1,9 +1,7 @@
 package org.openstreetmap.atlas.checks.atlas.predicates;
 
-import static org.openstreetmap.atlas.checks.constants.CommonConstants.CLOSED_PARENTHESES_CHAR;
-import static org.openstreetmap.atlas.checks.constants.CommonConstants.OPEN_PARENTHESES_CHAR;
-
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * Collection of value based predicates
@@ -17,44 +15,24 @@ public final class ValuePredicates
      * meaning there are the same number of open parentheses as closed. Closed meaning that every
      * open parentheses is followed by a closed parentheses.
      * 
-     * @param value
+     * @param s
      *            passed as an argument to check if valid parenthesis
      * @return true if passed argument is valid parenthesis
      */
-    public static boolean isValidParenthesis(final String value)
+    public static boolean isValidParenthesis(final String s)
     {
-        final Stack<Character> characterStack = new Stack<>();
-
-        for (final char character : value.toCharArray())
+        char[] chars = s.toCharArray();
+        Deque<Character> stack = new ArrayDeque<>();
+        for (char c : chars)
         {
-            if (character == OPEN_PARENTHESES_CHAR)
-            {
-                if (characterStack.isEmpty() || characterStack.peek() != CLOSED_PARENTHESES_CHAR)
-                {
-                    characterStack.push(OPEN_PARENTHESES_CHAR);
-                }
-                else
-                {
-                    characterStack.pop();
-                }
-            }
-            if (character == CLOSED_PARENTHESES_CHAR)
-            {
-                if (characterStack.isEmpty())
-                {
-                    return false;
-                }
-                if (characterStack.peek() != OPEN_PARENTHESES_CHAR)
-                {
-                    characterStack.push(CLOSED_PARENTHESES_CHAR);
-                }
-                else
-                {
-                    characterStack.pop();
-                }
-            }
+            if ((c == ')' && (stack.isEmpty() || stack.pop() != '('))
+                    || (c == ']' && (stack.isEmpty() || stack.pop() != '['))
+                    || (c == '}' && (stack.isEmpty() || stack.pop() != '{')))
+                return false;
+            if (c == '(' || c == '[' || c == '{')
+                stack.push(c);
         }
-        return characterStack.isEmpty();
+        return stack.isEmpty();
     }
 
     private ValuePredicates()
