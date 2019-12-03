@@ -38,7 +38,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
 {
     private static final long serialVersionUID = -6407331424906155431L;
     private Atlas atlas = null;
-    private final transient Logger logger = LoggerFactory.getLogger(AtlasDataSource.class);
+    private transient Logger logger = null;
     private final SparkFileHelper loadHelper;
     private final AtlasFilePathResolver pathResolver;
     private final MultiPolygon polygon;
@@ -150,7 +150,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
             }
             else if (FileSuffix.resourceFilter(FileSuffix.PBF).test(dataSource))
             {
-                this.logger.info("Loading Atlas from OSM protobuf {}", input);
+                getLogger().info("Loading Atlas from OSM protobuf {}", input);
                 this.atlas = this.loadPbf(dataSource, country);
                 intermediateAtlasHandler.accept(this.atlas);
             }
@@ -171,7 +171,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
                 final int pbfCount = pbfResources.size();
                 if (pbfCount > 0)
                 {
-                    this.logger.info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
+                    getLogger().info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
                             input);
                     final List<Atlas> atlases = pbfResources.parallelStream()
                             .map(dataSource -> this.loadPbf(dataSource, country))
@@ -186,6 +186,20 @@ public class AtlasDataSource implements Serializable, AutoCloseable
     public void setAtlas(final Atlas atlas)
     {
         this.atlas = atlas;
+    }
+
+    /**
+     * Checks if logger is null, then sets and return the logger value.
+     *
+     * @return {@link Logger} representation of LoggerFactory logger.
+     */
+    private Logger getLogger()
+    {
+        if (this.logger == null)
+        {
+            this.logger = LoggerFactory.getLogger(AtlasDataSource.class);
+        }
+        return this.logger;
     }
 
     private Atlas loadPbf(final Resource input, final String country)
