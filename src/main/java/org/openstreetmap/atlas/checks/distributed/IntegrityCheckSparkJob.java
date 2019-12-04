@@ -95,8 +95,7 @@ public class IntegrityCheckSparkJob extends SparkJob
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format("Comma-separated list of output formats %s and %s and %s and %s ",
-                    "flags", "metrics", "geoJson", "tippeCanoe"),
+            "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe).",
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
