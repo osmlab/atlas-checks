@@ -173,10 +173,10 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
             final Atlas atlas)
     {
-        final Optional<Finder> val = check.finder();
-        if (val.isPresent())
+        final Optional<Finder> finderOptional = check.finder();
+        if (finderOptional.isPresent())
         {
-            return Iterables.stream(val.get().find(atlas));
+            return Iterables.stream(finderOptional.get().find(atlas));
         }
 
         return Collections.emptyList();

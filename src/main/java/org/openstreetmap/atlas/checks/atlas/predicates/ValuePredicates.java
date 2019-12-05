@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.atlas.predicates;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Predicate;
 
 /**
  * Collection of value based predicates
@@ -14,12 +15,8 @@ public final class ValuePredicates
      * Tests if the {@link String} contains '(' and ')' that are balanced and closed. Balanced
      * meaning there are the same number of open parentheses as closed. Closed meaning that every
      * open parentheses is followed by a closed parentheses.
-     * 
-     * @param value
-     *            passed as an argument to check if valid parenthesis
-     * @return true if passed argument is valid parenthesis
      */
-    public static boolean isValidParenthesis(final String value)
+    private static Predicate<String> ARE_PARENTHESES_BALANCED_AND_CLOSED = value ->
     {
         final char[] chars = value.toCharArray();
         final Deque<Character> stack = new ArrayDeque<>();
@@ -37,6 +34,11 @@ public final class ValuePredicates
             }
         }
         return stack.isEmpty();
+    };
+
+    public static Predicate<String> isValidParenthesis()
+    {
+        return ARE_PARENTHESES_BALANCED_AND_CLOSED;
     }
 
     private ValuePredicates()

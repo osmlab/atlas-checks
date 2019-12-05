@@ -1,10 +1,13 @@
 package org.openstreetmap.atlas.checks.atlas.predicates;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.locationtech.jts.util.Assert;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
@@ -20,7 +23,10 @@ public class ValuePredicatesTest
     @Test
     public void isValidParenthesis()
     {
-        Assert.isTrue(this.valuePredicates.isValidParenthesis("({})"));
-        assertFalse(this.valuePredicates.isValidParenthesis("({))"));
+        final List<String> parenthesisList = new ArrayList<>(Arrays.asList("{()}[", "[]"));
+        assertEquals(
+                parenthesisList.stream().filter(this.valuePredicates.isValidParenthesis()).count(),
+                1);
     }
+
 }
