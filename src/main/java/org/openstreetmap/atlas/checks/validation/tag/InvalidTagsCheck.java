@@ -26,7 +26,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * This flags features based on configurable filters. Each filter passed contains the
  * {@link AtlasEntity} classes to check and a {@link TaggableFilter} to test objects against. If a
  * feature is of one of the given classes and passes the associated {@link TaggableFilter} then it
- * is flagged. There are no default filters, do this does not flag anything by default.
+ * is flagged. There are no default filters, so this does not flag anything by default.
  *
  * @author bbreithaupt
  */
