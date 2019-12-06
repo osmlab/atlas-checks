@@ -30,7 +30,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  *
  * @author bbreithaupt
  */
-public class InvalidTagsCheck extends BaseCheck<Tuple<Class, Long>>
+public class InvalidTagsCheck extends BaseCheck<String>
 {
     private static final long serialVersionUID = 5150282147895785829L;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
@@ -105,7 +105,7 @@ public class InvalidTagsCheck extends BaseCheck<Tuple<Class, Long>>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !this.isFlagged(new Tuple<>(object.getClass(), object.getOsmIdentifier()));
+        return !this.isFlagged(this.getUniqueOSMIdentifier(object));
     }
 
     /**
@@ -134,7 +134,7 @@ public class InvalidTagsCheck extends BaseCheck<Tuple<Class, Long>>
         {
             // Mark objects flagged by their class and id to allow for the same id in different
             // object types
-            this.markAsFlagged(new Tuple<>(object.getClass(), object.getOsmIdentifier()));
+            this.markAsFlagged(this.getUniqueOSMIdentifier(object));
 
             // Create a flag with generic instructions
             final String instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
