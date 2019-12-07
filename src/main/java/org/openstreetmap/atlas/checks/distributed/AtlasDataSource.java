@@ -150,7 +150,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
             }
             else if (FileSuffix.resourceFilter(FileSuffix.PBF).test(dataSource))
             {
-                getLogger().info("Loading Atlas from OSM protobuf {}", input);
+                this.getLogger().info("Loading Atlas from OSM protobuf {}", input);
                 this.atlas = this.loadPbf(dataSource, country);
                 intermediateAtlasHandler.accept(this.atlas);
             }
@@ -171,7 +171,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
                 final int pbfCount = pbfResources.size();
                 if (pbfCount > 0)
                 {
-                    getLogger().info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
+                    this.getLogger().info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
                             input);
                     final List<Atlas> atlases = pbfResources.parallelStream()
                             .map(dataSource -> this.loadPbf(dataSource, country))

@@ -288,7 +288,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected void clearFlaggedIdentifiers()
     {
-        getFlaggedIdentifiers().clear();
+        this.getFlaggedIdentifiers().clear();
     }
 
     protected final String configurationKey(final Class type, final String key)
@@ -458,12 +458,12 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected final boolean isFlagged(final T identifier)
     {
-        return getFlaggedIdentifiers().contains(identifier);
+        return this.getFlaggedIdentifiers().contains(identifier);
     }
 
     protected final void markAsFlagged(final T identifier)
     {
-        getFlaggedIdentifiers().add(identifier);
+        this.getFlaggedIdentifiers().add(identifier);
     }
 
     /**
