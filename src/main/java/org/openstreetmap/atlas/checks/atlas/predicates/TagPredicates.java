@@ -8,6 +8,7 @@ import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.EmbankmentTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.LocationTag;
 import org.openstreetmap.atlas.tags.ManMadeTag;
 import org.openstreetmap.atlas.tags.MaxSpeedTag;
@@ -15,6 +16,7 @@ import org.openstreetmap.atlas.tags.MinSpeedTag;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.PowerTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.names.NameTag;
 
 /**
  * Collection of tag based predicates
@@ -46,7 +48,27 @@ public interface TagPredicates
      */
     Predicate<AtlasObject> IS_HIGHWAY_AREA = object -> Validators.hasValuesFor(object,
             HighwayTag.class) && Validators.isOfType(object, AreaTag.class, AreaTag.YES);
-
+    
+    /**
+     * Tests if the {@link AtlasObject} has a highway tag that do not contain TERTIARY_LINK, SECONDARY_LINK,
+     * PRIMARY_LINK, TRUNK_LINK, or MOTORWAY_LINK
+     */
+    Predicate<AtlasObject> IS_HIGHWAY_NOT_LINK_TYPE = object -> Validators.hasValuesFor(object,
+            HighwayTag.class) && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.TERTIARY_LINK,
+            HighwayTag.SECONDARY_LINK, HighwayTag.PRIMARY_LINK, HighwayTag.TRUNK_LINK, HighwayTag.MOTORWAY_LINK);
+    
+    /**
+     * Tests if the {@link AtlasObject} has a highway tag that do contain TERTIARY, SECONDARY, PRIMARY, TRUNK, or MOTORWAY
+     */
+    Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators.hasValuesFor(object,
+            HighwayTag.class) && Validators.isOfType(object, HighwayTag.class, HighwayTag.TERTIARY,
+            HighwayTag.SECONDARY, HighwayTag.PRIMARY, HighwayTag.TRUNK, HighwayTag.MOTORWAY);
+    /**
+     * Tests if the {@link AtlasObject} has a junction tag not of type ROUNDABOUT.
+     */
+    Predicate<AtlasObject> NOT_ROUNDABOUT_JUNCTION = object -> Validators.hasValuesFor(object,
+            JunctionTag.class) && Validators.isNotOfType(object, JunctionTag.class, JunctionTag.ROUNDABOUT);
+    
     /**
      * Tests if the {@link AtlasObject} has a minimum or maximum speed
      */

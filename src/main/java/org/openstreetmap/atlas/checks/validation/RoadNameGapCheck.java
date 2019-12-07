@@ -1,10 +1,14 @@
 package org.openstreetmap.atlas.checks.validation;
 
 import java.util.Optional;
+import java.util.Set;
 
+import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -45,8 +49,12 @@ public class RoadNameGapCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // by default we will assume all objects as valid
-        return true;
+        return object instanceof Edge
+                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                && TagPredicates.IS_HIGHWAY_NOT_LINK_TYPE.test(object)
+                && TagPredicates.VALID_HIGHWAY_TAG.test(object)
+                && HighwayTag.isCarNavigableHighway(object);
+//                && TagPredicates.NOT_ROUNDABOUT_JUNCTION.test(object);
     }
 
     /**
@@ -59,10 +67,13 @@ public class RoadNameGapCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // insert algorithmic check to see whether object needs to be flagged.
-        // Example of flagging an object
-        // return Optional.of(this.createFlag(object, "Instruction how to fix issue or reason behind
-        // flagging the object");
+        final Edge incomingEdge = (Edge) object;
+        final Set<Edge> connectedEdges = incomingEdge.connectedEdges();
+         if (connectedEdges.size() < 2) {
+             return Optional.empty();
+         }
+         // find edge located between two dges with same name tag
+        
         return Optional.empty();
     }
 }
