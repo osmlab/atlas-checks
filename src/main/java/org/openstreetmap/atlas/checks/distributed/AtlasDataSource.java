@@ -171,8 +171,8 @@ public class AtlasDataSource implements Serializable, AutoCloseable
                 final int pbfCount = pbfResources.size();
                 if (pbfCount > 0)
                 {
-                    this.getLogger().info("Loading Atlas from {} OSM protobuf(s) found in {}", pbfCount,
-                            input);
+                    this.getLogger().info("Loading Atlas from {} OSM protobuf(s) found in {}",
+                            pbfCount, input);
                     final List<Atlas> atlases = pbfResources.parallelStream()
                             .map(dataSource -> this.loadPbf(dataSource, country))
                             .collect(Collectors.toList());
