@@ -161,9 +161,9 @@ public final class ConfigurationResolver
                 {
                     source.close();
                 }
-                catch (final Throwable throwable)
+                catch (final IOException ioe)
                 {
-                    thrown = throwable;
+                    thrown = ioe;
                 }
             }
         }
