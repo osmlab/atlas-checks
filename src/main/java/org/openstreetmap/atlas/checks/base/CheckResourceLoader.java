@@ -282,7 +282,7 @@ public class CheckResourceLoader
         }
         catch (final NoSuchMethodException oops)
         {
-            logger.info("No method found for {} with arguments {}", checkClass.toString(),
+            logger.info("No method found for {} with arguments {}", checkClass,
                     Stream.of(constructorArgumentTypes).map(Class::toString)
                             .collect(Collectors.joining(",")));
         }

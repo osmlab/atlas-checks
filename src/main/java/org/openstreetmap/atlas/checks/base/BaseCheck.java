@@ -60,7 +60,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
     private final List<String> countries;
     private final Map<String, List<String>> flagLanguageMap;
     // OSM Identifiers are used to keep track of flagged features
-    private final Set<T> flaggedIdentifiers = ConcurrentHashMap.newKeySet();
+    private transient Set<T> flaggedIdentifiers = null;
     private final Locale locale;
     private final String name = this.getClass().getSimpleName();
     // geo filter specific to this check
@@ -224,11 +224,17 @@ public abstract class BaseCheck<T> implements Check, Serializable
         String instructionFormat;
         try
         {
-            instructionFormat = this.flagLanguageMap.containsKey(this.getLocale().getLanguage())
-                    ? this.flagLanguageMap.get(this.getLocale().getLanguage()).get(index)
-                    : this.flagLanguageMap.containsKey(DEFAULT_LOCALE.getLanguage())
-                            ? this.flagLanguageMap.get(DEFAULT_LOCALE.getLanguage()).get(index)
-                            : this.getFallbackInstructions().get(index);
+            if (this.flagLanguageMap.containsKey(this.getLocale().getLanguage()))
+            {
+                instructionFormat = this.flagLanguageMap.get(this.getLocale().getLanguage())
+                        .get(index);
+            }
+            else
+            {
+                instructionFormat = this.flagLanguageMap.containsKey(DEFAULT_LOCALE.getLanguage())
+                        ? this.flagLanguageMap.get(DEFAULT_LOCALE.getLanguage()).get(index)
+                        : this.getFallbackInstructions().get(index);
+            }
 
         }
         catch (final IndexOutOfBoundsException exception)
@@ -282,7 +288,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected void clearFlaggedIdentifiers()
     {
-        this.flaggedIdentifiers.clear();
+        this.getFlaggedIdentifiers().clear();
     }
 
     protected final String configurationKey(final Class type, final String key)
@@ -381,6 +387,10 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected Set<T> getFlaggedIdentifiers()
     {
+        if (this.flaggedIdentifiers == null)
+        {
+            this.flaggedIdentifiers = ConcurrentHashMap.newKeySet();
+        }
         return this.flaggedIdentifiers;
     }
 
@@ -448,12 +458,12 @@ public abstract class BaseCheck<T> implements Check, Serializable
 
     protected final boolean isFlagged(final T identifier)
     {
-        return this.flaggedIdentifiers.contains(identifier);
+        return this.getFlaggedIdentifiers().contains(identifier);
     }
 
     protected final void markAsFlagged(final T identifier)
     {
-        this.flaggedIdentifiers.add(identifier);
+        this.getFlaggedIdentifiers().add(identifier);
     }
 
     /**
