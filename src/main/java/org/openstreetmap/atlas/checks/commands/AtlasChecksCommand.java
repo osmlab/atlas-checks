@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.utilities.runtime.FlexibleCommand;
 import org.openstreetmap.atlas.utilities.runtime.FlexibleSubCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -19,6 +21,8 @@ import io.github.classgraph.ScanResult;
  */
 public class AtlasChecksCommand extends FlexibleCommand
 {
+    private static final Logger logger = LoggerFactory.getLogger(AtlasChecksCommand.class);
+
     public static void main(final String... args)
     {
         final AtlasChecksCommand command = new AtlasChecksCommand(args);
@@ -26,9 +30,10 @@ public class AtlasChecksCommand extends FlexibleCommand
         {
             command.runWithoutQuitting(args);
         }
-        catch (final Throwable e)
+        catch (final RuntimeException e)
         {
-            e.printStackTrace();
+            logger.error("Unable to runWithoutQuitting for class {} with message {}",
+                    "AtlasChecksCommand", e.getMessage());
             command.printUsageAndExit(1);
         }
     }

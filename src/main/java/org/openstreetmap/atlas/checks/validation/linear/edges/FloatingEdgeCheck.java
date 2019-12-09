@@ -78,14 +78,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     {
         super(configuration);
 
-        // This will retrieve two values, minimum and maximum length. In the JSON configuration it
-        // would look like this:
-        // "FloatingEdgeCheck": {
-        // "length": {
-        // "maximum.kilometers": 100.0,
-        // "minimum.meters": 100.0
-        // }
-        // }
+        /*
+         * This will retrieve two values, minimum and maximum length in the JSON configuration.
+         */
         this.minimumDistance = configurationValue(configuration, "length.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
         this.maximumDistance = configurationValue(configuration, "length.maximum.kilometers",
