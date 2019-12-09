@@ -23,6 +23,7 @@ import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.MotorVehicleTag;
 import org.openstreetmap.atlas.tags.MotorcarTag;
+import org.openstreetmap.atlas.tags.PublicServiceVehiclesTag;
 import org.openstreetmap.atlas.tags.RouteTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.VehicleTag;
@@ -55,10 +56,17 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final Predicate<AtlasObject> SERVICE_ROAD = object -> Validators.isOfType(object,
             HighwayTag.class, HighwayTag.SERVICE);
     private static final long TREE_SIZE_DEFAULT = 50;
+    private static final boolean DEFAULT_SERVICE_IN_PEDESTRIAN_FILTER = false;
+    // An edge on which only a PSV may travel. Otherwise nonroutable
+    private static final Predicate<AtlasObject> NON_ROUTABLE_VEHICULAR_ACCESS = edge -> !edge
+            .getTag(PublicServiceVehiclesTag.KEY).orElse(PublicServiceVehiclesTag.NO.name())
+            .equals(PublicServiceVehiclesTag.NO.name());
     private static final long serialVersionUID = -1432150496331502258L;
     private final HighwayTag minimumHighwayType;
     private final int storeSize;
     private final int treeSize;
+    // This can be turned on if we want to flag service roads surrounded by pedestrian networks.
+    private final boolean serviceInPedestrianNetworkFilter;
 
     /**
      * Default constructor
@@ -79,6 +87,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
         // this.treeSize
         // Therefore underlying map/queue we will never re-double the capacity
         this.storeSize = (int) (this.treeSize / LOAD_FACTOR);
+        this.serviceInPedestrianNetworkFilter = configurationValue(configuration,
+                "filter.pedestrian.network", DEFAULT_SERVICE_IN_PEDESTRIAN_FILTER);
     }
 
     @Override
@@ -203,10 +213,12 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // of creating a false positive due to the sectioning of the way
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
-                // Ignore edges that are of type service and is connected to pedestrian navigable
-                // ways or that ends in a building or is within an airport polygon
-                || SERVICE_ROAD.test(edge) && (this.isConnectedToPedestrianNavigableHighway(edge)
-                        || this.intersectsAirportOrBuilding(edge));
+                // If the serviceInPedestrianNetworkFilter switch is off, ignore edges that are of
+                // type service and are surrounded to pedestrian navigable ways
+                || !this.serviceInPedestrianNetworkFilter && SERVICE_ROAD.test(edge)
+                        && this.isConnectedToPedestrianNavigableHighway(edge)
+                // Ignore service edges that end in a building or is within an airport polygon
+                || SERVICE_ROAD.test(edge) && this.intersectsAirportOrBuilding(edge);
     }
 
     /**
@@ -325,6 +337,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 && HighwayTag.isCarNavigableHighway(object) && this.isAccessible((Edge) object)
                 && this.isNavigable((Edge) object) && !RouteTag.isFerry(object)
                 // Ignore any highways tagged as areas
-                && !TagPredicates.IS_AREA.test(object);
+                && !TagPredicates.IS_AREA.test(object)
+                // Validate edges that have a psv tag and are motor_vehicle=no
+                || (object.getTag(MotorVehicleTag.KEY).orElse(MotorVehicleTag.NO.name()).equals(
+                        MotorVehicleTag.NO.name()) && NON_ROUTABLE_VEHICULAR_ACCESS.test(object));
+
     }
 }
