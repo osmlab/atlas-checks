@@ -35,10 +35,6 @@ public class RoadNameGapCheck extends BaseCheck
     public RoadNameGapCheck(final Configuration configuration)
     {
         super(configuration);
-        // any internal variables can be set here from configuration
-        // eg. MAX_LENGTH could be defined as "public static final double MAX_LENGTH = 100;"
-        // this.maxLength = configurationValue(configuration, "length.max", MAX_LENGTH,
-        // Distance::meters);
     }
 
     /**
@@ -70,21 +66,44 @@ public class RoadNameGapCheck extends BaseCheck
     {
         final Edge edge = (Edge) object;
         final Set<Edge> inEdges = edge.inEdges().stream()
-                .filter(edge1 -> validCheckForObject(edge1)).collect(Collectors.toSet());
+                .filter(this::validCheckForObject).collect(Collectors.toSet());
         final Set<Edge> outEdges = edge.outEdges().stream()
-                .filter(edge1 -> validCheckForObject(edge1)).collect(Collectors.toSet());
+                .filter(this::validCheckForObject).collect(Collectors.toSet());
 
-        if (inEdges == null || inEdges.size() < 1)
+        if (inEdges.isEmpty() || outEdges.isEmpty())
         {
             return Optional.empty();
         }
-
-        if (outEdges == null || outEdges.size() < 1)
+    
+        final Set<String> edgeNames = findInEdgeOutEdgeMatchingName(inEdges, outEdges);
+    
+        // Return empty if there is no pair of in edge and out edge with same name.
+        if (edgeNames.isEmpty())
         {
             return Optional.empty();
         }
-        final Set<String> edgeNames = new HashSet();
-
+    
+        // Create flag when we have in edge and out edge with same name but intermediate edge doesn't have a name.
+        if (!edge.getName().isPresent())
+        {
+            final String instruction = "Edge name is empty.";
+            return Optional.of(createFlag(object, instruction));
+        }
+        
+        //Create flag when in edge and out edge name tag matches and intermediate edge has different tag name.
+        final Optional<String> edgeName = edge.getName();
+        if (edgeName.isPresent() && !edgeNames.contains(edgeName.get()))
+        {
+            final String instruction = "Edge name is different from in edge name and out edge name.";
+            return Optional.of(createFlag(object, instruction));
+        }
+        return Optional.empty();
+    }
+    
+    private Set<String> findInEdgeOutEdgeMatchingName(Set<Edge> inEdges, Set<Edge> outEdges)
+    {
+        final Set<String> edgeNames = new HashSet<>();
+        
         for (final Edge inEdge : inEdges)
         {
             if (!inEdge.getName().isPresent())
@@ -97,31 +116,14 @@ public class RoadNameGapCheck extends BaseCheck
                 {
                     continue;
                 }
-                if (inEdge.getName().isPresent() && inEdge.getName().get().equals(outEdge.getName().get()))
+                final Optional<String> inEdgeName = inEdge.getName();
+                final Optional<String> outEdgeName = outEdge.getName();
+                if (inEdgeName.isPresent() && outEdgeName.isPresent() && inEdgeName.get().equals(outEdgeName.get()))
                 {
-                    edgeNames.add(outEdge.getName().get());
+                    edgeNames.add(outEdgeName.get());
                 }
             }
         }
-
-        if (edgeNames.isEmpty())
-        {
-            // There is no pair of inedge and out edge with same name.
-            return Optional.empty();
-        }
-
-        if (!edge.getName().isPresent())
-        {
-            // create flag. We have inedge and outedge with same name but this edge doesnt have a
-            // name.
-            final String instruction = "Edge name is empty.";
-            return Optional.of(createFlag(object, instruction));
-        }
-        if (!edgeNames.contains(edge.getName().get()))
-        {
-            final String instruction = "Edge name is different from in edge name and out edge name.";
-            return Optional.of(createFlag(object, instruction));
-        }
-        return Optional.empty();
+        return edgeNames;
     }
 }
