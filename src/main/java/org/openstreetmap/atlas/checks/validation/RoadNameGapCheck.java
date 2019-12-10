@@ -1,7 +1,9 @@
 package org.openstreetmap.atlas.checks.validation;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -49,12 +51,11 @@ public class RoadNameGapCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge
-                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+        return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && TagPredicates.IS_HIGHWAY_NOT_LINK_TYPE.test(object)
                 && TagPredicates.VALID_HIGHWAY_TAG.test(object)
                 && HighwayTag.isCarNavigableHighway(object);
-//                && TagPredicates.NOT_ROUNDABOUT_JUNCTION.test(object);
+        // && TagPredicates.NOT_ROUNDABOUT_JUNCTION.test(object);
     }
 
     /**
@@ -67,13 +68,60 @@ public class RoadNameGapCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Edge incomingEdge = (Edge) object;
-        final Set<Edge> connectedEdges = incomingEdge.connectedEdges();
-         if (connectedEdges.size() < 2) {
-             return Optional.empty();
-         }
-         // find edge located between two dges with same name tag
-        
+        final Edge edge = (Edge) object;
+        final Set<Edge> inEdges = edge.inEdges().stream()
+                .filter(edge1 -> validCheckForObject(edge1)).collect(Collectors.toSet());
+        final Set<Edge> outEdges = edge.outEdges().stream()
+                .filter(edge1 -> validCheckForObject(edge1)).collect(Collectors.toSet());
+
+        if (inEdges == null || inEdges.size() < 1)
+        {
+            return Optional.empty();
+        }
+
+        if (outEdges == null || outEdges.size() < 1)
+        {
+            return Optional.empty();
+        }
+        final Set<String> edgeNames = new HashSet();
+
+        for (final Edge inEdge : inEdges)
+        {
+            if (!inEdge.getName().isPresent())
+            {
+                continue;
+            }
+            for (final Edge outEdge : outEdges)
+            {
+                if (!outEdge.getName().isPresent())
+                {
+                    continue;
+                }
+                if (inEdge.getName().isPresent() && inEdge.getName().get().equals(outEdge.getName().get()))
+                {
+                    edgeNames.add(outEdge.getName().get());
+                }
+            }
+        }
+
+        if (edgeNames.isEmpty())
+        {
+            // There is no pair of inedge and out edge with same name.
+            return Optional.empty();
+        }
+
+        if (!edge.getName().isPresent())
+        {
+            // create flag. We have inedge and outedge with same name but this edge doesnt have a
+            // name.
+            final String instruction = "Edge name is empty.";
+            return Optional.of(createFlag(object, instruction));
+        }
+        if (!edgeNames.contains(edge.getName().get()))
+        {
+            final String instruction = "Edge name is different from in edge name and out edge name.";
+            return Optional.of(createFlag(object, instruction));
+        }
         return Optional.empty();
     }
 }
