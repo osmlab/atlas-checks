@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -50,8 +51,7 @@ public class RoadNameGapCheck extends BaseCheck
         return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && TagPredicates.IS_HIGHWAY_NOT_LINK_TYPE.test(object)
                 && TagPredicates.VALID_HIGHWAY_TAG.test(object)
-                && HighwayTag.isCarNavigableHighway(object);
-        // && TagPredicates.NOT_ROUNDABOUT_JUNCTION.test(object);
+                && HighwayTag.isCarNavigableHighway(object) && !JunctionTag.isRoundabout(object);
     }
 
     /**

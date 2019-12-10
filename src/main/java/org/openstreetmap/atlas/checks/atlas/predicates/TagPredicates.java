@@ -8,7 +8,6 @@ import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.EmbankmentTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.LocationTag;
 import org.openstreetmap.atlas.tags.ManMadeTag;
 import org.openstreetmap.atlas.tags.MaxSpeedTag;
@@ -73,12 +72,6 @@ public final class TagPredicates
             && Validators.isOfType(object, HighwayTag.class, HighwayTag.TERTIARY,
                     HighwayTag.SECONDARY, HighwayTag.PRIMARY, HighwayTag.TRUNK,
                     HighwayTag.MOTORWAY);
-    /**
-     * Tests if the {@link AtlasObject} has a junction tag not of type ROUNDABOUT.
-     */
-    public static final Predicate<AtlasObject> NOT_ROUNDABOUT_JUNCTION = object -> Validators
-            .hasValuesFor(object, JunctionTag.class)
-            && Validators.isNotOfType(object, JunctionTag.class, JunctionTag.ROUNDABOUT);
 
     /**
      * Tests if the {@link AtlasObject} has a minimum or maximum speed
