@@ -55,11 +55,16 @@ public class InvalidTagsCheck extends BaseCheck<String>
     }
 
     /**
-     * Convert a {@link String} of comma delimited
+     * Convert a {@link String} of comma delimited {@link AtlasEntity} class names and a
+     * {@link String} {@link TaggableFilter} to a {@link Set} of {@link AtlasEntity} {@link Class}ed
+     * and {@link TaggableFilter}.
      *
      * @param classString
+     *            A {@link String} of comma delimited {@link AtlasEntity} class names
      * @param tagFilterString
-     * @return
+     *            A {@link String} {@link TaggableFilter} definition
+     * @return A {@link Tuple} of a {@link Set} of {@link AtlasEntity} {@link Class}es and a
+     *         {@link TaggableFilter}
      */
     private static Tuple<Set<Class<AtlasEntity>>, TaggableFilter> stringsToClassTagFilter(
             final String classString, final String tagFilterString)
