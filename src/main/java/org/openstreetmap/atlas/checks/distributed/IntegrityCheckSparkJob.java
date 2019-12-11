@@ -94,9 +94,10 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     protected static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
             final Atlas atlas)
     {
-        if (check.finder().isPresent())
+        final Optional<Finder> finderOptional = check.finder();
+        if (finderOptional.isPresent())
         {
-            return Iterables.stream(check.finder().get().find(atlas));
+            return Iterables.stream(finderOptional.get().find(atlas));
         }
 
         return Collections.emptyList();
@@ -122,29 +123,8 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         final Pool checkExecutionPool = new Pool(checksToRun.size(), "Check execution pool",
                 POOL_DURATION_BEFORE_KILL);
         checksToRun.forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
-                        objectsToCheck(atlas, check), EventService.get(country))));
+                objectsToCheck(atlas, check), EventService.get(country))));
         checkExecutionPool.close();
-    }
-
-    /**
-     * Gets complex entities
-     *
-     * @param check
-     *            A {@link BaseCheck} object
-     * @param atlas
-     *            An {@link Atlas} object
-     * @return An {@link Iterable} of {@link ComplexEntity}s
-     */
-    protected static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
-            final Atlas atlas)
-    {
-        final Optional<Finder> finderOptional = check.finder();
-        if (finderOptional.isPresent())
-        {
-            return Iterables.stream(finderOptional.get().find(atlas));
-        }
-
-        return Collections.emptyList();
     }
 
     private static SparkFilePath initializeOutput(final String output, final TaskContext context,
