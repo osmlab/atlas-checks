@@ -484,5 +484,14 @@
       "difficulty": "MEDIUM",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "AtGradeSignPostCheck": {
+    "enabled": true,
+    "highway.filter": "highway->trunk,primary,secondary",
+    "connected.highway.types": {
+      "primary": ["trunk","primary","secondary"],
+      "trunk": ["primary"],
+      "secondary": ["primary"]
+    }
   }
 }
