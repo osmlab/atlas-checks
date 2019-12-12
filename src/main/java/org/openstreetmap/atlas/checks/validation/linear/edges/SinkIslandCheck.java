@@ -155,11 +155,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // Add the current candidate to the set of already explored edges
                 explored.add(candidate);
 
-                // From the list of outgoing edges from the current candidate filter out any edges
-                // that have already been explored and add all the rest to the queue of possible
-                // candidates
-                outEdges.stream().filter(outEdge -> !explored.contains(outEdge))
-                        .forEach(candidates::add);
+                // From the list of outgoing edges from the current candidate filter out any
+                // highway=pedestrian edges that were picked up and filter out any edges that have
+                // already been explored and add all the rest to the queue of possible candidates
+                outEdges.stream().filter(this::validEdge)
+                        .filter(outEdge -> !explored.contains(outEdge)).forEach(candidates::add);
 
                 // If the number of available candidates and the size of the currently explored
                 // items is larger then the configurable tree size, then we can break out of the
