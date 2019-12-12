@@ -134,10 +134,14 @@ public class SinkIslandCheck extends BaseCheck<Long>
             final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
                     .collect(Collectors.toSet());
 
-            // Validate highway=pedestrian edges connected to candidate if candidate is motor_vehicle=yes (add to outEdges)
-            if(candidate.getTag(MotorVehicleTag.KEY).orElse(MotorVehicleTag.NO.name()).equals(MotorVehicleTag.YES.name()))
+            // Validate highway=pedestrian edges connected to candidate if candidate is
+            // motor_vehicle=yes (add to outEdges)
+            if (candidate.getTag(MotorVehicleTag.KEY).orElse(MotorVehicleTag.NO.name())
+                    .equals(MotorVehicleTag.YES.name()))
             {
-                outEdges.addAll(candidate.outEdges().stream().filter(HighwayTag::isPedestrianNavigableHighway).collect(Collectors.toSet()));
+                outEdges.addAll(candidate.outEdges().stream()
+                        .filter(HighwayTag::isPedestrianNavigableHighway)
+                        .collect(Collectors.toSet()));
             }
 
             if (outEdges.isEmpty())
@@ -218,7 +222,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // of creating a false positive due to the sectioning of the way
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.end())
                 || SyntheticBoundaryNodeTag.isBoundaryNode(edge.start())
-                // If the serviceInPedestrianNetworkFilter switch is off, ignore edges that are of type at least service and are surrounded by pedestrian navigable ways. To flag such edges, the filter must be on and it's implied that the edge must not have the motor_vehicle tag.
+                // If the serviceInPedestrianNetworkFilter switch is off, ignore edges that are of
+                // type at least service and are surrounded by pedestrian navigable ways. To flag
+                // such edges, the filter must be on and it's implied that the edge must not have
+                // the motor_vehicle tag.
                 || !this.serviceInPedestrianNetworkFilter && IS_AT_LEAST_SERVICE_ROAD.test(edge)
                         && this.isConnectedToPedestrianNavigableHighway(edge)
                 // Ignore service edges that end in a building or are within an airport polygon
