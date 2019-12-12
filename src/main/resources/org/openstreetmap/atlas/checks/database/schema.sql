@@ -1,4 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS {schema};
+SET search_path TO {schema},public;
+
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS hstore;
 
@@ -8,7 +10,7 @@ CREATE TABLE IF NOT EXISTS flag (
 	check_name text not null,
 	instructions text not null,
 	run_uri text,
-	software_version varchar(8),
+	software_version text,
 	date_created timestamp
 );
 
