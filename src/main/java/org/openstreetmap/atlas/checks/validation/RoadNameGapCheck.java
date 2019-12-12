@@ -15,7 +15,8 @@ import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
+ * This check identifies Edges with no name Tag that are between two other Edges with the same name
+ * Tag, OR the Edge has a name Tag but does not equal the name Tag of the Edges that it is between.
  *
  * @author sugandhimaheshwaram
  */
