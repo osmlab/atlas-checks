@@ -36,25 +36,25 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_4) }, tags = { "highway=SECONDARY_LINK",
                                     "name=Tsing Long Highway" }) })
     private Atlas invalidHighWayTag;
-  
-  @TestAtlas(
-          // nodes
-          nodes = { @Node(coordinates = @Loc(value = TEST_1), id = "0"),
-                  @Node(coordinates = @Loc(value = TEST_2), id = "1"),
-                  @Node(coordinates = @Loc(value = TEST_3), id = "2"),
-                  @Node(coordinates = @Loc(value = TEST_4), id = "3") },
-          // edges
-          edges = {
-                  @Edge(id = "1000000000", coordinates = { @Loc(value = TEST_1),
-                          @Loc(value = TEST_2) }, tags = { "highway=PRIMARY",
-                          "name=Tsing Long Highway" }),
-                  @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_2),
-                          @Loc(value = TEST_3) }, tags = { "highway=MOTORWAY",
-                          "name=failingName", "junction=roundabout" }),
-                  @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
-                          @Loc(value = TEST_4) }, tags = { "highway=SECONDARY",
-                          "name=Tsing Long Highway" }) })
-  private Atlas junctionNotRoundAbout;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1), id = "0"),
+                    @Node(coordinates = @Loc(value = TEST_2), id = "1"),
+                    @Node(coordinates = @Loc(value = TEST_3), id = "2"),
+                    @Node(coordinates = @Loc(value = TEST_4), id = "3") },
+            // edges
+            edges = {
+                    @Edge(id = "1000000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=PRIMARY",
+                                    "name=Tsing Long Highway" }),
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=MOTORWAY", "name=failingName",
+                                    "junction=roundabout" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "highway=SECONDARY",
+                                    "name=Tsing Long Highway" }) })
+    private Atlas junctionNotRoundAbout;
 
     @TestAtlas(
             // nodes
@@ -107,10 +107,10 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
     {
         return this.invalidHighWayTag;
     }
-  
-  public Atlas isJunctionNotRoundAbout()
-  {
-    return this.junctionNotRoundAbout;
-  }
+
+    public Atlas isJunctionNotRoundAbout()
+    {
+        return this.junctionNotRoundAbout;
+    }
 
 }

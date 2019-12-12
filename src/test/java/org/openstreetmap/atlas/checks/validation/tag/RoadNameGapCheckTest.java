@@ -43,13 +43,13 @@ public class RoadNameGapCheckTest
                 new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
-  
-  @Test
-  public void testForIsJunctionNotRoundAbout()
-  {
-    this.verifier.actual(this.setup.isJunctionNotRoundAbout(),
-            new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
-    this.verifier.verifyEmpty();
-  }
+
+    @Test
+    public void testForIsJunctionNotRoundAbout()
+    {
+        this.verifier.actual(this.setup.isJunctionNotRoundAbout(),
+                new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
 
 }
