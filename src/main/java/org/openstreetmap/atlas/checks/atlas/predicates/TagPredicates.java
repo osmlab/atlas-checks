@@ -64,16 +64,6 @@ public final class TagPredicates
                     HighwayTag.MOTORWAY_LINK);
 
     /**
-     * Tests if the {@link AtlasObject} has a highway tag that do contain TERTIARY, SECONDARY,
-     * PRIMARY, TRUNK, or MOTORWAY
-     */
-    public static final Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators
-            .hasValuesFor(object, HighwayTag.class)
-            && Validators.isOfType(object, HighwayTag.class, HighwayTag.TERTIARY,
-                    HighwayTag.SECONDARY, HighwayTag.PRIMARY, HighwayTag.TRUNK,
-                    HighwayTag.MOTORWAY);
-
-    /**
      * Tests if the {@link AtlasObject} has a minimum or maximum speed
      */
     public static final Predicate<AtlasObject> HAS_SPEED_LIMIT = object -> Validators.hasValuesFor(

@@ -4,11 +4,10 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
-import org.openstreetmap.atlas.checks.validation.RoadNameGapCheck;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
- * {@link org.openstreetmap.atlas.checks.validation.RoadNameGapCheck} unit tests.
+ * {@link RoadNameGapCheck} unit tests.
  *
  * @author smaheshwaram
  */

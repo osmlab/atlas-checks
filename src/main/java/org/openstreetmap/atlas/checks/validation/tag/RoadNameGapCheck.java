@@ -1,17 +1,19 @@
-package org.openstreetmap.atlas.checks.validation;
+package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -24,7 +26,17 @@ public class RoadNameGapCheck extends BaseCheck
 {
 
     // You can use serialver to regenerate the serial UID.
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 7104778218412127847L;
+
+    /**
+     * Tests if the {@link AtlasObject} has a highway tag that do contain TERTIARY, SECONDARY,
+     * PRIMARY, TRUNK, or MOTORWAY
+     */
+    private static final Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators
+            .hasValuesFor(object, HighwayTag.class)
+            && Validators.isOfType(object, HighwayTag.class, HighwayTag.TERTIARY,
+                    HighwayTag.PRIMARY, HighwayTag.SECONDARY, HighwayTag.MOTORWAY,
+                    HighwayTag.TRUNK);
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -50,8 +62,7 @@ public class RoadNameGapCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && TagPredicates.IS_HIGHWAY_NOT_LINK_TYPE.test(object)
-                && TagPredicates.VALID_HIGHWAY_TAG.test(object)
+                && !HighwayTag.isLinkHighway(object) && VALID_HIGHWAY_TAG.test(object)
                 && HighwayTag.isCarNavigableHighway(object) && !JunctionTag.isRoundabout(object);
     }
 
@@ -66,20 +77,24 @@ public class RoadNameGapCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Set<Edge> inEdges = edge.inEdges().stream().filter(this::validCheckForObject)
-                .collect(Collectors.toSet());
-        final Set<Edge> outEdges = edge.outEdges().stream().filter(this::validCheckForObject)
-                .collect(Collectors.toSet());
+        final Set<String> inEdgesNameTags = edge.inEdges().stream().filter(
+                inEdge -> this.validCheckForObject(inEdge) && NameTag.getNameOf(inEdge).isPresent())
+                .map(inEdge -> NameTag.getNameOf(inEdge).get()).collect(Collectors.toSet());
+        final Set<String> outEdgesNameTags = edge.outEdges().stream()
+                .filter(outEdge -> this.validCheckForObject(outEdge)
+                        && NameTag.getNameOf(outEdge).isPresent())
+                .map(inEdge -> NameTag.getNameOf(inEdge).get()).collect(Collectors.toSet());
 
-        if (inEdges.isEmpty() || outEdges.isEmpty())
+        if (inEdgesNameTags.isEmpty() || outEdgesNameTags.isEmpty())
         {
             return Optional.empty();
         }
 
-        final Set<String> edgeNames = findInEdgeOutEdgeMatchingName(inEdges, outEdges);
+        final Set<String> inEdgeOutEdgeMatchingNames = this.findInEdgeOutEdgeMatchingName(
+                inEdgesNameTags, outEdgesNameTags);
 
         // Return empty if there is no pair of in edge and out edge with same name.
-        if (edgeNames.isEmpty())
+        if (inEdgeOutEdgeMatchingNames.isEmpty())
         {
             return Optional.empty();
         }
@@ -95,7 +110,7 @@ public class RoadNameGapCheck extends BaseCheck
         // Create flag when in edge and out edge name tag matches and intermediate edge has
         // different tag name.
         final Optional<String> edgeName = edge.getName();
-        if (edgeName.isPresent() && !edgeNames.contains(edgeName.get()))
+        if (edgeName.isPresent() && !inEdgeOutEdgeMatchingNames.contains(edgeName.get()))
         {
             final String instruction = "Edge name is different from in edge name and out edge name.";
             return Optional.of(createFlag(object, instruction));
@@ -103,32 +118,21 @@ public class RoadNameGapCheck extends BaseCheck
         return Optional.empty();
     }
 
-    private Set<String> findInEdgeOutEdgeMatchingName(final Set<Edge> inEdges,
-            final Set<Edge> outEdges)
+    private Set<String> findInEdgeOutEdgeMatchingName(final Set<String> inEdgesNameTags,
+            final Set<String> outEdgesNameTags)
     {
-        final Set<String> edgeNames = new HashSet<>();
+        final Set<String> inEdgeOutEdgeMatchingNames = new HashSet<>();
 
-        for (final Edge inEdge : inEdges)
+        for (final String inEdgeName : inEdgesNameTags)
         {
-            if (!inEdge.getName().isPresent())
+            for (final String outEdgeName : outEdgesNameTags)
             {
-                continue;
-            }
-            for (final Edge outEdge : outEdges)
-            {
-                if (!outEdge.getName().isPresent())
+                if (inEdgeName.equals(outEdgeName))
                 {
-                    continue;
-                }
-                final Optional<String> inEdgeName = inEdge.getName();
-                final Optional<String> outEdgeName = outEdge.getName();
-                if (inEdgeName.isPresent() && outEdgeName.isPresent()
-                        && inEdgeName.get().equals(outEdgeName.get()))
-                {
-                    edgeNames.add(outEdgeName.get());
+                    inEdgeOutEdgeMatchingNames.add(outEdgeName);
                 }
             }
         }
-        return edgeNames;
+        return inEdgeOutEdgeMatchingNames;
     }
 }

@@ -8,7 +8,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
 /**
- * Tests for {@link org.openstreetmap.atlas.checks.validation.RoadNameGapCheck}
+ * Tests for {@link RoadNameGapCheck}
  *
  * @author smaheshwaram
  */
