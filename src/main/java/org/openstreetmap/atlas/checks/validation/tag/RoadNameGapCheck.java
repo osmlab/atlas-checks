@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -27,6 +29,8 @@ public class RoadNameGapCheck extends BaseCheck
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 7104778218412127847L;
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
+            "Edge name {1} is different from in edge name and out edge name.");
 
     /**
      * Tests if the {@link AtlasObject} has a highway tag that do contain TERTIARY, SECONDARY,
@@ -103,8 +107,8 @@ public class RoadNameGapCheck extends BaseCheck
         // doesn't have a name.
         if (!edge.getName().isPresent())
         {
-            final String instruction = "Edge name is empty.";
-            return Optional.of(createFlag(object, instruction));
+            return Optional.of(
+                    createFlag(object, this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
 
         // Create flag when in edge and out edge name tag matches and intermediate edge has
@@ -112,10 +116,16 @@ public class RoadNameGapCheck extends BaseCheck
         final Optional<String> edgeName = edge.getName();
         if (edgeName.isPresent() && !inEdgeOutEdgeMatchingNames.contains(edgeName.get()))
         {
-            final String instruction = "Edge name is different from in edge name and out edge name.";
-            return Optional.of(createFlag(object, instruction));
+            return Optional.of(createFlag(object,
+                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(), edgeName)));
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     private Set<String> findInEdgeOutEdgeMatchingName(final Set<String> inEdgesNameTags,
