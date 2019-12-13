@@ -63,7 +63,7 @@ public class RoadNameGapCheck extends BaseCheck
     {
         return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && !HighwayTag.isLinkHighway(object) && VALID_HIGHWAY_TAG.test(object)
-                && HighwayTag.isCarNavigableHighway(object) && !JunctionTag.isRoundabout(object);
+                && !JunctionTag.isRoundabout(object);
     }
 
     /**
@@ -90,8 +90,8 @@ public class RoadNameGapCheck extends BaseCheck
             return Optional.empty();
         }
 
-        final Set<String> inEdgeOutEdgeMatchingNames = this.findInEdgeOutEdgeMatchingName(
-                inEdgesNameTags, outEdgesNameTags);
+        final Set<String> inEdgeOutEdgeMatchingNames = this
+                .findInEdgeOutEdgeMatchingName(inEdgesNameTags, outEdgesNameTags);
 
         // Return empty if there is no pair of in edge and out edge with same name.
         if (inEdgeOutEdgeMatchingNames.isEmpty())

@@ -21,10 +21,10 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_1), id = "0"),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2), id = "1"),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_3), id = "2"),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_4), id = "3") },
+            nodes = { @Node(coordinates = @TestAtlas.Loc(value = TEST_1), id = "0"),
+                    @Node(coordinates = @TestAtlas.Loc(value = TEST_2), id = "1"),
+                    @Node(coordinates = @TestAtlas.Loc(value = TEST_3), id = "2"),
+                    @Node(coordinates = @TestAtlas.Loc(value = TEST_4), id = "3") },
             // edges
             edges = {
                     @Edge(id = "1000000000", coordinates = { @Loc(value = TEST_1),
