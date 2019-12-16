@@ -2,6 +2,8 @@ package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -56,6 +58,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         }
     }
 
+    private static Set<Long> exploredEdges = new TreeSet<>();
     // Matches identifiers sometimes found in road names. E.g. the 'A' in Road A, the "12c" in 12c
     // Street, and the "Y6" in Y6 Drive.
     // Identifiers are defined to be any space-delimited string that either contains at least one
@@ -117,6 +120,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
                 .distanceTo(startEdge.start().getLocation())
                 .isLessThanOrEqualTo(maximumSearchDistance)
                         ? incomingEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
+                                .filter(e -> !exploredEdges.contains(e.getMasterEdgeIdentifier()))
                         : Stream.empty();
     }
 
@@ -271,6 +275,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             final Distance maximumSearchDistance)
     {
         super(startEdge, edgesWithinMaximumSearchDistance(startEdge, maximumSearchDistance));
+        exploredEdges.add(startEdge.getMasterEdgeIdentifier());
     }
-
 }
