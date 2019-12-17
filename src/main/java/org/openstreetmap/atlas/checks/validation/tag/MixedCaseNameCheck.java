@@ -25,7 +25,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author bbreithaupt
  */
-public class MixedCaseNameCheck extends BaseCheck<Long>
+public class MixedCaseNameCheck extends BaseCheck<String>
 {
 
     private static final long serialVersionUID = 7109483897229499466L;
@@ -120,13 +120,15 @@ public class MixedCaseNameCheck extends BaseCheck<Long>
     {
         // Valid objects are items that were OSM nodes or ways (Equivalent to Atlas nodes, points,
         // edges, lines and areas)
-        return !(object instanceof Relation) && !this.isFlagged(object.getOsmIdentifier())
+        return !(object instanceof Relation) && !this.isFlagged(this.getUniqueOSMIdentifier(object))
                 && (object.getTags().containsKey(ISOCountryTag.KEY)
                         // Must have an ISO code that is in checkNameCountries...
                         && this.checkNameCountries
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
                         && Validators.hasValuesFor(object, NameTag.class)
+                        // And if an Edge, is a master edge
+                        && (!(object instanceof Edge) || ((Edge) object).isMasterEdge())
                         // Or it must have a specific language name tag from languageNameTags
                         || this.languageNameTags.stream()
                                 .anyMatch(key -> object.getOsmTags().containsKey(key)));
@@ -165,7 +167,7 @@ public class MixedCaseNameCheck extends BaseCheck<Long>
         // If mix case id detected, flag
         if (!mixedCaseNameTags.isEmpty())
         {
-            this.markAsFlagged(object.getOsmIdentifier());
+            this.markAsFlagged(this.getUniqueOSMIdentifier(object));
 
             // Instruction includes type of OSM object and list of flagged tags
             final String instruction = this.getLocalizedInstruction(0,
