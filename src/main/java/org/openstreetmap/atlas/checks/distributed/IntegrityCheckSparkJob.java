@@ -73,8 +73,7 @@ public class IntegrityCheckSparkJob extends SparkJob
         TIPPECANOE
     }
 
-    @Deprecated
-    protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
+    private static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
             "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
             Optionality.OPTIONAL);
     // Configuration
@@ -96,8 +95,7 @@ public class IntegrityCheckSparkJob extends SparkJob
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
     private static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format(
-                    "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe)."),
+            "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe).",
             csv_formats -> Stream.of(csv_formats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
@@ -175,9 +173,10 @@ public class IntegrityCheckSparkJob extends SparkJob
     private static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
             final Atlas atlas)
     {
-        if (check.finder().isPresent())
+        final Optional<Finder> finderOptional = check.finder();
+        if (finderOptional.isPresent())
         {
-            return Iterables.stream(check.finder().get().find(atlas));
+            return Iterables.stream(finderOptional.get().find(atlas));
         }
 
         return Collections.emptyList();
@@ -274,10 +273,12 @@ public class IntegrityCheckSparkJob extends SparkJob
                         .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
         // Log countries and integrity
-        logger.info("Initialized countries: {}", countryCheckTuples.stream().map(tuple -> tuple._1)
-                .collect(Collectors.joining(",")));
-        logger.info("Initialized checks: {}", preOverriddenChecks.stream()
-                .map(BaseCheck::getCheckName).collect(Collectors.joining(",")));
+        final String infoMessage1 = countryCheckTuples.stream().map(tuple -> tuple._1)
+                .collect(Collectors.joining(","));
+        final String infoMessage2 = preOverriddenChecks.stream().map(BaseCheck::getCheckName)
+                .collect(Collectors.joining(","));
+        logger.info("Initialized countries: {}", infoMessage1);
+        logger.info("Initialized checks: {}", infoMessage2);
 
         // Parallelize on the countries
         final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = getContext()
