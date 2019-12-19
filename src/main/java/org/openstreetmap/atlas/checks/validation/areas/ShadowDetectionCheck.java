@@ -202,6 +202,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
         while (!toCheck.isEmpty())
         {
             final AtlasObject checking = toCheck.poll();
+
             // If a connection to the ground is found the parts are not floating
             if (!isOffGround(checking))
             {
@@ -287,8 +288,8 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
      */
     private boolean isOffGround(final AtlasObject object)
     {
-        Double minHeight;
-        Double minLevel;
+        final double minHeight;
+        final double minLevel;
         try
         {
             minHeight = Double
@@ -296,11 +297,10 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             minLevel = Double.parseDouble(
                     object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING));
         }
-        // We want to flag if there is a bad value
+        // We want to flag AtlasObjects with bad tag values
         catch (final NumberFormatException badTagValue)
         {
-            minHeight = 1.0;
-            minLevel = 1.0;
+            return true;
         }
         return minHeight > 0 || minLevel > 0;
     }
@@ -362,9 +362,11 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
         try
         {
             // Set partMinHeight
-            final double partMinHeight = MinHeightTag.get(part).map(Altitude::asMeters)
-                    .orElseGet(() -> Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
-                            * LEVEL_TO_METERS_CONVERSION);
+            final double partMinHeight = MinHeightTag.get(part).map(Altitude::asMeters).orElseGet(
+                    () -> partTags.containsKey(BuildingMinLevelTag.KEY)
+                            ? Double.parseDouble(partTags.get(BuildingMinLevelTag.KEY))
+                                    * LEVEL_TO_METERS_CONVERSION
+                            : 0);
 
             // Set partMaxHeight
             final double partMaxHeight = HeightTag.get(part).map(Altitude::asMeters)
