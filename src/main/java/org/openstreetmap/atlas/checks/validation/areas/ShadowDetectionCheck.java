@@ -297,7 +297,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             minLevel = Double.parseDouble(
                     object.getOsmTags().getOrDefault(BuildingMinLevelTag.KEY, ZERO_STRING));
         }
-        // We want to flag AtlasObjects with bad tag values
+        // We want to ignore but propagate AtlasObjects with bad tag values
         catch (final NumberFormatException badTagValue)
         {
             return true;
