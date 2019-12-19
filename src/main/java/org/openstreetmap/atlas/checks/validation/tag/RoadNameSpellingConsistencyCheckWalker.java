@@ -207,22 +207,21 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static boolean identifierSubstringsAreEqual(final String incomingEdgeName,
             final String startingEdgeName)
     {
-
         // Gather identifier substrings from both road names
-        final List<String> incomingEdgeNameAlphanumericIdentifierStrings;
-        incomingEdgeNameAlphanumericIdentifierStrings = Arrays
+        final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(incomingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> Stream.of(CJKNumbers.values())
-                        .anyMatch(cjkNumber -> substring
-                                .contains(new String(Character.toChars(cjkNumber.getValue()))))
-                        || ALPHANUMERIC_IDENTIFIER_STRING_PATTERN.matcher(substring).matches()
-                        || CHARACTER_IDENTIFIER_STRING_PATTERN.matcher(substring).matches())
+                .filter(substring -> ALPHANUMERIC_IDENTIFIER_STRING_PATTERN.matcher(substring)
+                        .matches()
+                        || CHARACTER_IDENTIFIER_STRING_PATTERN.matcher(substring).matches()
+                        || Stream.of(CJKNumbers.values())
+                                .anyMatch(cjkNumber -> substring.contains(
+                                        new String(Character.toChars(cjkNumber.getValue())))))
                 .collect(Collectors.toList());
-
         final List<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(startingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                .filter(substring -> ALPHANUMERIC_IDENTIFIER_STRING_PATTERN.matcher(substring)
+                        .matches()
+                        || CHARACTER_IDENTIFIER_STRING_PATTERN.matcher(substring).matches()
                         || Stream.of(CJKNumbers.values())
                                 .anyMatch(cjkNumber -> substring.contains(
                                         new String(Character.toChars(cjkNumber.getValue())))))
