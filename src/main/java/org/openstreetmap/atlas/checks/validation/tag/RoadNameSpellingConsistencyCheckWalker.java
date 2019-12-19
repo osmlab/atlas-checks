@@ -2,8 +2,11 @@ package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,6 +58,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         }
     }
 
+    private static final Set<Long> exploredEdges = new TreeSet<>();
     // Matches identifiers sometimes found in road names. E.g. the 'A' in Road A, the "12c" in 12c
     // Street, and the "Y6" in Y6 Drive.
     // Identifiers are defined to be any space-delimited string that either contains at least one
@@ -66,6 +70,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static final String CHARACTER_IDENTIFIER_STRING_REGEX = "\\p{P}.\\p{P}|.\\p{P}|\\p{P}.|^.$";
 
     private static final String WHITESPACE_REGEX = "\\s+";
+
+    private static final Pattern ALPHANUMERIC_IDENTIFIER_STRING_PATTERN = Pattern
+            .compile(ALPHANUMERIC_IDENTIFIER_STRING_REGEX);
+    private static final Pattern CHARACTER_IDENTIFIER_STRING_PATTERN = Pattern
+            .compile(CHARACTER_IDENTIFIER_STRING_REGEX);
 
     /**
      * Evaluate the {@link NameTag}s of the startingEdge and an incomingEdge to see if their
@@ -89,8 +98,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             final String startEdgeName = startEdge.getName().get();
             final String incomingEdgeName = incomingEdge.getName().get();
             return similarLengthDifferentCharacters(incomingEdgeName, startEdgeName)
-                    && identifierSubstringsAreEqual(incomingEdgeName, startEdgeName)
-                    && editDistanceIsOne(incomingEdgeName, startEdgeName);
+                    && editDistanceIsOne(incomingEdgeName, startEdgeName)
+                    && identifierSubstringsAreEqual(incomingEdgeName, startEdgeName);
         };
     }
 
@@ -107,10 +116,11 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     private static Function<Edge, Stream<Edge>> edgesWithinMaximumSearchDistance(
             final Edge startEdge, final Distance maximumSearchDistance)
     {
-        return incomingEdge -> incomingEdge.end().getLocation()
-                .distanceTo(startEdge.start().getLocation())
-                .isLessThanOrEqualTo(maximumSearchDistance)
-                        ? incomingEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
+        return incomingEdge -> incomingEdge.end().getLocation().distanceTo(startEdge.start()
+                .getLocation()).isLessThanOrEqualTo(maximumSearchDistance) ? incomingEdge
+                        .connectedEdges().stream()
+                        .filter(connectedEdge -> connectedEdge.isMasterEdge()
+                                && !exploredEdges.contains(connectedEdge.getMasterEdgeIdentifier()))
                         : Stream.empty();
     }
 
@@ -200,22 +210,25 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         // Gather identifier substrings from both road names
         final List<String> incomingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(incomingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                .filter(substring -> ALPHANUMERIC_IDENTIFIER_STRING_PATTERN.matcher(substring)
+                        .matches()
+                        || CHARACTER_IDENTIFIER_STRING_PATTERN.matcher(substring).matches()
                         || Stream.of(CJKNumbers.values())
                                 .anyMatch(cjkNumber -> substring.contains(
                                         new String(Character.toChars(cjkNumber.getValue())))))
                 .collect(Collectors.toList());
         final List<String> startingEdgeNameAlphanumericIdentifierStrings = Arrays
                 .stream(startingEdgeName.split(WHITESPACE_REGEX))
-                .filter(substring -> substring.matches(ALPHANUMERIC_IDENTIFIER_STRING_REGEX)
-                        || substring.matches(CHARACTER_IDENTIFIER_STRING_REGEX)
+                .filter(substring -> ALPHANUMERIC_IDENTIFIER_STRING_PATTERN.matcher(substring)
+                        .matches()
+                        || CHARACTER_IDENTIFIER_STRING_PATTERN.matcher(substring).matches()
                         || Stream.of(CJKNumbers.values())
                                 .anyMatch(cjkNumber -> substring.contains(
                                         new String(Character.toChars(cjkNumber.getValue())))))
                 .collect(Collectors.toList());
 
-        // If the two street names have different alphanumeric identifier strings anywhere in their
+        // If the two street names have different alphanumeric identifier strings anywhere in
+        // their
         // names, they're classified as being from different roads.
         final long incomingEdgeNameIdentifierCount = incomingEdgeNameAlphanumericIdentifierStrings
                 .size();
@@ -260,6 +273,6 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             final Distance maximumSearchDistance)
     {
         super(startEdge, edgesWithinMaximumSearchDistance(startEdge, maximumSearchDistance));
+        exploredEdges.add(startEdge.getMasterEdgeIdentifier());
     }
-
 }
