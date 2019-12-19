@@ -15,7 +15,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -81,25 +80,22 @@ public class RoadNameGapCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Set<String> inEdgesNameTags = edge.inEdges().stream().filter(
-                inEdge -> this.validCheckForObject(inEdge) && NameTag.getNameOf(inEdge).isPresent())
-                .map(inEdge -> NameTag.getNameOf(inEdge).get()).collect(Collectors.toSet());
-        final Set<String> outEdgesNameTags = edge.outEdges().stream()
-                .filter(outEdge -> this.validCheckForObject(outEdge)
-                        && NameTag.getNameOf(outEdge).isPresent())
-                .map(inEdge -> NameTag.getNameOf(inEdge).get()).collect(Collectors.toSet());
+        final Set<Edge> inEdges = edge.inEdges().stream().filter(this::validCheckForObject)
+                .collect(Collectors.toSet());
+        final Set<Edge> outEdges = edge.outEdges().stream().filter(this::validCheckForObject)
+                .collect(Collectors.toSet());
 
-        if (inEdgesNameTags.isEmpty() || outEdgesNameTags.isEmpty())
+        if (inEdges.isEmpty() || outEdges.isEmpty())
         {
             return Optional.empty();
         }
 
-        final Set<String> inEdgeOutEdgeMatchingNames = this
-                .findInEdgeOutEdgeMatchingName(inEdgesNameTags, outEdgesNameTags);
+        final Set<String> matchingInAndOutEdgeNames = getMatchingInAndOutEdgeNames(inEdges,
+                outEdges);
 
-        // Return empty if there is no pair of in edge and out edge with same name.
-        if (inEdgeOutEdgeMatchingNames.isEmpty())
+        if (matchingInAndOutEdgeNames.isEmpty())
         {
+            // There is no pair of inedge and out edge with same name.
             return Optional.empty();
         }
 
@@ -110,14 +106,11 @@ public class RoadNameGapCheck extends BaseCheck
             return Optional.of(
                     createFlag(object, this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
-
-        // Create flag when in edge and out edge name tag matches and intermediate edge has
-        // different tag name.
         final Optional<String> edgeName = edge.getName();
-        if (edgeName.isPresent() && !inEdgeOutEdgeMatchingNames.contains(edgeName.get()))
+        if (edgeName.isPresent() && !matchingInAndOutEdgeNames.contains(edgeName.get()))
         {
             return Optional.of(createFlag(object,
-                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(), edgeName)));
+                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(), edgeName.get())));
         }
         return Optional.empty();
     }
@@ -128,21 +121,31 @@ public class RoadNameGapCheck extends BaseCheck
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private Set<String> findInEdgeOutEdgeMatchingName(final Set<String> inEdgesNameTags,
-            final Set<String> outEdgesNameTags)
+    private Set<String> getMatchingInAndOutEdgeNames(final Set<Edge> inEdges,
+            final Set<Edge> outEdges)
     {
-        final Set<String> inEdgeOutEdgeMatchingNames = new HashSet<>();
-
-        for (final String inEdgeName : inEdgesNameTags)
+        final Set<String> edgeNames = new HashSet<>();
+        for (final Edge inEdge : inEdges)
         {
-            for (final String outEdgeName : outEdgesNameTags)
+            if (!inEdge.getName().isPresent())
             {
-                if (inEdgeName.equals(outEdgeName))
+                continue;
+            }
+            for (final Edge outEdge : outEdges)
+            {
+                if (!outEdge.getName().isPresent())
                 {
-                    inEdgeOutEdgeMatchingNames.add(outEdgeName);
+                    continue;
+                }
+                final Optional<String> inEdgeName = inEdge.getName();
+                final Optional<String> outEdgeName = outEdge.getName();
+                if (inEdgeName.isPresent() && outEdgeName.isPresent()
+                        && inEdgeName.get().equals(outEdgeName.get()))
+                {
+                    edgeNames.add(outEdgeName.get());
                 }
             }
         }
-        return inEdgeOutEdgeMatchingNames;
+        return edgeNames;
     }
 }
