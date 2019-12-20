@@ -107,8 +107,18 @@ public class RoadNameGapCheck extends BaseCheck
                     createFlag(object, this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
         final Optional<String> edgeName = edge.getName();
+
         if (edgeName.isPresent() && !matchingInAndOutEdgeNames.contains(edgeName.get()))
         {
+            // Case 1: Edge name: Tai. Incoming edge names: Tai , Shai. Outgoing edge name: Shai.
+            // Case 2: Edge name: Tai. Incoming edge names: Shai. Outgoing edge name: Tai, Shai.
+            // Case 3: Edge name: Tai. Incoming edges names: Tai, Shai. Outgoing edge names: Shai,
+            // Pendler.
+            if (finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(inEdges, edgeName)
+                    || finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(outEdges, edgeName))
+            {
+                return Optional.empty();
+            }
             return Optional.of(createFlag(object,
                     this.getLocalizedInstruction(1, edge.getOsmIdentifier(), edgeName.get())));
         }
@@ -121,6 +131,44 @@ public class RoadNameGapCheck extends BaseCheck
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Compare edge name with individual in and out edges names to see if there is a match. If there
+     * is a match no flag or else flag the edge.
+     *
+     * @param connectedEdges
+     *            Incoming or outgoing edges based on the passing value
+     * @param edgeName
+     *            Edge name
+     * @return True if there is matching edge name with connected edge or else false.
+     */
+    private boolean finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(final Set<Edge> connectedEdges,
+            final Optional<String> edgeName)
+    {
+        for (final Edge inEdge : connectedEdges)
+        {
+            if (!inEdge.getName().isPresent())
+            {
+                continue;
+            }
+            final Optional<String> inEdgeName = inEdge.getName();
+            if (inEdgeName.isPresent() && edgeName.isPresent()
+                    && inEdgeName.get().equals(edgeName.get()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Find matching in and out edge names by comparing every name of the edge.
+     *
+     * @param inEdges
+     *            incoming edges
+     * @param outEdges
+     *            outgoing edges
+     * @return Set of matching names for both incoming and outgoing edges.
+     */
     private Set<String> getMatchingInAndOutEdgeNames(final Set<Edge> inEdges,
             final Set<Edge> outEdges)
     {
@@ -137,10 +185,12 @@ public class RoadNameGapCheck extends BaseCheck
                 {
                     continue;
                 }
+
                 final Optional<String> inEdgeName = inEdge.getName();
                 final Optional<String> outEdgeName = outEdge.getName();
                 if (inEdgeName.isPresent() && outEdgeName.isPresent()
                         && inEdgeName.get().equals(outEdgeName.get()))
+                // && inEdge.getOsmIdentifier() != outEdge.getOsmIdentifier())
                 {
                     edgeNames.add(outEdgeName.get());
                 }
