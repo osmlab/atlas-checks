@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.distributed;
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,8 @@ import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
+import org.openstreetmap.atlas.geography.atlas.dynamic.DynamicAtlas;
+import org.openstreetmap.atlas.geography.atlas.dynamic.policy.DynamicAtlasPolicy;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.Sharding;
@@ -79,6 +82,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad",
             "The maximum amount of shards loaded into memory per executor", Integer::valueOf,
             Optionality.OPTIONAL, "45");
+    private static final Switch<Boolean> DYNAMIC_ATLAS = new Switch<>("dynamicAtlas",
+            "if true then use a dynamic atlas, else use a multi atlas", Boolean::new,
+            Optionality.OPTIONAL, "false");
     private static final Logger logger = LoggerFactory
             .getLogger(ShardedIntegrityChecksSparkJob.class);
     private final MultiMap<String, Check> countryChecks = new MultiMap<>();
@@ -192,7 +198,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         this.getContext().parallelize(tasks, unitsOfWork)
                 .mapToPair(produceFlags(input, output, this.configurationMap(), fileHelper,
-                        shardingBroadcast, distanceToLoadShards))
+                        shardingBroadcast, distanceToLoadShards,
+                        (Boolean) commandMap.get(DYNAMIC_ATLAS)))
                 .reduceByKey(UniqueCheckFlagContainer::combine)
                 .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
 
@@ -202,7 +209,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE);
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS);
     }
 
     private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
@@ -268,25 +275,37 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
             final String input, final String output, final Map<String, String> configurationMap,
             final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
-            final Distance shardDistanceExpansion)
+            final Distance shardDistanceExpansion, final boolean dynamic)
     {
         return task ->
         {
             final Function<Shard, Optional<Atlas>> fetcher = this.atlasFetcher(input,
                     task.getCountry(), configurationMap);
+            final Atlas atlas;
 
-            // final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher,
-            // sharding.getValue(),
-            // new HashSet<>(task.getShardGroup()),
-            // Rectangle.forLocated(task.getShardGroup()).bounds().expand(shardDistanceExpansion)).withDeferredLoading(true).withAggressivelyExploreRelations(false).withExtendIndefinitely(false);
-            // final Atlas atlas = new DynamicAtlas(policy);
-            final ShardGroup shardGroup = task.getShardGroup();
-            final Rectangle expansionBounds = Rectangle.forLocated(shardGroup)
-                    .expand(shardDistanceExpansion);
-            final MultiAtlas atlas = new MultiAtlas(StreamSupport
-                    .stream(sharding.getValue().shards(expansionBounds).spliterator(), true)
-                    .map(fetcher).filter(Optional::isPresent).map(Optional::get)
-                    .collect(Collectors.toList()));
+            if (dynamic)
+            {
+                logger.info("Running with a dynamic atlas");
+                final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher,
+                        sharding.getValue(), new HashSet<>(task.getShardGroup()),
+                        Rectangle.forLocated(task.getShardGroup()).bounds()
+                                .expand(shardDistanceExpansion)).withDeferredLoading(true)
+                                        .withAggressivelyExploreRelations(true)
+                                        .withExtendIndefinitely(false);
+                atlas = new DynamicAtlas(policy);
+            }
+            else
+            {
+                logger.info("Running with a multi atlas");
+                final ShardGroup shardGroup = task.getShardGroup();
+                final Rectangle expansionBounds = Rectangle.forLocated(shardGroup)
+                        .expand(shardDistanceExpansion);
+                atlas = new MultiAtlas(StreamSupport
+                        .stream(sharding.getValue().shards(expansionBounds).spliterator(), true)
+                        .map(fetcher).filter(Optional::isPresent).map(Optional::get)
+                        .collect(Collectors.toList()));
+            }
+
             final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
                     .geometricSurfaces(task.getShardGroup().stream().map(Shard::bounds)
                             .collect(Collectors.toList()));
