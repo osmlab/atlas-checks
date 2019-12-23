@@ -48,7 +48,8 @@ public class IncompleteSharding implements Sharding
     {
         final SlippyTile result = SlippyTile.forName(name);
 
-        if (!this.shardSet.contains(result)){
+        if (!this.shardSet.contains(result))
+        {
             throw new CoreException("This sharding does not include tile {}", name);
         }
 
