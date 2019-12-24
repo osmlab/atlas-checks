@@ -58,7 +58,7 @@ public class Task
     protected static final String TASK_PARENT_ID = "parent";
     protected static final String TASK_TYPE = "type";
     private static final String KEY_DESCRIPTION = "description";
-    private static final String GENERATOR = "generator";
+    private static final String CHECK_GENERATOR = "check";
     private String challengeName;
     private Optional<JsonArray> geoJson = Optional.empty();
     private String instruction;
@@ -206,12 +206,13 @@ public class Task
             feature.add(TASK_FEATURE_PROPERTIES, pointInformation);
             features.add(feature);
         });
-        // Add the name of the check to the Task's geojson
-        final JsonObject name = new JsonObject();
-        name.add(GENERATOR, new JsonPrimitive(this.challengeName));
-        features.add(name);
 
-        geoJson.ifPresent(json -> json.forEach(features::add));
+        geoJson.ifPresent(json ->
+        {
+            ((JsonObject) json.get(0).getAsJsonObject().get(TASK_FEATURE_PROPERTIES))
+                    .add(CHECK_GENERATOR, new JsonPrimitive(this.challengeName));
+            json.forEach(features::add);
+        });
 
         return features;
     }
