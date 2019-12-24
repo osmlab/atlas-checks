@@ -122,7 +122,6 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-
                                 final Challenge challenge = this
                                         .getChallenge(task.getChallengeName(), instructions);
                                 // Prepend the challenge name with the full country name if one
