@@ -4,7 +4,6 @@ import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
@@ -179,27 +179,35 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     .collect(Collectors.toSet());
             logger.error(
                     "Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas or <zoom>_<x>_<y>.pbf",
-                    input, missingCountries.toString());
+                    input, missingCountries);
             return;
         }
 
         final Integer maxShardLoad = (Integer) commandMap.get(SHARD_LOAD_MAX);
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
-        final List<ShardedCheckFlagsTask> tasks = new LinkedList<>();
-        int unitsOfWork = 0;
-        for (final Map.Entry<String, List<Shard>> countryShard : countryShards.entrySet())
-        {
-            final List<ShardGroup> groupsForCountry = new ShardGrouper(countryShard.getValue(),
-                    maxShardLoad, distanceToLoadShards).getGroups();
-            unitsOfWork += groupsForCountry.size();
-            groupsForCountry.stream().map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
-                    group, this.countryChecks.get(countryShard.getKey()))).forEach(tasks::add);
-        }
 
-        this.getContext().parallelize(tasks, unitsOfWork)
-                .mapToPair(produceFlags(input, output, this.configurationMap(), fileHelper,
-                        shardingBroadcast, distanceToLoadShards,
-                        (Boolean) commandMap.get(DYNAMIC_ATLAS)))
+        final List<JavaPairRDD<String, UniqueCheckFlagContainer>> countryRdds = countryShards
+                .entrySet().stream()
+                .map(countryShard -> new ShardGrouper(countryShard.getValue(), maxShardLoad,
+                        distanceToLoadShards)
+                                .getGroups().stream()
+                                .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
+                                        group, this.countryChecks.get(countryShard.getKey())))
+                                .collect(Collectors.toList()))
+                .map(tasksForCountry ->
+                {
+                    this.getContext().setJobGroup("0", String.format("Running checks on %s",
+                            tasksForCountry.get(0).getCountry()));
+                    return this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
+                            .mapToPair(produceFlags(input, output, this.configurationMap(),
+                                    fileHelper, shardingBroadcast, distanceToLoadShards,
+                                    (Boolean) commandMap.get(DYNAMIC_ATLAS)));
+                }).collect(Collectors.toList());
+
+        final JavaPairRDD<String, UniqueCheckFlagContainer> firstCountryRdd = countryRdds.get(0);
+        countryRdds.remove(0);
+
+        this.getContext().union(firstCountryRdd, countryRdds)
                 .reduceByKey(UniqueCheckFlagContainer::combine)
                 .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
 
