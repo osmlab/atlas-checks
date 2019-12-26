@@ -210,9 +210,10 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                                     (Boolean) commandMap.get(DYNAMIC_ATLAS)));
                 }).collect(Collectors.toList());
 
-        final StorageLevel storageLevel = Optional.ofNullable(commandMap.get(SPARK_STORAGE_DISK_ONLY))
-                .orElse("false").equals("true") ? StorageLevel.DISK_ONLY()
-                : StorageLevel.MEMORY_AND_DISK();
+        final StorageLevel storageLevel = Optional
+                .ofNullable(commandMap.get(SPARK_STORAGE_DISK_ONLY)).orElse("false").equals("true")
+                        ? StorageLevel.DISK_ONLY()
+                        : StorageLevel.MEMORY_AND_DISK();
         countryRdds.forEach(rdd -> rdd.persist(storageLevel));
 
         countryRdds.forEach(AbstractJavaRDDLike::count);
@@ -230,7 +231,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS, SPARK_STORAGE_DISK_ONLY);
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS,
+                SPARK_STORAGE_DISK_ONLY);
     }
 
     private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
