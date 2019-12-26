@@ -14,10 +14,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.spark.api.java.AbstractJavaRDDLike;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.storage.StorageLevel;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -50,6 +52,7 @@ import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
 import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
+import org.openstreetmap.atlas.utilities.conversion.StringConverter;
 import org.openstreetmap.atlas.utilities.filters.AtlasEntityPolygonsFilter;
 import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
@@ -85,6 +88,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private static final Switch<Boolean> DYNAMIC_ATLAS = new Switch<>("dynamicAtlas",
             "if true then use a dynamic atlas, else use a multi atlas", Boolean::new,
             Optionality.OPTIONAL, "false");
+    private static final Switch<String> SPARK_STORAGE_DISK_ONLY = new Switch<>(
+            "sparkStorageDiskOnly", "Store cached RDDs exclusively on disk",
+            StringConverter.IDENTITY, Optionality.OPTIONAL);
     private static final Logger logger = LoggerFactory
             .getLogger(ShardedIntegrityChecksSparkJob.class);
     private final MultiMap<String, Check> countryChecks = new MultiMap<>();
@@ -204,6 +210,13 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                                     (Boolean) commandMap.get(DYNAMIC_ATLAS)));
                 }).collect(Collectors.toList());
 
+        final StorageLevel storageLevel = Optional.ofNullable(commandMap.get(SPARK_STORAGE_DISK_ONLY))
+                .orElse("false").equals("true") ? StorageLevel.DISK_ONLY()
+                : StorageLevel.MEMORY_AND_DISK();
+        countryRdds.forEach(rdd -> rdd.persist(storageLevel));
+
+        countryRdds.forEach(AbstractJavaRDDLike::count);
+
         final JavaPairRDD<String, UniqueCheckFlagContainer> firstCountryRdd = countryRdds.get(0);
         countryRdds.remove(0);
 
@@ -217,7 +230,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS);
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS, SPARK_STORAGE_DISK_ONLY);
     }
 
     private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
