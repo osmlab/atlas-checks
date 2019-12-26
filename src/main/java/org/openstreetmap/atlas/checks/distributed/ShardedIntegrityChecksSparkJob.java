@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.spark.api.java.AbstractJavaRDDLike;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -191,9 +190,13 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         final Integer maxShardLoad = (Integer) commandMap.get(SHARD_LOAD_MAX);
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
+        final StorageLevel storageLevel = Optional
+                .ofNullable(commandMap.get(SPARK_STORAGE_DISK_ONLY)).orElse("false").equals("true")
+                        ? StorageLevel.DISK_ONLY()
+                        : StorageLevel.MEMORY_AND_DISK();
 
         final List<JavaPairRDD<String, UniqueCheckFlagContainer>> countryRdds = countryShards
-                .entrySet().stream()
+                .entrySet().parallelStream()
                 .map(countryShard -> new ShardGrouper(countryShard.getValue(), maxShardLoad,
                         distanceToLoadShards)
                                 .getGroups().stream()
@@ -204,19 +207,15 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 {
                     this.getContext().setJobGroup("0", String.format("Running checks on %s",
                             tasksForCountry.get(0).getCountry()));
-                    return this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
+                    final JavaPairRDD<String, UniqueCheckFlagContainer> rdd = this.getContext()
+                            .parallelize(tasksForCountry, tasksForCountry.size())
                             .mapToPair(produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(DYNAMIC_ATLAS)));
+                    rdd.persist(storageLevel);
+                    rdd.count();
+                    return rdd;
                 }).collect(Collectors.toList());
-
-        final StorageLevel storageLevel = Optional
-                .ofNullable(commandMap.get(SPARK_STORAGE_DISK_ONLY)).orElse("false").equals("true")
-                        ? StorageLevel.DISK_ONLY()
-                        : StorageLevel.MEMORY_AND_DISK();
-        countryRdds.forEach(rdd -> rdd.persist(storageLevel));
-
-        countryRdds.forEach(AbstractJavaRDDLike::count);
 
         final JavaPairRDD<String, UniqueCheckFlagContainer> firstCountryRdd = countryRdds.get(0);
         countryRdds.remove(0);
