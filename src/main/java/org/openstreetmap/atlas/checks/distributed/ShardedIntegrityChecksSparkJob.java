@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.distributed;
 
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -195,16 +196,21 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                         ? StorageLevel.DISK_ONLY()
                         : StorageLevel.MEMORY_AND_DISK();
 
-        final List<JavaPairRDD<String, UniqueCheckFlagContainer>> countryRdds = countryShards
-                .entrySet().parallelStream()
-                .map(countryShard -> new ShardGrouper(countryShard.getValue(), maxShardLoad,
-                        distanceToLoadShards)
-                                .getGroups().stream()
-                                .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
-                                        group, this.countryChecks.get(countryShard.getKey())))
-                                .collect(Collectors.toList()))
-                .map(tasksForCountry ->
+        final List<JavaPairRDD<String, UniqueCheckFlagContainer>> countryRdds = new ArrayList<>();
+
+        try (Pool checkPool = new Pool(countryShards.size(), "Countries Execution Pool"))
+        {
+            for (final Map.Entry<String, List<Shard>> countryShard : countryShards.entrySet())
+            {
+                checkPool.queue(() ->
                 {
+                    final List<ShardedCheckFlagsTask> tasksForCountry = new ShardGrouper(
+                            countryShard.getValue(), maxShardLoad, distanceToLoadShards).getGroups()
+                                    .stream()
+                                    .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
+                                            group, this.countryChecks.get(countryShard.getKey())))
+                                    .collect(Collectors.toList());
+
                     this.getContext().setJobGroup("0", String.format("Running checks on %s",
                             tasksForCountry.get(0).getCountry()));
                     final JavaPairRDD<String, UniqueCheckFlagContainer> rdd = this.getContext()
@@ -214,12 +220,15 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                                     (Boolean) commandMap.get(DYNAMIC_ATLAS)));
                     rdd.persist(storageLevel);
                     rdd.count();
-                    return rdd;
-                }).collect(Collectors.toList());
+                    countryRdds.add(rdd);
+                });
+            }
+        }
 
         final JavaPairRDD<String, UniqueCheckFlagContainer> firstCountryRdd = countryRdds.get(0);
         countryRdds.remove(0);
 
+        this.getContext().setJobGroup("0", "Conflate flags and generate outputs");
         this.getContext().union(firstCountryRdd, countryRdds)
                 .reduceByKey(UniqueCheckFlagContainer::combine)
                 .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
