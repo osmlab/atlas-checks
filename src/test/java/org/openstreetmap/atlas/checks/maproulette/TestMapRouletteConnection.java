@@ -81,19 +81,21 @@ public class TestMapRouletteConnection implements TaskLoader
         }
         else
         {
-            this.challengeToTasks.put(challengeId, new HashSet<>(tasks));
+            tasks.forEach(task ->
+            {
+                try
+                {
+                    this.uploadTask(challengeId, task);
+                    // Only record the task as being uploaded if it was generated properly in the
+                    // line above
+                    this.challengeToTasks.put(challengeId, new HashSet<>(tasks));
+                }
+                catch (UnsupportedEncodingException | URISyntaxException e)
+                {
+                    e.printStackTrace();
+                }
+            });
         }
-        tasks.forEach(task ->
-        {
-            try
-            {
-                this.uploadTask(challengeId, task);
-            }
-            catch (UnsupportedEncodingException | URISyntaxException e)
-            {
-                e.printStackTrace();
-            }
-        });
         return true;
     }
 

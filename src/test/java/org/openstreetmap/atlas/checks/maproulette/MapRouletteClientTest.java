@@ -67,6 +67,7 @@ public class MapRouletteClientTest
         Assert.assertEquals(1, this.mockConnection.uploadedProjects().size());
         Assert.assertEquals("project", this.mockConnection.uploadedProjects().stream().findFirst()
                 .map(Project::getName).orElse(""));
+        Assert.assertEquals(1, this.mockConnection.tasksForChallenge(TEST_CHALLENGE).size());
     }
 
     @Test
@@ -78,6 +79,7 @@ public class MapRouletteClientTest
         Assert.assertEquals(1, this.mockConnection.uploadedProjects().size());
         Assert.assertEquals("another project", this.mockConnection.uploadedProjects().stream()
                 .findFirst().map(Project::getName).orElse(""));
+        Assert.assertEquals(1, this.mockConnection.tasksForChallenge(TEST_CHALLENGE).size());
     }
 
     @Test
@@ -103,5 +105,6 @@ public class MapRouletteClientTest
         Assert.assertEquals(description, uploadedProject.getDescription());
         Assert.assertEquals(displayName, uploadedProject.getDisplayName());
         Assert.assertFalse(uploadedProject.isEnabled());
+        Assert.assertEquals(1, this.mockConnection.tasksForChallenge(TEST_CHALLENGE).size());
     }
 }
