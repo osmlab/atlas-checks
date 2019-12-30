@@ -19,6 +19,7 @@ import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.tags.HighwayTag;
@@ -68,7 +69,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         this.highwayFilter = configurationValue(configuration, "highway.filter", HIGHWAY_FILTER_DEFAULT,
                 TaggableFilter::forDefinition);
         this.connectedHighwayTypes =
-                this.configurationValue(configuration, "connected.highway.types", new HashMap<>());
+                this.configurationValue(configuration, "connected.highway.types", CONNECTED_HIGHWAY_TYPES_MAP);
     }
 
 
@@ -82,9 +83,9 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return IS_EDGE.test(object) && ((Edge)object).isMasterEdge()
-                && !this.isFlagged(String.valueOf(object.getIdentifier()))
-                && HighwayTag.highwayTag(object).isPresent() && this.highwayFilter.test(object);
+        return object instanceof Node && !this.isFlagged(String.valueOf(object.getOsmIdentifier()))
+                && this.isConnectedToValidHighways((Node) object);
+                //&& HighwayTag.highwayTag(object).isPresent() && this.highwayFilter.test(object);
     }
 
     /**
@@ -106,7 +107,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         }
         final Set<AtlasEntity> atlasObjectsToBeFlagged = currentEdge.outEdges().stream()
                 .filter(outEdge -> outEdge.isMasterEdge()
-                                //&& LevelTag.areOnSameLevel(currentEdge, outEdge)
+                                && LevelTag.areOnSameLevel(currentEdge, outEdge)
                                 && HighwayTag.highwayTag(outEdge).isPresent()
                                 && this.highwayFilter.test(outEdge)
                                 && listOfValidConnectedHighways.contains(HighwayTag.highwayTag(outEdge).get().getTagValue())
@@ -141,6 +142,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         atlasObjectsToBeFlagged.add(currentEdge);
         // Add end node of current edge to be flagged
         atlasObjectsToBeFlagged.add(currentEdge.end());
+        this.markAsFlagged(String.valueOf(currentEdge.getMasterEdgeIdentifier()));
         this.createFlag(atlasObjectsToBeFlagged,
                 this.getLocalizedInstruction(0, object.getOsmIdentifier(),
                         new StringList(identifiers).join(", ")));
@@ -164,5 +166,10 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     {
         return Iterables.stream(objects).map(AtlasEntity::getIdentifier).map(String::valueOf)
                 .collectToList();
+    }
+
+    private boolean isConnectedToValidHighways(final Node node)
+    {
+        return node.connectedEdges().stream().anyMatch(this.highwayFilter);
     }
 }
