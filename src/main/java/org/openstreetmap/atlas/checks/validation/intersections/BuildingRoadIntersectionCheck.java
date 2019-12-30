@@ -129,9 +129,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
         final CheckFlag flag = new CheckFlag(getTaskIdentifier(building));
         flag.addObject(building);
         this.handleIntersections(intersectingEdges, flag, building);
-        return flag.getPolyLines().size() > 1
-                ? Optional.of(flag.setObjectIdentifiersAsFlagIdentifier())
-                : Optional.empty();
+        return flag.getPolyLines().size() > 1 ? Optional.of(flag) : Optional.empty();
     }
 
     @Override
