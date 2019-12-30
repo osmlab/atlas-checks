@@ -120,7 +120,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 newFlag.addInstruction(
                         this.getLocalizedInstruction(1, invalidEdge.getOsmIdentifier()));
             });
-            return Optional.of(newFlag);
+            return Optional.of(newFlag.setObjectIdentifiersAsFlagIdentifier());
         }
         return Optional.empty();
     }

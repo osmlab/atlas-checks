@@ -129,7 +129,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         if (hasOverlap)
         {
             this.markAsFlagged(object.getIdentifier());
-            return Optional.of(flag);
+            return Optional.of(flag.setObjectIdentifiersAsFlagIdentifier());
         }
 
         return Optional.empty();

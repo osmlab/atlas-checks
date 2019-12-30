@@ -185,7 +185,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
 
         if (hadIntersection)
         {
-            return Optional.of(flag);
+            return Optional.of(flag.setObjectIdentifiersAsFlagIdentifier());
         }
 
         return Optional.empty();

@@ -145,7 +145,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
                     this.getLocalizedInstruction(0, object.getOsmIdentifier(),
                             new StringList(getIdentifiers(overlappingEdges)).join(", ")));
             flag.addObject(object);
-            return Optional.of(flag);
+            return Optional.of(flag.setObjectIdentifiersAsFlagIdentifier());
         }
         return Optional.empty();
     }

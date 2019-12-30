@@ -135,7 +135,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
             this.markAsFlagged(object.getOsmIdentifier());
             connectivityFlag.addInstruction(this.getLocalizedInstruction(0,
                     object.getOsmIdentifier(), String.join(", ", disconnectedObjects)));
-            return Optional.of(connectivityFlag);
+            return Optional.of(connectivityFlag.setObjectIdentifiersAsFlagIdentifier());
         }
 
         return Optional.empty();

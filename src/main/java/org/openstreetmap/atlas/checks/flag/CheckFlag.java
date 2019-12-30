@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.flag;
 
+import static org.openstreetmap.atlas.checks.constants.CommonConstants.EMPTY_STRING;
+
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
@@ -31,6 +33,7 @@ import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProp
 import org.openstreetmap.atlas.geography.geojson.GeoJsonType;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.streaming.resource.WritableResource;
+import org.openstreetmap.atlas.utilities.collections.EnhancedCollectors;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
@@ -56,7 +59,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     private static final Distance TEN_METERS = Distance.meters(10);
 
-    private final String identifier;
+    private String identifier;
     private String challengeName = null;
     private final List<String> instructions = new ArrayList<>();
     private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
@@ -481,6 +484,20 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         this.challengeName = challengeName;
     }
 
+    /**
+     * Set the {@link CheckFlag}'s identifier equal to the sorted concatenation of all the ids of
+     * its flagged features.
+     *
+     * @return this {@link CheckFlag}
+     */
+    public CheckFlag setObjectIdentifiersAsFlagIdentifier()
+    {
+        this.identifier = String.join(EMPTY_STRING, this.flaggedObjects.stream().map(
+                item -> String.valueOf(item.getProperties().get(FlaggedObject.ITEM_IDENTIFIER_TAG)))
+                .collect(EnhancedCollectors.toUnmodifiableSortedSet()));
+        return this;
+    }
+
     @Override
     public String toString()
     {
@@ -526,4 +543,5 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         // Turn that bounds into a GeoJSON geometry.
         return GeoJsonUtils.boundsToPolygonGeometry(bounds);
     }
+
 }

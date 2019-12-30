@@ -156,4 +156,14 @@ public class CheckFlagTest
         this.setup.getAtlas().entities().forEach(flag::addObject);
         testSerialization(flag);
     }
+
+    @Test
+    public void testSetObjectIdentifiersAsFlagIdentifier()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        flag.addObject(this.setup.getAtlasWithRelations().node(2));
+        flag.addObject(this.setup.getAtlasWithRelations().node(1));
+        flag.setObjectIdentifiersAsFlagIdentifier();
+        Assert.assertEquals("12", flag.getIdentifier());
+    }
 }

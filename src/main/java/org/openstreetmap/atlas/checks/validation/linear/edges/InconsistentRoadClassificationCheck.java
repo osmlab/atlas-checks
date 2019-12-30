@@ -157,7 +157,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
                 }
 
             });
-            return Optional.of(flag);
+            return Optional.of(flag.setObjectIdentifiersAsFlagIdentifier());
         }
 
         return Optional.empty();
