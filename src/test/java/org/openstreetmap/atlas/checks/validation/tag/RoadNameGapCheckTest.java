@@ -26,7 +26,7 @@ public class RoadNameGapCheckTest
                 new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-    
+
     @Test
     public void testForEdgeWithDifferentNameTagButSameOsmId()
     {
