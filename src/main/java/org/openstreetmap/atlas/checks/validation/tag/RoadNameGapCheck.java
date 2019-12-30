@@ -189,8 +189,8 @@ public class RoadNameGapCheck extends BaseCheck
                 final Optional<String> inEdgeName = inEdge.getName();
                 final Optional<String> outEdgeName = outEdge.getName();
                 if (inEdgeName.isPresent() && outEdgeName.isPresent()
-                        && inEdgeName.get().equals(outEdgeName.get()))
-                // && inEdge.getOsmIdentifier() != outEdge.getOsmIdentifier())
+                        && inEdgeName.get().equals(outEdgeName.get())
+                        && inEdge.getOsmIdentifier() != outEdge.getOsmIdentifier())
                 {
                     edgeNames.add(outEdgeName.get());
                 }
