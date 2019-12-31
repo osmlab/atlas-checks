@@ -114,7 +114,9 @@ public class RoadNameGapCheck extends BaseCheck
             // Case 2: Edge name: Tai. Incoming edge names: Shai. Outgoing edge name: Tai, Shai.
             // Case 3: Edge name: Tai. Incoming edges names: Tai, Shai. Outgoing edge names: Shai,
             // Pendler.
-            if (findMatchingEdgeNameWithConnectedEdges(edge.connectedEdges(), edgeName.get()))
+            final Set<Edge> connectedEdges = edge.connectedEdges().stream()
+                    .filter(this::validCheckForObject).collect(Collectors.toSet());
+            if (findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get()))
             {
                 return Optional.empty();
             }
