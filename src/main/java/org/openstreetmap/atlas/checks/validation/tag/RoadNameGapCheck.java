@@ -89,6 +89,11 @@ public class RoadNameGapCheck extends BaseCheck
         {
             return Optional.empty();
         }
+    
+        if (edge.getOsmIdentifier() == 24943687 || edge.getOsmIdentifier() == 401796510
+                || edge.getOsmIdentifier() == 23628252) {
+            System.out.println("****************");
+        }
 
         final Set<String> matchingInAndOutEdgeNames = getMatchingInAndOutEdgeNames(inEdges,
                 outEdges);
@@ -114,8 +119,7 @@ public class RoadNameGapCheck extends BaseCheck
             // Case 2: Edge name: Tai. Incoming edge names: Shai. Outgoing edge name: Tai, Shai.
             // Case 3: Edge name: Tai. Incoming edges names: Tai, Shai. Outgoing edge names: Shai,
             // Pendler.
-            if (finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(inEdges, edgeName.get())
-                    || finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(outEdges, edgeName.get()))
+            if (findMatchingEdgeNameWithConnectedEdges(edge.connectedEdges(), edgeName.get()))
             {
                 return Optional.empty();
             }
@@ -136,12 +140,12 @@ public class RoadNameGapCheck extends BaseCheck
      * is a match no flag or else flag the edge.
      *
      * @param connectedEdges
-     *            Incoming or outgoing edges based on the passing value
+     *            connected edges for a given edge
      * @param edgeName
      *            Edge name
      * @return True if there is matching edge name with connected edge or else false.
      */
-    private boolean finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(final Set<Edge> connectedEdges,
+    private boolean findMatchingEdgeNameWithConnectedEdges(final Set<Edge> connectedEdges,
             final String edgeName)
     {
         for (final Edge connectedEdge : connectedEdges)
