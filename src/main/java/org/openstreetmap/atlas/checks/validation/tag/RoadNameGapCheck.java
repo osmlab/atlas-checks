@@ -89,11 +89,6 @@ public class RoadNameGapCheck extends BaseCheck
         {
             return Optional.empty();
         }
-    
-        if (edge.getOsmIdentifier() == 24943687 || edge.getOsmIdentifier() == 401796510
-                || edge.getOsmIdentifier() == 23628252) {
-            System.out.println("****************");
-        }
 
         final Set<String> matchingInAndOutEdgeNames = getMatchingInAndOutEdgeNames(inEdges,
                 outEdges);
