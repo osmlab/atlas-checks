@@ -114,8 +114,8 @@ public class RoadNameGapCheck extends BaseCheck
             // Case 2: Edge name: Tai. Incoming edge names: Shai. Outgoing edge name: Tai, Shai.
             // Case 3: Edge name: Tai. Incoming edges names: Tai, Shai. Outgoing edge names: Shai,
             // Pendler.
-            if (finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(inEdges, edgeName)
-                    || finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(outEdges, edgeName))
+            if (finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(inEdges, edgeName.get())
+                    || finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(outEdges, edgeName.get()))
             {
                 return Optional.empty();
             }
@@ -142,17 +142,12 @@ public class RoadNameGapCheck extends BaseCheck
      * @return True if there is matching edge name with connected edge or else false.
      */
     private boolean finaMatchingEdgeNameWithAnyInEdgeOrOutEdge(final Set<Edge> connectedEdges,
-            final Optional<String> edgeName)
+            final String edgeName)
     {
-        for (final Edge inEdge : connectedEdges)
+        for (final Edge connectedEdge : connectedEdges)
         {
-            if (!inEdge.getName().isPresent())
-            {
-                continue;
-            }
-            final Optional<String> inEdgeName = inEdge.getName();
-            if (inEdgeName.isPresent() && edgeName.isPresent()
-                    && inEdgeName.get().equals(edgeName.get()))
+            final Optional<String> connectedEdgeName = connectedEdge.getName();
+            if (connectedEdgeName.isPresent() && connectedEdgeName.get().equals(edgeName))
             {
                 return true;
             }
