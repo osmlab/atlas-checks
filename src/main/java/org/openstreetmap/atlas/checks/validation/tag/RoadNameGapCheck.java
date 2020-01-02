@@ -16,6 +16,7 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
 
 /**
  * This check identifies Edges with no name Tag that are between two other Edges with the same name
@@ -25,6 +26,26 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class RoadNameGapCheck extends BaseCheck
 {
+    /**
+     * This checks if the connected edges have same direction or not.
+     */
+    class EdgePredicate
+    {
+        private Edge edge;
+        private EdgeDirectionComparator edgeDirectionComparator = new EdgeDirectionComparator();
+
+        EdgePredicate(final Edge edge)
+        {
+            this.edge = edge;
+        }
+
+        boolean isSameHeading(final AtlasObject object)
+        {
+            final Edge otherEdge = (Edge) object;
+            return object != null
+                    && this.edgeDirectionComparator.isSameDirection(this.edge, otherEdge, false);
+        }
+    }
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 7104778218412127847L;
@@ -80,10 +101,11 @@ public class RoadNameGapCheck extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
+        final EdgePredicate edgePredicate = new EdgePredicate(edge);
         final Set<Edge> inEdges = edge.inEdges().stream().filter(this::validCheckForObject)
-                .collect(Collectors.toSet());
+                .filter(edgePredicate::isSameHeading).collect(Collectors.toSet());
         final Set<Edge> outEdges = edge.outEdges().stream().filter(this::validCheckForObject)
-                .collect(Collectors.toSet());
+                .filter(edgePredicate::isSameHeading).collect(Collectors.toSet());
 
         if (inEdges.isEmpty() || outEdges.isEmpty())
         {
