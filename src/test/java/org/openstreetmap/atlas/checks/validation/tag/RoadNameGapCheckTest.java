@@ -24,7 +24,7 @@ public class RoadNameGapCheckTest
     {
         this.verifier.actual(this.setup.getEdgeWithDifferentNameTag(),
                 new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class RoadNameGapCheckTest
     {
         this.verifier.actual(this.setup.getEdgeWithNoNameTag(),
                 new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test

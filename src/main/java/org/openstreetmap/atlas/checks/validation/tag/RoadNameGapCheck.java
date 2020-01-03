@@ -106,7 +106,6 @@ public class RoadNameGapCheck extends BaseCheck
                 .filter(edgePredicate::isSameHeading).collect(Collectors.toSet());
         final Set<Edge> outEdges = edge.outEdges().stream().filter(this::validCheckForObject)
                 .filter(edgePredicate::isSameHeading).collect(Collectors.toSet());
-
         if (inEdges.isEmpty() || outEdges.isEmpty())
         {
             return Optional.empty();
