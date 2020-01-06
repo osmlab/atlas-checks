@@ -29,7 +29,7 @@ public class RoadNameGapCheck extends BaseCheck
     /**
      * This checks if the connected edges have same direction or not.
      */
-    class EdgePredicate
+    static class EdgePredicate
     {
         private Edge edge;
         private EdgeDirectionComparator edgeDirectionComparator = new EdgeDirectionComparator();
@@ -56,11 +56,9 @@ public class RoadNameGapCheck extends BaseCheck
      * Tests if the {@link AtlasObject} has a highway tag that do contain TERTIARY, SECONDARY,
      * PRIMARY, TRUNK, or MOTORWAY
      */
-    private static final Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators
-            .hasValuesFor(object, HighwayTag.class)
-            && Validators.isOfType(object, HighwayTag.class, HighwayTag.TERTIARY,
-                    HighwayTag.PRIMARY, HighwayTag.SECONDARY, HighwayTag.MOTORWAY,
-                    HighwayTag.TRUNK);
+    private static final Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators.isOfType(
+            object, HighwayTag.class, HighwayTag.TERTIARY, HighwayTag.PRIMARY, HighwayTag.SECONDARY,
+            HighwayTag.MOTORWAY, HighwayTag.TRUNK);
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -131,10 +129,6 @@ public class RoadNameGapCheck extends BaseCheck
 
         if (edgeName.isPresent() && !matchingInAndOutEdgeNames.contains(edgeName.get()))
         {
-            // Case 1: Edge name: Tai. Incoming edge names: Tai , Shai. Outgoing edge name: Shai.
-            // Case 2: Edge name: Tai. Incoming edge names: Shai. Outgoing edge name: Tai, Shai.
-            // Case 3: Edge name: Tai. Incoming edges names: Tai, Shai. Outgoing edge names: Shai,
-            // Pendler.
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
             if (findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get()))

@@ -10,7 +10,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * Tests for {@link RoadNameGapCheck}
  *
- * @author smaheshwaram
+ * @author sugandhimaheshwaram
  */
 public class RoadNameGapCheckTestRule extends CoreTestRule
 {

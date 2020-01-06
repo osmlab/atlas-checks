@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * {@link RoadNameGapCheck} unit tests.
  *
- * @author smaheshwaram
+ * @author sugandhimaheshwaram
  */
 public class RoadNameGapCheckTest
 {

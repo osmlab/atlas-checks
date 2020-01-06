@@ -29,6 +29,9 @@ Case 1: No name tag between two Edges with name tag (HKG)*
 a. Way 548524582 (https://www.openstreetmap.org/way/548524582) does not have the Tag, name=* and is 
 connected to Way 447864651 (https://www.openstreetmap.org/way/447864651) and Way 528677149 (https://www.openstreetmap.org/way/528677149) 
 that have the Tag, name=連翔道 Lin Cheung Road https://www.openstreetmap.org/way/548524582
+b. Edge name: Tai. Incoming edge names: Tai , Shai. Outgoing edge name: Shai.
+c. Edge name: Tai. Incoming edge names: Shai. Outgoing edge name: Tai, Shai.
+d.: Edge name: Tai. Incoming edges names: Tai, Shai. Outgoing edge names: Shai, Pendler.
 
 Case 2: Different name tag between two Edges with same name tag (ISO)
  
