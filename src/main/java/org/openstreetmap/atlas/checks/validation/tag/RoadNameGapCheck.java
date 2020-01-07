@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -53,14 +52,6 @@ public class RoadNameGapCheck extends BaseCheck<Long>
             "secondary", "tertiary", "trunk", "motorway");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
             "Edge name {1} is different from in edge name and out edge name.");
-
-    /**
-     * Tests if the {@link AtlasObject} has a highway tag that do contain TERTIARY, SECONDARY,
-     * PRIMARY, TRUNK, or MOTORWAY
-     */
-    private static final Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators.isOfType(
-            object, HighwayTag.class, HighwayTag.TERTIARY, HighwayTag.PRIMARY, HighwayTag.SECONDARY,
-            HighwayTag.MOTORWAY, HighwayTag.TRUNK);
 
     private final List<String> validHighwayTag;
 
