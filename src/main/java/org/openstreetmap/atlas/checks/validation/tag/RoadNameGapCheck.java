@@ -111,7 +111,6 @@ public class RoadNameGapCheck extends BaseCheck<Long>
 
         final Set<String> matchingInAndOutEdgeNames = getMatchingInAndOutEdgeNames(inEdges,
                 outEdges);
-
         if (matchingInAndOutEdgeNames.isEmpty())
         {
             // There is no pair of inedge and out edge with same name.
