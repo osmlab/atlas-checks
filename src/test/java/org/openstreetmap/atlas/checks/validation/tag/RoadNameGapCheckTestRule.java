@@ -25,20 +25,12 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(coordinates = @TestAtlas.Loc(value = TEST_1), id = "0"),
-                    @Node(coordinates = @TestAtlas.Loc(value = TEST_2), id = "1"),
-                    @Node(coordinates = @TestAtlas.Loc(value = TEST_3), id = "2"),
+            nodes = { @Node(coordinates = @TestAtlas.Loc(value = TEST_3), id = "2"),
                     @Node(coordinates = @TestAtlas.Loc(value = TEST_4), id = "3") },
             // edges
-            edges = {
-                    @Edge(id = "1001000000", coordinates = { @Loc(value = TEST_1),
-                            @Loc(value = TEST_2) }, tags = { "highway=motorway", "name=aroad" }),
-                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "highway=MOTORWAY",
-                                    "name=Tsing Long Highway" }),
-                    @Edge(id = "1003000002", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "highway=SECONDARY_LINK",
-                                    "name=Tsing Long Highway" }) })
+            edges = { @Edge(id = "1003000002", coordinates = { @Loc(value = TEST_3),
+                    @Loc(value = TEST_4) }, tags = { "highway=SECONDARY_LINK",
+                            "name=Tsing Long Highway" }) })
     private Atlas invalidHighWayTag;
 
     @TestAtlas(

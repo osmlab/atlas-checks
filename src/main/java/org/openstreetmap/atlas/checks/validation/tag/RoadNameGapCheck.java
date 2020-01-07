@@ -1,7 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -67,7 +66,8 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     {
         super(configuration);
         this.validHighwayTag = configurationValue(configuration, "valid.highway.tag",
-                VALID_HIGHWAY_TAG_DEFAULT);
+                VALID_HIGHWAY_TAG_DEFAULT).stream().map(String::toLowerCase)
+                        .collect(Collectors.toList());
     }
 
     /**
@@ -98,10 +98,12 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
         final EdgePredicate edgePredicate = new EdgePredicate(edge);
-        final Set<Edge> inEdges = edge.inEdges().stream().filter(this::validCheckForObject)
-                .filter(edgePredicate::isSameHeading).collect(Collectors.toSet());
-        final Set<Edge> outEdges = edge.outEdges().stream().filter(this::validCheckForObject)
-                .filter(edgePredicate::isSameHeading).collect(Collectors.toSet());
+        final Set<Edge> inEdges = edge.inEdges().stream()
+                .filter(obj -> validCheckForObject(obj) && edgePredicate.isSameHeading(obj))
+                .collect(Collectors.toSet());
+        final Set<Edge> outEdges = edge.outEdges().stream()
+                .filter(obj -> validCheckForObject(obj) && edgePredicate.isSameHeading(obj))
+                .collect(Collectors.toSet());
         if (inEdges.isEmpty() || outEdges.isEmpty())
         {
             return Optional.empty();
@@ -129,12 +131,11 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
-            if (findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get()))
-            {
-                return Optional.empty();
-            }
-            return Optional.of(createFlag(object,
-                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(), edgeName.get())));
+            return findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
+                    ? Optional.empty()
+                    : Optional.of(createFlag(object, this.getLocalizedInstruction(1,
+                            edge.getOsmIdentifier(), edgeName.get())));
+
         }
         return Optional.empty();
     }
@@ -158,15 +159,8 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     private boolean findMatchingEdgeNameWithConnectedEdges(final Set<Edge> connectedEdges,
             final String edgeName)
     {
-        for (final Edge connectedEdge : connectedEdges)
-        {
-            final Optional<String> connectedEdgeName = connectedEdge.getName();
-            if (connectedEdgeName.isPresent() && connectedEdgeName.get().equals(edgeName))
-            {
-                return true;
-            }
-        }
-        return false;
+        return connectedEdges.stream().anyMatch(connectedEdge -> connectedEdge.getName().isPresent()
+                && connectedEdge.getName().get().equals(edgeName));
     }
 
     /**
@@ -181,30 +175,11 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     private Set<String> getMatchingInAndOutEdgeNames(final Set<Edge> inEdges,
             final Set<Edge> outEdges)
     {
-        final Set<String> edgeNames = new HashSet<>();
-        for (final Edge inEdge : inEdges)
-        {
-            if (!inEdge.getName().isPresent())
-            {
-                continue;
-            }
-            for (final Edge outEdge : outEdges)
-            {
-                if (!outEdge.getName().isPresent())
-                {
-                    continue;
-                }
 
-                final Optional<String> inEdgeName = inEdge.getName();
-                final Optional<String> outEdgeName = outEdge.getName();
-                if (inEdgeName.isPresent() && outEdgeName.isPresent()
-                        && inEdgeName.get().equals(outEdgeName.get())
-                        && inEdge.getOsmIdentifier() != outEdge.getOsmIdentifier())
-                {
-                    edgeNames.add(outEdgeName.get());
-                }
-            }
-        }
-        return edgeNames;
+        return inEdges.stream().filter(inEdge -> outEdges.stream()
+                .anyMatch(outEdge -> outEdge.getName().isPresent() && inEdge.getName().isPresent()
+                        && outEdge.getName().get().equals(inEdge.getName().get())
+                        && inEdge.getOsmIdentifier() != outEdge.getOsmIdentifier()))
+                .map(edge -> edge.getName().get()).collect(Collectors.toSet());
     }
 }
