@@ -445,6 +445,7 @@
     }
   },
   "RoadNameGapCheck": {
+    "valid.highway.tag": ["primary","secondary","tertiary","trunk","motorway"],
     "challenge": {
       "description": "identifies Edges with no name Tag that are between two other Edges with the same name Tag, OR the Edge has a name Tag but does not equal the name Tag of the Edges that it is between.",
       "blurb": "Flag the Edge with different name tag or no name tag which is between the same name tag edges",

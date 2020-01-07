@@ -24,7 +24,7 @@ import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
  *
  * @author sugandhimaheshwaram
  */
-public class RoadNameGapCheck extends BaseCheck
+public class RoadNameGapCheck extends BaseCheck<Long>
 {
     /**
      * This checks if the connected edges have same direction or not.
@@ -49,6 +49,8 @@ public class RoadNameGapCheck extends BaseCheck
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 7104778218412127847L;
+    private static final List<String> VALID_HIGHWAY_TAG_DEFAULT = Arrays.asList("primary",
+            "secondary", "tertiary", "trunk", "motorway");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
             "Edge name {1} is different from in edge name and out edge name.");
 
@@ -59,6 +61,8 @@ public class RoadNameGapCheck extends BaseCheck
     private static final Predicate<AtlasObject> VALID_HIGHWAY_TAG = object -> Validators.isOfType(
             object, HighwayTag.class, HighwayTag.TERTIARY, HighwayTag.PRIMARY, HighwayTag.SECONDARY,
             HighwayTag.MOTORWAY, HighwayTag.TRUNK);
+
+    private final List<String> validHighwayTag;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -71,6 +75,8 @@ public class RoadNameGapCheck extends BaseCheck
     public RoadNameGapCheck(final Configuration configuration)
     {
         super(configuration);
+        this.validHighwayTag = configurationValue(configuration, "valid.highway.tag",
+                VALID_HIGHWAY_TAG_DEFAULT);
     }
 
     /**
@@ -84,8 +90,10 @@ public class RoadNameGapCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !HighwayTag.isLinkHighway(object) && VALID_HIGHWAY_TAG.test(object)
-                && !JunctionTag.isRoundabout(object);
+                && !JunctionTag.isRoundabout(object)
+                && Validators.hasValuesFor(object, HighwayTag.class)
+                || this.validHighwayTag.stream()
+                        .anyMatch(key -> object.getOsmTags().containsKey(key));
     }
 
     /**
