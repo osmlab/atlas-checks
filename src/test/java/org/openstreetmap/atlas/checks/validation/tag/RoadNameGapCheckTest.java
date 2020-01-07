@@ -35,7 +35,7 @@ public class RoadNameGapCheckTest
     public void testForEdgeWithDifferentNameTagButSameOsmId()
     {
         this.verifier.actual(this.setup.getEdgeWithDifferentNameTagButSameOsmId(),
-                new RoadNameGapCheck(this.inlineConfiguration));
+                new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -51,7 +51,7 @@ public class RoadNameGapCheckTest
     public void testForInvalidHighWayTag()
     {
         this.verifier.actual(this.setup.isInvalidHighWayTag(),
-                new RoadNameGapCheck(this.inlineConfiguration));
+                new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
@@ -59,7 +59,7 @@ public class RoadNameGapCheckTest
     public void testForIsJunctionNotRoundAbout()
     {
         this.verifier.actual(this.setup.isJunctionNotRoundAbout(),
-                new RoadNameGapCheck(this.inlineConfiguration));
+                new RoadNameGapCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
