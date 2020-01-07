@@ -73,13 +73,13 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(id = "1001000000", coordinates = { @Loc(value = TEST_5),
-                            @Loc(value = TEST_6) }, tags = { "highway=PRIMARY",
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
                                     "name=Tsing Long Highway" }),
                     @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_7) }, tags = { "highway=PRIMARY",
+                            @Loc(value = TEST_7) }, tags = { "highway=primary",
                                     "name=failingName" }),
                     @Edge(id = "1003000002", coordinates = { @Loc(value = TEST_7),
-                            @Loc(value = TEST_8) }, tags = { "highway=PRIMARY",
+                            @Loc(value = TEST_8) }, tags = { "highway=primary",
                                     "name=Tsing Long Highway" }) })
     private Atlas edgeWithDifferentNameTag;
 
@@ -115,12 +115,12 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(id = "1001000000", coordinates = { @Loc(value = TEST_5),
-                            @Loc(value = TEST_6) }, tags = { "highway=PRIMARY",
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
                                     "name=Tsing Long Highway" }),
                     @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_7) }, tags = { "highway=MOTORWAY" }),
+                            @Loc(value = TEST_7) }, tags = { "highway=primary" }),
                     @Edge(id = "1003000002", coordinates = { @Loc(value = TEST_7),
-                            @Loc(value = TEST_8) }, tags = { "highway=SECONDARY",
+                            @Loc(value = TEST_8) }, tags = { "highway=primary",
                                     "name=Tsing Long Highway" }) })
     private Atlas edgeWithNoNameTag;
 

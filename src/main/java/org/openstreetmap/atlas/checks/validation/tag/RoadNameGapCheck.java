@@ -83,8 +83,7 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
                 && !JunctionTag.isRoundabout(object)
                 && Validators.hasValuesFor(object, HighwayTag.class)
-                || this.validHighwayTag.stream()
-                        .anyMatch(key -> object.getOsmTags().containsKey(key));
+                && this.validHighwayTag.contains(object.tag(HighwayTag.KEY));
     }
 
     /**
