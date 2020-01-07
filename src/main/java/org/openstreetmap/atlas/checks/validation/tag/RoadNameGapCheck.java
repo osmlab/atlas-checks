@@ -175,7 +175,6 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     private Set<String> getMatchingInAndOutEdgeNames(final Set<Edge> inEdges,
             final Set<Edge> outEdges)
     {
-
         return inEdges.stream().filter(inEdge -> outEdges.stream()
                 .anyMatch(outEdge -> outEdge.getName().isPresent() && inEdge.getName().isPresent()
                         && outEdge.getName().get().equals(inEdge.getName().get())
