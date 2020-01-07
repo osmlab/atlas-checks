@@ -10,6 +10,7 @@ This document is a list of tables with a description and link to documentation f
 | [PedestrianAreaOverlappingEdgeCheck](checks/pedestrianAreaOverlappingEdgeCheck.md) | The purpose of this check is to identify pedestrian areas overlapping with roads that are not snapped to car navigable edges. |
 | [ShadowDetectionCheck](checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
 | [SpikyBuildingCheck](checks/spikyBuildingCheck.md) | The purpose of this check is to identify buildings with extremely sharp angles in their geometry. |
+| [WaterbodyAndIslandSizeCheck](checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
 
 ## Highways
 | Check Name | Check Description |
@@ -69,4 +70,3 @@ This document is a list of tables with a description and link to documentation f
 | [GeneralizedCoastlineCheck](checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart, have angles that are too sharp, and/or have _source=PGS_ Tag values. |
 | [IntersectingBuildingsCheck](checks/intersectingBuildingsCheck.md) | The purpose of this check is to identify buildings that intersect other buildings. |
 | [SelfIntersectingPolylineCheck](checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
-| [WaterbodyAndIslandSizeCheck](checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
