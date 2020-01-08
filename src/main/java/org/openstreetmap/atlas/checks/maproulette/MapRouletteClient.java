@@ -95,7 +95,11 @@ public class MapRouletteClient implements Serializable
             }
         });
     }
-
+  
+  /**
+   * This methods sets challenge id file
+   * @param challengeIdFile challenge id file location.
+   */
     protected static void setChallengeIdFile(final Optional<String> challengeIdFile)
     {
         MapRouletteClient.ChallengeIDFile = challengeIdFile;
