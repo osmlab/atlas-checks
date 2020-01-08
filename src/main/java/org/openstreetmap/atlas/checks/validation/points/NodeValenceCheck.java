@@ -58,7 +58,7 @@ public class NodeValenceCheck extends BaseCheck<Long>
         if (valence > this.maximumConnections)
         {
             final CheckFlag flag = new CheckFlag(String.valueOf(object.getIdentifier()));
-            connectedCarNavigableEdges.forEach(edge -> flag.addObject(edge));
+            connectedCarNavigableEdges.forEach(flag::addObject);
             flag.addObject(object, this.getLocalizedInstruction(0, node.getOsmIdentifier(), valence,
                     this.maximumConnections));
             return Optional.of(flag);

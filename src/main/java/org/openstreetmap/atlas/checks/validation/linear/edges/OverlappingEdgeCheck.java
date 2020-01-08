@@ -101,7 +101,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
                 }
                 start = end;
             }
-            if (overlappingItems.size() > 0)
+            if (!overlappingItems.isEmpty())
             {
                 this.markAsFlagged(object.getOsmIdentifier());
                 // Mark overlapping objects as flagged

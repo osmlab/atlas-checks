@@ -2,10 +2,9 @@ package org.openstreetmap.atlas.checks.validation.relations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,17 +62,7 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
             CLOSED_LOOP_INSTRUCTION_FORMAT, SINGLE_MEMBER_RELATION_INSTRUCTION_FORMAT,
             MISSING_OUTER_INSTRUCTION_FORMAT, INVALID_ROLE_INSTRUCTION_FORMAT,
             INVALID_OSM_TYPE_INSTRUCTION_FORMAT);
-    private static final Map<ItemType, String> atlasToOsmType = new HashMap<ItemType, String>()
-    {
-        {
-            put(ItemType.EDGE, "way");
-            put(ItemType.AREA, "way");
-            put(ItemType.LINE, "way");
-            put(ItemType.NODE, "node");
-            put(ItemType.POINT, "node");
-            put(ItemType.RELATION, "relation");
-        }
-    };
+    private static final EnumMap<ItemType, String> atlasToOsmType = new EnumMap<>(ItemType.class);
     private static final Logger logger = LoggerFactory
             .getLogger(InvalidMultiPolygonRelationCheck.class);
 
@@ -89,6 +78,12 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
                 .indexOf(CLOSED_LOOP_INSTRUCTION_FORMAT);
         INVALID_OSM_TYPE_INSTRUCTION_FORMAT_INDEX = FALLBACK_INSTRUCTIONS
                 .indexOf(INVALID_OSM_TYPE_INSTRUCTION_FORMAT);
+        atlasToOsmType.put(ItemType.EDGE, "way");
+        atlasToOsmType.put(ItemType.AREA, "way");
+        atlasToOsmType.put(ItemType.LINE, "way");
+        atlasToOsmType.put(ItemType.NODE, "node");
+        atlasToOsmType.put(ItemType.POINT, "node");
+        atlasToOsmType.put(ItemType.RELATION, "relation");
     }
 
     public InvalidMultiPolygonRelationCheck(final Configuration configuration)

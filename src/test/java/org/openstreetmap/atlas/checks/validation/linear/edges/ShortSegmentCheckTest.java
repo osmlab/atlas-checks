@@ -14,7 +14,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class ShortSegmentCheckTest
 {
-    private static ShortSegmentCheck check = new ShortSegmentCheck(
+    private static final ShortSegmentCheck check = new ShortSegmentCheck(
             ConfigurationResolver.emptyConfiguration());
 
     @Rule
@@ -50,7 +50,7 @@ public class ShortSegmentCheckTest
                 this.setup.shortBidirectionalSegmentWithOneValence3NodeAndOneValence2NodeAtlas(),
                 check);
         this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> verifyFlaggedItemIsShort(flag));
     }
 
@@ -60,7 +60,7 @@ public class ShortSegmentCheckTest
         this.verifier.actual(this.setup.shortBidirectionalSegmentWithTwoValence2NodesAtlas(),
                 check);
         this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> verifyFlaggedItemIsShort(flag));
     }
 
@@ -90,7 +90,7 @@ public class ShortSegmentCheckTest
     {
         this.verifier.actual(this.setup.shortSegmentWithOneValence2NodeAtlas(), check);
         this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> verifyFlaggedItemIsShort(flag));
     }
 
@@ -107,7 +107,7 @@ public class ShortSegmentCheckTest
     {
         this.verifier.actual(this.setup.shortSegmentWithTwoValence1NodesAtlas(), check);
         this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> verifyFlaggedItemIsShort(flag));
     }
 
@@ -123,7 +123,7 @@ public class ShortSegmentCheckTest
     {
         this.verifier.actual(this.setup.shortSegmentsWithTwoValence2NodesAtlas(), check);
         this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> verifyFlaggedItemIsShort(flag));
     }
 
@@ -132,7 +132,7 @@ public class ShortSegmentCheckTest
     {
         this.verifier.actual(this.setup.shortSegmentsWithValence1And2NodesAtlas(), check);
         this.verifier.verifyNotNull();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 4));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(4, flags.size()));
         this.verifier.verify(flag -> verifyFlaggedItemIsShort(flag));
     }
 }

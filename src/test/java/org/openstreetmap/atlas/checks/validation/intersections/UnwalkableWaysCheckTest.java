@@ -27,7 +27,7 @@ public class UnwalkableWaysCheckTest
     {
         this.verifier.actual(this.setup.getSingleFootNoCrossingDoubleAtlas(), this.check);
         this.verifier.verifyEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 0));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class UnwalkableWaysCheckTest
                 enabledDoubleCrossingConfig);
         this.verifier.actual(this.setup.getDoubleCrossingDoubleAtlas(), privateCheck);
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 2));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
 
     @Test
@@ -49,8 +49,8 @@ public class UnwalkableWaysCheckTest
 
         this.verifier.actual(this.setup.getSingleCrossingDouble(), this.check);
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 1));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -59,7 +59,7 @@ public class UnwalkableWaysCheckTest
     {
         this.verifier.actual(this.setup.getSingleFootNoCrossingDoubleAtlas(), this.check);
         this.verifier.verifyEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 0));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 0));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(0, flag.getFlaggedObjects().size()));
     }
 }

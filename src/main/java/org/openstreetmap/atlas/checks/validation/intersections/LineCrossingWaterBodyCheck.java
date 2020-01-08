@@ -96,8 +96,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      */
     private static boolean canRelationCrossWaterBody(final Set<Relation> multipolygonRelations)
     {
-        return multipolygonRelations.stream()
-                .anyMatch(relation -> VALID_RELATIONS_TAG_FILTER.test(relation));
+        return multipolygonRelations.stream().anyMatch(VALID_RELATIONS_TAG_FILTER);
     }
 
     /**

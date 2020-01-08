@@ -25,8 +25,8 @@ public class LineCrossingBuildingCheckTest
     {
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 7));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -48,8 +48,8 @@ public class LineCrossingBuildingCheckTest
     {
         this.verifier.actual(this.setup.invalidIntersectionItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 3));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
