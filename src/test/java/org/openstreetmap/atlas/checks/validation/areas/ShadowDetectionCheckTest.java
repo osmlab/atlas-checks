@@ -36,14 +36,6 @@ public class ShadowDetectionCheckTest
     }
 
     @Test
-    public void invalidBuildingMissingTag()
-    {
-        this.verifier.actual(this.setup.invalidBuildingMissingTagAtlas(),
-                new ShadowDetectionCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void invalidBuildingPartSingleAtlas()
     {
         this.verifier.actual(this.setup.invalidBuildingPartSingleAtlas(),

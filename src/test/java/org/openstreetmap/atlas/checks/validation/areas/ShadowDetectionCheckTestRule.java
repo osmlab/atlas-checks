@@ -329,17 +329,6 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
                                     "building:part=yes", "height=91'10\"", "min_height=11'6\"" }) })
     private Atlas validBuildingPartsTouchHeightFeetInchesAtlas;
 
-    @TestAtlas(
-            // areas
-            areas = {
-                    @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = { "building=yes",
-                                    "height=20", "min_height=10m" }),
-                    @Area(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_3), @Loc(TEST_5),
-                            @Loc(TEST_6) }, tags = { "height=30", "min_height=10",
-                                    "building=yes" }) })
-    private Atlas invalidBuildingMissingTagAtlas;
-
     public Atlas invalidBuildingAndPartStackedAtlas()
     {
         return this.invalidBuildingAndPartStackedAtlas;
@@ -348,11 +337,6 @@ public class ShadowDetectionCheckTestRule extends CoreTestRule
     public Atlas invalidBuildingBadMinAtlas()
     {
         return this.invalidBuildingBadMinAtlas;
-    }
-
-    public Atlas invalidBuildingMissingTagAtlas()
-    {
-        return this.invalidBuildingMissingTagAtlas;
     }
 
     public Atlas invalidBuildingPartSingleAtlas()

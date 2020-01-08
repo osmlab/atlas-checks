@@ -11,8 +11,6 @@ import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 
-import com.google.gson.JsonArray;
-
 /**
  * A stub MapRouletteConnection that doesn't actually connect to anything.
  *
@@ -81,20 +79,7 @@ public class TestMapRouletteConnection implements TaskLoader
         }
         else
         {
-            tasks.forEach(task ->
-            {
-                try
-                {
-                    this.uploadTask(challengeId, task);
-                    // Only record the task as being uploaded if it was generated properly in the
-                    // line above
-                    this.challengeToTasks.put(challengeId, new HashSet<>(tasks));
-                }
-                catch (UnsupportedEncodingException | URISyntaxException e)
-                {
-                    e.printStackTrace();
-                }
-            });
+            this.challengeToTasks.put(challengeId, new HashSet<>(tasks));
         }
         return true;
     }
@@ -103,13 +88,7 @@ public class TestMapRouletteConnection implements TaskLoader
     public boolean uploadTask(final long challengeId, final Task task)
             throws UnsupportedEncodingException, URISyntaxException
     {
-        final JsonArray taskArray = new JsonArray();
-        taskArray.add(task.generateTask(challengeId));
-        // At this point we would send the taskArray out to an MR server for upload.
-        // Return true in this case if the task was generated properly. An exception is thrown if
-        // it's not -- this is how we know if the task wouldn't be uploaded in a nontesting
-        // environment.
-        return true;
+        return false;
     }
 
     public Set<Project> uploadedProjects()

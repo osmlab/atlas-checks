@@ -58,9 +58,6 @@ public class Task
     protected static final String TASK_PARENT_ID = "parent";
     protected static final String TASK_TYPE = "type";
     private static final String KEY_DESCRIPTION = "description";
-    private static final String CHECK_GENERATOR = "flag:check";
-    private static final String FRAMEWORK_GENERATOR = "flag:generator";
-    private static final String FRAMEWORK = "Atlas Checks";
     private String challengeName;
     private Optional<JsonArray> geoJson = Optional.empty();
     private String instruction;
@@ -209,14 +206,7 @@ public class Task
             features.add(feature);
         });
 
-        geoJson.ifPresent(json ->
-        {
-            final JsonObject propertiesField = (JsonObject) json.get(0).getAsJsonObject()
-                    .get(TASK_FEATURE_PROPERTIES);
-            propertiesField.add(CHECK_GENERATOR, new JsonPrimitive(this.challengeName));
-            propertiesField.add(FRAMEWORK_GENERATOR, new JsonPrimitive(FRAMEWORK));
-            json.forEach(features::add);
-        });
+        geoJson.ifPresent(json -> json.forEach(features::add));
 
         return features;
     }

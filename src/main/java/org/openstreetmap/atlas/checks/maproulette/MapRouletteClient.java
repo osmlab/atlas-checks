@@ -126,10 +126,7 @@ public class MapRouletteClient implements Serializable
             final Challenge challenge, final Task task)
     {
         task.setProjectName(projectConfiguration.getName());
-        if (task.getChallengeName() == null)
-        {
-            task.setChallengeName(challenge.getName());
-        }
+        task.setChallengeName(challenge.getName());
         updateChallengeTaskList(challenge, task, projectConfiguration);
     }
 
