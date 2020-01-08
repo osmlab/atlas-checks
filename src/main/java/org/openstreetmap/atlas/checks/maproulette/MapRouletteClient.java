@@ -1,5 +1,8 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -38,6 +41,7 @@ public class MapRouletteClient implements Serializable
     // Map containing all the challenges per project
     private final Map<String, Project> projects;
     private final Map<Long, Map<String, Challenge>> challenges;
+    private static Optional<String> ChallengeIDFile = Optional.empty();
 
     /**
      * Creates a {@link MapRouletteClient} from {@link MapRouletteConfiguration}.
@@ -64,6 +68,37 @@ public class MapRouletteClient implements Serializable
         }
 
         return null;
+    }
+
+    /**
+     * This method writes challenge ids to a file.
+     *
+     * @param challengeId
+     *            challenge id of the newly created MapRoulette challenge.
+     */
+    public static void writeChallengeIdsToFile(final long challengeId)
+    {
+        ChallengeIDFile.ifPresent(fileName ->
+        {
+            try
+            {
+                final BufferedWriter fileWriter = new BufferedWriter(
+                        new FileWriter(fileName, true));
+                fileWriter.append(String.format("%d", challengeId));
+                fileWriter.newLine();
+                fileWriter.close();
+            }
+            catch (final IOException ioException)
+            {
+                logger.warn("IOException occurred while writing challenge id {} to the file {}",
+                        challengeId, fileName);
+            }
+        });
+    }
+
+    protected static void setChallengeIdFile(final Optional<String> challengeIdFile)
+    {
+        MapRouletteClient.ChallengeIDFile = challengeIdFile;
     }
 
     /**
@@ -161,7 +196,12 @@ public class MapRouletteClient implements Serializable
         challenge.setParentIdentifier(project.getId());
         if (!challengeMap.containsKey(challenge.getName()))
         {
-            challenge.setId(this.connection.createChallenge(project, challenge));
+            final long challengeId = this.connection.createChallenge(project, challenge);
+            if (challengeId != -1)
+            {
+                writeChallengeIdsToFile(challengeId);
+            }
+            challenge.setId(challengeId);
             challengeMap.put(challenge.getName(), challenge);
             this.challenges.put(project.getId(), challengeMap);
         }

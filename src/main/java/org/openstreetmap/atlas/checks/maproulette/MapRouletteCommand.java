@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.maproulette;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
@@ -32,6 +33,10 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     private static final Switch<String> PROJECT_DISPLAY_NAME = new Switch<>("projectDisplayName",
             "Display name of the project under which all of the challenges will be submitted",
             StringConverter.IDENTITY);
+    protected static final Switch<String> CHALLENGE_ID_FILE = new Switch<>("challengeIdFile",
+            "Full path to file where challenge ids are stored after creation in MapRoulette.",
+            StringConverter.IDENTITY);
+
     private MapRouletteClient mapRouletteClient;
 
     public MapRouletteClient getClient()
@@ -97,6 +102,8 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
                 logger.warn("Failed to initialize the MapRouletteClient", e);
             }
         }
+        MapRouletteClient
+                .setChallengeIdFile((Optional<String>) commandMap.getOption(CHALLENGE_ID_FILE));
         execute(commandMap, mapRoulette);
         return 0;
     }
