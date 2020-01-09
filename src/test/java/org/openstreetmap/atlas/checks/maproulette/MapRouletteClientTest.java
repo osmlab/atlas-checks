@@ -113,9 +113,9 @@ public class MapRouletteClientTest
     @Test
     public void testWriteChallengeIdsToFile()
     {
-        String fileName = String.format("%s/src/test/resources/challenges/challengeIds",
+        final String fileName = String.format("%s/src/test/resources/challenges/challengeIds",
                 System.getProperty("user.dir"));
-        Optional<String> fileNameOptional = Optional.of(fileName);
+        final Optional<String> fileNameOptional = Optional.of(fileName);
         assertTrue(fileNameOptional.isPresent());
         MapRouletteClient.setChallengeIdFile(fileNameOptional);
         MapRouletteClient.writeChallengeIdsToFile(1);
