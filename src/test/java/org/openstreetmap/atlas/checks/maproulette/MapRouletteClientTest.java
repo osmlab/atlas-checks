@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.maproulette;
 
 import java.util.Optional;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
 import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
+import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -106,5 +108,16 @@ public class MapRouletteClientTest
         Assert.assertEquals(displayName, uploadedProject.getDisplayName());
         Assert.assertFalse(uploadedProject.isEnabled());
         Assert.assertEquals(1, this.mockConnection.tasksForChallenge(TEST_CHALLENGE).size());
+    }
+    
+    @Test
+    public void testWriteChallengeIdsToFile()
+    {
+        String fileName = String.format("%s/src/test/resources/challenges/challengeIds",
+                System.getProperty("user.dir"));
+        Optional<String> fileNameOptional = Optional.of(fileName);
+        MapRouletteClient.setChallengeIdFile(fileNameOptional);
+        MapRouletteClient.writeChallengeIdsToFile(1);
+        MapRouletteClient.writeChallengeIdsToFile(2);
     }
 }
