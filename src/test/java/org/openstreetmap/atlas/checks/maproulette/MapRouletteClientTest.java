@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -116,6 +118,7 @@ public class MapRouletteClientTest
         String fileName = String.format("%s/src/test/resources/challenges/challengeIds",
                 System.getProperty("user.dir"));
         Optional<String> fileNameOptional = Optional.of(fileName);
+        assertTrue(fileNameOptional.isPresent());
         MapRouletteClient.setChallengeIdFile(fileNameOptional);
         MapRouletteClient.writeChallengeIdsToFile(1);
         MapRouletteClient.writeChallengeIdsToFile(2);
