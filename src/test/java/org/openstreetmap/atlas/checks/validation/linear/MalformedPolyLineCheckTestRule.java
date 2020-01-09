@@ -63,7 +63,7 @@ public class MalformedPolyLineCheckTestRule extends CoreTestRule
                     @Relation.Member(id = "1002000001", type = "line", role = RelationTypeTag.MULTIPOLYGON_TYPE) }, tags = {
                             "natural=water" }) })
     private Atlas relationWithWaterTagAtlas;
-    @TestAtlas(loadFromTextResource = "MalformedPolyLine.txt.gz")
+    @TestAtlas(loadFromTextResource = "MalformedPolyLine.txt")
     private Atlas malformedPolyLineAtlas;
 
     public Atlas getComplexPolyLineAtlas()
