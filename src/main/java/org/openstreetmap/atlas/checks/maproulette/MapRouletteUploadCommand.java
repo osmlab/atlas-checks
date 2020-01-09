@@ -14,14 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.serializer.TaskDeserializer;
 import org.openstreetmap.atlas.checks.utility.FileUtility;
-import org.openstreetmap.atlas.locale.IsoCountry;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -59,7 +57,6 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             "A comma separated list of check names to filter flags by.",
             string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL);
     private static final String PARAMETER_CHALLENGE = "challenge";
-
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
     private final Map<String, Challenge> checkNameChallengeMap;
 
@@ -126,16 +123,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                             {
                                 final Challenge challenge = this
                                         .getChallenge(task.getChallengeName(), instructions);
-                                // Prepend the challenge name with the full country name if one
-                                // exists, else country code if it exists. Then try to add the task
-                                // for upload
+                                // Prepend the challenge name with the ISO country code, if one
+                                // exists. Then try to add the task for upload
                                 countryCode.ifPresent(iso -> challenge.setName(String.join(" - ",
-                                        Arrays.stream(countryCode.get().split(","))
-                                                .map(country -> IsoCountry.displayCountry(country)
-                                                        .orElse(country))
-                                                .collect(Collectors.toList()).toString()
-                                                .replace("[", "").replace("]", ""),
-                                        task.getChallengeName())));
+                                        countryCode.get(), task.getChallengeName())));
                                 this.addTask(challenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
