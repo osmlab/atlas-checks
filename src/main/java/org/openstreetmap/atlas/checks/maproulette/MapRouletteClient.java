@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +34,7 @@ public class MapRouletteClient implements Serializable
 {
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteClient.class);
     private static final long serialVersionUID = -8121247154514856056L;
+    private static final String CHALLENGES_FILE = "challenges.txt";
     // This map contains the key which is "${projectName}-${challengeName}" mapping to the batch of
     // tasks for the given key
     private final Map<Tuple<String, String>, Set<Task>> batch;
@@ -41,7 +43,7 @@ public class MapRouletteClient implements Serializable
     // Map containing all the challenges per project
     private final Map<String, Project> projects;
     private final Map<Long, Map<String, Challenge>> challenges;
-    private static Optional<String> outputPath = Optional.empty();
+    private Optional<String> outputPath = Optional.empty();
 
     /**
      * Creates a {@link MapRouletteClient} from {@link MapRouletteConfiguration}.
@@ -68,47 +70,6 @@ public class MapRouletteClient implements Serializable
         }
 
         return null;
-    }
-
-    /**
-     * This method writes challenge ids to a file.
-     *
-     * @param challengeId
-     *            challenge id of the newly created MapRoulette challenge.
-     * @param projectId
-     *            project id of the MapRoulette challenge.
-     */
-    public static void writeChallengeIdsToFile(final long challengeId, final long projectId)
-    {
-        outputPath.ifPresent(fileName ->
-        {
-            try
-            {
-                final BufferedWriter fileWriter = new BufferedWriter(
-                        new FileWriter(fileName, true));
-                fileWriter
-                        .append(String.format("project: %d;challenge: %d", projectId, challengeId));
-                fileWriter.newLine();
-                fileWriter.close();
-            }
-            catch (final IOException ioException)
-            {
-                logger.warn(
-                        "IOException occurred while writing project id {}, challenge id {} to the file {}",
-                        projectId, challengeId, fileName);
-            }
-        });
-    }
-
-    /**
-     * This methods sets challenge id output path
-     * 
-     * @param challengeIdFile
-     *            challenge id file location.
-     */
-    protected static void setOutputPath(final Optional<String> challengeIdFile)
-    {
-        MapRouletteClient.outputPath = challengeIdFile;
     }
 
     /**
@@ -199,6 +160,17 @@ public class MapRouletteClient implements Serializable
     public void uploadTasks(final Tuple<String, String> key)
     {
         this.upload(key);
+    }
+
+    /**
+     * This methods sets challenge id output path
+     *
+     * @param challengeIdFile
+     *            challenge id file location.
+     */
+    protected void setOutputPath(final Optional<String> challengeIdFile)
+    {
+        this.outputPath = challengeIdFile;
     }
 
     private Optional<Challenge> createChallenge(final Project project, final Challenge challenge)
@@ -309,5 +281,39 @@ public class MapRouletteClient implements Serializable
                         this.connection.getConnectionInfo()), e);
             }
         }
+    }
+
+    /**
+     * This method creates a text file with given file name and writes project id, challenge id to a
+     * text file
+     *
+     * @param challengeId
+     *            challenge id of the newly created MapRoulette challenge.
+     * @param projectId
+     *            project id of the MapRoulette challenge.
+     */
+    private void writeChallengeIdsToFile(final long challengeId, final long projectId)
+    {
+        this.outputPath.ifPresent(path ->
+        {
+            // Instead of concatenating strings directly, using File to ensure different OS get the
+            // correct path.
+            final String fileName = new File(path, CHALLENGES_FILE).getAbsolutePath();
+            try
+            {
+                final BufferedWriter fileWriter = new BufferedWriter(
+                        new FileWriter(fileName, true));
+                fileWriter.append(String.format("project:%d;challenge:%d", projectId, challengeId));
+                fileWriter.newLine();
+                fileWriter.close();
+            }
+            catch (final IOException ioException)
+            {
+                ioException.printStackTrace();
+                logger.warn(
+                        "IOException occurred while writing project id {}, challenge id {} to the file {}",
+                        projectId, challengeId, fileName);
+            }
+        });
     }
 }
