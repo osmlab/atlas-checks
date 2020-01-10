@@ -87,7 +87,7 @@ public class MapRouletteClient implements Serializable
                 final BufferedWriter fileWriter = new BufferedWriter(
                         new FileWriter(fileName, true));
                 fileWriter
-                        .append(String.format("project: %d,challenge: %d", projectId, challengeId));
+                        .append(String.format("project: %d;challenge: %d", projectId, challengeId));
                 fileWriter.newLine();
                 fileWriter.close();
             }
