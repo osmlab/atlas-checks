@@ -102,8 +102,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
                 logger.warn("Failed to initialize the MapRouletteClient", e);
             }
         }
-        MapRouletteClient
-                .setOutputPath((Optional<String>) commandMap.getOption(OUTPUT_PATH));
+        MapRouletteClient.setOutputPath((Optional<String>) commandMap.getOption(OUTPUT_PATH));
         execute(commandMap, mapRoulette);
         return 0;
     }

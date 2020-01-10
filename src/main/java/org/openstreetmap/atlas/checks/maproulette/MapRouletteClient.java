@@ -75,6 +75,8 @@ public class MapRouletteClient implements Serializable
      *
      * @param challengeId
      *            challenge id of the newly created MapRoulette challenge.
+     * @param projectId
+     *            project id of the MapRoulette challenge.
      */
     public static void writeChallengeIdsToFile(final long challengeId, final long projectId)
     {
@@ -84,13 +86,15 @@ public class MapRouletteClient implements Serializable
             {
                 final BufferedWriter fileWriter = new BufferedWriter(
                         new FileWriter(fileName, true));
-                fileWriter.append(String.format("project: %d,challenge: %d", projectId, challengeId));
+                fileWriter
+                        .append(String.format("project: %d,challenge: %d", projectId, challengeId));
                 fileWriter.newLine();
                 fileWriter.close();
             }
             catch (final IOException ioException)
             {
-                logger.warn("IOException occurred while writing project id {}, challenge id {} to the file {}",
+                logger.warn(
+                        "IOException occurred while writing project id {}, challenge id {} to the file {}",
                         projectId, challengeId, fileName);
             }
         });
