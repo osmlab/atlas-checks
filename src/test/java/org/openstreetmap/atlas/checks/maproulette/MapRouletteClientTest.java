@@ -117,8 +117,8 @@ public class MapRouletteClientTest
                 System.getProperty("user.dir"));
         final Optional<String> fileNameOptional = Optional.of(fileName);
         assertTrue(fileNameOptional.isPresent());
-        MapRouletteClient.setChallengeIdFile(fileNameOptional);
-        MapRouletteClient.writeChallengeIdsToFile(1);
-        MapRouletteClient.writeChallengeIdsToFile(2);
+        MapRouletteClient.setOutputPath(fileNameOptional);
+        MapRouletteClient.writeChallengeIdsToFile(1, 24);
+        MapRouletteClient.writeChallengeIdsToFile(1, 25);
     }
 }

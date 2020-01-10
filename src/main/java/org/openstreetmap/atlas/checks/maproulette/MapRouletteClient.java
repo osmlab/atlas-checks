@@ -41,7 +41,7 @@ public class MapRouletteClient implements Serializable
     // Map containing all the challenges per project
     private final Map<String, Project> projects;
     private final Map<Long, Map<String, Challenge>> challenges;
-    private static Optional<String> ChallengeIDFile = Optional.empty();
+    private static Optional<String> outputPath = Optional.empty();
 
     /**
      * Creates a {@link MapRouletteClient} from {@link MapRouletteConfiguration}.
@@ -76,35 +76,35 @@ public class MapRouletteClient implements Serializable
      * @param challengeId
      *            challenge id of the newly created MapRoulette challenge.
      */
-    public static void writeChallengeIdsToFile(final long challengeId)
+    public static void writeChallengeIdsToFile(final long challengeId, final long projectId)
     {
-        ChallengeIDFile.ifPresent(fileName ->
+        outputPath.ifPresent(fileName ->
         {
             try
             {
                 final BufferedWriter fileWriter = new BufferedWriter(
                         new FileWriter(fileName, true));
-                fileWriter.append(String.format("%d", challengeId));
+                fileWriter.append(String.format("project: %d,challenge: %d", projectId, challengeId));
                 fileWriter.newLine();
                 fileWriter.close();
             }
             catch (final IOException ioException)
             {
-                logger.warn("IOException occurred while writing challenge id {} to the file {}",
-                        challengeId, fileName);
+                logger.warn("IOException occurred while writing project id {}, challenge id {} to the file {}",
+                        projectId, challengeId, fileName);
             }
         });
     }
 
     /**
-     * This methods sets challenge id file
+     * This methods sets challenge id output path
      * 
      * @param challengeIdFile
      *            challenge id file location.
      */
-    protected static void setChallengeIdFile(final Optional<String> challengeIdFile)
+    protected static void setOutputPath(final Optional<String> challengeIdFile)
     {
-        MapRouletteClient.ChallengeIDFile = challengeIdFile;
+        MapRouletteClient.outputPath = challengeIdFile;
     }
 
     /**
@@ -206,9 +206,9 @@ public class MapRouletteClient implements Serializable
         if (!challengeMap.containsKey(challenge.getName()))
         {
             final long challengeId = this.connection.createChallenge(project, challenge);
-            if (challengeId != -1)
+            if (challengeId != -1 && project.getId() != -1)
             {
-                writeChallengeIdsToFile(challengeId);
+                writeChallengeIdsToFile(challengeId, project.getId());
             }
             challenge.setId(challengeId);
             challengeMap.put(challenge.getName(), challenge);

@@ -76,7 +76,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     @Override
     public SwitchList switches()
     {
-        return super.switches().with(INPUT_DIRECTORY, CHALLENGE_ID_FILE, CONFIG_LOCATION, COUNTRIES,
+        return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
                 CHECKS);
     }
 

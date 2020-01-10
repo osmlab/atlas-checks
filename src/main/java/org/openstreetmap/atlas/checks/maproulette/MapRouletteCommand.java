@@ -33,7 +33,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     private static final Switch<String> PROJECT_DISPLAY_NAME = new Switch<>("projectDisplayName",
             "Display name of the project under which all of the challenges will be submitted",
             StringConverter.IDENTITY);
-    protected static final Switch<String> CHALLENGE_ID_FILE = new Switch<>("challengeIdFile",
+    protected static final Switch<String> OUTPUT_PATH = new Switch<>("outputPath",
             "Full path to file where challenge ids are stored after creation in MapRoulette.",
             StringConverter.IDENTITY);
 
@@ -103,7 +103,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
             }
         }
         MapRouletteClient
-                .setChallengeIdFile((Optional<String>) commandMap.getOption(CHALLENGE_ID_FILE));
+                .setOutputPath((Optional<String>) commandMap.getOption(OUTPUT_PATH));
         execute(commandMap, mapRoulette);
         return 0;
     }
