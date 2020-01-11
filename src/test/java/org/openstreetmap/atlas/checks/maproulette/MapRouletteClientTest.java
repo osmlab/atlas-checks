@@ -35,10 +35,10 @@ public class MapRouletteClientTest
     private static final Challenge TEST_CHALLENGE = new Challenge("a name", "a description",
             "a blurb", "an instruction", ChallengeDifficulty.EASY, "");
     private static final Optional<JsonArray> GEOJSON = getSampleGeojson();
-    
+
     @Rule
     public TemporaryFolder challengesDir = new TemporaryFolder();
-    
+
     private Task testTaskOne;
     private TestMapRouletteConnection mockConnection;
     private MapRouletteClient client;

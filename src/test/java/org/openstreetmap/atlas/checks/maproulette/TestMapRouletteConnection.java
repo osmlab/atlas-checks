@@ -67,7 +67,7 @@ public class TestMapRouletteConnection implements TaskLoader
     {
         return "";
     }
-    
+
     public void setProjectNameToId(final Map<String, Long> projectIdMap)
     {
         this.projectNameToId = projectIdMap;
