@@ -51,7 +51,7 @@ public class TestMapRouletteConnection implements TaskLoader
             newSet.add(challenge);
             this.projectToChallenges.put(project, newSet);
         }
-        return challenge.getId();
+        return 0;
     }
 
     @Override

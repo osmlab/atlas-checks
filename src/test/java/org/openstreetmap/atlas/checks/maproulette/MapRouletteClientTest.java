@@ -74,7 +74,6 @@ public class MapRouletteClientTest
     {
         this.client.addTask(TEST_CHALLENGE, this.testTaskOne);
         this.client.uploadTasks();
-        TEST_CHALLENGE.setId(12);
 
         Assert.assertEquals(1, this.mockConnection.uploadedProjects().size());
         Assert.assertEquals("project", this.mockConnection.uploadedProjects().stream().findFirst()
@@ -87,7 +86,6 @@ public class MapRouletteClientTest
     {
         this.client.addTask("another project", TEST_CHALLENGE, this.testTaskOne);
         this.client.uploadTasks();
-        TEST_CHALLENGE.setId(12);
 
         Assert.assertEquals(1, this.mockConnection.uploadedProjects().size());
         Assert.assertEquals("another project", this.mockConnection.uploadedProjects().stream()
@@ -103,7 +101,6 @@ public class MapRouletteClientTest
         final String displayName = "displayName";
         final ProjectConfiguration configuration = new ProjectConfiguration(name, description,
                 displayName, false);
-        TEST_CHALLENGE.setId(12);
         this.client.addTask(configuration, TEST_CHALLENGE, this.testTaskOne);
         this.client.uploadTasks();
 
@@ -135,14 +132,13 @@ public class MapRouletteClientTest
         final String dirPath = this.challengesDir.newFolder("challenges").getAbsolutePath();
         final Optional<String> directoryPath = Optional.of(dirPath);
         this.client.setOutputPath(directoryPath);
-        TEST_CHALLENGE.setId(12);
 
         // Upload challenge.
         this.client.addTask(projectName, TEST_CHALLENGE, this.testTaskOne);
 
         final File challengesFile = new File(dirPath, "challenges.txt");
         final String actualData = new String(Files.readAllBytes(challengesFile.toPath()));
-        final String expectedData = "project:34096;challenge:12\n";
+        final String expectedData = "project:34096;challenge:0\n";
         assertEquals(expectedData, actualData);
     }
 }
