@@ -23,6 +23,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
+import org.openstreetmap.atlas.tags.DestinationForwardTag;
 import org.openstreetmap.atlas.tags.DestinationTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
@@ -138,6 +139,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap = new HashMap<>();
         inEdges.forEach(inEdge ->
         {
+
             final String highwayTypeOfCurrentEdge = HighwayTag.highwayTag(inEdge).get()
                     .getTagValue();
             if (this.connectedHighwayTypes.containsKey(highwayTypeOfCurrentEdge))
@@ -153,7 +155,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                 // types.
                 // Check if the highway type of out edge is one of the valid connected highway types
                 // based on
-                // the incoming edge
+                // the incoming edgeg
                 if (filteredOutEdges.size() >= 2)
                 {
                     final Set<AtlasEntity> filteredOutEdgesBasedOnHighwayTypes = filteredOutEdges
@@ -164,6 +166,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                                 return highwayTag.isPresent() && listOfValidConnectedHighways
                                         .contains(highwayTag.get().getTagValue());
                             }).collect(Collectors.toSet());
+
                     if (filteredOutEdgesBasedOnHighwayTypes.stream()
                             .anyMatch(JunctionTag::isRoundabout))
                     {
@@ -219,15 +222,10 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                                         .stream().map(AtlasEntity.class::cast)
                                         .collect(Collectors.toSet());
                         final AtlasEntity exitEdge = roundaboutExitEdge.get();
-                        if (OneWayTag.isExplicitlyTwoWay(exitEdge))
-                        {
-                            final Optional<Set<AtlasEntity>> roundAboutEdgesNotPartOfRelations = this
-                                    .connectedEdgesNotPartOfRelation(exitEdge, roundaboutEdges,
-                                            destinationSignRelations.get());
-                            roundAboutEdgesNotPartOfRelations
-                                    .ifPresent(entitiesToBeFlagged::addAll);
-
-                        }
+                        final Optional<Set<AtlasEntity>> roundAboutEdgesNotPartOfRelations = this
+                                .connectedEdgesNotPartOfRelation(exitEdge, roundaboutEdges,
+                                        destinationSignRelations.get());
+                        roundAboutEdgesNotPartOfRelations.ifPresent(entitiesToBeFlagged::addAll);
                     }
 
                 });
@@ -275,10 +273,10 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                 if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
                 {
                     final AtlasEntity exitEdge = roundaboutExitEdge.get();
-                    if (!OneWayTag.isExplicitlyTwoWay(exitEdge)
-                            && !(roundaboutEdge.get().tag(DestinationTag.KEY) != null
-                                    || intersectingNode.tag(DestinationTag.KEY) != null
-                                    || roundaboutExitEdge.get().tag(DestinationTag.KEY) != null))
+                    if ((OneWayTag.isExplicitlyTwoWay(exitEdge)
+                            && exitEdge.tag(DestinationForwardTag.KEY) == null)
+                            || (!OneWayTag.isExplicitlyTwoWay(exitEdge)
+                                    && exitEdge.tag(DestinationTag.KEY) == null))
                     {
                         entitiesToBeFlagged.add(roundaboutEdge.get());
                         entitiesToBeFlagged.add(roundaboutExitEdge.get());
