@@ -43,7 +43,7 @@ public class MapRouletteClient implements Serializable
     // Map containing all the challenges per project
     private final Map<String, Project> projects;
     private final Map<Long, Map<String, Challenge>> challenges;
-    private Optional<String> outputPath = Optional.empty();
+    private transient Optional<String> outputPath = Optional.empty();
 
     /**
      * Creates a {@link MapRouletteClient} from {@link MapRouletteConfiguration}.
@@ -309,10 +309,9 @@ public class MapRouletteClient implements Serializable
             }
             catch (final IOException ioException)
             {
-                ioException.printStackTrace();
-                logger.warn(
+                logger.error(
                         "IOException occurred while writing project id {}, challenge id {} to the file {}",
-                        projectId, challengeId, fileName);
+                        projectId, challengeId, fileName, ioException);
             }
         });
     }
