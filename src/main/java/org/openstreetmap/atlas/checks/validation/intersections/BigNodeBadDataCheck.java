@@ -94,7 +94,6 @@ public class BigNodeBadDataCheck extends BaseCheck<Long>
         else
         {
             final int allPathsCount = bigNode.allPaths().size();
-
             final Set<RestrictedPath> turnRestrictions = bigNode.turnRestrictions();
             final int turnRestrictionCount = turnRestrictions.size();
             // Get list of restricted path OSM ids
