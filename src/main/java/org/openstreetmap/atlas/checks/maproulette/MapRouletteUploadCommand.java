@@ -76,7 +76,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     @Override
     public SwitchList switches()
     {
-        return super.switches().with(INPUT_DIRECTORY, CONFIG_LOCATION, COUNTRIES, CHECKS);
+        return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
+                CHECKS);
     }
 
     @Override
@@ -181,7 +182,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     /**
      * Returns a string which can be used as a key in a configuration to get checkName's challenge
      * configuration
-     * 
+     *
      * @param checkName
      *            the name of the a check in a configuration file
      * @return checkName.challenge
