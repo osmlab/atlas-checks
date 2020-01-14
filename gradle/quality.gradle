@@ -3,6 +3,11 @@ jacoco
     toolVersion = versions.jacoco
 }
 
+checkstyle
+{
+    toolVersion = versions.checkstyle
+}
+
 sourceSets
 {
     integrationTest
@@ -63,9 +68,4 @@ jacocoTestReport {
         csv.enabled true
         html.destination file("${buildDir}/reports/jacoco")
     }
-}
-
-checkstyle
-{
-    toolVersion = versions.checkstyle
 }
