@@ -1,5 +1,9 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -30,6 +34,7 @@ public class MapRouletteClient implements Serializable
 {
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteClient.class);
     private static final long serialVersionUID = -8121247154514856056L;
+    private static final String CHALLENGES_FILE = "challenges.txt";
     // This map contains the key which is "${projectName}-${challengeName}" mapping to the batch of
     // tasks for the given key
     private final Map<Tuple<String, String>, Set<Task>> batch;
@@ -38,6 +43,7 @@ public class MapRouletteClient implements Serializable
     // Map containing all the challenges per project
     private final Map<String, Project> projects;
     private final Map<Long, Map<String, Challenge>> challenges;
+    private transient Optional<String> outputPath = Optional.empty();
 
     /**
      * Creates a {@link MapRouletteClient} from {@link MapRouletteConfiguration}.
@@ -156,6 +162,17 @@ public class MapRouletteClient implements Serializable
         this.upload(key);
     }
 
+    /**
+     * This methods sets challenge id output path
+     *
+     * @param challengeIdFile
+     *            challenge id file location.
+     */
+    protected void setOutputPath(final Optional<String> challengeIdFile)
+    {
+        this.outputPath = challengeIdFile;
+    }
+
     private Optional<Challenge> createChallenge(final Project project, final Challenge challenge)
             throws UnsupportedEncodingException, URISyntaxException
     {
@@ -164,7 +181,12 @@ public class MapRouletteClient implements Serializable
         challenge.setParentIdentifier(project.getId());
         if (!challengeMap.containsKey(challenge.getName()))
         {
-            challenge.setId(this.connection.createChallenge(project, challenge));
+            final long challengeId = this.connection.createChallenge(project, challenge);
+            if (challengeId != -1 && project.getId() != -1)
+            {
+                writeChallengeIdsToFile(challengeId, project.getId());
+            }
+            challenge.setId(challengeId);
             challengeMap.put(challenge.getName(), challenge);
             this.challenges.put(project.getId(), challengeMap);
         }
@@ -259,5 +281,38 @@ public class MapRouletteClient implements Serializable
                         this.connection.getConnectionInfo()), e);
             }
         }
+    }
+
+    /**
+     * This method creates a text file with given file name and writes project id, challenge id to a
+     * text file
+     *
+     * @param challengeId
+     *            challenge id of the newly created MapRoulette challenge.
+     * @param projectId
+     *            project id of the MapRoulette challenge.
+     */
+    private void writeChallengeIdsToFile(final long challengeId, final long projectId)
+    {
+        this.outputPath.ifPresent(path ->
+        {
+            // Instead of concatenating strings directly, using File to ensure different OS get the
+            // correct path.
+            final String fileName = new File(path, CHALLENGES_FILE).getAbsolutePath();
+            try
+            {
+                final BufferedWriter fileWriter = new BufferedWriter(
+                        new FileWriter(fileName, true));
+                fileWriter.append(String.format("project:%d;challenge:%d", projectId, challengeId));
+                fileWriter.newLine();
+                fileWriter.close();
+            }
+            catch (final IOException ioException)
+            {
+                logger.error(
+                        "IOException occurred while writing project id {}, challenge id {} to the file {}",
+                        projectId, challengeId, fileName, ioException);
+            }
+        });
     }
 }
