@@ -213,6 +213,7 @@
      }
    },
   "DuplicateWaysCheck": {
+    "enabled": false,
     "challenge": {
       "description": "Tasks contain Ways which have been partially or completely duplicated.",
       "blurb": "Duplicate Ways",
