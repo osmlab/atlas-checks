@@ -23,11 +23,13 @@ public class TestMapRouletteConnection implements TaskLoader
 
     private final Map<Project, Set<Challenge>> projectToChallenges;
     private final Map<Long, Set<Task>> challengeToTasks;
+    private Map<String, Long> projectNameToId;
 
     public TestMapRouletteConnection()
     {
         this.projectToChallenges = new HashMap<>();
         this.challengeToTasks = new HashMap<>();
+        this.projectNameToId = new HashMap<>();
     }
 
     public Set<Challenge> challengesForProject(final Project project)
@@ -57,13 +59,18 @@ public class TestMapRouletteConnection implements TaskLoader
             throws UnsupportedEncodingException, URISyntaxException
     {
         this.projectToChallenges.put(project, new HashSet<>());
-        return 0;
+        return this.projectNameToId.getOrDefault(project.getName(), 0L);
     }
 
     @Override
     public String getConnectionInfo()
     {
         return "";
+    }
+
+    public void setProjectNameToId(final Map<String, Long> projectIdMap)
+    {
+        this.projectNameToId = projectIdMap;
     }
 
     public Set<Task> tasksForChallenge(final Challenge challenge)
