@@ -2,6 +2,8 @@ package org.openstreetmap.atlas.checks.utility;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -16,7 +18,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 public class UniqueCheckFlagContainer implements Serializable
 {
 
-    private final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> uniqueFlags;
+    private final ConcurrentHashMap<String, ConcurrentHashMap<Set<String>, CheckFlag>> uniqueFlags;
 
     public static UniqueCheckFlagContainer combine(final UniqueCheckFlagContainer container1,
             final UniqueCheckFlagContainer container2)
@@ -34,7 +36,7 @@ public class UniqueCheckFlagContainer implements Serializable
     }
 
     private UniqueCheckFlagContainer(
-            final ConcurrentHashMap<String, ConcurrentHashMap<String, CheckFlag>> flags)
+            final ConcurrentHashMap<String, ConcurrentHashMap<Set<String>, CheckFlag>> flags)
     {
         this.uniqueFlags = flags;
     }
@@ -42,7 +44,11 @@ public class UniqueCheckFlagContainer implements Serializable
     public void add(final String flagSource, final CheckFlag flag)
     {
         this.uniqueFlags.putIfAbsent(flagSource, new ConcurrentHashMap<>());
-        this.uniqueFlags.get(flagSource).putIfAbsent(flag.getIdentifier(), flag);
+        final Set<String> uniqueObjectIdentifiers = flag.getUniqueIdentifiers();
+        this.uniqueFlags.get(flagSource)
+                .putIfAbsent(uniqueObjectIdentifiers.isEmpty()
+                        ? Collections.singleton(flag.getIdentifier())
+                        : uniqueObjectIdentifiers, flag);
     }
 
     public void addAll(final String flagSource, final Iterable<CheckFlag> flags)

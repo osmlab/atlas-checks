@@ -5,13 +5,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.ItemType;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 
 import com.google.gson.JsonObject;
 
@@ -93,6 +98,25 @@ public class CheckFlagTest
         this.setup.getAtlasWithRelations().relations().forEach(flag::addObject);
         // Tests if both the relations are added to flag
         Assert.assertEquals(2, flag.getFlaggedRelations().size());
+    }
+
+    @Test
+    public void testGetUniqueObjectIdentifiers()
+    {
+        final CheckFlag flag = new CheckFlag("a-identifier");
+        flag.addObject(this.setup.getAtlasWithRelations().entity(1, ItemType.NODE));
+        flag.addObject(this.setup.getAtlasWithRelations().entity(2, ItemType.NODE));
+        flag.addObject(this.setup.getAtlasWithRelations().entity(12, ItemType.EDGE));
+        flag.addPoint(
+                ((Node) this.setup.getAtlasWithRelations().entity(1, ItemType.NODE)).getLocation());
+        Assert.assertEquals(new HashSet<>(Arrays.asList("Node1", "Node2", "Edge12")),
+                flag.getUniqueIdentifiers());
+
+        final CheckFlag pointFlag = new CheckFlag("a-identifier");
+        flag.addPoint(
+                ((Node) this.setup.getAtlasWithRelations().entity(1, ItemType.NODE)).getLocation());
+        Assert.assertEquals(new HashSet<>(Collections.singletonList("a-identifier")),
+                pointFlag.getUniqueIdentifiers());
     }
 
     @Test
