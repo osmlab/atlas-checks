@@ -26,6 +26,7 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.tags.NoExitTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -68,8 +69,8 @@ public class ConnectivityCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Node && !this.isFlagged(object.getOsmIdentifier())
-                && !BarrierTag.isBarrier(object)
+        return object instanceof Node && !SyntheticBoundaryNodeTag.isSyntheticBoundaryNode(object)
+                && !this.isFlagged(object.getOsmIdentifier()) && !BarrierTag.isBarrier(object)
                 && !Validators.isOfType(object, NoExitTag.class, NoExitTag.YES)
                 && !this.connectedEdgesHaveLevelTags((Node) object)
                 // Node is part of a valid road, for this check
