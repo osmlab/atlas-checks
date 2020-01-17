@@ -213,6 +213,7 @@
      }
    },
   "DuplicateWaysCheck": {
+    "enabled": false,
     "challenge": {
       "description": "Tasks contain Ways which have been partially or completely duplicated.",
       "blurb": "Duplicate Ways",
@@ -373,6 +374,18 @@
       "difficulty":"NORMAL"
     }
   },
+  "InvalidTagsCheck": {
+    "filters.classes.tags": [
+      ["area,relation","boundary->protected_area&protect_class->!"]
+    ],
+    "challenge": {
+      "description": "Tasks containing features with tags containing missing, conflicting, or incorrect values",
+      "blurb": "Features with invalid tags",
+      "instruction": "Open your favorite editor and check that the listed tags are correct.",
+      "difficulty": "Medium",
+      "tags":"tags"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
@@ -442,6 +455,16 @@
       "blurb": "Overlapping AOI Polygon",
       "instruction": "Correct the areas as necessary to not have overlapping ways representing the same AOI",
       "difficulty": "HARD"
+    }
+  },
+  "RoadNameGapCheck": {
+    "valid.highway.tag": ["primary","secondary","tertiary","trunk","motorway"],
+    "challenge": {
+      "description": "identifies Edges with no name Tag that are between two other Edges with the same name Tag, OR the Edge has a name Tag but does not equal the name Tag of the Edges that it is between.",
+      "blurb": "Flag the Edge with different name tag or no name tag which is between the same name tag edges",
+      "instruction": "Open your favorite editor and edit or add the name tag of the flagged edge(s) so they're consistent with connecting edges with same name tag.",
+      "difficulty": "EASY",
+      "tags":"highway"
     }
   },
   "RoadNameSpellingConsistencyCheck": {

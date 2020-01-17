@@ -97,10 +97,10 @@ public class SnakeRoadCheck extends BaseCheck<Long>
         this.markAsFlagged(object.getOsmIdentifier());
 
         // Instantiate the network walk with the starting edge
-        SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
+        final SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
 
         // Walk the road
-        walk = walkNetwork(edge, walk);
+        walkNetwork(edge, walk);
 
         // If we've found a snake road, create a flag
         if (networkWalkQualifiesAsSnakeRoad(walk))
@@ -157,9 +157,8 @@ public class SnakeRoadCheck extends BaseCheck<Long>
      *            the {@link Edge} we're currently traversing from
      * @param walk
      *            the {@link SnakeRoadNetworkWalk} that contains the snake road status to this point
-     * @return {@link SnakeRoadNetworkWalk} with all Snake Road information
      */
-    private SnakeRoadNetworkWalk walkNetwork(final Edge current, final SnakeRoadNetworkWalk walk)
+    private void walkNetwork(final Edge current, final SnakeRoadNetworkWalk walk)
     {
         while (!walk.getDirectConnections().isEmpty())
         {
@@ -181,7 +180,6 @@ public class SnakeRoadCheck extends BaseCheck<Long>
                     // We've finished processing all direct connections and there are no connections
                     // in the next layer either, filter false positives and return
                     walk.filterFalsePositives();
-                    return walk;
                 }
                 else
                 {
@@ -192,8 +190,6 @@ public class SnakeRoadCheck extends BaseCheck<Long>
                 }
             }
         }
-
-        return walk;
     }
 
 }
