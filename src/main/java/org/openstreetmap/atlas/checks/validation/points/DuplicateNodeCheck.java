@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -39,7 +40,7 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Node && !this.isFlagged(((Node) object).getLocation());
+        return object instanceof Node;
     }
 
     @Override
@@ -53,7 +54,7 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
         if (duplicates.size() > 1)
         {
             final List<Long> duplicateIdentifiers = duplicates.stream()
-                    .map(duplicate -> duplicate.getOsmIdentifier()).collect(Collectors.toList());
+                    .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, duplicateIdentifiers, node.getLocation())));
         }
