@@ -104,7 +104,8 @@ public class ConnectivityCheck extends BaseCheck<Long>
                         && this.getLayerMap(nearbyNode).keySet().stream()
                                 .anyMatch(nodeLayerMap::containsKey)))
         {
-            // Flag nearby nodes if they are not synthetic boundary node, are start node, are not a
+            // Flag nearby nodes if they are neither synthetic boundary node nor a start node, are
+            // not a
             // barrier, have a valid
             // connected edge, and there is not a valid route to the start node
             if (!SyntheticBoundaryNodeTag.isSyntheticBoundaryNode(nodeNearby)
