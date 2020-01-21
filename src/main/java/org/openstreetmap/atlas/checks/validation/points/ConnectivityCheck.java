@@ -26,6 +26,7 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.tags.NoExitTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -68,8 +69,8 @@ public class ConnectivityCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Node && !this.isFlagged(object.getOsmIdentifier())
-                && !BarrierTag.isBarrier(object)
+        return object instanceof Node && !SyntheticBoundaryNodeTag.isSyntheticBoundaryNode(object)
+                && !this.isFlagged(object.getOsmIdentifier()) && !BarrierTag.isBarrier(object)
                 && !Validators.isOfType(object, NoExitTag.class, NoExitTag.YES)
                 && !this.connectedEdgesHaveLevelTags((Node) object)
                 // Node is part of a valid road, for this check
@@ -103,9 +104,12 @@ public class ConnectivityCheck extends BaseCheck<Long>
                         && this.getLayerMap(nearbyNode).keySet().stream()
                                 .anyMatch(nodeLayerMap::containsKey)))
         {
-            // Flag nearby nodes if they are not are start node, are not a barrier, have a valid
+            // Flag nearby nodes if they are neither synthetic boundary node nor a start node, are
+            // not a
+            // barrier, have a valid
             // connected edge, and there is not a valid route to the start node
-            if (!node.equals(nodeNearby) && !BarrierTag.isBarrier(nodeNearby)
+            if (!SyntheticBoundaryNodeTag.isSyntheticBoundaryNode(nodeNearby)
+                    && !node.equals(nodeNearby) && !BarrierTag.isBarrier(nodeNearby)
                     && !Validators.isOfType(nodeNearby, NoExitTag.class, NoExitTag.YES)
                     && nodeNearby.connectedEdges().stream().anyMatch(this::validEdgeFilter)
                     && !hasValidConnection(node, connectedEdges, nodeNearby))
