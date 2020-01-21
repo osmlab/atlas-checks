@@ -1,10 +1,18 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
@@ -24,10 +32,13 @@ public class MapRouletteClientTest
 {
 
     private static final String CONFIGURATION = "server:123:project:api_key";
-
     private static final Challenge TEST_CHALLENGE = new Challenge("a name", "a description",
             "a blurb", "an instruction", ChallengeDifficulty.EASY, "");
     private static final Optional<JsonArray> GEOJSON = getSampleGeojson();
+
+    @Rule
+    public TemporaryFolder challengesDir = new TemporaryFolder();
+
     private Task testTaskOne;
     private TestMapRouletteConnection mockConnection;
     private MapRouletteClient client;
@@ -106,5 +117,28 @@ public class MapRouletteClientTest
         Assert.assertEquals(displayName, uploadedProject.getDisplayName());
         Assert.assertFalse(uploadedProject.isEnabled());
         Assert.assertEquals(1, this.mockConnection.tasksForChallenge(TEST_CHALLENGE).size());
+    }
+
+    @Test
+    public void testWriteChallengeIdsToFile() throws Exception
+    {
+        // Project setup.
+        final String projectName = "challengeMetaProject";
+        final Map<String, Long> projectNameToId = new HashMap<>();
+        projectNameToId.put(projectName, 34096L);
+        this.mockConnection.setProjectNameToId(projectNameToId);
+
+        // challenge setup
+        final String dirPath = this.challengesDir.newFolder("challenges").getAbsolutePath();
+        final Optional<String> directoryPath = Optional.of(dirPath);
+        this.client.setOutputPath(directoryPath);
+
+        // Upload challenge.
+        this.client.addTask(projectName, TEST_CHALLENGE, this.testTaskOne);
+
+        final File challengesFile = new File(dirPath, "challenges.txt");
+        final String actualData = new String(Files.readAllBytes(challengesFile.toPath()));
+        final String expectedData = "project:34096;challenge:0\n";
+        assertEquals(expectedData, actualData);
     }
 }
