@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,7 +41,7 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Node;
+        return object instanceof Node && !this.isFlagged(((Node) object).getLocation());
     }
 
     @Override
@@ -55,7 +56,7 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
         {
             final List<Long> duplicateIdentifiers = duplicates.stream()
                     .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
-            return Optional.of(this.createFlag(object,
+            return Optional.of(this.createFlag(new HashSet<>(duplicates),
                     this.getLocalizedInstruction(0, duplicateIdentifiers, node.getLocation())));
         }
 

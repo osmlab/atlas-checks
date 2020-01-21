@@ -66,6 +66,6 @@ public class DuplicateNodeCheckTest
         final Iterable<CheckFlag> flags = new DuplicateNodeCheck(
                 ConfigurationResolver.emptyConfiguration()).flags(atlas);
 
-        Assert.assertEquals(2, Iterables.size(flags));
+        Assert.assertEquals(1, Iterables.size(flags));
     }
 }
