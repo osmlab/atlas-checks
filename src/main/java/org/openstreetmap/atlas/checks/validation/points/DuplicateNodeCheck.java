@@ -53,12 +53,12 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
 
         final List<Node> duplicates = Iterables
                 .asList(object.getAtlas().nodesAt(node.getLocation()));
-        
         if (duplicates.size() > 1)
         {
             final List<Long> duplicateIdentifiers = duplicates.stream()
                     .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
-            final Optional<Long> minIdentifier = duplicateIdentifiers.stream().min(Comparator.comparingLong(Long::valueOf));
+            final Optional<Long> minIdentifier = duplicateIdentifiers.stream()
+                    .min(Comparator.comparingLong(Long::valueOf));
             if (minIdentifier.isPresent() && object.getOsmIdentifier() == minIdentifier.get())
             {
                 return Optional.of(this.createFlag(new HashSet<>(duplicates),
