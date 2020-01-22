@@ -45,11 +45,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with ids {0} has invalid crossings."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edges {0} is crossing invalidly.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
@@ -108,9 +108,12 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
         if (collectedEdges.size() > 1)
         {
+            final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
             this.markAsFlagged(object.getIdentifier());
-            return Optional.of(this.createFlag(collectedEdges,
-                    this.getLocalizedInstruction(0, collectedEdges)));
+            newFlag.addObject(object);
+            newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+
+            return Optional.of(newFlag);
         }
         return Optional.empty();
     }
@@ -178,7 +181,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private boolean isValidCrossingEdge(final AtlasObject object)
     {
         if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object) && !this.isFlagged(object.getIdentifier()))
+                && !TagPredicates.IS_AREA.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
