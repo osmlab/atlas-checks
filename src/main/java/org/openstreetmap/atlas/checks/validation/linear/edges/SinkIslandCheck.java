@@ -104,14 +104,14 @@ public class SinkIslandCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // Flag to keep track of whether we found an issue or not
-        boolean emptyFlag = false;
+        boolean haltedSearch = false;
 
         // The current edge to be explored
         Edge candidate = (Edge) object;
 
         // A set of all edges that we have already explored
         final Set<AtlasObject> explored = new HashSet<>(this.storeSize, LOAD_FACTOR);
-        // A set of all edges that we explore that have no outgoing edges
+        // A set of all sink edges
         final Set<AtlasObject> terminal = new HashSet<>();
         // Current queue of candidates that we can draw from
         final Queue<Edge> candidates = new ArrayDeque<>(this.storeSize);
@@ -126,7 +126,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
             // flag it.
             if (this.edgeCharacteristicsToIgnore(candidate))
             {
-                emptyFlag = true;
+                haltedSearch = true;
+                explored.add(candidate);
                 break;
             }
 
@@ -166,7 +167,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 // loop and assume that this is not a SinkIsland
                 if (candidates.size() + explored.size() > this.treeSize)
                 {
-                    emptyFlag = true;
+                    haltedSearch = true;
                     break;
                 }
             }
@@ -175,25 +176,22 @@ public class SinkIslandCheck extends BaseCheck<Long>
             candidate = candidates.poll();
         }
 
-        // If we exit due to tree size (emptyFlag == true) and there are terminal edges we could
-        // cache them and check on entry to this method. However it seems to happen too rare in
-        // practice. So these edges (if any) will be processed as all others. Even though they would
-        // not generate any candidates. Otherwise if we covered the whole tree, there is no need to
-        // delay processing of terminal edges. We should add them to the geometry we are going to
-        // flag.
-        if (!emptyFlag)
-        {
-            // Include all touched edges
-            explored.addAll(terminal);
-        }
-
-        // Set every explored edge as flagged for any other processes to know that we have already
-        // process all those edges
+        // Unify all explored edges and mark them so we don't process them more than once
+        explored.addAll(terminal);
         explored.forEach(marked -> this.markAsFlagged(marked.getIdentifier()));
 
-        // Create the flag if and only if the empty flag value is not set to false
-        return emptyFlag ? Optional.empty()
-                : Optional.of(createFlag(explored, this.getLocalizedInstruction(0)));
+        if (!haltedSearch)
+        {
+            // Include all touched edges
+            return Optional.of(createFlag(explored, this.getLocalizedInstruction(0)));
+        }
+        else if (!terminal.isEmpty())
+        {
+            // Include only edges explicitly marked as sink islands during processing
+            return Optional.of(createFlag(terminal, this.getLocalizedInstruction(0)));
+        }
+        // No encountered sink edges, and a stop criteria was met.
+        return Optional.empty();
     }
 
     @Override
