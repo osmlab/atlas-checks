@@ -254,4 +254,13 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
+
+    @Test
+    public void validSyntheticNodeCheckTest()
+    {
+        this.verifier.actual(this.setup.validSyntheticNodeCheck(),
+                new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
 }
