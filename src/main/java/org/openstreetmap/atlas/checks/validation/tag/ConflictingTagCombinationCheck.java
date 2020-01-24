@@ -115,10 +115,11 @@ public class ConflictingTagCombinationCheck extends BaseCheck<String>
                         this.filterKeys.get(filterIndex)));
             }
         }
-        if (object instanceof Edge) {
+        if (object instanceof Edge)
+        {
             return instructions.isEmpty() ? Optional.empty()
                     : Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
-                    String.join(" ", instructions)));
+                            String.join(" ", instructions)));
         }
         return instructions.isEmpty() ? Optional.empty()
                 : Optional.of(this.createFlag(object, String.join(" ", instructions)));
