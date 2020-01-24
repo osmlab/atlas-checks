@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -114,8 +115,13 @@ public class ConflictingTagCombinationCheck extends BaseCheck<String>
                         this.filterKeys.get(filterIndex)));
             }
         }
+        if (object instanceof Edge) {
+            return instructions.isEmpty() ? Optional.empty()
+                    : Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                    String.join(" ", instructions)));
+        }
         return instructions.isEmpty() ? Optional.empty()
-                : Optional.of(createFlag(object, String.join(" ", instructions)));
+                : Optional.of(this.createFlag(object, String.join(" ", instructions)));
     }
 
     @Override
