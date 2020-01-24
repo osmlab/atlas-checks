@@ -13,7 +13,7 @@ get just the right minimum and maximum pool size.
 Other reasons for this is to be able to adjust the check for different kinds of scenarios. From a purely analysis
 perspective you can use the checks to look for large pools only by setting the minimum value high and the maximum
 value a little higher. Alternatively look for small pools only by setting the minimum value low and the maximum value
-a little higher. These aren't the most pratical examples, however in building checks it is important to think
+a little higher. These aren't the most practical examples, however in building checks it is important to think
 about these different kind of scenarios.
 
 ##### Edge Cases

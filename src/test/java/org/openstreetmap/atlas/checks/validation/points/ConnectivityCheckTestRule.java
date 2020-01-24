@@ -65,6 +65,15 @@ public class ConnectivityCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // Nodes
+            nodes = { @Node(coordinates = @Loc(TEST1)),
+                    @Node(coordinates = @Loc(TEST2), tags = {
+                            "synthetic_boundary_node=yes" }) }, edges = {
+                                    @Edge(coordinates = { @Loc(TEST1), @Loc(TEST2) }, tags = {
+                                            "highway=secondary" }) })
+    private Atlas validationForSyntheticNode;
+
+    @TestAtlas(
+            // Nodes
             nodes = { @Node(coordinates = @Loc(TEST1)), @Node(coordinates = @Loc(TEST2)),
                     @Node(coordinates = @Loc(TEST3)), @Node(coordinates = @Loc(TEST4)) }, edges = {
                             @Edge(coordinates = { @Loc(TEST1), @Loc(TEST2) }, tags = {
@@ -471,5 +480,10 @@ public class ConnectivityCheckTestRule extends CoreTestRule
     public Atlas validDisconnectedNodesLevelAtlas()
     {
         return this.validDisconnectedNodesLevelAtlas;
+    }
+
+    public Atlas validSyntheticNodeCheck()
+    {
+        return this.validationForSyntheticNode;
     }
 }

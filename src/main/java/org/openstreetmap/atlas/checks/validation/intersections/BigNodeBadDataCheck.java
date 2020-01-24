@@ -29,9 +29,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class BigNodeBadDataCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("This complex intersection has too many paths ({0}) or junction edges ({1}).  "
-                    + "There are {2,number,#} restricted paths and their OSM ids are: {3} ");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "This complex intersection has too many junction edges ({0}).",
+            "This complex intersection has too many paths ({0}).  "
+                    + "There are {1,number,#} restricted paths and their OSM ids are: {2} ");
     private static final long MAX_NUMBER_JUNCTION_EDGES_THRESHOLD_DEFAULT = 12;
     private static final long MAX_NUMBER_PATHS_THRESHOLD_DEFAULT = 1000;
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.TOLL_GANTRY.toString();
@@ -77,28 +78,41 @@ public class BigNodeBadDataCheck extends BaseCheck<Long>
         {
             return Optional.empty();
         }
-        final int allPathsCount = bigNode.allPaths().size();
-        final int junctionEdgesCount = bigNode.junctionEdges().size();
-        final Set<RestrictedPath> turnRestrictions = bigNode.turnRestrictions();
-        final int turnRestrictionCount = turnRestrictions.size();
-        // Get list of restricted path OSM ids
-        final List<Long> restrictedPathOsmIds = turnRestrictions.stream()
-                .flatMap(restrictedPath -> Iterables.asList(restrictedPath.getRoute()).stream()
-                        .map(Edge::getOsmIdentifier))
-                .collect(Collectors.toList());
 
-        if (allPathsCount > maxNumberPathsThreshold
-                || junctionEdgesCount > maxNumberJunctionEdgesThreshold)
+        final int junctionEdgesCount = bigNode.junctionEdges().size();
+        if (junctionEdgesCount > maxNumberJunctionEdgesThreshold)
         {
             final CheckFlag flag = createFlag(bigNode,
-                    this.getLocalizedInstruction(0, allPathsCount, junctionEdgesCount,
-                            turnRestrictionCount, restrictedPathOsmIds.toString()));
+                    this.getLocalizedInstruction(0, junctionEdgesCount));
 
             bigNode.edges().forEach(flag::addObject);
             // Add map pin at each BigNode Node
             bigNode.nodes().forEach(b -> flag.addPoint(b.getLocation()));
 
             return Optional.of(flag);
+        }
+        else
+        {
+            final int allPathsCount = bigNode.allPaths().size();
+            final Set<RestrictedPath> turnRestrictions = bigNode.turnRestrictions();
+            final int turnRestrictionCount = turnRestrictions.size();
+            // Get list of restricted path OSM ids
+            final List<Long> restrictedPathOsmIds = turnRestrictions.stream()
+                    .flatMap(restrictedPath -> Iterables.asList(restrictedPath.getRoute()).stream()
+                            .map(Edge::getOsmIdentifier))
+                    .collect(Collectors.toList());
+
+            if (allPathsCount > maxNumberPathsThreshold)
+            {
+                final CheckFlag flag = createFlag(bigNode, this.getLocalizedInstruction(1,
+                        allPathsCount, turnRestrictionCount, restrictedPathOsmIds.toString()));
+
+                bigNode.edges().forEach(flag::addObject);
+                // Add map pin at each BigNode Node
+                bigNode.nodes().forEach(b -> flag.addPoint(b.getLocation()));
+
+                return Optional.of(flag);
+            }
         }
 
         return Optional.empty();
