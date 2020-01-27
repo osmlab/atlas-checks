@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.intersections;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +22,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
-import org.openstreetmap.atlas.geography.atlas.items.TurnRestriction;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.DestinationForwardTag;
 import org.openstreetmap.atlas.tags.DestinationTag;
@@ -37,10 +35,10 @@ import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-
-import com.google.common.collect.ImmutableMap;
 import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Auto generated Check template
@@ -77,8 +75,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     private static final Angle DEFAULT_SAME_DIRECTION_LOWER_LIMIT = Angle.degrees(-100);
     private static final Angle DEFAULT_SAME_DIRECTION_UPPER_LIMIT = Angle.degrees(9);
     private static final EdgeDirectionComparator EDGE_DIRECTION_COMPARATOR = new EdgeDirectionComparator(
-            DEFAULT_OPPOSITE_DIRECTION_LOWER_LIMIT,DEFAULT_OPPOSITE_DIRECTION_UPPER_LIMIT,
-            DEFAULT_SAME_DIRECTION_LOWER_LIMIT,DEFAULT_SAME_DIRECTION_UPPER_LIMIT);
+            DEFAULT_OPPOSITE_DIRECTION_LOWER_LIMIT, DEFAULT_OPPOSITE_DIRECTION_UPPER_LIMIT,
+            DEFAULT_SAME_DIRECTION_LOWER_LIMIT, DEFAULT_SAME_DIRECTION_UPPER_LIMIT);
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             NO_DESTINATION_SIGN_RELATION_INSTRUCTION,
@@ -163,7 +161,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                         .filter(outEdge -> LevelTag.areOnSameLevel(inEdge, outEdge)
                                 && LayerTag.areOnSameLayer(inEdge, outEdge))
                         .collect(Collectors.toSet());
-                final Set<AtlasEntity> filteredByDirection = this.isValidOutEdgeUsingDirection(inEdge, filteredOutEdges2);
+                final Set<AtlasEntity> filteredByDirection = this
+                        .isValidOutEdgeUsingDirection(inEdge, filteredOutEdges2);
                 // If there are at least two out edges, filter these edges based on their highway
                 // types.
                 // Check if the highway type of out edge is one of the valid connected highway types
@@ -419,9 +418,11 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                         && HighwayTag.isCarNavigableHighway(connected));
     }
 
-    private Set<AtlasEntity> isValidOutEdgeUsingDirection(final Edge inEdge, final Set<AtlasEntity> outEdges)
+    private Set<AtlasEntity> isValidOutEdgeUsingDirection(final Edge inEdge,
+            final Set<AtlasEntity> outEdges)
     {
-        return outEdges.stream().filter(outEdge -> EDGE_DIRECTION_COMPARATOR.isSameDirection(inEdge,
-                (Edge)outEdge, true)).collect(Collectors.toSet());
+        return outEdges.stream().filter(
+                outEdge -> EDGE_DIRECTION_COMPARATOR.isSameDirection(inEdge, (Edge) outEdge, true))
+                .collect(Collectors.toSet());
     }
 }
