@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.intersections;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
+import org.openstreetmap.atlas.geography.atlas.items.TurnRestriction;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.DestinationForwardTag;
 import org.openstreetmap.atlas.tags.DestinationTag;
@@ -37,6 +39,8 @@ import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 import com.google.common.collect.ImmutableMap;
+import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
+import org.openstreetmap.atlas.utilities.scalars.Angle;
 
 /**
  * Auto generated Check template
@@ -68,6 +72,13 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             + "at-grade junction with connected edges. Add a destination sign tag to {1}";
 
     private static final int THREE = 3;
+    private static final Angle DEFAULT_OPPOSITE_DIRECTION_LOWER_LIMIT = Angle.degrees(171);
+    private static final Angle DEFAULT_OPPOSITE_DIRECTION_UPPER_LIMIT = Angle.degrees(-171);
+    private static final Angle DEFAULT_SAME_DIRECTION_LOWER_LIMIT = Angle.degrees(-100);
+    private static final Angle DEFAULT_SAME_DIRECTION_UPPER_LIMIT = Angle.degrees(9);
+    private static final EdgeDirectionComparator EDGE_DIRECTION_COMPARATOR = new EdgeDirectionComparator(
+            DEFAULT_OPPOSITE_DIRECTION_LOWER_LIMIT,DEFAULT_OPPOSITE_DIRECTION_UPPER_LIMIT,
+            DEFAULT_SAME_DIRECTION_LOWER_LIMIT,DEFAULT_SAME_DIRECTION_UPPER_LIMIT);
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             NO_DESTINATION_SIGN_RELATION_INSTRUCTION,
@@ -120,10 +131,10 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     {
         final Node intersectingNode = (Node) object;
         // Filter all in edges that have valid highway types
-        final Set<Edge> inEdges = intersectingNode.inEdges().stream()
+        final List<Edge> inEdges = intersectingNode.inEdges().stream()
                 .filter(inEdge -> inEdge.isMasterEdge() && HighwayTag.highwayTag(inEdge).isPresent()
                         && this.highwayFilter.test(inEdge))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         final Set<Edge> outEdges = intersectingNode.outEdges().stream()
                 .filter(outEdge -> outEdge.isMasterEdge()
                         && HighwayTag.highwayTag(outEdge).isPresent()
@@ -137,6 +148,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         // Matching out edges are based on z level and highway type
         final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap = new HashMap<>();
         final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap = new HashMap<>();
+        Collections.sort(inEdges);
         inEdges.forEach(inEdge ->
         {
 
@@ -147,18 +159,19 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                 final List<String> listOfValidConnectedHighways = this.connectedHighwayTypes
                         .get(highwayTypeOfCurrentEdge);
                 // Filter out edges based on level and layer tags and valid highway types
-                final Set<AtlasEntity> filteredOutEdges = outEdges.stream()
+                final Set<AtlasEntity> filteredOutEdges2 = outEdges.stream()
                         .filter(outEdge -> LevelTag.areOnSameLevel(inEdge, outEdge)
                                 && LayerTag.areOnSameLayer(inEdge, outEdge))
                         .collect(Collectors.toSet());
+                final Set<AtlasEntity> filteredByDirection = this.isValidOutEdgeUsingDirection(inEdge, filteredOutEdges2);
                 // If there are at least two out edges, filter these edges based on their highway
                 // types.
                 // Check if the highway type of out edge is one of the valid connected highway types
                 // based on
-                // the incoming edgeg
-                if (filteredOutEdges.size() >= 2)
+                // the incoming edge
+                if (filteredByDirection.size() >= 2)
                 {
-                    final Set<AtlasEntity> filteredOutEdgesBasedOnHighwayTypes = filteredOutEdges
+                    final Set<AtlasEntity> filteredOutEdgesBasedOnHighwayTypes = filteredByDirection
                             .stream().filter(atlasEntity ->
                             {
                                 final Optional<HighwayTag> highwayTag = HighwayTag
@@ -404,5 +417,11 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         return edge -> edge.connectedEdges().stream()
                 .filter(connected -> JunctionTag.isRoundabout(connected)
                         && HighwayTag.isCarNavigableHighway(connected));
+    }
+
+    private Set<AtlasEntity> isValidOutEdgeUsingDirection(final Edge inEdge, final Set<AtlasEntity> outEdges)
+    {
+        return outEdges.stream().filter(outEdge -> EDGE_DIRECTION_COMPARATOR.isSameDirection(inEdge,
+                (Edge)outEdge, true)).collect(Collectors.toSet());
     }
 }
