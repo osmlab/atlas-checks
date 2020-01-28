@@ -54,6 +54,19 @@ public class ImproperAndUnknownRoadNameCheckTest
     }
 
     @Test
+    public void testInvalidEdgeIdentifier()
+    {
+        int flagCount = 0;
+        for (final CheckFlag flag : new ImproperAndUnknownRoadNameCheck(
+                ConfigurationResolver.emptyConfiguration())
+                        .flags(this.setup.inValidEdgeIdentifier()))
+        {
+            flagCount++;
+        }
+        Assert.assertEquals(0, flagCount);
+    }
+
+    @Test
     public void testInvalidNames()
     {
         int flagCount = 0;
