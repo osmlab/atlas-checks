@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -8,6 +10,7 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -53,9 +56,14 @@ public class DuplicateNodeCheck extends BaseCheck<Location>
         if (duplicates.size() > 1)
         {
             final List<Long> duplicateIdentifiers = duplicates.stream()
-                    .map(duplicate -> duplicate.getOsmIdentifier()).collect(Collectors.toList());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, duplicateIdentifiers, node.getLocation())));
+                    .map(AtlasEntity::getOsmIdentifier).collect(Collectors.toList());
+            final Optional<Long> minIdentifier = duplicateIdentifiers.stream()
+                    .min(Comparator.comparingLong(Long::valueOf));
+            if (minIdentifier.isPresent() && object.getOsmIdentifier() == minIdentifier.get())
+            {
+                return Optional.of(this.createFlag(new HashSet<>(duplicates),
+                        this.getLocalizedInstruction(0, duplicateIdentifiers, node.getLocation())));
+            }
         }
 
         return Optional.empty();
