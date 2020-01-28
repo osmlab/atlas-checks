@@ -144,7 +144,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
         if (resource.isPresent())
         {
             final Resource dataSource = resource.get();
-            if (AtlasResourceLoader.IS_ATLAS.test(dataSource))
+            if (AtlasResourceLoader.HAS_ATLAS_EXTENSION.test(dataSource))
             {
                 this.atlas = new AtlasResourceLoader().load(dataSource);
             }

@@ -144,7 +144,8 @@ public final class ConfigurationResolver
                 .ifPresent(configurationSources::add);
 
         final List<Resource> configurationResources = configurationSources.stream()
-                .map(InputStreamResource::new).collect(Collectors.toList());
+                .map(inputStream -> new InputStreamResource(() -> inputStream))
+                .collect(Collectors.toList());
 
         final Configuration configuration;
         Throwable thrown = null;
@@ -187,7 +188,7 @@ public final class ConfigurationResolver
     {
         try (InputStream config = context.getResourceAsStream(path))
         {
-            return new StandardConfiguration(new InputStreamResource(config));
+            return new StandardConfiguration(new InputStreamResource(() -> config));
         }
         catch (final IOException oops)
         {
