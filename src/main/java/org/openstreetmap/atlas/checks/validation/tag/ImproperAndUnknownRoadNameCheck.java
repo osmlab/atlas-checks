@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.SurfaceTag;
@@ -53,7 +54,7 @@ public class ImproperAndUnknownRoadNameCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge;
+        return object instanceof Edge && ((Edge) object).isMasterEdge();
     }
 
     @Override
@@ -68,7 +69,8 @@ public class ImproperAndUnknownRoadNameCheck extends BaseCheck<Long>
             if (!instructions.isEmpty())
             {
                 this.markAsFlagged(object.getOsmIdentifier());
-                final CheckFlag flag = createFlag(object, "");
+                final CheckFlag flag = createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                        "");
                 flag.addInstructions(instructions);
                 return Optional.of(flag);
             }
