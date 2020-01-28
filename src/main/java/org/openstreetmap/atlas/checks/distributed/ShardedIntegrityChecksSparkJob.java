@@ -204,8 +204,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 checkPool.queue(() ->
                 {
-                    final List<ShardedCheckFlagsTask> tasksForCountry = new ShardGrouper(
-                            countryShard.getValue(), maxShardLoad, distanceToLoadShards).getGroups()
+                    final ShardGrouper shardGrouper = new ShardGrouper(
+                        countryShard.getValue(), maxShardLoad, distanceToLoadShards);
+                    final List<ShardedCheckFlagsTask> tasksForCountry = shardGrouper.getGroups()
                                     .stream()
                                     .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
                                             group, this.countryChecks.get(countryShard.getKey())))
@@ -276,12 +277,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
                 eventService.register(new CheckFlagGeoJsonProcessor(fileHelper,
                         SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER, country)));
-            }
-
-            if (outputFormats.contains(OutputFormats.METRICS))
-            {
-                eventService.register(new MetricFileGenerator(METRICS_FILENAME, fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_METRIC_FOLDER, country)));
             }
 
             if (outputFormats.contains(OutputFormats.TIPPECANOE))
