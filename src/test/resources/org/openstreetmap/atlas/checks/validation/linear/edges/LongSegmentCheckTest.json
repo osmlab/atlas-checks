@@ -1,0 +1,5 @@
+{
+  "LongSegmentCheck": {
+    "length.minimum.kilometers": 1.0
+  }
+}

@@ -29,6 +29,7 @@ public class ImproperAndUnknownRoadNameCheckTestRule extends CoreTestRule
     public static final String INVALID_EDGE_ID_9 = "108740465";
     public static final String INVALID_EDGE_ID_10 = "109740465";
     public static final String INVALID_EDGE_ID_11 = "110740465";
+    public static final String INVALID_EDGE_ID_12 = "-102740465";
 
     private static final String ONE = "29.920386, -2.089355";
     private static final String TWO = "29.920535, -2.088497";
@@ -65,6 +66,14 @@ public class ImproperAndUnknownRoadNameCheckTestRule extends CoreTestRule
                     "name=ConfigTest" }, coordinates = { @Loc(value = ONE), @Loc(value = TWO) }) })
     private Atlas configAtlas;
 
+    @TestAtlas(nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+            @Node(id = "2", coordinates = @Loc(value = TWO)) }, edges = {
+                    @Edge(id = VALID_EDGE_ID_3, tags = { "name=Seattle Way" }, coordinates = {
+                            @Loc(value = ONE), @Loc(value = TWO) }),
+                    @Edge(id = INVALID_EDGE_ID_12, tags = { "name=ConfigTest" }, coordinates = {
+                            @Loc(value = ONE), @Loc(value = TWO) }) })
+    private Atlas invalidEdgeIdentifier;
+
     public Atlas configAtlas()
     {
         return this.configAtlas;
@@ -77,6 +86,11 @@ public class ImproperAndUnknownRoadNameCheckTestRule extends CoreTestRule
                 INVALID_EDGE_ID_9, INVALID_EDGE_ID_10, INVALID_EDGE_ID_11));
     }
 
+    public Atlas inValidEdgeIdentifier()
+    {
+        return this.invalidEdgeIdentifier;
+    }
+
     public Atlas testAtlas()
     {
         return this.testAtlas;
@@ -86,5 +100,4 @@ public class ImproperAndUnknownRoadNameCheckTestRule extends CoreTestRule
     {
         return new HashSet<String>(Arrays.asList(VALID_EDGE_ID_3, VALID_EDGE_ID_4));
     }
-
 }
