@@ -113,13 +113,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             newFlag.addObject(object);
             newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
 
-            collectedEdges.forEach(invalidEdge ->
-            {
-                this.markAsFlagged(invalidEdge.getIdentifier());
-                newFlag.addObject(invalidEdge);
-                newFlag.addInstruction(
-                        this.getLocalizedInstruction(1, invalidEdge.getOsmIdentifier()));
-            });
             return Optional.of(newFlag);
         }
         return Optional.empty();
@@ -188,7 +181,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private boolean isValidCrossingEdge(final AtlasObject object)
     {
         if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object) && !this.isFlagged(object.getIdentifier()))
+                && !TagPredicates.IS_AREA.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
