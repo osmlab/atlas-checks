@@ -184,7 +184,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     .filter(aCountry -> !countryShards.containsKey(aCountry))
                     .collect(Collectors.toSet());
             logger.error(
-                    "Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas or <zoom>_<x>_<y>.pbf",
+                    "Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas",
                     input, missingCountries);
             return;
         }
@@ -204,13 +204,13 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 checkPool.queue(() ->
                 {
-                    final ShardGrouper shardGrouper = new ShardGrouper(
-                        countryShard.getValue(), maxShardLoad, distanceToLoadShards);
+                    final ShardGrouper shardGrouper = new ShardGrouper(countryShard.getValue(),
+                            maxShardLoad, distanceToLoadShards);
                     final List<ShardedCheckFlagsTask> tasksForCountry = shardGrouper.getGroups()
-                                    .stream()
-                                    .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(),
-                                            group, this.countryChecks.get(countryShard.getKey())))
-                                    .collect(Collectors.toList());
+                            .stream()
+                            .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(), group,
+                                    this.countryChecks.get(countryShard.getKey())))
+                            .collect(Collectors.toList());
 
                     this.getContext().setJobGroup("0", String.format("Running checks on %s",
                             tasksForCountry.get(0).getCountry()));
