@@ -20,15 +20,46 @@ import org.slf4j.LoggerFactory;
  * {@link RunnableCheckBase#eventService} along with {@link MapRouletteClient} for handling.
  *
  * @author mkalender
+ * @author bbreithaupt
  */
 public final class RunnableCheck extends RunnableCheckBase<Check> implements Runnable
 {
     private static final Logger logger = LoggerFactory.getLogger(RunnableCheck.class);
 
+    /**
+     * Default constructor
+     *
+     * @param country
+     *            country that is being processed
+     * @param check
+     *            check that is being executed
+     * @param objects
+     *            {@link AtlasObject}s that are going to be executed
+     * @param client
+     *            {@link MapRouletteClient} that will upload the tasks to MapRoulette
+     */
+    public RunnableCheck(final String country, final Check check,
+            final Iterable<AtlasObject> objects, final MapRouletteClient client)
+    {
+        super(country, check, objects, client);
+    }
+
+    /**
+     * Default constructor
+     *
+     * @param country
+     *            country that is being processed
+     * @param check
+     *            check that is being executed
+     * @param objects
+     *            {@link AtlasObject}s that are going to be executed
+     * @param eventService
+     *            {@link EventService} to post to
+     */
     public RunnableCheck(final String country, final Check check,
             final Iterable<AtlasObject> objects, final EventService eventService)
     {
-        super(country, check, objects, eventService);
+        super(country, check, objects, null, eventService);
     }
 
     /**
@@ -46,7 +77,7 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
                 final Optional<CheckFlag> flag = this.getCheck().check(object);
                 if (flag.isPresent())
                 {
-                    // this.addTask(flag.get());
+                    this.addTask(flag.get());
                     this.getEventService().post(new CheckFlagEvent(this.getName(), flag.get()));
                 }
             });
@@ -55,6 +86,8 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
             final Duration checkRunTime = timer.elapsedSince();
             logger.info("{} completed in {}.", this.getName(), checkRunTime);
             this.getEventService().post(new MetricEvent(this.getName(), checkRunTime));
+
+            this.uploadTasks();
         }
         catch (final Exception e)
         {

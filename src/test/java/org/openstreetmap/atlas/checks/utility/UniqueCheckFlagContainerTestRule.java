@@ -7,6 +7,11 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
+/**
+ * Test Rule for {@link UniqueCheckFlagContainerTest}
+ *
+ * @author bbreithaupt
+ */
 public class UniqueCheckFlagContainerTestRule extends CoreTestRule
 {
     private static final String TEST_1 = "47.8586236, -122.6417178";

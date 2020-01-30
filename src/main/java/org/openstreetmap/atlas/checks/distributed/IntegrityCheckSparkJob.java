@@ -21,7 +21,6 @@ import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
-import org.openstreetmap.atlas.checks.event.MapRouletteClientProcessor;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
@@ -123,7 +122,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         final Pool checkExecutionPool = new Pool(checksToRun.size(), "Check execution pool",
                 POOL_DURATION_BEFORE_KILL);
         checksToRun.forEach(check -> checkExecutionPool.queue(new RunnableCheck(country, check,
-                objectsToCheck(atlas, check), EventService.get(country))));
+                objectsToCheck(atlas, check), MapRouletteClient.instance(configuration))));
         checkExecutionPool.close();
     }
 
@@ -316,12 +315,6 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
             else
             {
                 tippecanoeOutput = null;
-            }
-
-            if (Objects.nonNull(mapRouletteConfiguration))
-            {
-                EventService.get(country)
-                        .register(new MapRouletteClientProcessor(mapRouletteConfiguration, checks));
             }
 
             final Consumer<Atlas> intermediateAtlasHandler;

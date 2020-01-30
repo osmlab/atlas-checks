@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -28,9 +27,7 @@ import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
-import org.openstreetmap.atlas.checks.event.MapRouletteClientProcessor;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
-import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.checks.utility.ShardGroup;
 import org.openstreetmap.atlas.checks.utility.ShardGrouper;
 import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
@@ -73,6 +70,7 @@ import scala.Tuple2;
  * memory profile as well as better parallelization
  *
  * @author jklamer
+ * @author bbreithaupt
  */
 public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArguments
 {
@@ -121,8 +119,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 .get(OUTPUT_FORMATS);
         final StringList countries = StringList.split((String) commandMap.get(COUNTRIES),
                 CommonConstants.COMMA);
-        final MapRouletteConfiguration mapRouletteConfiguration = (MapRouletteConfiguration) commandMap
-                .get(MAP_ROULETTE);
         @SuppressWarnings("unchecked")
         final Optional<List<String>> checkFilter = (Optional<List<String>>) commandMap
                 .getOption(CHECK_FILTER);
@@ -232,7 +228,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         this.getContext().setJobGroup("0", "Conflate flags and generate outputs");
         this.getContext().union(firstCountryRdd, countryRdds)
                 .reduceByKey(UniqueCheckFlagContainer::combine)
-                .foreach(processFlags(output, fileHelper, outputFormats, mapRouletteConfiguration));
+                .foreach(processFlags(output, fileHelper, outputFormats));
 
         logger.info("Sharded checks completed in {}", start.elapsedSince());
     }
@@ -257,8 +253,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
     @SuppressWarnings("unchecked")
     private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output,
-            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats,
-            final MapRouletteConfiguration mapRouletteConfiguration)
+            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats)
     {
         return tuple ->
         {
@@ -283,12 +278,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 eventService.register(new CheckFlagTippecanoeProcessor(fileHelper,
                         SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
-            }
-
-            if (Objects.nonNull(mapRouletteConfiguration))
-            {
-                eventService.register(new MapRouletteClientProcessor(mapRouletteConfiguration,
-                        this.countryChecks.get(country)));
             }
 
             flagContainer.reconstructEvents().parallel().forEach(eventService::post);
