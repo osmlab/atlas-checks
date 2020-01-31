@@ -16,6 +16,7 @@ import org.openstreetmap.atlas.geography.Heading;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -85,7 +86,8 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if (object instanceof Edge && !isFlagged(object.getOsmIdentifier()))
+        if (object instanceof Edge && ((Edge) object).isMasterEdge()
+                && !isFlagged(object.getOsmIdentifier()))
         {
             final Edge edge = (Edge) object;
 
@@ -112,7 +114,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
                 .findInconsistentEdges(edge);
         if (!inconsistentEdgeTuples.isEmpty())
         {
-            final CheckFlag flag = createFlag(item,
+            final CheckFlag flag = createFlag(new OsmWayWalker((Edge) item).collectEdges(),
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier(), edge.highwayTag()));
             markAsFlagged(edge.getOsmIdentifier());
             inconsistentEdgeTuples.forEach(inconsistentEdgeTuple ->
