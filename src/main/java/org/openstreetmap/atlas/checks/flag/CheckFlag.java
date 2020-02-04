@@ -49,6 +49,7 @@ import com.google.gson.JsonObject;
  * @author cuthbertm
  * @author mgostintsev
  * @author brian_l_davis
+ * @author bbreithaupt
  */
 public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
@@ -468,6 +469,13 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return new MultiIterable<>(getShapes()).iterator();
     }
 
+    /**
+     * Decouple the {@link CheckFlag} from any
+     * {@link org.openstreetmap.atlas.geography.atlas.Atlas}s by making all the
+     * {@link FlaggedObject}s complete.
+     *
+     * @return this
+     */
     public CheckFlag makeComplete()
     {
         final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();

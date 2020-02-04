@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
  * A flag for a {@link Relation}
  *
  * @author sayas01
+ * @author bbreithaupt
  */
 public class FlaggedRelation extends FlaggedObject
 {
@@ -175,6 +176,14 @@ public class FlaggedRelation extends FlaggedObject
         return tags;
     }
 
+    /**
+     * Get the geometry for a relation as either a {@link MultiPolygon} or bounding
+     * {@link Rectangle}.
+     *
+     * @param relation
+     *            {@link Relation}
+     * @return {@link MultiPolygon} geometry
+     */
     private MultiPolygon relationGeometry(final Relation relation)
     {
         if (relation.isMultiPolygon())

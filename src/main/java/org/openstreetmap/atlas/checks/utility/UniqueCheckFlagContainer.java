@@ -11,15 +11,26 @@ import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 
 /**
- * A container that will deduplicate check flags based on source and ID
+ * A container that will deduplicate check flags based on source and unique IDs
  *
  * @author jklamer
+ * @author bbreithaupt
  */
 public class UniqueCheckFlagContainer implements Serializable
 {
 
     private final ConcurrentHashMap<String, ConcurrentHashMap<Set<String>, CheckFlag>> uniqueFlags;
 
+    /**
+     * Combines to containers. This deduplicates {@link CheckFlag}s by overwiting ones with matching
+     * sources and IDs.
+     *
+     * @param container1
+     *            {@link UniqueCheckFlagContainer}
+     * @param container2
+     *            {@link UniqueCheckFlagContainer}
+     * @return merged {@link UniqueCheckFlagContainer}
+     */
     public static UniqueCheckFlagContainer combine(final UniqueCheckFlagContainer container1,
             final UniqueCheckFlagContainer container2)
     {
@@ -41,6 +52,14 @@ public class UniqueCheckFlagContainer implements Serializable
         this.uniqueFlags = flags;
     }
 
+    /**
+     * Add a {@link CheckFlag} to the container based on its source.
+     *
+     * @param flagSource
+     *            {@link String} source (check that generated the flag)
+     * @param flag
+     *            {@link CheckFlag}
+     */
     public void add(final String flagSource, final CheckFlag flag)
     {
         this.uniqueFlags.putIfAbsent(flagSource, new ConcurrentHashMap<>());
@@ -51,12 +70,25 @@ public class UniqueCheckFlagContainer implements Serializable
                         : uniqueObjectIdentifiers, flag);
     }
 
+    /**
+     * Batch add {@link CheckFlag} from a single source.
+     *
+     * @param flagSource
+     *            {@link String} source (check that generated the flags)
+     * @param flags
+     *            {@link Iterable} of {@link CheckFlag}s
+     */
     public void addAll(final String flagSource, final Iterable<CheckFlag> flags)
     {
         flags.forEach(flag -> this.add(flagSource, flag));
 
     }
 
+    /**
+     * Convert the {@link CheckFlag}s into a {@link Stream} of {@link CheckFlagEvent}s.
+     *
+     * @return a {@link Stream} of {@link CheckFlagEvent}s
+     */
     public Stream<CheckFlagEvent> reconstructEvents()
     {
         return this.uniqueFlags.keySet().stream()
@@ -64,6 +96,11 @@ public class UniqueCheckFlagContainer implements Serializable
                         .map(checkFlag -> new CheckFlagEvent(checkName, checkFlag)));
     }
 
+    /**
+     * Get the contents of the container as a stream.
+     *
+     * @return a {@link Stream} of {@link CheckFlag}s
+     */
     public Stream<CheckFlag> stream()
     {
         return this.uniqueFlags.values().stream().map(ConcurrentHashMap::values)
