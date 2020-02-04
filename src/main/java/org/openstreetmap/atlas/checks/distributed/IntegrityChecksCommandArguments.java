@@ -50,6 +50,16 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
         TIPPECANOE
     }
 
+    @Deprecated
+    protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
+            "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
+            Optionality.OPTIONAL);
+    protected static final String OUTPUT_ATLAS_FOLDER = "atlas";
+    // Outputs
+    protected static final String OUTPUT_FLAG_FOLDER = "flag";
+    protected static final String OUTPUT_GEOJSON_FOLDER = "geojson";
+    protected static final String OUTPUT_METRIC_FOLDER = "metric";
+    protected static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
     static final Switch<List<String>> CHECK_FILTER = new Switch<>("checkFilter",
             "Comma-separated list of checks to run",
             checks -> Arrays.asList(checks.split(CommonConstants.COMMA)), Optionality.OPTIONAL);
@@ -66,9 +76,8 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
             "Map roulette server information, format <Host>:<Port>:<ProjectName>:<ApiKey>, projectName is optional.",
             MapRouletteConfiguration::parse, Optionality.OPTIONAL);
     static final Switch<Set<OutputFormats>> OUTPUT_FORMATS = new Switch<>("outputFormats",
-            String.format(
-                    "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe)."),
-            csv_formats -> Stream.of(csv_formats.split(","))
+            "Comma-separated list of output formats (flags, metrics, geojson, tippecanoe).",
+            csvFormats -> Stream.of(csvFormats.split(","))
                     .map(format -> Enum.valueOf(OutputFormats.class, format.toUpperCase()))
                     .collect(Collectors.toSet()),
             Optionality.OPTIONAL, "flags,metrics");
@@ -78,19 +87,7 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
-    @Deprecated
-    protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
-            "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
-            Optionality.OPTIONAL);
-    protected static final String OUTPUT_ATLAS_FOLDER = "atlas";
-    // Outputs
-    protected static final String OUTPUT_FLAG_FOLDER = "flag";
-    protected static final String OUTPUT_GEOJSON_FOLDER = "geojson";
-    protected static final String OUTPUT_METRIC_FOLDER = "metric";
-    protected static final String OUTPUT_TIPPECANOE_FOLDER = "tippecanoe";
     private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
-    private static final Pattern PBF_FILENAME_PATTERN = Pattern
-            .compile("^([0-9]+)-([0-9]+)-([0-9]+)");
     private static final Logger logger = LoggerFactory
             .getLogger(IntegrityChecksCommandArguments.class);
 
@@ -161,7 +158,7 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     protected static Iterable<AtlasObject> objectsToCheck(final Atlas atlas, final Check check,
             final Predicate<AtlasEntity> geoFilter)
     {
-        return new MultiIterable<AtlasObject>(Iterables.filter(atlas.entities(), geoFilter),
+        return new MultiIterable<>(Iterables.filter(atlas.entities(), geoFilter),
                 check.finder().map(finder -> finder.find(atlas)).orElse(Collections.emptyList()));
     }
 

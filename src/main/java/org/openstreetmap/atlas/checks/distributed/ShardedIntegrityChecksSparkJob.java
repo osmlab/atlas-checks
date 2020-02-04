@@ -74,12 +74,14 @@ import scala.Tuple2;
  */
 public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArguments
 {
-
     private static final Switch<Distance> EXPANSION_DISTANCE = new Switch<>("shardBufferDistance",
             "Distance to expand the bounds of the shard group to create a network in kilometers",
             distanceString -> Distance.kilometers(Double.valueOf(distanceString)),
             Optionality.OPTIONAL, "10.0");
-    private static final String SHARDING_FILE = "sharding.txt";
+    private static final String ATLAS_SHARDING_FILE = "sharding.txt";
+    private static final Switch<String> SHARDING = new Switch<>("sharding",
+            "Sharding to load in place of file in Atlas path", StringConverter.IDENTITY,
+            Optionality.OPTIONAL);
     private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad",
             "The maximum amount of shards loaded into memory per executor", Integer::valueOf,
             Optionality.OPTIONAL, "45");
@@ -110,8 +112,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Time start = Time.now();
         final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
         final String input = Optional.ofNullable(input(commandMap)).orElse(atlasDirectory);
-        final String shardingPathInAtlas = "dynamic@"
-                + SparkFileHelper.combine(input, SHARDING_FILE);
 
         final String output = output(commandMap);
         @SuppressWarnings("unchecked")
@@ -138,7 +138,14 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final AtlasFilePathResolver resolver = new AtlasFilePathResolver(checksConfiguration);
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
-        final Sharding sharding = AtlasSharding.forString(shardingPathInAtlas,
+
+        // Get sharding
+        final Optional<String> alternateShardingFile = (Optional<String>) commandMap
+                .getOption(SHARDING);
+        final String shardingPathInAtlas = "dynamic@"
+                + SparkFileHelper.combine(input, ATLAS_SHARDING_FILE);
+        final String shardingFilePath = alternateShardingFile.orElse(shardingPathInAtlas);
+        final Sharding sharding = AtlasSharding.forString(shardingFilePath,
                 this.configurationMap());
         final Broadcast<Sharding> shardingBroadcast = this.getContext().broadcast(sharding);
 
@@ -233,61 +240,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         logger.info("Sharded checks completed in {}", start.elapsedSince());
     }
 
-    @Override
-    protected SwitchList switches()
-    {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS,
-                SPARK_STORAGE_DISK_ONLY);
-    }
-
-    private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
-            final Map<String, String> configuration)
-    {
-        final HadoopAtlasFileCache cache = new HadoopAtlasFileCache(input, configuration);
-        final AtlasResourceLoader loader = new AtlasResourceLoader();
-        return (Function<Shard, Optional<Atlas>> & Serializable) shard ->
-        {
-            return cache.get(country, shard).map(loader::load);
-        };
-    }
-
     @SuppressWarnings("unchecked")
-    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output,
-            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats)
-    {
-        return tuple ->
-        {
-            final String country = tuple._1();
-            final UniqueCheckFlagContainer flagContainer = tuple._2();
-            final EventService eventService = EventService.get(country);
-
-            if (outputFormats.contains(OutputFormats.FLAGS))
-            {
-                eventService.register(new CheckFlagFileProcessor(fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_FLAG_FOLDER, country)));
-            }
-
-            if (outputFormats.contains(OutputFormats.GEOJSON))
-            {
-
-                eventService.register(new CheckFlagGeoJsonProcessor(fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER, country)));
-            }
-
-            if (outputFormats.contains(OutputFormats.TIPPECANOE))
-            {
-                eventService.register(new CheckFlagTippecanoeProcessor(fileHelper,
-                        SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
-            }
-
-            flagContainer.reconstructEvents().parallel().forEach(eventService::post);
-            eventService.complete();
-            return;
-        };
-    }
-
-    @SuppressWarnings("unchecked")
-    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
+    protected PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
             final String input, final String output, final Map<String, String> configurationMap,
             final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
             final Distance shardDistanceExpansion, final boolean dynamic)
@@ -360,6 +314,57 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
             eventService.complete();
             return new Tuple2<>(task.getCountry(), container);
+        };
+    }
+
+    @Override
+    protected SwitchList switches()
+    {
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS,
+                SPARK_STORAGE_DISK_ONLY);
+    }
+
+    private Function<Shard, Optional<Atlas>> atlasFetcher(final String input, final String country,
+            final Map<String, String> configuration)
+    {
+        final HadoopAtlasFileCache cache = new HadoopAtlasFileCache(input, configuration);
+        final AtlasResourceLoader loader = new AtlasResourceLoader();
+        return (Function<Shard, Optional<Atlas>> & Serializable) shard -> cache.get(country, shard)
+                .map(loader::load);
+    }
+
+    @SuppressWarnings("unchecked")
+    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output,
+            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats)
+    {
+        return tuple ->
+        {
+            final String country = tuple._1();
+            final UniqueCheckFlagContainer flagContainer = tuple._2();
+            final EventService eventService = EventService.get(country);
+
+            if (outputFormats.contains(OutputFormats.FLAGS))
+            {
+                eventService.register(new CheckFlagFileProcessor(fileHelper,
+                        SparkFileHelper.combine(output, OUTPUT_FLAG_FOLDER, country)));
+            }
+
+            if (outputFormats.contains(OutputFormats.GEOJSON))
+            {
+
+                eventService.register(new CheckFlagGeoJsonProcessor(fileHelper,
+                        SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER, country)));
+            }
+
+            if (outputFormats.contains(OutputFormats.TIPPECANOE))
+            {
+                eventService.register(new CheckFlagTippecanoeProcessor(fileHelper,
+                        SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
+            }
+
+            flagContainer.reconstructEvents().parallel().forEach(eventService::post);
+            eventService.complete();
+            return;
         };
     }
 }
