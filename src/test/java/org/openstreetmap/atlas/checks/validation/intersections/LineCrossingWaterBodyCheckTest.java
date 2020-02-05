@@ -40,8 +40,8 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 3));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -49,24 +49,24 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.invalidIntersectionItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
     public void testInvalidLineCrossingAtlas()
     {
         this.verifier.actual(this.setup.invalidLineCrossingAtlas(), check);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 5));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
     }
 
     @Test
     public void testMultipolygonMemberCrossingAtlas()
     {
         this.verifier.actual(this.setup.multipolygonMemberCrossingAtlas(), check);
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 4));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
     }
 
     @Test
