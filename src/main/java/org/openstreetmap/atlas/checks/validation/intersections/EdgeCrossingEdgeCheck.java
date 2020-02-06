@@ -1,10 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
@@ -23,6 +25,8 @@ import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+
+import scala.Tuple2;
 
 /**
  * Flags edges that are crossing other edges invalidly. If two edges are crossing each other, then
@@ -45,11 +49,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
@@ -105,22 +109,44 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         // edges from being flagged more than once.
         final Set<Edge> collectedEdges = new EdgeCrossingEdgeWalker((Edge) object,
                 this.getInvalidCrossingEdges()).collectEdges();
-
         if (collectedEdges.size() > 1)
         {
-            final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
-            this.markAsFlagged(object.getIdentifier());
-            newFlag.addObject(object);
-            newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
-
-            collectedEdges.forEach(invalidEdge ->
+            final List<Tuple2<Long, Set<Edge>>> edgeCrossPairs = collectedEdges
+                    .stream().filter(
+                            e -> e.getOsmIdentifier() != object.getOsmIdentifier())
+                    .map(e -> new Tuple2<>(e.getOsmIdentifier(),
+                            new EdgeCrossingEdgeWalker(e, this.getInvalidCrossingEdges())
+                                    .collectEdges()))
+                    .collect(Collectors.toList());
+            edgeCrossPairs.add(new Tuple2<>(object.getOsmIdentifier(), collectedEdges));
+            final Optional<Tuple2<Long, Set<Edge>>> maxPair = edgeCrossPairs.stream().max(
+                    (entry1, entry2) -> Integer.compare(entry1._2().size(), entry2._2().size()));
+            if (maxPair.isPresent())
             {
-                this.markAsFlagged(invalidEdge.getIdentifier());
-                newFlag.addObject(invalidEdge);
-                newFlag.addInstruction(
-                        this.getLocalizedInstruction(1, invalidEdge.getOsmIdentifier()));
-            });
-            return Optional.of(newFlag);
+                final int maxSize = (maxPair.get()._2()).size();
+                if (maxSize == collectedEdges.size())
+                {
+                    // when the current edge has max edges, of all connected edges, check if another
+                    // edge
+                    // also have the same set of connected edges. If that is the case flag only
+                    // minimum identifier edge.
+                    final Optional<Long> minIdentifier = edgeCrossPairs.stream()
+                            .filter(entry -> (entry._2()).size() == maxSize)
+                            .filter(entry -> (entry._2()).stream()
+                                    .allMatch(collectedEdges::contains))
+                            .map(Tuple2::_1).min(Comparator.comparingLong(Long::valueOf));
+                    if (minIdentifier.isPresent()
+                            && minIdentifier.get() == object.getOsmIdentifier())
+                    {
+                        final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
+                        this.markAsFlagged(object.getIdentifier());
+                        newFlag.addObject(object);
+                        newFlag.addInstruction(this.getLocalizedInstruction(0, collectedEdges,
+                                object.getOsmIdentifier()));
+                        return Optional.of(newFlag);
+                    }
+                }
+            }
         }
         return Optional.empty();
     }
@@ -188,7 +214,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private boolean isValidCrossingEdge(final AtlasObject object)
     {
         if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object) && !this.isFlagged(object.getIdentifier()))
+                && !TagPredicates.IS_AREA.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())

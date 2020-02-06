@@ -24,7 +24,7 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(),
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -41,8 +41,8 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.actual(this.setup.invalidCrossingItemsWithInvalidLayerTagAtlas(),
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 4));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -51,8 +51,8 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.actual(this.setup.invalidCrossingItemsWithSameLayerTagAtlas(),
                 new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"EdgeCrossingEdgeCheck\":{\"minimum.highway.type\":\"track\"}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(flags.size(), 1));
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -62,6 +62,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
     }
 
     @Test
