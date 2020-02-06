@@ -233,6 +233,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
             final Edge edge)
     {
         return edge.outEdges().stream()
+                .filter(Edge::isMasterEdge)
                 .filter(connectedEdge -> referenceHighwayType
                         .isOfEqualClassification(connectedEdge.highwayTag())
                         && this.areInTheSimilarDirection(edge, connectedEdge));
@@ -251,6 +252,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
 
         // Split the outEdges into those that are inconsistent links and those that are not
         final Map<Boolean, List<Edge>> edgesAreProblematicLinks = referenceEdge.outEdges().stream()
+                .filter(Edge::isMasterEdge)
                 .filter(this.allConnectedEdgesFilter(referenceEdge, referenceHighwayType))
                 .collect(Collectors.partitioningBy(
                         edge -> this.isProblematicLink(edge, referenceHighwayType)));
@@ -328,6 +330,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
     private boolean isBypassed(final Edge inconsistency, final HighwayTag referenceHighwayTag)
     {
         return inconsistency.start().outEdges().stream()
+                .filter(Edge::isMasterEdge)
                 .anyMatch(edge -> !edge.equals(inconsistency)
                         && edge.end().equals(inconsistency.end())
                         && edge.highwayTag().isIdenticalClassification(referenceHighwayTag));
@@ -343,6 +346,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
     private boolean isContinuousOutgoingEdge(final Edge edge)
     {
         return edge.outEdges().stream()
+                .filter(Edge::isMasterEdge)
                 .anyMatch(connectedEdge -> edge.highwayTag()
                         .isOfEqualClassification(connectedEdge.highwayTag())
                         && this.areInTheSimilarDirection(edge, connectedEdge));
