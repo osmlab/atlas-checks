@@ -436,7 +436,10 @@
       "tags": "building"
     }
   },
-  "LineCrossingWaterBodyCheck": {},
+  "LineCrossingWaterBodyCheck": {
+    "enabled": true,
+    "flaggableItems.buildings": true
+  },
   "LongSegmentCheck": {
     "length.minimum.kilometers": 10.0,
     "challenge": {

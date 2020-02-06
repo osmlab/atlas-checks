@@ -9,6 +9,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * @author mkalender
  * @author sayana_saithu
+ * @author seancoulter
  */
 public class LineCrossingWaterBodyCheckTest
 {
@@ -20,6 +21,16 @@ public class LineCrossingWaterBodyCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void testBuildingCrossing()
+    {
+        this.verifier.actual(this.setup.getInvalidCrossingBuildingAtlas(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": { \"enabled\": true, \"flaggableItems.buildings\": true }}")));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
+    }
 
     @Test
     public void testCrossingLineWithNoOsmTagAtlas()

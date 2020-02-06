@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -24,6 +24,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
+import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
@@ -35,14 +36,15 @@ import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags line items (edges or lines) that are crossing water bodies invalidly.
- * {@code LineCrossingWaterBodyCheck#canCrossWaterBody(AtlasItem)} and
+ * Flags line items (edges or lines), and optionally buildings, that are crossing water bodies
+ * invalidly. {@code LineCrossingWaterBodyCheck#canCrossWaterBody(AtlasItem)} and
  * {@code Utilities#haveExplicitLocationsForIntersections(Polygon, AtlasItem)} is used to decide
  * whether a crossing is valid or not.
  *
  * @author mertk
  * @author savannahostrowski
  * @author sayana_saithu
+ * @author seancoulter
  */
 public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 {
@@ -52,12 +54,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             LINEAR_INSTRUCTION);
     private static final String ADDRESS_PREFIX_KEY = "addr";
     // Whitelist for line tags
-
     private static final Set<String> VALID_LINE_TAGS = Stream.of(NotesTag.KEY, SourceTag.KEY,
             NaturalTag.KEY, PlaceTag.KEY, AdministrativeLevelTag.KEY).collect(Collectors.toSet());
     // Whitelisted tags filter for multipolygon relations. Multipolygon relations with these tags
-    // are
-    // expected to cross water bodies.
+    // are expected to cross water bodies.
     private static final TaggableFilter VALID_RELATIONS_TAG_FILTER = TaggableFilter
             .forDefinition("natural->*|place->*|landuse->*|waterway->*|admin_level->*|boundary->*");
     private static final String CAN_CROSS_WATER_BODY_TAGS = "waterway->*|boundary->*|landuse->*|"
@@ -66,6 +66,22 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes";
     private static final TaggableFilter CAN_CROSS_WATER_BODY_FILTER = TaggableFilter
             .forDefinition(CAN_CROSS_WATER_BODY_TAGS);
+    // Whether we should flag buildings that cross waterbodies
+    private static final boolean DEFAULT_INVALIDATE_CROSSING_BUILDINGS = false;
+    private boolean invalidateCrossingBuildings;
+    // Assume the object is an area based on atlas call
+    private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
+            .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
+    private static final String WATER_BODY_TAGS = "natural->spring,hot_spring,stream,water"
+            + "|water->lake,pond,oxbow,salt_pool,canal,river,lock,moat,stream_pool,drain,reservoir,tidal,lagoon"
+            + "|landuse->pond,reservoir,water"
+            + "|waterway->river,riverbank,brook,ditch,stream,canal,derelict_canal"
+            + "|wetland->tidalflat,reedbed" + "|intermittent->dry" + "|seasonal->dry_season";
+    private static final String WATER_BODY_EXCLUDE_EXCEPTIONS = "waterway->drain&name->!|seasonal->yes&wetland->tidalflat,reedbed||water->tidalflat,reedbed||natural->tidalflat,reedbed|landuse->basin&natural->!water||natural->!||water->!)";
+    private static final TaggableFilter VALID_WATER_BODY_TAGS = TaggableFilter
+            .forDefinition(WATER_BODY_TAGS);
+    private static final TaggableFilter INVALID_WATER_BODY_TAGS = TaggableFilter
+            .forDefinition(WATER_BODY_EXCLUDE_EXCEPTIONS);
     private static final long serialVersionUID = 6048659185833217159L;
 
     /**
@@ -146,23 +162,30 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     public LineCrossingWaterBodyCheck(final Configuration configuration)
     {
         super(configuration);
+        this.invalidateCrossingBuildings = this.configurationValue(configuration,
+                "flaggableItems.buildings", DEFAULT_INVALIDATE_CROSSING_BUILDINGS);
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_AREA.test(object) && TagPredicates.IS_WATER_BODY.test(object);
+        return TypePredicates.IS_AREA.test(object) && !INVALID_WATER_BODY_TAGS.test(object)
+                && VALID_WATER_BODY_TAGS.test(object);
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // First retrieve the crossing edges and lines
+        // First retrieve the crossing edges, lines, buildings
         final Area objectAsArea = (Area) object;
         final Polygon areaAsPolygon = objectAsArea.asPolygon();
         final Atlas atlas = object.getAtlas();
-        final Iterable<AtlasItem> crossingLinearItems = new MultiIterable<>(
-                atlas.edgesIntersecting(areaAsPolygon), atlas.linesIntersecting(areaAsPolygon));
+        final Iterable<AtlasItem> allCrossingItems = this.invalidateCrossingBuildings
+                ? new MultiIterable<>(atlas.edgesIntersecting(areaAsPolygon),
+                        atlas.linesIntersecting(areaAsPolygon),
+                        atlas.areasIntersecting(areaAsPolygon, IS_BUILDING::test))
+                : new MultiIterable<>(atlas.edgesIntersecting(areaAsPolygon),
+                        atlas.linesIntersecting(areaAsPolygon));
 
         // Assume there is no invalid crossing
         boolean hasInvalidCrossings = false;
@@ -177,17 +200,17 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
         // Therefore, if an OSM way crosses a water body multiple times in separate edges, then
         // each edge will be marked explicitly.
-        for (final AtlasItem crossingLineItem : crossingLinearItems)
+        for (final AtlasItem crossingItem : allCrossingItems)
         {
-            // Check whether crossing linear item can actually cross
-            if (!canCrossWaterBody(crossingLineItem)
+            // Flag all buildings or if line item, check if it can actually cross
+            if (crossingItem instanceof Area || !canCrossWaterBody(crossingItem)
                     && !IntersectionUtilities.haveExplicitLocationsForIntersections(areaAsPolygon,
-                            (LineItem) crossingLineItem))
+                            (LineItem) crossingItem))
             {
                 // Update the flag
-                newFlag.addObject(crossingLineItem);
-                newFlag.addInstruction(
-                        this.getLocalizedInstruction(1, crossingLineItem.getOsmIdentifier()));
+                newFlag.addObject(crossingItem);
+                newFlag.addInstruction(this.getLocalizedInstruction(
+                        crossingItem instanceof Area ? 0 : 1, crossingItem.getOsmIdentifier()));
                 // Set indicator to make sure we return invalid crossings
                 hasInvalidCrossings = true;
             }
