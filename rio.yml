@@ -1,0 +1,43 @@
+schemaVersion: '2.0'
+machine:
+  java:
+    version: 11-openjdk
+  env:
+    RUNTIME_JDK_VERSION: 11-openjdk
+publish:
+  libraries:
+    repo: m2:oss-patched
+  reports:
+    junit: true
+
+builds:
+  - branchName: apple
+    name: apple-prb
+    build:
+      template: buildozer:v1:prb
+
+  - branchName: apple
+    name: apple-release
+    build:
+      template: buildozer:v1:publish
+    trigger:
+      gitPush: false
+    publish:
+      release: true
+      libraries: true
+
+  - branchName: hotfix
+    name: hotfix-prb
+    build:
+      template: buildozer:v1:prb
+
+  - branchName: hotfix
+    name: hotfix-release
+    build:
+      template: buildozer:v1:publish
+    trigger:
+      gitPush: false
+    publish:
+      release: true
+      libraries: true
+
