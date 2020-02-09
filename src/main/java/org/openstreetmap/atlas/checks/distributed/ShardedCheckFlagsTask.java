@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.openstreetmap.atlas.checks.base.Check;
-import org.openstreetmap.atlas.checks.utility.ShardGroup;
 import org.openstreetmap.atlas.event.EventService;
+import org.openstreetmap.atlas.geography.sharding.Shard;
 
 /**
  * Meta data holder for sharded flag generation task
@@ -16,13 +16,12 @@ public class ShardedCheckFlagsTask implements Serializable
 {
     private final List<Check> checks;
     private final String country;
-    private final ShardGroup shardGroup;
+    private final Shard shard;
 
-    public ShardedCheckFlagsTask(final String country, final ShardGroup shardGroup,
-            final List<Check> checks)
+    public ShardedCheckFlagsTask(final String country, final Shard shard, final List<Check> checks)
     {
         this.country = country;
-        this.shardGroup = shardGroup;
+        this.shard = shard;
         this.checks = checks;
     }
 
@@ -41,13 +40,13 @@ public class ShardedCheckFlagsTask implements Serializable
         return EventService.get(this.getUniqueTaskIdentifier());
     }
 
-    public ShardGroup getShardGroup()
+    public Shard getShard()
     {
-        return this.shardGroup;
+        return this.shard;
     }
 
     public String getUniqueTaskIdentifier()
     {
-        return this.country + "_" + this.shardGroup.getName();
+        return this.country + "_" + this.shard.getName();
     }
 }

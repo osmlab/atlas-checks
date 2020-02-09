@@ -4,7 +4,6 @@ import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,8 +27,6 @@ import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
-import org.openstreetmap.atlas.checks.utility.ShardGroup;
-import org.openstreetmap.atlas.checks.utility.ShardGrouper;
 import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
 import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.event.Processor;
@@ -158,7 +155,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Sharding sharding = AtlasSharding.forString(shardingFilePath,
                 this.configurationMap());
         final Broadcast<Sharding> shardingBroadcast = this.getContext().broadcast(sharding);
-        final Integer maxShardLoad = (Integer) commandMap.get(SHARD_LOAD_MAX);
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
 
         // Check inputs
@@ -214,11 +210,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 checkPool.queue(() ->
                 {
-                    // Group shards for the country
-                    final ShardGrouper shardGrouper = new ShardGrouper(countryShard.getValue(),
-                            maxShardLoad, distanceToLoadShards);
                     // Generate a task for each shard group
-                    final List<ShardedCheckFlagsTask> tasksForCountry = shardGrouper.getGroups()
+                    final List<ShardedCheckFlagsTask> tasksForCountry = countryShard.getValue()
                             .stream()
                             .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(), group,
                                     this.countryChecks.get(countryShard.getKey())))
@@ -375,19 +368,16 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 logger.info("Running with a dynamic atlas");
                 final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher,
-                        sharding.getValue(), new HashSet<>(task.getShardGroup()),
-                        Rectangle.forLocated(task.getShardGroup()).bounds()
-                                .expand(shardDistanceExpansion)).withDeferredLoading(true)
-                                        .withAggressivelyExploreRelations(true)
-                                        .withExtendIndefinitely(false);
+                        sharding.getValue(), Collections.singleton(task.getShard()),
+                        task.getShard().bounds().expand(shardDistanceExpansion))
+                                .withDeferredLoading(true).withAggressivelyExploreRelations(true)
+                                .withExtendIndefinitely(false);
                 atlas = new DynamicAtlas(policy);
             }
             else
             {
                 logger.info("Running with a multi atlas");
-                final ShardGroup shardGroup = task.getShardGroup();
-                final Rectangle expansionBounds = Rectangle.forLocated(shardGroup)
-                        .expand(shardDistanceExpansion);
+                final Rectangle expansionBounds = task.getShard().bounds();
                 atlas = new MultiAtlas(StreamSupport
                         .stream(sharding.getValue().shards(expansionBounds).spliterator(), true)
                         .map(fetcher).filter(Optional::isPresent).map(Optional::get)
@@ -395,8 +385,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             }
 
             final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
-                    .geometricSurfaces(task.getShardGroup().stream().map(Shard::bounds)
-                            .collect(Collectors.toList()));
+                    .polygons(Collections.singleton(task.getShard().bounds()));
 
             // Prepare the event service
             final EventService eventService = task.getEventService();
@@ -417,9 +406,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     container.add(event.getCheckName(), event.getCheckFlag().makeComplete());
                 }
             });
-            // Metrics are output on a per shard group level
+            // Metrics are output on a per shard level
             final MetricFileGenerator metricFileGenerator = new MetricFileGenerator(
-                    task.getShardGroup().getName() + "_" + METRICS_FILENAME, fileHelper,
+                    task.getShard().getName() + "_" + METRICS_FILENAME, fileHelper,
                     SparkFileHelper.combine(output, OUTPUT_METRIC_FOLDER, task.getCountry()));
             eventService.register(metricFileGenerator);
 
