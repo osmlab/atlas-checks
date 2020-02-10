@@ -18,13 +18,13 @@ with ways [393673917](https://www.openstreetmap.org/way/202447272),
 
 #### Code Review
 
-The check ensures that the Atlas object being evaluated is an [Node](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Node.java)
+The check ensures that the Atlas object being evaluated is a [Node](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Node.java)
 with a minimum node valence of 3. The node is a valid candidate for the check if it forms an intersection with edges at the same z-level with highway classification specified in the configurable. 
-Once the node is evaluated to be a valid at-grade intersection, check if it is a member of any destination_sign relation.
-If the node is not part of a relation, then flag the node along with the intersecting edges. Since a node can be part of multiple destination_sign
-relations, check if any of the valid intersecting edge is not part of a destination_sign relation. If there are edges missing destination_sign
+Once the node is evaluated to be a valid at-grade intersection, check if it is a member of any destination_sign relations.
+If the node is not part of a destination_sign relation, then flag the node along with the intersecting edges. Since a node can be part of multiple destination_sign
+relations, check if all the valid intersecting edges are members of destination_sign relations. If there are edges missing destination_sign
 relations, flag the node and the edges. If all the intersecting edges are members of relations, check if all the relations have destination tags.
-If the relations are missing destination_sign tag, flag it. If the node is part of a roundabout, when flagging the node, and connected edges to the node, also flag all the roundabout edges.
+If the relations are missing destination_sign tag, flag it. If the node is part of a roundabout, flag all the roundabout edges when flagging the node and its intersecting edges.
 
 To learn more about the code, please look at the comments in the source code for the check.
 [AtGradeSignPostCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/AtGradeSignPostCheck.java)
