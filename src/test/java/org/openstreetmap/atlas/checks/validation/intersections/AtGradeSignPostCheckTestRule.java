@@ -188,14 +188,14 @@ public class AtGradeSignPostCheckTestRule extends CoreTestRule
                                     "highway=primary", "oneway=yes" }) })
     private Atlas roundaboutIntersectionMissingDestinationSignRelationAtlas;
 
-    public Atlas getMissingDestinationSignRelationAtlas()
-    {
-        return this.missingDestinationSignRelationAtlas;
-    }
-
     public Atlas getIncompleteDestinationSignRelationAtlas()
     {
         return this.incompleteDestinationSignRelationAtlas;
+    }
+
+    public Atlas getMissingDestinationSignRelationAtlas()
+    {
+        return this.missingDestinationSignRelationAtlas;
     }
 
     public Atlas getMissingDestinationSignTagAtlas()

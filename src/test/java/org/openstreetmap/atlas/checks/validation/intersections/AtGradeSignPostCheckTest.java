@@ -27,21 +27,6 @@ public class AtGradeSignPostCheckTest
                     + "    }\n" + "  }}");
 
     @Test
-    public void testMissingDestinationSignRelation()
-    {
-        this.verifier.actual(this.setup.getMissingDestinationSignRelationAtlas(),
-                new AtGradeSignPostCheck(this.inlineConfiguration));
-        // this.verifier.verifyNotEmpty();
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains("is not part of a destination sign relation"));
-        });
-    }
-
-    @Test
     public void testIncompleteDestinationSignRelation()
     {
         this.verifier.actual(this.setup.getIncompleteDestinationSignRelationAtlas(),
@@ -54,6 +39,21 @@ public class AtGradeSignPostCheckTest
             Assert.assertTrue(flag.getInstructions().contains("could also form destination sign "
                     + "relations with this node. Create new destination sign relation with these "
                     + "edges and the node"));
+        });
+    }
+
+    @Test
+    public void testMissingDestinationSignRelation()
+    {
+        this.verifier.actual(this.setup.getMissingDestinationSignRelationAtlas(),
+                new AtGradeSignPostCheck(this.inlineConfiguration));
+        // this.verifier.verifyNotEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(
+                    flag.getInstructions().contains("is not part of a destination sign relation"));
         });
     }
 

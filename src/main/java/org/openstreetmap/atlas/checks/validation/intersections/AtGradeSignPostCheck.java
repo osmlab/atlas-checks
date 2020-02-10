@@ -332,6 +332,49 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
+     * Collect all roundabout edges and exit edges that are missing destination sign relations or
+     * missing destination sign tags
+     *
+     * @param roundAboutInEdgeToOutEdgeMap
+     *            Map<AtlasEntity, Set<AtlasEntity>> where key is inEdge and value is set of
+     *            outEdges of the rounabout
+     * @param destinationSignRelations
+     *            set of existing destoination sign relations
+     * @return set of edges that meet the above criteria
+     */
+    private Set<AtlasEntity> getAllRoundaboutEdgesMissingTagsOrRelations(
+            final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
+            final Set<Relation> destinationSignRelations)
+    {
+        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
+        roundAboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
+        {
+            final Optional<AtlasEntity> roundaboutEdge = setOfOutEdge.stream()
+                    .filter(JunctionTag::isRoundabout).findFirst();
+            final Optional<AtlasEntity> roundaboutExitEdge = setOfOutEdge.stream()
+                    .filter(outEdge -> !JunctionTag.isRoundabout(outEdge)).findFirst();
+            if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
+            {
+                final Set<AtlasEntity> roundaboutEdges = this
+                        .getRoundaboutEdges((Edge) roundaboutEdge.get());
+                final AtlasEntity exitEdge = roundaboutExitEdge.get();
+                // If the destination sign relation is missing destination tag, flag it
+                if (this.isMissingDestinationTag((Edge) exitEdge))
+                {
+                    entitiesToBeFlagged.addAll(roundaboutEdges);
+                    entitiesToBeFlagged.add(roundaboutExitEdge.get());
+                }
+                final Optional<Set<AtlasEntity>> roundAboutEdgesNotPartOfRelations = this
+                        .connectedEdgesNotPartOfRelation(exitEdge, roundaboutEdges,
+                                destinationSignRelations);
+                // If there are missing destination sign relations, flag it
+                roundAboutEdgesNotPartOfRelations.ifPresent(entitiesToBeFlagged::addAll);
+            }
+        });
+        return entitiesToBeFlagged;
+    }
+
+    /**
      * @param inEdgeToOutEdgeMap
      *            inEdge to outEdge map
      * @param destinationSignRelations
@@ -397,43 +440,16 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * Function for {@link SimpleEdgeWalker} that gathers connected edges that are part of a
-     * roundabout.
+     * Collects all roundabout edges starting with the given given
      *
-     * @return {@link Function} for {@link SimpleEdgeWalker}
+     * @param startEdge
+     *            {@link Edge}
+     * @return Set of roundabout edges
      */
-    private Function<Edge, Stream<Edge>> isRoundaboutEdge()
+    private Set<AtlasEntity> getRoundaboutEdges(final Edge startEdge)
     {
-        return edge -> edge.connectedEdges().stream()
-                .filter(connected -> JunctionTag.isRoundabout(connected)
-                        && HighwayTag.isCarNavigableHighway(connected));
-    }
-
-    /**
-     * Checks if the edge is missing DestinationForwardTag if two way or is missing a destination
-     * tag if one way
-     *
-     * @param edge
-     *            any edge
-     * @return true if the edge is missing the destination tags
-     */
-    private boolean isMissingDestinationTag(final Edge edge)
-    {
-        return (OneWayTag.isExplicitlyTwoWay(edge) && edge.tag(DestinationForwardTag.KEY) == null)
-                || (!OneWayTag.isExplicitlyTwoWay(edge) && edge.tag(DestinationTag.KEY) == null);
-    }
-
-    /**
-     * Checks if given edge is a valid intersecting edge for an at-grade intersection
-     *
-     * @param edge
-     *            edge
-     * @return true if the edge is valid intersecting edge
-     */
-    private boolean isValidIntersectingEdge(final Edge edge)
-    {
-        return edge.isMasterEdge() && HighwayTag.highwayTag(edge).isPresent()
-                && this.highwayFilter.test(edge);
+        return new SimpleEdgeWalker(startEdge, this.isRoundaboutEdge()).collectEdges().stream()
+                .map(AtlasEntity.class::cast).collect(Collectors.toSet());
     }
 
     /**
@@ -457,22 +473,49 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * Collects all roundabout edges starting with the given given
-     * 
-     * @param startEdge
-     *            {@link Edge}
-     * @return Set of roundabout edges
+     * Checks if the edge is missing DestinationForwardTag if two way or is missing a destination
+     * tag if one way
+     *
+     * @param edge
+     *            any edge
+     * @return true if the edge is missing the destination tags
      */
-    private Set<AtlasEntity> getRoundaboutEdges(final Edge startEdge)
+    private boolean isMissingDestinationTag(final Edge edge)
     {
-        return new SimpleEdgeWalker(startEdge, this.isRoundaboutEdge()).collectEdges().stream()
-                .map(AtlasEntity.class::cast).collect(Collectors.toSet());
+        return (OneWayTag.isExplicitlyTwoWay(edge) && edge.tag(DestinationForwardTag.KEY) == null)
+                || (!OneWayTag.isExplicitlyTwoWay(edge) && edge.tag(DestinationTag.KEY) == null);
+    }
+
+    /**
+     * Function for {@link SimpleEdgeWalker} that gathers connected edges that are part of a
+     * roundabout.
+     *
+     * @return {@link Function} for {@link SimpleEdgeWalker}
+     */
+    private Function<Edge, Stream<Edge>> isRoundaboutEdge()
+    {
+        return edge -> edge.connectedEdges().stream()
+                .filter(connected -> JunctionTag.isRoundabout(connected)
+                        && HighwayTag.isCarNavigableHighway(connected));
+    }
+
+    /**
+     * Checks if given edge is a valid intersecting edge for an at-grade intersection
+     *
+     * @param edge
+     *            edge
+     * @return true if the edge is valid intersecting edge
+     */
+    private boolean isValidIntersectingEdge(final Edge edge)
+    {
+        return edge.isMasterEdge() && HighwayTag.highwayTag(edge).isPresent()
+                && this.highwayFilter.test(edge);
     }
 
     /**
      * Collect matching out edges and corresponding in edge in a map. Store the roundabout edges and
      * non roundabout edges in separate maps.
-     * 
+     *
      * @param inEdges
      *            List<Edge> inEdges
      * @param outEdges
@@ -514,52 +557,9 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                 }
             }
         });
-        Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = new HashMap<>();
+        final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = new HashMap<>();
         mapOfMatchingInAndOutEdges.put("nonRoundaboutMatchingEdgesMap", inEdgeToOutEdgeMap);
         mapOfMatchingInAndOutEdges.put("roundaboutMatchingEdgesMap", roundAboutInEdgeToOutEdgeMap);
         return mapOfMatchingInAndOutEdges;
-    }
-
-    /**
-     * Collect all roundabout edges and exit edges that are missing destination sign relations or
-     * missing destination sign tags
-     *
-     * @param roundAboutInEdgeToOutEdgeMap
-     *            Map<AtlasEntity, Set<AtlasEntity>> where key is inEdge and value is set of
-     *            outEdges of the rounabout
-     * @param destinationSignRelations
-     *            set of existing destoination sign relations
-     * @return set of edges that meet the above criteria
-     */
-    private Set<AtlasEntity> getAllRoundaboutEdgesMissingTagsOrRelations(
-            final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
-            final Set<Relation> destinationSignRelations)
-    {
-        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
-        roundAboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
-        {
-            final Optional<AtlasEntity> roundaboutEdge = setOfOutEdge.stream()
-                    .filter(JunctionTag::isRoundabout).findFirst();
-            final Optional<AtlasEntity> roundaboutExitEdge = setOfOutEdge.stream()
-                    .filter(outEdge -> !JunctionTag.isRoundabout(outEdge)).findFirst();
-            if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
-            {
-                final Set<AtlasEntity> roundaboutEdges = this
-                        .getRoundaboutEdges((Edge) roundaboutEdge.get());
-                final AtlasEntity exitEdge = roundaboutExitEdge.get();
-                // If the destination sign relation is missing destination tag, flag it
-                if (this.isMissingDestinationTag((Edge) exitEdge))
-                {
-                    entitiesToBeFlagged.addAll(roundaboutEdges);
-                    entitiesToBeFlagged.add(roundaboutExitEdge.get());
-                }
-                final Optional<Set<AtlasEntity>> roundAboutEdgesNotPartOfRelations = this
-                        .connectedEdgesNotPartOfRelation(exitEdge, roundaboutEdges,
-                                destinationSignRelations);
-                // If there are missing destination sign relations, flag it
-                roundAboutEdgesNotPartOfRelations.ifPresent(entitiesToBeFlagged::addAll);
-            }
-        });
-        return entitiesToBeFlagged;
     }
 }
