@@ -23,8 +23,8 @@ apply from: 'gradle/execute.gradle'
 
 description = "Atlas Checks"
 
-sourceCompatibility=1.8
-targetCompatibility=1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 repositories
 {
@@ -41,6 +41,14 @@ repositories
 
 configurations
 {
+    all {
+        resolutionStrategy {
+            // Force the version compatible with the latest version
+            // of Spark brought in by atlas generator
+            force 'com.fasterxml.jackson.core:jackson-core:2.6.7'
+            force 'com.fasterxml.jackson.core:jackson-databind:2.6.7'
+        }
+    }
     compile
     {
         resolutionStrategy
@@ -51,11 +59,6 @@ configurations
             // Snappy 1.1.1.6 is the one that has the proper .so libs.
             // https://github.com/xerial/snappy-java/issues/6
             force 'org.xerial.snappy:snappy-java:1.1.1.6'
-
-            // Force the version compatible with the latest version
-            // of Spark brought in by atlas generator
-            force 'com.fasterxml.jackson.core:jackson-core:2.9.8'
-            force 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
         }
     }
     shaded
@@ -68,11 +71,6 @@ configurations
             // Snappy 1.1.1.6 is the one that has the proper .so libs.
             // https://github.com/xerial/snappy-java/issues/6
             force 'org.xerial.snappy:snappy-java:1.1.1.6'
-
-            // Force the version compatible with the latest version
-            // of Spark brought in by atlas generator
-            force 'com.fasterxml.jackson.core:jackson-core:2.9.8'
-            force 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
         }
         // Hadoop and Spark are way too fat.
         exclude group: 'org.apache.hadoop'
@@ -156,6 +154,6 @@ gradle.startParameter.excludedTaskNames += skippedTaskNames
 
 idea {
     project {
-        languageLevel = '1.8'
+        languageLevel = '11'
     }
 }
