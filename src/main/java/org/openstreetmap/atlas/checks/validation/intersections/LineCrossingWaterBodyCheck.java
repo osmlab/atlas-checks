@@ -49,9 +49,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 {
     private static final String LINEAR_INSTRUCTION = "Linear item {0,number,#} is crossing water body invalidly.";
+    private static final String BUILDING_INSTRUCTION = "Building item {0,number,#} is intersecting water body invalidly.";
     private static final String WATERBODY_INSTRUCTION = "The water body with id {0,number,#} has invalid crossings.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WATERBODY_INSTRUCTION,
-            LINEAR_INSTRUCTION);
+            LINEAR_INSTRUCTION, BUILDING_INSTRUCTION);
     private static final String ADDRESS_PREFIX_KEY = "addr";
     // Whitelist for line tags
     private static final Set<String> VALID_LINE_TAGS = Stream.of(NotesTag.KEY, SourceTag.KEY,
@@ -72,16 +73,52 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     // Assume the object is an area based on atlas call
     private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
             .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
-    private static final String WATER_BODY_TAGS = "natural->spring,hot_spring,stream,water"
-            + "|water->lake,pond,oxbow,salt_pool,canal,river,lock,moat,stream_pool,drain,reservoir,tidal,lagoon"
-            + "|landuse->pond,reservoir,water"
-            + "|waterway->river,riverbank,brook,ditch,stream,canal,derelict_canal"
-            + "|wetland->tidalflat,reedbed" + "|intermittent->dry" + "|seasonal->dry_season";
-    private static final String WATER_BODY_EXCLUDE_EXCEPTIONS = "waterway->drain&name->!|seasonal->yes&wetland->tidalflat,reedbed||water->tidalflat,reedbed||natural->tidalflat,reedbed|landuse->basin&natural->!water||natural->!||water->!)";
+
+    private static final String WATER_BODY_TAGS =
+            // Lakes
+            "natural->spring,hot_spring&name->*" + "|natural->lake,pond" + "|water:type->lake"
+                    + "|landuse->pond" + "|water->lake,pond,oxbow,salt_lake" +
+
+                    // Rivers
+                    "|natural->stream"
+                    + "|water->canal,river,lock,moat,riverbank,creek,stream,stream_pool"
+                    + "|waterway->river,riverbank,brook,ditch,stream,creek,canal,derelict_canal"
+                    + "|stream->*" + "|waterway->drain&name->*" + "|water->drain&name->*" +
+
+                    // Reservoirs
+                    "|water->reservoir" + "|water->dam&natural->water" + "|landuse->reservoir"
+                    + "|natural->reservoir" + "|seamark:type->dam&natural->water" +
+
+                    // Miscellaneous
+                    "|natural->water" + "|waterway->water" + "|water->water,perennial"
+                    + "|landuse->water" +
+
+                    // Wetlands
+                    "|wetland->tidalflat,reedbed" + "|water->tidalflat,reedbed"
+                    + "|natural->tidalflat,reedbed" +
+
+                    // Lagoons
+                    "|natural->lagoon" + "|water->lagoon" + "|waterway->lagoon" +
+
+                    // Intermittent/Dry lakes
+                    "|intermittent->dry" + "|seasonal->dry" + "|natural->dry_lake";
     private static final TaggableFilter VALID_WATER_BODY_TAGS = TaggableFilter
             .forDefinition(WATER_BODY_TAGS);
+
+    private static final String WATER_BODY_EXCLUDE_TAGS = "natural->dock,water_point,floodway,spillway,wastewater,waterhole"
+            + "|waterway->lock_gate,dock,water_point,floodway,spillway,wastewater,waterhole,culvert,dam,waterfall,fish_pass,dry_dock,construction,boat_lift,weir,breakwater,boatyard"
+            + "|water->lock_gate,dock,water_point,floodway,spillway,wastewater,waterhole,pool,reflecting_pool,swimming_pool,salt_pool,fountain,tank,fish_pass"
+            + "|tunnel->culvert" + "|waterway->drain&name->!" + "|water->drain&name->!"
+            + "|wetland->tidalflat,reedbed&seasonal->yes"
+            + "|water->tidalflat,reedbed&seasonal->yes"
+            + "|natural->tidalflat,reedbed&seasonal->yes" + "|covered->yes" + "|highway->*"
+            + "|natural->strait,channel,fjord,sound,bay" + "|harbour->*&harbour->!no"
+            + "|estuary->*&estuary->!no" + "|bay->*&bay->!no"
+            + "|seamark:type->harbour,harbour_basin,sea_area" + "|place->sea"
+            + "|water->bay,cove,harbour" + "|waterway->artificial,dock";
     private static final TaggableFilter INVALID_WATER_BODY_TAGS = TaggableFilter
-            .forDefinition(WATER_BODY_EXCLUDE_EXCEPTIONS);
+            .forDefinition(WATER_BODY_EXCLUDE_TAGS);
+
     private static final long serialVersionUID = 6048659185833217159L;
 
     /**
@@ -169,6 +206,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
+        // We only consider water body areas, not linear water bodies
         return TypePredicates.IS_AREA.test(object) && !INVALID_WATER_BODY_TAGS.test(object)
                 && VALID_WATER_BODY_TAGS.test(object);
     }
@@ -210,7 +248,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 // Update the flag
                 newFlag.addObject(crossingItem);
                 newFlag.addInstruction(this.getLocalizedInstruction(
-                        crossingItem instanceof Area ? 0 : 1, crossingItem.getOsmIdentifier()));
+                        crossingItem instanceof Area ? 2 : 1, crossingItem.getOsmIdentifier()));
                 // Set indicator to make sure we return invalid crossings
                 hasInvalidCrossings = true;
             }
