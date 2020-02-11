@@ -366,6 +366,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     task.getShard().bounds().expand(shardDistanceExpansion))
                             .withAggressivelyExploreRelations(true).withExtendIndefinitely(false);
             final Atlas atlas = new DynamicAtlas(policy);
+            ((DynamicAtlas) atlas).preemptiveLoad();
 
             final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
                     .polygons(Collections.singleton(task.getShard().bounds()));
