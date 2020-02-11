@@ -49,11 +49,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings with {1}."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly with {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
@@ -141,8 +141,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
                         this.markAsFlagged(object.getIdentifier());
                         newFlag.addObject(object);
-                        newFlag.addInstruction(this.getLocalizedInstruction(0, collectedEdges,
-                                object.getOsmIdentifier()));
+                        newFlag.addInstruction(this.getLocalizedInstruction(0,
+                                object.getOsmIdentifier(), collectedEdges.stream()
+                                        .map(AtlasObject::getIdentifier).collect(Collectors.toList())));
                         return Optional.of(newFlag);
                     }
                 }
@@ -181,6 +182,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
                             && this.isValidCrossingEdge(crossingEdge)))
                     .stream()
+                    .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge.getOsmIdentifier())
                     // Go through crossing items and collect invalid crossings
                     // NOTE: Due to way sectioning same OSM way could be marked multiple times here.
                     // However,
