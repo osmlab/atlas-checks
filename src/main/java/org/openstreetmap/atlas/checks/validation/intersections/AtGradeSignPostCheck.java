@@ -52,6 +52,31 @@ import com.google.common.collect.ImmutableMap;
  */
 public class AtGradeSignPostCheck extends BaseCheck<String>
 {
+    /**
+     * A class for holding flagged intersection items and corresponding flag instruction index
+     */
+    private class FlaggedIntersection
+    {
+        private int instructionIndex;
+        private Set<AtlasEntity> setOfFlaggedItems;
+
+        FlaggedIntersection(final int instructionIndex, final Set<AtlasEntity> setOfFlaggedItems)
+        {
+            this.instructionIndex = instructionIndex;
+            this.setOfFlaggedItems = setOfFlaggedItems;
+        }
+
+        private Set<AtlasEntity> getFlaggedItems()
+        {
+            return this.setOfFlaggedItems;
+        }
+
+        private Integer getInstructionIndex()
+        {
+            return this.instructionIndex;
+        }
+    }
+
     private static final long serialVersionUID = -7428641176420422187L;
     // Valid highway types to be considered for the check
     private static final String HIGHWAY_FILTER_DEFAULT = "highway->trunk,primary,secondary";
@@ -83,6 +108,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             + "at-grade junction. It is part of destination sign relation(s). Either the existing relations are missing destination sign tag or following connected edges {1} "
             + "could also form destination sign relations with this node. Either add destination tags to existing relations or create new destination sign relation "
             + "with these edges and the node.";
+    private static final String NON_ROUNDABOUT_INTERSECTION_MAP = "nonRoundaboutMatchingEdgesMap";
+    private static final String ROUNDABOUT_INTERSECTION_MAP = "roundaboutMatchingEdgesMap";
 
     private static final int INSTRUCTION_INDEX_ZERO = 0;
     private static final int INSTRUCTION_INDEX_ONE = 1;
@@ -150,6 +177,10 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        if (String.valueOf(object.getOsmIdentifier()).equals("1720823768"))
+        {
+            System.out.println(object);
+        }
         final Node intersectingNode = (Node) object;
         // Filter and sort all in edges that have valid highway types
         final List<Edge> inEdges = intersectingNode.inEdges().stream()
@@ -172,107 +203,26 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = this
                 .populateInEdgeToOutEdgeMaps(inEdges, outEdges);
         final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap = mapOfMatchingInAndOutEdges
-                .getOrDefault("nonRoundaboutMatchingEdgesMap", null);
+                .getOrDefault(NON_ROUNDABOUT_INTERSECTION_MAP, null);
         final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap = mapOfMatchingInAndOutEdges
-                .getOrDefault("roundaboutMatchingEdgesMap", null);
+                .getOrDefault(ROUNDABOUT_INTERSECTION_MAP, null);
         // If there are no valid intersection, return Optional.empty()
         if ((inEdgeToOutEdgeMap == null || inEdgeToOutEdgeMap.isEmpty())
                 && (roundAboutInEdgeToOutEdgeMap == null || roundAboutInEdgeToOutEdgeMap.isEmpty()))
         {
             return Optional.empty();
         }
-
-        int instructionIndex = -1;
-        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
         // Collect all destination sign relations, the node is a member of
         final Optional<Set<Relation>> destinationSignRelations = this
                 .getParentDestinationSignRelations(intersectingNode);
-
-        // If the node is not part of any destination sign relations, flag it
-        if (!destinationSignRelations.isPresent())
-        {
-            // Flag all in and out edges
-            if (roundAboutInEdgeToOutEdgeMap.isEmpty() && inEdgeToOutEdgeMap != null)
-            {
-                this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
-                inEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
-                {
-                    entitiesToBeFlagged.add(inEdge);
-                    entitiesToBeFlagged.addAll(setOfOutEdge);
-                });
-                if (!entitiesToBeFlagged.isEmpty())
-                {
-                    instructionIndex = INSTRUCTION_INDEX_ZERO;
-                }
-            }
-            // Flag all roundabout edges
-            else
-            {
-                roundAboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
-                {
-                    // Ideally there would only be one roundabout edge and one exit edge per node
-                    final Optional<AtlasEntity> roundaboutEdge = setOfOutEdge.stream()
-                            .filter(JunctionTag::isRoundabout).findFirst();
-                    final Optional<AtlasEntity> roundaboutExitEdge = setOfOutEdge.stream()
-                            .filter(outEdge -> !JunctionTag.isRoundabout(outEdge)).findFirst();
-                    if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
-                    {
-                        entitiesToBeFlagged
-                                .addAll(this.getRoundaboutEdges((Edge) roundaboutEdge.get()));
-                        entitiesToBeFlagged.add(roundaboutExitEdge.get());
-                    }
-                });
-                if (!entitiesToBeFlagged.isEmpty())
-                {
-                    instructionIndex = INSTRUCTION_INDEX_THREE;
-                }
-            }
-        }
-        // If the node is part of destination sign relation, check if destination tag of the
-        // relation is missing or if there are any missing relations that the node could be part of
-        // based on from and to edges
-        else
-        {
-            // Flag all roundabout edges that are missing destination sign relations or missing
-            // destination sign tags for existing relations
-            if (!roundAboutInEdgeToOutEdgeMap.isEmpty())
-            {
-                final Set<AtlasEntity> allRoundaboutEdgesMissingTagsOrRelations = this
-                        .getAllRoundaboutEdgesMissingTagsOrRelations(roundAboutInEdgeToOutEdgeMap,
-                                destinationSignRelations.get());
-                if (!allRoundaboutEdgesMissingTagsOrRelations.isEmpty())
-                {
-                    entitiesToBeFlagged.addAll(allRoundaboutEdgesMissingTagsOrRelations);
-                    instructionIndex = INSTRUCTION_INDEX_FOUR;
-                }
-            }
-            else
-            {
-                final Set<Relation> destinationSignRelationsMissingTag = this
-                        .getRelationsWithMissingDestinationTag(destinationSignRelations.get());
-                // Flag if destination sign tag is missing
-                if (!destinationSignRelationsMissingTag.isEmpty())
-                {
-                    this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
-                    instructionIndex = INSTRUCTION_INDEX_ONE;
-                    entitiesToBeFlagged.addAll(destinationSignRelationsMissingTag);
-                }
-                else if (inEdgeToOutEdgeMap != null)
-                {
-                    // If there are any missing destination sign relation that the node should be
-                    // part
-                    // of, flag it
-                    final Set<AtlasEntity> connectedEdgesNotFormDestinationRelation = this
-                            .getConnectedEdgesNotFormDestinationRelation(inEdgeToOutEdgeMap,
-                                    destinationSignRelations.get());
-                    if (!connectedEdgesNotFormDestinationRelation.isEmpty())
-                    {
-                        instructionIndex = INSTRUCTION_INDEX_TWO;
-                        entitiesToBeFlagged.addAll(connectedEdgesNotFormDestinationRelation);
-                    }
-                }
-            }
-        }
+        final FlaggedIntersection flaggedIntersection = destinationSignRelations.isEmpty()
+                ? this.getIntersectionsWithNoDestinationSignRelation(roundAboutInEdgeToOutEdgeMap,
+                        inEdgeToOutEdgeMap, intersectingNode)
+                : this.getIntersectionsWithIncompleteDestinationSignRelation(
+                        roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap, intersectingNode,
+                        destinationSignRelations.get());
+        final int instructionIndex = flaggedIntersection.getInstructionIndex();
+        final Set<AtlasEntity> entitiesToBeFlagged = flaggedIntersection.getFlaggedItems();
         if (instructionIndex == -1)
         {
             return Optional.empty();
@@ -388,9 +338,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         return inEdgeToOutEdgeMap.entrySet().stream().flatMap(atlasEntitySetEntry ->
         {
             final AtlasEntity key = atlasEntitySetEntry.getKey();
-            final Optional<Set<AtlasEntity>> atlasEntities = this.connectedEdgesNotPartOfRelation(
-                    key, inEdgeToOutEdgeMap.get(key), destinationSignRelations);
-            return atlasEntities.map(Stream::of).orElseGet(Stream::empty);
+            return this.connectedEdgesNotPartOfRelation(key, inEdgeToOutEdgeMap.get(key),
+                    destinationSignRelations).stream();
         }).flatMap(Collection::stream).collect(Collectors.toSet());
     }
 
@@ -405,6 +354,131 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     {
         return Iterables.stream(objects).map(AtlasEntity::getIdentifier).map(String::valueOf)
                 .collectToList();
+    }
+
+    /**
+     * Node could be part of multiple destination_sign relations. This method collect the
+     * intersecting items that are not part of existing destination_sign relation of the node or if
+     * the relations are missing a destination_sign tag.
+     *
+     * @param roundAboutInEdgeToOutEdgeMap
+     *            map with roundabout inEdge and outEdges
+     * @param inEdgeToOutEdgeMap
+     *            map with non-roundabout inEdge and outEdges
+     * @param intersectingNode
+     *            {@link Node}
+     * @param destinationSignRelations
+     *            set of relations the node is a member of
+     * @return FlaggedIntersection with instruction index and set of flagged items with incomplete
+     *         destination_sign relation
+     */
+    private FlaggedIntersection getIntersectionsWithIncompleteDestinationSignRelation(
+            final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
+            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap,
+            final Node intersectingNode, final Set<Relation> destinationSignRelations)
+    {
+        // If the node is part of destination sign relation, check if destination tag of the
+        // relation is missing or if there are any missing relations that the node could be part of
+        // based on from and to edges
+        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
+        int instructionIndex = -1;
+        // Flag all roundabout edges that are missing destination sign relations or missing
+        // destination sign tags for existing relations
+        if (!roundAboutInEdgeToOutEdgeMap.isEmpty())
+        {
+            final Set<AtlasEntity> allRoundaboutEdgesMissingTagsOrRelations = this
+                    .getAllRoundaboutEdgesMissingTagsOrRelations(roundAboutInEdgeToOutEdgeMap,
+                            destinationSignRelations);
+            if (!allRoundaboutEdgesMissingTagsOrRelations.isEmpty())
+            {
+                entitiesToBeFlagged.addAll(allRoundaboutEdgesMissingTagsOrRelations);
+                instructionIndex = INSTRUCTION_INDEX_FOUR;
+            }
+        }
+        else
+        {
+            final Set<Relation> destinationSignRelationsMissingTag = this
+                    .getRelationsWithMissingDestinationTag(destinationSignRelations);
+            // Flag if destination sign tag is missing
+            if (!destinationSignRelationsMissingTag.isEmpty())
+            {
+                this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
+                instructionIndex = INSTRUCTION_INDEX_ONE;
+                entitiesToBeFlagged.addAll(destinationSignRelationsMissingTag);
+            }
+            else if (inEdgeToOutEdgeMap != null)
+            {
+                // If there are any missing destination sign relation that the node should be
+                // part of, flag it
+                final Set<AtlasEntity> connectedEdgesNotFormDestinationRelation = this
+                        .getConnectedEdgesNotFormDestinationRelation(inEdgeToOutEdgeMap,
+                                destinationSignRelations);
+                if (!connectedEdgesNotFormDestinationRelation.isEmpty())
+                {
+                    instructionIndex = INSTRUCTION_INDEX_TWO;
+                    entitiesToBeFlagged.addAll(connectedEdgesNotFormDestinationRelation);
+                }
+            }
+        }
+        return new FlaggedIntersection(instructionIndex, entitiesToBeFlagged);
+    }
+
+    /**
+     * Get items part of intersection that is not part of any destination_sign relations
+     *
+     * @param roundAboutInEdgeToOutEdgeMap
+     *            map with roundabout inEdge and outEdges
+     * @param inEdgeToOutEdgeMap
+     *            map with non-roundabout inEdge and outEdges
+     * @param intersectingNode
+     *            {@link Node}
+     * @return FlaggedIntersection with instruction index and set of flagged items with no
+     *         destination_sign relation
+     */
+    private FlaggedIntersection getIntersectionsWithNoDestinationSignRelation(
+            final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
+            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap,
+            final Node intersectingNode)
+    {
+        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
+        int instructionIndex = -1;
+        // Flag all in and out edges
+        if (roundAboutInEdgeToOutEdgeMap.isEmpty() && inEdgeToOutEdgeMap != null)
+        {
+            inEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
+            {
+                entitiesToBeFlagged.add(inEdge);
+                entitiesToBeFlagged.addAll(setOfOutEdge);
+            });
+            if (!entitiesToBeFlagged.isEmpty())
+            {
+                instructionIndex = INSTRUCTION_INDEX_ZERO;
+            }
+        }
+        // Flag all roundabout edges
+        else
+        {
+            roundAboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
+            {
+                // Ideally there would only be one roundabout edge and one exit edge per node
+                final Optional<AtlasEntity> roundaboutEdge = JunctionTag.isRoundabout(inEdge)
+                        ? Optional.of(inEdge)
+                        : setOfOutEdge.stream().filter(JunctionTag::isRoundabout).findFirst();
+                final Optional<AtlasEntity> roundaboutExitEdge = setOfOutEdge.stream()
+                        .filter(outEdge -> !JunctionTag.isRoundabout(outEdge)).findFirst();
+                if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
+                {
+                    entitiesToBeFlagged
+                            .addAll(this.getRoundaboutEdges((Edge) roundaboutEdge.get()));
+                    entitiesToBeFlagged.add(roundaboutExitEdge.get());
+                }
+            });
+            if (!entitiesToBeFlagged.isEmpty())
+            {
+                instructionIndex = INSTRUCTION_INDEX_THREE;
+            }
+        }
+        return new FlaggedIntersection(instructionIndex, entitiesToBeFlagged);
     }
 
     /**
@@ -454,21 +528,17 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
 
     /**
      * Checks if given outEdge is at the same z level and in the same direction as that of the
-     * inEdge and has a valid highway tag
+     * inEdge
      *
      * @param inEdge
      *            inEdge
      * @param outEdge
      *            outEdge
-     * @param validHighwayTypes
-     *            list of valid Highway types
      * @return true if the outEdge matches the above criteria for the given inEdge
      */
-    private boolean isMatchingOutEdge(final Edge inEdge, final Edge outEdge,
-            final List<String> validHighwayTypes)
+    private boolean isMatchingOutEdge(final Edge inEdge, final Edge outEdge)
     {
         return LevelTag.areOnSameLevel(inEdge, outEdge) && LayerTag.areOnSameLayer(inEdge, outEdge)
-                && validHighwayTypes.contains(outEdge.highwayTag().getTagValue())
                 && EDGE_DIRECTION_COMPARATOR.isSameDirection(inEdge, outEdge, true);
     }
 
@@ -530,36 +600,45 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap = new HashMap<>();
         inEdges.forEach(inEdge ->
         {
-            final String inEdgeHighwayType = HighwayTag.highwayTag(inEdge).get().getTagValue();
-            if (this.connectedHighwayTypes.containsKey(inEdgeHighwayType))
+            final Optional<HighwayTag> highwayTag = HighwayTag.highwayTag(inEdge);
+            if (highwayTag.isPresent()
+                    && this.connectedHighwayTypes.containsKey(highwayTag.get().getTagValue()))
             {
-                final List<String> validHighwayTypesOfOutEdge = this.connectedHighwayTypes
-                        .get(inEdgeHighwayType);
                 // Filter out edges based on level and layer tags and valid highway types
-                final Set<AtlasEntity> filteredOutEdges = outEdges.stream().filter(outEdge -> this
-                        .isMatchingOutEdge(inEdge, outEdge, validHighwayTypesOfOutEdge))
+                final Set<AtlasEntity> filteredOutEdges = outEdges.stream()
+                        .filter(outEdge -> this.isMatchingOutEdge(inEdge, outEdge))
                         .collect(Collectors.toSet());
-
-                // If there are at least two out edges, filter these edges based on their highway
-                // types. Check if the highway type of out edge is one of the valid connected
-                // highway types
-                // based on the incoming edge
+                // There should be at least 2 valid outEdges
                 if (filteredOutEdges.size() >= 2)
                 {
-                    if (filteredOutEdges.stream().anyMatch(JunctionTag::isRoundabout))
+                    final String inEdgeHighwayType = highwayTag.get().getTagValue();
+                    final List<String> validHighwayTypesOfOutEdge = this.connectedHighwayTypes
+                            .get(inEdgeHighwayType);
+                    final Set<AtlasEntity> filteredByHighways = filteredOutEdges.stream()
+                            .filter(atlasEntity ->
+                            {
+                                final Optional<HighwayTag> atlasEntityHighway = HighwayTag
+                                        .highwayTag(atlasEntity);
+                                return atlasEntityHighway.isPresent() && validHighwayTypesOfOutEdge
+                                        .contains(atlasEntityHighway.get().getTagValue());
+                            }).collect(Collectors.toSet());
+                    // If any of the edges is a roundabout, add it to roundabout map
+                    if (filteredByHighways.stream().anyMatch(JunctionTag::isRoundabout)
+                            || JunctionTag.isRoundabout(inEdge))
                     {
-                        roundAboutInEdgeToOutEdgeMap.put(inEdge, filteredOutEdges);
+                        roundAboutInEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
                     }
-                    else
+                    else if (!filteredByHighways.isEmpty())
                     {
-                        inEdgeToOutEdgeMap.put(inEdge, filteredOutEdges);
+                        inEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
                     }
                 }
+
             }
         });
         final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = new HashMap<>();
-        mapOfMatchingInAndOutEdges.put("nonRoundaboutMatchingEdgesMap", inEdgeToOutEdgeMap);
-        mapOfMatchingInAndOutEdges.put("roundaboutMatchingEdgesMap", roundAboutInEdgeToOutEdgeMap);
+        mapOfMatchingInAndOutEdges.put(NON_ROUNDABOUT_INTERSECTION_MAP, inEdgeToOutEdgeMap);
+        mapOfMatchingInAndOutEdges.put(ROUNDABOUT_INTERSECTION_MAP, roundAboutInEdgeToOutEdgeMap);
         return mapOfMatchingInAndOutEdges;
     }
 }

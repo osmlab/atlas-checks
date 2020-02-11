@@ -5,7 +5,6 @@
 This check identifies at-grade intersections that are not modeled into destination_sign relations. 
 An at-grade intersection is an intersection with two or more edges at the same level with valid 
 highway classifications.
- 
 
 #### Live Examples
 
