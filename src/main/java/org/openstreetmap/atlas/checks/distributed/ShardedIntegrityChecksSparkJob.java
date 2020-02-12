@@ -4,7 +4,6 @@ import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +27,6 @@ import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
-import org.openstreetmap.atlas.checks.utility.ShardGroup;
 import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
 import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.event.Processor;
@@ -36,7 +34,6 @@ import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.generator.sharding.AtlasSharding;
 import org.openstreetmap.atlas.generator.tools.caching.HadoopAtlasFileCache;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
-import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
 import org.openstreetmap.atlas.geography.atlas.dynamic.DynamicAtlas;
@@ -66,7 +63,7 @@ import scala.Tuple2;
 
 /**
  * A spark job for generating integrity checks in a sharded fashion. This allows for a lower local
- * memory profile as well as better parallelization
+ * memory profile as well as better parallelization.
  *
  * @author jklamer
  * @author bbreithaupt
@@ -84,9 +81,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad",
             "The maximum amount of shards loaded into memory per executor", Integer::valueOf,
             Optionality.OPTIONAL, "45");
-    private static final Switch<Boolean> DYNAMIC_ATLAS = new Switch<>("dynamicAtlas",
-            "if true then use a dynamic atlas, else use a multi atlas", Boolean::new,
-            Optionality.OPTIONAL, "true");
+    private static final Switch<Boolean> MULTI_ATLAS = new Switch<>("multiAtlas",
+            "If true then use a multi atlas, else use a dynamic atlas. This works better for running on a single machine",
+            Boolean::new, Optionality.OPTIONAL, "false");
     private static final Switch<String> SPARK_STORAGE_DISK_ONLY = new Switch<>(
             "sparkStorageDiskOnly", "Store cached RDDs exclusively on disk",
             StringConverter.IDENTITY, Optionality.OPTIONAL);
@@ -228,7 +225,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                             .parallelize(tasksForCountry, tasksForCountry.size())
                             .mapToPair(produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
-                                    (Boolean) commandMap.get(DYNAMIC_ATLAS)));
+                                    (Boolean) commandMap.get(MULTI_ATLAS)));
                     // Save the RDD
                     rdd.persist(storageLevel);
                     // Use a fast spark action to overcome spark lazy elocution. This is necessary
@@ -258,7 +255,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, DYNAMIC_ATLAS,
+        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, MULTI_ATLAS,
                 SPARK_STORAGE_DISK_ONLY);
     }
 
@@ -328,7 +325,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
             flagContainer.reconstructEvents().parallel().forEach(eventService::post);
             eventService.complete();
-            return;
         };
     }
 
@@ -348,8 +344,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      *            spark {@link Broadcast} of the current {@link Sharding}
      * @param shardDistanceExpansion
      *            {@link Distance} to expand the shard group
-     * @param dynamic
-     *            boolean whether to use a dynamic or multi Atlas
+     * @param multi
+     *            boolean whether to use a multi or dynamic Atlas
      * @return {@link PairFunction} that takes {@link ShardedCheckFlagsTask} and returns a
      *         {@link Tuple2} of a {@link String} country code and {@link UniqueCheckFlagContainer}
      */
@@ -357,7 +353,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
             final String input, final String output, final Map<String, String> configurationMap,
             final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
-            final Distance shardDistanceExpansion, final boolean dynamic)
+            final Distance shardDistanceExpansion, final boolean multi)
     {
         return task ->
         {
@@ -366,26 +362,27 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     task.getCountry(), configurationMap);
             final Atlas atlas;
 
-            // Use dynamic or multi (multi runs faster locally)
-            if (dynamic)
+            // Use dynamic or multi atlas (multi runs faster locally)
+            if (multi)
             {
-                logger.info("Running with a dynamic atlas");
-                final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher, sharding.getValue(),
-                        Collections.singleton(task.getShard()),
-                        task.getShard().bounds().expand(shardDistanceExpansion))
-                        .withDeferredLoading(true).withAggressivelyExploreRelations(true)
-                        .withExtendIndefinitely(false);
-                atlas = new DynamicAtlas(policy);
-                ((DynamicAtlas) atlas).preemptiveLoad();
+                atlas = new MultiAtlas(
+                        StreamSupport
+                                .stream(sharding.getValue()
+                                        .shards(task.getShard().bounds()
+                                                .expand(shardDistanceExpansion))
+                                        .spliterator(), true)
+                                .map(fetcher).filter(Optional::isPresent).map(Optional::get)
+                                .collect(Collectors.toList()));
             }
             else
             {
-                logger.info("Running with a multi atlas");
-                atlas = new MultiAtlas(StreamSupport
-                        .stream(sharding.getValue().shards(task.getShard().bounds()
-                                .expand(shardDistanceExpansion)).spliterator(), true)
-                        .map(fetcher).filter(Optional::isPresent).map(Optional::get)
-                        .collect(Collectors.toList()));
+                final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher,
+                        sharding.getValue(), Collections.singleton(task.getShard()),
+                        task.getShard().bounds().expand(shardDistanceExpansion))
+                                .withDeferredLoading(true).withAggressivelyExploreRelations(true)
+                                .withExtendIndefinitely(false);
+                atlas = new DynamicAtlas(policy);
+                ((DynamicAtlas) atlas).preemptiveLoad();
             }
 
             final AtlasEntityPolygonsFilter boundaryFilter = AtlasEntityPolygonsFilter.Type.INCLUDE
