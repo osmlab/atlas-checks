@@ -20,11 +20,14 @@ import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
+import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
+import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
@@ -67,9 +70,16 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes";
     private static final TaggableFilter CAN_CROSS_WATER_BODY_FILTER = TaggableFilter
             .forDefinition(CAN_CROSS_WATER_BODY_TAGS);
+    private static final String OFFENDING_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
+    private static final TaggableFilter IS_OFFENDER = TaggableFilter
+            .forDefinition(OFFENDING_LINEITEMS);
     // Whether we should flag buildings that cross waterbodies
-    private static final boolean DEFAULT_INVALIDATE_CROSSING_BUILDINGS = false;
-    private boolean invalidateCrossingBuildings;
+    private static final Predicate<Edge> HIGHWAY_TYPE_TO_FLAG = object -> object.highwayTag()
+            .isMoreImportantThanOrEqualTo(HighwayTag.PATH)
+            && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.BUS_GUIDEWAY);
+    // Whether we should limit flags to only streets, buildings, and railways
+    private static final boolean DEFAULT_OFFENDING_LINEITEM_FILTER = false;
+    private boolean filterOffendingLineItems;
     // Assume the object is an area based on atlas call
     private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
             .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
@@ -115,7 +125,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "|natural->strait,channel,fjord,sound,bay" + "|harbour->*&harbour->!no"
             + "|estuary->*&estuary->!no" + "|bay->*&bay->!no"
             + "|seamark:type->harbour,harbour_basin,sea_area" + "|place->sea"
-            + "|water->bay,cove,harbour" + "|waterway->artificial,dock";
+            + "|water->bay,cove,harbour" + "|waterway->artificial,dock"
+            + "|man_made->breakwater,pier" + "|natural->beach,marsh,swamp" + "|water->marsh"
+            + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow";
     private static final TaggableFilter INVALID_WATER_BODY_TAGS = TaggableFilter
             .forDefinition(WATER_BODY_EXCLUDE_TAGS);
 
@@ -199,8 +211,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     public LineCrossingWaterBodyCheck(final Configuration configuration)
     {
         super(configuration);
-        this.invalidateCrossingBuildings = this.configurationValue(configuration,
-                "flaggableItems.buildings", DEFAULT_INVALIDATE_CROSSING_BUILDINGS);
+        this.filterOffendingLineItems = this.configurationValue(configuration,
+                "intersectingLineItems.filter", DEFAULT_OFFENDING_LINEITEM_FILTER);
     }
 
     @Override
@@ -218,10 +230,19 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         final Area objectAsArea = (Area) object;
         final Polygon areaAsPolygon = objectAsArea.asPolygon();
         final Atlas atlas = object.getAtlas();
-        final Iterable<AtlasItem> allCrossingItems = this.invalidateCrossingBuildings
-                ? new MultiIterable<>(atlas.edgesIntersecting(areaAsPolygon),
-                        atlas.linesIntersecting(areaAsPolygon),
+        final Iterable<AtlasItem> allCrossingItems = this.filterOffendingLineItems
+                // If we're only looking for crossing buildings/railways/streets
+                ? new MultiIterable<>(
+                        atlas.lineItemsIntersecting(areaAsPolygon,
+                                lineItem -> (lineItem instanceof Edge
+                                        && HIGHWAY_TYPE_TO_FLAG.test((Edge) lineItem)
+                                        || IS_OFFENDER.test(lineItem))
+                                        && lineItem.intersects(areaAsPolygon)
+                                        && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
+                                                || Validators.isOfType(lineItem, BridgeTag.class,
+                                                        BridgeTag.NO))),
                         atlas.areasIntersecting(areaAsPolygon, IS_BUILDING::test))
+                // If we're interested in all crossing line items
                 : new MultiIterable<>(atlas.edgesIntersecting(areaAsPolygon),
                         atlas.linesIntersecting(areaAsPolygon));
 

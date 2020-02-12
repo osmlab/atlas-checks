@@ -438,7 +438,7 @@
   },
   "LineCrossingWaterBodyCheck": {
     "enabled": true,
-    "flaggableItems.buildings": true
+    "intersectingLineItems.filter": true
   },
   "LongSegmentCheck": {
     "length.minimum.kilometers": 10.0,

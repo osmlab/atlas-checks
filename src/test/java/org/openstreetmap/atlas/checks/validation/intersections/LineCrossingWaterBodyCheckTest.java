@@ -27,7 +27,7 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.getInvalidCrossingBuildingAtlas(),
                 new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
-                        "{  \"LineCrossingWaterBodyCheck\": { \"enabled\": true, \"flaggableItems.buildings\": true }}")));
+                        "{  \"LineCrossingWaterBodyCheck\": { \"enabled\": true, \"intersectingLineItems.filter\": true }}")));
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
     }
