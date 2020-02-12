@@ -141,9 +141,10 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
                         this.markAsFlagged(object.getIdentifier());
                         newFlag.addObject(object);
-                        newFlag.addInstruction(this.getLocalizedInstruction(0,
-                                object.getOsmIdentifier(), collectedEdges.stream()
-                                        .map(AtlasObject::getIdentifier).collect(Collectors.toList())));
+                        newFlag.addInstruction(
+                                this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                                        collectedEdges.stream().map(AtlasObject::getIdentifier)
+                                                .collect(Collectors.toList())));
                         return Optional.of(newFlag);
                     }
                 }
@@ -182,7 +183,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
                             && this.isValidCrossingEdge(crossingEdge)))
                     .stream()
-                    .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge.getOsmIdentifier())
+                    .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge
+                            .getOsmIdentifier())
                     // Go through crossing items and collect invalid crossings
                     // NOTE: Due to way sectioning same OSM way could be marked multiple times here.
                     // However,
