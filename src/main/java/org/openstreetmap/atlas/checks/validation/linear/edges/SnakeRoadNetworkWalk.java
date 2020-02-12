@@ -48,7 +48,7 @@ public class SnakeRoadNetworkWalk
         // We use a TreeSet here to order the edges by their Atlas identifier. This helps us easily
         // grab the first and last Edge making up the road and check connections for false
         // positives.
-        this.visitedEdges = new TreeSet<AtlasObject>((one, two) ->
+        this.visitedEdges = new TreeSet<>((one, two) ->
         {
             return Long.compare(one.getIdentifier(), two.getIdentifier());
         });
@@ -186,7 +186,6 @@ public class SnakeRoadNetworkWalk
         this.visitedEdges.add(comingTo);
         this.setGreatestValence(comingTo.start());
         this.setGreatestValence(comingTo.end());
-        checkIfEdgeHeadingDifferenceExceedsThreshold(comingFrom, comingTo);
     }
 
     /**
