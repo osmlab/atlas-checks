@@ -26,12 +26,17 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author seancoulter
  */
-public class OceanBleedingCheck extends BaseCheck
+public class OceanBleedingCheck extends BaseCheck<Long>
 {
     private static final String VALID_OCEAN_TAGS = "natural->strait,channel,fjord,sound,bay|"
-            + "harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock";
-    private static final TaggableFilter OCEAN_DEFINITIONS = TaggableFilter
+            + "harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock";
+    private static final TaggableFilter VALID_OCEAN_DEFINITIONS = TaggableFilter
             .forDefinition(VALID_OCEAN_TAGS);
+    private static final String INVALID_OCEAN_TAGS = "man_made->breakwater,pier"
+            + "|natural->beach,marsh,swamp" + "|water->marsh"
+            + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow";
+    private static final TaggableFilter INVALID_OCEAN_DEFINITIONS = TaggableFilter
+            .forDefinition(INVALID_OCEAN_TAGS);
     private static final Predicate<Area> IS_BUILDING = area -> Validators.isNotOfType(area,
             BuildingTag.class, BuildingTag.NO);
     private static final Predicate<Edge> VALID_HIGHWAY_TYPE = object -> object.highwayTag()
@@ -69,7 +74,7 @@ public class OceanBleedingCheck extends BaseCheck
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return OCEAN_DEFINITIONS.test(object)
+        return VALID_OCEAN_DEFINITIONS.test(object) && !INVALID_OCEAN_DEFINITIONS.test(object)
                 && (object instanceof Area || object instanceof LineItem);
     }
 
@@ -97,11 +102,11 @@ public class OceanBleedingCheck extends BaseCheck
         // Collect offending line items (non-bridges) and buildings
         // We do a second check in the predicate for actual intersection on the ocean boundary if
         // the ocean boundary is a LineItem. Or else we just use the area polygon.
-        final Iterable<LineItem> intersectingRoads = object.getAtlas().lineItemsIntersecting(
-                oceanBoundary,
-                lineItem -> (oceanIsArea
+        final Iterable<LineItem> intersectingRoads = object.getAtlas()
+                .lineItemsIntersecting(oceanBoundary, lineItem -> (oceanIsArea
                         || (((LineItem) object).asPolyLine()).intersects(lineItem.asPolyLine()))
-                        && !Validators.hasValuesFor(lineItem, BridgeTag.class)
+                        && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
+                                || Validators.isOfType(lineItem, BridgeTag.class, BridgeTag.NO))
                         && (lineItem instanceof Edge && VALID_HIGHWAY_TYPE.test((Edge) lineItem)
                                 || VALID_OFFENDING_LINEITEM.test(lineItem)));
         final Iterable<Area> intersectingBuildings = object.getAtlas().areasIntersecting(
