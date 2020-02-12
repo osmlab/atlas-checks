@@ -78,17 +78,16 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private static final Switch<String> SHARDING = new Switch<>("sharding",
             "Sharding to load in place of sharding file in Atlas path", StringConverter.IDENTITY,
             Optionality.OPTIONAL);
-    private static final Switch<Integer> SHARD_LOAD_MAX = new Switch<>("maxShardLoad",
-            "The maximum amount of shards loaded into memory per executor", Integer::valueOf,
-            Optionality.OPTIONAL, "45");
     private static final Switch<Boolean> MULTI_ATLAS = new Switch<>("multiAtlas",
             "If true then use a multi atlas, else use a dynamic atlas. This works better for running on a single machine",
             Boolean::new, Optionality.OPTIONAL, "false");
     private static final Switch<String> SPARK_STORAGE_DISK_ONLY = new Switch<>(
             "sparkStorageDiskOnly", "Store cached RDDs exclusively on disk",
             StringConverter.IDENTITY, Optionality.OPTIONAL);
+
     private static final Logger logger = LoggerFactory
             .getLogger(ShardedIntegrityChecksSparkJob.class);
+
     private final MultiMap<String, Check> countryChecks = new MultiMap<>();
 
     public static void main(final String[] args)
@@ -255,8 +254,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(SHARD_LOAD_MAX, EXPANSION_DISTANCE, MULTI_ATLAS,
-                SPARK_STORAGE_DISK_ONLY);
+        return super.switches().with(EXPANSION_DISTANCE, MULTI_ATLAS,
+                SPARK_STORAGE_DISK_ONLY, SHARDING);
     }
 
     /**
