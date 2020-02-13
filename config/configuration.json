@@ -204,14 +204,14 @@
       "difficulty": "EASY"
     }
   },
-   "DuplicatePointCheck": {
-     "challenge": {
-       "description": "Tasks contain node locations where duplicate points of interest are found.",
-       "blurb": "Duplicate Points",
-       "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains.",
-       "difficulty": "EASY"
-     }
-   },
+  "DuplicatePointCheck": {
+    "challenge": {
+      "description": "Tasks contain node locations where duplicate points of interest are found.",
+      "blurb": "Duplicate Points",
+      "instruction": "Open your favorite editor and remove one or more of the duplicate points of interest until only one remains.",
+      "difficulty": "EASY"
+    }
+  },
   "DuplicateWaysCheck": {
     "enabled": false,
     "challenge": {
@@ -374,6 +374,19 @@
       "difficulty":"NORMAL"
     }
   },
+  "InvalidMultiPolygonRelationCheck": {},
+  "InvalidSignBoardRelationCheck": {
+    "countries": [
+      "RUS"
+    ],
+    "challenge": {
+      "description": "Tasks containing signboard relations that are not properly formed.",
+      "blurb": "Invalid Signboards",
+      "instruction": "Open your favorite editor, and add/correct members of the specified signboard relation.",
+      "difficulty": "Normal",
+      "defaultPriority": "MEDIUM"
+    }
+  },
   "InvalidTagsCheck": {
     "filters.classes.tags": [
       ["area,relation","boundary->protected_area&protect_class->!"]
@@ -393,6 +406,92 @@
       "instruction": "Correct the displayed invalid turn restriction",
       "difficulty": "HARD",
       "tags":"highway"
+    }
+  },
+  "LineCrossingBuildingCheck": {
+    "challenge": {
+      "description": "The water body has invalid crossings by line item(s).",
+      "blurb": "Unless line item is a certain type that can cross water bodies, then it should not cross them.",
+      "instruction": "Open the task in your favorite editor and fix the issue with invalid crossing.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "building"
+    }
+  },
+  "LineCrossingWaterBodyCheck": {},
+  "LongSegmentCheck": {
+    "length.minimum.kilometers": 10.0,
+    "challenge": {
+      "description": "A long segment is a segment that is more than 10 kilometers long. Very long segments may not represent actual roads.",
+      "blurb": "Very long segments may not represent actual roads.",
+      "instruction": "Open your favorite editor and check if the segment should be split into smaller segments or removed.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
+  },
+  "MalformedPolyLineCheck": {
+    "challenge": {
+      "description": "Tasks containing lines that have only one point, or none, and the ones that are too long or too short. A line is considered too long if it is longer than 500km and too short if is shorter than 1m. Coastlines and Rivers are excluded.",
+      "blurb": "Polylines that are malformed.",
+      "instruction": "Open your favorite editor, remove unnecessary nodes if required. Split way into multiple ways so that the way is not too long, or increase the length of a way if it is less than 1m.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
     }
   },
   "MalformedRoundaboutCheck" : {
@@ -432,6 +531,15 @@
       "difficulty": "MEDIUM"
     }
   },
+  "NodeValenceCheck": {
+    "connections.maximum": 10,
+    "challenge": {
+      "description": "Tasks with nodes are not connected to too many edges. It is considered to have too many edges if it contains more than 10 connections.",
+      "blurb": "Nodes with too many edges.",
+      "instruction": "Open your favorite editor and disconnect edges to the node.",
+      "difficulty": "EXPERT"
+    }
+  },
   "OneMemberRelationCheck": {
     "tags.filter": "type->!person&type->!multipolygon",
     "challenge": {
@@ -455,6 +563,64 @@
       "blurb": "Overlapping AOI Polygon",
       "instruction": "Correct the areas as necessary to not have overlapping ways representing the same AOI",
       "difficulty": "HARD"
+    }
+  },
+  "OverlappingEdgeCheck": {
+    "highway.priority.minimum": "residential",
+    "pedestrian.areas.filter": true,
+    "challenge": {
+      "description": "Tasks will include highways that are overlapped by another highway.",
+      "blurb": "Overlapping Highways",
+      "instruction": "Open your favorite editor and either remove the overlap way segment or correct tagging so that only a single highway remains.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
+    }
+  },
+  "RoadLinkCheck": {
+    "length.maximum.miles": 1.0,
+    "challenge": {
+      "description": "Verify that one end or the other is a fork to/from a road of the same class, that is not a _link",
+      "blurb": "Check for invalid classes in connected ways.",
+      "instruction": "Open your favorite editor and check that the connected ways are either of the same class or a link. If not modify the connected ways class to either the same class or a link.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
     }
   },
   "RoadNameGapCheck": {
@@ -575,6 +741,36 @@
     "length.maximum": 2,
     "non.latin.length.maximum": 1
   },
+  "ShortSegmentCheck": {
+    "edge.length.maximum.meters": 1.0,
+    "node.valence.minimum": 3,
+    "highway.priority.minimum": "service",
+    "challenge": {
+      "description": "A short segment is a segment that is less than 1 meter. A short segment should not be dead-end. Also a short segment with 2 connections should be investigated to see if segment is really needed.",
+      "blurb": "Segments with less 1 meter length should not be dead end.",
+      "instruction": "Open your favorite editor and fix the issue with the short segment.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
+    }
+  },
   "SignPostCheck": {
     "link":{
       "length.minimum.meters": 50.0,
@@ -655,6 +851,45 @@
       "blurb": "Verify unusual layer tags.",
       "instruction": "Open your favorite editor, check the instruction for the task and then modify the tag that is considered unusual or possibly invalid.",
       "difficulty": "EASY"
+    }
+  },
+  "UnwalkableWaysCheck": {
+    "countries": [
+      "SGP"
+    ],
+    "includeDualCrossingDualCarriageways": false,
+    "challenge": {
+      "description": "Intersections with dual carriageways can cause foot traffic routing issues.",
+      "blurb": "Should be marked foot=yes or foot=no",
+      "instruction": "Should be marked as foot=yes or foot=no",
+      "difficulty": "EASY"
+    }
+  },
+  "ValenceOneImportantRoadCheck": {
+    "challenge": {
+      "description": "Tasks containing high classification roads that start and/or end disconnected from the surrounding road network.",
+      "blurb": "Valence-1 Important Road",
+      "instruction": "Open your favorite editor and add/correct connecting ways to continue the highway, add/correct a corresponding link to connect the highway to a different class road network, or reverse digitization to correct one-way direction.",
+      "difficulty": "Normal",
+      "defaultPriority": "LOW",
+      "highPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
+      },
+      "mediumPriorityRule": {
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      }
     }
   },
   "WaterbodyAndIslandSizeCheck": {
