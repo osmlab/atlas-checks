@@ -63,7 +63,11 @@ import scala.Tuple2;
 
 /**
  * A spark job for generating integrity checks in a sharded fashion. This allows for a lower local
- * memory profile as well as better parallelization.
+ * memory profile as well as better parallelization.<br>
+ * This implementation currently only supports Atlas files as an input data source. They must be in
+ * the structure: folder/iso_code/iso_z-x-y.atlas<br>
+ * Also required is a reference for how the Atlases are sharded. This can be provided as a
+ * sharding.txt file in the input path, or through the {@code sharding} argument.
  *
  * @author jklamer
  * @author bbreithaupt
