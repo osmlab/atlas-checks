@@ -254,8 +254,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(EXPANSION_DISTANCE, MULTI_ATLAS,
-                SPARK_STORAGE_DISK_ONLY, SHARDING);
+        return super.switches().with(EXPANSION_DISTANCE, MULTI_ATLAS, SPARK_STORAGE_DISK_ONLY,
+                SHARDING);
     }
 
     /**
