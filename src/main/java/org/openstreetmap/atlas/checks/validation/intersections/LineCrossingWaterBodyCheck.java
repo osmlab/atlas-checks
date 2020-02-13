@@ -28,6 +28,7 @@ import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
@@ -39,10 +40,11 @@ import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags line items (edges or lines), and optionally buildings, that are crossing water bodies
- * invalidly. {@code LineCrossingWaterBodyCheck#canCrossWaterBody(AtlasItem)} and
+ * Flags line items (edges or lines) that are crossing water bodies invalidly.
+ * {@code LineCrossingWaterBodyCheck#canCrossWaterBody(AtlasItem)} and
  * {@code Utilities#haveExplicitLocationsForIntersections(Polygon, AtlasItem)} is used to decide
- * whether a crossing is valid or not.
+ * whether a crossing is valid or not. Can also be configured to flag only streets, railways, or
+ * buildings that cross waterbodies.
  *
  * @author mertk
  * @author savannahostrowski
@@ -83,6 +85,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     // Assume the object is an area based on atlas call
     private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
             .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
+    private static final String BUILDING_TAGS_DO_NOT_FLAG = "public_transport->station,aerialway=station";
+    private static final TaggableFilter NONOFFENDING_BUILDINGS = TaggableFilter
+            .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
 
     private static final String WATER_BODY_TAGS =
             // Lakes
@@ -111,7 +116,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                     "|natural->lagoon" + "|water->lagoon" + "|waterway->lagoon" +
 
                     // Intermittent/Dry lakes
-                    "|intermittent->dry" + "|seasonal->dry" + "|natural->dry_lake";
+                    "|intermittent->dry" + "|seasonal->dry" + "|natural->dry_lake" +
+
+                    // Unique
+                    "|waterway->billabong,navigablechannel,river;stream,reservoir";
     private static final TaggableFilter VALID_WATER_BODY_TAGS = TaggableFilter
             .forDefinition(WATER_BODY_TAGS);
 
@@ -127,7 +135,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "|seamark:type->harbour,harbour_basin,sea_area" + "|place->sea"
             + "|water->bay,cove,harbour" + "|waterway->artificial,dock"
             + "|man_made->breakwater,pier" + "|natural->beach,marsh,swamp" + "|water->marsh"
-            + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow";
+            + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow"
+            + "|waterway->drainage_channel,glacier,Minnow Falls, pumping_station"
+            + "|water->tank,Earth_Tank_,_Off_Stream_Flow_Dam,treatment_pond,re#,swamp_-_occasional,trough,Trough,waste_water";
     private static final TaggableFilter INVALID_WATER_BODY_TAGS = TaggableFilter
             .forDefinition(WATER_BODY_EXCLUDE_TAGS);
 
@@ -240,8 +250,11 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                                         && lineItem.intersects(areaAsPolygon)
                                         && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
                                                 || Validators.isOfType(lineItem, BridgeTag.class,
-                                                        BridgeTag.NO))),
-                        atlas.areasIntersecting(areaAsPolygon, IS_BUILDING::test))
+                                                        BridgeTag.NO))
+                                        && LevelTag.areOnSameLevel(object, lineItem)),
+                        atlas.areasIntersecting(areaAsPolygon,
+                                area -> IS_BUILDING.test(area) && !NONOFFENDING_BUILDINGS.test(area)
+                                        && LevelTag.areOnSameLevel(object, area)))
                 // If we're interested in all crossing line items
                 : new MultiIterable<>(atlas.edgesIntersecting(areaAsPolygon),
                         atlas.linesIntersecting(areaAsPolygon));
