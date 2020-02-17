@@ -208,8 +208,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Optional<Set<Relation>> destinationSignRelations = this
                 .getParentDestinationSignRelations(intersectingNode);
         final FlaggedIntersection flaggedIntersection = destinationSignRelations.isEmpty()
-                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap,
-                        inEdgeToOutEdgeMap)
+                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap)
                 : this.getIntersectionsWithIncompleteDestinationSignRelation(
                         roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap, intersectingNode,
                         destinationSignRelations.get());
@@ -424,7 +423,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      * @param inEdgeToOutEdgeMap
      *            map with non-roundabout inEdge and outEdges
      * @return FlaggedIntersection with instruction index and set of flagged items based on the
-     * input params
+     *         input params
      */
     private FlaggedIntersection getFlaggedIntersection(
             final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
