@@ -72,7 +72,21 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         super();
         this.checkNameChallengeMap = new HashMap<>();
     }
-
+    
+    /**
+     * Returns a comma separated string of country display names
+     *
+     * @param countryCode
+     *         - iso3 country code string. Can contain more than one country i.e (USA,MEX)
+     * @return
+     */
+    public String getCountryDisplayName(final Optional<String> countryCode)
+    {
+        return Arrays.stream(countryCode.get().split(",")).map(
+                country -> IsoCountry.displayCountry(country).orElse(country)).collect(
+                Collectors.joining(", "));
+    }
+    
     @Override
     public SwitchList switches()
     {
@@ -123,18 +137,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-                                final Challenge challenge = this
-                                        .getChallenge(task.getChallengeName(), instructions);
-                                // Prepend the challenge name with the full country name if one
-                                // exists, else country code if it exists. Then try to add the task
-                                // for upload
-                                countryCode.ifPresent(iso -> challenge.setName(String.join(" - ",
-                                        Arrays.stream(countryCode.get().split(","))
-                                                .map(country -> IsoCountry.displayCountry(country)
-                                                        .orElse(country))
-                                                .collect(Collectors.toList()).toString()
-                                                .replace("[", "").replace("]", ""),
-                                        task.getChallengeName())));
+                                final Challenge challenge = this.getChallenge(
+                                        task.getChallengeName(), instructions, countryCode);
                                 this.addTask(challenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
@@ -162,10 +166,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *            the name of the check
      * @param fallbackConfiguration
      *            the full configuration, which contains challenge parameters for checkName.
+     * @param countryCode
+     *            the CheckFlag iso3 country code
      * @return the check's challenge parameters, stored as a Challenge object.
      */
     private Challenge getChallenge(final String checkName,
-            final Configuration fallbackConfiguration)
+            final Configuration fallbackConfiguration, final Optional<String> countryCode)
     {
         return this.checkNameChallengeMap.computeIfAbsent(checkName, name ->
         {
@@ -174,7 +180,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Gson gson = new GsonBuilder().disableHtmlEscaping()
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
-            result.setName(result.getName().isEmpty() ? checkName : result.getName());
+            // Prepend the challenge name with the full country name if one exists
+            final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
+                    result.getName().isEmpty() ? checkName : result.getName());
+            result.setName(challengeName);
             return result;
         });
     }
