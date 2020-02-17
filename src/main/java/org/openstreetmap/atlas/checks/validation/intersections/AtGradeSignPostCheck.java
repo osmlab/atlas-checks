@@ -208,7 +208,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Optional<Set<Relation>> destinationSignRelations = this
                 .getParentDestinationSignRelations(intersectingNode);
         final FlaggedIntersection flaggedIntersection = destinationSignRelations.isEmpty()
-                ? this.getIntersectionsWithNoDestinationSignRelation(roundAboutInEdgeToOutEdgeMap,
+                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap,
                         inEdgeToOutEdgeMap)
                 : this.getIntersectionsWithIncompleteDestinationSignRelation(
                         roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap, intersectingNode,
@@ -416,16 +416,17 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * Get intersection that is not part of any destination_sign relations
+     * Return a FlaggedIntersection with the items in the input params and appropriate instruction
+     * index based on the input params.
      *
      * @param roundAboutInEdgeToOutEdgeMap
      *            map with roundabout inEdge and outEdges
      * @param inEdgeToOutEdgeMap
      *            map with non-roundabout inEdge and outEdges
-     * @return FlaggedIntersection with instruction index and set of flagged items with no
-     *         destination_sign relation
+     * @return FlaggedIntersection with instruction index and set of flagged items based on the
+     * input params
      */
-    private FlaggedIntersection getIntersectionsWithNoDestinationSignRelation(
+    private FlaggedIntersection getFlaggedIntersection(
             final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
             final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap)
     {
@@ -441,6 +442,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             });
             if (!entitiesToBeFlagged.isEmpty())
             {
+                //
                 instructionIndex = INSTRUCTION_INDEX_ZERO;
             }
         }
