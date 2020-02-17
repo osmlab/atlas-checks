@@ -32,7 +32,6 @@ import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.tags.OneWayTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
-import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -78,8 +77,6 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     private static final long serialVersionUID = -7428641176420422187L;
-    // Valid highway types to be considered for the check
-    private static final String HIGHWAY_FILTER_DEFAULT = "highway->trunk,primary,secondary";
     // Primary road (inEdge) connected to trunk, primary, secondary roads (outEdges) are treated as
     // valid intersection
     private static final List<String> CONNECTIONS_TO_PRIMARY = Arrays.asList("trunk", "primary",
@@ -133,7 +130,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             ROUNDABOUT_EDGE_MISSING_DESTINATION_SIGN_RELATION,
             ROUNDABOUT_EDGE_INCOMPLETE_DESTINATION_SIGN_RELATION);
 
-    private final TaggableFilter highwayFilter;
+    private final Set<String> highwayFilter;
     private Map<String, List<String>> connectedHighwayTypes;
 
     /**
@@ -147,10 +144,9 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     public AtGradeSignPostCheck(final Configuration configuration)
     {
         super(configuration);
-        this.highwayFilter = configurationValue(configuration, "highway.filter",
-                HIGHWAY_FILTER_DEFAULT, TaggableFilter::forDefinition);
         this.connectedHighwayTypes = this.configurationValue(configuration,
                 "connected.highway.types", CONNECTED_HIGHWAY_TYPES_MAP);
+        this.highwayFilter = new HashSet<>(this.connectedHighwayTypes.keySet());
     }
 
     /**
@@ -177,10 +173,6 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (String.valueOf(object.getOsmIdentifier()).equals("1720823768"))
-        {
-            System.out.println(object);
-        }
         final Node intersectingNode = (Node) object;
         // Filter and sort all in edges that have valid highway types
         final List<Edge> inEdges = intersectingNode.inEdges().stream()
@@ -217,7 +209,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                 .getParentDestinationSignRelations(intersectingNode);
         final FlaggedIntersection flaggedIntersection = destinationSignRelations.isEmpty()
                 ? this.getIntersectionsWithNoDestinationSignRelation(roundAboutInEdgeToOutEdgeMap,
-                        inEdgeToOutEdgeMap, intersectingNode)
+                        inEdgeToOutEdgeMap)
                 : this.getIntersectionsWithIncompleteDestinationSignRelation(
                         roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap, intersectingNode,
                         destinationSignRelations.get());
@@ -424,21 +416,18 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * Get items part of intersection that is not part of any destination_sign relations
+     * Get intersection that is not part of any destination_sign relations
      *
      * @param roundAboutInEdgeToOutEdgeMap
      *            map with roundabout inEdge and outEdges
      * @param inEdgeToOutEdgeMap
      *            map with non-roundabout inEdge and outEdges
-     * @param intersectingNode
-     *            {@link Node}
      * @return FlaggedIntersection with instruction index and set of flagged items with no
      *         destination_sign relation
      */
     private FlaggedIntersection getIntersectionsWithNoDestinationSignRelation(
             final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
-            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap,
-            final Node intersectingNode)
+            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap)
     {
         final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
         int instructionIndex = -1;
@@ -579,7 +568,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     private boolean isValidIntersectingEdge(final Edge edge)
     {
         return edge.isMasterEdge() && HighwayTag.highwayTag(edge).isPresent()
-                && this.highwayFilter.test(edge);
+                && this.highwayFilter.contains(edge.highwayTag().getTagValue());
     }
 
     /**
