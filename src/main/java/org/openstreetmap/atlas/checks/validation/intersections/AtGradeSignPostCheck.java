@@ -335,6 +335,63 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
+     * Return a FlaggedIntersection with the items in the input params and appropriate instruction
+     * index based on the input params.
+     *
+     * @param roundAboutInEdgeToOutEdgeMap
+     *            map with roundabout inEdge and outEdges
+     * @param inEdgeToOutEdgeMap
+     *            map with non-roundabout inEdge and outEdges
+     * @return FlaggedIntersection with instruction index and set of flagged items based on the
+     *         input params
+     */
+    private FlaggedIntersection getFlaggedIntersection(
+            final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
+            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap)
+    {
+        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
+        int instructionIndex = -1;
+        // Flag all in and out edges
+        if (roundAboutInEdgeToOutEdgeMap.isEmpty() && inEdgeToOutEdgeMap != null)
+        {
+            inEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
+            {
+                entitiesToBeFlagged.add(inEdge);
+                entitiesToBeFlagged.addAll(setOfOutEdge);
+            });
+            if (!entitiesToBeFlagged.isEmpty())
+            {
+                //
+                instructionIndex = INSTRUCTION_INDEX_ZERO;
+            }
+        }
+        // Flag all roundabout edges
+        else
+        {
+            roundAboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
+            {
+                // Ideally there would only be one roundabout edge and one exit edge per node
+                final Optional<AtlasEntity> roundaboutEdge = JunctionTag.isRoundabout(inEdge)
+                        ? Optional.of(inEdge)
+                        : setOfOutEdge.stream().filter(JunctionTag::isRoundabout).findFirst();
+                final Optional<AtlasEntity> roundaboutExitEdge = setOfOutEdge.stream()
+                        .filter(outEdge -> !JunctionTag.isRoundabout(outEdge)).findFirst();
+                if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
+                {
+                    entitiesToBeFlagged
+                            .addAll(this.getRoundaboutEdges((Edge) roundaboutEdge.get()));
+                    entitiesToBeFlagged.add(roundaboutExitEdge.get());
+                }
+            });
+            if (!entitiesToBeFlagged.isEmpty())
+            {
+                instructionIndex = INSTRUCTION_INDEX_THREE;
+            }
+        }
+        return new FlaggedIntersection(instructionIndex, entitiesToBeFlagged);
+    }
+
+    /**
      * Collects all atlas identifiers of given set of {@link AtlasObject}s
      *
      * @param objects
@@ -409,63 +466,6 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                     instructionIndex = INSTRUCTION_INDEX_TWO;
                     entitiesToBeFlagged.addAll(connectedEdgesNotFormDestinationRelation);
                 }
-            }
-        }
-        return new FlaggedIntersection(instructionIndex, entitiesToBeFlagged);
-    }
-
-    /**
-     * Return a FlaggedIntersection with the items in the input params and appropriate instruction
-     * index based on the input params.
-     *
-     * @param roundAboutInEdgeToOutEdgeMap
-     *            map with roundabout inEdge and outEdges
-     * @param inEdgeToOutEdgeMap
-     *            map with non-roundabout inEdge and outEdges
-     * @return FlaggedIntersection with instruction index and set of flagged items based on the
-     *         input params
-     */
-    private FlaggedIntersection getFlaggedIntersection(
-            final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
-            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap)
-    {
-        final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
-        int instructionIndex = -1;
-        // Flag all in and out edges
-        if (roundAboutInEdgeToOutEdgeMap.isEmpty() && inEdgeToOutEdgeMap != null)
-        {
-            inEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
-            {
-                entitiesToBeFlagged.add(inEdge);
-                entitiesToBeFlagged.addAll(setOfOutEdge);
-            });
-            if (!entitiesToBeFlagged.isEmpty())
-            {
-                //
-                instructionIndex = INSTRUCTION_INDEX_ZERO;
-            }
-        }
-        // Flag all roundabout edges
-        else
-        {
-            roundAboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
-            {
-                // Ideally there would only be one roundabout edge and one exit edge per node
-                final Optional<AtlasEntity> roundaboutEdge = JunctionTag.isRoundabout(inEdge)
-                        ? Optional.of(inEdge)
-                        : setOfOutEdge.stream().filter(JunctionTag::isRoundabout).findFirst();
-                final Optional<AtlasEntity> roundaboutExitEdge = setOfOutEdge.stream()
-                        .filter(outEdge -> !JunctionTag.isRoundabout(outEdge)).findFirst();
-                if (roundaboutEdge.isPresent() && roundaboutExitEdge.isPresent())
-                {
-                    entitiesToBeFlagged
-                            .addAll(this.getRoundaboutEdges((Edge) roundaboutEdge.get()));
-                    entitiesToBeFlagged.add(roundaboutExitEdge.get());
-                }
-            });
-            if (!entitiesToBeFlagged.isEmpty())
-            {
-                instructionIndex = INSTRUCTION_INDEX_THREE;
             }
         }
         return new FlaggedIntersection(instructionIndex, entitiesToBeFlagged);

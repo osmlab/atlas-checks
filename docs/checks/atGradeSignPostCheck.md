@@ -4,7 +4,9 @@
 
 This check identifies at-grade intersections that are not modeled into destination_sign relations. 
 An at-grade intersection is an intersection with two or more edges at the same level with valid 
-highway classifications.
+highway classifications. The highway classifications of the in and out edges of an at-grade intersection are specified in the configuration file and are as follows:
+1. If in edge is of type primary, the intersection is valid if there are at least two out edges, at the same z level as the in edge, that are either trunk, primary or secondary.
+2. If in edge is of type trunk or secondary, the intersection is valid if there are at least two out edges, at the same z level as the in edge, that are primary.
 
 #### Live Examples
 
