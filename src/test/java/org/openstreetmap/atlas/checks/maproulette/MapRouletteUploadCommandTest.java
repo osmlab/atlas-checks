@@ -1,8 +1,10 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.AfterClass;
@@ -60,7 +62,7 @@ public class MapRouletteUploadCommandTest
         final String[] additionalArguments = {};
         this.runAndTest(additionalArguments, 1, 2, 2);
     }
-    
+
     @Test
     public void testGetCountryDisplayName()
     {
@@ -69,12 +71,30 @@ public class MapRouletteUploadCommandTest
         final MapRouletteUploadCommand command = new MapRouletteUploadCommand();
         final String displayCountryNames1 = command.getCountryDisplayName(countries1);
         final String displayCountryNames2 = command.getCountryDisplayName(countries2);
-        
+
         Assert.assertEquals("Canada, Mexico", displayCountryNames1);
         Assert.assertEquals("United States", displayCountryNames2);
-        
+
     }
-    
+
+    @Test
+    public void testGetCustomChallengeName()
+    {
+        final String[] additionalArguments = { String.format("-config=%s",
+                MapRouletteUploadCommandTest.class.getResource("checksConfig.json").getPath()) };
+
+        final TestMapRouletteConnection connection = this.run(additionalArguments);
+        final Set<Project> projects = connection.uploadedProjects();
+
+        final List<String> challengeNames = projects.stream().flatMap(project -> connection
+                .challengesForProject(project).stream().map(Challenge::getName))
+                .collect(Collectors.toList());
+
+        Assert.assertEquals("Canada, Mexico - Intersecting Lines", challengeNames.get(0));
+        Assert.assertEquals("United States - Spiky Buildings", challengeNames.get(1));
+
+    }
+
     @Before
     public void writeFiles()
     {
@@ -96,6 +116,30 @@ public class MapRouletteUploadCommandTest
 
             this.filesCreated = true;
         }
+    }
+
+    /**
+     * Similar to runAndTest, however this function will return a {@link TestMapRouletteConnection}
+     *
+     * @param additionalArguments
+     *            String[] of extra arguments for {@link MapRouletteUploadCommand}, to add to the
+     *            data i/o locations and server config
+     * @return TestMapRouletteConnection
+     */
+    private TestMapRouletteConnection run(final String[] additionalArguments)
+    {
+        // Set up some arguments
+        final MapRouletteCommand command = new MapRouletteUploadCommand();
+        final String[] arguments = { String.format("-logfiles=%s", FOLDER.getPath()),
+                MAPROULETTE_CONFIG };
+        final CommandMap map = command
+                .getCommandMap((String[]) ArrayUtils.addAll(arguments, additionalArguments));
+        final TestMapRouletteConnection connection = new TestMapRouletteConnection();
+
+        // Run the command
+        command.onRun(map, configuration -> new MapRouletteClient(configuration, connection));
+
+        return connection;
     }
 
     /**

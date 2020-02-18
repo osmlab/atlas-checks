@@ -27,7 +27,7 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
     @TestAtlas(points = {
             @Point(coordinates = @Loc(value = CENTER), id = "1", tags = { "iso_country_code=USA" }),
             @Point(coordinates = @Loc(value = CENTER), id = "2", tags = {
-                    "iso_country_code=CAN" }) })
+                    "iso_country_code=CAN,MEX" }) })
     private Atlas basicAtlas;
 
     public CheckFlagEvent getAnotherBasicFlag()

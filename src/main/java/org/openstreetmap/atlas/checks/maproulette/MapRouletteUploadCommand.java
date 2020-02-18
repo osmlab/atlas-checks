@@ -72,21 +72,21 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         super();
         this.checkNameChallengeMap = new HashMap<>();
     }
-    
+
     /**
      * Returns a comma separated string of country display names
      *
      * @param countryCode
-     *         - iso3 country code string. Can contain more than one country i.e (USA,MEX)
+     *            - iso3 country code string. Can contain more than one country i.e (USA,MEX)
      * @return
      */
     public String getCountryDisplayName(final Optional<String> countryCode)
     {
-        return Arrays.stream(countryCode.get().split(",")).map(
-                country -> IsoCountry.displayCountry(country).orElse(country)).collect(
-                Collectors.joining(", "));
+        return Arrays.stream(countryCode.get().split(","))
+                .map(country -> IsoCountry.displayCountry(country).orElse(country))
+                .collect(Collectors.joining(", "));
     }
-    
+
     @Override
     public SwitchList switches()
     {

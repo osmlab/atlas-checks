@@ -1,0 +1,12 @@
+{
+  "SomeCheck": {
+    "challenge": {
+      "name": "Spiky Buildings"
+    }
+  },
+  "SomeOtherCheck": {
+    "challenge": {
+      "name": "Intersecting Lines"
+    }
+  }
+}
