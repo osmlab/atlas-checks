@@ -74,7 +74,6 @@ public class MapRouletteUploadCommandTest
 
         Assert.assertEquals("Canada, Mexico", displayCountryNames1);
         Assert.assertEquals("United States", displayCountryNames2);
-
     }
 
     @Test
@@ -92,7 +91,6 @@ public class MapRouletteUploadCommandTest
 
         Assert.assertEquals("Canada, Mexico - Intersecting Lines", challengeNames.get(0));
         Assert.assertEquals("United States - Spiky Buildings", challengeNames.get(1));
-
     }
 
     @Before
