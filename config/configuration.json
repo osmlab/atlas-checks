@@ -941,5 +941,19 @@
       "difficulty": "MEDIUM",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "AtGradeSignPostCheck": {
+    "connected.highway.types": {
+      "primary": ["trunk","primary","secondary"],
+      "trunk": ["primary"],
+      "secondary": ["primary"]
+    },
+    "challenge":{
+      "description":"This tasks contains at-grade intersections that are not part of destination_sign relations.",
+      "blurb":"Add/Fix destination_sign relations to at-grade intersections",
+      "instruction":"Open your favorite editor and check the instruction fr the task and add a destination_sign relation or destination_sign tag to the at-grade intersection.",
+      "difficulty":"NORMAL",
+      "defaultPriority":"MEDIUM"
+    }
   }
 }
