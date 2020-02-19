@@ -78,7 +78,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *
      * @param countryCode
      *            - iso3 country code string. Can contain more than one country i.e (USA,MEX)
-     * @return
+     * @return comma separated String of iso3 country codes
      */
     public String getCountryDisplayName(final Optional<String> countryCode)
     {
