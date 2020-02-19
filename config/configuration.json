@@ -942,7 +942,6 @@
     }
   },
   "AtGradeSignPostCheck": {
-    "enabled": true,
     "connected.highway.types": {
       "primary": ["trunk","primary","secondary"],
       "trunk": ["primary"],
