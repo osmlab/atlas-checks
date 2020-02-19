@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
@@ -168,9 +169,14 @@ public class SnakeRoadCheck extends BaseCheck<Long>
             // Process it
             walk.visitEdge(current, connection);
 
+            final Set<Edge> oneLayerRemovedConnections = walk
+                    .getConnectedMasterEdgeOfTheSameWay(connection);
+            oneLayerRemovedConnections.forEach(
+                    onceRemovedConnection -> walk.checkIfEdgeHeadingDifferenceExceedsThreshold(
+                            connection, onceRemovedConnection));
+
             // Add its neighbors to the next layer
-            walk.populateOneLayerRemovedConnections(
-                    walk.getConnectedMasterEdgeOfTheSameWay(connection));
+            walk.populateOneLayerRemovedConnections(oneLayerRemovedConnections);
 
             // If we've processed all directly connected edges, check the next layer of connections
             if (walk.getDirectConnections().isEmpty())
