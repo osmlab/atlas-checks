@@ -318,21 +318,21 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * @param NonRoundaboutInEdgeToOutEdgeMap
+     * @param nonRoundaboutInEdgeToOutEdgeMap
      *            inEdge to outEdge map
      * @param destinationSignRelations
      *            destinationSignRelations
      * @return
      */
     private Set<AtlasEntity> getConnectedEdgesNotFormDestinationRelation(
-            final Map<AtlasEntity, Set<AtlasEntity>> NonRoundaboutInEdgeToOutEdgeMap,
+            final Map<AtlasEntity, Set<AtlasEntity>> nonRoundaboutInEdgeToOutEdgeMap,
             final Set<Relation> destinationSignRelations)
     {
-        return NonRoundaboutInEdgeToOutEdgeMap.entrySet().stream().flatMap(atlasEntitySetEntry ->
+        return nonRoundaboutInEdgeToOutEdgeMap.entrySet().stream().flatMap(atlasEntitySetEntry ->
         {
             final AtlasEntity key = atlasEntitySetEntry.getKey();
             return this.connectedEdgesNotPartOfRelation(key,
-                    NonRoundaboutInEdgeToOutEdgeMap.get(key), destinationSignRelations).stream();
+                    nonRoundaboutInEdgeToOutEdgeMap.get(key), destinationSignRelations).stream();
         }).flatMap(Collection::stream).collect(Collectors.toSet());
     }
 
