@@ -215,11 +215,11 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                         roundAboutInEdgeToOutEdgeMap, nonRoundaboutInEdgeToOutEdgeMap,
                         intersectingNode, destinationSignRelations.get());
         final int instructionIndex = flaggedIntersection.getInstructionIndex();
-        final Set<AtlasEntity> entitiesToBeFlagged = flaggedIntersection.getFlaggedItems();
         if (instructionIndex == -1)
         {
             return Optional.empty();
         }
+        final Set<AtlasEntity> entitiesToBeFlagged = flaggedIntersection.getFlaggedItems();
         final List<String> identifiers = this.getIdentifiers(entitiesToBeFlagged);
         entitiesToBeFlagged.add(intersectingNode);
         this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
