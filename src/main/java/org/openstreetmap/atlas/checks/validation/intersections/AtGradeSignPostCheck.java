@@ -318,21 +318,21 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * @param inEdgeToOutEdgeMap
+     * @param NonRoundaboutInEdgeToOutEdgeMap
      *            inEdge to outEdge map
      * @param destinationSignRelations
      *            destinationSignRelations
      * @return
      */
     private Set<AtlasEntity> getConnectedEdgesNotFormDestinationRelation(
-            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap,
+            final Map<AtlasEntity, Set<AtlasEntity>> NonRoundaboutInEdgeToOutEdgeMap,
             final Set<Relation> destinationSignRelations)
     {
-        return inEdgeToOutEdgeMap.entrySet().stream().flatMap(atlasEntitySetEntry ->
+        return NonRoundaboutInEdgeToOutEdgeMap.entrySet().stream().flatMap(atlasEntitySetEntry ->
         {
             final AtlasEntity key = atlasEntitySetEntry.getKey();
-            return this.connectedEdgesNotPartOfRelation(key, inEdgeToOutEdgeMap.get(key),
-                    destinationSignRelations).stream();
+            return this.connectedEdgesNotPartOfRelation(key,
+                    NonRoundaboutInEdgeToOutEdgeMap.get(key), destinationSignRelations).stream();
         }).flatMap(Collection::stream).collect(Collectors.toSet());
     }
 
@@ -342,21 +342,21 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      *
      * @param roundAboutInEdgeToOutEdgeMap
      *            map with roundabout inEdge and outEdges
-     * @param inEdgeToOutEdgeMap
+     * @param nonRoundaboutInEdgeToOutEdgeMap
      *            map with non-roundabout inEdge and outEdges
      * @return FlaggedIntersection with instruction index and set of flagged items based on the
      *         input params
      */
     private FlaggedIntersection getFlaggedIntersection(
             final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
-            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap)
+            final Map<AtlasEntity, Set<AtlasEntity>> nonRoundaboutInEdgeToOutEdgeMap)
     {
         final Set<AtlasEntity> entitiesToBeFlagged = new HashSet<>();
         int instructionIndex = -1;
         // Flag all in and out edges
-        if (roundAboutInEdgeToOutEdgeMap.isEmpty() && inEdgeToOutEdgeMap != null)
+        if (roundAboutInEdgeToOutEdgeMap.isEmpty() && nonRoundaboutInEdgeToOutEdgeMap != null)
         {
-            inEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
+            nonRoundaboutInEdgeToOutEdgeMap.forEach((inEdge, setOfOutEdge) ->
             {
                 entitiesToBeFlagged.add(inEdge);
                 entitiesToBeFlagged.addAll(setOfOutEdge);
@@ -413,7 +413,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      *
      * @param roundAboutInEdgeToOutEdgeMap
      *            map with roundabout inEdge and outEdges
-     * @param inEdgeToOutEdgeMap
+     * @param nonRoundaboutInEdgeToOutEdgeMap
      *            map with non-roundabout inEdge and outEdges
      * @param intersectingNode
      *            {@link Node}
@@ -424,7 +424,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      */
     private FlaggedIntersection getIntersectionsWithIncompleteDestinationSignRelation(
             final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap,
-            final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap,
+            final Map<AtlasEntity, Set<AtlasEntity>> nonRoundaboutInEdgeToOutEdgeMap,
             final Node intersectingNode, final Set<Relation> destinationSignRelations)
     {
         // If the node is part of destination sign relation, check if destination tag of the
@@ -456,13 +456,13 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                 instructionIndex = INSTRUCTION_INDEX_ONE;
                 entitiesToBeFlagged.addAll(destinationSignRelationsMissingTag);
             }
-            else if (inEdgeToOutEdgeMap != null)
+            else if (nonRoundaboutInEdgeToOutEdgeMap != null)
             {
                 // If there are any missing destination sign relation that the node should be
                 // part of, flag it
                 final Set<AtlasEntity> connectedEdgesNotFormDestinationRelation = this
-                        .getConnectedEdgesNotFormDestinationRelation(inEdgeToOutEdgeMap,
-                                destinationSignRelations);
+                        .getConnectedEdgesNotFormDestinationRelation(
+                                nonRoundaboutInEdgeToOutEdgeMap, destinationSignRelations);
                 if (!connectedEdgesNotFormDestinationRelation.isEmpty())
                 {
                     instructionIndex = INSTRUCTION_INDEX_TWO;
@@ -588,7 +588,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     private Map<String, Map<AtlasEntity, Set<AtlasEntity>>> populateInEdgeToOutEdgeMaps(
             final List<Edge> inEdges, final Set<Edge> outEdges)
     {
-        final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap = new HashMap<>();
+        final Map<AtlasEntity, Set<AtlasEntity>> nonRoundaboutInEdgeToOutEdgeMap = new HashMap<>();
         final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap = new HashMap<>();
         inEdges.forEach(inEdge ->
         {
@@ -622,14 +622,15 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                     }
                     else if (!filteredByHighways.isEmpty())
                     {
-                        inEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
+                        nonRoundaboutInEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
                     }
                 }
 
             }
         });
         final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = new HashMap<>();
-        mapOfMatchingInAndOutEdges.put(NON_ROUNDABOUT_INTERSECTION_MAP, inEdgeToOutEdgeMap);
+        mapOfMatchingInAndOutEdges.put(NON_ROUNDABOUT_INTERSECTION_MAP,
+                nonRoundaboutInEdgeToOutEdgeMap);
         mapOfMatchingInAndOutEdges.put(ROUNDABOUT_INTERSECTION_MAP, roundAboutInEdgeToOutEdgeMap);
         return mapOfMatchingInAndOutEdges;
     }
