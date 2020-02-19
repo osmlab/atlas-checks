@@ -140,11 +140,17 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     {
                         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
                         this.markAsFlagged(object.getIdentifier());
-                        newFlag.addObject(object);
+                        final Set<Location> points = collectedEdges.stream().filter(
+                                crossEdge -> crossEdge.getIdentifier() != object.getIdentifier())
+                                .flatMap(crossEdge -> getIntersection((Edge) object, crossEdge)
+                                        .stream())
+                                .collect(Collectors.toSet());
                         newFlag.addInstruction(
-                                this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                                this.getLocalizedInstruction(0, object.getIdentifier(),
                                         collectedEdges.stream().map(AtlasObject::getIdentifier)
                                                 .collect(Collectors.toList())));
+                        newFlag.addPoints(points);
+                        newFlag.addObject(object);
                         return Optional.of(newFlag);
                     }
                 }
@@ -157,6 +163,22 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * This function returns set of intersections locations for given params.
+     * 
+     * @param edge1
+     *            Atlas object
+     * @param edge2
+     *            crossing edge
+     * @return set of intersection locations.
+     */
+    private Set<Location> getIntersection(final Edge edge1, final Edge edge2)
+    {
+        final PolyLine edge1AsPolyLine = edge1.asPolyLine();
+        final PolyLine edge2AsPolyLine = edge2.asPolyLine();
+        return edge1AsPolyLine.intersections(edge2AsPolyLine);
     }
 
     /**

@@ -24,7 +24,7 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(),
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -42,7 +42,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"EdgeCrossingEdgeCheck\":{\"minimum.highway.type\":\"track\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
     }
 
     @Test
