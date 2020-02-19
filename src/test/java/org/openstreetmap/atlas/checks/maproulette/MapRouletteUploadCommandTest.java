@@ -81,15 +81,13 @@ public class MapRouletteUploadCommandTest
     {
         final String[] additionalArguments = { String.format("-config=%s",
                 MapRouletteUploadCommandTest.class.getResource("checksConfig.json").getPath()) };
-
         final TestMapRouletteConnection connection = this.run(additionalArguments);
         final Set<Project> projects = connection.uploadedProjects();
-
         final List<String> challengeNames = projects.stream().flatMap(project -> connection
                 .challengesForProject(project).stream().map(Challenge::getName))
                 .collect(Collectors.toList());
-        Collections.sort(challengeNames);
 
+        Collections.sort(challengeNames);
         Assert.assertEquals("Canada - Spiky Buildings", challengeNames.get(0));
         Assert.assertEquals("Mexico, Belize - Intersecting Lines", challengeNames.get(1));
         Assert.assertEquals("United States - Address Point Match", challengeNames.get(2));
