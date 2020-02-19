@@ -189,17 +189,17 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         }
         // For each inEdge, get the list of potentially matching out edges
         // Matching out edges are based on z level and highway type.
-        // For each inEdge, store the inEdge and corresponding outEdges in inEdgeToOutEdgeMap
+        // For each inEdge, store the inEdge and corresponding outEdges in nonRoundaboutInEdgeToOutEdgeMap
         // If any of the out edge is a roundabout edge, store the roundabout edges and the inEdge in
         // roundAboutInEdgeToOutEdgeMap
         final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = this
                 .populateInEdgeToOutEdgeMaps(inEdges, outEdges);
-        final Map<AtlasEntity, Set<AtlasEntity>> inEdgeToOutEdgeMap = mapOfMatchingInAndOutEdges
-                .getOrDefault(NON_ROUNDABOUT_INTERSECTION_MAP, null);
+        final Map<AtlasEntity, Set<AtlasEntity>> nonRoundaboutInEdgeToOutEdgeMap = mapOfMatchingInAndOutEdges
+                .get(NON_ROUNDABOUT_INTERSECTION_MAP);
         final Map<AtlasEntity, Set<AtlasEntity>> roundAboutInEdgeToOutEdgeMap = mapOfMatchingInAndOutEdges
-                .getOrDefault(ROUNDABOUT_INTERSECTION_MAP, null);
+                .get(ROUNDABOUT_INTERSECTION_MAP);
         // If there are no valid intersection, return Optional.empty()
-        if ((inEdgeToOutEdgeMap == null || inEdgeToOutEdgeMap.isEmpty())
+        if ((nonRoundaboutInEdgeToOutEdgeMap == null || nonRoundaboutInEdgeToOutEdgeMap.isEmpty())
                 && (roundAboutInEdgeToOutEdgeMap == null || roundAboutInEdgeToOutEdgeMap.isEmpty()))
         {
             return Optional.empty();
@@ -208,9 +208,9 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Optional<Set<Relation>> destinationSignRelations = this
                 .getParentDestinationSignRelations(intersectingNode);
         final FlaggedIntersection flaggedIntersection = destinationSignRelations.isEmpty()
-                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap)
+                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap, nonRoundaboutInEdgeToOutEdgeMap)
                 : this.getIntersectionsWithIncompleteDestinationSignRelation(
-                        roundAboutInEdgeToOutEdgeMap, inEdgeToOutEdgeMap, intersectingNode,
+                        roundAboutInEdgeToOutEdgeMap, nonRoundaboutInEdgeToOutEdgeMap, intersectingNode,
                         destinationSignRelations.get());
         final int instructionIndex = flaggedIntersection.getInstructionIndex();
         final Set<AtlasEntity> entitiesToBeFlagged = flaggedIntersection.getFlaggedItems();
