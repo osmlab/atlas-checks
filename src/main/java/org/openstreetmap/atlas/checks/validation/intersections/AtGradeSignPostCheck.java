@@ -189,7 +189,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         }
         // For each inEdge, get the list of potentially matching out edges
         // Matching out edges are based on z level and highway type.
-        // For each inEdge, store the inEdge and corresponding outEdges in nonRoundaboutInEdgeToOutEdgeMap
+        // For each inEdge, store the inEdge and corresponding outEdges in
+        // nonRoundaboutInEdgeToOutEdgeMap
         // If any of the out edge is a roundabout edge, store the roundabout edges and the inEdge in
         // roundAboutInEdgeToOutEdgeMap
         final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = this
@@ -208,10 +209,11 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Optional<Set<Relation>> destinationSignRelations = this
                 .getParentDestinationSignRelations(intersectingNode);
         final FlaggedIntersection flaggedIntersection = destinationSignRelations.isEmpty()
-                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap, nonRoundaboutInEdgeToOutEdgeMap)
+                ? this.getFlaggedIntersection(roundAboutInEdgeToOutEdgeMap,
+                        nonRoundaboutInEdgeToOutEdgeMap)
                 : this.getIntersectionsWithIncompleteDestinationSignRelation(
-                        roundAboutInEdgeToOutEdgeMap, nonRoundaboutInEdgeToOutEdgeMap, intersectingNode,
-                        destinationSignRelations.get());
+                        roundAboutInEdgeToOutEdgeMap, nonRoundaboutInEdgeToOutEdgeMap,
+                        intersectingNode, destinationSignRelations.get());
         final int instructionIndex = flaggedIntersection.getInstructionIndex();
         final Set<AtlasEntity> entitiesToBeFlagged = flaggedIntersection.getFlaggedItems();
         if (instructionIndex == -1)
