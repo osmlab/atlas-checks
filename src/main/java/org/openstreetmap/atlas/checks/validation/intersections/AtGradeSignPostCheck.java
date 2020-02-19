@@ -504,7 +504,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * Collects all roundabout edges starting with the given given
+     * Collects all roundabout edges starting with the given edge
      *
      * @param startEdge
      *            {@link Edge}
