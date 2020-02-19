@@ -82,9 +82,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      */
     public String getCountryDisplayName(final Optional<String> countryCode)
     {
-        return Arrays.stream(countryCode.get().split(","))
+        return countryCode.isPresent() ? Arrays.stream(countryCode.get().split(","))
                 .map(country -> IsoCountry.displayCountry(country).orElse(country))
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(", ")) : "";
     }
 
     @Override
