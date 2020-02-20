@@ -125,18 +125,20 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 final int maxSize = (maxPair.get()._2()).size();
 
                 // max edges object is not the one passed to this flag.
-                List<Tuple2<Edge, Set<Edge>>> maxEdgePairs = edgeCrossPairs.stream()
+                final List<Tuple2<Edge, Set<Edge>>> maxEdgePairs = edgeCrossPairs.stream()
                         .filter(crossPair -> (crossPair._2()).size() == maxSize)
                         .collect(Collectors.toList());
-                Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
+                final Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
                         .reduce((edge1, edge2) ->
                         {
                             // reduce to get the minimum osm identifier edge pair.
-                            return edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1 : edge2;
+                            return edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier()
+                                    ? edge1
+                                    : edge2;
                         });
                 if (minIdentifierPair.isPresent())
                 {
-                    Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
+                    final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
                     if (!this.isFlagged(minPair._1().getIdentifier()))
                     {
                         return createEdgeCrossCheckFlag(minPair._1(), minPair._2());
@@ -147,25 +149,35 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
-    private Optional<CheckFlag> createEdgeCrossCheckFlag(Edge edge, Set<Edge> collectedEdges)
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Function creates edge cross check flag.
+     * 
+     * @param edge
+     *            Atlas object.
+     * @param collectedEdges
+     *            collected edges for a given atlas object.
+     * @return newly created edge cross check glag including crossing edges locations.
+     */
+    private Optional<CheckFlag> createEdgeCrossCheckFlag(final Edge edge,
+            final Set<Edge> collectedEdges)
     {
         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(edge));
         this.markAsFlagged(edge.getIdentifier());
         final Set<Location> points = collectedEdges.stream()
                 .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
-                .flatMap(crossEdge -> getIntersection((Edge) edge, crossEdge).stream())
+                .flatMap(crossEdge -> getIntersection(edge, crossEdge).stream())
                 .collect(Collectors.toSet());
         newFlag.addInstruction(this.getLocalizedInstruction(0, edge.getIdentifier(), collectedEdges
                 .stream().map(AtlasObject::getIdentifier).collect(Collectors.toList())));
         newFlag.addPoints(points);
         newFlag.addObject(edge);
         return Optional.of(newFlag);
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
