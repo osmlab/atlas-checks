@@ -22,7 +22,6 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class RoadLinkCheck extends BaseCheck<Long>
 {
-
     public static final double DISTANCE_MILES_DEFAULT = 1;
     private static final String INVALID_LINK_DISTANCE_INSTRUCTION = "Invalid link, distance, {0}, greater than maximum, {1}.";
     private static final String NO_SAME_CLASSIFICATION_INSTRUCTION = "None of the connected edges contain any edges with the same classification [{0}]";
