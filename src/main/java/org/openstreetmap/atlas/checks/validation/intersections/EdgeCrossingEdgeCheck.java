@@ -112,9 +112,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         {
             final List<Tuple2<Edge, Set<Edge>>> edgeCrossPairs = collectedEdges
                     .stream().filter(
-                            e -> e.getOsmIdentifier() != object.getOsmIdentifier())
-                    .map(e -> new Tuple2<>(e,
-                            new EdgeCrossingEdgeWalker(e, this.getInvalidCrossingEdges())
+                            edge -> edge.getOsmIdentifier() != object.getOsmIdentifier())
+                    .map(edge -> new Tuple2<>(edge,
+                            new EdgeCrossingEdgeWalker(edge, this.getInvalidCrossingEdges())
                                     .collectEdges()))
                     .collect(Collectors.toList());
             edgeCrossPairs.add(new Tuple2<>((Edge) object, collectedEdges));
@@ -130,12 +130,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         .collect(Collectors.toList());
                 final Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
                         .reduce((edge1, edge2) ->
-                        {
-                            // reduce to get the minimum osm identifier edge pair.
-                            return edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier()
-                                    ? edge1
-                                    : edge2;
-                        });
+                        // reduce to get the minimum osm identifier edge pair.
+                        edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1
+                                : edge2);
                 if (minIdentifierPair.isPresent())
                 {
                     final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
