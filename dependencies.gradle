@@ -1,14 +1,14 @@
 project.ext.versions = [
-        checkstyle      : '8.18',
-        jacoco          : '0.8.3',
-        atlas           : '6.0.2',
-        commons         : '2.6',
-        atlas_generator : '5.0.1',
-        atlas_checkstyle: '5.6.9',
-        postgis         : '2.1.7.2',
-        postgres        : '42.2.6',
-        spring          : '4.2.2.RELEASE',
-        mockito         : '2.23.0'
+    checkstyle: '8.18',
+    jacoco: '0.8.3',
+    atlas: '6.0.2',
+    commons:'2.6',
+    atlas_generator: '5.0.1',
+    atlas_checkstyle: '5.6.9',
+    postgis: '2.1.7.2',
+    postgres: '42.2.6',
+    spring: '4.2.2.RELEASE',
+    mockito: '2.23.0'
 ]
 
 project.ext.packages = [
