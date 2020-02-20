@@ -1,7 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -111,52 +110,56 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 this.getInvalidCrossingEdges()).collectEdges();
         if (collectedEdges.size() > 1)
         {
-            final List<Tuple2<Long, Set<Edge>>> edgeCrossPairs = collectedEdges
+            final List<Tuple2<Edge, Set<Edge>>> edgeCrossPairs = collectedEdges
                     .stream().filter(
                             e -> e.getOsmIdentifier() != object.getOsmIdentifier())
-                    .map(e -> new Tuple2<>(e.getOsmIdentifier(),
+                    .map(e -> new Tuple2<>(e,
                             new EdgeCrossingEdgeWalker(e, this.getInvalidCrossingEdges())
                                     .collectEdges()))
                     .collect(Collectors.toList());
-            edgeCrossPairs.add(new Tuple2<>(object.getOsmIdentifier(), collectedEdges));
-            final Optional<Tuple2<Long, Set<Edge>>> maxPair = edgeCrossPairs.stream().max(
+            edgeCrossPairs.add(new Tuple2<>((Edge) object, collectedEdges));
+            final Optional<Tuple2<Edge, Set<Edge>>> maxPair = edgeCrossPairs.stream().max(
                     (entry1, entry2) -> Integer.compare(entry1._2().size(), entry2._2().size()));
             if (maxPair.isPresent())
             {
                 final int maxSize = (maxPair.get()._2()).size();
-                if (maxSize == collectedEdges.size())
+
+                // max edges object is not the one passed to this flag.
+                List<Tuple2<Edge, Set<Edge>>> maxEdgePairs = edgeCrossPairs.stream()
+                        .filter(crossPair -> (crossPair._2()).size() == maxSize)
+                        .collect(Collectors.toList());
+                Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
+                        .reduce((edge1, edge2) ->
+                        {
+                            // reduce to get the minimum osm identifier edge pair.
+                            return edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1 : edge2;
+                        });
+                if (minIdentifierPair.isPresent())
                 {
-                    // when the current edge has max edges, of all connected edges, check if another
-                    // edge
-                    // also have the same set of connected edges. If that is the case flag only
-                    // minimum identifier edge.
-                    final Optional<Long> minIdentifier = edgeCrossPairs.stream()
-                            .filter(entry -> (entry._2()).size() == maxSize)
-                            .filter(entry -> (entry._2()).stream()
-                                    .allMatch(collectedEdges::contains))
-                            .map(Tuple2::_1).min(Comparator.comparingLong(Long::valueOf));
-                    if (minIdentifier.isPresent()
-                            && minIdentifier.get() == object.getOsmIdentifier())
+                    Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
+                    if (!this.isFlagged(minPair._1().getIdentifier()))
                     {
-                        final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
-                        this.markAsFlagged(object.getIdentifier());
-                        final Set<Location> points = collectedEdges.stream().filter(
-                                crossEdge -> crossEdge.getIdentifier() != object.getIdentifier())
-                                .flatMap(crossEdge -> getIntersection((Edge) object, crossEdge)
-                                        .stream())
-                                .collect(Collectors.toSet());
-                        newFlag.addInstruction(
-                                this.getLocalizedInstruction(0, object.getIdentifier(),
-                                        collectedEdges.stream().map(AtlasObject::getIdentifier)
-                                                .collect(Collectors.toList())));
-                        newFlag.addPoints(points);
-                        newFlag.addObject(object);
-                        return Optional.of(newFlag);
+                        return createEdgeCrossCheckFlag(minPair._1(), minPair._2());
                     }
                 }
             }
         }
         return Optional.empty();
+    }
+
+    private Optional<CheckFlag> createEdgeCrossCheckFlag(Edge edge, Set<Edge> collectedEdges)
+    {
+        final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(edge));
+        this.markAsFlagged(edge.getIdentifier());
+        final Set<Location> points = collectedEdges.stream()
+                .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
+                .flatMap(crossEdge -> getIntersection((Edge) edge, crossEdge).stream())
+                .collect(Collectors.toSet());
+        newFlag.addInstruction(this.getLocalizedInstruction(0, edge.getIdentifier(), collectedEdges
+                .stream().map(AtlasObject::getIdentifier).collect(Collectors.toList())));
+        newFlag.addPoints(points);
+        newFlag.addObject(edge);
+        return Optional.of(newFlag);
     }
 
     @Override
