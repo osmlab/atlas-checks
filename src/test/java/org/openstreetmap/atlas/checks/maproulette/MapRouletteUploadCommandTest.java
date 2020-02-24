@@ -1,7 +1,10 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.AfterClass;
@@ -57,7 +60,37 @@ public class MapRouletteUploadCommandTest
     public void testExecute()
     {
         final String[] additionalArguments = {};
-        this.runAndTest(additionalArguments, 1, 2, 2);
+        this.runAndTest(additionalArguments, 1, 3, 3);
+    }
+
+    @Test
+    public void testGetCountryDisplayName()
+    {
+        final Optional<String> countries1 = Optional.of("CAN,MEX");
+        final Optional<String> countries2 = Optional.of("USA");
+        final MapRouletteUploadCommand command = new MapRouletteUploadCommand();
+        final String displayCountryNames1 = command.getCountryDisplayName(countries1);
+        final String displayCountryNames2 = command.getCountryDisplayName(countries2);
+
+        Assert.assertEquals("Canada, Mexico", displayCountryNames1);
+        Assert.assertEquals("United States", displayCountryNames2);
+    }
+
+    @Test
+    public void testGetCustomChallengeName()
+    {
+        final String[] additionalArguments = { String.format("-config=%s",
+                MapRouletteUploadCommandTest.class.getResource("checksConfig.json").getPath()) };
+        final TestMapRouletteConnection connection = this.run(additionalArguments);
+        final Set<Project> projects = connection.uploadedProjects();
+        final List<String> challengeNames = projects.stream().flatMap(project -> connection
+                .challengesForProject(project).stream().map(Challenge::getName))
+                .collect(Collectors.toList());
+
+        Collections.sort(challengeNames);
+        Assert.assertEquals("Canada - Spiky Buildings", challengeNames.get(0));
+        Assert.assertEquals("Mexico, Belize - Intersecting Lines", challengeNames.get(1));
+        Assert.assertEquals("United States - Address Point Match", challengeNames.get(2));
     }
 
     @Before
@@ -70,6 +103,8 @@ public class MapRouletteUploadCommandTest
                     new SparkFileHelper(Collections.emptyMap()),
                     FOLDER.child("unzipped.log").toString()).withCompression(false);
             unzippedProcessor.process(this.setup.getOneBasicFlag());
+            unzippedProcessor.process(this.setup.getTwoCountryFlag());
+            unzippedProcessor.process(this.setup.getAnotherBasicFlag());
             unzippedProcessor.process(new ShutdownEvent());
 
             // Create a zipped file
@@ -81,6 +116,30 @@ public class MapRouletteUploadCommandTest
 
             this.filesCreated = true;
         }
+    }
+
+    /**
+     * Similar to runAndTest, however this function will return a {@link TestMapRouletteConnection}
+     *
+     * @param additionalArguments
+     *            String[] of extra arguments for {@link MapRouletteUploadCommand}, to add to the
+     *            data i/o locations and server config
+     * @return TestMapRouletteConnection
+     */
+    private TestMapRouletteConnection run(final String[] additionalArguments)
+    {
+        // Set up some arguments
+        final MapRouletteCommand command = new MapRouletteUploadCommand();
+        final String[] arguments = { String.format("-logfiles=%s", FOLDER.getPath()),
+                MAPROULETTE_CONFIG };
+        final CommandMap map = command
+                .getCommandMap((String[]) ArrayUtils.addAll(arguments, additionalArguments));
+        final TestMapRouletteConnection connection = new TestMapRouletteConnection();
+
+        // Run the command
+        command.onRun(map, configuration -> new MapRouletteClient(configuration, connection));
+
+        return connection;
     }
 
     /**
@@ -101,15 +160,7 @@ public class MapRouletteUploadCommandTest
             final int expectedChallenges, final int expectedTasks)
     {
         // Set up some arguments
-        final MapRouletteCommand command = new MapRouletteUploadCommand();
-        final String[] arguments = { String.format("-logfiles=%s", FOLDER.getPath()),
-                MAPROULETTE_CONFIG };
-        final CommandMap map = command
-                .getCommandMap((String[]) ArrayUtils.addAll(arguments, additionalArguments));
-        final TestMapRouletteConnection connection = new TestMapRouletteConnection();
-
-        // Run the command
-        command.onRun(map, configuration -> new MapRouletteClient(configuration, connection));
+        final TestMapRouletteConnection connection = this.run(additionalArguments);
 
         // Test the results
         final Set<Project> projects = connection.uploadedProjects();
