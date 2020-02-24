@@ -37,7 +37,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.Finder;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
@@ -79,27 +78,6 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     public static void main(final String[] args)
     {
         new IntegrityCheckSparkJob().run(args);
-    }
-
-    /**
-     * Gets complex entities
-     *
-     * @param check
-     *            A {@link BaseCheck} object
-     * @param atlas
-     *            An {@link Atlas} object
-     * @return An {@link Iterable} of {@link ComplexEntity}s
-     */
-    protected static Iterable<ComplexEntity> findComplexEntities(final BaseCheck check,
-            final Atlas atlas)
-    {
-        final Optional<Finder> finderOptional = check.finder();
-        if (finderOptional.isPresent())
-        {
-            return Iterables.stream(finderOptional.get().find(atlas));
-        }
-
-        return Collections.emptyList();
     }
 
     /**

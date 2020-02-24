@@ -60,8 +60,10 @@ public class CheckResourceLoader
     private final MultiMap<String, String> countryGroups = new MultiMap<>();
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
-    private final String countryWhitelistTemplate = "%s." + BaseCheck.PARAMETER_WHITELIST_COUNTRIES;
-    private final String countryBlacklistTemplate = "%s." + BaseCheck.PARAMETER_BLACKLIST_COUNTRIES;
+    private static final String COUNTRY_WHITELIST_TEMPLATE = "%s."
+            + BaseCheck.PARAMETER_WHITELIST_COUNTRIES;
+    private static final String COUNTRY_BLACKLIST_TEMPLATE = "%s."
+            + BaseCheck.PARAMETER_BLACKLIST_COUNTRIES;
     private final Set<String> packages;
     private final Optional<List<String>> checkWhiteList;
     private final Optional<List<String>> checkBlackList;
@@ -316,11 +318,11 @@ public class CheckResourceLoader
             final Class checkClass, final String country)
     {
         final List<String> countryWhitelist = configuration
-                .get(String.format(this.countryWhitelistTemplate, checkClass.getSimpleName()),
+                .get(String.format(this.COUNTRY_WHITELIST_TEMPLATE, checkClass.getSimpleName()),
                         Collections.emptyList())
                 .value();
         final List<String> countryBlacklist = configuration
-                .get(String.format(this.countryBlacklistTemplate, checkClass.getSimpleName()),
+                .get(String.format(this.COUNTRY_BLACKLIST_TEMPLATE, checkClass.getSimpleName()),
                         Collections.emptyList())
                 .value();
         return this.isEnabledByConfiguration(configuration, checkClass)
