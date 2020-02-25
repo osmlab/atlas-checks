@@ -347,7 +347,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      *            spark {@link Broadcast} of the current {@link Sharding}
      * @param shardDistanceExpansion
      *            {@link Distance} to expand the shard group
-     * @param multi
+     * @param multiAtlas
      *            boolean whether to use a multi or dynamic Atlas
      * @return {@link PairFunction} that takes {@link ShardedCheckFlagsTask} and returns a
      *         {@link Tuple2} of a {@link String} country code and {@link UniqueCheckFlagContainer}
@@ -356,7 +356,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
             final String input, final String output, final Map<String, String> configurationMap,
             final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
-            final Distance shardDistanceExpansion, final boolean multi)
+            final Distance shardDistanceExpansion, final boolean multiAtlas)
     {
         return task ->
         {
@@ -366,7 +366,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             final Atlas atlas;
 
             // Use dynamic or multi atlas (multi runs faster locally)
-            if (multi)
+            if (multiAtlas)
             {
                 atlas = new MultiAtlas(
                         StreamSupport

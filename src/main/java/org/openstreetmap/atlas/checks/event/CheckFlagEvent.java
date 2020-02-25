@@ -18,6 +18,7 @@ import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.checks.flag.FlaggedRelation;
+import org.openstreetmap.atlas.event.Event;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonObject;
@@ -35,7 +36,7 @@ import com.google.gson.JsonPrimitive;
  *
  * @author mkalender, bbreithaupt
  */
-public final class CheckFlagEvent extends org.openstreetmap.atlas.event.Event
+public final class CheckFlagEvent extends Event
 {
     private static final GeoJsonBuilder GEOJSON_BUILDER = new GeoJsonBuilder();
     private static final String GEOMETRY_COLLECTION = "GeometryCollection";
