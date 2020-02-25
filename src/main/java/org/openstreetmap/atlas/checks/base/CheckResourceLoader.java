@@ -318,11 +318,11 @@ public class CheckResourceLoader
             final Class checkClass, final String country)
     {
         final List<String> countryWhitelist = configuration
-                .get(String.format(this.COUNTRY_WHITELIST_TEMPLATE, checkClass.getSimpleName()),
+                .get(String.format(COUNTRY_WHITELIST_TEMPLATE, checkClass.getSimpleName()),
                         Collections.emptyList())
                 .value();
         final List<String> countryBlacklist = configuration
-                .get(String.format(this.COUNTRY_BLACKLIST_TEMPLATE, checkClass.getSimpleName()),
+                .get(String.format(COUNTRY_BLACKLIST_TEMPLATE, checkClass.getSimpleName()),
                         Collections.emptyList())
                 .value();
         return this.isEnabledByConfiguration(configuration, checkClass)
