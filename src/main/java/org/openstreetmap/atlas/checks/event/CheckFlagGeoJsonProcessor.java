@@ -8,6 +8,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
+import org.openstreetmap.atlas.event.Processor;
+import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +20,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * A {@link org.openstreetmap.atlas.event.Processor} for {@link CheckFlagEvent}s to write them into
- * GeoJson files
+ * A {@link Processor} for {@link CheckFlagEvent}s to write them into GeoJson files
  *
  * @author brian_l_davis
  */
-public final class CheckFlagGeoJsonProcessor
-        implements org.openstreetmap.atlas.event.Processor<CheckFlagEvent>
+public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent>
 {
 
     private static final int MAX_BATCH_SUM = 25000;
@@ -113,7 +113,7 @@ public final class CheckFlagGeoJsonProcessor
 
     @Override
     @Subscribe
-    public void process(final org.openstreetmap.atlas.event.ShutdownEvent event)
+    public void process(final ShutdownEvent event)
     {
         try
         {
