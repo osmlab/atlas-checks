@@ -438,7 +438,8 @@
   },
   "LineCrossingWaterBodyCheck": {
     "enabled": true,
-    "intersectingLineItems.filter": true
+    "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
+    "buildings.flag": true
   },
   "LongSegmentCheck": {
     "length.minimum.kilometers": 10.0,

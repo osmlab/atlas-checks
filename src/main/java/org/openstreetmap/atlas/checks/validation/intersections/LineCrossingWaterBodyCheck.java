@@ -72,16 +72,11 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes";
     private static final TaggableFilter CAN_CROSS_WATER_BODY_FILTER = TaggableFilter
             .forDefinition(CAN_CROSS_WATER_BODY_TAGS);
-    private static final String OFFENDING_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
-    private static final TaggableFilter IS_OFFENDER = TaggableFilter
-            .forDefinition(OFFENDING_LINEITEMS);
-    // Whether we should flag buildings that cross waterbodies
+    private TaggableFilter lineItemsOffending;
+    private boolean flagBuildings;
     private static final Predicate<Edge> HIGHWAY_TYPE_TO_FLAG = object -> object.highwayTag()
             .isMoreImportantThanOrEqualTo(HighwayTag.PATH)
             && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.BUS_GUIDEWAY);
-    // Whether we should limit flags to only streets, buildings, and railways
-    private static final boolean DEFAULT_OFFENDING_LINEITEM_FILTER = false;
-    private boolean filterOffendingLineItems;
     // Assume the object is an area based on atlas call
     private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
             .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
@@ -221,8 +216,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     public LineCrossingWaterBodyCheck(final Configuration configuration)
     {
         super(configuration);
-        this.filterOffendingLineItems = this.configurationValue(configuration,
-                "intersectingLineItems.filter", DEFAULT_OFFENDING_LINEITEM_FILTER);
+        this.lineItemsOffending = TaggableFilter
+                .forDefinition(this.configurationValue(configuration, "lineItems.offending", ""));
+        this.flagBuildings = this.configurationValue(configuration, "buildings.flag", false);
     }
 
     @Override
@@ -240,24 +236,17 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         final Area objectAsArea = (Area) object;
         final Polygon areaAsPolygon = objectAsArea.asPolygon();
         final Atlas atlas = object.getAtlas();
-        final Iterable<AtlasItem> allCrossingItems = this.filterOffendingLineItems
-                // If we're only looking for crossing buildings/railways/streets
+
+        final Iterable<AtlasItem> allCrossingItems = this.flagBuildings
                 ? new MultiIterable<>(
                         atlas.lineItemsIntersecting(areaAsPolygon,
-                                lineItem -> (lineItem instanceof Edge
-                                        && HIGHWAY_TYPE_TO_FLAG.test((Edge) lineItem)
-                                        || IS_OFFENDER.test(lineItem))
-                                        && lineItem.intersects(areaAsPolygon)
-                                        && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
-                                                || Validators.isOfType(lineItem, BridgeTag.class,
-                                                        BridgeTag.NO))
-                                        && LevelTag.areOnSameLevel(object, lineItem)),
+                                lineItem -> isOffendingLineItem(object, areaAsPolygon)
+                                        .test(lineItem)),
                         atlas.areasIntersecting(areaAsPolygon,
                                 area -> IS_BUILDING.test(area) && !NONOFFENDING_BUILDINGS.test(area)
                                         && LevelTag.areOnSameLevel(object, area)))
-                // If we're interested in all crossing line items
-                : new MultiIterable<>(atlas.edgesIntersecting(areaAsPolygon),
-                        atlas.linesIntersecting(areaAsPolygon));
+                : new MultiIterable<AtlasItem>(atlas.lineItemsIntersecting(areaAsPolygon,
+                        lineItem -> isOffendingLineItem(object, areaAsPolygon).test(lineItem)));
 
         // Assume there is no invalid crossing
         boolean hasInvalidCrossings = false;
@@ -301,5 +290,29 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * True if the incoming AtlasObject is an Edge with the correct highway type or Line with the
+     * correct tag combination AND the lineItem intersects the parameter waterbody polygon AND the
+     * lineItem is not a bridge and is on the same level as the parameter waterbody.
+     * 
+     * @param object
+     *            The waterbody
+     * @param areaAsPolygon
+     *            The waterbody as a polygon
+     * @return True if the incoming AtlasObject is an Edge with the correct highway type or Line
+     *         with the correct tag combination AND the lineItem intersects the parameter area AND
+     *         the lineItem is not a bridge and is on the same level as the parameter area.
+     */
+    private Predicate<LineItem> isOffendingLineItem(final AtlasObject object,
+            final Polygon areaAsPolygon)
+    {
+        return lineItem -> (lineItem instanceof Edge && HIGHWAY_TYPE_TO_FLAG.test((Edge) lineItem)
+                || this.lineItemsOffending.test(lineItem))
+                && lineItem.intersects(areaAsPolygon)
+                && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
+                        || Validators.isOfType(lineItem, BridgeTag.class, BridgeTag.NO))
+                && LevelTag.areOnSameLevel(object, lineItem);
     }
 }

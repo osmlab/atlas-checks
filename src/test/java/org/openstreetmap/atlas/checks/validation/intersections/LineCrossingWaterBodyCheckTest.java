@@ -25,11 +25,13 @@ public class LineCrossingWaterBodyCheckTest
     @Test
     public void testBuildingCrossing()
     {
-        this.verifier.actual(this.setup.getInvalidCrossingBuildingAtlas(),
+        this.verifier.actual(this.setup.invalidCrossingBuildingAtlas(),
                 new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
-                        "{  \"LineCrossingWaterBodyCheck\": { \"enabled\": true, \"intersectingLineItems.filter\": true }}")));
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\","
+                                + "    \"buildings.flag\": true" + "  }}")));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 2));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -73,6 +75,16 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testInvalidLineItemCrossing()
+    {
+        this.verifier.actual(this.setup.invalidCrossingLineItemAtlas(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\" }}")));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
     public void testMultipolygonMemberCrossingAtlas()
     {
         this.verifier.actual(this.setup.multipolygonMemberCrossingAtlas(), check);
@@ -98,6 +110,16 @@ public class LineCrossingWaterBodyCheckTest
     public void testValidIntersectionItemsAtlas()
     {
         this.verifier.actual(this.setup.validIntersectionItemsAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidLineItemCrossing()
+    {
+        this.verifier.actual(this.setup.validCrossingLineItemAtlas(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\" }}")));
         this.verifier.verifyEmpty();
     }
 }
