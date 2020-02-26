@@ -300,9 +300,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     /**
-     * True if the incoming AtlasObject is an {@link Edge} with the correct highway type or {@link LineItem} with the
-     * correct tag combination AND the lineItem intersects the parameter waterbody polygon AND the
-     * lineItem is not a bridge and is on the same level as the parameter waterbody.
+     * True if the incoming AtlasObject is an {@link Edge} with the correct highway type or
+     * {@link LineItem} with the correct tag combination AND the lineItem intersects the parameter
+     * waterbody polygon AND the lineItem is not a bridge and is on the same level as the parameter
+     * waterbody.
      * 
      * @param object
      *            The waterbody
