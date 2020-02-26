@@ -40,11 +40,11 @@ import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags line items (edges or lines) that are crossing water bodies invalidly.
+ * Flags line items (edges or lines) and optionally buildings that are crossing water bodies
+ * invalidly. Configurable values and
  * {@code LineCrossingWaterBodyCheck#canCrossWaterBody(AtlasItem)} and
- * {@code Utilities#haveExplicitLocationsForIntersections(Polygon, AtlasItem)} is used to decide
- * whether a crossing is valid or not. Can also be configured to flag only streets, railways, or
- * buildings that cross waterbodies.
+ * {@code Utilities#haveExplicitLocationsForIntersections(Polygon, AtlasItem)} are used to decide
+ * whether a crossing is valid or not.
  *
  * @author mertk
  * @author savannahostrowski
@@ -66,18 +66,17 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     // are expected to cross water bodies.
     private static final TaggableFilter VALID_RELATIONS_TAG_FILTER = TaggableFilter
             .forDefinition("natural->*|place->*|landuse->*|waterway->*|admin_level->*|boundary->*");
-    private static final String CAN_CROSS_WATER_BODY_TAGS = "waterway->*|boundary->*|landuse->*|"
+    private static final String DEFAULT_CAN_CROSS_WATER_BODY_TAGS = "waterway->*|boundary->*|landuse->*|"
             + "bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|"
             + "embankment->yes|location->underwater,underground|power->line,minor_line|"
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes";
-    private static final TaggableFilter CAN_CROSS_WATER_BODY_FILTER = TaggableFilter
-            .forDefinition(CAN_CROSS_WATER_BODY_TAGS);
+    private TaggableFilter canCrossWaterBodyFilter;
     private TaggableFilter lineItemsOffending;
     private boolean flagBuildings;
-    private static final Predicate<Edge> HIGHWAY_TYPE_TO_FLAG = object -> object.highwayTag()
-            .isMoreImportantThanOrEqualTo(HighwayTag.PATH)
-            && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.BUS_GUIDEWAY);
-    // Assume the object is an area based on atlas call
+    private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
+    private HighwayTag highwayMinimum;
+    private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
+    private List<HighwayTag> highwaysExclude;
     private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
             .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
     private static final String BUILDING_TAGS_DO_NOT_FLAG = "public_transport->station,aerialway=station";
@@ -137,24 +136,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             .forDefinition(WATER_BODY_EXCLUDE_TAGS);
 
     private static final long serialVersionUID = 6048659185833217159L;
-
-    /**
-     * Checks if given {@link AtlasItem} can cross a water body
-     *
-     * @param crossingItem
-     *            {@link AtlasItem} crossing
-     * @return whether given {@link AtlasItem} can cross a water body
-     */
-    private static boolean canCrossWaterBody(final AtlasItem crossingItem)
-    {
-        // In the following cases, given item can cross a water body
-
-        return CAN_CROSS_WATER_BODY_FILTER.test(crossingItem)
-                // It has a tag starting with addr
-                || crossingItem.containsKeyStartsWith(Collections.singleton(ADDRESS_PREFIX_KEY))
-                // If crossing item is a line and meets the conditions for a boundary
-                || crossingItem instanceof Line && isBoundary(crossingItem);
-    }
 
     /**
      * Checks if the relation has whitelisted tags that makes its members cross water bodies
@@ -219,6 +200,15 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         this.lineItemsOffending = TaggableFilter
                 .forDefinition(this.configurationValue(configuration, "lineItems.offending", ""));
         this.flagBuildings = this.configurationValue(configuration, "buildings.flag", false);
+        this.canCrossWaterBodyFilter = TaggableFilter.forDefinition(this.configurationValue(
+                configuration, "lineItems.non_offending", DEFAULT_CAN_CROSS_WATER_BODY_TAGS));
+        this.highwayMinimum = Enum.valueOf(HighwayTag.class,
+                this.configurationValue(configuration, "highway.minimum", DEFAULT_HIGHWAY_MINIMUM)
+                        .toUpperCase());
+        this.highwaysExclude = this
+                .configurationValue(configuration, "highways.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
+                .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -236,7 +226,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         final Area objectAsArea = (Area) object;
         final Polygon areaAsPolygon = objectAsArea.asPolygon();
         final Atlas atlas = object.getAtlas();
-
         final Iterable<AtlasItem> allCrossingItems = this.flagBuildings
                 ? new MultiIterable<>(
                         atlas.lineItemsIntersecting(areaAsPolygon,
@@ -264,7 +253,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         for (final AtlasItem crossingItem : allCrossingItems)
         {
             // Flag all buildings or if line item, check if it can actually cross
-            if (crossingItem instanceof Area || !canCrossWaterBody(crossingItem)
+            if (crossingItem instanceof Area || !this.canCrossWaterBody(crossingItem)
                     && !IntersectionUtilities.haveExplicitLocationsForIntersections(areaAsPolygon,
                             (LineItem) crossingItem))
             {
@@ -293,6 +282,24 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     /**
+     * Checks if given {@link AtlasItem} can cross a water body
+     *
+     * @param crossingItem
+     *            {@link AtlasItem} crossing
+     * @return whether given {@link AtlasItem} can cross a water body
+     */
+    private boolean canCrossWaterBody(final AtlasItem crossingItem)
+    {
+        // In the following cases, given item can cross a water body
+
+        return this.canCrossWaterBodyFilter.test(crossingItem)
+                // It has a tag starting with addr
+                || crossingItem.containsKeyStartsWith(Collections.singleton(ADDRESS_PREFIX_KEY))
+                // If crossing item is a line and meets the conditions for a boundary
+                || crossingItem instanceof Line && isBoundary(crossingItem);
+    }
+
+    /**
      * True if the incoming AtlasObject is an Edge with the correct highway type or Line with the
      * correct tag combination AND the lineItem intersects the parameter waterbody polygon AND the
      * lineItem is not a bridge and is on the same level as the parameter waterbody.
@@ -308,7 +315,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private Predicate<LineItem> isOffendingLineItem(final AtlasObject object,
             final Polygon areaAsPolygon)
     {
-        return lineItem -> (lineItem instanceof Edge && HIGHWAY_TYPE_TO_FLAG.test((Edge) lineItem)
+        return lineItem -> (lineItem instanceof Edge
+                && ((Edge) lineItem).highwayTag().isMoreImportantThanOrEqualTo(this.highwayMinimum)
+                && !this.highwaysExclude.contains(((Edge) lineItem).highwayTag())
                 || this.lineItemsOffending.test(lineItem))
                 && lineItem.intersects(areaAsPolygon)
                 && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
