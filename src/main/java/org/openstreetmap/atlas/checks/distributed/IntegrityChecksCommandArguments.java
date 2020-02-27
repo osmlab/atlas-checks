@@ -90,6 +90,7 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
     private static final Logger logger = LoggerFactory
             .getLogger(IntegrityChecksCommandArguments.class);
+    private static final long serialVersionUID = 3411367641498888770L;
 
     /**
      * Creates a map from country name to {@link List} of {@link Shard} definitions from
@@ -143,6 +144,12 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
                                 logger.warn(String.format("Couldn't parse shard file name %s.",
                                         shardFileName), e);
                             }
+                        }
+                        else
+                        {
+                            logger.warn(String.format(
+                                    "Skipping atlas file %s, its name does not conform to the sharded standard.",
+                                    shardFileName));
                         }
                     });
         });

@@ -91,6 +91,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
     private static final Logger logger = LoggerFactory
             .getLogger(ShardedIntegrityChecksSparkJob.class);
+    private static final long serialVersionUID = -8038802870994470017L;
 
     private final MultiMap<String, Check> countryChecks = new MultiMap<>();
 
@@ -212,10 +213,10 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 checkPool.queue(() ->
                 {
-                    // Generate a task for each shard group
+                    // Generate a task for each shard
                     final List<ShardedCheckFlagsTask> tasksForCountry = countryShard.getValue()
                             .stream()
-                            .map(group -> new ShardedCheckFlagsTask(countryShard.getKey(), group,
+                            .map(shard -> new ShardedCheckFlagsTask(countryShard.getKey(), shard,
                                     this.countryChecks.get(countryShard.getKey())))
                             .collect(Collectors.toList());
 
