@@ -77,8 +77,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private HighwayTag highwayMinimum;
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
     private List<HighwayTag> highwaysExclude;
-    private static final Predicate<AtlasObject> IS_BUILDING = object -> Validators
-            .isNotOfType(object, BuildingTag.class, BuildingTag.NO);
     private static final String BUILDING_TAGS_DO_NOT_FLAG = "public_transport->station,aerialway=station";
     private static final TaggableFilter NONOFFENDING_BUILDINGS = TaggableFilter
             .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
@@ -227,12 +225,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         final Polygon areaAsPolygon = objectAsArea.asPolygon();
         final Atlas atlas = object.getAtlas();
         final Iterable<AtlasItem> allCrossingItems = this.flagBuildings
-                ? new MultiIterable<>(
-                        atlas.lineItemsIntersecting(areaAsPolygon,
-                                lineItem -> isOffendingLineItem(object, areaAsPolygon)
-                                        .test(lineItem)),
+                ? new MultiIterable<>(atlas.lineItemsIntersecting(
+                        areaAsPolygon,
+                        lineItem -> isOffendingLineItem(object, areaAsPolygon).test(lineItem)),
                         atlas.areasIntersecting(areaAsPolygon,
-                                area -> IS_BUILDING.test(area) && !NONOFFENDING_BUILDINGS.test(area)
+                                area -> BuildingTag.isBuilding(area)
+                                        && !NONOFFENDING_BUILDINGS.test(area)
                                         && LevelTag.areOnSameLevel(object, area)))
                 : new MultiIterable<AtlasItem>(atlas.lineItemsIntersecting(areaAsPolygon,
                         lineItem -> isOffendingLineItem(object, areaAsPolygon).test(lineItem)));
