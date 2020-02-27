@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  * @author gpogulsky
  * @author nachtm
  * @author sayas01
+ * @author seancoulter
  */
 public class SinkIslandCheckTestRule extends CoreTestRule
 {
@@ -190,6 +191,22 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                                     @Loc(value = TEST_14) }, tags = { "highway=service" }) })
     private Atlas edgesWithinAirportAtlas;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+            @Node(coordinates = @Loc(value = TEST_2)),
+            @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=secondary", "psv=bus", "motor_vehicle=no" }) })
+    private Atlas psvAndMotorVehicleNoRoad;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+            @Node(coordinates = @Loc(value = TEST_2)),
+            @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=pedestrian" }),
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=service", "motor_vehicle=yes" }) })
+    private Atlas pedestrianRoadAndMotorVehicleYesRoad;
+
     public Atlas getEdgeConnectedToPedestrianNetwork()
     {
         return this.pedestrianNetwork;
@@ -223,6 +240,16 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     public Atlas getParkingGarageEntranceOrExit()
     {
         return this.parkingGarageEntranceOrExitAtlas;
+    }
+
+    public Atlas getPedestrianRoadAndMotorVehicleYesRoad()
+    {
+        return this.pedestrianRoadAndMotorVehicleYesRoad;
+    }
+
+    public Atlas getPsvAndMotorVehicleNoRoad()
+    {
+        return this.psvAndMotorVehicleNoRoad;
     }
 
     public Atlas getServiceSinkIsland()
