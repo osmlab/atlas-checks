@@ -78,7 +78,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!this.isFlagged(object.getOsmIdentifier()))
+        if (!this.isFlagged(object.getIdentifier()))
         {
             final Atlas atlas = object.getAtlas();
             final Set<AtlasObject> overlappingItems = new HashSet<>();
@@ -103,18 +103,18 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
             }
             if (!overlappingItems.isEmpty())
             {
-                this.markAsFlagged(object.getOsmIdentifier());
+                this.markAsFlagged(object.getIdentifier());
                 // Mark overlapping objects as flagged
                 overlappingItems
-                        .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getOsmIdentifier()));
+                        .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getIdentifier()));
                 final CheckFlag flag = this.createFlag(overlappingItems,
-                        this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                        this.getLocalizedInstruction(0, object.getIdentifier(),
                                 new StringList(osmIdentifiers(overlappingItems)).join(", ")));
                 // If the edges are part of the same way, give special instructions
                 if (overlappingItems.stream().anyMatch(
-                        overlapEdge -> overlapEdge.getOsmIdentifier() == object.getOsmIdentifier()))
+                        overlapEdge -> overlapEdge.getIdentifier() == object.getIdentifier()))
                 {
-                    flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier()));
+                    flag.addInstruction(this.getLocalizedInstruction(1, object.getIdentifier()));
                 }
                 return Optional.of(flag);
             }
@@ -184,7 +184,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
         {
             wayIds.add(nextEdge.getIdentifier());
             final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
+                    .filter(outEdge -> outEdge.getIdentifier() == object.getIdentifier())
                     .collectToList();
             nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
             // If original edge is found, the way is closed
@@ -198,7 +198,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
 
     private Predicate<Edge> notIn(final AtlasObject object)
     {
-        return edge -> !this.isFlagged(object.getOsmIdentifier());
+        return edge -> !this.isFlagged(object.getIdentifier());
     }
 
     /**
@@ -231,7 +231,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
 
     private Iterable<String> osmIdentifiers(final Iterable<AtlasObject> objects)
     {
-        return Iterables.stream(objects).map(AtlasObject::getOsmIdentifier).map(String::valueOf)
+        return Iterables.stream(objects).map(AtlasObject::getIdentifier).map(String::valueOf)
                 .collectToList();
     }
 
