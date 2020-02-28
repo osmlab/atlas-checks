@@ -60,6 +60,10 @@ public class CheckResourceLoader
     private final MultiMap<String, String> countryGroups = new MultiMap<>();
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
+    private static final String COUNTRY_WHITELIST_TEMPLATE = "%s."
+            + BaseCheck.PARAMETER_WHITELIST_COUNTRIES;
+    private static final String COUNTRY_BLACKLIST_TEMPLATE = "%s."
+            + BaseCheck.PARAMETER_BLACKLIST_COUNTRIES;
     private final Set<String> packages;
     private final Optional<List<String>> checkWhiteList;
     private final Optional<List<String>> checkBlackList;
@@ -181,9 +185,8 @@ public class CheckResourceLoader
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
         final Configuration countryConfiguration = this.getConfigurationForCountry(country);
-        return loadChecks(
-                checkClass -> this.isEnabledByConfiguration(countryConfiguration, checkClass),
-                countryConfiguration);
+        return loadChecks(checkClass -> this.isEnabledByConfiguration(countryConfiguration,
+                checkClass, country), countryConfiguration);
     }
 
     public <T extends Check> Set<T> loadChecksUsingConstructors(
@@ -309,5 +312,21 @@ public class CheckResourceLoader
     {
         final String key = String.format(this.enabledKeyTemplate, checkClass.getSimpleName());
         return configuration.get(key, this.enabledByDefault).value();
+    }
+
+    private boolean isEnabledByConfiguration(final Configuration configuration,
+            final Class checkClass, final String country)
+    {
+        final List<String> countryWhitelist = configuration
+                .get(String.format(COUNTRY_WHITELIST_TEMPLATE, checkClass.getSimpleName()),
+                        Collections.emptyList())
+                .value();
+        final List<String> countryBlacklist = configuration
+                .get(String.format(COUNTRY_BLACKLIST_TEMPLATE, checkClass.getSimpleName()),
+                        Collections.emptyList())
+                .value();
+        return this.isEnabledByConfiguration(configuration, checkClass)
+                && countryWhitelist.isEmpty() ? !countryBlacklist.contains(country)
+                        : countryWhitelist.contains(country);
     }
 }

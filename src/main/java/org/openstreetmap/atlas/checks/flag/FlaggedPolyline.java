@@ -1,10 +1,15 @@
 package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Map;
+import java.util.Optional;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteArea;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteLine;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -71,6 +76,24 @@ public class FlaggedPolyline extends FlaggedObject
     }
 
     @Override
+    public FlaggedObject getAsCompleteFlaggedObject()
+    {
+        if (this.atlasItem instanceof Area)
+        {
+            return new FlaggedPolyline(CompleteArea.from((Area) this.atlasItem));
+        }
+        else if (this.atlasItem instanceof Edge)
+        {
+            return new FlaggedPolyline(CompleteEdge.from((Edge) this.atlasItem));
+        }
+        else if (this.atlasItem instanceof Line)
+        {
+            return new FlaggedPolyline(CompleteLine.from((Line) this.atlasItem));
+        }
+        throw new CoreException("FlaggedPolyline has improper Atlas Item {}", this.atlasItem);
+    }
+
+    @Override
     public String getCountry()
     {
         return this.country;
@@ -86,6 +109,12 @@ public class FlaggedPolyline extends FlaggedObject
     public Map<String, String> getProperties()
     {
         return this.properties;
+    }
+
+    @Override
+    protected Optional<AtlasObject> getObject()
+    {
+        return Optional.ofNullable(this.atlasItem);
     }
 
     private String initCountry(final AtlasObject object)
