@@ -84,7 +84,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             Optionality.OPTIONAL);
     private static final Switch<Boolean> MULTI_ATLAS = new Switch<>("multiAtlas",
             "If true then use a multi atlas, else use a dynamic atlas. This works better for running on a single machine",
-            Boolean::new, Optionality.OPTIONAL, "false");
+            Boolean::getBoolean, Optionality.OPTIONAL, "false");
     private static final Switch<String> SPARK_STORAGE_DISK_ONLY = new Switch<>(
             "sparkStorageDiskOnly", "Store cached RDDs exclusively on disk",
             StringConverter.IDENTITY, Optionality.OPTIONAL);

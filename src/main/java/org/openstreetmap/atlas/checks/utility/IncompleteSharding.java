@@ -40,7 +40,7 @@ public class IncompleteSharding implements Sharding
             return this.shards.get(shard.bounds().expand(Distance.ONE_METER)).stream()
                     .filter(aShard -> !aShard.equals(shard)).collect(Collectors.toList());
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override

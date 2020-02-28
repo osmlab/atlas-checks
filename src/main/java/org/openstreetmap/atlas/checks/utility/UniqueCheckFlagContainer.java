@@ -34,10 +34,8 @@ public class UniqueCheckFlagContainer implements Serializable
     public static UniqueCheckFlagContainer combine(final UniqueCheckFlagContainer container1,
             final UniqueCheckFlagContainer container2)
     {
-        container2.uniqueFlags.entrySet().forEach(entry ->
-        {
-            container1.addAll(entry.getKey(), entry.getValue().values());
-        });
+        container2.uniqueFlags.entrySet()
+                .forEach(entry -> container1.addAll(entry.getKey(), entry.getValue().values()));
         return container1;
     }
 
@@ -46,6 +44,8 @@ public class UniqueCheckFlagContainer implements Serializable
         this.uniqueFlags = new ConcurrentHashMap<>();
     }
 
+    @SuppressWarnings("s1144")
+    // Ignore unused constructor warning, this is used for deserialization
     private UniqueCheckFlagContainer(
             final ConcurrentHashMap<String, ConcurrentHashMap<Set<String>, CheckFlag>> flags)
     {

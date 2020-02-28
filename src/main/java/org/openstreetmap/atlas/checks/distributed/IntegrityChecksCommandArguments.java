@@ -50,7 +50,10 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
         TIPPECANOE
     }
 
-    @Deprecated
+    /**
+     * @deprecated in favor of INPUT from SparkJob
+     */
+    @Deprecated(since = "6.0.2")
     protected static final Switch<String> ATLAS_FOLDER = new Switch<>("inputFolder",
             "Path of folder which contains Atlas file(s)", StringConverter.IDENTITY,
             Optionality.OPTIONAL);
