@@ -31,6 +31,7 @@ import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
 import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.event.Processor;
 import org.openstreetmap.atlas.event.ShutdownEvent;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.generator.sharding.AtlasSharding;
 import org.openstreetmap.atlas.generator.tools.caching.HadoopAtlasFileCache;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
@@ -163,8 +164,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         // Check inputs
         if (countries.isEmpty())
         {
-            logger.error("No countries found to run");
-            return;
+            throw new CoreException("No countries found to run.");
         }
         for (final String country : countries)
         {
@@ -180,8 +180,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         }
         if (this.countryChecks.isEmpty())
         {
-            logger.error("No checks loaded for any of the countries provided. Skipping execution");
-            return;
+            throw new CoreException("No checks loaded for any of the countries provided.");
         }
 
         // Find the shards for each country atlas files
@@ -189,7 +188,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 countries.stream().collect(Collectors.toSet()), resolver, input, sparkContext);
         if (countryShards.isEmpty())
         {
-            logger.info("No atlas files found in input ");
+            throw new CoreException("No atlas files found in input.");
         }
 
         if (!countries.stream().allMatch(countryShards::containsKey))
@@ -197,10 +196,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             final Set<String> missingCountries = countries.stream()
                     .filter(aCountry -> !countryShards.containsKey(aCountry))
                     .collect(Collectors.toSet());
-            logger.error(
+            throw new CoreException(
                     "Unable to find standardized named shard files in the path {}/<countryName> for the countries {}. \n Files must be in format <country>_<zoom>_<x>_<y>.atlas",
                     input, missingCountries);
-            return;
         }
 
         // List of spark RDDS/tasks
