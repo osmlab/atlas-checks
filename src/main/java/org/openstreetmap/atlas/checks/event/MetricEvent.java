@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.utilities.scalars.Duration;
  *
  * @author mkalender
  */
-public final class MetricEvent extends Event
+public final class MetricEvent extends org.openstreetmap.atlas.event.Event
 {
     private final String name;
     private final Duration duration;

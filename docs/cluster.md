@@ -88,7 +88,8 @@ To get the job running against a different version of Spark could be very challe
 If you see an exception while running in your environment, like `ClassNotFoundException`,  `ClassCastException`, thrown from a standard library, such as Guava, Slf4j, 
 then you are hitting the dependency conflict problem.   To solve it, try to figure out the name of the conflicted library, then update dependency configuration in `build.gradle` file to force a working version. 
 
-#### large country support
+#### Large country support
 
 By default atlas-check run jobs by country. This means one worker node will have to be able to load all the data for one country in memory. 
-This is not a good way to distribute workload and could make it very challenging to run large countries like USA, RUS, or CHN. Before a better solution gets implemented, you'll have to allocate large memories if you need to check against an enormous country. 
+This is not a good way to distribute workload and could make it very challenging to run large countries like USA, RUS, or CHN. 
+For running large countries see [Sharded Checks](shardedchecks.md).

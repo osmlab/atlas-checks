@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
@@ -74,8 +75,8 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
                 checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                 // Add the geoJSON as a value
                 checkFeatureMap.get(checkName)
-                        .put(this.getAtlasIdentifiers(feature.getAsJsonObject().get(PROPERTIES)
-                                .getAsJsonObject().get(FEATURE_PROPERTIES).getAsJsonArray()),
+                        .put(this.getIdentifiers(
+                                feature.getAsJsonObject().get(PROPERTIES).getAsJsonObject()),
                                 jsonFeature);
             });
         }
@@ -101,17 +102,21 @@ public class AtlasChecksGeoJSONDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     /**
-     * Get the atlas ids from an array of feature properties.
+     * Get the unique ids for a flag. Fall back to getting the atlas ids from the feature properties
+     * for reverse compatibility.
      *
      * @param properties
-     *            a {@link JsonArray} of feature properties
+     *            a {@link JsonObject} of a flag
      * @return a {@link Set} of {@link String} ids
      */
-    private Set<String> getAtlasIdentifiers(final JsonArray properties)
+    private Set<String> getIdentifiers(final JsonObject properties)
     {
-        return Iterables.stream(properties)
-                .filter(object -> object.getAsJsonObject().has(IDENTIFIER))
-                .map(object -> object.getAsJsonObject().get(IDENTIFIER).getAsString())
-                .collectToSet();
+        return properties.has(IDENTIFIERS)
+                ? Iterables.stream(properties.get(IDENTIFIERS).getAsJsonArray())
+                        .map(JsonElement::getAsString).collectToSet()
+                : Iterables.stream(properties.get(FEATURE_PROPERTIES).getAsJsonArray())
+                        .filter(object -> object.getAsJsonObject().has(IDENTIFIER))
+                        .map(object -> object.getAsJsonObject().get(IDENTIFIER).getAsString())
+                        .collectToSet();
     }
 }
