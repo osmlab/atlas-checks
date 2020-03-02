@@ -65,6 +65,30 @@ public class CheckResourceLoaderTest
                         .filter(name -> name.startsWith("CheckResource")).distinct().count());
     }
 
+    @Test
+    public void testCheckCountryBlacklist()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"countries.blacklist\":[\"ABC\"]}}";
+
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(0, checkResourceLoader.loadChecksForCountry("ABC").size());
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("DEF").size());
+    }
+
+    @Test
+    public void testCheckCountryWhitelist()
+    {
+        final String configSource = "{\"CheckResourceLoader.scanUrls\": [\"org.openstreetmap.atlas.checks.base.checks\"],\"CheckResourceLoaderTestCheck\":{\"enabled\": true, \"countries\":[\"ABC\"]}}";
+
+        final Configuration configuration = ConfigurationResolver.inlineConfiguration(configSource);
+        final CheckResourceLoader checkResourceLoader = new CheckResourceLoader(configuration);
+
+        Assert.assertEquals(1, checkResourceLoader.loadChecksForCountry("ABC").size());
+        Assert.assertEquals(0, checkResourceLoader.loadChecksForCountry("DEF").size());
+    }
+
     /**
      * Test the check loading using country keyword specific configurations. Assert that each
      * country gets its own version of the check.
