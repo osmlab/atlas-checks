@@ -218,6 +218,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     @Override
+    @SuppressWarnings("S2293")
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // First retrieve the crossing edges, lines, buildings
