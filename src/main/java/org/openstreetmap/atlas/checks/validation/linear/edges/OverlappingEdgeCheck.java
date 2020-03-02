@@ -108,13 +108,13 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
                 overlappingItems
                         .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getIdentifier()));
                 final CheckFlag flag = this.createFlag(overlappingItems,
-                        this.getLocalizedInstruction(0, object.getIdentifier(),
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier(),
                                 new StringList(osmIdentifiers(overlappingItems)).join(", ")));
                 // If the edges are part of the same way, give special instructions
                 if (overlappingItems.stream().anyMatch(
-                        overlapEdge -> overlapEdge.getIdentifier() == object.getIdentifier()))
+                        overlapEdge -> overlapEdge.getOsmIdentifier() == object.getOsmIdentifier()))
                 {
-                    flag.addInstruction(this.getLocalizedInstruction(1, object.getIdentifier()));
+                    flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier()));
                 }
                 return Optional.of(flag);
             }
@@ -182,13 +182,13 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
         // Loop through out going edges with the same OSM id
         while (nextEdge != null)
         {
-            wayIds.add(nextEdge.getIdentifier());
+            wayIds.add(nextEdge.getOsmIdentifier());
             final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(outEdge -> outEdge.getIdentifier() == object.getIdentifier())
+                    .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
                     .collectToList();
             nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
             // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
+            if (nextEdge != null && wayIds.contains(nextEdge.getOsmIdentifier()))
             {
                 return true;
             }
@@ -231,7 +231,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
 
     private Iterable<String> osmIdentifiers(final Iterable<AtlasObject> objects)
     {
-        return Iterables.stream(objects).map(AtlasObject::getIdentifier).map(String::valueOf)
+        return Iterables.stream(objects).map(AtlasObject::getOsmIdentifier).map(String::valueOf)
                 .collectToList();
     }
 
