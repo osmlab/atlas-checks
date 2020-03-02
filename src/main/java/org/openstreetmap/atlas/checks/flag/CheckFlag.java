@@ -5,6 +5,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -48,18 +49,18 @@ import com.google.gson.JsonObject;
  * @author cuthbertm
  * @author mgostintsev
  * @author brian_l_davis
+ * @author bbreithaupt
  */
 public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
-    private static final long serialVersionUID = -1287808902452203852L;
-    private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
-
     private static final Distance TEN_METERS = Distance.meters(10);
-
-    private final String identifier;
+    private static final String NULL_IDENTIFIERS = "nullnull";
+    private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
+    private static final long serialVersionUID = -1287808902452203852L;
     private String challengeName = null;
+    private Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
+    private final String identifier;
     private final List<String> instructions = new ArrayList<>();
-    private final Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -438,6 +439,23 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
                 .map(polyLine -> (Iterable<Location>) polyLine).collect(Collectors.toList()));
     }
 
+    /**
+     * Generates an id {@link Set} for unique flag identification. The set is comprised of the item
+     * type + atlas id of the flagged objects. If there are no objects with atlas ids then the set
+     * only contains the check flag id.
+     *
+     * @return a {@link Set} of the unique ids
+     */
+    public Set<String> getUniqueIdentifiers()
+    {
+        final Set<String> flaggedObjectIdentifiers = this.flaggedObjects.stream()
+                .map(object -> object.getProperties().get(FlaggedObject.ITEM_TYPE_TAG)
+                        + object.getProperties().get(FlaggedObject.ITEM_IDENTIFIER_TAG))
+                .filter(string -> !string.equals(NULL_IDENTIFIERS)).collect(Collectors.toSet());
+        return flaggedObjectIdentifiers.isEmpty() ? Collections.singleton(this.identifier)
+                : flaggedObjectIdentifiers;
+    }
+
     @Override
     public int hashCode()
     {
@@ -449,6 +467,22 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public Iterator<Location> iterator()
     {
         return new MultiIterable<>(getShapes()).iterator();
+    }
+
+    /**
+     * Decouple the {@link CheckFlag} from any
+     * {@link org.openstreetmap.atlas.geography.atlas.Atlas}s by making all the
+     * {@link FlaggedObject}s complete.
+     *
+     * @return this
+     */
+    public CheckFlag makeComplete()
+    {
+        final LinkedHashSet<FlaggedObject> completeFlaggedObjects = new LinkedHashSet<>();
+        this.flaggedObjects.forEach(flaggedObject -> completeFlaggedObjects
+                .add(flaggedObject.getAsCompleteFlaggedObject()));
+        this.flaggedObjects = completeFlaggedObjects;
+        return this;
     }
 
     /**

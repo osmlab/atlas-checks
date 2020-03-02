@@ -9,6 +9,7 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.Resource;

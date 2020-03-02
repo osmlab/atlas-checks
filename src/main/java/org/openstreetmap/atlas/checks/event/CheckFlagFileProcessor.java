@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.event;
 
+import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +9,7 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * A {@link Processor} for {@link CheckFlagEvent}s to write them into line delimited GeoJson files
+ * A {@link } for {@link CheckFlagEvent}s to write them into line delimited GeoJson files
  *
  * @author mkalender
  */

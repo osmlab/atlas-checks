@@ -1,0 +1,10 @@
+{
+  "CheckResourceLoader": {
+    "scanUrls": [
+      "org.openstreetmap.atlas.checks.validation"
+    ],
+    "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
+    "enabled.value.default": false
+  },
+  "EdgesTestCheck": {"enabled": true}
+}

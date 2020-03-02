@@ -409,6 +409,53 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_OUTSIDE_AREA_4) }) })
     private Atlas crossingLineWithValidLineTagAtlas;
 
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_4)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_5)),
+                    @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) },
+            // Area
+            areas = {
+                    @Area(coordinates = { @Loc(value = AREA_LOCATION_1),
+                            @Loc(value = AREA_LOCATION_2), @Loc(value = AREA_LOCATION_3),
+                            @Loc(value = AREA_LOCATION_4),
+                            @Loc(value = AREA_LOCATION_5) }, tags = { "landuse=reservoir" }),
+                    @Area(coordinates = { @Loc(LOCATION_OUTSIDE_AREA_1), @Loc(AREA_LOCATION_1),
+                            @Loc(AREA_LOCATION_BETWEEN_2_AND_3) }, tags = { "building=hut" }) })
+    private Atlas invalidCrossingBuildingAtlas;
+
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_4)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_5)),
+                    @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) },
+            // Lines
+            lines = { @Line(coordinates = { @Loc(AREA_LOCATION_1),
+                    @Loc(LOCATION_OUTSIDE_AREA_1) }, tags = "railway=abandoned") })
+    private Atlas validCrossingLineItemAtlas;
+
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_4)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_5)),
+                    @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) },
+            // Lines
+            lines = { @Line(coordinates = { @Loc(AREA_LOCATION_1),
+                    @Loc(LOCATION_OUTSIDE_AREA_1) }, tags = "railway=tram") })
+    private Atlas invalidCrossingLineItemAtlas;
+
     public Atlas crossingLineWithNoOsmTagAtlas()
     {
         return this.crossingLineWithNoOsmTagAtlas;
@@ -419,9 +466,19 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
         return this.crossingLineWithValidLineTagAtlas;
     }
 
+    public Atlas invalidCrossingBuildingAtlas()
+    {
+        return this.invalidCrossingBuildingAtlas;
+    }
+
     public Atlas invalidCrossingItemsAtlas()
     {
         return this.invalidCrossingItemsAtlas;
+    }
+
+    public Atlas invalidCrossingLineItemAtlas()
+    {
+        return this.invalidCrossingLineItemAtlas;
     }
 
     public Atlas invalidIntersectionItemsAtlas()
@@ -447,6 +504,11 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     public Atlas validCrossingItemsAtlas()
     {
         return this.validCrossingItemsAtlas;
+    }
+
+    public Atlas validCrossingLineItemAtlas()
+    {
+        return this.validCrossingLineItemAtlas;
     }
 
     public Atlas validIntersectionItemsAtlas()

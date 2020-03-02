@@ -13,10 +13,10 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * A {@link Processor} for {@link MetricEvent}s to write them into files. By default this supports
- * maximum {@code FileProcessor.BATCH_SIZE} metrics. If number of metrics go beyond that limit, the
- * newest metrics will override the previous ones in the file, because the file name is going to be
- * the same for both write operations.
+ * A {@link org.openstreetmap.atlas.event.Processor} for {@link MetricEvent}s to write them into
+ * files. By default this supports maximum {@code FileProcessor.BATCH_SIZE} metrics. If number of
+ * metrics go beyond that limit, the newest metrics will override the previous ones in the file,
+ * because the file name is going to be the same for both write operations.
  *
  * @author mkalender
  */
@@ -69,7 +69,7 @@ public final class MetricFileGenerator extends FileProcessor<MetricEvent>
 
     @Override
     @Subscribe
-    public void process(final ShutdownEvent event)
+    public void process(final org.openstreetmap.atlas.event.ShutdownEvent event)
     {
         try
         {
