@@ -5,11 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -20,7 +22,6 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class RoadLinkCheck extends BaseCheck<Long>
 {
-
     public static final double DISTANCE_MILES_DEFAULT = 1;
     private static final String INVALID_LINK_DISTANCE_INSTRUCTION = "Invalid link, distance, {0}, greater than maximum, {1}.";
     private static final String NO_SAME_CLASSIFICATION_INSTRUCTION = "None of the connected edges contain any edges with the same classification [{0}]";
@@ -40,7 +41,7 @@ public class RoadLinkCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && ((Edge) object).highwayTag().isLink()
-                && !this.isFlagged(object.getOsmIdentifier());
+                && ((Edge) object).isMasterEdge() && !this.isFlagged(object.getOsmIdentifier());
     }
 
     @Override
@@ -50,16 +51,20 @@ public class RoadLinkCheck extends BaseCheck<Long>
         this.markAsFlagged(edge.getOsmIdentifier());
         if (edge.length().isGreaterThan(this.maximumLength))
         {
-            return Optional.of(this.createFlag(object,
+            return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
                     this.getLocalizedInstruction(0, edge.length(), this.maximumLength)));
         }
-        else if (edge.connectedEdges().stream().noneMatch(
+        else if (edge.connectedEdges().stream().filter(Edge::isMasterEdge).noneMatch(
                 connected -> connected.highwayTag().isOfEqualClassification(edge.highwayTag())))
         {
             final Set<AtlasObject> geometry = new HashSet<>();
             geometry.add(edge);
-            geometry.addAll(edge.connectedEdges());
-            final CheckFlag flag = this.createFlag(geometry,
+            geometry.addAll(edge.connectedEdges().stream().filter(Edge::isMasterEdge)
+                    .collect(Collectors.toSet()));
+            final Set<Edge> flagEdges = geometry.stream()
+                    .flatMap(obj -> new OsmWayWalker((Edge) obj).collectEdges().stream())
+                    .collect(Collectors.toSet());
+            final CheckFlag flag = this.createFlag(flagEdges,
                     this.getLocalizedInstruction(1, edge.highwayTag().toString()));
             flag.addPoint(edge.start().getLocation().midPoint(edge.end().getLocation()));
             return Optional.of(flag);

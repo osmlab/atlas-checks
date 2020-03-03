@@ -436,7 +436,16 @@
       "tags": "building"
     }
   },
-  "LineCrossingWaterBodyCheck": {},
+  "LineCrossingWaterBodyCheck": {
+    "enabled": true,
+    "highway.minimum": "path",
+    "highways.exclude": [
+      "bus_guideway"
+    ],
+    "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
+    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes",
+    "buildings.flag": true
+  },
   "LongSegmentCheck": {
     "length.minimum.kilometers": 10.0,
     "challenge": {
@@ -799,6 +808,7 @@
   "SinkIslandCheck": {
     "tree.size": 50,
     "minimum.highway.type": "service",
+    "filter.pedestrian.network": false,
     "challenge": {
       "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
       "blurb": "Identify islands of roads.",
@@ -939,6 +949,20 @@
       "instruction": "Open your favorite editor and check the instruction for the task to either update the geometry of the way to be a polygon or add area=yes tag or both.",
       "difficulty": "MEDIUM",
       "defaultPriority": "MEDIUM"
+    }
+  },
+  "AtGradeSignPostCheck": {
+    "connected.highway.types": {
+      "primary": ["trunk","primary","secondary"],
+      "trunk": ["primary"],
+      "secondary": ["primary"]
+    },
+    "challenge":{
+      "description":"This tasks contains at-grade intersections that are not part of destination_sign relations.",
+      "blurb":"Add/Fix destination_sign relations to at-grade intersections",
+      "instruction":"Open your favorite editor and check the instruction fr the task and add a destination_sign relation or destination_sign tag to the at-grade intersection.",
+      "difficulty":"NORMAL",
+      "defaultPriority":"MEDIUM"
     }
   }
 }
