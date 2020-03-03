@@ -29,16 +29,14 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class OceanBleedingCheck extends BaseCheck<Long>
 {
-    private static final String VALID_OCEAN_TAGS = "natural->strait,channel,fjord,sound,bay|"
+    private static final String DEFAULT_VALID_OCEAN_TAGS = "natural->strait,channel,fjord,sound,bay|"
             + "harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock";
-    private static final TaggableFilter VALID_OCEAN_DEFINITIONS = TaggableFilter
-            .forDefinition(VALID_OCEAN_TAGS);
-    private static final String INVALID_OCEAN_TAGS = "man_made->breakwater,pier"
+    private final TaggableFilter validOceanTags;
+    private static final String DEFAULT_INVALID_OCEAN_TAGS = "man_made->breakwater,pier"
             + "|natural->beach,marsh,swamp" + "|water->marsh"
             + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow"
             + "|landuse->*";
-    private static final TaggableFilter INVALID_OCEAN_DEFINITIONS = TaggableFilter
-            .forDefinition(INVALID_OCEAN_TAGS);
+    private final TaggableFilter invalidOceanTags;
     private static final String DEFAULT_OFFENDING_MISCELLANEOUS_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
     private final TaggableFilter defaultOffendingLineitems;
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
@@ -63,6 +61,10 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     public OceanBleedingCheck(final Configuration configuration)
     {
         super(configuration);
+        this.validOceanTags = TaggableFilter.forDefinition(
+                this.configurationValue(configuration, "ocean.valid", DEFAULT_VALID_OCEAN_TAGS));
+        this.invalidOceanTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
+                "ocean.invalid", DEFAULT_INVALID_OCEAN_TAGS));
         this.defaultOffendingLineitems = TaggableFilter.forDefinition(this.configurationValue(
                 configuration, "lineItems.offending", DEFAULT_OFFENDING_MISCELLANEOUS_LINEITEMS));
         this.highwayMinimum = Enum.valueOf(HighwayTag.class,
@@ -84,7 +86,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return VALID_OCEAN_DEFINITIONS.test(object) && !INVALID_OCEAN_DEFINITIONS.test(object)
+        return this.validOceanTags.test(object) && !this.invalidOceanTags.test(object)
                 && (object instanceof Area || object instanceof LineItem);
     }
 
