@@ -49,7 +49,7 @@ public class OceanBleedingCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(AREA_LOCATION_2)), @Node(coordinates = @Loc(AREA_LOCATION_3)),
             @Node(coordinates = @Loc(LOCATION_OUTSIDE_AREA_1)),
             @Node(coordinates = @Loc(LOCATION_INSIDE_OCEAN)) }, areas = {
-                    @Area(tags = { "seamark=sea_area" }, coordinates = { @Loc(AREA_LOCATION_1),
+                    @Area(tags = { "seamark:type=sea_area" }, coordinates = { @Loc(AREA_LOCATION_1),
                             @Loc(AREA_LOCATION_2), @Loc(AREA_LOCATION_3) }) }, edges = {
                                     @Edge(tags = { "highway=tertiary" }, coordinates = {
                                             @Loc(LOCATION_OUTSIDE_AREA_1),

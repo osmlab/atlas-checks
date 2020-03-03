@@ -437,14 +437,19 @@
     }
   },
   "LineCrossingWaterBodyCheck": {
-    "enabled": true,
     "highway.minimum": "path",
     "highways.exclude": [
       "bus_guideway"
     ],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
     "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes",
-    "buildings.flag": true
+    "buildings.flag": true,
+    "challenge": {
+      "description": "Certain OSM features should not cross waterbodies.",
+      "blurb": "Edit features overlapping the waterbody so they either validly overlap or do not overlap.",
+      "instruction": "Open your favorite editor and edit the features overlapping the waterbody so they either validly overlap or do not overlap.",
+      "difficulty": "EASY"
+    }
   },
   "LongSegmentCheck": {
     "length.minimum.kilometers": 10.0,
@@ -963,6 +968,19 @@
       "instruction":"Open your favorite editor and check the instruction fr the task and add a destination_sign relation or destination_sign tag to the at-grade intersection.",
       "difficulty":"NORMAL",
       "defaultPriority":"MEDIUM"
+    }
+  },
+  "OceanBleedingCheck": {
+    "highway.minimum": "path",
+    "highways.exclude": [
+      "bus_guideway"
+    ],
+    "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
+    "challenge": {
+      "description": "Certain OSM features should not bleed into (intersect) oceans.",
+      "blurb": "Edit features overlapping the ocean feature so they either validly intersect or do not overlap.",
+      "instruction": "Open your favorite editor and edit the features overlapping the ocean so they either validly overlap or do not overlap.",
+      "difficulty": "EASY"
     }
   }
 }

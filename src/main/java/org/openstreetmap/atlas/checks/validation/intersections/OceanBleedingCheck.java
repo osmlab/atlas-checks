@@ -1,10 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -16,13 +18,12 @@ import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags railways, streets, buildings that bleed into an ocean. An ocean is defined by a set of
- * ocean tags, and can be an {@link Area} or {@link LineItem}.
+ * Flags railways (configurable), streets (configurable), buildings that bleed into an ocean. An
+ * ocean is defined by a set of ocean tags, and can be an {@link Area} or {@link LineItem}.
  *
  * @author seancoulter
  */
@@ -34,21 +35,21 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             .forDefinition(VALID_OCEAN_TAGS);
     private static final String INVALID_OCEAN_TAGS = "man_made->breakwater,pier"
             + "|natural->beach,marsh,swamp" + "|water->marsh"
-            + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow";
+            + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow"
+            + "|landuse->*";
     private static final TaggableFilter INVALID_OCEAN_DEFINITIONS = TaggableFilter
             .forDefinition(INVALID_OCEAN_TAGS);
-    private static final Predicate<Area> IS_BUILDING = area -> Validators.isNotOfType(area,
-            BuildingTag.class, BuildingTag.NO);
-    private static final Predicate<Edge> VALID_HIGHWAY_TYPE = object -> object.highwayTag()
-            .isMoreImportantThanOrEqualTo(HighwayTag.PATH)
-            && Validators.isNotOfType(object, HighwayTag.class, HighwayTag.BUS_GUIDEWAY);
-    private static final String VALID_OFFENDING_MISCELLANEOUS_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
-    private static final TaggableFilter VALID_OFFENDING_LINEITEM = TaggableFilter
-            .forDefinition(VALID_OFFENDING_MISCELLANEOUS_LINEITEMS);
-    private static final String BLEEDING_BUILDING_INSTRUCTION = "Building {0,number,#} intersects ocean feature {1,number,#}.";
-    private static final String BLEEDING_LINEITEM_INSTRUCTION = "Way {0,number,#} intersects ocean feature {1,number,#}.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(BLEEDING_BUILDING_INSTRUCTION, BLEEDING_LINEITEM_INSTRUCTION);
+    private static final String DEFAULT_OFFENDING_MISCELLANEOUS_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
+    private final TaggableFilter defaultOffendingLineitems;
+    private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
+    private final HighwayTag highwayMinimum;
+    private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
+    private final List<HighwayTag> highwaysExclude;
+    private static final String OCEAN_INSTRUCTION = "Ocean feature {0,number,#} has invalid intersections.";
+    private static final String BLEEDING_BUILDING_INSTRUCTION = "Building {0,number,#} intersects the ocean feature.";
+    private static final String BLEEDING_LINEITEM_INSTRUCTION = "Way {0,number,#} intersects the ocean feature.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            BLEEDING_BUILDING_INSTRUCTION, BLEEDING_LINEITEM_INSTRUCTION, OCEAN_INSTRUCTION);
     private static final long serialVersionUID = -2229281211747728380L;
 
     /**
@@ -62,6 +63,15 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     public OceanBleedingCheck(final Configuration configuration)
     {
         super(configuration);
+        this.defaultOffendingLineitems = TaggableFilter.forDefinition(this.configurationValue(
+                configuration, "lineItems.offending", DEFAULT_OFFENDING_MISCELLANEOUS_LINEITEMS));
+        this.highwayMinimum = Enum.valueOf(HighwayTag.class,
+                this.configurationValue(configuration, "highway.minimum", DEFAULT_HIGHWAY_MINIMUM)
+                        .toUpperCase());
+        this.highwaysExclude = this
+                .configurationValue(configuration, "highways.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
+                .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -102,23 +112,25 @@ public class OceanBleedingCheck extends BaseCheck<Long>
         // Collect offending line items (non-bridges) and buildings
         // We do a second check in the predicate for actual intersection on the ocean boundary if
         // the ocean boundary is a LineItem. Or else we just use the area polygon.
-        final Iterable<LineItem> intersectingRoads = object.getAtlas()
-                .lineItemsIntersecting(oceanBoundary, lineItem -> (oceanIsArea
+        final Iterable<LineItem> intersectingRoads = object.getAtlas().lineItemsIntersecting(
+                oceanBoundary,
+                lineItem -> (oceanIsArea
                         || (((LineItem) object).asPolyLine()).intersects(lineItem.asPolyLine()))
-                        && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
-                                || Validators.isOfType(lineItem, BridgeTag.class, BridgeTag.NO))
-                        && (lineItem instanceof Edge && VALID_HIGHWAY_TYPE.test((Edge) lineItem)
-                                || VALID_OFFENDING_LINEITEM.test(lineItem)));
+                        && !BridgeTag.isBridge(lineItem)
+                        && (lineItem instanceof Edge
+                                && this.validHighwayType().test((Edge) lineItem)
+                                || this.defaultOffendingLineitems.test(lineItem)));
         final Iterable<Area> intersectingBuildings = object.getAtlas().areasIntersecting(
                 oceanBoundary,
                 area -> (oceanIsArea
                         || ((LineItem) object).asPolyLine().intersects(area.asPolygon()))
-                        && IS_BUILDING.test(area));
+                        && BuildingTag.isBuilding(area));
 
         // Unify all offenders in storage so the flag id is generated from a single set of flagged
         // objects
         final HashSet<AtlasObject> flaggedObjects = new HashSet<>();
         final StringBuilder instructions = new StringBuilder();
+        instructions.append(this.getLocalizedInstruction(2, object.getOsmIdentifier()));
         intersectingBuildings.forEach(building ->
         {
             flaggedObjects.add(building);
@@ -139,5 +151,16 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Validates the supplied street {@link Edge}
+     *
+     * @return true if the Edge is a valid street, false otherwise
+     */
+    private Predicate<Edge> validHighwayType()
+    {
+        return edge -> edge.highwayTag().isMoreImportantThanOrEqualTo(this.highwayMinimum)
+                && !this.highwaysExclude.contains(edge.highwayTag());
     }
 }
