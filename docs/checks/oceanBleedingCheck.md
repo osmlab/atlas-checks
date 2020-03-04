@@ -1,6 +1,6 @@
 # Ocean Bleeding Check
 
-This check aims to flag streets, railways, and buildings that bleed into (intersect) ocean features. Intersection includes any geometrical interaction between the ocean feature and the land feature. The definition of streets and railways can be changed in the configuration for the check ("lineItems.offending" for railways, "highway.minimum" and "highways.exclude" for streets) Additionally, tags that should be considered when validating/invalidating an ocean feature are configurable.
+This check aims to flag streets, railways, and buildings that bleed into (intersect) ocean features. Intersection includes any geometrical interaction between the ocean feature and the land feature. The definition of streets and railways can be changed in the configuration for the check ("lineItems.offending" for railways, "highway.minimum" and "highway.exclude" for streets) Additionally, tags that should be considered when validating/invalidating an ocean feature are configurable.
 
 #### Live Examples
 

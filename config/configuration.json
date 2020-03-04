@@ -975,10 +975,12 @@
       "valid": "natural->strait,channel,fjord,sound,bay|harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock",
       "invalid": "man_made->breakwater,pier|natural->beach,marsh,swamp|water->marsh|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow|landuse->*"
     },
-    "highway.minimum": "path",
-    "highways.exclude": [
-      "bus_guideway"
-    ],
+    "highway": {
+      "minimum": "path",
+      "exclude": [
+        "bus_guideway"
+      ]
+    },
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
     "challenge": {
       "description": "Certain OSM features should not bleed into (intersect) oceans.",

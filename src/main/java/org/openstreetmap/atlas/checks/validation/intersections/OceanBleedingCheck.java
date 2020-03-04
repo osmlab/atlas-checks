@@ -71,7 +71,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                 this.configurationValue(configuration, "highway.minimum", DEFAULT_HIGHWAY_MINIMUM)
                         .toUpperCase());
         this.highwaysExclude = this
-                .configurationValue(configuration, "highways.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
+                .configurationValue(configuration, "highway.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
                 .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
                 .collect(Collectors.toList());
     }
