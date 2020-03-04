@@ -23,7 +23,7 @@ public class OceanBleedingCheckTest
     {
         this.verifier.actual(this.setup.getInvalidBuildingBleedingIntoOcean(),
                 new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
@@ -31,7 +31,7 @@ public class OceanBleedingCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRailwayBleedingIntoOcean(),
                 new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class OceanBleedingCheckTest
     {
         this.verifier.actual(this.setup.getInvalidStreetBleedingIntoOcean(),
                 new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyNotEmpty();
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
@@ -47,6 +47,14 @@ public class OceanBleedingCheckTest
     {
         this.verifier.actual(this.setup.getValidBridgeOverOceanBoundary(),
                 new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validPathIntoOcean()
+    {
+        this.verifier.actual(this.setup.getPathBleedingIntoOcean(),
+                new OceanBleedingCheck(ConfigurationResolver.inlineConfiguration("{\"OceanBleedingCheck\": {\"highway.minimum\": \"service\"}}")));
         this.verifier.verifyEmpty();
     }
 
