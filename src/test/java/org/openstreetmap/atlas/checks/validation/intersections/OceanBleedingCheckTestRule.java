@@ -60,11 +60,11 @@ public class OceanBleedingCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(AREA_LOCATION_2)), @Node(coordinates = @Loc(AREA_LOCATION_3)),
             @Node(coordinates = @Loc(LOCATION_OUTSIDE_AREA_1)),
             @Node(coordinates = @Loc(LOCATION_INSIDE_OCEAN)) }, areas = {
-            @Area(tags = { "seamark:type=sea_area" }, coordinates = { @Loc(AREA_LOCATION_1),
-                    @Loc(AREA_LOCATION_2), @Loc(AREA_LOCATION_3) }) }, edges = {
-            @Edge(tags = { "highway=path" }, coordinates = {
-                    @Loc(LOCATION_OUTSIDE_AREA_1),
-                    @Loc(LOCATION_INSIDE_OCEAN) }) })
+                    @Area(tags = { "seamark:type=sea_area" }, coordinates = { @Loc(AREA_LOCATION_1),
+                            @Loc(AREA_LOCATION_2), @Loc(AREA_LOCATION_3) }) }, edges = {
+                                    @Edge(tags = { "highway=path" }, coordinates = {
+                                            @Loc(LOCATION_OUTSIDE_AREA_1),
+                                            @Loc(LOCATION_INSIDE_OCEAN) }) })
     private Atlas pathBleedingIntoOcean;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(AREA_LOCATION_1)),

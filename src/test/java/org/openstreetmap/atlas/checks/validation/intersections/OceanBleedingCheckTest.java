@@ -54,7 +54,8 @@ public class OceanBleedingCheckTest
     public void validPathIntoOcean()
     {
         this.verifier.actual(this.setup.getPathBleedingIntoOcean(),
-                new OceanBleedingCheck(ConfigurationResolver.inlineConfiguration("{\"OceanBleedingCheck\": {\"highway.minimum\": \"service\"}}")));
+                new OceanBleedingCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"OceanBleedingCheck\": {\"highway.minimum\": \"service\"}}")));
         this.verifier.verifyEmpty();
     }
 
