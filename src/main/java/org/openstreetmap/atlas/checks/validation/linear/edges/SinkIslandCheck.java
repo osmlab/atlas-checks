@@ -49,8 +49,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList("Road is impossible to get out of.");
     private static final float LOAD_FACTOR = 0.8f;
-    private static final Predicate<AtlasObject> NAVIGABLE_HIGHWAYS = object -> Validators.isOfType(
-            object, MotorVehicleTag.class, MotorVehicleTag.YES, MotorVehicleTag.DESIGNATED)
+    private static final Predicate<AtlasObject> NAVIGABLE_HIGHWAYS = object -> Validators
+            .isOfType(object, MotorVehicleTag.class, MotorVehicleTag.YES)
             || Validators.isOfType(object, MotorcarTag.class, MotorcarTag.YES)
             || Validators.isOfType(object, VehicleTag.class, VehicleTag.YES);
     private static final Predicate<AtlasObject> SERVICE_ROAD = object -> Validators.isOfType(object,
