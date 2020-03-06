@@ -1,0 +1,17 @@
+{
+  "SomeCheck": {
+    "challenge": {
+      "name": "Address Point Match"
+    }
+  },
+  "SomeOtherCheck": {
+    "challenge": {
+      "name": "Spiky Buildings"
+    }
+  },
+  "AnotherCheck": {
+    "challenge": {
+      "name": "Intersecting Lines"
+    }
+  }
+}

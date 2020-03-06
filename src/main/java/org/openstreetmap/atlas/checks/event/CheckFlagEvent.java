@@ -18,19 +18,21 @@ import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.checks.flag.FlaggedRelation;
+import org.openstreetmap.atlas.event.Event;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonBuilder.GeometryWithProperties;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonObject;
 import org.openstreetmap.atlas.tags.HighwayTag;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 /**
- * Wraps a {@link CheckFlag} for submission to the {@link EventService} for handling {@link Check}
- * results
+ * Wraps a {@link CheckFlag} for submission to the
+ * {@link org.openstreetmap.atlas.event.EventService} for handling {@link Check} results
  *
  * @author mkalender, bbreithaupt
  */
@@ -42,6 +44,9 @@ public final class CheckFlagEvent extends Event
     private static final String FEATURES = "features";
     private static final String FEATURE_COLLECTION = "FeatureCollection";
     private static final String INSTRUCTIONS = "instructions";
+    private static final String IDENTIFIERS = "identifiers";
+
+    private static final Gson GSON = new Gson();
 
     private final String checkName;
     private final CheckFlag flag;
@@ -143,6 +148,7 @@ public final class CheckFlagEvent extends Event
         flagProperties.add("feature_properties", featureProperties);
         flagProperties.add("feature_osmids", uniqueFeatureOsmIds);
         flagProperties.addProperty("feature_count", featureProperties.size());
+        flagProperties.add(IDENTIFIERS, GSON.toJsonTree(flag.getUniqueIdentifiers()));
 
         feature.addProperty("id", flag.getIdentifier());
         feature.add("properties", flagProperties);
@@ -189,6 +195,7 @@ public final class CheckFlagEvent extends Event
         final JsonObject flagPropertiesJson = new JsonObject();
         flagPropertiesJson.addProperty("id", flag.getIdentifier());
         flagPropertiesJson.addProperty(INSTRUCTIONS, flag.getInstructions());
+        flagPropertiesJson.add(IDENTIFIERS, GSON.toJsonTree(flag.getUniqueIdentifiers()));
 
         // Add additional properties
         additionalProperties.forEach(flagPropertiesJson::addProperty);

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.streaming.resource.Resource;
