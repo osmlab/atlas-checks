@@ -182,13 +182,13 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
         // Loop through out going edges with the same OSM id
         while (nextEdge != null)
         {
-            wayIds.add(nextEdge.getOsmIdentifier());
+            wayIds.add(nextEdge.getIdentifier());
             final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
                     .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
                     .collectToList();
             nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
             // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getOsmIdentifier()))
+            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
             {
                 return true;
             }
