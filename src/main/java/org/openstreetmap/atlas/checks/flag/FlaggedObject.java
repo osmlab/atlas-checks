@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.flag;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
@@ -17,14 +18,14 @@ import com.google.gson.JsonObject;
  */
 public abstract class FlaggedObject implements Serializable, Located
 {
-    protected static final String COUNTRY_MISSING = "NA";
     protected static final String AREA_TAG = "Area";
+    protected static final String COUNTRY_MISSING = "NA";
     protected static final String EDGE_TAG = "Edge";
-    protected static final String OSM_IDENTIFIER_TAG = "osmIdentifier";
     protected static final String ITEM_IDENTIFIER_TAG = "identifier";
     protected static final String ITEM_TYPE_TAG = "itemType";
     protected static final String LINE_TAG = "Line";
     protected static final String NODE_TAG = "Node";
+    protected static final String OSM_IDENTIFIER_TAG = "osmIdentifier";
     protected static final String POINT_TAG = "Point";
     private static final long serialVersionUID = -2898518269816777421L;
 
@@ -57,6 +58,13 @@ public abstract class FlaggedObject implements Serializable, Located
     }
 
     /**
+     * Return either itself or a copy of itself where there is no memory reference to an Atlas.
+     *
+     * @return Flagged Object with no memory reference to an Atlas
+     */
+    public abstract FlaggedObject getAsCompleteFlaggedObject();
+
+    /**
      * @return the flagged object's country code
      */
     public String getCountry()
@@ -87,4 +95,6 @@ public abstract class FlaggedObject implements Serializable, Located
     {
         return Objects.hash(this.getCountry(), this.getGeometry(), this.getProperties());
     }
+
+    protected abstract Optional<AtlasObject> getObject();
 }

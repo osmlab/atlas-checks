@@ -7,6 +7,7 @@ import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.event.MetricEvent;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
+import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.openstreetmap.atlas.utilities.time.Time;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
  * {@link RunnableCheckBase#eventService} along with {@link MapRouletteClient} for handling.
  *
  * @author mkalender
+ * @author bbreithaupt
  */
 public final class RunnableCheck extends RunnableCheckBase<Check> implements Runnable
 {
@@ -40,6 +42,24 @@ public final class RunnableCheck extends RunnableCheckBase<Check> implements Run
             final Iterable<AtlasObject> objects, final MapRouletteClient client)
     {
         super(country, check, objects, client);
+    }
+
+    /**
+     * Default constructor
+     *
+     * @param country
+     *            country that is being processed
+     * @param check
+     *            check that is being executed
+     * @param objects
+     *            {@link AtlasObject}s that are going to be executed
+     * @param eventService
+     *            {@link EventService} to post to
+     */
+    public RunnableCheck(final String country, final Check check,
+            final Iterable<AtlasObject> objects, final EventService eventService)
+    {
+        super(country, check, objects, null, eventService);
     }
 
     /**
