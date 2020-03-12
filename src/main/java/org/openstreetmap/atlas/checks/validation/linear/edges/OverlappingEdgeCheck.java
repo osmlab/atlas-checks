@@ -78,7 +78,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!this.isFlagged(object.getOsmIdentifier()))
+        if (!this.isFlagged(object.getIdentifier()))
         {
             final Atlas atlas = object.getAtlas();
             final Set<AtlasObject> overlappingItems = new HashSet<>();
@@ -103,10 +103,10 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
             }
             if (!overlappingItems.isEmpty())
             {
-                this.markAsFlagged(object.getOsmIdentifier());
+                this.markAsFlagged(object.getIdentifier());
                 // Mark overlapping objects as flagged
                 overlappingItems
-                        .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getOsmIdentifier()));
+                        .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getIdentifier()));
                 final CheckFlag flag = this.createFlag(overlappingItems,
                         this.getLocalizedInstruction(0, object.getOsmIdentifier(),
                                 new StringList(osmIdentifiers(overlappingItems)).join(", ")));
@@ -198,7 +198,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
 
     private Predicate<Edge> notIn(final AtlasObject object)
     {
-        return edge -> !this.isFlagged(object.getOsmIdentifier());
+        return edge -> !this.isFlagged(object.getIdentifier());
     }
 
     /**
