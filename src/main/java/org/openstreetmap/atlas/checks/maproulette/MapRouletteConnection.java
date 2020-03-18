@@ -3,13 +3,13 @@ package org.openstreetmap.atlas.checks.maproulette;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
@@ -144,15 +144,8 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     {
         final JsonObject challengeJson = challenge.toJson(challenge.getName());
         final String type = challengeJson.has(Survey.KEY_ANSWERS) ? KEY_SURVEY : KEY_CHALLENGE;
-        String encodedChallengeQuery = challenge.getName();
-        try
-        {
-            encodedChallengeQuery = URIUtil.encodeQuery(challenge.getName());
-        }
-        catch (final URIException error)
-        {
-            logger.info("Unable to encode Challenge name {}.", challenge.getName());
-        }
+        final String encodedChallengeQuery = URLEncoder
+                .encode(challenge.getName(), StandardCharsets.UTF_8).replace("+", "%20");
         return create(
                 String.format("/api/v2/project/%d/challenge/%s", project.getId(),
                         encodedChallengeQuery),
