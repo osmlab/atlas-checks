@@ -144,9 +144,11 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     {
         final JsonObject challengeJson = challenge.toJson(challenge.getName());
         final String type = challengeJson.has(Survey.KEY_ANSWERS) ? KEY_SURVEY : KEY_CHALLENGE;
+        final String encodedChallengeQuery = URLEncoder
+                .encode(challenge.getName(), StandardCharsets.UTF_8).replace("+", "%20");
         return create(
                 String.format("/api/v2/project/%d/challenge/%s", project.getId(),
-                        URLEncoder.encode(challenge.getName(), StandardCharsets.UTF_8).replace("+", "%20")),
+                        encodedChallengeQuery),
                 String.format("/api/v2/%s", type), String.format("/api/v2/%s/", type) + "%s",
                 challengeJson, String.format("Created/Updated Challenge with ID {} and name %s",
                         challenge.getName()));
