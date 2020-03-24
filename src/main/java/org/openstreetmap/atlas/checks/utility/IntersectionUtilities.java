@@ -53,7 +53,7 @@ public final class IntersectionUtilities
         long intersectionArea = 0;
         for (final PolyLine polyline : clip.getClip())
         {
-            if (polyline != null && polyline instanceof Polygon)
+            if (polyline instanceof Polygon)
             {
                 final Polygon clippedPolygon = (Polygon) polyline;
                 intersectionArea += clippedPolygon.surface().asDm7Squared();

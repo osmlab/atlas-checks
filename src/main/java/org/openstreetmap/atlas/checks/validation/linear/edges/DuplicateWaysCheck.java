@@ -20,7 +20,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  *
  * @author savannahostrowski
  */
-public class DuplicateWaysCheck extends BaseCheck
+public class DuplicateWaysCheck extends BaseCheck<Long>
 {
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;

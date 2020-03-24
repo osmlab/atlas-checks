@@ -271,7 +271,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         {
             final String country = tuple._1();
             final UniqueCheckFlagContainer flagContainer = tuple._2();
-            final EventService eventService = EventService.get(country);
+            final EventService<CheckFlagEvent> eventService = EventService.get(country);
 
             if (outputFormats.contains(OutputFormats.FLAGS))
             {
