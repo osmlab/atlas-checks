@@ -136,8 +136,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
             }
 
             // Retrieve all the valid outgoing edges to explore
-            final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
-                    .collect(Collectors.toSet());
+            final List<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
+                    .distinct().sorted().collect(Collectors.toList());
 
             // Validate highway=pedestrian edges connected to candidate if candidate is
             // motor_vehicle=yes (add to outEdges)
@@ -145,8 +145,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
                     .equals(MotorVehicleTag.YES.name()))
             {
                 outEdges.addAll(candidate.outEdges().stream()
-                        .filter(HighwayTag::isPedestrianNavigableHighway)
-                        .collect(Collectors.toSet()));
+                        .filter(HighwayTag::isPedestrianNavigableHighway).distinct().sorted()
+                        .collect(Collectors.toList()));
             }
 
             if (outEdges.isEmpty())
