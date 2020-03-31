@@ -40,7 +40,7 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
             SHARP_ANGLE_INSTRUCTIONS);
     private static final double MINIMUM_DISTANCE_BETWEEN_NODES = 100;
     private static final double MINIMUM_NODE_PAIR_THRESHOLD_PERCENTAGE = 30.0;
-    private static final String COASTLINE_TAG_FILTER_DEFAULT = "source->PGS";
+    private static final String COASTLINE_TAG_FILTER_DEFAULT = "";
     private static final double SHARP_ANGLE_THRESHOLD_DEFAULT = Integer.MAX_VALUE;
 
     private static final double HUNDRED_PERCENT = 100.0;
