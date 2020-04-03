@@ -15,7 +15,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  * @author nachtm
  * @author sayas01
  * @author seancoulter
- * @author bbreithaupt 
+ * @author bbreithaupt
  */
 public class SinkIslandCheckTestRule extends CoreTestRule
 {
