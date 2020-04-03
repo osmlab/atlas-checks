@@ -33,9 +33,6 @@ In order to load geographically connected shards together the job requires a def
 #### In Memory Atlas Type
 By default Sharded Checks uses a [Dynamic Atlas](https://github.com/osmlab/atlas/tree/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/dynamic). It is also possible to use a [Multi Atlas](https://github.com/osmlab/atlas/tree/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/multi) to load Atlas files. This can be done by setting the `multiAtlas` parameter to `true`. It has been found that a Multi Atlas is the more performant in non-distributed environments.
 
-#### Spark Storage
-By default Spark uses memory before disk when storing an RDD. In environments with large mounts of available memory this works well. In memory limited environments this can bog down when trying to process large data sets. In these scenarios it is more efficient to save everything directly to disk. This can be done by setting the `sparkStorageDiskOnly` to `true`.
-
 #### Shared Arguments
 The following are brief descriptions of the parameters that Sharded Atlas Checks shares with the normal job
 
