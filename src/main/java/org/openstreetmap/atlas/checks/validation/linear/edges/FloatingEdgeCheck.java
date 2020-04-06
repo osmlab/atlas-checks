@@ -48,6 +48,8 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
     private final HighwayTag highwayMinimum;
+    // check if floating edge is connected to construction road
+    private final boolean checkConstructionRoad;
 
     /**
      * Checks if the {@link Edge} intersects with/is within an airport.
@@ -89,6 +91,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         final String highwayType = this.configurationValue(configuration, "highway.minimum",
                 HIGHWAY_MINIMUM_DEFAULT);
         this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
+        this.checkConstructionRoad = configurationValue(configuration, "construction.check", false);
     }
 
     /**
@@ -129,7 +132,12 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         // connected edges and has not been cut on the border and contains a synthetic boundary tag.
         if (edge.length().isGreaterThanOrEqualTo(this.minimumDistance)
                 && edge.length().isLessThanOrEqualTo(this.maximumDistance)
-                && this.hasNoConnectedEdges(edge) && this.isNotOnSyntheticBoundary(edge))
+                && this.hasNoConnectedEdges(edge) && this.isNotOnSyntheticBoundary(edge)
+                && (!this.checkConstructionRoad || ((Edge) object).connectedNodes().stream()
+                        .noneMatch(node -> node.getAtlas()
+                                .linesContaining(node.getLocation(), line -> Validators
+                                        .isOfType(line, HighwayTag.class, HighwayTag.CONSTRUCTION))
+                                .iterator().hasNext())))
         {
             // return a flag created using the object and the flag that was either defined in the
             // configuration or above.
