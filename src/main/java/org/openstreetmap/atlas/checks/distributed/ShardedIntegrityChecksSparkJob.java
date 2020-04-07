@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.distributed;
 
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,11 +12,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.storage.StorageLevel;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -86,9 +83,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     private static final Switch<Boolean> MULTI_ATLAS = new Switch<>("multiAtlas",
             "If true then use a multi atlas, else use a dynamic atlas. This works better for running on a single machine",
             Boolean::getBoolean, Optionality.OPTIONAL, "false");
-    private static final Switch<String> SPARK_STORAGE_DISK_ONLY = new Switch<>(
-            "sparkStorageDiskOnly", "Store cached RDDs exclusively on disk",
-            StringConverter.IDENTITY, Optionality.OPTIONAL);
 
     private static final Logger logger = LoggerFactory
             .getLogger(ShardedIntegrityChecksSparkJob.class);
@@ -143,12 +137,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
-        // Spark storage argument
-        final StorageLevel storageLevel = Optional
-                .ofNullable(commandMap.get(SPARK_STORAGE_DISK_ONLY)).orElse("false").equals("true")
-                        ? StorageLevel.DISK_ONLY()
-                        : StorageLevel.MEMORY_AND_DISK();
-
         // Get sharding
         @SuppressWarnings("unchecked")
         final Optional<String> alternateShardingFile = (Optional<String>) commandMap
@@ -201,9 +189,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     input, missingCountries);
         }
 
-        // List of spark RDDS/tasks
-        final List<JavaPairRDD<String, UniqueCheckFlagContainer>> countryRdds = new ArrayList<>();
-
         // Countrify spark parallelization for better debugging
         try (Pool checkPool = new Pool(countryShards.size(), "Countries Execution Pool"))
         {
@@ -219,37 +204,19 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                             .collect(Collectors.toList());
 
                     // Set spark UI job title
-                    this.getContext().setJobGroup("0",
-                            String.format("Running checks on %s",
-                                    tasksForCountry.get(0).getCountry()));
-                    // Run each task in spark, producing UniqueCheckFlagContainers
-                    final JavaPairRDD<String, UniqueCheckFlagContainer> rdd = this.getContext()
-                            .parallelize(tasksForCountry, tasksForCountry.size())
+                    this.getContext().setLocalProperty("callSite.short", String
+                            .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
+
+                    this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
                             .mapToPair(produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
-                                    (Boolean) commandMap.get(MULTI_ATLAS)));
-                    // Save the RDD
-                    rdd.persist(storageLevel);
-                    // Use a fast spark action to overcome spark lazy elocution. This is necessary
-                    // to get the UI title to appear in the right spot.
-                    rdd.count();
-                    // Add the RDDs to the list
-                    countryRdds.add(rdd);
+                                    (Boolean) commandMap.get(MULTI_ATLAS)))
+                            .reduceByKey(UniqueCheckFlagContainer::combine)
+                            // Generate outputs
+                            .foreach(processFlags(output, fileHelper, outputFormats));
                 });
             }
         }
-
-        // Set up for unioning
-        final JavaPairRDD<String, UniqueCheckFlagContainer> firstCountryRdd = countryRdds.get(0);
-        countryRdds.remove(0);
-
-        // Add UI title
-        this.getContext().setJobGroup("0", "Conflate flags and generate outputs");
-        // union the RDDs, combine the UniqueCheckFlagContainers by country, and proccess the flags
-        // through the output event service
-        this.getContext().union(firstCountryRdd, countryRdds)
-                .reduceByKey(UniqueCheckFlagContainer::combine)
-                .foreach(processFlags(output, fileHelper, outputFormats));
 
         logger.info("Sharded checks completed in {}", start.elapsedSince());
     }
@@ -257,8 +224,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(EXPANSION_DISTANCE, MULTI_ATLAS, SPARK_STORAGE_DISK_ONLY,
-                SHARDING);
+        return super.switches().with(EXPANSION_DISTANCE, MULTI_ATLAS, SHARDING);
     }
 
     /**
