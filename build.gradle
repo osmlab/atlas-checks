@@ -1,8 +1,23 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 
-plugins {
-	id 'java'
+
+
+buildscript {
+    dependencies {
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.4.0"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+        // Rio Addon
+        classpath 'com.apple.cie.rio:gradle-build-plugin:latest.release'
+    }
+}
+
+// Used to promote a staging release build
+// https://github.com/Codearte/gradle-nexus-staging-plugin
+// gradle closeAndReleaseRepository
+plugins
+{
+  id 'java'
 	id 'maven'
 	id 'maven-publish'
 	id 'idea'
@@ -21,7 +36,17 @@ apply from: 'gradle/quality.gradle'
 apply from: 'gradle/deployment.gradle'
 apply from: 'gradle/execute.gradle'
 
-description = "Atlas Checks"
+apply plugin: 'java'
+apply plugin: 'checkstyle'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: "com.diffplug.gradle.spotless"
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+// Rio addon
+apply plugin: 'rio-library'
 
 sourceCompatibility = 11
 targetCompatibility = 11
@@ -37,6 +62,49 @@ repositories
     maven { url "http://repository.cloudera.com/cloudera/cloudera-repos/" }
     // For staged repositories (before they get to maven central)
     maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+}
+
+idea {
+    project {
+        languageLevel = '1.8'
+    }
+}
+
+// corresponds to POM description
+description = "Atlas Checks"
+
+// This is to skip the tasks for which there is a skip<TaskName>=true environment variable
+def skippedTaskNames = System.getenv().findAll { key, value ->
+    key.startsWith("skip") && value.equalsIgnoreCase("true")
+}.keySet().collect { it.substring(4) }
+
+gradle.startParameter.excludedTaskNames += skippedTaskNames
+
+checkstyle
+{
+    toolVersion = versions.checkstyle
+}
+
+sourceSets
+{
+    integrationTest
+    {
+        java
+        {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+test
+{
+    testLogging
+    {
+        events "passed", "skipped", "failed"
+    }
 }
 
 configurations
@@ -80,6 +148,8 @@ configurations
     }
     runtime
     archives
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
 }
 
 dependencies
@@ -98,18 +168,26 @@ dependencies
     shaded project.configurations.getByName('compile')
 }
 
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
 /**
  * Artifact related items
  */
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
+// task javadocJar(type: Jar) {
+//     classifier = 'javadoc'
+//     from javadoc
+// }
+//
+// task sourcesJar(type: Jar) {
+//     classifier = 'sources'
+//     from sourceSets.main.allSource
+// }
 
 task shaded(type: Jar) {
     baseName = project.name
@@ -136,24 +214,59 @@ shadowJar {
     zip64 = true
 }
 
-artifacts
-{
-    archives javadocJar
-    archives sourcesJar
-    archives shaded
+// artifacts
+// {
+//     archives javadocJar, sourcesJar
+// }
+
+/**
+ * Deployment related items
+ */
+import org.gradle.plugins.signing.Sign
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.allTasks.any { it instanceof Sign }) {
+        allprojects { ext."signing.keyId" = System.getenv('GPG_KEY_ID') }
+        allprojects { ext."signing.secretKeyRingFile" = System.getenv('GPG_KEY_LOCATION') }
+        allprojects { ext."signing.password" = System.getenv('GPG_PASSPHRASE') }
+    }
+    // Do not sign archives by default (a local build without gpg keyring should succeed)
+    if (taskGraph.allTasks.any { it.name == 'build' || it.name == 'assemble' }) {
+        tasks.findAll { it.name == 'signArchives' || it.name == 'signDocsJar' || it.name == 'signTestJar' }.each { task ->
+            task.enabled = false
+        }
+    }
 }
 
-/*
- * This is to skip the tasks for which there is a skip<TaskName>=true
- * environment variable
- */
-def skippedTaskNames = System.getenv().findAll { key, value ->
-    key.startsWith("skip") && value.equalsIgnoreCase("true")
-}.keySet().collect { it.substring(4) }
-gradle.startParameter.excludedTaskNames += skippedTaskNames
+// Rio addons
+rio
+{
+    library
+    { isPublic = true }
+}
+
+publish.dependsOn shaded
+publish.dependsOn shadowJar
 
 idea {
     project {
         languageLevel = '11'
+    }
+}
+artifacts {
+    archives shaded
+    archives shadowJar
+}
+
+publishing.publications {
+    rioLibrary(MavenPublication) {
+        groupId project.group
+        artifactId project.name
+        artifact shaded {
+            classifier "shaded"
+        }
+        artifact shadowJar {
+            classifier "fat"
+        }
     }
 }
