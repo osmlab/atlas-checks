@@ -8,6 +8,7 @@ import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Line;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
@@ -94,6 +95,15 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_2) }, tags = { "highway=SECONDARY" }) })
     private Atlas mixedAtlas;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+            @Node(coordinates = @Loc(value = TEST_2)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
+                            "highway=SECONDARY" }) }, lines = {
+                                    @Line(coordinates = { @Loc(value = TEST_2),
+                                            @Loc(value = TEST_3) }, tags = { "highway=CONSTRUCTION",
+                                                    "construction=RESIDENTIAL" }) })
+    private Atlas floatingEdgeConstructionAtlas;
+
     public Atlas airportAtlas()
     {
         return this.airportAtlas;
@@ -114,6 +124,11 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
         return this.floatingEdgeAtlas;
     }
 
+    public Atlas floatingEdgeConstructionAtlas()
+    {
+        return this.floatingEdgeConstructionAtlas;
+    }
+
     public Atlas floatingEdgeInAirportPolygon()
     {
         return this.floatingEdgeInAirportAtlas;
@@ -128,5 +143,4 @@ public class FloatingEdgeCheckTestRule extends CoreTestRule
     {
         return this.syntheticBorderAtlas;
     }
-
 }

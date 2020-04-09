@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * @author nachtm
  * @author sayas01
  * @author seancoulter
+ * @author bbreithaupt
  */
 public class SinkIslandCheckTest
 {
@@ -22,6 +23,14 @@ public class SinkIslandCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void permittedSelectAccessTest()
+    {
+        this.verifier.actual(this.setup.permittedSelectAccessAtlas(),
+                new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
 
     @Test
     public void testEdgesEndingInBuilding()

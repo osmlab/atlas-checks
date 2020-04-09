@@ -95,7 +95,7 @@ public class GeneralizedCoastlineCheckTest
     {
         this.verifier.actual(this.setup.getOneLineSegmentGeneralizedSourceSurvey(),
                 new GeneralizedCoastlineCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test

@@ -40,6 +40,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author nachtm
  * @author sayas01
  * @author seancoulter
+ * @author bbreithaupt
  */
 public class SinkIslandCheck extends BaseCheck<Long>
 {
@@ -49,10 +50,13 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList("Road is impossible to get out of.");
     private static final float LOAD_FACTOR = 0.8f;
-    private static final Predicate<AtlasObject> NAVIGABLE_HIGHWAYS = object -> Validators
-            .isOfType(object, MotorVehicleTag.class, MotorVehicleTag.YES)
-            || Validators.isOfType(object, MotorcarTag.class, MotorcarTag.YES)
-            || Validators.isOfType(object, VehicleTag.class, VehicleTag.YES);
+    private static final Predicate<AtlasObject> NAVIGABLE_HIGHWAYS = object -> Validators.isOfType(
+            object, MotorVehicleTag.class, MotorVehicleTag.YES, MotorVehicleTag.DESIGNATED,
+            MotorVehicleTag.PERMISSIVE)
+            || Validators.isOfType(object, MotorcarTag.class, MotorcarTag.YES,
+                    MotorcarTag.DESIGNATED, MotorcarTag.PERMISSIVE)
+            || Validators.isOfType(object, VehicleTag.class, VehicleTag.YES, VehicleTag.DESIGNATED,
+                    VehicleTag.PERMISSIVE);
     private static final Predicate<AtlasObject> SERVICE_ROAD = object -> Validators.isOfType(object,
             HighwayTag.class, HighwayTag.SERVICE);
     private static final Predicate<AtlasObject> IS_AT_LEAST_SERVICE_ROAD = object -> ((Edge) object)
@@ -132,8 +136,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
             }
 
             // Retrieve all the valid outgoing edges to explore
-            final Set<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
-                    .collect(Collectors.toSet());
+            final List<Edge> outEdges = candidate.outEdges().stream().filter(this::validEdge)
+                    .distinct().sorted().collect(Collectors.toList());
 
             // Validate highway=pedestrian edges connected to candidate if candidate is
             // motor_vehicle=yes (add to outEdges)
@@ -141,8 +145,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
                     .equals(MotorVehicleTag.YES.name()))
             {
                 outEdges.addAll(candidate.outEdges().stream()
-                        .filter(HighwayTag::isPedestrianNavigableHighway)
-                        .collect(Collectors.toSet()));
+                        .filter(HighwayTag::isPedestrianNavigableHighway).distinct().sorted()
+                        .collect(Collectors.toList()));
             }
 
             if (outEdges.isEmpty())
