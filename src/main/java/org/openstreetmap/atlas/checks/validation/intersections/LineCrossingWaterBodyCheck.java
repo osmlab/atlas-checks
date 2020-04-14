@@ -216,7 +216,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // We only consider water body areas, not linear water bodies
+        // We only consider water body areas or multipolygon relations, not linear water bodies
         return (TypePredicates.IS_AREA.test(object)
                 || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
                 && !INVALID_WATER_BODY_TAGS.test(object) && VALID_WATER_BODY_TAGS.test(object);
@@ -229,23 +229,28 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // First convert the waterbody to a GeometricSurface for use in querying
         final GeometricSurface waterbody = object instanceof Area ? ((Area) object).asPolygon()
                 : new RelationOrAreaToMultiPolygonConverter().convert((Relation) object);
-        // Then retrieve the crossing edges, lines, buildings
+        // Then retrieve the invalid crossing edges, lines, buildings
         final Atlas atlas = object.getAtlas();
-        final Iterable<AtlasItem> allCrossingItems = this.flagBuildings
-                ? new MultiIterable<>(atlas.lineItemsIntersecting(
-                        waterbody,
-                        lineItem -> isOffendingLineItem(object, waterbody).test(lineItem)),
+        final Iterable<AtlasItem> invalidCrossingItems = this.flagBuildings
+                ? new MultiIterable<>(atlas.lineItemsIntersecting(waterbody,
+                        lineItem -> isOffendingLineItem(object).test(lineItem)
+                                && !this.canCrossWaterBody(lineItem)
+                                && !this.intersectionsAreExplicit(waterbody, lineItem)),
                         atlas.areasIntersecting(waterbody,
                                 area -> BuildingTag.isBuilding(area)
                                         && !NONOFFENDING_BUILDINGS.test(area)
                                         && LevelTag.areOnSameLevel(object, area)))
                 : new MultiIterable<AtlasItem>(atlas.lineItemsIntersecting(waterbody,
-                        lineItem -> isOffendingLineItem(object, waterbody).test(lineItem)));
+                        lineItem -> isOffendingLineItem(object).test(lineItem)
+                                && !this.canCrossWaterBody(lineItem)
+                                && !this.intersectionsAreExplicit(waterbody, lineItem)));
 
-        // Assume there is no invalid crossing
-        boolean hasInvalidCrossings = false;
+        // This waterbody has no invalid crossings
+        if (!invalidCrossingItems.iterator().hasNext())
+        {
+            return Optional.empty();
+        }
 
-        // Still let's create a flag in case of an invalid crossing
         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(object));
         newFlag.addObject(object);
         newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
@@ -257,32 +262,19 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
         // Therefore, if an OSM way crosses a water body multiple times in separate edges, then
         // each edge will be marked explicitly.
-        for (final AtlasItem crossingItem : allCrossingItems)
+        for (final AtlasItem crossingItem : invalidCrossingItems)
         {
-            // Flag all buildings or if line item, check if it can actually cross
-            if (crossingItem instanceof Area || !this.canCrossWaterBody(crossingItem)
-                    && !this.intersectionsAreExplicit(waterbody, (LineItem) crossingItem))
+            // Update the flag
+            newFlag.addObject(crossingItem);
+            if (!recordedOsmIds.contains(crossingItem.getOsmIdentifier()))
             {
-                // Update the flag
-                newFlag.addObject(crossingItem);
-                if (!recordedOsmIds.contains(crossingItem.getOsmIdentifier()))
-                {
-                    newFlag.addInstruction(this.getLocalizedInstruction(
-                            crossingItem instanceof Area ? 2 : 1, crossingItem.getOsmIdentifier()));
-                    recordedOsmIds.add(crossingItem.getOsmIdentifier());
-                }
-                // Set indicator to make sure we return invalid crossings
-                hasInvalidCrossings = true;
+                newFlag.addInstruction(this.getLocalizedInstruction(
+                        crossingItem instanceof Area ? 2 : 1, crossingItem.getOsmIdentifier()));
+                recordedOsmIds.add(crossingItem.getOsmIdentifier());
             }
         }
 
-        // If there is an invalid crossing, return the previously created flag
-        if (hasInvalidCrossings)
-        {
-            return Optional.of(newFlag);
-        }
-
-        return Optional.empty();
+        return Optional.of(newFlag);
     }
 
     @Override
@@ -312,7 +304,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     /**
      * Returns true if the intersections between the parameter waterbody and the lineItem are marked
      * by Locations in the Atlas. In the case of a waterbody MultiPolygon, iterate through all inner
-     * and outer members and make sure there are such Locations for all intersections
+     * and outer members and make sure that if there is an intersection, there is a corresponding
+     * Location
      *
      * @param waterbody
      *            the waterbody
@@ -332,33 +325,27 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         return Stream
                 .concat(waterbodyMultiPolygon.inners().stream(),
                         waterbodyMultiPolygon.outers().stream())
-                .filter(polygon -> polygon.intersects(lineItem.asPolyLine()))
                 .allMatch(polygon -> IntersectionUtilities
                         .haveExplicitLocationsForIntersections(polygon, lineItem));
     }
 
     /**
-     * True if the incoming AtlasObject is an {@link Edge} with the correct highway type or
-     * {@link LineItem} with the correct tag combination AND the lineItem intersects the parameter
-     * waterbody AND the lineItem is not a bridge and is on the same level as the parameter
-     * waterbody.
+     * True if the incoming AtlasObject is an {@link Edge} with the correct highway type OR
+     * {@link LineItem} that has the correct tag combination, is not a bridge, and is on the same
+     * level as the parameter waterbody.
      * 
      * @param object
      *            The waterbody
-     * @param waterbody
-     *            The waterbody as a {@link GeometricSurface}
-     * @return True if the incoming AtlasObject is an Edge with the correct highway type or Line
-     *         with the correct tag combination AND the lineItem intersects the parameter area AND
-     *         the lineItem is not a bridge and is on the same level as the parameter area.
+     * @return True if the incoming AtlasObject is an {@link Edge} with the correct highway type OR
+     *         {@link LineItem} that has the correct tag combination, is not a bridge, and is on the
+     *         same level as the parameter waterbody.
      */
-    private Predicate<LineItem> isOffendingLineItem(final AtlasObject object,
-            final GeometricSurface waterbody)
+    private Predicate<LineItem> isOffendingLineItem(final AtlasObject object)
     {
         return lineItem -> (lineItem instanceof Edge
                 && ((Edge) lineItem).highwayTag().isMoreImportantThanOrEqualTo(this.highwayMinimum)
                 && !this.highwaysExclude.contains(((Edge) lineItem).highwayTag())
                 || this.lineItemsOffending.test(lineItem))
-                && lineItem.intersects(waterbody)
                 && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
                         || Validators.isOfType(lineItem, BridgeTag.class, BridgeTag.NO))
                 && LevelTag.areOnSameLevel(object, lineItem);
