@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
  */
 public class FlaggedPoint extends FlaggedObject
 {
+    protected static final String SYNTHETIC_POINT_TAG = "synthetic_highlight_point";
     private static final Logger logger = LoggerFactory.getLogger(FlaggedPoint.class);
     private static final long serialVersionUID = -5912453173756416690L;
     private LocationItem locationItem;

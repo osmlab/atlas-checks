@@ -27,7 +27,6 @@ public abstract class FlaggedObject implements Serializable, Located
     protected static final String NODE_TAG = "Node";
     protected static final String OSM_IDENTIFIER_TAG = "osmIdentifier";
     protected static final String POINT_TAG = "Point";
-    protected static final String SYNTHETIC_POINT_TAG = "synthetic_point_feature";
     private static final long serialVersionUID = -2898518269816777421L;
 
     /**
