@@ -37,6 +37,8 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow"
             + "|landuse->*";
     private final TaggableFilter invalidOceanTags;
+    private static final String DEFAULT_OCEAN_BOUNDARY_TAGS = "natural->coastline";
+    private final TaggableFilter oceanBoundaryTags;
     private static final String DEFAULT_OFFENDING_MISCELLANEOUS_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
     private final TaggableFilter defaultOffendingLineitems;
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
@@ -74,6 +76,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                 .configurationValue(configuration, "highway.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
                 .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
                 .collect(Collectors.toList());
+        this.oceanBoundaryTags = TaggableFilter.forDefinition(this.configurationValue(configuration, "ocean.boundary", DEFAULT_OCEAN_BOUNDARY_TAGS));
     }
 
     /**
@@ -87,7 +90,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return this.validOceanTags.test(object) && !this.invalidOceanTags.test(object)
-                && (object instanceof Area || object instanceof LineItem);
+                && (object instanceof Area || object instanceof LineItem) || object instanceof LineItem && this.oceanBoundaryTags.test(object);
     }
 
     /**
@@ -117,7 +120,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
         final Iterable<LineItem> intersectingRoads = object.getAtlas().lineItemsIntersecting(
                 oceanBoundary,
                 lineItem -> (oceanIsArea
-                        || (((LineItem) object).asPolyLine()).intersects(lineItem.asPolyLine()))
+                        || ((LineItem) object).asPolyLine().intersects(lineItem.asPolyLine()))
                         && !BridgeTag.isBridge(lineItem)
                         && (lineItem instanceof Edge
                                 && this.validHighwayType().test((Edge) lineItem)
