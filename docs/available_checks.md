@@ -29,14 +29,12 @@ This document is a list of tables with a description and link to documentation f
 | [RoundaboutConnectorCheck](checks/roundaboutConnectorCheck.md) | The purpose of this check is to identify roads that connect to a roundabout at too sharp an angle |
 | [RoundaboutValenceCheck](checks/roundaboutValenceCheck.md) | The purpose of this check is to identify OpenStreetMap (OSM) tagged roundabouts that have an unusual number of edges connected to them. |
 | [SharpAngleCheck](checks/sharpAngleCheck.md) | The purpose of this check is to identify roads with angles that are too sharp. Sharp angles may indicate inaccurate digitization once a certain threshold is exceeded. |
-| ShortSegmentCheck |  The purpose of this check is to identify short segments/edges (length is less than a configured minimum length) that
-  have a node with less than or equal to a configured node valence connections. |
+| ShortSegmentCheck |  The purpose of this check is to identify short segments/edges (length is less than a configured minimum length) that have a node with less than or equal to a configured node valence connections. |
 | [SignPostCheck](checks/signPostCheck.md) | The purpose of this check is to identify On-/Off-Ramps in motorways and trunk highways that are not relaying information from their respective sign posts. |
 | [SingleSegmentMotorwayCheck](checks/singleSegmentMotorwayCheck.md) | The purpose of this check is to identify ways tagged with highway=motorway that are not connected to any ways tagged the same. |
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
-| UnwalkableWaysCheck | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any
-  high-priority roads that are dual carriageways. |
+| UnwalkableWaysCheck | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
 | ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
 
 ## Nodes
@@ -75,8 +73,7 @@ This document is a list of tables with a description and link to documentation f
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
 | [InvalidAccessTagCheck](checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |
 | [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md) | The purpose of this check is to identify highways in OSM with an invalid lanes tag value. |
-| InvalidTagsCheck | This flags features based on configurable filters. Each filter passed contains the
-  atlas entity classes to check and a taggable filter to test objects against. If a feature is of one of the given classes and passes the associated TaggableFilter, it is flagged. |
+| InvalidTagsCheck | This flags features based on configurable filters. Each filter passed contains the atlas entity classes to check and a taggable filter to test objects against. If a feature is of one of the given classes and passes the associated TaggableFilter, it is flagged. |
 | [MixedCaseNameCheck](checks/mixedCaseNameCheck.md) | The purpose of this check is to identify names that contain invalid mixed cases so that they can be edited to be the standard format. |
 | [RoadNameGapCheck](checks/RoadNameGapCheck.md) | The purpose of this check is to identify edge connected between two edges whose name tag is same. Flag the edge if the edge has a name tag different to name tag of edges connected to it or if there is no name tag itself.
 | [RoadNameSpellingConsistencyCheck](checks/RoadNameSpellingConsistencyCheck.md) | The purpose of this check is to identify road segments that have a name Tag with a different spelling from that of other segments of the same road. This check is primarily meant to catch small errors in spelling, such as a missing letter, letter accent mixups, or capitalization errors. |
