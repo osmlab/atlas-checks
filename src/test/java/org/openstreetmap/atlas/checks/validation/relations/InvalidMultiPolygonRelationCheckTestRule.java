@@ -16,6 +16,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
  * Test rule for {@link InvalidMultiPolygonRelationCheckTest}
  *
  * @author jklamer
+ * @author bbreithaupt
  */
 public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
 {
@@ -415,6 +416,133 @@ public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
                                                                                             "name=The Park" }) })
     private Atlas validRelationWithWaySectioning;
 
+    @TestAtlas(
+            // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_1),
+                    @Loc(value = TEST_VALIDRELATION_2), @Loc(value = TEST_VALIDRELATION_3),
+                    @Loc(value = TEST_VALIDRELATION_1) }) },
+            // Lines
+            lines = {
+                    @Line(id = "1000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_5),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_6) }),
+                    @Line(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_6),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_7),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_5) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "1000000", type = "line", role = "outer"),
+                    @Member(id = "2000000", type = "line", role = "outer") }, tags = "type=multipolygon") })
+    private Atlas overlappingOutersAtlas;
+
+    @TestAtlas(
+            // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_10),
+                    @Loc(value = TEST_VALIDRELATION_11), @Loc(value = TEST_VALIDRELATION_14),
+                    @Loc(value = TEST_VALIDRELATION_6), @Loc(value = TEST_VALIDRELATION_10) }),
+                    @Area(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_2),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1) }),
+                    @Area(id = "3000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_8),
+                            @Loc(value = TEST_INVALIDMEMBERTYPE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "2000000", type = "area", role = "inner"),
+                    @Member(id = "3000000", type = "area", role = "outer") }, tags = "type=multipolygon") })
+    private Atlas outerInHoleAtlas;
+
+    @TestAtlas(
+            // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_1),
+                    @Loc(value = TEST_VALIDRELATION_2), @Loc(value = TEST_VALIDRELATION_3),
+                    @Loc(value = TEST_VALIDRELATION_1) }) },
+            // Lines
+            lines = {
+                    @Line(id = "1000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_5),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_6) }),
+                    @Line(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_6),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_7),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_5) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "inner"),
+                    @Member(id = "1000000", type = "line", role = "outer"),
+                    @Member(id = "2000000", type = "line", role = "outer") }, tags = "type=multipolygon") })
+    private Atlas innerOuterOverlapAtlas;
+
+    @TestAtlas(
+            // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_10),
+                    @Loc(value = TEST_VALIDRELATION_11), @Loc(value = TEST_VALIDRELATION_14),
+                    @Loc(value = TEST_VALIDRELATION_6), @Loc(value = TEST_VALIDRELATION_10) }),
+                    @Area(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_2),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1) }),
+                    @Area(id = "3000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_8),
+                            @Loc(value = TEST_INVALIDMEMBERTYPE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "2000000", type = "area", role = "inner"),
+                    @Member(id = "3000000", type = "area", role = "inner") }, tags = "type=multipolygon") })
+    private Atlas innerOverlapAtlas;
+
+    @TestAtlas(
+            // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_10),
+                    @Loc(value = TEST_VALIDRELATION_11), @Loc(value = TEST_VALIDRELATION_14),
+                    @Loc(value = TEST_VALIDRELATION_6), @Loc(value = TEST_VALIDRELATION_10) }),
+                    @Area(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_8),
+                            @Loc(value = TEST_INVALIDMEMBERTYPE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1) }),
+                    @Area(id = "3000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_8),
+                            @Loc(value = TEST_INVALIDMEMBERTYPE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "2000000", type = "area", role = "inner"),
+                    @Member(id = "3000000", type = "area", role = "inner") }, tags = "type=multipolygon") })
+    private Atlas innerTouchAtlas;
+
+    @TestAtlas(
+            // Areas
+            areas = {
+                    @Area(id = "1000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_0),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_2),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_0) }),
+                    @Area(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_5),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_5) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "2000000", type = "area", role = "inner") }, tags = "type=multipolygon") })
+    private Atlas innerOutsideOuterAtlas;
+
     public Atlas getAtlas()
     {
         return this.atlas;
@@ -453,5 +581,35 @@ public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
     public Atlas getValidRelationWithWaySectioning()
     {
         return this.validRelationWithWaySectioning;
+    }
+
+    public Atlas innerOuterOverlapAtlas()
+    {
+        return this.innerOuterOverlapAtlas;
+    }
+
+    public Atlas innerOutsideOuterAtlas()
+    {
+        return this.innerOutsideOuterAtlas;
+    }
+
+    public Atlas innerOverlapAtlas()
+    {
+        return this.innerOverlapAtlas;
+    }
+
+    public Atlas innerTouchAtlas()
+    {
+        return this.innerTouchAtlas;
+    }
+
+    public Atlas outerInHoleAtlas()
+    {
+        return this.outerInHoleAtlas;
+    }
+
+    public Atlas overlappingOutersAtlas()
+    {
+        return this.overlappingOutersAtlas;
     }
 }

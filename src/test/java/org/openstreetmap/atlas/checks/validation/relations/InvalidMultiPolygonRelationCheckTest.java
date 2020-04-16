@@ -23,9 +23,11 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * Test for {@link InvalidMultiPolygonRelationCheck}
  *
  * @author jklamer
+ * @author bbreithaupt
  */
 public class InvalidMultiPolygonRelationCheckTest
 {
+    private static final String PARTIAL_OVERLAP_INSTRUCTION = "Relation %s has members with centroids";
 
     private static final InvalidMultiPolygonRelationCheck referenceDefaultLocaleCheck = new InvalidMultiPolygonRelationCheck(
             ConfigurationResolver.emptyConfiguration());
@@ -36,13 +38,61 @@ public class InvalidMultiPolygonRelationCheckTest
     public final ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void innerOuterOverlapTest()
+    {
+        this.verifyCheck(this.setup.innerOuterOverlapAtlas(),
+                ConfigurationResolver.emptyConfiguration(), 1,
+                Collections.singletonList(String.format(PARTIAL_OVERLAP_INSTRUCTION, "1")));
+    }
+
+    @Test
+    public void innerOutsideOuterTest()
+    {
+        this.verifyCheck(this.setup.innerOutsideOuterAtlas(),
+                ConfigurationResolver.emptyConfiguration(), 1,
+                Collections.singletonList(
+                        String.format(referenceDefaultLocaleCheck.getLocalizedInstruction(
+                                InvalidMultiPolygonRelationCheck.INNER_MISSING_OUTER_INSTRUCTION_FORMAT_INDEX,
+                                1), "1")));
+    }
+
+    @Test
+    public void innerOverlapTest()
+    {
+        this.verifyCheck(this.setup.innerOverlapAtlas(), ConfigurationResolver.emptyConfiguration(),
+                1, Collections.singletonList(String.format(PARTIAL_OVERLAP_INSTRUCTION, "1")));
+    }
+
+    @Test
+    public void innerTouchTest()
+    {
+        this.verifyCheck(this.setup.innerTouchAtlas(), ConfigurationResolver.emptyConfiguration(),
+                0, Collections.emptyList());
+    }
+
+    @Test
     public void invalidMemberType()
     {
         this.verifyCheck(this.setup.getInvalidMemberType(),
                 ConfigurationResolver.emptyConfiguration(), 1,
                 Arrays.asList(referenceDefaultLocaleCheck.getLocalizedInstruction(
                         InvalidMultiPolygonRelationCheck.INVALID_OSM_TYPE_INSTRUCTION_FORMAT_INDEX,
-                        1L, 39033L, 1L, Arrays.asList(Tuple.createTuple("node", 39007L)))));
+                        1L, 39033L, Arrays.asList(Tuple.createTuple("node", 39007L)))));
+    }
+
+    @Test
+    public void outerInHoleTest()
+    {
+        this.verifyCheck(this.setup.outerInHoleAtlas(), ConfigurationResolver.emptyConfiguration(),
+                0, Collections.emptyList());
+    }
+
+    @Test
+    public void overlappingOutersTest()
+    {
+        this.verifyCheck(this.setup.overlappingOutersAtlas(),
+                ConfigurationResolver.emptyConfiguration(), 1,
+                Collections.singletonList(String.format(PARTIAL_OVERLAP_INSTRUCTION, "1")));
     }
 
     @Test
@@ -108,7 +158,7 @@ public class InvalidMultiPolygonRelationCheckTest
                 ConfigurationResolver.emptyConfiguration(), 1,
                 Arrays.asList(referenceDefaultLocaleCheck.getLocalizedInstruction(
                         InvalidMultiPolygonRelationCheck.INVALID_ROLE_INSTRUCTION_FORMAT_INDEX, 1L,
-                        39152L, 1L, Arrays.asList(39056L)),
+                        39152L, Arrays.asList(39056L)),
                         referenceDefaultLocaleCheck.getLocalizedInstruction(
                                 InvalidMultiPolygonRelationCheck.CLOSED_LOOP_INSTRUCTION_FORMAT_INDEX,
                                 39152L, Stream.of(39056L, 39040L).collect(Collectors.toSet()),
