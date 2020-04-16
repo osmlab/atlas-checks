@@ -226,7 +226,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     @Override
-    @SuppressWarnings("S2293")
+    @SuppressWarnings("squid:S2293")
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // First convert the waterbody to a GeometricSurface for use in querying
