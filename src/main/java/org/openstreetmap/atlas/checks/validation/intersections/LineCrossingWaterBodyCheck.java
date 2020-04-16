@@ -37,6 +37,7 @@ import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
 import org.openstreetmap.atlas.tags.SourceTag;
+import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
@@ -216,10 +217,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // We only consider water body areas or multipolygon relations, not linear water bodies
-        return (TypePredicates.IS_AREA.test(object)
-                || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
-                && !INVALID_WATER_BODY_TAGS.test(object) && VALID_WATER_BODY_TAGS.test(object);
+        // We only consider water body areas or multipolygon relations that are not at borders, not
+        // linear water bodies
+        return (TypePredicates.IS_AREA.test(object) || (object instanceof Relation
+                && object.getTag(SyntheticRelationMemberAdded.KEY).isEmpty()
+                && ((Relation) object).isMultiPolygon())) && !INVALID_WATER_BODY_TAGS.test(object)
+                && VALID_WATER_BODY_TAGS.test(object);
     }
 
     @Override
