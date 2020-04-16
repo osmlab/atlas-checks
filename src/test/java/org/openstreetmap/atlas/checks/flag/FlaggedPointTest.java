@@ -22,6 +22,5 @@ public class FlaggedPointTest
         Assert.assertFalse(flaggedPointProperties.isEmpty());
         Assert.assertTrue(flaggedPointProperties.containsKey(FlaggedPoint.SYNTHETIC_POINT_TAG));
         Assert.assertEquals("yes", flaggedPointProperties.get(FlaggedPoint.SYNTHETIC_POINT_TAG));
-
     }
 }
