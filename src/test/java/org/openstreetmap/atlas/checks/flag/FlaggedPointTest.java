@@ -6,6 +6,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openstreetmap.atlas.geography.Location;
 
+/**
+ * Tests for {@link FlaggedPoint}
+ *
+ * @author danielbaah
+ */
 public class FlaggedPointTest
 {
     @Test
