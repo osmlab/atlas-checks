@@ -36,6 +36,7 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 import com.google.common.collect.Range;
 
@@ -104,8 +105,8 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // Gather connected building parts and check for a connection to the ground
-        final Set<AtlasObject> floatingParts = this.getFloatingParts(object);
-        if (!floatingParts.isEmpty())
+        final Tuple<Set<AtlasObject>, Boolean> connectedParts = this.getConnectedParts(object);
+        if (connectedParts.getSecond())
         {
             final CheckFlag flag;
             // If object is a relation, flatten it and add a relation instruction
@@ -120,7 +121,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
                 flag = this.createFlag(object, this.getLocalizedInstruction(0));
             }
             // Flag all the connected floating parts together
-            for (final AtlasObject part : floatingParts)
+            for (final AtlasObject part : connectedParts.getFirst())
             {
                 this.markAsFlagged(part.getIdentifier());
                 if (!part.equals(object))
@@ -139,6 +140,8 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             }
             return Optional.of(flag);
         }
+
+        connectedParts.getFirst().forEach(part -> this.markAsFlagged(part.getIdentifier()));
         return Optional.empty();
     }
 
@@ -185,17 +188,18 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
     }
 
     /**
-     * Uses a BFS to gather all connected building parts. If a part is found that is on the ground,
-     * an empty {@link Set} is returned because the parts are not floating.
+     * Uses a BFS to gather all connected building parts and check for a connection to the ground.
      *
      * @param startingPart
      *            {@link AtlasObject} to start the walker from
-     * @return a {@link Set} of {@link AtlasObject}s that are all floating
+     * @return a {@link Tuple} of a {@link Set} of connected {@link AtlasObject} building parts and
+     *         a {@link Boolean} indicating if they are floating
      */
-    private Set<AtlasObject> getFloatingParts(final AtlasObject startingPart)
+    private Tuple<Set<AtlasObject>, Boolean> getConnectedParts(final AtlasObject startingPart)
     {
         final Set<AtlasObject> connectedParts = new HashSet<>();
         final ArrayDeque<AtlasObject> toCheck = new ArrayDeque<>();
+        boolean isFloating = true;
         connectedParts.add(startingPart);
         toCheck.add(startingPart);
 
@@ -206,7 +210,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             // If a connection to the ground is found the parts are not floating
             if (!isOffGround(checking))
             {
-                return new HashSet<>();
+                isFloating = false;
             }
             // Get parts connected in 3D
             final Set<AtlasObject> neighboringParts = new HashSet<>();
@@ -228,7 +232,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             connectedParts.addAll(neighboringParts);
             toCheck.addAll(neighboringParts);
         }
-        return connectedParts;
+        return Tuple.createTuple(connectedParts, isFloating);
     }
 
     /**
