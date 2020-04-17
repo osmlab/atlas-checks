@@ -328,7 +328,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
                     ? ((Area) object).asPolygon()
                     : MULTI_POLYGON_CONVERTER.convert((Relation) object);
             // Check if it is a building part, and overlaps.
-            return !checked.contains(object) && !this.isFlagged(object.getIdentifier())
+            return !checked.contains(object)
                     && (this.isBuildingOrPart(object) || this.isBuildingRelationMember(object))
                     // Check 2D overlap
                     && (partPolygon instanceof Polygon
