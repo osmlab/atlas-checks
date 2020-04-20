@@ -76,7 +76,8 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                 .configurationValue(configuration, "highway.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
                 .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
                 .collect(Collectors.toList());
-        this.oceanBoundaryTags = TaggableFilter.forDefinition(this.configurationValue(configuration, "ocean.boundary", DEFAULT_OCEAN_BOUNDARY_TAGS));
+        this.oceanBoundaryTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
+                "ocean.boundary", DEFAULT_OCEAN_BOUNDARY_TAGS));
     }
 
     /**
@@ -90,7 +91,8 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return this.validOceanTags.test(object) && !this.invalidOceanTags.test(object)
-                && (object instanceof Area || object instanceof LineItem) || object instanceof LineItem && this.oceanBoundaryTags.test(object);
+                && (object instanceof Area || object instanceof LineItem)
+                || object instanceof LineItem && this.oceanBoundaryTags.test(object);
     }
 
     /**
