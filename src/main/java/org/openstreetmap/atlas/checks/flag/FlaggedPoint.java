@@ -1,9 +1,9 @@
 package org.openstreetmap.atlas.checks.flag;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteNode;
@@ -36,7 +36,9 @@ public class FlaggedPoint extends FlaggedObject
     {
         this.locationItem = null;
         this.point = point;
-        this.properties = Collections.EMPTY_MAP;
+        // Add a synthetic tag to Point features used to highlight FlaggedObjects
+        this.properties = Map.of(SyntheticHighlightPointTag.KEY,
+                SyntheticHighlightPointTag.YES.name().toLowerCase());
     }
 
     /**
@@ -56,21 +58,21 @@ public class FlaggedPoint extends FlaggedObject
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
         final JsonObject geoJsonGeometry;
-        final JsonObject properties;
+        final JsonObject geoJsonProperties;
         if (this.locationItem != null)
         {
             geoJsonGeometry = this.locationItem.asGeoJsonGeometry();
-            properties = this.locationItem.getGeoJsonProperties();
+            geoJsonProperties = this.locationItem.getGeoJsonProperties();
         }
         else
         {
-            properties = new JsonObject();
+            geoJsonProperties = new JsonObject();
             geoJsonGeometry = this.point.asGeoJsonGeometry();
         }
 
-        properties.addProperty("flag:id", flagIdentifier);
-        properties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
-        return GeoJsonUtils.feature(geoJsonGeometry, properties);
+        geoJsonProperties.addProperty("flag:id", flagIdentifier);
+        geoJsonProperties.addProperty("flag:type", FlaggedPoint.class.getSimpleName());
+        return GeoJsonUtils.feature(geoJsonGeometry, geoJsonProperties);
     }
 
     @Override
