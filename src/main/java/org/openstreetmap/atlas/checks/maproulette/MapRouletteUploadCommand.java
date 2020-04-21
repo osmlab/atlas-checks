@@ -14,12 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.serializer.TaskDeserializer;
 import org.openstreetmap.atlas.checks.utility.FileUtility;
+import org.openstreetmap.atlas.locale.IsoCountry;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -71,10 +73,25 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         this.checkNameChallengeMap = new HashMap<>();
     }
 
+    /**
+     * Returns a comma separated string of country display names
+     *
+     * @param countryCode
+     *            - iso3 country code string. Can contain more than one country i.e (USA,MEX)
+     * @return comma separated String of iso3 country codes
+     */
+    public String getCountryDisplayName(final Optional<String> countryCode)
+    {
+        return countryCode.isPresent() ? Arrays.stream(countryCode.get().split(","))
+                .map(country -> IsoCountry.displayCountry(country).orElse(country))
+                .collect(Collectors.joining(", ")) : "";
+    }
+
     @Override
     public SwitchList switches()
     {
-        return super.switches().with(INPUT_DIRECTORY, CONFIG_LOCATION, COUNTRIES, CHECKS);
+        return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
+                CHECKS);
     }
 
     @Override
@@ -120,12 +137,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-                                final Challenge challenge = this
-                                        .getChallenge(task.getChallengeName(), instructions);
-                                // Prepend the challenge name with the ISO country code, if one
-                                // exists. Then try to add the task for upload
-                                countryCode.ifPresent(iso -> challenge.setName(String.join(" - ",
-                                        countryCode.get(), task.getChallengeName())));
+                                final Challenge challenge = this.getChallenge(
+                                        task.getChallengeName(), instructions, countryCode);
                                 this.addTask(challenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
@@ -153,10 +166,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *            the name of the check
      * @param fallbackConfiguration
      *            the full configuration, which contains challenge parameters for checkName.
+     * @param countryCode
+     *            the CheckFlag iso3 country code
      * @return the check's challenge parameters, stored as a Challenge object.
      */
     private Challenge getChallenge(final String checkName,
-            final Configuration fallbackConfiguration)
+            final Configuration fallbackConfiguration, final Optional<String> countryCode)
     {
         return this.checkNameChallengeMap.computeIfAbsent(checkName, name ->
         {
@@ -165,7 +180,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Gson gson = new GsonBuilder().disableHtmlEscaping()
                     .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
             final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
-            result.setName(result.getName().isEmpty() ? checkName : result.getName());
+            // Prepend the challenge name with the full country name if one exists
+            final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
+                    result.getName().isEmpty() ? checkName : result.getName());
+            result.setName(challengeName);
             return result;
         });
     }
@@ -173,7 +191,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     /**
      * Returns a string which can be used as a key in a configuration to get checkName's challenge
      * configuration
-     * 
+     *
      * @param checkName
      *            the name of the a check in a configuration file
      * @return checkName.challenge

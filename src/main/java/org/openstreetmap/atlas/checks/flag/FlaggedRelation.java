@@ -1,16 +1,23 @@
 package org.openstreetmap.atlas.checks.flag;
 
 import java.util.Map;
+import java.util.Optional;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteRelation;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
+import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
@@ -18,20 +25,32 @@ import com.google.gson.JsonObject;
  * A flag for a {@link Relation}
  *
  * @author sayas01
+ * @author bbreithaupt
  */
 public class FlaggedRelation extends FlaggedObject
 {
     private static final long serialVersionUID = 81887932468503688L;
-
-    private final Relation relation;
-    private final Map<String, String> properties;
+    private static final RelationOrAreaToMultiPolygonConverter MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
+    private static final Logger logger = LoggerFactory.getLogger(FlaggedRelation.class);
     private final String country;
+    private final Map<String, String> properties;
+    private final Relation relation;
+    private final MultiPolygon multipolygonGeometry;
 
     public FlaggedRelation(final Relation relation)
     {
         this.relation = relation;
         this.properties = initProperties(relation);
         this.country = initCountry(relation);
+        this.multipolygonGeometry = this.relationGeometry(relation);
+    }
+
+    public FlaggedRelation(final Relation relation, final MultiPolygon geoJsonGeometry)
+    {
+        this.relation = relation;
+        this.properties = initProperties(relation);
+        this.country = initCountry(relation);
+        this.multipolygonGeometry = geoJsonGeometry;
     }
 
     /**
@@ -44,11 +63,11 @@ public class FlaggedRelation extends FlaggedObject
     @Override
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
-        final JsonObject geoJsonGeometry = this.relation.asGeoJsonGeometry();
         final JsonObject featureProperties = this.relation.getGeoJsonProperties();
         featureProperties.addProperty("flag:id", flagIdentifier);
         featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
-        return GeoJsonUtils.feature(geoJsonGeometry, featureProperties);
+        return GeoJsonUtils.feature(this.multipolygonGeometry.asGeoJsonGeometry(),
+                featureProperties);
     }
 
     /**
@@ -64,6 +83,12 @@ public class FlaggedRelation extends FlaggedObject
     public boolean equals(final Object other)
     {
         return super.equals(other);
+    }
+
+    @Override
+    public FlaggedObject getAsCompleteFlaggedObject()
+    {
+        return new FlaggedRelation(CompleteRelation.from(this.relation), this.multipolygonGeometry);
     }
 
     /**
@@ -120,6 +145,12 @@ public class FlaggedRelation extends FlaggedObject
         return this.relation.members();
     }
 
+    @Override
+    protected Optional<AtlasObject> getObject()
+    {
+        return Optional.of(this.relation);
+    }
+
     private String initCountry(final AtlasObject object)
     {
         final Map<String, String> tags = object.getTags();
@@ -143,5 +174,38 @@ public class FlaggedRelation extends FlaggedObject
         tags.put(OSM_IDENTIFIER_TAG, relation.getOsmIdentifier() + "");
         tags.put(ITEM_TYPE_TAG, "Relation");
         return tags;
+    }
+
+    /**
+     * Get the geometry for a relation as either a {@link MultiPolygon} or bounding
+     * {@link Rectangle}.
+     *
+     * @param relation
+     *            {@link Relation}
+     * @return {@link MultiPolygon} geometry
+     */
+    private MultiPolygon relationGeometry(final Relation relation)
+    {
+        if (relation.isMultiPolygon())
+        {
+            try
+            {
+                return MULTI_POLYGON_CONVERTER.convert(relation);
+            }
+            catch (final CoreException exception)
+            {
+                final String message = String.format("%s - %s",
+                        exception.getClass().getSimpleName(), exception.getMessage());
+                logger.error("Unable to recreate multipolygon for relation {}. {}",
+                        relation.getIdentifier(), message);
+                return MultiPolygon.forOuters(relation.bounds());
+            }
+        }
+        // Otherwise, we'll fall back to just providing the properties of the relation with the
+        // bounding box as a polygon geometry.
+        else
+        {
+            return MultiPolygon.forOuters(relation.bounds());
+        }
     }
 }

@@ -33,6 +33,7 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     static final String FEATURE_PROPERTIES = "feature_properties";
     static final String GENERATOR = "generator";
     static final String NAME = "name";
+    static final String IDENTIFIERS = "identifiers";
     private static final Command.Switch<File> REFERENCE_FILE_PARAMETER = new Command.Switch<>(
             "reference",
             "A file or directory of files containing atlas-checks flags to use as a baseline for comparison.",

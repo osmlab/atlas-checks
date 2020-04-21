@@ -15,7 +15,7 @@ Please see the [contributing guidelines](https://github.com/osmlab/atlas/blob/de
 
 ### Requirements
 To run Atlas Checks the following is required:
-1. [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+1. [OpenJDK 11](https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/OpenJDK11U-jdk_x64_mac_hotspot_11.0.5_10.pkg)
 2. [Gradle](https://gradle.org/install)
 3. [Git Command Line Tools](https://git-scm.com/downloads)
 

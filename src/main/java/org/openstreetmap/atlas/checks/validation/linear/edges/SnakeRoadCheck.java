@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.linear.edges;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
@@ -97,10 +98,10 @@ public class SnakeRoadCheck extends BaseCheck<Long>
         this.markAsFlagged(object.getOsmIdentifier());
 
         // Instantiate the network walk with the starting edge
-        SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
+        final SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
 
         // Walk the road
-        walk = walkNetwork(edge, walk);
+        walkNetwork(edge, walk);
 
         // If we've found a snake road, create a flag
         if (networkWalkQualifiesAsSnakeRoad(walk))
@@ -157,9 +158,8 @@ public class SnakeRoadCheck extends BaseCheck<Long>
      *            the {@link Edge} we're currently traversing from
      * @param walk
      *            the {@link SnakeRoadNetworkWalk} that contains the snake road status to this point
-     * @return {@link SnakeRoadNetworkWalk} with all Snake Road information
      */
-    private SnakeRoadNetworkWalk walkNetwork(final Edge current, final SnakeRoadNetworkWalk walk)
+    private void walkNetwork(final Edge current, final SnakeRoadNetworkWalk walk)
     {
         while (!walk.getDirectConnections().isEmpty())
         {
@@ -169,9 +169,14 @@ public class SnakeRoadCheck extends BaseCheck<Long>
             // Process it
             walk.visitEdge(current, connection);
 
+            final Set<Edge> oneLayerRemovedConnections = walk
+                    .getConnectedMasterEdgeOfTheSameWay(connection);
+            oneLayerRemovedConnections.forEach(
+                    onceRemovedConnection -> walk.checkIfEdgeHeadingDifferenceExceedsThreshold(
+                            connection, onceRemovedConnection));
+
             // Add its neighbors to the next layer
-            walk.populateOneLayerRemovedConnections(
-                    walk.getConnectedMasterEdgeOfTheSameWay(connection));
+            walk.populateOneLayerRemovedConnections(oneLayerRemovedConnections);
 
             // If we've processed all directly connected edges, check the next layer of connections
             if (walk.getDirectConnections().isEmpty())
@@ -181,7 +186,6 @@ public class SnakeRoadCheck extends BaseCheck<Long>
                     // We've finished processing all direct connections and there are no connections
                     // in the next layer either, filter false positives and return
                     walk.filterFalsePositives();
-                    return walk;
                 }
                 else
                 {
@@ -192,8 +196,6 @@ public class SnakeRoadCheck extends BaseCheck<Long>
                 }
             }
         }
-
-        return walk;
     }
 
 }

@@ -13,6 +13,8 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * @author gpogulsky
  * @author nachtm
  * @author sayas01
+ * @author seancoulter
+ * @author bbreithaupt
  */
 public class SinkIslandCheckTest
 {
@@ -21,6 +23,14 @@ public class SinkIslandCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void permittedSelectAccessTest()
+    {
+        this.verifier.actual(this.setup.permittedSelectAccessAtlas(),
+                new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
 
     @Test
     public void testEdgesEndingInBuilding()
@@ -78,6 +88,32 @@ public class SinkIslandCheckTest
         this.verifier.actual(this.setup.getParkingGarageEntranceOrExit(), new SinkIslandCheck(
                 ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testPedestrianRoadAndMotorVehicleYesRoad()
+    {
+        this.verifier.actual(this.setup.getPedestrianRoadAndMotorVehicleYesRoad(),
+                new SinkIslandCheck(ConfigurationResolver
+                        .inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testPsvAndMotorVehicleNoRoad()
+    {
+        this.verifier.actual(this.setup.getPsvAndMotorVehicleNoRoad(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testServiceInPedestrianNetworkFilterOn()
+    {
+        this.verifier.actual(this.setup.getEdgeConnectedToPedestrianNetwork(),
+                new SinkIslandCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"SinkIslandCheck.filter.pedestrian.network\":true}")));
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test

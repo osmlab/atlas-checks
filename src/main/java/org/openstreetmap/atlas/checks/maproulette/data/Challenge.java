@@ -57,6 +57,13 @@ public class Challenge implements Serializable
     private final String mediumPriorityRule;
     private final String lowPriorityRule;
 
+    public Challenge(final Challenge challenge)
+    {
+        this(challenge.name, challenge.description, challenge.blurb, challenge.instruction,
+                challenge.difficulty, challenge.defaultPriority, challenge.highPriorityRule,
+                challenge.mediumPriorityRule, challenge.lowPriorityRule, challenge.tags);
+    }
+
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty, final String tags)
     {

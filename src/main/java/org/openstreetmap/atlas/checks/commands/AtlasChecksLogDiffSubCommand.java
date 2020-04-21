@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
@@ -19,7 +20,7 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -64,9 +65,12 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                     // Add the check name as a key
                     checkFeatureMap.putIfAbsent(checkName, new HashMap<>());
                     // Add the geoJSON as a value
-                    checkFeatureMap.get(checkName).put(
-                            this.getAtlasIdentifiers(source.get(FEATURES).getAsJsonArray()),
-                            source);
+                    if (checkFeatureMap.get(checkName).containsKey(this.getIdentifiers(source)))
+                    {
+                        logger.info("Duplicate flag found in {}: {}", file.getAbsolutePath(),
+                                source);
+                    }
+                    checkFeatureMap.get(checkName).put(this.getIdentifiers(source), source);
                 }
             }
         }
@@ -78,19 +82,28 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     }
 
     /**
-     * Get the atlas ids from an array of features.
+     * Get the unique ids for a flag. Fall back to getting the atlas ids from the features for
+     * reverse compatibility.
      *
-     * @param features
-     *            a {@link JsonArray} of features
+     * @param flagJson
+     *            a {@link JsonObject} of a flag
      * @return a {@link Set} of {@link String} ids
      */
-    private Set<String> getAtlasIdentifiers(final JsonArray features)
+    private Set<String> getIdentifiers(final JsonObject flagJson)
     {
-        return Iterables.stream(features)
-                .filter(object -> object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
-                        .has(IDENTIFIER))
-                .map(object -> object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
-                        .get(IDENTIFIER).getAsString())
-                .collectToSet();
+        final JsonObject flagProperties = flagJson.get(PROPERTIES).getAsJsonObject();
+        return flagProperties.has(IDENTIFIERS)
+                ? Iterables.stream(flagProperties.get(IDENTIFIERS).getAsJsonArray())
+                        .map(JsonElement::getAsString).collectToSet()
+                : Iterables.stream(flagJson.get(FEATURES).getAsJsonArray()).filter(object -> object
+                        .getAsJsonObject().get(PROPERTIES).getAsJsonObject().has(IDENTIFIER)
+                        || object.getAsJsonObject().get(PROPERTIES).getAsJsonObject().has("ItemId"))
+                        .map(object -> Optional
+                                .ofNullable(object.getAsJsonObject().get(PROPERTIES)
+                                        .getAsJsonObject().get(IDENTIFIER))
+                                .orElse(object.getAsJsonObject().get(PROPERTIES).getAsJsonObject()
+                                        .get("ItemId"))
+                                .getAsString())
+                        .collectToSet();
     }
 }

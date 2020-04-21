@@ -2,10 +2,10 @@ package org.openstreetmap.atlas.checks.distributed;
 
 import org.apache.commons.lang.StringUtils;
 import org.openstreetmap.atlas.checks.base.Check;
-import org.openstreetmap.atlas.checks.event.EventService;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteClient;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
+import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.openstreetmap.atlas.utilities.threads.Pool;
@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
  * Base class to with helper methods for {@link RunnableCheck}
  *
  * @author mkalender
+ * @author bbreithaupt
  * @param <T>
  *            this would either be a {@link Check} type
  */
@@ -61,6 +62,27 @@ public abstract class RunnableCheckBase<T extends Check>
     public RunnableCheckBase(final String country, final T check,
             final Iterable<AtlasObject> objects, final MapRouletteClient client)
     {
+        this(country, check, objects, client, EventService.get(country));
+    }
+
+    /**
+     * Default constructor
+     *
+     * @param country
+     *            country that is being processed
+     * @param check
+     *            check that is being executed
+     * @param objects
+     *            {@link AtlasObject}s that are going to be executed
+     * @param client
+     *            {@link MapRouletteClient} that will upload the tasks to MapRoulette
+     * @param eventService
+     *            {@link EventService} to post to
+     */
+    public RunnableCheckBase(final String country, final T check,
+            final Iterable<AtlasObject> objects, final MapRouletteClient client,
+            final EventService eventService)
+    {
         this.country = country;
         this.check = check;
         this.challenge = check.getChallenge();
@@ -71,7 +93,7 @@ public abstract class RunnableCheckBase<T extends Check>
         }
         this.objects = objects;
         this.client = client;
-        this.eventService = EventService.get(country);
+        this.eventService = eventService;
     }
 
     /**

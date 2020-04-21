@@ -8,6 +8,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
+import org.openstreetmap.atlas.event.Processor;
+import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
