@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.flag;
 import java.util.Map;
 import java.util.Optional;
 
+import org.openstreetmap.atlas.checks.constants.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteNode;
@@ -24,7 +25,6 @@ import com.google.gson.JsonObject;
  */
 public class FlaggedPoint extends FlaggedObject
 {
-    protected static final String SYNTHETIC_POINT_TAG = "synthetic_highlight_point";
     private static final Logger logger = LoggerFactory.getLogger(FlaggedPoint.class);
     private static final long serialVersionUID = -5912453173756416690L;
     private LocationItem locationItem;
@@ -37,7 +37,8 @@ public class FlaggedPoint extends FlaggedObject
         this.locationItem = null;
         this.point = point;
         // Add a synthetic tag to Point features used to highlight FlaggedObjects
-        this.properties = Map.of(SYNTHETIC_POINT_TAG, "yes");
+        this.properties = Map.of(SyntheticHighlightPointTag.KEY,
+                SyntheticHighlightPointTag.YES.name().toLowerCase());
     }
 
     /**

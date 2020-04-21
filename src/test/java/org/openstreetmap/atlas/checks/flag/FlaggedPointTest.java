@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openstreetmap.atlas.checks.constants.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Location;
 
 /**
@@ -20,7 +21,7 @@ public class FlaggedPointTest
         final Map<String, String> flaggedPointProperties = flaggedPoint.getProperties();
 
         Assert.assertFalse(flaggedPointProperties.isEmpty());
-        Assert.assertTrue(flaggedPointProperties.containsKey(FlaggedPoint.SYNTHETIC_POINT_TAG));
-        Assert.assertEquals("yes", flaggedPointProperties.get(FlaggedPoint.SYNTHETIC_POINT_TAG));
+        Assert.assertTrue(flaggedPointProperties.containsKey(SyntheticHighlightPointTag.KEY));
+        Assert.assertEquals("yes", flaggedPointProperties.get(SyntheticHighlightPointTag.KEY));
     }
 }
