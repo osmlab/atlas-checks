@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openstreetmap.atlas.checks.constants.tags.SyntheticHighlightPointTag;
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Location;
 
 /**

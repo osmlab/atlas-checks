@@ -3,7 +3,7 @@ package org.openstreetmap.atlas.checks.flag;
 import java.util.Map;
 import java.util.Optional;
 
-import org.openstreetmap.atlas.checks.constants.tags.SyntheticHighlightPointTag;
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteNode;

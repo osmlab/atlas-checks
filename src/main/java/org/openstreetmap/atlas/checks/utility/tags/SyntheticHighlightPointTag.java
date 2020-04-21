@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.constants.tags;
+package org.openstreetmap.atlas.checks.utility.tags;
 
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.Tag;
