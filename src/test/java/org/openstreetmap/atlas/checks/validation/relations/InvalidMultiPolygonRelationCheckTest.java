@@ -116,6 +116,15 @@ public class InvalidMultiPolygonRelationCheckTest
     }
 
     @Test
+    public void testOneMemberConfig()
+    {
+        this.verifyCheck(this.setup.getOneMemberRelation(),
+                ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidMultiPolygonRelationCheck\":{\"members.one.ignore\":true}}"),
+                0, Collections.emptyList());
+    }
+
+    @Test
     public void testOpenPolygon()
     {
         this.verifier.actual(this.setup.getAtlas(), referenceDefaultLocaleCheck);

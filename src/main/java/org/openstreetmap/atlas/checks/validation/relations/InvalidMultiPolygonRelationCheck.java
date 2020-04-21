@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * <li>The multipolygon must be closed.</li>
  * <li>There must one or more outer members</li>
  * <li>Each member must have a role</li>
- * <li>There should be more than one member</li>
+ * <li>There should be more than one member (Optional)</li>
  * <li>Inner members must be contained by an outer member, but not intersect any</li>
  * <li>Outer members must not overlap</li>
  * <li>Inner members must not overlap with, but may touch, other inner members</li>
@@ -105,16 +105,20 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
         atlasToOsmType.put(ItemType.RELATION, "relation");
     }
 
+    private final boolean ignoreOneMember;
+
     public InvalidMultiPolygonRelationCheck(final Configuration configuration)
     {
         super(configuration);
+        this.ignoreOneMember = this.configurationValue(configuration, "members.one.ignore", false);
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Relation
-                && Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.MULTIPOLYGON);
+                && Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.MULTIPOLYGON)
+                && !(this.ignoreOneMember && ((Relation) object).members().size() == 1);
     }
 
     @Override
