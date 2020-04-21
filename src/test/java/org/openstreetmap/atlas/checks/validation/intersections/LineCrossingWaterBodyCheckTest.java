@@ -75,6 +75,13 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testInvalidLineCrossingRelationWaterbody()
+    {
+        this.verifier.actual(this.setup.invalidLineCrossingRelationWaterbody(), check);
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testInvalidLineItemCrossing()
     {
         this.verifier.actual(this.setup.invalidCrossingLineItemAtlas(),
