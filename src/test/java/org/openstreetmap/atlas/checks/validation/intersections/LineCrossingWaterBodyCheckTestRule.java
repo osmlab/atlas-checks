@@ -461,7 +461,8 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
             @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
             @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) }, areas = {
-                    @Area(id = "100", coordinates = { @Loc(AREA_LOCATION_1), @Loc(AREA_LOCATION_2),
+                    @Area(id = "100", tags = "last_edit_time=20200422", coordinates = {
+                            @Loc(AREA_LOCATION_1), @Loc(AREA_LOCATION_2),
                             @Loc(AREA_LOCATION_3) }) }, lines = {
                                     @Line(tags = "railway=yes", coordinates = {
                                             @Loc(LOCATION_OUTSIDE_AREA_1),

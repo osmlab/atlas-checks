@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
 import org.openstreetmap.atlas.geography.GeometricSurface;
 import org.openstreetmap.atlas.geography.MultiPolygon;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
@@ -37,12 +38,12 @@ import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
 import org.openstreetmap.atlas.tags.SourceTag;
-import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
  * Flags line items (edges or lines) and optionally buildings that are crossing water bodies
@@ -217,12 +218,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // We only consider water body areas or multipolygon relations that are not at borders, not
-        // linear water bodies
-        return (TypePredicates.IS_AREA.test(object) || (object instanceof Relation
-                && object.getTag(SyntheticRelationMemberAdded.KEY).isEmpty()
-                && ((Relation) object).isMultiPolygon())) && !INVALID_WATER_BODY_TAGS.test(object)
-                && VALID_WATER_BODY_TAGS.test(object);
+        // We only consider water body areas or multipolygon relations, not linear water bodies
+        return (TypePredicates.IS_AREA.test(object)
+                || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
+                && !INVALID_WATER_BODY_TAGS.test(object) && VALID_WATER_BODY_TAGS.test(object);
     }
 
     @Override
@@ -235,18 +234,25 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // Then retrieve the invalid crossing edges, lines, buildings
         final Atlas atlas = object.getAtlas();
         final Iterable<AtlasItem> invalidCrossingItems = this.flagBuildings
-                ? new MultiIterable<>(atlas.lineItemsIntersecting(waterbody,
-                        lineItem -> isOffendingLineItem(object, waterbody).test(lineItem)
-                                && !this.canCrossWaterBody(lineItem)
-                                && !this.intersectionsAreExplicit(waterbody, lineItem)),
+                ? new MultiIterable<>(
+                        atlas.lineItemsIntersecting(waterbody,
+                                lineItem -> isOffendingLineItem(object).test(lineItem)
+                                        && !this.canCrossWaterBody(lineItem)
+                                        && !this.intersectionsAreExplicit(waterbody, lineItem)
+                                        && this.intersectsValidPartOfWaterbody(waterbody, object,
+                                                lineItem.asPolyLine())),
                         atlas.areasIntersecting(waterbody,
                                 area -> BuildingTag.isBuilding(area)
                                         && !NONOFFENDING_BUILDINGS.test(area)
-                                        && LevelTag.areOnSameLevel(object, area)))
+                                        && LevelTag.areOnSameLevel(object, area)
+                                        && this.intersectsValidPartOfWaterbody(waterbody, object,
+                                                area.asPolygon())))
                 : new MultiIterable<AtlasItem>(atlas.lineItemsIntersecting(waterbody,
-                        lineItem -> isOffendingLineItem(object, waterbody).test(lineItem)
+                        lineItem -> isOffendingLineItem(object).test(lineItem)
                                 && !this.canCrossWaterBody(lineItem)
-                                && !this.intersectionsAreExplicit(waterbody, lineItem)));
+                                && !this.intersectionsAreExplicit(waterbody, lineItem)
+                                && this.intersectsValidPartOfWaterbody(waterbody, object,
+                                        lineItem.asPolyLine())));
 
         // This waterbody has no invalid crossings
         if (!invalidCrossingItems.iterator().hasNext())
@@ -306,9 +312,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 
     /**
      * Returns true if the intersections between the parameter waterbody and the lineItem are marked
-     * by Locations in the Atlas. In the case of a waterbody MultiPolygon, iterate through all inner
-     * and outer members and make sure that if there is an intersection, there is a corresponding
-     * Location
+     * by Locations in the Atlas. In the case of a waterbody MultiPolygon, iterate through all outer
+     * members (all we care about) and make sure that if there is an intersection, there is a
+     * corresponding Location
      *
      * @param waterbody
      *            the waterbody
@@ -330,19 +336,42 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     /**
+     * If the waterbody is an area, the intersection is valid. If it's not an area, it's a
+     * multipolygon, and we make sure the intersection is on an outer member of the multipolygon and
+     * that the outer member was not synthetically created by the atlas slicing process. It's
+     * estimated that if the relation has a member without the LastEditTimeTag, it likely did not
+     * come from an OSM feature, which suggests it was created due to atlas slicing and would
+     * therefore not be a geometrically accurate member of the relation.
+     *
+     * @param waterbody
+     * @param object
+     * @param lineItem
+     * @return
+     */
+    private boolean intersectsValidPartOfWaterbody(final GeometricSurface waterbody,
+            final AtlasObject object, final PolyLine lineItem)
+    {
+        return !(waterbody instanceof MultiPolygon) || ((Relation) object).members().stream()
+                .filter(member -> member.getRole().equals("outer"))
+                .map(member -> new Tuple<>(member.getEntity(),
+                        new Polygon(member.getEntity() instanceof Area ? (Area) member.getEntity()
+                                : (LineItem) member.getEntity())))
+                .anyMatch(member -> lineItem.intersects(member.getSecond())
+                        && member.getFirst().lastEdit().isPresent());
+    }
+
+    /**
      * True if the incoming LineItem is either an {@link Edge} with the correct highway type or
-     * {@link LineItem} that has the correct tag combination, AND the lineItem is not a bridge, is
-     * on the same level as the parameter waterbody, and if the waterbody is a MultiPolygon, the
-     * LineItem intersects any outer polygon of the waterbody
-     * 
+     * {@link LineItem} that has the correct tag combination, AND the lineItem is not a bridge and
+     * is on the same level as the parameter waterbody
+     *
      * @param object
      *            The waterbody
      * @return True if the incoming AtlasObject is an {@link Edge} with the correct highway type OR
      *         {@link LineItem} that has the correct tag combination, is not a bridge, and is on the
      *         same level as the parameter waterbody.
      */
-    private Predicate<LineItem> isOffendingLineItem(final AtlasObject object,
-            final GeometricSurface waterbody)
+    private Predicate<LineItem> isOffendingLineItem(final AtlasObject object)
     {
         return lineItem -> (lineItem instanceof Edge
                 && ((Edge) lineItem).highwayTag().isMoreImportantThanOrEqualTo(this.highwayMinimum)
@@ -350,8 +379,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 || this.lineItemsOffending.test(lineItem))
                 && (!Validators.hasValuesFor(lineItem, BridgeTag.class)
                         || Validators.isOfType(lineItem, BridgeTag.class, BridgeTag.NO))
-                && LevelTag.areOnSameLevel(object, lineItem)
-                && (!(waterbody instanceof MultiPolygon) || ((MultiPolygon) waterbody).outers()
-                        .stream().anyMatch(lineItem::intersects));
+                && LevelTag.areOnSameLevel(object, lineItem);
     }
 }
