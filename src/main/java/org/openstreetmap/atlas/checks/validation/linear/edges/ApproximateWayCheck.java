@@ -1,25 +1,21 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
+import org.openstreetmap.atlas.checks.base.BaseCheck;
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.Segment;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
-
-import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
-import org.openstreetmap.atlas.checks.base.BaseCheck;
-import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.Latitude;
-import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.Segment;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Edge;
-import org.openstreetmap.atlas.tags.AerowayTag;
-import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
@@ -136,7 +132,6 @@ public class ApproximateWayCheck extends BaseCheck<Long>
 
     /**
      * Calculates the angle between the two segments.
-     * This assumes that s1 and s2 are connected at one end in the same location (s1.end == s2.start)
      */
     private double findAngle(Segment s1, Segment s2) {
         double a = s1.length().asMeters();
