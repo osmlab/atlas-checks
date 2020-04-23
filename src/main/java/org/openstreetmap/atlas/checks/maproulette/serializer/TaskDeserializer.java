@@ -72,8 +72,8 @@ public class TaskDeserializer implements JsonDeserializer<Task>
      */
     private JsonArray filterOutPointsFromGeojson(final JsonArray features)
     {
-        return this.objectStream(features)
-                .filter(feature -> feature.has(PROPERTIES) && !feature.get(PROPERTIES).getAsJsonObject().has(SyntheticHighlightPointTag.KEY))
+        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES)
+                && !feature.get(PROPERTIES).getAsJsonObject().has(SyntheticHighlightPointTag.KEY))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
