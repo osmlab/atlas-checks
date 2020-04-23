@@ -337,26 +337,30 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 
     /**
      * If the waterbody is an area, the intersection is valid. If it's not an area, it's a
-     * multipolygon, and we make sure the intersection is on an outer member of the multipolygon and
-     * that the outer member was not synthetically created by the atlas slicing process. It's
-     * estimated that if the relation has a member without the LastEditTimeTag, it likely did not
+     * multipolygon, and we make sure that either
+     *
+     * 1. The intersection is at an outer member of the multipolygon and
+     * the outer member was not synthetically created by the atlas slicing process. It's
+     * estimated that if the outer member doesn't have the {@link LastEditTimeTag}, it likely did not
      * come from an OSM feature, which suggests it was created due to atlas slicing and would
      * therefore not be a geometrically accurate member of the relation.
      *
-     * @param waterbody
-     * @param object
-     * @param lineItem
-     * @return
+     * 2. The intersecting feature is entirely floating in an outer member of the relation, and not intersecting/floating in any of the inner members. The inner members are typically islands so we avoid flagging in the latter scenario. The outer member must still have the LastEditTime tag
+     *
+     * @param waterbody the GeometricSurface representation of the waterbody
+     * @param object the AtlasEntity representation of the waterbody
+     * @param intersectingFeature the intersecting building/road/line
+     * @return true if either of the 2 above conditions are satisfied, false otherwise
      */
     private boolean intersectsValidPartOfWaterbody(final GeometricSurface waterbody,
-            final AtlasObject object, final PolyLine lineItem)
+            final AtlasObject object, final PolyLine intersectingFeature)
     {
         return !(waterbody instanceof MultiPolygon) || ((Relation) object).members().stream()
                 .filter(member -> member.getRole().equals("outer"))
                 .map(member -> new Tuple<>(member.getEntity(),
                         new Polygon(member.getEntity() instanceof Area ? (Area) member.getEntity()
                                 : (LineItem) member.getEntity())))
-                .anyMatch(member -> lineItem.intersects(member.getSecond())
+                .anyMatch(member -> (intersectingFeature.intersects(member.getSecond()) || (intersectingFeature.within(member.getSecond()) && ((MultiPolygon) waterbody).inners().stream().noneMatch(innerMember -> intersectingFeature.intersects(innerMember) || intersectingFeature.within(innerMember))))
                         && member.getFirst().lastEdit().isPresent());
     }
 
