@@ -51,6 +51,12 @@
       "difficulty": "HARD"
     }
   },
+  "ApproximateWayCheck": {
+    "deviation.minimum.meters": 35.0,
+    "angle.minimum": 100.0,
+    "bezierStep": 0.01,
+    "highway.minimum": "service"
+  },
   "AreasWithHighwayTagCheck":{
     "tag.filters":"highway->*&area->yes",
     "challenge":{
