@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.serializer.CheckFlagDeserializer;
 import org.openstreetmap.atlas.checks.utility.FileUtility;
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
@@ -398,8 +399,9 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private JsonArray filterOutPointsFromGeojson(final JsonArray features)
     {
         return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
-                .filter(feature -> feature.has(PROPERTIES)
-                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
+                .filter(feature -> feature.has(PROPERTIES) && (!feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty() || feature.get(PROPERTIES).getAsJsonObject().has(
+                        SyntheticHighlightPointTag.KEY)
+                ))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 }
