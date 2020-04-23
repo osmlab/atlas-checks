@@ -390,7 +390,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     /**
-     * Get all geojson features which do contain a properties field from a {@link JsonArray}.
+     * Filter all synthetic CheckFlag points from {@link JsonArray}.
      *
      * @param features
      *            a {@link JsonArray} of geojson features
