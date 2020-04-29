@@ -22,17 +22,18 @@ This section summarizes the various use cases for this check and provides potent
 For each use case, please add a screenshot of the feature & openstreetmap.org link (or other sources). If necessary, edit the screenshot to better illustrate the use case.
 
 Example:
+
 *Case 1: [Descriptive but concise title.] (Location)*
  - Summary/Explanation of what is being flagged and why
  - OSM Link
 
-Add image here
+Add supporting  image here
 
 **Further investigation**
 Provide any additional information found that is worth mentioning (e.g. Further explanation of false positives or false negatives).
 
 **Supported regions**
-Specify which countries/regions this check is applicable to. List ISO codes. All countries in a valid answer.
+Specify which countries/regions this check is applicable to. List ISO codes. "All countries" works all well.
 
 **What's not supported (optional):**
 This section explains what elements are not supported by this check, whether or not these elements should be included/addressed in the future, and if these cases are better handled in another (existing or new) check.
