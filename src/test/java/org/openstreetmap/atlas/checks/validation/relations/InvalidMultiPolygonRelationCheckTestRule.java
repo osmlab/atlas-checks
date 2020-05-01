@@ -439,6 +439,28 @@ public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_1),
+                    @Loc(value = TEST_VALIDRELATION_2), @Loc(value = TEST_VALIDRELATION_3),
+                    @Loc(value = TEST_VALIDRELATION_1) }) },
+            // Lines
+            lines = {
+                    @Line(id = "1000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_5),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_6) }),
+                    @Line(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_6),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_7),
+                            @Loc(value = TEST_VALIDRELATIONWITHWAYSECTIONING_5) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "1000000", type = "line", role = "outer"),
+                    @Member(id = "2000000", type = "line", role = "outer") }, tags = {
+                            "type=multipolygon", "synthetic_relation_member_added=1000000" }) })
+    private Atlas overlappingOutersCountrySlicedAtlas;
+
+    @TestAtlas(
+            // Areas
             areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_10),
                     @Loc(value = TEST_VALIDRELATION_11), @Loc(value = TEST_VALIDRELATION_14),
                     @Loc(value = TEST_VALIDRELATION_6), @Loc(value = TEST_VALIDRELATION_10) }),
@@ -611,5 +633,10 @@ public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
     public Atlas overlappingOutersAtlas()
     {
         return this.overlappingOutersAtlas;
+    }
+
+    public Atlas overlappingOutersCountrySlicedAtlas()
+    {
+        return this.overlappingOutersCountrySlicedAtlas;
     }
 }

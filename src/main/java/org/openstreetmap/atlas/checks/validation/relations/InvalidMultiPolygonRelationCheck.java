@@ -27,6 +27,7 @@ import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMul
 import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
 import org.openstreetmap.atlas.geography.converters.jts.JtsPolygonConverter;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.maps.MultiMap;
@@ -118,7 +119,8 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
     {
         return object instanceof Relation
                 && Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.MULTIPOLYGON)
-                && !(this.ignoreOneMember && ((Relation) object).members().size() == 1);
+                && !(this.ignoreOneMember && ((Relation) object).members().size() == 1)
+                && !SyntheticRelationMemberAdded.hasAddedRelationMember(object);
     }
 
     @Override

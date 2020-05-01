@@ -88,6 +88,13 @@ public class InvalidMultiPolygonRelationCheckTest
     }
 
     @Test
+    public void overlappingOutersCountrySlicedTest()
+    {
+        this.verifyCheck(this.setup.overlappingOutersCountrySlicedAtlas(),
+                ConfigurationResolver.emptyConfiguration(), 0, Collections.emptyList());
+    }
+
+    @Test
     public void overlappingOutersTest()
     {
         this.verifyCheck(this.setup.overlappingOutersAtlas(),
