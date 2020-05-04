@@ -4,54 +4,10 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
-  },
-  "PoolSizeCheck": {
-    "surface": {
-      "maximum": 1000.0,
-      "minimum": 50.0
-    }
-  },
-  "SpikyBuildingCheck": {
-    "spiky.angle.maximum": 15.0,
-    "curve": {
-      "degrees": {
-        "maximum.single_heading_change": 25.0,
-        "minimum.total_heading_change": 10.0
-      },
-      "points.minimum": 4
-    },
-    "challenge": {
-      "description": "Find poorly digitized buildings with sharp angles in their geometry",
-      "blurb": "Fix buildings with spiky geometry",
-      "instruction": "Open your favorite editor and validate that the buildings are mapped correctly",
-      "difficulty": "NORMAL",
-      "tags":"building"
-    }
-  },
-  "OrphanNodeCheck": {
-
-  },
-  "AddressPointMatchCheck": {
-    "bounds.size": 150.0,
-    "challenge": {
-      "description": "Tasks contain nodes which either have no street name or incorrect street names",
-      "blurb": "Nodes without street names, or with incorrect street names",
-      "instruction": "Open your favorite editor and edit the node street names",
-      "difficulty": "EASY",
-      "defaultPriority": "LOW"
-    }
-  },
-  "AddressStreetNameCheck": {
-    "bounds.size": 100.0,
-    "challenge": {
-      "description": "Tasks contain nodes with addr:street names that don't match the surrounding roads",
-      "blurb": "Nodes with mismatched addr:street names",
-      "instruction": "Open your favorite editor and edit the node street names",
-      "difficulty": "HARD"
-    }
+    "enabled.value.default": false
   },
   "ApproximateWayCheck": {
+    "enabled": true,
     "deviation.minimum.meters": 35.0,
     "angle.minimum": 100.0,
     "bezierStep": 0.01,
