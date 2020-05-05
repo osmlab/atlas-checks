@@ -25,6 +25,7 @@ public final class CommonConstants
     public static final String UNDERSCORE = "_";
     public static final String EQUALS_TO = "=";
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final String DELIMITER = ":";
 
     // Common characters
     public static final char OPEN_PARENTHESES_CHAR = '(';
