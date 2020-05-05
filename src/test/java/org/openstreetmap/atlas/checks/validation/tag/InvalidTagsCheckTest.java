@@ -76,8 +76,8 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"override.default.filters\": false,\"filters.classes.tags\":[[\"node,point\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
+                        "{\"InvalidTagsCheck\":{\"override.default.filters\": false,\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
