@@ -33,11 +33,13 @@ import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
 import org.openstreetmap.atlas.tags.SourceTag;
+import org.openstreetmap.atlas.tags.SyntheticNearestNeighborCountryCodeTag;
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
@@ -368,7 +370,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                                 && ((MultiPolygon) waterbody).inners().stream().noneMatch(
                                         innerMember -> intersectingFeature.intersects(innerMember)
                                                 || intersectingFeature.within(innerMember))))
-                        && member.getFirst().lastEdit().isPresent());
+                        && (member.getFirst().getTags().keySet().stream().anyMatch(key -> !(key.equals(ISOCountryTag.KEY) || key.equals(SyntheticNearestNeighborCountryCodeTag.KEY)))));
     }
 
     /**
