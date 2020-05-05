@@ -390,6 +390,8 @@
   "InvalidTagsCheck": {
     "override.default.filters": false,
     "filters.classes.tags": [
+      ["area","boundary->protected_area&protect_class->!"],
+      ["relation","boundary->protected_area&protect_class->!"]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, or incorrect values",
