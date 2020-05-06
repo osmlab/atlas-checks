@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.flag;
 import java.util.Map;
 import java.util.Optional;
 
+import com.google.gson.JsonElement;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.MultiPolygon;
@@ -64,6 +65,12 @@ public class FlaggedRelation extends FlaggedObject
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
         final JsonObject featureProperties = this.relation.getGeoJsonProperties();
+        final JsonElement osmIdentifier = featureProperties.get(OSM_IDENTIFIER_TAG);
+        final JsonElement identifier = featureProperties.get(GeoJsonUtils.IDENTIFIER);
+        featureProperties.remove(OSM_IDENTIFIER_TAG);
+        featureProperties.remove(GeoJsonUtils.IDENTIFIER);
+        featureProperties.addProperty(OSM_IDENTIFIER_TAG, osmIdentifier.toString());
+        featureProperties.addProperty(GeoJsonUtils.IDENTIFIER, identifier.toString());
         featureProperties.addProperty("flag:id", flagIdentifier);
         featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
         return GeoJsonUtils.feature(this.multipolygonGeometry.asGeoJsonGeometry(),
@@ -205,7 +212,7 @@ public class FlaggedRelation extends FlaggedObject
         // bounding box as a polygon geometry.
         else
         {
-            return MultiPolygon.forOuters(relation.bounds());
+            return MultiPolygon.forPolygon(relation.bounds());
         }
     }
 }
