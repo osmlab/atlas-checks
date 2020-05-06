@@ -212,7 +212,7 @@ public class FlaggedRelation extends FlaggedObject
         // bounding box as a polygon geometry.
         else
         {
-            return MultiPolygon.forPolygon(relation.bounds());
+            return MultiPolygon.forOuters(relation.bounds());
         }
     }
 }
