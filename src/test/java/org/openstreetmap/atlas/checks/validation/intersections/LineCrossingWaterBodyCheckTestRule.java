@@ -456,6 +456,21 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                     @Loc(LOCATION_OUTSIDE_AREA_1) }, tags = "railway=tram") })
     private Atlas invalidCrossingLineItemAtlas;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) }, areas = {
+                    @Area(id = "100", coordinates = { @Loc(AREA_LOCATION_1), @Loc(AREA_LOCATION_2),
+                            @Loc(AREA_LOCATION_3) }) }, lines = {
+                                    @Line(tags = "railway=yes", coordinates = {
+                                            @Loc(LOCATION_OUTSIDE_AREA_1),
+                                            @Loc(AREA_LOCATION_BETWEEN_2_AND_3) }) }, relations = {
+                                                    @Relation(tags = { "type=multipolygon",
+                                                            "natural=water" }, members = {
+                                                                    @Member(id = "100", role = "outer", type = "area") }) })
+    private Atlas invalidLineCrossingRelationWaterbody;
+
     public Atlas crossingLineWithNoOsmTagAtlas()
     {
         return this.crossingLineWithNoOsmTagAtlas;
@@ -489,6 +504,11 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     public Atlas invalidLineCrossingAtlas()
     {
         return this.invalidLineCrossingAtlas;
+    }
+
+    public Atlas invalidLineCrossingRelationWaterbody()
+    {
+        return this.invalidLineCrossingRelationWaterbody;
     }
 
     public Atlas multipolygonMemberCrossingAtlas()
