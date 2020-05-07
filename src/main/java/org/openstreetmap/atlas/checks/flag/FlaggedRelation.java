@@ -69,6 +69,9 @@ public class FlaggedRelation extends FlaggedObject
         final JsonObject featureProperties = this.relation.getGeoJsonProperties();
         final JsonElement osmIdentifier = featureProperties.get(OSM_IDENTIFIER_TAG);
         final JsonElement identifier = featureProperties.get(IDENTIFIER);
+        // Since the properties of all other FlaggedObjects are String, osmIdentifier and
+        // identifier values of FlaggedRelation, which are Integers are removed and added as String
+        // here
         featureProperties.remove(OSM_IDENTIFIER_TAG);
         featureProperties.remove(IDENTIFIER);
         featureProperties.addProperty(OSM_IDENTIFIER_TAG, osmIdentifier.toString());
