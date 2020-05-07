@@ -140,21 +140,10 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             final Iterable<LineItem> intersectingLinearFeatures = object.getAtlas()
                     .lineItemsIntersecting(oceanBoundary, lineItem -> !BridgeTag.isBridge(lineItem)
                             && isInvalidlyInteractingWithOcean().test(lineItem));
-            final Iterable<LineItem> withinLinearFeatures = StreamSupport
-                    .stream(object.getAtlas().lineItemsWithin(oceanBoundary).spliterator(), false)
-                    .filter(lineItem -> !BridgeTag.isBridge(lineItem) && (lineItem instanceof Edge
-                            && this.validHighwayType().test((Edge) lineItem)
-                            || this.defaultOffendingLineitems.test(lineItem)))
-                    .collect(Collectors.toList());
             final Iterable<Area> intersectingBuildingFeatures = object.getAtlas()
                     .areasIntersecting(oceanBoundary, BuildingTag::isBuilding);
-            final Iterable<Area> withinBuildingFeatures = StreamSupport
-                    .stream(object.getAtlas().areasWithin(oceanBoundary).spliterator(), false)
-                    .filter(BuildingTag::isBuilding).collect(Collectors.toList());
             intersectingLinearFeatures.forEach(offendingLineItems::add);
-            withinLinearFeatures.forEach(offendingLineItems::add);
             intersectingBuildingFeatures.forEach(offendingBuildings::add);
-            withinBuildingFeatures.forEach(offendingBuildings::add);
         }
         else
         {
@@ -162,12 +151,11 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             // coastline landmass or linear waterbody
             final Iterable<LineItem> intersectingLinearFeatures = object.getAtlas()
                     .lineItemsIntersecting(oceanBoundary,
-                            lineItem -> (oceanIsArea || ((LineItem) object).asPolyLine()
-                                    .intersects(lineItem.asPolyLine()))
+                            lineItem -> (oceanIsArea && !oceanBoundary.fullyGeometricallyEncloses(lineItem.asPolyLine()) || object instanceof LineItem && ((LineItem) object).asPolyLine().intersects(lineItem.asPolyLine()))
                                     && isInvalidlyInteractingWithOcean().test(lineItem));
             final Iterable<Area> withinLinearFeatures = object.getAtlas()
-                    .areasIntersecting(oceanBoundary, area -> (oceanIsArea
-                            || ((LineItem) object).asPolyLine().intersects(area.asPolygon()))
+                    .areasIntersecting(oceanBoundary, area -> (oceanIsArea && !oceanBoundary.fullyGeometricallyEncloses(area.asPolygon())
+                            || object instanceof LineItem && ((LineItem) object).asPolyLine().intersects(area.asPolygon()))
                             && BuildingTag.isBuilding(area));
             intersectingLinearFeatures.forEach(offendingLineItems::add);
             withinLinearFeatures.forEach(offendingBuildings::add);
