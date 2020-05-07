@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -150,12 +149,17 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             // Collect invalid buildings items intersecting the ocean feature, which is either a
             // coastline landmass or linear waterbody
             final Iterable<LineItem> intersectingLinearFeatures = object.getAtlas()
-                    .lineItemsIntersecting(oceanBoundary,
-                            lineItem -> (oceanIsArea && !oceanBoundary.fullyGeometricallyEncloses(lineItem.asPolyLine()) || object instanceof LineItem && ((LineItem) object).asPolyLine().intersects(lineItem.asPolyLine()))
-                                    && isInvalidlyInteractingWithOcean().test(lineItem));
-            final Iterable<Area> withinLinearFeatures = object.getAtlas()
-                    .areasIntersecting(oceanBoundary, area -> (oceanIsArea && !oceanBoundary.fullyGeometricallyEncloses(area.asPolygon())
-                            || object instanceof LineItem && ((LineItem) object).asPolyLine().intersects(area.asPolygon()))
+                    .lineItemsIntersecting(oceanBoundary, lineItem -> (oceanIsArea
+                            && !oceanBoundary.fullyGeometricallyEncloses(lineItem.asPolyLine())
+                            || object instanceof LineItem && ((LineItem) object).asPolyLine()
+                                    .intersects(lineItem.asPolyLine()))
+                            && isInvalidlyInteractingWithOcean().test(lineItem));
+            final Iterable<Area> withinLinearFeatures = object.getAtlas().areasIntersecting(
+                    oceanBoundary,
+                    area -> (oceanIsArea
+                            && !oceanBoundary.fullyGeometricallyEncloses(area.asPolygon())
+                            || object instanceof LineItem && ((LineItem) object).asPolyLine()
+                                    .intersects(area.asPolygon()))
                             && BuildingTag.isBuilding(area));
             intersectingLinearFeatures.forEach(offendingLineItems::add);
             withinLinearFeatures.forEach(offendingBuildings::add);
