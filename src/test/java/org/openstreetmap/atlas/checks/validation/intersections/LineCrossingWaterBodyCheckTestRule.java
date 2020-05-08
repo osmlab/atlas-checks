@@ -472,6 +472,37 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                                                                     @Member(id = "100", role = "outer", type = "area") }) })
     private Atlas invalidLineCrossingRelationWaterbody;
 
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "amenity=ferry_terminal"),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)) },
+            // area
+            areas = { @Area(coordinates = { @Loc(value = AREA_LOCATION_1),
+                    @Loc(value = AREA_LOCATION_2),
+                    @Loc(value = AREA_LOCATION_3) }, tags = { "natural=water" }) },
+            // edges
+            edges = {
+                    // an edge
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_1),
+                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }) })
+    private Atlas validFerryTerminalIntersection;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "ford=yes"),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)) },
+            // area
+            areas = { @Area(coordinates = { @Loc(value = AREA_LOCATION_1),
+                    @Loc(value = AREA_LOCATION_2),
+                    @Loc(value = AREA_LOCATION_3) }, tags = { "natural=water" }) },
+            // edges
+            edges = {
+                    // an edge
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_1),
+                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }) })
+    private Atlas validFordedRoad;
+
     public Atlas crossingLineWithNoOsmTagAtlas()
     {
         return this.crossingLineWithNoOsmTagAtlas;
@@ -530,6 +561,16 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     public Atlas validCrossingLineItemAtlas()
     {
         return this.validCrossingLineItemAtlas;
+    }
+
+    public Atlas validFerryTerminalIntersection()
+    {
+        return this.validFerryTerminalIntersection;
+    }
+
+    public Atlas validFordedRoad()
+    {
+        return this.validFordedRoad;
     }
 
     public Atlas validIntersectionItemsAtlas()

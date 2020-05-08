@@ -114,6 +114,20 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testValidFerryTerminalIntersection()
+    {
+        this.verifier.actual(this.setup.validFerryTerminalIntersection(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidFordedRoad()
+    {
+        this.verifier.actual(this.setup.validFordedRoad(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testValidIntersectionItemsAtlas()
     {
         this.verifier.actual(this.setup.validIntersectionItemsAtlas(), check);

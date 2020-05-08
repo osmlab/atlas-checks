@@ -16,6 +16,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
 import org.openstreetmap.atlas.geography.GeometricSurface;
+import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
@@ -30,8 +31,10 @@ import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
 import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
+import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
+import org.openstreetmap.atlas.tags.FordTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.LevelTag;
@@ -239,8 +242,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 ? new MultiIterable<>(
                         atlas.lineItemsIntersecting(waterbody,
                                 lineItem -> isOffendingLineItem(object).test(lineItem)
-                                        && !this.canCrossWaterBody(lineItem)
-                                        && !this.intersectionsAreExplicit(waterbody, lineItem)
+                                        && !this.canCrossWaterBody(lineItem, waterbody)
                                         && this.intersectsValidPartOfWaterbody(waterbody, object,
                                                 lineItem.asPolyLine())),
                         atlas.areasIntersecting(waterbody,
@@ -251,8 +253,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                                                 area.asPolygon())))
                 : new MultiIterable<AtlasItem>(atlas.lineItemsIntersecting(waterbody,
                         lineItem -> isOffendingLineItem(object).test(lineItem)
-                                && !this.canCrossWaterBody(lineItem)
-                                && !this.intersectionsAreExplicit(waterbody, lineItem)
+                                && !this.canCrossWaterBody(lineItem, waterbody)
                                 && this.intersectsValidPartOfWaterbody(waterbody, object,
                                         lineItem.asPolyLine())));
 
@@ -301,15 +302,46 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      *            {@link AtlasItem} crossing
      * @return whether given {@link AtlasItem} can cross a water body
      */
-    private boolean canCrossWaterBody(final AtlasItem crossingItem)
+    private boolean canCrossWaterBody(final AtlasItem crossingItem,
+            final GeometricSurface waterbody)
     {
-        // In the following cases, given item can cross a water body
-
-        return this.canCrossWaterBodyFilter.test(crossingItem)
+        // In the following cases, given line can cross a water body
+        if (this.canCrossWaterBodyFilter.test(crossingItem)
                 // It has a tag starting with addr
                 || crossingItem.containsKeyStartsWith(Collections.singleton(ADDRESS_PREFIX_KEY))
                 // If crossing item is a line and meets the conditions for a boundary
-                || crossingItem instanceof Line && isBoundary(crossingItem);
+                || crossingItem instanceof Line && isBoundary(crossingItem))
+        {
+            return true;
+        }
+
+        // Each intersection between the Edge & waterbody should have a Node in the atlas
+        if (!(crossingItem instanceof Edge)
+                || !this.intersectionsAreExplicit(waterbody, (Edge) crossingItem))
+        {
+            return false;
+        }
+
+        // All intersections between the street and waterbody
+        final Set<Location> intersections = waterbody instanceof Polygon
+                ? ((Polygon) waterbody).intersections(((Edge) crossingItem).asPolyLine())
+                : ((MultiPolygon) waterbody).outers().stream()
+                        .flatMap(polygon -> polygon
+                                .intersections(((Edge) crossingItem).asPolyLine()).stream())
+                        .collect(Collectors.toSet());
+        final Predicate<AtlasItem> hasFordTag = item -> !item.getTag(FordTag.KEY)
+                .orElse(FordTag.NO.name()).equalsIgnoreCase(FordTag.NO.name());
+        // The street itself has a ford tag, or...
+        return hasFordTag.test(crossingItem)
+                // If a street node is at the water border, it should be a ford or a ferry terminal.
+                // If a street node is in the water, it should be a ford.
+                || ((Edge) crossingItem).connectedNodes().stream()
+                        .filter(node -> intersections.contains(node.getLocation()))
+                        .allMatch(node -> node.getTag(AmenityTag.KEY).orElse("").equalsIgnoreCase(
+                                AmenityTag.FERRY_TERMINAL.name()) || hasFordTag.test(node))
+                        && ((Edge) crossingItem).connectedNodes().stream().filter(
+                                node -> waterbody.fullyGeometricallyEncloses(node.getLocation()))
+                                .allMatch(hasFordTag);
     }
 
     /**
@@ -324,8 +356,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      *            the intersecting lineitem
      * @return true if all intersections are explicitly marked, false otherwise
      */
-    private boolean intersectionsAreExplicit(final GeometricSurface waterbody,
-            final LineItem lineItem)
+    private boolean intersectionsAreExplicit(final GeometricSurface waterbody, final Edge lineItem)
     {
         if (waterbody instanceof Polygon)
         {
@@ -370,7 +401,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                                 && ((MultiPolygon) waterbody).inners().stream().noneMatch(
                                         innerMember -> intersectingFeature.intersects(innerMember)
                                                 || intersectingFeature.within(innerMember))))
-                        && (member.getFirst().getTags().keySet().stream().anyMatch(key -> !(key.equals(ISOCountryTag.KEY) || key.equals(SyntheticNearestNeighborCountryCodeTag.KEY)))));
+                        && (member.getFirst().getTags().keySet().stream()
+                                .anyMatch(key -> !(key.equals(ISOCountryTag.KEY) || key
+                                        .equals(SyntheticNearestNeighborCountryCodeTag.KEY)))));
     }
 
     /**
