@@ -5,7 +5,10 @@
 This check flags roads that have only integers in their name. 
 
 An example of an improper name tag in this case is something like: `name=42`  
-Items like `name=1st Ave` are allowed, and not flagged.
+Items like `name=1st Ave` are allowed, and not flagged.  
+
+To avoid overlap with [ShortNameCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/ShortNameCheck.java), 
+this check can be configured to not flag any name tag with only a single character (i.e. `name=1` would not be flagged).
 
 #### Live Example
 
