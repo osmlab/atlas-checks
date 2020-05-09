@@ -6,11 +6,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
+import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -25,7 +29,9 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * Flags railways (configurable), streets (configurable), buildings that bleed into an ocean. An
- * ocean is defined by a set of ocean tags, and can be an {@link Area} or {@link LineItem}.
+ * ocean is defined by a set of ocean tags, and can be an {@link Area} or {@link LineItem}. Differs
+ * from {@link LineCrossingWaterBodyCheck} in that that check has a different set of tags/geometries
+ * to define waterbodies.
  *
  * @author seancoulter
  */
@@ -137,8 +143,8 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             // Collect invalid line items contained within and intersecting with the waterbody ocean
             // feature
             final Iterable<LineItem> intersectingLinearFeatures = object.getAtlas()
-                    .lineItemsIntersecting(oceanBoundary, lineItem -> !BridgeTag.isBridge(lineItem)
-                            && isInvalidlyInteractingWithOcean().test(lineItem));
+                    .lineItemsIntersecting(oceanBoundary,
+                            isInvalidlyInteractingWithOcean(oceanBoundary));
             final Iterable<Area> intersectingBuildingFeatures = object.getAtlas()
                     .areasIntersecting(oceanBoundary, BuildingTag::isBuilding);
             intersectingLinearFeatures.forEach(offendingLineItems::add);
@@ -153,8 +159,10 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                             && !oceanBoundary.fullyGeometricallyEncloses(lineItem.asPolyLine())
                             || object instanceof LineItem && ((LineItem) object).asPolyLine()
                                     .intersects(lineItem.asPolyLine()))
-                            && isInvalidlyInteractingWithOcean().test(lineItem));
-            final Iterable<Area> withinLinearFeatures = object.getAtlas().areasIntersecting(
+                            && isInvalidlyInteractingWithOcean(
+                                    oceanIsArea ? oceanBoundary : ((LineItem) object).asPolyLine())
+                                            .test(lineItem));
+            final Iterable<Area> intersectingBuildingFeatures = object.getAtlas().areasIntersecting(
                     oceanBoundary,
                     area -> (oceanIsArea
                             && !oceanBoundary.fullyGeometricallyEncloses(area.asPolygon())
@@ -162,7 +170,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                                     .intersects(area.asPolygon()))
                             && BuildingTag.isBuilding(area));
             intersectingLinearFeatures.forEach(offendingLineItems::add);
-            withinLinearFeatures.forEach(offendingBuildings::add);
+            intersectingBuildingFeatures.forEach(offendingBuildings::add);
         }
 
         // Unify all offenders in storage so the flag id is generated from a single set of flagged
@@ -194,19 +202,39 @@ public class OceanBleedingCheck extends BaseCheck<Long>
 
     /**
      * Checks if the provided {@link LineItem} should be flagged. It should be flagged if it's not a
-     * bridge and is either an edge with the correct highway type that is not connected to a ferry
-     * terminal, or a Line that has at least one of the configurable offending tags
+     * bridge and is either an edge with the correct highway type that is not explicitly connected
+     * to a ferry terminal, or a Line that has at least one of the configurable offending tags
      *
      * @return true if lineItem should be flagged, false otherwise
      */
-    private Predicate<LineItem> isInvalidlyInteractingWithOcean()
+    private Predicate<LineItem> isInvalidlyInteractingWithOcean(final PolyLine oceanFeature)
     {
-        return lineItem -> !BridgeTag.isBridge(lineItem)
-                && (lineItem instanceof Edge && this.validHighwayType().test((Edge) lineItem)
-                        && ((Edge) lineItem).connectedNodes().stream()
-                                .noneMatch(node -> node.getTag(AmenityTag.KEY).orElse("")
-                                        .equals(AmenityTag.FERRY_TERMINAL.name()))
-                        || this.defaultOffendingLineitems.test(lineItem));
+        return lineItem ->
+        {
+            if (BridgeTag.isBridge(lineItem))
+            {
+                return false;
+            }
+            if (!(lineItem instanceof Edge))
+            {
+                return this.defaultOffendingLineitems.test(lineItem);
+            }
+            if (!this.validHighwayType().test((Edge) lineItem))
+            {
+                return false;
+            }
+            if (IntersectionUtilities.haveExplicitLocationsForIntersections(oceanFeature, lineItem))
+            {
+                // All intersections are explicit, so make sure they're marked as ferry terminals
+                final Set<Location> intersections = oceanFeature
+                        .intersections(lineItem.asPolyLine());
+                return ((Edge) lineItem).connectedNodes().stream()
+                        .filter(node -> intersections.contains(node.getLocation()))
+                        .anyMatch(node -> !node.getTag(AmenityTag.KEY).orElse("")
+                                .equalsIgnoreCase(AmenityTag.FERRY_TERMINAL.name()));
+            }
+            return true;
+        };
     }
 
     /**

@@ -73,17 +73,17 @@ public final class IntersectionUtilities
     }
 
     /**
-     * Verifies intersections of given {@link Polygon} and {@link LineItem} are explicit
+     * Verifies intersections of given {@link PolyLine} and {@link LineItem} are explicit
      * {@link Location}s for both items
      *
      * @param areaCrossed
-     *            {@link Polygon} being crossed
+     *            {@link PolyLine} being crossed
      * @param crossingItem
      *            {@link LineItem} crossing
-     * @return whether given {@link Polygon} and {@link LineItem}'s intersections are actual
+     * @return whether given {@link PolyLine} and {@link LineItem}'s intersections are actual
      *         {@link Location}s for both items
      */
-    public static boolean haveExplicitLocationsForIntersections(final Polygon areaCrossed,
+    public static boolean haveExplicitLocationsForIntersections(final PolyLine areaCrossed,
             final LineItem crossingItem)
     {
         // Find out intersections
