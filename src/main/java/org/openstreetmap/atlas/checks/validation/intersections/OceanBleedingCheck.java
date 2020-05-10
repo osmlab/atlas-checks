@@ -172,7 +172,29 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             intersectingLinearFeatures.forEach(offendingLineItems::add);
             intersectingBuildingFeatures.forEach(offendingBuildings::add);
         }
+        return this.generateFlag(object, offendingLineItems, offendingBuildings);
+    }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Generate and return flag for this ocean feature if there were offending items
+     * 
+     * @param object
+     *            the ocean feature
+     * @param offendingLineItems
+     *            offending streets/railways
+     * @param offendingBuildings
+     *            offending buildings
+     * @return the flag for this ocean feature if flaggable items were found
+     */
+    private Optional<CheckFlag> generateFlag(final AtlasObject object,
+            final ArrayList<LineItem> offendingLineItems, final ArrayList<Area> offendingBuildings)
+    {
         // Unify all offenders in storage so the flag id is generated from a single set of flagged
         // objects
         final HashSet<AtlasObject> flaggedObjects = new HashSet<>();
@@ -195,12 +217,6 @@ public class OceanBleedingCheck extends BaseCheck<Long>
         });
         return flaggedObjects.isEmpty() ? Optional.empty()
                 : Optional.of(this.createFlag(flaggedObjects, instructions.toString()));
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
