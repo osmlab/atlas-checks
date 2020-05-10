@@ -53,9 +53,9 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     private final HighwayTag highwayMinimum;
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
     private final List<HighwayTag> highwaysExclude;
-    private static final String OCEAN_INSTRUCTION = "Ocean feature {0,number,#} has invalid intersections.";
-    private static final String BLEEDING_BUILDING_INSTRUCTION = "Building {0,number,#} intersects the ocean feature.";
-    private static final String BLEEDING_LINEITEM_INSTRUCTION = "Way {0,number,#} intersects the ocean feature.";
+    private static final String OCEAN_INSTRUCTION = "Ocean feature {0,number,#} has invalid intersections. ";
+    private static final String BLEEDING_BUILDING_INSTRUCTION = "Building {0,number,#} intersects the ocean feature. ";
+    private static final String BLEEDING_LINEITEM_INSTRUCTION = "Way {0,number,#} intersects the ocean feature. ";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             BLEEDING_BUILDING_INSTRUCTION, BLEEDING_LINEITEM_INSTRUCTION, OCEAN_INSTRUCTION);
     private static final long serialVersionUID = -2229281211747728380L;
@@ -181,14 +181,17 @@ public class OceanBleedingCheck extends BaseCheck<Long>
         offendingBuildings.forEach(building ->
         {
             flaggedObjects.add(building);
-            instructions.append(this.getLocalizedInstruction(0, building.getOsmIdentifier(),
-                    object.getOsmIdentifier()));
+            instructions.append(this.getLocalizedInstruction(0, building.getOsmIdentifier()));
         });
+        final Set<Long> seenLineItems = new HashSet<>();
         offendingLineItems.forEach(lineItem ->
         {
             flaggedObjects.add(lineItem);
-            instructions.append(this.getLocalizedInstruction(1, lineItem.getOsmIdentifier(),
-                    object.getOsmIdentifier()));
+            if (!seenLineItems.contains(lineItem.getOsmIdentifier()))
+            {
+                instructions.append(this.getLocalizedInstruction(1, lineItem.getOsmIdentifier()));
+                seenLineItems.add(lineItem.getOsmIdentifier());
+            }
         });
         return flaggedObjects.isEmpty() ? Optional.empty()
                 : Optional.of(this.createFlag(flaggedObjects, instructions.toString()));
@@ -225,9 +228,18 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             }
             if (IntersectionUtilities.haveExplicitLocationsForIntersections(oceanFeature, lineItem))
             {
-                // All intersections are explicit, so make sure they're marked as ferry terminals
+                // All intersections are explicit (or there are none -> full containment), so make
+                // sure they're marked as ferry terminals
                 final Set<Location> intersections = oceanFeature
                         .intersections(lineItem.asPolyLine());
+
+                if (!intersections.contains(((Edge) lineItem).start().getLocation())
+                        && !intersections.contains(((Edge) lineItem).end().getLocation()))
+                {
+                    // The point of intersection was at an intermediate position along the edge, or
+                    // there were no intersections (full containment in the waterbody)
+                    return true;
+                }
                 return ((Edge) lineItem).connectedNodes().stream()
                         .filter(node -> intersections.contains(node.getLocation()))
                         .anyMatch(node -> !node.getTag(AmenityTag.KEY).orElse("")
