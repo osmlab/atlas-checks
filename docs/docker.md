@@ -1,6 +1,6 @@
-# Docker
+# Development - Docker
 
-A simple Docker container for local development use. The base image is derived from
+Use the [Dockerfile](/Dockerfile) to build a simple Docker container for development. The base image is derived from
 [docker-gradle](https://github.com/keeganwitt/docker-gradle), a simple image that contains 
 both gradle (v6.4) and [adoptopenjdk11](https://github.com/AdoptOpenJDK/openjdk-docker).
 
