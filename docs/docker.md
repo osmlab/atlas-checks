@@ -7,14 +7,14 @@ both gradle (v6.4) and [adoptopenjdk11](https://github.com/AdoptOpenJDK/openjdk-
 ## Installation and setup
 Create docker image (in atlas-checks root).
 ```bash
-docker run [image name] [gradle command]
+docker build --rm --tag checks .
 ```
 
 Create a docker container from the "checks" image. By default, the container exposes the gradle
 wrapper (`gradlew`) script that invokes project's latest version of gradle. With this, you can
 run the following commands: `run, build, buildCheck`
 ```bash
-docker build --rm --tag checks .
+docker run [image name] [gradle command]
 ```
 
 
