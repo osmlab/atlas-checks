@@ -240,7 +240,8 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         try
         {
-            sql.setString(1, flag.getIdentifier());
+            sql.setString(1, flag.getUniqueIdentifiers().stream().map(String::toString)
+                    .collect(Collectors.joining(",")));
             sql.setString(2, flag.getChallengeName().orElse(""));
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
             sql.setString(FOUR, this.optionAndArgumentDelegate.getOptionArgument(RUN_URI_INPUT)
