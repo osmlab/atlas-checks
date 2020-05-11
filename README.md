@@ -25,7 +25,7 @@ To start working with Atlas Checks follow the steps below:
 2. Switch to newly created directory: `cd atlas-checks`
 3. Execute `./gradlew run`
 
-This command will build and run Atlas Checks with all the default options against a sample OSM PBF of Belize downloaded from [here](https://apple.box.com/s/3k3wcc0lq1fhqgozxr4mdi0llf95byo3). GeoJSON output will be produced that contains all the results found from the run. Those outputs will be found in `atlas-checks/build/examples/data/output`. For more information on running Atlas Checks as a standalone application click [here](docs/standalone.md).
+This command will build and run Atlas Checks with all the default options against a sample Atlases of Belize downloaded from [here](https://uc6f1395c4244d78e8c5da2efa27.dl.dropboxusercontent.com/zip_download_get/Aa7gnKbK7HUcG3UNuQzIjDJz3DFvn8hzVoPyUM32Egx_xI7sz3i3cjCOEjl0XTr6-qZxirkoR3Tb3lgNBX75xO82S3g_Yzc7fx4DbxBeGGRw6g). GeoJSON output will be produced that contains all the results found from the run. Those outputs will be found in `atlas-checks/build/examples/data/output`. For more information on running Atlas Checks as a standalone application click [here](docs/standalone.md).
 
 ## Working with Configuration
 See [configuration docs](docs/configuration.md) for more information about the configuration files that can be used to define specific details around the Atlas Checks application.

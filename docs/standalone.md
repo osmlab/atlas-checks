@@ -1,6 +1,6 @@
 # Running Atlas Checks as a Standalone Application
 
-For prerequisites for running checks see [dev.md](dev.md). To run the checks only the first two prerequisites are required, Java8 and Gradle.
+For prerequisites for running checks see [dev.md](dev.md). To run the checks only the first two prerequisites are required, Java11 and Gradle.
 
 Atlas Checks can easily be executed using all the default settings with no additional requirements by simply executing
 the following statement in the root directory of the cloned Atlas Checks repository:
@@ -13,12 +13,12 @@ This will run Atlas Checks using the [configuration.json](../config/configuratio
 
 Atlas Checks allows you to run the checks against PBF files.
 
-`./gradlew run` will download a sample BLZ (Belize) PBF file and run the cheks on it automatically.
+`./gradlew run -Pchecks.local.sharded=false -Pchecks.local.input=https://download.geofabrik.de/central-america/belize-latest.osm.pbf` will download a BLZ (Belize) PBF file and run the checks on it automatically.
 
-If you want to supply a location to a remote PBF you can use a project property in Gradle to set the PBF location
-and execute
+You can change the value of the `checks.local.input` parameter to any remote PBF file you like.
 
-`gradle run -Pchecks.local.input=https://download.geofabrik.de/africa/south-africa-latest.osm.pbf`
+The `checks.local.sharded` parameter must be set to `false` to use gradle run with a PBF. The sharded checks job only works with sharded Atlas files. 
+
 
 #### Running against PBF with Bounding Box
 
@@ -28,7 +28,7 @@ area allows Atlas Checks to complete faster, or simply for focus. Like running a
 the PBF file using either a URL location or a local file, but in this case you would include the bounding
 box as well.
 
-`./gradlew run -Pchecks.local.input=https://download.geofabrik.de/africa/south-africa-latest.osm.pbf -Pchecks.local.pbfBoundingBox=lat,lon:lat,lon`
+`./gradlew run -Pchecks.local.sharded=false -Pchecks.local.input=https://download.geofabrik.de/africa/south-africa-latest.osm.pbf -Pchecks.local.pbfBoundingBox=lat,lon:lat,lon`
 
 In the above case you would replace lat,lon:lat,lon with the actual bounds of your box.
 
