@@ -18,6 +18,10 @@ There are a couple of requirements for building and running a new Atlas Check. T
 - Some form of IDE
     - There are multiple editors that you can use to help you build your Atlas Check. You can use text editors like [Notepad(++)](https://notepad-plus-plus.org/), [Vim](http://www.vim.org/download.php), [Emacs](https://www.gnu.org/software/emacs/) or [Sublime](https://www.sublimetext.com). Or you can use a full integrated development environment like [Intellij Idea](https://www.jetbrains.com/idea/) or [Eclipse](https://eclipse.org).
 
+Alternatively, use the [Dockerfile](/Dockerfile) to create a development environment. See the docker
+[documentation](/docs/docker.md) for installation instructions.
+
+
 ### Building Check Template
 Building a check template is as easy as running a very basic command using gradle:
 `./gradlew buildCheck -PCheckName=CheckName`
@@ -226,17 +230,7 @@ The properties of each flag will contain the following items:
 
 ### Currently Available Checks
 
-- [PoolSizeCheck](tutorials/tutorial1-PoolSizeCheck.md)
-- [BuildingRoadIntersectionCheck](checks/buildingRoadIntersectionCheck.md)
-- [SelfIntersectingPolylineCheck](checks/selfIntersectingPolylineCheck.md)
-- [FloatingEdgeCheck](checks/floatingEdgeCheck.md)
-- [RoundAboutClosedLoopCheck](checks/roundaboutClosedLoopCheck.md)
-- [SharpAngleCheck](checks/sharpAngleCheck.md)
-- [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md)
-- [SnakeRoadCheck](checks/snakeRoadCheck.md)
-- [DuplicateNodeCheck](checks/duplicateNodeCheck.md)
-- [OrphanNodeCheck](tutorials/tutorial2-OrphanNodeCheck.md)
-- [InvalidTurnRestrictionCheck](checks/invalidTurnRestrictionCheck.md)
+See the [checks catalog](/docs/available_checks.md) for a list and description of available checks.
 
 ** For Best Practices around writing Atlas Checks, please view our [best practices document](bestpractices.md). **
 
