@@ -1,10 +1,10 @@
 task downloadAtlases {
     doLast {
         mkdir "${buildDir}/example/data/atlases/"
-        ant.get(src: "https://uc6f1395c4244d78e8c5da2efa27.dl.dropboxusercontent.com/zip_download_get/Aa7gnKbK7HUcG3UNuQzIjDJz3DFvn8hzVoPyUM32Egx_xI7sz3i3cjCOEjl0XTr6-qZxirkoR3Tb3lgNBX75xO82S3g_Yzc7fx4DbxBeGGRw6g",
+        ant.get(src: "https://dl.dropboxusercontent.com/zip_download_get/Aa7gnKbK7HUcG3UNuQzIjDJz3DFvn8hzVoPyUM32Egx_xI7sz3i3cjCOEjl0XTr6-qZxirkoR3Tb3lgNBX75xO82S3g_Yzc7fx4DbxBeGGRw6g",
             dest: "${buildDir}/example/data/atlases/BLZ.zip",
             skipexisting: 'true')
-        ant.get(src: "https://uc023c426e3ebfeb1af0658a9821.dl.dropboxusercontent.com/cd/0/get/A3j9YdKpvcDEeIUMCV5qopbOWJBZ7vUpocaOeTGYWTOIa_XlGOG75UIkfCAHGUi-M79QSRaq0e1U1N28L1j-zv7Hc0ZocsBA2QNDcsDka2Mg0Q/file",
+        ant.get(src: "https://dl.dropboxusercontent.com/cd/0/get/A3h0gTqq9G5NiQxtTElNqaOGvb0VoIUlK20O2ub4CYuRCMajHcwyZdyKduGE8p41bmJ_n2GgCO2oRm3b1Mxnrn2nw5vz0M79U2jJJykmAv6FDQ/file",
                 dest: "${buildDir}/example/data/atlases/sharding.txt",
                 skipexisting: 'true')
     }
@@ -27,7 +27,9 @@ task unzipAtlases (dependsOn: 'downloadAtlases') {
 task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the Atlas Check Spark job.') {
     classpath = sourceSets.main.runtimeClasspath
 
-    main = project.property("checks.${project.profile}.mainClass")
+    main = project.property("checks.${project.profile}.sharded").equals("true")
+            ? "org.openstreetmap.atlas.checks.distributed.ShardedIntegrityChecksSparkJob"
+            : "org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob"
 
     // apply arguments defined in the gradle.properties file for this profile
     def flags = project.properties.findAll { property ->
