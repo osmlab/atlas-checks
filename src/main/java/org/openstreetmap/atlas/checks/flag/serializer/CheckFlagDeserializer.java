@@ -41,6 +41,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         final String instruction = properties.get(INSTRUCTIONS).getAsString();
         final String flagIdentifier = properties.get(IDENTIFIERS) == null
                 ? properties.get(ID).getAsString()
+                // Convert array of ids into comma delimited string
                 : this.parseIdentifiers((JsonArray) properties.get(IDENTIFIERS));
         final CheckFlag flag = new CheckFlag(flagIdentifier);
         flag.addInstruction(instruction);
@@ -48,17 +49,17 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
 
         return flag;
     }
-    
+
     /**
      * Returns a comma delimited string of identifiers.
-     * @param identifiers - array of flag identifiers
+     * 
+     * @param identifiers
+     *            - array of flag identifiers
      * @return - comma delimited string
      */
-    private String parseIdentifiers(JsonArray identifiers)
+    private String parseIdentifiers(final JsonArray identifiers)
     {
-        return Arrays.asList(new Gson().fromJson(identifiers, String[].class))
-                .stream()
-                .map(String::toString)
-                .collect(Collectors.joining(","));
+        return Arrays.asList(new Gson().fromJson(identifiers, String[].class)).stream()
+                .map(String::toString).collect(Collectors.joining(","));
     }
 }

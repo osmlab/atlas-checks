@@ -50,21 +50,21 @@ public class CheckFlagDeserializerTest
     }
 
     @Test
-    public void instructionsDeserializationTest() throws IOException
-    {
-        final String flag = this.getResource("checkflags2.log").get(0);
-        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
-        final String instructions = checkFlag.getInstructions();
-        Assert.assertNotEquals(0, instructions.length());
-    }
-    
-    @Test
     public void identifierDeserializationTest() throws IOException
     {
         final String flag = this.getResource("checkflags3.log").get(0);
         final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
         final String identifier = checkFlag.getIdentifier();
         Assert.assertEquals("Area522424754000000,Edge-522211636000001", identifier);
+    }
+
+    @Test
+    public void instructionsDeserializationTest() throws IOException
+    {
+        final String flag = this.getResource("checkflags2.log").get(0);
+        final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
+        final String instructions = checkFlag.getInstructions();
+        Assert.assertNotEquals(0, instructions.length());
     }
 
     /**
