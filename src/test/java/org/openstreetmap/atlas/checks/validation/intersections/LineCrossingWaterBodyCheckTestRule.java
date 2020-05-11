@@ -32,6 +32,18 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     private static final String LOCATION_OUTSIDE_AREA_3 = "47.573128, -122.292999";
     private static final String LOCATION_OUTSIDE_AREA_4 = "47.569073, -122.309608";
 
+    private static final String MULIPOLYGON_OUTER_1 = "47.6265, -122.3815";
+    private static final String MULIPOLYGON_OUTER_2 = "47.5948, -122.3854";
+    private static final String MULIPOLYGON_OUTER_3 = "47.5898, -122.3440";
+    private static final String MULIPOLYGON_OUTER_4 = "47.6220, -122.3514";
+
+    private static final String MULIPOLYGON_INNER_1 = "47.6133, -122.3724";
+    private static final String MULIPOLYGON_INNER_2 = "47.6014, -122.3717";
+    private static final String MULIPOLYGON_INNER_3 = "47.6018, -122.3614";
+    private static final String MULIPOLYGON_INNER_4 = "47.6130, -122.3609";
+
+    private static final String OUTSIDE_MULTIPOLYGON_1 = "47.6459, -122.3820";
+
     @TestAtlas(
             // nodes
             nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
@@ -461,15 +473,15 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
             @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
             @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) }, areas = {
-                    @Area(id = "100", tags = "last_edit_time=20200422", coordinates = {
-                            @Loc(AREA_LOCATION_1), @Loc(AREA_LOCATION_2),
-                            @Loc(AREA_LOCATION_3) }) }, lines = {
-                                    @Line(tags = "railway=yes", coordinates = {
-                                            @Loc(LOCATION_OUTSIDE_AREA_1),
-                                            @Loc(AREA_LOCATION_BETWEEN_2_AND_3) }) }, relations = {
-                                                    @Relation(tags = { "type=multipolygon",
-                                                            "natural=water" }, members = {
-                                                                    @Member(id = "100", role = "outer", type = "area") }) })
+                    @Area(id = "100", tags = { "iso_country_code=USA",
+                            "another_tag=exists" }, coordinates = { @Loc(AREA_LOCATION_1),
+                                    @Loc(AREA_LOCATION_2), @Loc(AREA_LOCATION_3) }) }, lines = {
+                                            @Line(tags = "railway=yes", coordinates = {
+                                                    @Loc(LOCATION_OUTSIDE_AREA_1),
+                                                    @Loc(AREA_LOCATION_BETWEEN_2_AND_3) }) }, relations = {
+                                                            @Relation(tags = { "type=multipolygon",
+                                                                    "natural=water" }, members = {
+                                                                            @Member(id = "100", role = "outer", type = "area") }) })
     private Atlas invalidLineCrossingRelationWaterbody;
 
     @TestAtlas(nodes = {
@@ -502,6 +514,85 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                     @Edge(coordinates = { @Loc(value = AREA_LOCATION_1),
                             @Loc(value = LOCATION_OUTSIDE_AREA_1) }) })
     private Atlas validFordedRoad;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_1)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_2)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_3)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_4)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_1)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_2)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_3)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_4)) }, relations = {
+                    @Relation(members = { @Member(id = "100", role = "inner", type = "area"),
+                            @Member(id = "200", role = "outer", type = "area") }, tags = {
+                                    "natural=water", "type=multipolygon" }) }, areas = {
+                                            @Area(id = "100", coordinates = {
+                                                    @Loc(value = MULIPOLYGON_INNER_1),
+                                                    @Loc(value = MULIPOLYGON_INNER_2),
+                                                    @Loc(value = MULIPOLYGON_INNER_3),
+                                                    @Loc(value = MULIPOLYGON_INNER_4) }),
+                                            @Area(id = "200", tags = { "iso_country_code=USA",
+                                                    "another_tag=exists" }, coordinates = {
+                                                            @Loc(value = MULIPOLYGON_OUTER_1),
+                                                            @Loc(value = MULIPOLYGON_OUTER_2),
+                                                            @Loc(value = MULIPOLYGON_OUTER_3),
+                                                            @Loc(value = MULIPOLYGON_OUTER_4) }) }, edges = @Edge(coordinates = {
+                                                                    @Loc(value = MULIPOLYGON_INNER_1),
+                                                                    @Loc(value = MULIPOLYGON_INNER_2) }, tags = "highway=unclassified"))
+    private Atlas validStreetWithinInnerMember;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_1)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_2)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_3)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_4)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_1)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_2)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_3)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_4)) }, relations = {
+                    @Relation(members = { @Member(id = "100", role = "inner", type = "area"),
+                            @Member(id = "200", role = "outer", type = "area") }, tags = {
+                                    "natural=water", "type=multipolygon" }) }, areas = {
+                                            @Area(id = "100", coordinates = {
+                                                    @Loc(value = MULIPOLYGON_INNER_1),
+                                                    @Loc(value = MULIPOLYGON_INNER_2),
+                                                    @Loc(value = MULIPOLYGON_INNER_3),
+                                                    @Loc(value = MULIPOLYGON_INNER_4) }),
+                                            @Area(id = "200", tags = { "iso_country_code=USA",
+                                                    "another_tag=exists" }, coordinates = {
+                                                            @Loc(value = MULIPOLYGON_OUTER_1),
+                                                            @Loc(value = MULIPOLYGON_OUTER_2),
+                                                            @Loc(value = MULIPOLYGON_OUTER_3),
+                                                            @Loc(value = MULIPOLYGON_OUTER_4) }) }, edges = @Edge(coordinates = {
+                                                                    @Loc(value = MULIPOLYGON_OUTER_1),
+                                                                    @Loc(value = MULIPOLYGON_OUTER_2) }, tags = "highway=primary"))
+    private Atlas invalidWithinOuterMemberNoInteractionWithInnerMember;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_1)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_2)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_3)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_4)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_1), tags = "ford=yes"),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_2)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_3)),
+            @Node(coordinates = @Loc(value = MULIPOLYGON_OUTER_4)),
+            @Node(coordinates = @Loc(value = OUTSIDE_MULTIPOLYGON_1)) }, relations = {
+                    @Relation(members = { @Member(id = "100", role = "inner", type = "area"),
+                            @Member(id = "200", role = "outer", type = "area") }, tags = {
+                                    "natural=water", "type=multipolygon" }) }, areas = {
+                                            @Area(id = "100", coordinates = {
+                                                    @Loc(value = MULIPOLYGON_INNER_1),
+                                                    @Loc(value = MULIPOLYGON_INNER_2),
+                                                    @Loc(value = MULIPOLYGON_INNER_3),
+                                                    @Loc(value = MULIPOLYGON_INNER_4) }),
+                                            @Area(id = "200", tags = { "iso_country_code=USA",
+                                                    "another_tag=exists" }, coordinates = {
+                                                            @Loc(value = MULIPOLYGON_OUTER_1),
+                                                            @Loc(value = MULIPOLYGON_OUTER_2),
+                                                            @Loc(value = MULIPOLYGON_OUTER_3),
+                                                            @Loc(value = MULIPOLYGON_OUTER_4) }) }, edges = @Edge(coordinates = {
+                                                                    @Loc(value = MULIPOLYGON_OUTER_1),
+                                                                    @Loc(value = OUTSIDE_MULTIPOLYGON_1) }))
+    private Atlas validFordAtIntersectionLocation;
 
     public Atlas crossingLineWithNoOsmTagAtlas()
     {
@@ -543,6 +634,11 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
         return this.invalidLineCrossingRelationWaterbody;
     }
 
+    public Atlas invalidWithinOuterMemberNoInteractionWithInnerMember()
+    {
+        return this.invalidWithinOuterMemberNoInteractionWithInnerMember;
+    }
+
     public Atlas multipolygonMemberCrossingAtlas()
     {
         return this.multipolygonMemberCrossingAtlas;
@@ -568,6 +664,11 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
         return this.validFerryTerminalIntersection;
     }
 
+    public Atlas validFordAtIntersectionLocation()
+    {
+        return this.validFordAtIntersectionLocation;
+    }
+
     public Atlas validFordedRoad()
     {
         return this.validFordedRoad;
@@ -576,5 +677,10 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     public Atlas validIntersectionItemsAtlas()
     {
         return this.validIntersectionItemsAtlas;
+    }
+
+    public Atlas validStreetWithinInnerMember()
+    {
+        return this.validStreetWithinInnerMember;
     }
 }

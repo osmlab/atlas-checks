@@ -442,7 +442,7 @@
       "bus_guideway"
     ],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
-    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes",
+    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|ford->!no&ford->*",
     "buildings.flag": true,
     "challenge": {
       "description": "Certain OSM features should not cross waterbodies.",
