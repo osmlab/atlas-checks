@@ -216,8 +216,8 @@ public class InvalidTagsCheck extends BaseCheck<String>
                 .map(Tuple::getSecond).flatMap(Collection::stream)
                 .filter(filter -> filter.test(object))
                 // Map the filters that were passed to instructions
-                .map(classTagFilter -> this.getLocalizedInstruction(1,
-                        getFilterKeys(classTagFilter)))
+                .map(taggableFilter -> this.getLocalizedInstruction(1,
+                        getFilterKeys(taggableFilter)))
                 .collect(Collectors.toList());
         if (!instructions.isEmpty())
         {
