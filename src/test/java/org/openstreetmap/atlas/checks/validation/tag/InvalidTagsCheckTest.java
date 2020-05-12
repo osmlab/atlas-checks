@@ -72,20 +72,27 @@ public class InvalidTagsCheckTest
     }
 
     @Test
-    public void invalidNodePointTestUsingResourceFilter()
-    {
-        this.verifier.actual(this.setup.testAtlas(),
-                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"override.default.filters\": false,\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void validEmptyConfigTest()
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"InvalidTagsCheck\":{\"override.default.filters\": true,\"filters.classes.tags\":[]}}")));
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void appendConfigFiltersTest()
+    {
+        this.verifier.actual(this.setup.testAtlas(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"override.default.filters\": false, \"append.to.default.filters\": true,\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
+                                + "[\"point\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(3, flags.size());
+            flags.forEach(flag -> System.out.println(flag.getInstructions()));
+        });
+
     }
 }

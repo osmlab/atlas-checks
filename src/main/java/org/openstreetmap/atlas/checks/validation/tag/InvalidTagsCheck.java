@@ -36,9 +36,14 @@ import com.google.gson.JsonParser;
  * This flags features based on configurable filters. Each filter passed contains the
  * {@link AtlasEntity} classes to check and a {@link TaggableFilter} to test objects against. If a
  * feature is of one of the given classes and passes the associated {@link TaggableFilter} then it
- * is flagged. There are no default filters, so this does not flag anything by default.
+ * is flagged. In addition to the taggable filters, there are two configurable boolean values,
+ * "override.default.filters" and "append.to.default.filters". If the "override.default.filters" key
+ * is set to true, only the filters passed through config are used to flag the atlas features. If
+ * the "append.to.default.filters" is set to true, the filters passed through the config are
+ * appended to the default filters that are in the "invalidTags.txt" resource file.
  *
  * @author bbreithaupt
+ * @author sayas01
  */
 public class InvalidTagsCheck extends BaseCheck<String>
 {
@@ -52,6 +57,64 @@ public class InvalidTagsCheck extends BaseCheck<String>
 
     private final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> classTagFilters;
     private final boolean overrideDefaultFilters;
+    private final boolean appendToDefaultFilters;
+
+    /**
+     * @return a List of Tuple containing AtlasEntity and a list of TaggableFilters read from the
+     *         json files of each AtlasEntity. DEFAULT_FILTER_RESOURCE file maps each AtlasEntity to
+     *         its corresponding filter files.
+     */
+    private static List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> getDefaultFilters()
+    {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                InvalidTagsCheck.class.getResourceAsStream(DEFAULT_FILTER_RESOURCE))))
+        {
+            final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> listOfClassToFilters = new ArrayList<>();
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                final String[] split = line.split(DELIMITER);
+                if (split.length == 2)
+                {
+                    listOfClassToFilters.add(
+                            new Tuple<>(ItemType.valueOf(split[0].toUpperCase()).getMemberClass(),
+                                    getFiltersFromResource(split[1])));
+                }
+            }
+            return listOfClassToFilters;
+        }
+        catch (final IOException exception)
+        {
+            logger.error(String.format("Could not read %s", DEFAULT_FILTER_RESOURCE), exception);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Read the json file and return a list of TaggableFilter for each line.
+     *
+     * @param filterResourcePath
+     *            file path
+     * @return list of TaggableFilter
+     */
+    private static List<TaggableFilter> getFiltersFromResource(final String filterResourcePath)
+    {
+        try (InputStreamReader reader = new InputStreamReader(
+                InvalidTagsCheck.class.getResourceAsStream(filterResourcePath)))
+        {
+            final JsonElement element = new JsonParser().parse(reader);
+            final JsonArray filters = element.getAsJsonObject().get("filters").getAsJsonArray();
+            return StreamSupport.stream(filters.spliterator(), false)
+                    .map(jsonElement -> TaggableFilter.forDefinition(jsonElement.getAsString()))
+                    .collect(Collectors.toList());
+        }
+        catch (final Exception exception)
+        {
+            logger.error("There was a problem parsing invalid-tags-check-filter.json. "
+                    + "Check if the JSON file has valid structure.", exception);
+            return Collections.emptyList();
+        }
+    }
 
     /**
      * Gathers the keys from a {@link TaggableFilter} using regex.
@@ -105,22 +168,27 @@ public class InvalidTagsCheck extends BaseCheck<String>
         super(configuration);
         this.overrideDefaultFilters = this.configurationValue(configuration,
                 "override.default.filters", false);
-        this.classTagFilters = this.overrideDefaultFilters ? this.configurationValue(configuration,
-                "filters.classes.tags", Collections.emptyList(),
-                configList -> configList.stream().map(classTagValue ->
-                {
-                    final List<String> classTagList = (List<String>) classTagValue;
-                    if (classTagList.size() > 1)
-                    {
-                        return Optional.of(
-                                stringsToClassTagFilter(classTagList.get(0), classTagList.get(1)));
-                    }
-                    return Optional.empty();
-                }).filter(Optional::isPresent).map(
-                        tuple -> (Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>) tuple
-                                .get())
-                        .collect(Collectors.toList()))
-                : this.getDefaultFilters();
+        this.appendToDefaultFilters = this.configurationValue(configuration,
+                "append.to.default.filters", false);
+        // If the "override.default.filters" key in the config is set to true, use only the filters
+        // passed through the config,
+        if (this.overrideDefaultFilters && !this.appendToDefaultFilters)
+        {
+            this.classTagFilters = this.getFiltersFromConfiguration(configuration);
+        }
+        // Append filters from config to the default list of filters if "append.to.default.filters"
+        // is set to true
+        else if (!this.overrideDefaultFilters && this.appendToDefaultFilters)
+        {
+            final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> defaultFilters = getDefaultFilters();
+            // Add all filters from the config file to the default list of filters
+            defaultFilters.addAll(this.getFiltersFromConfiguration(configuration));
+            this.classTagFilters = defaultFilters;
+        }
+        else
+        {
+            this.classTagFilters = Collections.emptyList();
+        }
     }
 
     /**
@@ -185,48 +253,30 @@ public class InvalidTagsCheck extends BaseCheck<String>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> getDefaultFilters()
+    /**
+     * From the config file, create a list of Tuples with atlas entity and corresponding list of
+     * taggable filters
+     *
+     * @param configuration
+     *            configuration
+     * @return List of Tuples containing AtlasEntity and its corresponding list of TaggableFilter
+     */
+    private List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> getFiltersFromConfiguration(
+            final Configuration configuration)
     {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                InvalidTagsCheck.class.getResourceAsStream(DEFAULT_FILTER_RESOURCE))))
-        {
-            final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> listOfClassToFilters = new ArrayList<>();
-            String line;
-            while ((line = reader.readLine()) != null)
-            {
-                final String[] split = line.split(DELIMITER);
-                if (split.length == 2)
+        return this.configurationValue(configuration, "filters.classes.tags",
+                Collections.emptyList(), configList -> configList.stream().map(classTagValue ->
                 {
-                    listOfClassToFilters.add(
-                            new Tuple<>(ItemType.valueOf(split[0].toUpperCase()).getMemberClass(),
-                                    this.getFiltersFromResource(split[1])));
-                }
-            }
-            return listOfClassToFilters;
-        }
-        catch (final IOException exception)
-        {
-            logger.error(String.format("Could not read %s", DEFAULT_FILTER_RESOURCE), exception);
-            return Collections.emptyList();
-        }
-    }
-
-    private List<TaggableFilter> getFiltersFromResource(final String filterResourcePath)
-    {
-        try (InputStreamReader reader = new InputStreamReader(
-                InvalidTagsCheck.class.getResourceAsStream(filterResourcePath)))
-        {
-            final JsonElement element = new JsonParser().parse(reader);
-            final JsonArray filters = element.getAsJsonObject().get("filters").getAsJsonArray();
-            return StreamSupport.stream(filters.spliterator(), false)
-                    .map(jsonElement -> TaggableFilter.forDefinition(jsonElement.getAsString()))
-                    .collect(Collectors.toList());
-        }
-        catch (final Exception exception)
-        {
-            logger.error("There was a problem parsing invalid-tags-check-filter.json. "
-                    + "Check if the JSON file has valid structure.", exception);
-            return Collections.emptyList();
-        }
+                    final List<String> classTagList = (List<String>) classTagValue;
+                    if (classTagList.size() > 1)
+                    {
+                        return Optional.of(
+                                stringsToClassTagFilter(classTagList.get(0), classTagList.get(1)));
+                    }
+                    return Optional.empty();
+                }).filter(Optional::isPresent).map(
+                        tuple -> (Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>) tuple
+                                .get())
+                        .collect(Collectors.toList()));
     }
 }
