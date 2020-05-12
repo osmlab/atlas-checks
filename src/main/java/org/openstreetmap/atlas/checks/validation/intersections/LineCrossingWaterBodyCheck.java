@@ -32,7 +32,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
 import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
-import org.openstreetmap.atlas.tags.AmenityTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.FordTag;
@@ -93,6 +92,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private static final String BUILDING_TAGS_DO_NOT_FLAG = "public_transport->station,aerialway=station";
     private static final TaggableFilter NONOFFENDING_BUILDINGS = TaggableFilter
             .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
+    private static final String DEFAULT_VALID_INTERSECTING_NODE = "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
+    private final TaggableFilter intersectingNodesNonoffending;
 
     private static final String WATER_BODY_TAGS =
             // Lakes
@@ -220,6 +221,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 .configurationValue(configuration, "highways.exclude", DEFAULT_HIGHWAYS_EXCLUDE)
                 .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
                 .collect(Collectors.toList());
+        this.intersectingNodesNonoffending = TaggableFilter
+                .forDefinition(this.configurationValue(configuration,
+                        "nodes.intersecting.non_offending", DEFAULT_VALID_INTERSECTING_NODE));
     }
 
     @Override
@@ -341,12 +345,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         final Predicate<Node> nodeHasFordTag = item -> !item.getTag(FordTag.KEY)
                 .orElse(FordTag.NO.name()).equalsIgnoreCase(FordTag.NO.name());
 
-        // If a street node is at the water border, it should be a ford or a ferry terminal.
+        // If a street node is at the water border, it should be tagged with any of
+        // this.intersectingNodesNonoffending
         // If a street node is in the water, it should be a ford.
         return ((Edge) crossingItem).connectedNodes().stream()
                 .filter(node -> intersections.contains(node.getLocation()))
-                .allMatch(node -> node.getTag(AmenityTag.KEY).orElse("").equalsIgnoreCase(
-                        AmenityTag.FERRY_TERMINAL.name()) || nodeHasFordTag.test(node))
+                .allMatch(this.intersectingNodesNonoffending)
                 && ((Edge) crossingItem).connectedNodes().stream()
                         .filter(node -> waterbody.fullyGeometricallyEncloses(node.getLocation()))
                         .allMatch(nodeHasFordTag);

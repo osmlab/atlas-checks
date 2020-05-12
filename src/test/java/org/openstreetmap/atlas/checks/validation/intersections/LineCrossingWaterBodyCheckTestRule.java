@@ -485,7 +485,7 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     private Atlas invalidLineCrossingRelationWaterbody;
 
     @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "amenity=ferry_terminal"),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "amenity=FERRY_TERMINAL"),
             @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
             @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
             @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)) },
