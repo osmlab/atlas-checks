@@ -91,6 +91,25 @@ public class InvalidTagsCheck extends BaseCheck<String>
     }
 
     /**
+     * Gathers the keys from a {@link TaggableFilter} using regex.
+     *
+     * @param listOfFilters<TaggableFilter>
+     *            a {@link TaggableFilter}
+     * @return the tag keys as a {@link Set} of {@link String}s
+     */
+    private static Set<String> getFilterKeys(final AtlasObject atlasObject,
+            final List<TaggableFilter> listOfFilters)
+    {
+        final Set<String> collectedKeys = new HashSet<>();
+        listOfFilters.stream().filter(taggableFilter -> taggableFilter.test(atlasObject)).forEach(
+                filter -> collectedKeys.addAll(Arrays.stream(filter.toString().split("[|&]+"))
+                        .filter(string -> string.contains(KEY_VALUE_SEPARATOR))
+                        .map(tag -> tag.split(KEY_VALUE_SEPARATOR)[0])
+                        .collect(Collectors.toSet())));
+        return collectedKeys;
+    }
+
+    /**
      * Read the json file and return a list of TaggableFilter for each line.
      *
      * @param filterResourcePath
@@ -114,25 +133,6 @@ public class InvalidTagsCheck extends BaseCheck<String>
                     + "Check if the JSON file has valid structure.", exception);
             return Collections.emptyList();
         }
-    }
-
-    /**
-     * Gathers the keys from a {@link TaggableFilter} using regex.
-     *
-     * @param listOfFilters<TaggableFilter>
-     *            a {@link TaggableFilter}
-     * @return the tag keys as a {@link Set} of {@link String}s
-     */
-    private static Set<String> getFilterKeys(final AtlasObject atlasObject,
-            final List<TaggableFilter> listOfFilters)
-    {
-        final Set<String> collectedKeys = new HashSet<>();
-        listOfFilters.stream().filter(taggableFilter -> taggableFilter.test(atlasObject)).forEach(
-                filter -> collectedKeys.addAll(Arrays.stream(filter.toString().split("[|&]+"))
-                        .filter(string -> string.contains(KEY_VALUE_SEPARATOR))
-                        .map(tag -> tag.split(KEY_VALUE_SEPARATOR)[0])
-                        .collect(Collectors.toSet())));
-        return collectedKeys;
     }
 
     /**
