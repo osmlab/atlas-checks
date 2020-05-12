@@ -27,7 +27,7 @@ public class InvalidTagsCheckTestRule extends CoreTestRule
             // nodes
             nodes = {
                     @Node(id = "1000000", coordinates = @Loc(value = TEST_1), tags = {
-                            "crossing=traffic_signals" }),
+                            "crossing=traffic_signals", "place=island", "natural=lake" }),
                     @Node(id = "2000000", coordinates = @Loc(value = TEST_2), tags = {}),
                     @Node(id = "3000000", coordinates = @Loc(value = TEST_3), tags = {
                             "place=island", "natural=lake" }) },

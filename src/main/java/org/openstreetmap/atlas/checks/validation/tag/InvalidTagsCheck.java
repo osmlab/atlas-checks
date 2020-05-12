@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -93,20 +93,15 @@ public class InvalidTagsCheck extends BaseCheck<String>
     /**
      * Gathers the keys from a {@link TaggableFilter} using regex.
      *
-     * @param listOfFilters<TaggableFilter>
+     * @param filter
      *            a {@link TaggableFilter}
      * @return the tag keys as a {@link Set} of {@link String}s
      */
-    private static Set<String> getFilterKeys(final AtlasObject atlasObject,
-            final List<TaggableFilter> listOfFilters)
+    private static Set<String> getFilterKeys(final TaggableFilter filter)
     {
-        final Set<String> collectedKeys = new HashSet<>();
-        listOfFilters.stream().filter(taggableFilter -> taggableFilter.test(atlasObject)).forEach(
-                filter -> collectedKeys.addAll(Arrays.stream(filter.toString().split("[|&]+"))
-                        .filter(string -> string.contains(KEY_VALUE_SEPARATOR))
-                        .map(tag -> tag.split(KEY_VALUE_SEPARATOR)[0])
-                        .collect(Collectors.toSet())));
-        return collectedKeys;
+        return Arrays.stream(filter.toString().split("[|&]+"))
+                .filter(string -> string.contains(KEY_VALUE_SEPARATOR))
+                .map(tag -> tag.split(KEY_VALUE_SEPARATOR)[0]).collect(Collectors.toSet());
     }
 
     /**
@@ -217,15 +212,13 @@ public class InvalidTagsCheck extends BaseCheck<String>
         // Test against each filter and create an instruction if the object passes
         final List<String> instructions = this.classTagFilters.stream()
                 // Test that the object is one of the given AtlasEntity classes
-                .filter(classTagFilter -> classTagFilter.getFirst().isInstance(object)
-                        // Test the object against the taggable filter
-                        && classTagFilter.getSecond().stream()
-                                .anyMatch(taggableFilter -> taggableFilter.test(object)))
+                .filter(classTagFilter -> classTagFilter.getFirst().isInstance(object))
+                .map(Tuple::getSecond).flatMap(Collection::stream)
+                .filter(filter -> filter.test(object))
                 // Map the filters that were passed to instructions
                 .map(classTagFilter -> this.getLocalizedInstruction(1,
-                        getFilterKeys(object, classTagFilter.getSecond())))
+                        getFilterKeys(classTagFilter)))
                 .collect(Collectors.toList());
-
         if (!instructions.isEmpty())
         {
             // Mark objects flagged by their class and id to allow for the same id in different

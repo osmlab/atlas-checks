@@ -27,12 +27,6 @@ public class InvalidTagsCheckTest
                         "{\"InvalidTagsCheck\":{\"override.default.filters\": false, \"append.to.default.filters\": true,\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
                                 + "[\"point\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
-        this.verifier.globallyVerify(flags ->
-        {
-            Assert.assertEquals(3, flags.size());
-            flags.forEach(flag -> System.out.println(flag.getInstructions()));
-        });
-
     }
 
     @Test
