@@ -1,6 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import static org.openstreetmap.atlas.checks.constants.CommonConstants.DELIMITER;
+import static org.openstreetmap.atlas.checks.constants.CommonConstants.COLON;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
             String line;
             while ((line = reader.readLine()) != null)
             {
-                final String[] split = line.split(DELIMITER);
+                final String[] split = line.split(COLON);
                 if (split.length == 2)
                 {
                     listOfClassToFilters.add(
