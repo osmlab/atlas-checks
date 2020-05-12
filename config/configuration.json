@@ -389,6 +389,7 @@
   },
   "InvalidTagsCheck": {
     "override.default.filters": false,
+    "append.to.default.filters": true,
     "filters.classes.tags": [
       ["area","boundary->protected_area&protect_class->!"],
       ["relation","boundary->protected_area&protect_class->!"]
