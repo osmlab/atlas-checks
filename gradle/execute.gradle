@@ -1,19 +1,22 @@
 task downloadAtlases {
     doLast {
-        mkdir "${buildDir}/example/data/atlases/"
-        ant.get(src: "https://dl.dropboxusercontent.com/zip_download_get/Aa7gnKbK7HUcG3UNuQzIjDJz3DFvn8hzVoPyUM32Egx_xI7sz3i3cjCOEjl0XTr6-qZxirkoR3Tb3lgNBX75xO82S3g_Yzc7fx4DbxBeGGRw6g",
-            dest: "${buildDir}/example/data/atlases/BLZ.zip",
+        mkdir "${buildDir}/example/data/atlas/"
+        ant.get(src: "https://dl.dropboxusercontent.com/s/0f6tmuyovwva2jz/BLZ.zip",
+            dest: "${buildDir}/example/data/atlas/BLZ.zip",
             skipexisting: 'true')
-        ant.get(src: "https://dl.dropboxusercontent.com/cd/0/get/A3h0gTqq9G5NiQxtTElNqaOGvb0VoIUlK20O2ub4CYuRCMajHcwyZdyKduGE8p41bmJ_n2GgCO2oRm3b1Mxnrn2nw5vz0M79U2jJJykmAv6FDQ/file",
-                dest: "${buildDir}/example/data/atlases/sharding.txt",
+        ant.get(src: "https://dl.dropboxusercontent.com/s/pb99909ake348mx/tree-6-14-100000.txt",
+                dest: "${buildDir}/example/data/atlas/sharding.txt",
                 skipexisting: 'true')
     }
 }
 
 task unzipAtlases (dependsOn: 'downloadAtlases') {
     doLast {
-        ant.unzip(src: "${buildDir}/example/data/atlases/BLZ.zip",
-            dest: "${buildDir}/example/data/atlases/BLZ")
+        ant.unzip(src: "${buildDir}/example/data/atlas/BLZ.zip",
+            dest: "${buildDir}/example/data/atlas/unzip")
+        ant.copydir(src: "${buildDir}/example/data/atlas/unzip/BLZ",
+            dest: "${buildDir}/example/data/atlas/BLZ")
+        ant.delete(dir: "${buildDir}/example/data/atlas/unzip")
     }
 }
 
