@@ -26,7 +26,7 @@ public class InvalidTagsCheckTest
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": false,\"append\": true},\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
                                 + "[\"point\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
 
     @Test
