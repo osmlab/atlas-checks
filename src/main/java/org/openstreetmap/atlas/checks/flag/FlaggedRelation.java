@@ -1,5 +1,8 @@
 package org.openstreetmap.atlas.checks.flag;
 
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.IDENTIFIER;
+import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.feature;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -12,13 +15,13 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
-import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -64,10 +67,18 @@ public class FlaggedRelation extends FlaggedObject
     public JsonObject asGeoJsonFeature(final String flagIdentifier)
     {
         final JsonObject featureProperties = this.relation.getGeoJsonProperties();
+        final JsonElement osmIdentifier = featureProperties.get(OSM_IDENTIFIER_TAG);
+        final JsonElement identifier = featureProperties.get(IDENTIFIER);
+        // Since the properties of all other FlaggedObjects are String, osmIdentifier and
+        // identifier values of FlaggedRelation, which are Integers are removed and added as String
+        // here
+        featureProperties.remove(OSM_IDENTIFIER_TAG);
+        featureProperties.remove(IDENTIFIER);
+        featureProperties.addProperty(OSM_IDENTIFIER_TAG, osmIdentifier.toString());
+        featureProperties.addProperty(IDENTIFIER, identifier.toString());
         featureProperties.addProperty("flag:id", flagIdentifier);
         featureProperties.addProperty("flag:type", FlaggedRelation.class.getSimpleName());
-        return GeoJsonUtils.feature(this.multipolygonGeometry.asGeoJsonGeometry(),
-                featureProperties);
+        return feature(this.multipolygonGeometry.asGeoJsonGeometry(), featureProperties);
     }
 
     /**
