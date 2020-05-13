@@ -37,10 +37,11 @@ import com.google.gson.JsonParser;
  * {@link AtlasEntity} classes to check and a {@link TaggableFilter} to test objects against. If a
  * feature is of one of the given classes and passes the associated {@link TaggableFilter} then it
  * is flagged. In addition to the taggable filters, there are two configurable boolean values,
- * "override.default.filters" and "append.to.default.filters". If the "override.default.filters" key
- * is set to true, only the filters passed through config are used to flag the atlas features. If
- * the "append.to.default.filters" is set to true, the filters passed through the config are
- * appended to the default filters that are in the "invalidTags.txt" resource file.
+ * "filters.resource.append.override" and "filters.resource.append". If the
+ * "filters.resource.append.override" key is set to true, only the filters passed through config are
+ * used to flag the atlas features. If the "filters.resource.append" is set to true, the filters
+ * passed through the config are appended to the default filters that are in the "invalidTags.txt"
+ * resource file.
  *
  * @author bbreithaupt
  * @author sayas01
@@ -56,8 +57,8 @@ public class InvalidTagsCheck extends BaseCheck<String>
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
 
     private final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> classTagFilters;
-    private final boolean overrideDefaultFilters;
-    private final boolean appendToDefaultFilters;
+    private final boolean overrideResourceFilters;
+    private final boolean appendToResourceFilters;
 
     /**
      * @return a List of Tuple containing AtlasEntity and a list of TaggableFilters read from the
@@ -161,19 +162,19 @@ public class InvalidTagsCheck extends BaseCheck<String>
     public InvalidTagsCheck(final Configuration configuration)
     {
         super(configuration);
-        this.overrideDefaultFilters = this.configurationValue(configuration,
-                "override.default.filters", false);
-        this.appendToDefaultFilters = this.configurationValue(configuration,
-                "append.to.default.filters", false);
-        // If the "override.default.filters" key in the config is set to true, use only the filters
+        this.overrideResourceFilters = this.configurationValue(configuration,
+                "filters.resource.override", false);
+        this.appendToResourceFilters = this.configurationValue(configuration,
+                "filters.resource.append", false);
+        // If the "filters.resource.override" key in the config is set to true, use only the filters
         // passed through the config,
-        if (this.overrideDefaultFilters && !this.appendToDefaultFilters)
+        if (this.overrideResourceFilters && !this.appendToResourceFilters)
         {
             this.classTagFilters = this.getFiltersFromConfiguration(configuration);
         }
-        // Append filters from config to the default list of filters if "append.to.default.filters"
+        // Append filters from config to the default list of filters if "filters.resource.append"
         // is set to true
-        else if (!this.overrideDefaultFilters && this.appendToDefaultFilters)
+        else if (!this.overrideResourceFilters && this.appendToResourceFilters)
         {
             final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> defaultFilters = getDefaultFilters();
             // Add all filters from the config file to the default list of filters

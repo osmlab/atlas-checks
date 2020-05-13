@@ -1,16 +1,16 @@
 # Invalid Tags Check
 
-This check flags features for invalid tags based on a list of TaggableFilters. The list of TaggableFilters for this check is either a combination of filters passed through the 
-check configuration and default list of TaggableFilters or just the default filters. 
-The two configurable boolean values, "override.default.filters" and "append.to.default.filters", 
+This check flags features for invalid tags based on a list of TaggableFilters. The list of TaggableFilters for this check are passed through the config and/or through resource files.
+The two configurable boolean values, "filters.resource.append" and "filters.resource.override", 
 determine the list of taggable filters that each of the atlas entities will be tested against. The rules are
-1) If "override.default.filters" is true and "append.to.default.filters" is false,
+1) If "filters.resource.override" is true and "filters.resource.append" is false,
 only the filters that are passed through the configuration file will be used to test the atlas entities. 
-2) If "append.to.default.filters" is true and "override.default.filters" is false,
-both the configurable filters and default filters will be used to test the atlas features.
+2) If "filters.resource.append" is true and "filters.resource.override" is false,
+both the configurable filters and filters passed through the resource files will be used to test the atlas features.
 3) In all other cases, filters are set to empty list.
 
-The default filters for each AtlasEntity are stored in resource files. File "invalidTags.txt" contains the mapping of AtlasEntity to its corresponding resource file.
+Filters for this check are either passed through config or/and through resource files.
+File "invalidTags.txt" contains the mapping of AtlasEntity to its corresponding resource file.
 Each configurable filter has 2 parts. The first is AtlasEntity class (node, edge, area, etc.). The second is a 
 [TaggableFilter](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/filters/TaggableFilter.java).
 
