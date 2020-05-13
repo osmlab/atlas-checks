@@ -76,24 +76,24 @@ public final class IntersectionUtilities
      * Verifies intersections of given {@link PolyLine} and {@link LineItem} are explicit
      * {@link Location}s for both items
      *
-     * @param areaCrossed
+     * @param lineCrossed
      *            {@link PolyLine} being crossed
      * @param crossingItem
      *            {@link LineItem} crossing
      * @return whether given {@link PolyLine} and {@link LineItem}'s intersections are actual
      *         {@link Location}s for both items
      */
-    public static boolean haveExplicitLocationsForIntersections(final PolyLine areaCrossed,
+    public static boolean haveExplicitLocationsForIntersections(final PolyLine lineCrossed,
             final LineItem crossingItem)
     {
         // Find out intersections
         final PolyLine crossingItemAsPolyLine = crossingItem.asPolyLine();
-        final Set<Location> intersections = areaCrossed.intersections(crossingItemAsPolyLine);
+        final Set<Location> intersections = lineCrossed.intersections(crossingItemAsPolyLine);
 
         // Verify intersections are explicit locations for both geometries
         for (final Location intersection : intersections)
         {
-            if (!areaCrossed.contains(intersection)
+            if (!lineCrossed.contains(intersection)
                     || !crossingItemAsPolyLine.contains(intersection))
             {
                 return false;
