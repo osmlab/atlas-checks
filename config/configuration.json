@@ -374,7 +374,15 @@
       "difficulty":"NORMAL"
     }
   },
-  "InvalidMultiPolygonRelationCheck": {},
+  "InvalidMultiPolygonRelationCheck": {
+    "members.one.ignore": true,
+    "challenge": {
+      "description": "Tasks containing improperly formed multipolygon relations.",
+      "blurb": "Invalid Multipolygon Relations",
+      "instruction": "Open your favorite editor and fix the issues listed in the instructions for each multipolygon relation.",
+      "difficulty": "HARD"
+    }
+  },
   "InvalidSignBoardRelationCheck": {
     "countries": [
       "RUS"
