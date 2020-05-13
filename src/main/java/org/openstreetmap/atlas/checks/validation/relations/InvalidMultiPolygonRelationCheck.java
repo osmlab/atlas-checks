@@ -255,15 +255,15 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
     {
         final Set<Tuple<Polygon, Polygon>> problematicPolygons = new HashSet<>();
 
-        outerToInners.entrySet().forEach(entry ->
+        outerToInners.forEach((key, value) ->
         {
             // Loop through each combination of inner polygons only once to check for overlap
-            for (int index1 = 0; index1 < entry.getValue().size() - 1; index1++)
+            for (int index1 = 0; index1 < value.size() - 1; index1++)
             {
-                for (int index2 = index1 + 1; index2 < entry.getValue().size(); index2++)
+                for (int index2 = index1 + 1; index2 < value.size(); index2++)
                 {
-                    final Polygon polygon1 = entry.getValue().get(index1);
-                    final Polygon polygon2 = entry.getValue().get(index2);
+                    final Polygon polygon1 = value.get(index1);
+                    final Polygon polygon2 = value.get(index2);
                     final org.locationtech.jts.geom.Polygon jtsPolygon1 = JTS_POLYGON_CONVERTER
                             .convert(polygon1);
                     final org.locationtech.jts.geom.Polygon jtsPolygon2 = JTS_POLYGON_CONVERTER
@@ -280,8 +280,8 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
                 }
             }
             // Check that no inner intersects its outer
-            entry.getValue().stream().filter(polygon -> polygon.intersects(entry.getKey())).forEach(
-                    polygon -> problematicPolygons.add(Tuple.createTuple(polygon, entry.getKey())));
+            value.stream().filter(polygon -> polygon.intersects(key))
+                    .forEach(polygon -> problematicPolygons.add(Tuple.createTuple(polygon, key)));
         });
 
         return problematicPolygons;
