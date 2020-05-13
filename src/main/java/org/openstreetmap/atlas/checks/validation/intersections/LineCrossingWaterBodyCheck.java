@@ -42,7 +42,6 @@ import org.openstreetmap.atlas.tags.NaturalTag;
 import org.openstreetmap.atlas.tags.NotesTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
 import org.openstreetmap.atlas.tags.SourceTag;
-import org.openstreetmap.atlas.tags.SyntheticNearestNeighborCountryCodeTag;
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
@@ -384,12 +383,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * If the waterbody is an area, the intersection is flaggable. If it's not an area, it's a
      * multipolygon, and we make sure that either 1. The intersection is at an outer member of the
      * multipolygon and the outer member was not synthetically created by the atlas slicing process.
-     * It's estimated that if the outer member only has the {@link ISOCountryTag} and
-     * {@link SyntheticNearestNeighborCountryCodeTag}, it was created due to atlas slicing and would
-     * therefore not be a geometrically accurate member of the relation. 2. The intersecting feature
-     * is entirely floating in an outer member of the relation, and not intersecting/floating in any
-     * of the inner members. The inner members are typically islands so we avoid flagging in the
-     * latter scenario. The outer member must still have only the 2 tags mentioned above
+     * It's estimated that if the outer member only has the {@link ISOCountryTag}, it was created
+     * due to atlas slicing and would therefore not be a geometrically accurate member of the
+     * relation. 2. The intersecting feature is entirely floating in an outer member of the
+     * relation, and not intersecting/floating in any of the inner members. The inner members are
+     * typically islands so we avoid flagging in the latter scenario. The outer member must still
+     * have only the 2 tags mentioned above
      *
      * @param waterbody
      *            the GeometricSurface representation of the waterbody
@@ -422,9 +421,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                                                         .intersects(innerMember)
                                                         || intersectingFeature
                                                                 .within(innerMember))))
-                                && (member.getFirst().getTags().keySet().stream().anyMatch(
-                                        key -> !(key.equals(ISOCountryTag.KEY) || key.equals(
-                                                SyntheticNearestNeighborCountryCodeTag.KEY)))));
+                                && (member.getFirst().getTags().keySet().stream()
+                                        .anyMatch(key -> !key.equals(ISOCountryTag.KEY))));
     }
 
     /**
