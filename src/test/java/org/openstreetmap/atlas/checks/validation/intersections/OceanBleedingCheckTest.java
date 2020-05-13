@@ -27,6 +27,14 @@ public class OceanBleedingCheckTest
     }
 
     @Test
+    public void invalidFloatingStreetInOcean()
+    {
+        this.verifier.actual(this.setup.getInvalidFloatingStreetInOcean(),
+                new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
     public void invalidRailwayBleedingIntoOcean()
     {
         this.verifier.actual(this.setup.getInvalidRailwayBleedingIntoOcean(),
@@ -43,9 +51,33 @@ public class OceanBleedingCheckTest
     }
 
     @Test
+    public void invalidStreetCrossingCoastlineArea()
+    {
+        this.verifier.actual(this.setup.getInvalidStreetCrossingCoastlineArea(),
+                new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void invalidStreetCrossingCoastlineLine()
+    {
+        this.verifier.actual(this.setup.getInvalidStreetCrossingCoastlineLine(),
+                new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
     public void validBridgeOverOceanBoundary()
     {
         this.verifier.actual(this.setup.getValidBridgeOverOceanBoundary(),
+                new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validBuildingEnclosedByCoastlineIsland()
+    {
+        this.verifier.actual(this.setup.getValidBuildingEnclosedByCoastlineIsland(),
                 new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
@@ -63,6 +95,22 @@ public class OceanBleedingCheckTest
     public void validRailwayBleedingIntoWaterbodyNonOcean()
     {
         this.verifier.actual(this.setup.getValidRailwayBleedingIntoWaterbodyNonOcean(),
+                new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validStreetConnectedToFerryTerminal()
+    {
+        this.verifier.actual(this.setup.getValidStreetConnectedToFerryTerminal(),
+                new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validStreetEnclosedByCoastlineIsland()
+    {
+        this.verifier.actual(this.setup.getValidStreetEnclosedByCoastlineIsland(),
                 new OceanBleedingCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
