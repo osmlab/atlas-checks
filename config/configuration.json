@@ -833,6 +833,7 @@
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
+    "character.single.ignore": true,
     "challenge": {
       "description": "Tasks containing name tags with only integers",
       "blurb": "Street Names Integers Only",

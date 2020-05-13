@@ -29,6 +29,16 @@ public class StreetNameIntegersOnlyCheckTest
     }
 
     @Test
+    public void motorwayWithMixedNameTagIntegerNameLeftTagIgnoreSingleTest()
+    {
+        this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTagAtlas(),
+                new StreetNameIntegersOnlyCheck(ConfigurationResolver
+                        .inlineConfiguration("{\"StreetNameIntegersOnlyCheck\": {\n"
+                                + "    \"character.single.ignore\":true}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void motorwayWithMixedNameTagIntegerNameLeftTagOnlyCheckNameTest()
     {
         this.verifier.actual(this.setup.motorwayWithMixedNameTagIntegerNameLeftTagAtlas(),
