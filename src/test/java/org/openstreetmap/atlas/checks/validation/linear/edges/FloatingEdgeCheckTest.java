@@ -21,6 +21,9 @@ public class FloatingEdgeCheckTest
     private final FloatingEdgeCheck minimumHighwayCheck = new FloatingEdgeCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"FloatingEdgeCheck\":{\"highway.minimum\": \"PRIMARY_LINK\",\"length\":{\"maximum.kilometers\":16.093,\"minimum.meters\": 1.0}}}"));
+    private final FloatingEdgeCheck constructionCheck = new FloatingEdgeCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"FloatingEdgeCheck\":{\"construction.check\": true,\"length\":{\"maximum.kilometers\":16.093,\"minimum.meters\": 1.0}}}"));
 
     @Test
     public void testAirportIntersectingEdge()
@@ -50,6 +53,13 @@ public class FloatingEdgeCheckTest
         this.verifier.actual(this.setup.floatingEdgeAtlas(), this.check);
         this.verifier.verifyNotNull();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testFloatingEdgeConstruction()
+    {
+        this.verifier.actual(this.setup.floatingEdgeConstructionAtlas(), this.constructionCheck);
+        this.verifier.verifyEmpty();
     }
 
     @Test

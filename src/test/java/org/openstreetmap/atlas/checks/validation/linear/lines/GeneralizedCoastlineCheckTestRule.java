@@ -90,11 +90,11 @@ public class GeneralizedCoastlineCheckTestRule extends CoreTestRule
                                     @Member(id = "123", role = "na", type = "relation") }) })
     private Atlas withNestedRelationGeneralized;
 
-    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
             @Loc(value = GENERALIZED_ONE), @Loc(value = GENERALIZED_TWO) }) })
     private Atlas oneLineSegmentGeneralized;
 
-    @TestAtlas(lines = { @Line(tags = { "natural=coastline", "source=PGS" }, coordinates = {
+    @TestAtlas(lines = { @Line(tags = { "natural=coastline" }, coordinates = {
             @Loc(value = GENERALIZED_THREE), @Loc(value = GENERALIZED_FOUR) }) })
     private Atlas oneLineSegmentNotGeneralized;
 
