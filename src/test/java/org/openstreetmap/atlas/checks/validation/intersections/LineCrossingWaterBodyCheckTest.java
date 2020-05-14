@@ -75,6 +75,13 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testInvalidLineCrossingRelationWaterbody()
+    {
+        this.verifier.actual(this.setup.invalidLineCrossingRelationWaterbody(), check);
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testInvalidLineItemCrossing()
     {
         this.verifier.actual(this.setup.invalidCrossingLineItemAtlas(),
@@ -82,6 +89,17 @@ public class LineCrossingWaterBodyCheckTest
                         "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
                                 + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\" }}")));
         this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testInvalidWithinOuterMemberNoInteractionWithInnerMember()
+    {
+        this.verifier.actual(this.setup.invalidWithinOuterMemberNoInteractionWithInnerMember(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\","
+                                + "    \"buildings.flag\": true" + "  }}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -107,6 +125,31 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testValidFerryTerminalIntersection()
+    {
+        this.verifier.actual(this.setup.validFerryTerminalIntersection(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidFordAtIntersectionLocation()
+    {
+        this.verifier.actual(this.setup.validFordAtIntersectionLocation(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\","
+                                + "    \"buildings.flag\": true" + "  }}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidFordedRoad()
+    {
+        this.verifier.actual(this.setup.validFordedRoad(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testValidIntersectionItemsAtlas()
     {
         this.verifier.actual(this.setup.validIntersectionItemsAtlas(), check);
@@ -120,6 +163,17 @@ public class LineCrossingWaterBodyCheckTest
                 new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
                         "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
                                 + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\" }}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidStreetWithinInnerMember()
+    {
+        this.verifier.actual(this.setup.validStreetWithinInnerMember(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\","
+                                + "    \"buildings.flag\": true" + "  }}")));
         this.verifier.verifyEmpty();
     }
 }

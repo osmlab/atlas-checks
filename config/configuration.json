@@ -374,7 +374,15 @@
       "difficulty":"NORMAL"
     }
   },
-  "InvalidMultiPolygonRelationCheck": {},
+  "InvalidMultiPolygonRelationCheck": {
+    "members.one.ignore": true,
+    "challenge": {
+      "description": "Tasks containing improperly formed multipolygon relations.",
+      "blurb": "Invalid Multipolygon Relations",
+      "instruction": "Open your favorite editor and fix the issues listed in the instructions for each multipolygon relation.",
+      "difficulty": "HARD"
+    }
+  },
   "InvalidSignBoardRelationCheck": {
     "countries": [
       "RUS"
@@ -388,8 +396,13 @@
     }
   },
   "InvalidTagsCheck": {
+    "filters.resource": {
+      "override": true,
+      "append": false
+    },
     "filters.classes.tags": [
-      ["area,relation","boundary->protected_area&protect_class->!"]
+      ["area","boundary->protected_area&protect_class->!"],
+      ["relation","boundary->protected_area&protect_class->!"]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, or incorrect values",
@@ -442,7 +455,8 @@
       "bus_guideway"
     ],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
-    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes",
+    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|ford->!no&ford->*",
+    "nodes.intersecting.non_offending": "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal",
     "buildings.flag": true,
     "challenge": {
       "description": "Certain OSM features should not cross waterbodies.",
@@ -833,6 +847,7 @@
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
+    "character.single.ignore": true,
     "challenge": {
       "description": "Tasks containing name tags with only integers",
       "blurb": "Street Names Integers Only",
@@ -973,7 +988,8 @@
   "OceanBleedingCheck": {
     "ocean": {
       "valid": "natural->strait,channel,fjord,sound,bay|harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock",
-      "invalid": "man_made->breakwater,pier|natural->beach,marsh,swamp|water->marsh|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow|landuse->*"
+      "invalid": "man_made->breakwater,pier|natural->beach,marsh,swamp|water->marsh|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow|landuse->*",
+      "boundary": "natural->coastline"
     },
     "highway": {
       "minimum": "path",

@@ -1,16 +1,22 @@
-task downloadPbf {
+task downloadAtlases {
     doLast {
-        mkdir "${buildDir}/example/data/pbfSource/"
-        ant.get(src: "https://dl.dropboxusercontent.com/s/ddvpimpnbv6o43t/belize-geofabrik-2019-03-13T21-14-02Z.osm.pbf",
-            dest: "${buildDir}/example/data/pbfSource/belize.osm.pbf",
+        mkdir "${buildDir}/example/data/atlas/"
+        ant.get(src: "https://dl.dropboxusercontent.com/s/0f6tmuyovwva2jz/BLZ.zip",
+            dest: "${buildDir}/example/data/atlas/BLZ.zip",
             skipexisting: 'true')
+        ant.get(src: "https://dl.dropboxusercontent.com/s/pb99909ake348mx/tree-6-14-100000.txt",
+                dest: "${buildDir}/example/data/atlas/sharding.txt",
+                skipexisting: 'true')
     }
 }
 
-task copyPbf (dependsOn: 'downloadPbf') {
+task unzipAtlases (dependsOn: 'downloadAtlases') {
     doLast {
-        ant.copy(file: "${buildDir}/example/data/pbfSource/belize.osm.pbf",
-            toFile: "${buildDir}/example/data/pbfs/belize.osm.pbf")
+        ant.unzip(src: "${buildDir}/example/data/atlas/BLZ.zip",
+            dest: "${buildDir}/example/data/atlas/unzip")
+        ant.copydir(src: "${buildDir}/example/data/atlas/unzip/BLZ",
+            dest: "${buildDir}/example/data/atlas/BLZ")
+        ant.delete(dir: "${buildDir}/example/data/atlas/unzip")
     }
 }
 
@@ -24,7 +30,9 @@ task copyPbf (dependsOn: 'downloadPbf') {
 task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the Atlas Check Spark job.') {
     classpath = sourceSets.main.runtimeClasspath
 
-    main = project.property("checks.${project.profile}.mainClass")
+    main = project.property("checks.${project.profile}.sharded").equals("true")
+            ? "org.openstreetmap.atlas.checks.distributed.ShardedIntegrityChecksSparkJob"
+            : "org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob"
 
     // apply arguments defined in the gradle.properties file for this profile
     def flags = project.properties.findAll { property ->
@@ -52,8 +60,8 @@ task runChecks(type: JavaExec, dependsOn: 'assemble', description: 'Executes the
  * Wraps runChecks to perform any task involving setup or teardown
  */
 task run(dependsOn: ['assemble',
-        'downloadPbf',
-        'copyPbf'], group: 'application', description: 'Runs the Atlas Check framework configured using profiles defined in gradle.properties.') {
+        'downloadAtlases',
+        'unzipAtlases'], group: 'application', description: 'Runs the Atlas Check framework configured using profiles defined in gradle.properties.') {
     doLast {
         runChecks.getCommandLine().each {
             line -> println("$line \\")
