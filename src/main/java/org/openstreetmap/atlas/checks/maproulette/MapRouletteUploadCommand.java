@@ -141,10 +141,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                             {
                                 final Map<String, Challenge> countryToChallengeMap = this.checkNameChallengeMap
                                         .computeIfAbsent(task.getChallengeName(),
-                                                theName -> new HashMap<>());
+                                                ignore -> new HashMap<>());
                                 final Challenge challenge = countryToChallengeMap.computeIfAbsent(
                                         countryCode.orElse(""),
-                                        theName -> this.getChallenge(task.getChallengeName(),
+                                        ignore -> this.getChallenge(task.getChallengeName(),
                                                 instructions, countryCode));
                                 this.addTask(challenge, task);
                             }

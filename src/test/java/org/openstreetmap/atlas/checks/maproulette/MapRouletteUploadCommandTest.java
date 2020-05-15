@@ -46,7 +46,7 @@ public class MapRouletteUploadCommandTest
     public void testCheckFilter()
     {
         final String[] additionalArguments = { "-checks=SomeCheck" };
-        this.runAndTest(additionalArguments, 1, 1, 1);
+        this.runAndTest(additionalArguments, 1, 2, 2);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class MapRouletteUploadCommandTest
     public void testExecute()
     {
         final String[] additionalArguments = {};
-        this.runAndTest(additionalArguments, 1, 3, 3);
+        this.runAndTest(additionalArguments, 1, 4, 4);
     }
 
     @Test
@@ -91,6 +91,7 @@ public class MapRouletteUploadCommandTest
         Assert.assertEquals("Canada - Spiky Buildings", challengeNames.get(0));
         Assert.assertEquals("Mexico, Belize - Intersecting Lines", challengeNames.get(1));
         Assert.assertEquals("United States - Address Point Match", challengeNames.get(2));
+        Assert.assertEquals("Uruguay - Address Point Match", challengeNames.get(3));
     }
 
     @Before
@@ -105,6 +106,7 @@ public class MapRouletteUploadCommandTest
             unzippedProcessor.process(this.setup.getOneBasicFlag());
             unzippedProcessor.process(this.setup.getTwoCountryFlag());
             unzippedProcessor.process(this.setup.getAnotherBasicFlag());
+            unzippedProcessor.process(this.setup.getFlagSameCheck());
             unzippedProcessor.process(new ShutdownEvent());
 
             // Create a zipped file
