@@ -240,7 +240,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         try
         {
-            sql.setString(1, flag.getUniqueIdentifiers().stream().map(String::toString)
+            sql.setString(1, flag.getUniqueIdentifiers().stream().sorted().map(String::toString)
                     .collect(Collectors.joining(",")));
             sql.setString(2, flag.getChallengeName().orElse(""));
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
@@ -401,9 +401,9 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
                 .filter(feature -> feature.has(PROPERTIES)
-                        && (!feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty()
-                                || feature.get(PROPERTIES).getAsJsonObject()
-                                        .has(SyntheticHighlightPointTag.KEY)))
+                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty()
+                        && !feature.get(PROPERTIES).getAsJsonObject()
+                                .has(SyntheticHighlightPointTag.KEY))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 }

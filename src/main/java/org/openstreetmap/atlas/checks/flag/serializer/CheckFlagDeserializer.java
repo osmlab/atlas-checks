@@ -59,7 +59,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
      */
     private String parseIdentifiers(final JsonArray identifiers)
     {
-        return Arrays.asList(new Gson().fromJson(identifiers, String[].class)).stream()
+        return Arrays.stream(new Gson().fromJson(identifiers, String[].class)).sorted()
                 .map(String::toString).collect(Collectors.joining(","));
     }
 }
