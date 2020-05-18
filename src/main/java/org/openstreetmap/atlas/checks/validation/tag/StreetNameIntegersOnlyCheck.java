@@ -19,13 +19,13 @@ import com.google.common.base.CharMatcher;
 
 /**
  * This check flags {@link Edge}s that are car navigable highways and have a name tag that contains
- * only integers.
+ * only integers. Name tags with a single character are optionally ignored, as they will be flagged
+ * by {@link ShortNameCheck}.
  *
  * @author bbreithaupt
  */
-public class StreetNameIntegersOnlyCheck extends BaseCheck
+public class StreetNameIntegersOnlyCheck extends BaseCheck<Long>
 {
-
     private static final long serialVersionUID = 3439708862406928654L;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
@@ -35,6 +35,7 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
             NameLeftTag.KEY, NameRightTag.KEY);
 
     private final List<String> nameKeys;
+    private final boolean ignoreSingleCharacter;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -47,8 +48,9 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
     public StreetNameIntegersOnlyCheck(final Configuration configuration)
     {
         super(configuration);
-        this.nameKeys = (List<String>) configurationValue(configuration, "name.keys.filter",
-                NAME_KEYS_DEFAULT);
+        this.nameKeys = configurationValue(configuration, "name.keys.filter", NAME_KEYS_DEFAULT);
+        this.ignoreSingleCharacter = configurationValue(configuration, "character.single.ignore",
+                false);
     }
 
     /**
@@ -81,7 +83,9 @@ public class StreetNameIntegersOnlyCheck extends BaseCheck
         for (final String nameKey : this.nameKeys)
         {
             final Optional<String> nameValue = object.getTag(nameKey);
-            if (nameValue.isPresent())
+            // Only test present name tags, and optionally ignore single character name values
+            if (nameValue.isPresent()
+                    && (!this.ignoreSingleCharacter || nameValue.get().length() > 1))
             {
                 try
                 {
