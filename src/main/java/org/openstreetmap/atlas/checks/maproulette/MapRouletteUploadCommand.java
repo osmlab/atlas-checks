@@ -60,7 +60,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL);
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
-    private final Map<String, Challenge> checkNameChallengeMap;
+
+    // Challenge name --> [ ISO --> countrified Challenge ]
+    private final Map<String, Map<String, Challenge>> checkNameChallengeMap;
 
     public static void main(final String[] args)
     {
@@ -137,8 +139,13 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                         {
                             try
                             {
-                                final Challenge challenge = this.getChallenge(
-                                        task.getChallengeName(), instructions, countryCode);
+                                final Map<String, Challenge> countryToChallengeMap = this.checkNameChallengeMap
+                                        .computeIfAbsent(task.getChallengeName(),
+                                                ignore -> new HashMap<>());
+                                final Challenge challenge = countryToChallengeMap.computeIfAbsent(
+                                        countryCode.orElse(""),
+                                        ignore -> this.getChallenge(task.getChallengeName(),
+                                                instructions, countryCode));
                                 this.addTask(challenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
@@ -173,19 +180,16 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private Challenge getChallenge(final String checkName,
             final Configuration fallbackConfiguration, final Optional<String> countryCode)
     {
-        return this.checkNameChallengeMap.computeIfAbsent(checkName, name ->
-        {
-            final Map<String, String> challengeMap = fallbackConfiguration
-                    .get(getChallengeParameter(checkName), Collections.emptyMap()).value();
-            final Gson gson = new GsonBuilder().disableHtmlEscaping()
-                    .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
-            final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
-            // Prepend the challenge name with the full country name if one exists
-            final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
-                    result.getName().isEmpty() ? checkName : result.getName());
-            result.setName(challengeName);
-            return result;
-        });
+        final Map<String, String> challengeMap = fallbackConfiguration
+                .get(getChallengeParameter(checkName), Collections.emptyMap()).value();
+        final Gson gson = new GsonBuilder().disableHtmlEscaping()
+                .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
+        final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
+        // Prepend the challenge name with the full country name if one exists
+        final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
+                result.getName().isEmpty() ? checkName : result.getName());
+        result.setName(challengeName);
+        return result;
     }
 
     /**
