@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -63,22 +62,6 @@ public class WaterAreaCheck extends BaseCheck<Long>
             final AtlasObject object1, final AtlasObject object2)
     {
         return filters.parallelStream().anyMatch(f -> f.test(object1) && f.test(object2));
-    }
-
-    /**
-     * Convert an iterable to an actual stream
-     *
-     * @param <T>
-     *            The type of object the iterable has
-     * @param iterable
-     *            The iterable to convert to a stream
-     * @return A stream object
-     */
-    private static <T> Stream<T> iterableToStream(final Iterable<T> iterable)
-    {
-        final Stream.Builder<T> builder = Stream.builder();
-        iterable.forEach(builder::accept);
-        return builder.build();
     }
 
     public WaterAreaCheck(final Configuration configuration)
@@ -157,16 +140,16 @@ public class WaterAreaCheck extends BaseCheck<Long>
             else
             {
                 final List<Pair<Segment, List<Area>>> possibleAreaIntersections = areaSegments
-                        .stream()
-                        .map(b -> Pair.of(b, Iterables.stream(object.getAtlas().areasIntersecting(
-                                b.bounds(), o -> matchesFilter(this.waterwayFilters, o)
-                                        && !object.equals(o) && o.asPolygon().overlaps(areaPolygon)
-                                        && o.asPolygon().intersections(areaPolygon).stream()
-                                                .anyMatch(p -> iterableToStream(o.getRawGeometry())
-                                                        .noneMatch(it -> it.equals(p))
-                                                        && iterableToStream(area.getRawGeometry())
-                                                                .noneMatch(it -> it.equals(p)))))
-                                .collectToList()))
+                        .stream().map(
+                                b -> Pair.of(b,
+                                        Iterables
+                                                .stream(object.getAtlas().areasIntersecting(
+                                                        b.bounds(),
+                                                        o -> matchesFilter(this.waterwayFilters, o)
+                                                                && !object.equals(o)
+                                                                && o.asPolygon()
+                                                                        .overlaps(areaPolygon)))
+                                                .collectToList()))
                         .filter(p -> !p.getRight().isEmpty()).collect(Collectors.toList());
 
                 final List<Area> areaIntersections = possibleAreaIntersections.stream()
