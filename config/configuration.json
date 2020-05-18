@@ -1068,5 +1068,13 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW"
     }
+  },
+  "WaterAreaCheck": {
+    "challenge": {
+      "description": "Overlapping waterway areas",
+      "blurb": "Edit overlapping waterway features so they either validly intersect or do not overlap.",
+      "instruction": "Open your favorite editor and edit the features overlapping the ocean so they either validly overlap or do not overlap.",
+      "difficulty": "MEDIUM"
+    }
   }
 }
