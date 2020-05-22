@@ -12,7 +12,6 @@ import org.openstreetmap.atlas.checks.validation.GeometryValidator;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
-import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -143,11 +142,11 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             {
                 if (object instanceof Area)
                 {
-                    isJtsValid = GeometryValidator.isValidPolygon((Polygon) polyline);
+                    isJtsValid = GeometryValidator.testSimplicity(polyline).isEmpty();
                 }
                 else
                 {
-                    isJtsValid = GeometryValidator.isValidPolyLine(polyline);
+                    isJtsValid = GeometryValidator.testSimplicity(polyline).isEmpty();
                 }
             }
             catch (final IllegalArgumentException e)
