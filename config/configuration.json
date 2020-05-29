@@ -376,6 +376,8 @@
   },
   "InvalidMultiPolygonRelationCheck": {
     "members.one.ignore": true,
+    "overlap.points.minimum": 0,
+    "overlap.points.maximum": 2000000,
     "challenge": {
       "description": "Tasks containing improperly formed multipolygon relations.",
       "blurb": "Invalid Multipolygon Relations",

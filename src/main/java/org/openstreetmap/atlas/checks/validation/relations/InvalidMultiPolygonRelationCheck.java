@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.MultiPolygon;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
@@ -81,6 +82,8 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
             .getLogger(InvalidMultiPolygonRelationCheck.class);
 
     private static final JtsPolygonConverter JTS_POLYGON_CONVERTER = new JtsPolygonConverter();
+    private static final long OVERLAP_MINIMUM_POINTS_DEFAULT = 0;
+    private static final long OVERLAP_MAMIMUM_POINTS_DEFAULT = 2000000;
 
     static
     {
@@ -107,11 +110,17 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
     }
 
     private final boolean ignoreOneMember;
+    private final long overlapMinimumPoints;
+    private final long overlapMaximumPoints;
 
     public InvalidMultiPolygonRelationCheck(final Configuration configuration)
     {
         super(configuration);
         this.ignoreOneMember = this.configurationValue(configuration, "members.one.ignore", false);
+        this.overlapMinimumPoints = this.configurationValue(configuration, "overlap.points.minimum",
+                OVERLAP_MINIMUM_POINTS_DEFAULT);
+        this.overlapMaximumPoints = this.configurationValue(configuration, "overlap.points.maximum",
+                OVERLAP_MAMIMUM_POINTS_DEFAULT);
     }
 
     @Override
@@ -177,9 +186,21 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
         // don't overlap.
         try
         {
-            return Optional.of(checkOverlap(
-                    RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER.convert(multipolygonRelation),
-                    multipolygonRelation.getOsmIdentifier()));
+            final MultiPolygon multiPolygon = RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER
+                    .convert(multipolygonRelation);
+            // Skip the overlap checks for multipolygons outside the configurable range of shape
+            // points
+            final long shapePoints = multiPolygon.getOuterToInners().entrySet().stream()
+                    .mapToInt(entry -> entry.getKey().size()
+                            + entry.getValue().stream().mapToInt(PolyLine::size).sum())
+                    .sum();
+            if (this.overlapMinimumPoints <= shapePoints
+                    && shapePoints <= this.overlapMaximumPoints)
+            {
+                return Optional
+                        .of(checkOverlap(multiPolygon, multipolygonRelation.getOsmIdentifier()));
+            }
+            return Optional.empty();
         }
         // Catch open polygons and mark the broken locations
         catch (final MultiplePolyLineToPolygonsConverter.OpenPolygonException exception)
