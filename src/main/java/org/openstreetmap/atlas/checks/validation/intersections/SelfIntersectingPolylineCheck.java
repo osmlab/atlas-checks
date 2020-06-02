@@ -140,14 +140,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
             boolean isJtsValid = true;
             try
             {
-                if (object instanceof Area)
-                {
-                    isJtsValid = GeometryValidator.testSimplicity(polyline).isEmpty();
-                }
-                else
-                {
-                    isJtsValid = GeometryValidator.testSimplicity(polyline).isEmpty();
-                }
+                isJtsValid = GeometryValidator.testSimplicity(polyline).isEmpty();
             }
             catch (final IllegalArgumentException e)
             {
