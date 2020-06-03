@@ -184,7 +184,8 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
         {
             wayIds.add(nextEdge.getIdentifier());
             final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(Edge::isMasterEdge) //traverse via master edges only
+                    //Traverse via master Edges only.
+                    .filter(Edge::isMasterEdge)
                     .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
                     .collectToList();
             nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
