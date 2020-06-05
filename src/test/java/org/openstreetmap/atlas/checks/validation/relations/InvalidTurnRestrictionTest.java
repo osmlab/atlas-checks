@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -9,6 +10,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  * {@link InvalidTurnRestrictionCheck} tests.
  *
  * @author gpogulsky
+ * @author bbreithaupt
  */
 public class InvalidTurnRestrictionTest
 {
@@ -20,6 +22,60 @@ public class InvalidTurnRestrictionTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void disconnectedFromTest()
+    {
+        this.verifier.actual(this.testCaseRule.disconnectedFromAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("There is not a single navigable route to restrict")));
+    }
+
+    @Test
+    public void doubleFromTest()
+    {
+        this.verifier.actual(this.testCaseRule.doubleFromAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("There is not a single navigable route to restrict")));
+    }
+
+    @Test
+    public void doubleViaTest()
+    {
+        this.verifier.actual(this.testCaseRule.doubleViaAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(
+                flag.getInstructions().contains("A Turn Restriction should only have 1 via Node")));
+    }
+
+    @Test
+    public void onlyViaTest()
+    {
+        this.verifier.actual(this.testCaseRule.onlyViaAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("Missing a from and/or to member")));
+    }
+
+    @Test
+    public void redundantRestrictionTest()
+    {
+        this.verifier.actual(this.testCaseRule.redundantRestrictionAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("There is not a single navigable route to restrict")));
+    }
+
+    @Test
+    public void sameFromToNoViaTest()
+    {
+        this.verifier.actual(this.testCaseRule.sameFromToNoViaAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "Via member is required for restrictions with the same to and from members")));
+    }
 
     @Test
     public void testGoodAtlas()
