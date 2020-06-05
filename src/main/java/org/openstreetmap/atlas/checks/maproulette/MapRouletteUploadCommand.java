@@ -118,7 +118,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             {
                 try (BufferedReader reader = FileUtility.getReader(logFile, logOutputFileType))
                 {
-                    reader.lines().forEach(line ->
+                    reader.lines().filter(line -> line.trim().length() > 0).forEach(line ->
                     {
                         // Get Task from geojson
                         final Task task = gson.fromJson(line, Task.class);
