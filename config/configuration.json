@@ -4,10 +4,9 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "ApproximateWayCheck": {
-    "enabled": true,
     "deviation.minimum.meters": 35.0,
     "angle.minimum": 100.0,
     "bezierStep": 0.01,
