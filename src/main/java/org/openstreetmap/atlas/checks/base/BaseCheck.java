@@ -128,8 +128,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
         }
         catch (final Exception oops)
         {
-            logger.error(String.format("%s failed on feature %s.", this.getCheckName(),
-                    object.getIdentifier()), oops);
+            logger.error(String.format("%s failed on feature %s (%s).", this.getCheckName(),
+                    object.getIdentifier(), object.getOsmIdentifier()), oops);
         }
 
         return Optional.empty();
