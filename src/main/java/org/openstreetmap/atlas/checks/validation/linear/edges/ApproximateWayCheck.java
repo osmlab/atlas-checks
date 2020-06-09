@@ -57,12 +57,11 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         this.minimumDeviation = configurationValue(configuration, "deviation.minimum.meters",
                 DEVIATION_MINIMUM_METERS_DEFAULT, Distance::meters);
         final String highwayType = this.configurationValue(configuration, "highway.minimum",
-            HIGHWAY_MINIMUM_DEFAULT);
+                HIGHWAY_MINIMUM_DEFAULT);
         this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
         this.minimumAngle = configurationValue(configuration, "angle.minimum",
-            MINIMUM_ANGLE_DEFAULT);
-        this.bezierStep = configurationValue(configuration, "bezierStep",
-            BEZIER_STEP_DEFAULT);
+                MINIMUM_ANGLE_DEFAULT);
+        this.bezierStep = configurationValue(configuration, "bezierStep", BEZIER_STEP_DEFAULT);
     }
 
     /**
@@ -76,14 +75,13 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
-            && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object);
+                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object);
     }
 
     /**
-     * This is the actual function that will check to see whether the object needs to be flagged.
-     *
-     * A majority of flagged edges were those that contained correctly mapped ~90 degree angles,
-     * we also don't want to worry about sharp angles as those are flagged in {@link SharpAngleCheck}
+     * This is the actual function that will check to see whether the object needs to be flagged. A
+     * majority of flagged edges were those that contained correctly mapped ~90 degree angles, we
+     * also don't want to worry about sharp angles as those are flagged in {@link SharpAngleCheck}
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
@@ -99,36 +97,21 @@ public class ApproximateWayCheck extends BaseCheck<Long>
             return Optional.empty();
         }
 
-        final OptionalDouble max = IntStream.range(0, segments.size() - 1)
-                .mapToDouble(index ->
-                {
-                    final Segment seg1 = segments.get(index);
-                    final Segment seg2 = segments.get(index + 1);
-                    if (findAngle(seg1 , seg2) < minimumAngle)
-                    {
-                        return 0;
-                    }
-                    return quadraticBezier(
-                        seg1.first(),
-                        // vvv could also be s1.end()
-                        seg2.first(),
-                        seg2.end()
-                    );
-                })
-                .reduce(Math::max);
+        final OptionalDouble max = IntStream.range(0, segments.size() - 1).mapToDouble(index ->
+        {
+            final Segment seg1 = segments.get(index);
+            final Segment seg2 = segments.get(index + 1);
+            if (findAngle(seg1, seg2) < minimumAngle)
+            {
+                return 0;
+            }
+            return quadraticBezier(seg1.first(), seg2.first(), seg2.end());
+        }).reduce(Math::max);
 
         if (max.isPresent() && max.getAsDouble() > this.minimumDeviation.asMeters())
         {
-            return Optional.of(
-                createFlag(
-                    object,
-                    this.getLocalizedInstruction(
-                        0,
-                        object.getOsmIdentifier(),
-                        max.getAsDouble()
-                    )
-                )
-            );
+            return Optional.of(createFlag(object,
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier(), max.getAsDouble())));
         }
 
         return Optional.empty();
@@ -140,7 +123,8 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private double distance(final double startX, final double startY, final double endX, final double endY)
+    private double distance(final double startX, final double startY, final double endX,
+            final double endY)
     {
         return sqrt(pow(endX - startX, 2) + pow(endY - startY, 2));
     }
@@ -153,7 +137,8 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         final double aLength = seg1.length().asMeters();
         final double bLength = seg2.length().asMeters();
         final double cLength = new Segment(seg1.start(), seg2.end()).length().asMeters();
-        return Math.toDegrees(Math.acos((pow(aLength,2) + pow(bLength, 2) - pow(cLength, 2))/(2*aLength*bLength)));
+        return Math.toDegrees(Math.acos(
+                (pow(aLength, 2) + pow(bLength, 2) - pow(cLength, 2)) / (2 * aLength * bLength)));
     }
 
     /**
@@ -170,14 +155,19 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     {
         final Optional<HighwayTag> highwayTagOfObject = HighwayTag.highwayTag(object);
         return highwayTagOfObject.isPresent()
-            && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.highwayMinimum);
+                && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.highwayMinimum);
     }
 
     /**
-     * Constructs a quadratic bezier curve and finds the closest distance of the curve to the anchor.
-     * @param start start point of bezier curve
-     * @param anchor anchor for the curve
-     * @param end end point of bezier curve
+     * Constructs a quadratic bezier curve and finds the closest distance of the curve to the
+     * anchor.
+     * 
+     * @param start
+     *            start point of bezier curve
+     * @param anchor
+     *            anchor for the curve
+     * @param end
+     *            end point of bezier curve
      * @return distance in meters from closest point on bezier curve
      */
     private double quadraticBezier(final Location start, final Location anchor, final Location end)
@@ -192,8 +182,10 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         double min = Double.POSITIVE_INFINITY;
         for (double i = 0; i <= 1; i += bezierStep)
         {
-            final double pointX = (pow(1 - i, 2) * startX) + (2 * i * (1 - i) * anchorX + pow(i, 2) * endX);
-            final double pointY = (pow(1 - i, 2) * startY) + (2 * i * (1 - i) * anchorY + pow(i, 2) * endY);
+            final double pointX = (pow(1 - i, 2) * startX)
+                    + (2 * i * (1 - i) * anchorX + pow(i, 2) * endX);
+            final double pointY = (pow(1 - i, 2) * startY)
+                    + (2 * i * (1 - i) * anchorY + pow(i, 2) * endY);
             // distance from point on bezier curve to anchor
             final double distance = distance(pointX, pointY, anchorX, anchorY);
             if (distance < min)
