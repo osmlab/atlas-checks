@@ -49,7 +49,8 @@
       "blurb": "Nodes with mismatched addr:street names",
       "instruction": "Open your favorite editor and edit the node street names",
       "difficulty": "HARD"
-    },
+    }
+  },
   "ApproximateWayCheck": {
     "deviation.minimum.meters": 35.0,
     "angle.minimum": 100.0,

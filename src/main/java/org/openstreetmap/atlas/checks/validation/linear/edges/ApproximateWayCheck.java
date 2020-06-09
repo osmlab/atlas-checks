@@ -1,5 +1,14 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.stream.IntStream;
+
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -11,15 +20,6 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.stream.IntStream;
-
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
-
 /**
  * This check flags edges that deviate from the assumed curve of a road by at least
  * {@value DEVIATION_MINIMUM_METERS_DEFAULT} meters.
@@ -29,7 +29,6 @@ import static java.lang.Math.sqrt;
 public class ApproximateWayCheck extends BaseCheck<Long>
 {
 
-    // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
     private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} deviates by {1,number,#} meters";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
@@ -93,28 +92,33 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        List<Segment> segments = ((Edge) object).asPolyLine().segments();
+        final List<Segment> segments = ((Edge) object).asPolyLine().segments();
 
-        if (segments.size() < 2) {
+        if (segments.size() < 2)
+        {
             return Optional.empty();
         }
 
-        OptionalDouble max = IntStream.range(1, segments.size() - 1)
-                .mapToDouble(index -> {
-                    Segment s1 = segments.get(index);
-                    Segment s2 = segments.get(index + 1);
-                    if (findAngle(s1 , s2) < minimumAngle) {
+        final OptionalDouble max = IntStream.range(0, segments.size() - 1)
+                .mapToDouble(index ->
+                {
+                    final Segment seg1 = segments.get(index);
+                    final Segment seg2 = segments.get(index + 1);
+                    if (findAngle(seg1 , seg2) < minimumAngle)
+                    {
                         return 0;
                     }
                     return quadraticBezier(
-                        s1.first(),
-                        s2.first(), // could also be s1.end()
-                        s2.end()
+                        seg1.first(),
+                        // vvv could also be s1.end()
+                        seg2.first(),
+                        seg2.end()
                     );
                 })
                 .reduce(Math::max);
 
-        if (max.isPresent() && max.getAsDouble() > minimumDeviation.asMeters()) {
+        if (max.isPresent() && max.getAsDouble() > this.minimumDeviation.asMeters())
+        {
             return Optional.of(
                 createFlag(
                     object,
@@ -130,46 +134,26 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    private double distance(final double startX, final double startY, final double endX, final double endY)
+    {
+        return sqrt(pow(endX - startX, 2) + pow(endY - startY, 2));
+    }
+
     /**
      * Calculates the angle between the two segments.
      */
-    private double findAngle(Segment s1, Segment s2) {
-        double a = s1.length().asMeters();
-        double b = s2.length().asMeters();
-        double c = new Segment(s1.start(), s2.end()).length().asMeters();
-        return Math.toDegrees(Math.acos((pow(a,2) + pow(b, 2) - pow(c, 2))/(2*a*b)));
-    }
-
-    /**
-     * Constructs a quadratic bezier curve and finds the closest distance of the curve to the anchor.
-     * @param start start point of bezier curve
-     * @param anchor anchor for the curve
-     * @param end end point of bezier curve
-     * @return distance in meters from closest point on bezier curve
-     */
-    private double quadraticBezier(Location start, Location anchor, Location end) {
-        double x0 = start.getLongitude().onEarth().asMeters();
-        double y0 = start.getLatitude().onEarth().asMeters();
-        double x1 = anchor.getLongitude().onEarth().asMeters();
-        double y1 = anchor.getLatitude().onEarth().asMeters();
-        double x2 = end.getLongitude().onEarth().asMeters();
-        double y2 = end.getLatitude().onEarth().asMeters();
-
-        double min = Double.POSITIVE_INFINITY;
-        for (double i = 0; i <= 1; i += bezierStep) {
-            double x = (pow(1 - i, 2) * x0) + (2 * i * (1 - i) * x1 + pow(i, 2) * x2);
-            double y = (pow(1 - i, 2) * y0) + (2 * i * (1 - i) * y1 + pow(i, 2) * y2);
-            // distance from point on bezier curve to anchor
-            double d = distance(x, y, x1, y1);
-            if (d < min) {
-                min = d;
-            }
-        }
-        return min;
-    }
-
-    private double distance(double x0, double y0, double x1, double y1) {
-        return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2));
+    private double findAngle(final Segment seg1, final Segment seg2)
+    {
+        final double aLength = seg1.length().asMeters();
+        final double bLength = seg2.length().asMeters();
+        final double cLength = new Segment(seg1.start(), seg2.end()).length().asMeters();
+        return Math.toDegrees(Math.acos((pow(aLength,2) + pow(bLength, 2) - pow(cLength, 2))/(2*aLength*bLength)));
     }
 
     /**
@@ -189,6 +173,34 @@ public class ApproximateWayCheck extends BaseCheck<Long>
             && highwayTagOfObject.get().isMoreImportantThanOrEqualTo(this.highwayMinimum);
     }
 
-    @Override
-    protected List<String> getFallbackInstructions() { return FALLBACK_INSTRUCTIONS; }
+    /**
+     * Constructs a quadratic bezier curve and finds the closest distance of the curve to the anchor.
+     * @param start start point of bezier curve
+     * @param anchor anchor for the curve
+     * @param end end point of bezier curve
+     * @return distance in meters from closest point on bezier curve
+     */
+    private double quadraticBezier(final Location start, final Location anchor, final Location end)
+    {
+        final double startX = start.getLongitude().onEarth().asMeters();
+        final double startY = start.getLatitude().onEarth().asMeters();
+        final double anchorX = anchor.getLongitude().onEarth().asMeters();
+        final double anchorY = anchor.getLatitude().onEarth().asMeters();
+        final double endX = end.getLongitude().onEarth().asMeters();
+        final double endY = end.getLatitude().onEarth().asMeters();
+
+        double min = Double.POSITIVE_INFINITY;
+        for (double i = 0; i <= 1; i += bezierStep)
+        {
+            final double pointX = (pow(1 - i, 2) * startX) + (2 * i * (1 - i) * anchorX + pow(i, 2) * endX);
+            final double pointY = (pow(1 - i, 2) * startY) + (2 * i * (1 - i) * anchorY + pow(i, 2) * endY);
+            // distance from point on bezier curve to anchor
+            final double distance = distance(pointX, pointY, anchorX, anchorY);
+            if (distance < min)
+            {
+                min = distance;
+            }
+        }
+        return min;
+    }
 }
