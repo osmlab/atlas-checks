@@ -355,6 +355,15 @@
       "tags":"access,highway"
     }
   },
+  "InvalidGeometryCheck": {
+    "challenge": {
+      "description": "Tasks containing Ways with invalid geometries",
+      "blurb": "Invalid Geometries",
+      "instruction": "Correct the geometries of the displayed ways",
+      "difficulty": "NORMAL",
+      "tags":"geometry"
+    }
+  },
   "InvalidLanesTagCheck": {
     "lanes.filter": "lanes->1,1.5,2,3,4,5,6,7,8,9,10",
     "challenge":{
@@ -376,6 +385,8 @@
   },
   "InvalidMultiPolygonRelationCheck": {
     "members.one.ignore": true,
+    "overlap.points.minimum": 0,
+    "overlap.points.maximum": 2000000,
     "challenge": {
       "description": "Tasks containing improperly formed multipolygon relations.",
       "blurb": "Invalid Multipolygon Relations",
