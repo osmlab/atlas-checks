@@ -162,7 +162,7 @@ public class Challenge implements Serializable
 
     public long getStatus()
     {
-        return status;
+        return this.status;
     }
 
     public String getTags()
@@ -172,7 +172,7 @@ public class Challenge implements Serializable
 
     public boolean isEnabled()
     {
-        return enabled;
+        return this.enabled;
     }
 
     public void setCheckinComment(final String checkinComment)
@@ -180,7 +180,7 @@ public class Challenge implements Serializable
         this.checkinComment = checkinComment;
     }
 
-    public void setEnabled(boolean enabled)
+    public void setEnabled(final boolean enabled)
     {
         this.enabled = enabled;
     }

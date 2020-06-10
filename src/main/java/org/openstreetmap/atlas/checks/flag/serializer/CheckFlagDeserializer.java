@@ -26,6 +26,19 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
     private static final String ID = "id";
     private static final String IDENTIFIERS = "identifiers";
 
+    /**
+     * Returns a comma delimited string of identifiers.
+     *
+     * @param identifiers
+     *            - array of flag identifiers
+     * @return - comma delimited string
+     */
+    public static String parseIdentifiers(final JsonArray identifiers)
+    {
+        return Arrays.stream(new Gson().fromJson(identifiers, String[].class)).sorted()
+                .map(String::toString).collect(Collectors.joining(","));
+    }
+
     public CheckFlagDeserializer()
     {
         // Default constructor
@@ -48,18 +61,5 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         flag.setChallengeName(checkName);
 
         return flag;
-    }
-
-    /**
-     * Returns a comma delimited string of identifiers.
-     * 
-     * @param identifiers
-     *            - array of flag identifiers
-     * @return - comma delimited string
-     */
-    public static String parseIdentifiers(final JsonArray identifiers)
-    {
-        return Arrays.stream(new Gson().fromJson(identifiers, String[].class)).sorted()
-                .map(String::toString).collect(Collectors.joining(","));
     }
 }
