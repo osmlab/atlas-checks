@@ -39,7 +39,7 @@ public class MapRouletteUploadCommandTest
     @AfterClass
     public static void cleanup()
     {
-        new File(FOLDER.getPath()).deleteRecursively();
+        new File(FOLDER.getPathString()).deleteRecursively();
     }
 
     @Test
@@ -132,7 +132,7 @@ public class MapRouletteUploadCommandTest
     {
         // Set up some arguments
         final MapRouletteCommand command = new MapRouletteUploadCommand();
-        final String[] arguments = { String.format("-logfiles=%s", FOLDER.getPath()),
+        final String[] arguments = { String.format("-logfiles=%s", FOLDER.getPathString()),
                 MAPROULETTE_CONFIG };
         final CommandMap map = command
                 .getCommandMap((String[]) ArrayUtils.addAll(arguments, additionalArguments));
