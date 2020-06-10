@@ -56,6 +56,8 @@ public class Challenge implements Serializable
     private final String highPriorityRule;
     private final String mediumPriorityRule;
     private final String lowPriorityRule;
+    private long status;
+    private boolean enabled;
 
     public Challenge(final Challenge challenge)
     {
@@ -158,14 +160,29 @@ public class Challenge implements Serializable
         return this.parent;
     }
 
+    public long getStatus()
+    {
+        return status;
+    }
+
     public String getTags()
     {
         return this.tags;
     }
 
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
     public void setCheckinComment(final String checkinComment)
     {
         this.checkinComment = checkinComment;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
     }
 
     public void setId(final long identifier)
@@ -181,6 +198,11 @@ public class Challenge implements Serializable
     public void setParentIdentifier(final long identifier)
     {
         this.parent = identifier;
+    }
+
+    public void setStatus(final long status)
+    {
+        this.status = status;
     }
 
     public JsonObject toJson(final String challengeName)

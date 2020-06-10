@@ -42,7 +42,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         final String flagIdentifier = properties.get(IDENTIFIERS) == null
                 ? properties.get(ID).getAsString()
                 // Convert array of ids into comma delimited string
-                : this.parseIdentifiers((JsonArray) properties.get(IDENTIFIERS));
+                : parseIdentifiers((JsonArray) properties.get(IDENTIFIERS));
         final CheckFlag flag = new CheckFlag(flagIdentifier);
         flag.addInstruction(instruction);
         flag.setChallengeName(checkName);
@@ -57,7 +57,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
      *            - array of flag identifiers
      * @return - comma delimited string
      */
-    private String parseIdentifiers(final JsonArray identifiers)
+    public static String parseIdentifiers(final JsonArray identifiers)
     {
         return Arrays.stream(new Gson().fromJson(identifiers, String[].class)).sorted()
                 .map(String::toString).collect(Collectors.joining(","));

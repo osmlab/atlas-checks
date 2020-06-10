@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
+import org.openstreetmap.atlas.checks.maproulette.data.ChallengeStatus;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.serializer.TaskDeserializer;
@@ -189,6 +190,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
                 result.getName().isEmpty() ? checkName : result.getName());
         result.setName(challengeName);
+        // Add challenge name to check-in comment
+        result.setCheckinComment(String.format("#maproulette: %s", challengeName));
+        // Set challenge status to ready
+        result.setStatus(ChallengeStatus.READY.intValue());
+        // Set challenged disabled
+        result.setEnabled(false);
         return result;
     }
 
