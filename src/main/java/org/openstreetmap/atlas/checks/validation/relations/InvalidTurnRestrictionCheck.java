@@ -76,6 +76,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         final Set<AtlasObject> members = relation.members().stream().map(RelationMember::getEntity)
                 .collect(Collectors.toSet());
 
+        // A to and from member are required
         if (relation.members().stream()
                 .noneMatch(member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_FROM))
                 || relation.members().stream().noneMatch(
@@ -85,7 +86,9 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
                     relation.getOsmIdentifier(), MISSING_TO_FROM_INSTRUCTION)));
         }
 
+        // Build a turn restriction
         final TurnRestriction turnRestriction = new TurnRestriction(relation);
+        // If it is not valid map the reason to an instruction
         if (!turnRestriction.isValid())
         {
             return Optional.of(createFlag(members, this.getLocalizedInstruction(0,
@@ -103,6 +106,13 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Map {@link TurnRestriction} invalid reasons to instructions
+     *
+     * @param invalidReason
+     *            invalid reason from {@link TurnRestriction}
+     * @return {@link String} instruction
+     */
     private String getInstructionFromInvalidReason(final String invalidReason)
     {
         String instruction = UNKNOWN_ISSUE;
