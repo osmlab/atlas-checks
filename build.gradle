@@ -37,8 +37,6 @@ repositories
     maven { url "http://repository.cloudera.com/cloudera/cloudera-repos/" }
     // For staged repositories (before they get to maven central)
     maven { url "https://oss.sonatype.org/content/repositories/releases/" }
-    
-    flatDir { dirs 'libs' }
 }
 
 configurations
