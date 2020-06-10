@@ -5,10 +5,10 @@ import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERT
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.IDENTIFIER;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -48,7 +48,8 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
     {
         final Map<String, Map<Set<String>, JsonObject>> checkFeatureMap = new HashMap<>();
         try (InputStreamReader inputStreamReader = file.isGzipped()
-                ? new InputStreamReader(new GZIPInputStream(new FileInputStream(file.getFile())))
+                ? new InputStreamReader(
+                        new GZIPInputStream(Files.newInputStream(file.toAbsolutePath())))
                 : new FileReader(file.getPathString()))
         {
             try (BufferedReader reader = new BufferedReader(inputStreamReader))

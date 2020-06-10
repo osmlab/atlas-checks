@@ -6,11 +6,12 @@ import static org.openstreetmap.atlas.checks.constants.CommonConstants.LINE_SEPA
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -517,7 +518,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         logger.info("Reading files from: {}", path);
 
         // Check all files in the folder and all sub-folders
-        return new File(path).listFilesRecursively().parallelStream()
+        return new File(path, FileSystems.getDefault()).listFilesRecursively().parallelStream()
                 // Filter the files to only include log files, either gzipped or uncompressed
                 .filter(file -> FilenameUtils
                         .getExtension(file.isGzipped() ? FilenameUtils.getBaseName(file.getName())
@@ -534,8 +535,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
 
                     // Read the log file
                     try (InputStreamReader inputStreamReader = file.isGzipped()
-                            ? new InputStreamReader(
-                                    new GZIPInputStream(new FileInputStream(file.getFile())))
+                            ? new InputStreamReader(new GZIPInputStream(
+                                    Files.newInputStream(file.toAbsolutePath())))
                             : new FileReader(file.getPathString()))
                     {
                         try (BufferedReader reader = new BufferedReader(inputStreamReader))
@@ -653,7 +654,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         final String outputString = table.stream().map(line -> String.join(COMMA, line))
                 .collect(Collectors.joining(LINE_SEPARATOR));
 
-        try (FileWriter outputWriter = new FileWriter(new File(outputPath).getFile()))
+        try (OutputStreamWriter outputWriter = new OutputStreamWriter(Files
+                .newOutputStream(new File(outputPath, FileSystems.getDefault()).toAbsolutePath())))
         {
             outputWriter.write(outputString);
         }
