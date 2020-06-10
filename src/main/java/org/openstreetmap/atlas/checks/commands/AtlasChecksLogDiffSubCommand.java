@@ -49,7 +49,7 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
         final Map<String, Map<Set<String>, JsonObject>> checkFeatureMap = new HashMap<>();
         try (InputStreamReader inputStreamReader = file.isGzipped()
                 ? new InputStreamReader(new GZIPInputStream(new FileInputStream(file.getFile())))
-                : new FileReader(file.getPath()))
+                : new FileReader(file.getPathString()))
         {
             try (BufferedReader reader = new BufferedReader(inputStreamReader))
             {
@@ -67,7 +67,7 @@ public class AtlasChecksLogDiffSubCommand extends JSONFlagDiffSubCommand
                     // Add the geoJSON as a value
                     if (checkFeatureMap.get(checkName).containsKey(this.getIdentifiers(source)))
                     {
-                        logger.info("Duplicate flag found in {}: {}", file.getAbsolutePath(),
+                        logger.info("Duplicate flag found in {}: {}", file.getAbsolutePathString(),
                                 source);
                     }
                     checkFeatureMap.get(checkName).put(this.getIdentifiers(source), source);

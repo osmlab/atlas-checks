@@ -58,7 +58,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "log-diff", String.format("-reference=%s", SOURCE_DIRECTORY),
                 String.format("-input=%s", TARGET_DIRECTORY),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -79,7 +79,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "log-diff", String.format("-reference=%s", this.sourceFile),
                 String.format("-input=%s", this.targetFile),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -117,7 +117,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "log-diff", String.format("-reference=%s", this.sourceFileGZ),
                 String.format("-input=%s", this.targetFile),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -138,7 +138,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "log-diff", String.format("-reference=%s", GZ_SOURCE_DIRECTORY),
                 String.format("-input=%s", GZ_TARGET_DIRECTORY),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -159,7 +159,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "log-diff", String.format("-reference=%s", this.sourceFileGZ),
                 String.format("-input=%s", this.targetFileGZ),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -188,7 +188,7 @@ public class AtlasChecksLogDiffSubCommandTest
 
         // Create first source log file
         final FileProcessor<CheckFlagEvent> sourceProcessor = new CheckFlagFileProcessor(
-                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePath())
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePathString())
                         .withCompression(compression);
         sourceProcessor.process(this.setup.getConstantCheckFlagEvent());
         sourceProcessor.process(this.setup.getSubtractionCheckFlagEvent());
@@ -196,14 +196,14 @@ public class AtlasChecksLogDiffSubCommandTest
 
         // Create second source log file
         final FileProcessor<CheckFlagEvent> sourceProcessor2 = new CheckFlagFileProcessor(
-                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePath())
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePathString())
                         .withCompression(compression);
         sourceProcessor2.process(this.setup.getPreChangeCheckFlagEvent());
         sourceProcessor2.process(new ShutdownEvent());
 
         // Create first target log file
         final FileProcessor<CheckFlagEvent> targetProcessor = new CheckFlagFileProcessor(
-                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePath())
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePathString())
                         .withCompression(compression);
         targetProcessor.process(this.setup.getConstantCheckFlagEvent());
         targetProcessor.process(this.setup.getAdditionCheckFlagEvent());
@@ -211,7 +211,7 @@ public class AtlasChecksLogDiffSubCommandTest
 
         // Create second target log file
         final FileProcessor<CheckFlagEvent> targetProcessor2 = new CheckFlagFileProcessor(
-                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePath())
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePathString())
                         .withCompression(compression);
         targetProcessor2.process(this.setup.getPostChangeCheckFlagEvent());
         targetProcessor2.process(new ShutdownEvent());
@@ -230,6 +230,6 @@ public class AtlasChecksLogDiffSubCommandTest
         return directory.listFilesRecursively().stream()
                 .filter(file -> file.getName().endsWith(".log")
                         || file.getName().endsWith(".log.gz"))
-                .sorted().collect(Collectors.toList()).get(0).getPath();
+                .sorted().collect(Collectors.toList()).get(0).getPathString();
     }
 }

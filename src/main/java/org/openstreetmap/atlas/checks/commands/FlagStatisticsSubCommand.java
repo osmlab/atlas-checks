@@ -528,7 +528,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                     final Map<String, Map<String, Counter>> countryCheckMap = new HashMap<>();
                     logger.info("Reading: {}", file.getName());
                     // Get the parent folder name and assume it is a county code
-                    final String country = FilenameUtils.getName(file.getParent());
+                    final String country = FilenameUtils.getName(file.getParentPathString());
                     // Add the country to the map
                     countryCheckMap.putIfAbsent(country, new HashMap<>());
 
@@ -536,7 +536,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                     try (InputStreamReader inputStreamReader = file.isGzipped()
                             ? new InputStreamReader(
                                     new GZIPInputStream(new FileInputStream(file.getFile())))
-                            : new FileReader(file.getPath()))
+                            : new FileReader(file.getPathString()))
                     {
                         try (BufferedReader reader = new BufferedReader(inputStreamReader))
                         {

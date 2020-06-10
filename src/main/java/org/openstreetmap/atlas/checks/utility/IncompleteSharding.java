@@ -33,6 +33,12 @@ public class IncompleteSharding implements Sharding
     }
 
     @Override
+    public String getName()
+    {
+        return "Incomplete Sharding";
+    }
+
+    @Override
     public Iterable<Shard> neighbors(final Shard shard)
     {
         if (this.shardSet.contains(shard))
