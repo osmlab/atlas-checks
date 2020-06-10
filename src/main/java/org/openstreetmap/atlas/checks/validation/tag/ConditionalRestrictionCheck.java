@@ -3,6 +3,8 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -14,13 +16,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 /**
  * Flags conditional restriction tags that do not follow the scheme provided on the OSM wiki.
  * {@literal <restriction-type>[:<transportation mode>][:<direction>]:conditional
-  = <restriction-value> @ <condition>[;<restriction-value> @ <condition>]}
+ * = <restriction-value> @ <condition>[;<restriction-value> @ <condition>]}
  *
  * @author laura
  * @see <a href="https://wiki.openstreetmap.org/wiki/Conditional_restrictions">wiki</a>
  * for more information.
  */
-public class ConditionalRestrictionCheck extends BaseCheck {
+public class ConditionalRestrictionCheck extends BaseCheck<String> {
 
     private static final long serialVersionUID = 6726352951073801440L;
 
@@ -41,7 +43,7 @@ public class ConditionalRestrictionCheck extends BaseCheck {
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "The conditional key {0} does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format",
-            "The conditional value does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ");
+            "The conditional value {0} does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ");
 
     public ConditionalRestrictionCheck(final Configuration configuration) {
         super(configuration);
@@ -69,7 +71,7 @@ public class ConditionalRestrictionCheck extends BaseCheck {
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, key)));
             }
             final String value = object.getOsmTags().get(key);
-            if (!isValueValid(value)) {
+            if (!isValueValid(value, key)) {
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1, value)));
             }
         }
@@ -92,9 +94,35 @@ public class ConditionalRestrictionCheck extends BaseCheck {
         }
     }
 
-    private boolean isValueValid(final String value) {
-        //TODO implement value check
-        return true;
+    private boolean isValueValid(final String value, final String key) {
+        boolean isValid = true;
+        final Pattern valuePattern = Pattern.compile(
+                "([a-zA-Z0-9_-]*?)\\s@\\s(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*)\\s*(;\\s*([^@\\s][^@]*?)\\s*@\\s*(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*?)\\s*)*");
+        final Matcher matcher = valuePattern.matcher(value);
+        if (matcher.matches()) {
+            if (containsTransportationMode(key)) {
+                String[] parts = value.split("@");
+                for (int i = 0; i < parts.length - 1; i += 2) {
+                    if (!isAccessValue(parts[i].trim())) {
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+        } else {
+            isValid = false;
+        }
+        return isValid;
+    }
+
+    private boolean containsTransportationMode(final String key) {
+        final String[] parts = key.split(":");
+        for (String part : parts) {
+            if (isTransportationMode(part)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isRestrictionType(final String value) {

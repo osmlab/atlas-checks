@@ -36,11 +36,39 @@ public class ConditionalRestrictionCheckTestRule extends CoreTestRule {
                             "hgv:maxweight:conditional=none @ delivery" }) })
     private Atlas invalidConditionalKey;
 
+    @TestAtlas(
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)) },
+            edges = {
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=pedestrian",
+                            "motor_vehicle:conditional=delivery @ (Mo-Fr 06:00-11:00,17:00-19:00;Sa 03:30-19:00)",
+                            "bicycle=yes", "bicycle:conditional=no@(Sa 08:00-16:00)" }) })
+    private Atlas invalidConditionFormat;
+
+    @TestAtlas(
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)) },
+            edges = {
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=pedestrian",
+                            "motor_vehicle:conditional=delivery @ (Mo-Fr 06:00-11:00,17:00-19:00;Sa 03:30-19:00)",
+                            "bicycle=yes", "bicycle:conditional=notallowed @ (Sa 08:00-16:00)" }) })
+    private Atlas invalidAccessType;
+
     public Atlas getConditionalWay() {
         return conditionalWay;
     }
 
     public Atlas getInvalidConditionalKey() {
         return invalidConditionalKey;
+    }
+
+    public Atlas getInvalidConditionFormat() {
+        return invalidConditionFormat;
+    }
+
+    public Atlas getInvalidAccessType() {
+        return invalidAccessType;
     }
 }
