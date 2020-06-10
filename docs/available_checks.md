@@ -89,6 +89,7 @@ This document is a list of tables with a description and link to documentation f
 | [~~DuplicateWaysCheck~~ (Deprecated)](checks/duplicateWaysCheck.md) | The purpose of this check is to identify Ways that have either had their entire length or a segment of their length duplicated or drawn multiple times. **This check has been deprecated and is no longer active.** |
 | [GeneralizedCoastlineCheck](checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart, have angles that are too sharp, and/or have _source=PGS_ Tag values. |
 | [IntersectingBuildingsCheck](checks/intersectingBuildingsCheck.md) | The purpose of this check is to identify buildings that intersect other buildings. |
+| [InvalidGeometryCheck](checks/invalidGeometryCheck.md) | This check flags invalid polyline and polygon geometries. |
 | LineCrossingBuildingCheck | The purpose of this check is to identify line items (edges or lines) that are crossing buildings invalidly. |
 | LineCrossingWaterBodyCheck | The purpose of this check is to identify line items (edges or lines) and optionally buildings, that cross water bodies invalidly. |
 | MalformedPolyLineCheck | This check identifies lines that have only one point, or none, and the ones that are too long. |
