@@ -1,5 +1,14 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
@@ -12,9 +21,6 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Flags edges that are closed shaped and have minimum of two intersections with navigable roads.
@@ -30,73 +36,13 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public static final String MISSING_JUNCTION_TAG_INSTRUCTION = "This edge might be a roundabout";
     // Minimum intersection with Navigable Roads
     private static final int MINIMUM_INTERSECTION = 2;
+    private static final int MODULUS = 10;
+    private static final int FIRST_EDGE_SECTION = 1;
     public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
     private static final double MIN_THRESHOLD_DEGREES_DEFAULT = 10.0;
     private final Angle maxAngleThreshold;
     private final Angle minAngleThreshold;
-
-    private static boolean aConnectedEdgeValenceMoreThan(final Edge edge)
-    {
-        //Identify all sections of original OSM way
-        final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
-                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
-        Set<Long> connectedEdges = new HashSet<>();
-        edgesFormingOSMWay.stream()
-                .forEach(obj -> obj.connectedEdges()
-                        .stream()
-                        .filter(Edge::isMasterEdge)
-                        //intersection with navigable roads
-                        .filter(HighwayTag::isCarNavigableHighway)
-                        .filter(e -> e.getTag(ServiceTag.KEY).isEmpty())
-                        //de-duplication sectioned edges
-                        .forEach(wayId -> connectedEdges.add(wayId.getOsmIdentifier())));
-        return (connectedEdges.size() > MINIMUM_INTERSECTION);
-    }
-
-    //Re-build original OSM way geometry polyline.
-    private PolyLine buildOriginalOsmWayGeometry(final Edge edge) {
-
-        //Identify all sections of original OSM way
-        final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
-                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
-
-        //Sort sectioned Edges by Ids
-        final List<Edge> sortedEdges = new ArrayList<>(edgesFormingOSMWay);
-        sortedEdges.sort(Comparator.comparingLong(AtlasObject::getIdentifier));
-
-        //Build original OSM polyline
-        PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
-        for (int i = 0; i < sortedEdges.size(); i++) {
-            if (i > 0) {
-                geometry = geometry.append(sortedEdges.get(i).asPolyLine());
-            }
-        }
-        return geometry;
-    }
-
-    //Master edge is part of closed way
-    private boolean isPartOfClosedWay(final Edge object)
-    {
-        final HashSet<Long> wayIds = new HashSet<>();
-        Edge nextEdge = object;
-        // Loop through out going edges with the same OSM id
-        while (nextEdge != null)
-        {
-            wayIds.add(nextEdge.getIdentifier());
-            final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(Edge::isMasterEdge)
-                    .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
-                    .collectToList();
-            nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
-            // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Default constructor
@@ -135,21 +81,21 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
 
         //process only first sectioned Edge
-        if(edge.getIdentifier() % 10 == 1 && edge.isMasterEdge()
+        if(edge.getIdentifier() % MODULUS == FIRST_EDGE_SECTION && edge.isMasterEdge()
                 && HighwayTag.isCarNavigableHighway(edge)
                     && isPartOfClosedWay(edge))
         {
             if (!edge.getTag(JunctionTag.KEY).isPresent()  && !edge.getTag(AreaTag.KEY).isPresent()
-                    && aConnectedEdgeValenceMoreThan(edge))
+                    && intersectingWithMoreThan(edge))
             {
                 //rebuild original OSM Way geometry
-                PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
+                final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
                 //check maximum angle
-                final List<Tuple<Angle, Location>> maxOffendingAngles = (originalGeom
-                        .anglesGreaterThanOrEqualTo(this.maxAngleThreshold));
+                final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
+                        .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
                 //check minimum angle
-                final List<Tuple<Angle, Location>> minOffendingAngles = (originalGeom
-                        .anglesLessThanOrEqualTo(this.minAngleThreshold));
+                final List<Tuple<Angle, Location>> minOffendingAngles = originalGeom
+                        .anglesLessThanOrEqualTo(this.minAngleThreshold);
 
                 if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
                 {
@@ -167,5 +113,88 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Build original OSW way geometry from all MasterEdge sections
+     *
+     * @param edge
+     *
+     * @return original Way geometry polyline
+     */
+    private PolyLine buildOriginalOsmWayGeometry(final Edge edge)
+    {
+        //Identify all sections of original OSM way
+        final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
+                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+
+        //Sort sectioned Edges by Ids
+        final List<Edge> sortedEdges = new ArrayList<>(edgesFormingOSMWay);
+        sortedEdges.sort(Comparator.comparingLong(AtlasObject::getIdentifier));
+
+        //Build original OSM polyline
+        PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
+        for (int i = 0; i < sortedEdges.size(); i++)
+        {
+            if (i > 0)
+            {
+                geometry = geometry.append(sortedEdges.get(i).asPolyLine());
+            }
+        }
+        return geometry;
+    }
+
+    /**
+     * Check if original OSM Way is intersecting with CAR_NAVIGABLE_HIGHWAYS. See {@link HighwayTag}
+     *
+     * @param edge
+     *
+     * @return true if way intersecting with more more than {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
+     */
+    private boolean intersectingWithMoreThan(final Edge edge)
+    {
+        //Identify all sections of original OSM way
+        final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
+                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+        final Set<Long> connectedEdges = new HashSet<>();
+        edgesFormingOSMWay.stream()
+                .forEach(obj -> obj.connectedEdges()
+                        .stream()
+                        .filter(Edge::isMasterEdge)
+                        //intersection with navigable roads
+                        .filter(HighwayTag::isCarNavigableHighway)
+                        .filter(e -> e.getTag(ServiceTag.KEY).isEmpty())
+                        //de-duplication sectioned edges
+                        .forEach(wayId -> connectedEdges.add(wayId.getOsmIdentifier())));
+        return connectedEdges.size() > MINIMUM_INTERSECTION;
+    }
+
+    /**
+     * Check if Edge is part of Closed Way. See https://wiki.openstreetmap.org/wiki/Item:Q4669
+     *
+     * @param edge
+     *
+     * @return true if edge is part of closed way.
+     */
+    private boolean isPartOfClosedWay(final Edge edge)
+    {
+        final HashSet<Long> wayIds = new HashSet<>();
+        Edge nextEdge = edge;
+        // Loop through out going edges with the same OSM id
+        while (nextEdge != null)
+        {
+            wayIds.add(nextEdge.getIdentifier());
+            final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
+                    .filter(Edge::isMasterEdge)
+                    .filter(outEdge -> outEdge.getOsmIdentifier() == edge.getOsmIdentifier())
+                    .collectToList();
+            nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
+            // If original edge is found, the way is closed
+            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
