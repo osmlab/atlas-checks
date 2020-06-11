@@ -10,8 +10,9 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas;
  * @author vladlemberg
  */
 
-public class RoundaboutMissingTagCheckTestRule extends CoreTestRule {
-
+public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
+{
+    //roundabout nodes
     private static final String TEST_NODE_VERTEX_1 = "37.3293541,-121.9156701";
     private static final String TEST_NODE_SHP_1 = "37.3293187,-121.9157123";
     private static final String TEST_NODE_SHP_2 = "37.3292841,-121.9157281";
@@ -28,6 +29,7 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule {
     private static final String TEST_NODE_SHP_10 = "37.3293534,-121.9155234";
     private static final String TEST_NODE_SHP_11 = "37.3293683,-121.9155658";
     private static final String TEST_NODE_SHP_12 = "37.3293686,-121.9156274";
+    //connected way nodes
     private static final String TEST_NODE_5 = "37.3303971,-121.9139893";
     private static final String TEST_NODE_6 = "37.3281316,-121.9170493";
 
@@ -171,20 +173,23 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule {
             })
     private Atlas closedWayNoIntersectionsWithNavigableEdges;
 
-
-    public Atlas closedWayRoundShape() {
-        return this.closedWayRoundShape;
+    public Atlas closedWayMalformedShape()
+    {
+        return this.closedWayMalformedShape;
     }
 
-    public Atlas unClosedWay() {
-        return this.unClosedWay;
-    }
-
-    public Atlas closedWayNoIntersectionsWithNavigableEdges() {
+    public Atlas closedWayNoIntersectionsWithNavigableEdges()
+    {
         return this.closedWayNoIntersectionsWithNavigableEdges;
     }
 
-    public Atlas ClosedWayMalformedShape() {
-        return this.closedWayMalformedShape;
+    public Atlas closedWayRoundShape()
+    {
+        return this.closedWayRoundShape;
+    }
+
+    public Atlas unClosedWay()
+    {
+        return this.unClosedWay;
     }
 }

@@ -5,6 +5,11 @@ import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
+/**
+ * Unit tests for {@link RoundaboutMissingTagCheck}.
+ *
+ * @author vladlemberg
+ */
 public class RoundaboutMissingTagCheckTest {
 
     @Rule
@@ -14,19 +19,19 @@ public class RoundaboutMissingTagCheckTest {
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void closedWayMalformedShape()
+    {
+        this.verifier.actual(this.setup.closedWayMalformedShape(),
+                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void closedWayRoundShape()
     {
         this.verifier.actual(this.setup.closedWayRoundShape(),
                 new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void closedWayMalformedShape()
-    {
-        this.verifier.actual(this.setup.ClosedWayMalformedShape(),
-                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
     }
 
     @Test
