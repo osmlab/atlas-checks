@@ -1,12 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -16,7 +10,10 @@ import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
-import org.openstreetmap.atlas.tags.*;
+import org.openstreetmap.atlas.tags.AreaTag;
+import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
@@ -38,7 +35,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     private static final int MINIMUM_INTERSECTION = 2;
     private static final int MODULUS = 10;
     private static final int FIRST_EDGE_SECTION = 1;
-    public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(MISSING_JUNCTION_TAG_INSTRUCTION);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
     private static final double MIN_THRESHOLD_DEGREES_DEFAULT = 10.0;
     private final Angle maxAngleThreshold;
@@ -85,7 +82,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                 && HighwayTag.isCarNavigableHighway(edge)
                     && isPartOfClosedWay(edge))
         {
-            if (!edge.getTag(JunctionTag.KEY).isPresent()  && !edge.getTag(AreaTag.KEY).isPresent()
+            if (edge.getTag(JunctionTag.KEY).isEmpty()  && edge.getTag(AreaTag.KEY).isEmpty()
                     && intersectingWithMoreThan(edge))
             {
                 //rebuild original OSM Way geometry
@@ -119,6 +116,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
      * Build original OSW way geometry from all MasterEdge sections
      *
      * @param edge
+     *      entity to check
      *
      * @return original Way geometry polyline
      */
@@ -148,6 +146,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
      * Check if original OSM Way is intersecting with CAR_NAVIGABLE_HIGHWAYS. See {@link HighwayTag}
      *
      * @param edge
+     *      entity to check
      *
      * @return true if way intersecting with more more than {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
      */
@@ -157,7 +156,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
                 .filter(Edge::isMasterEdge).collect(Collectors.toSet());
         final Set<Long> connectedEdges = new HashSet<>();
-        edgesFormingOSMWay.stream()
+        edgesFormingOSMWay
                 .forEach(obj -> obj.connectedEdges()
                         .stream()
                         .filter(Edge::isMasterEdge)
@@ -173,6 +172,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
      * Check if Edge is part of Closed Way. See https://wiki.openstreetmap.org/wiki/Item:Q4669
      *
      * @param edge
+     *      entity to check
      *
      * @return true if edge is part of closed way.
      */
