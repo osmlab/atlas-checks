@@ -30,16 +30,16 @@ public class ConditionalRestrictionCheck extends BaseCheck<String> {
     private static final List<String> RESTRICTION_TYPES =
             List.of("access", "restriction", "maxspeed", "minspeed", "maxweight", "maxaxleload", "maxheight",
                     "maxlength", "maxstay", "maxgcweight", "maxgcweightrating", "interval", "duration", "overtaking",
-                    "oneway", "fee", "toll", "noexit");
+                    "oneway", "fee", "toll", "noexit", "snowplowing", "disabled");
     private static final List<String> TRANSPORTATION_MODE =
             List.of("foot", "ski", "inline_skates", "horse", "vehicle", "bicycle", "carriage", "trailer", "caravan",
                     "motor_vehicle", "motorcycle", "moped", "mofa", "motorcar", "motorhome", "tourist_bus", "coach",
                     "goods", "hgv", "hgv_articulated", "agricultural", "golf_cart", "atv", "snowmobile", "psv", "bus",
-                    "minibus", "share_taxi", "taxi", "hov", "hazmat", "emergency");
-    private static final List<String> DIRECTION = List.of("forward", "backward");
+                    "minibus", "share_taxi", "taxi", "hov", "hazmat", "emergency", "canoe", "electric_vehicle");
+    private static final List<String> DIRECTION = List.of("forward", "backward", "left", "right", "both");
     private static final List<String> ACCESS_RESTRICTION_VALUE =
             List.of("yes", "no", "private", "permissive", "destination", "delivery", "customers", "designated",
-                    "use_sidepath", "dismount", "agricultural", "forestry", "discouraged", "official");
+                    "use_sidepath", "dismount", "agricultural", "forestry", "discouraged", "official", "lane");
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "The conditional key {0} does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format",
