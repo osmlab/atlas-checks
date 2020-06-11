@@ -10,8 +10,8 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  *
  * @author vladlemberg
  */
-public class RoundaboutMissingTagCheckTest {
-
+public class RoundaboutMissingTagCheckTest
+{
     @Rule
     public RoundaboutMissingTagCheckTestRule setup = new RoundaboutMissingTagCheckTestRule();
 
@@ -27,19 +27,19 @@ public class RoundaboutMissingTagCheckTest {
     }
 
     @Test
-    public void closedWayRoundShape()
-    {
-        this.verifier.actual(this.setup.closedWayRoundShape(),
-                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void closedWayNoIntersectionsWithNavigableEdges()
     {
         this.verifier.actual(this.setup.closedWayNoIntersectionsWithNavigableEdges(),
                 new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void closedWayRoundShape()
+    {
+        this.verifier.actual(this.setup.closedWayRoundShape(),
+                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
