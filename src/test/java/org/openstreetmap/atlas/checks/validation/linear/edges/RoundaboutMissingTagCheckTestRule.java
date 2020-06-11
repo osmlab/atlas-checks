@@ -12,7 +12,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 
 public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
 {
-    //roundabout nodes
+    // roundabout nodes
     private static final String TEST_NODE_VERTEX_1 = "37.3293541,-121.9156701";
     private static final String TEST_NODE_SHP_1 = "37.3293187,-121.9157123";
     private static final String TEST_NODE_SHP_2 = "37.3292841,-121.9157281";
@@ -29,14 +29,13 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
     private static final String TEST_NODE_SHP_10 = "37.3293534,-121.9155234";
     private static final String TEST_NODE_SHP_11 = "37.3293683,-121.9155658";
     private static final String TEST_NODE_SHP_12 = "37.3293686,-121.9156274";
-    //connected way nodes
+    // connected way nodes
     private static final String TEST_NODE_5 = "37.3303971,-121.9139893";
     private static final String TEST_NODE_6 = "37.3281316,-121.9170493";
 
     @TestAtlas(
             // nodes
-            nodes = {
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_3)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_4)),
@@ -53,122 +52,143 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_SHP_11)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_SHP_12)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_5)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_6)),
-            },
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_6)), },
             // edges
             edges = {
-                    //parts of roundabout
+                    // parts of roundabout
                     @TestAtlas.Edge(id = "12340001", coordinates = {
                             @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_1),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_2),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_3),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) },
-                            tags = {"highway=primary"}),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {
+                                    "highway=primary" }),
                     @TestAtlas.Edge(id = "12340002", coordinates = {
                             @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_4),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_5),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_6),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) },
-                            tags = { "highway=primary" }),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = {
+                                    "highway=primary" }),
                     @TestAtlas.Edge(id = "12340003", coordinates = {
                             @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_7),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_8),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_9),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) },
-                            tags = { "highway=primary" }),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=primary" }),
                     @TestAtlas.Edge(id = "12340004", coordinates = {
                             @TestAtlas.Loc(value = TEST_NODE_VERTEX_4),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_10),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_11),
                             @TestAtlas.Loc(value = TEST_NODE_SHP_12),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) },
-                            tags = { "highway=primary" }),
-                    //connected navigable edges
-                    @TestAtlas.Edge(id = "32340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) }, tags = {
+                                    "highway=primary" }),
+                    // connected navigable edges
+                    @TestAtlas.Edge(id = "32340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
                             @TestAtlas.Loc(value = TEST_NODE_6) }, tags = { "highway=tertiary" }),
-                    @TestAtlas.Edge(id = "42340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_5),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+                    @TestAtlas.Edge(id = "42340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_5),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=secondary" }),
 
             })
     private Atlas closedWayRoundShape;
 
     @TestAtlas(
             // nodes
-            nodes = {
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_3)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_4)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_5)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_6)),
-            },
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_6)), },
             // edges
             edges = {
-                    //parts of roundabout
-                    @TestAtlas.Edge(id = "12340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {"highway=primary"}),
-                    @TestAtlas.Edge(id = "12340002", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "12340003", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "12340004", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_4),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
-                    //connected navigable edges
-                    @TestAtlas.Edge(id = "32340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                    // parts of roundabout
+                    @TestAtlas.Edge(id = "12340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "12340002", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "12340003", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "12340004", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) }, tags = {
+                                    "highway=primary" }),
+                    // connected navigable edges
+                    @TestAtlas.Edge(id = "32340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
                             @TestAtlas.Loc(value = TEST_NODE_6) }, tags = { "highway=tertiary" }),
-                    @TestAtlas.Edge(id = "42340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_5),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+                    @TestAtlas.Edge(id = "42340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_5),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=secondary" }),
 
             })
     private Atlas closedWayMalformedShape;
 
     @TestAtlas(
             // nodes
-            nodes = {
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_4)),
-            },
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_4)), },
             // edges
-            edges = {
-                    @TestAtlas.Edge(id = "2234", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "2235", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "2236", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=primary" }),
-            })
+            edges = { @TestAtlas.Edge(id = "2234", coordinates = {
+                    @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
+                    @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=primary" }),
+                    @TestAtlas.Edge(id = "2235", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "2236", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=primary" }), })
     private Atlas unClosedWay;
     @TestAtlas(
             // nodes
-            nodes = {
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_3)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_4)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_5)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_6)),
-            },
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_6)), },
             // edges
             edges = {
-                    //parts of roundabout
-                    @TestAtlas.Edge(id = "12340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {"highway=primary"}),
-                    @TestAtlas.Edge(id = "12340002", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "12340003", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "12340004", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_4),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
-                    //connected not navigable edges
-                    @TestAtlas.Edge(id = "32340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                    // parts of roundabout
+                    @TestAtlas.Edge(id = "12340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "12340002", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "12340003", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_3),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=primary" }),
+                    @TestAtlas.Edge(id = "12340004", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) }, tags = {
+                                    "highway=primary" }),
+                    // connected not navigable edges
+                    @TestAtlas.Edge(id = "32340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
                             @TestAtlas.Loc(value = TEST_NODE_6) }, tags = { "highway=footway" }),
-                    @TestAtlas.Edge(id = "42340001", coordinates = { @TestAtlas.Loc(value = TEST_NODE_5),
-                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=path" }),
+                    @TestAtlas.Edge(id = "42340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_5),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
+                                    "highway=path" }),
 
             })
     private Atlas closedWayNoIntersectionsWithNavigableEdges;
