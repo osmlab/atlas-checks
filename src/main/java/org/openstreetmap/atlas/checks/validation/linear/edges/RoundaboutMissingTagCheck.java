@@ -87,27 +87,24 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
 
         // process only first sectioned Edge
         if (edge.getIdentifier() % MODULUS == FIRST_EDGE_SECTION && edge.isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(edge) && isPartOfClosedWay(edge))
+                && HighwayTag.isCarNavigableHighway(edge) && isPartOfClosedWay(edge)
+                && edge.getTag(JunctionTag.KEY).isEmpty() && edge.getTag(AreaTag.KEY).isEmpty()
+                && intersectingWithMoreThan(edge))
         {
-            if (edge.getTag(JunctionTag.KEY).isEmpty() && edge.getTag(AreaTag.KEY).isEmpty()
-                    && intersectingWithMoreThan(edge))
-            {
-                // rebuild original OSM Way geometry
-                final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
-                // check maximum angle
-                final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
-                        .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
-                // check minimum angle
-                final List<Tuple<Angle, Location>> minOffendingAngles = originalGeom
-                        .anglesLessThanOrEqualTo(this.minAngleThreshold);
+            // rebuild original OSM Way geometry
+            final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
+            // check maximum angle
+            final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
+                    .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
+            // check minimum angle
+            final List<Tuple<Angle, Location>> minOffendingAngles = originalGeom
+                    .anglesLessThanOrEqualTo(this.minAngleThreshold);
 
-                if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
-                {
-                    System.out.println(edge.getOsmIdentifier());
-                    this.markAsFlagged(object.getOsmIdentifier());
-                    return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
-                            this.getLocalizedInstruction(0)));
-                }
+            if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
+            {
+                this.markAsFlagged(object.getOsmIdentifier());
+                return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+                        this.getLocalizedInstruction(0)));
             }
         }
         return Optional.empty();
