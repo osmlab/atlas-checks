@@ -87,9 +87,8 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
 
         // process only first sectioned Edge
         if (edge.getIdentifier() % MODULUS == FIRST_EDGE_SECTION && edge.isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(edge)
-                && edge.getTag(JunctionTag.KEY).isEmpty() && edge.getTag(AreaTag.KEY).isEmpty()
-                && isPartOfClosedWay(edge)
+                && HighwayTag.isCarNavigableHighway(edge) && edge.getTag(JunctionTag.KEY).isEmpty()
+                && edge.getTag(AreaTag.KEY).isEmpty() && isPartOfClosedWay(edge)
                 && intersectingWithMoreThan(edge))
         {
             // rebuild original OSM Way geometry
