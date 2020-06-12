@@ -44,6 +44,30 @@ public class RoundaboutMissingTagCheckTest
     }
 
     @Test
+    public void edgeWithAreaTag()
+    {
+        this.verifier.actual(this.setup.edgeWithAreaTag(),
+                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void edgeWithRoundaboutTag()
+    {
+        this.verifier.actual(this.setup.edgeWithRoundaboutTag(),
+                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void reversedEdge()
+    {
+        this.verifier.actual(this.setup.reversedEdge(),
+                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void unClosedWay()
     {
         this.verifier.actual(this.setup.unClosedWay(),

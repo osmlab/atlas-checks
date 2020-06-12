@@ -138,6 +138,49 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),},
+            // edges
+            edges = {
+                    @TestAtlas.Edge(id = "12340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {
+                            "highway=primary", "junction=roundabout" }),
+            })
+    private Atlas edgeWithRoundaboutTag;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),},
+            // edges
+            edges = {
+                    @TestAtlas.Edge(id = "12340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {
+                            "highway=primary", "area=yes" }),
+            })
+    private Atlas edgeWithAreaTag;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),},
+            // edges
+            edges = {
+                    @TestAtlas.Edge(id = "-12340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1) }, tags = {
+                            "highway=primary"}),
+                    @TestAtlas.Edge(id = "12340001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_1),
+                            @TestAtlas.Loc(value = TEST_NODE_VERTEX_2) }, tags = {
+                            "highway=primary" }),
+            })
+    private Atlas reversedEdge;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_2)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_3)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_4)), },
@@ -154,6 +197,7 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                             @TestAtlas.Loc(value = TEST_NODE_VERTEX_4) }, tags = {
                                     "highway=primary" }), })
     private Atlas unClosedWay;
+
     @TestAtlas(
             // nodes
             nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_NODE_VERTEX_1)),
@@ -206,6 +250,21 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
     public Atlas closedWayRoundShape()
     {
         return this.closedWayRoundShape;
+    }
+
+    public Atlas edgeWithAreaTag()
+    {
+        return this.edgeWithAreaTag;
+    }
+
+    public Atlas edgeWithRoundaboutTag()
+    {
+        return this.edgeWithRoundaboutTag;
+    }
+
+    public Atlas reversedEdge()
+    {
+        return this.reversedEdge;
     }
 
     public Atlas unClosedWay()
