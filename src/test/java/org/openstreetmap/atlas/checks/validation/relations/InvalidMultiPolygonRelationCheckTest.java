@@ -95,6 +95,24 @@ public class InvalidMultiPolygonRelationCheckTest
     }
 
     @Test
+    public void overlappingOutersMaximumPointsTest()
+    {
+        this.verifyCheck(this.setup.overlappingOutersAtlas(),
+                ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidMultiPolygonRelationCheck\":{\"overlap.points.maximum\":2}}"),
+                0, Collections.emptyList());
+    }
+
+    @Test
+    public void overlappingOutersMinimumPointsTest()
+    {
+        this.verifyCheck(this.setup.overlappingOutersAtlas(),
+                ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidMultiPolygonRelationCheck\":{\"overlap.points.minimum\":2000}}"),
+                0, Collections.emptyList());
+    }
+
+    @Test
     public void overlappingOutersTest()
     {
         this.verifyCheck(this.setup.overlappingOutersAtlas(),

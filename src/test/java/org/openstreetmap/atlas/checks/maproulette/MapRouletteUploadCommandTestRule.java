@@ -20,7 +20,8 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
     private static final String CENTER = "0,0";
     private static final String IDENTIFIER_1 = "1";
     private static final String IDENTIFIER_2 = "2";
-    private static final String IDENTIFIER_3 = "2";
+    private static final String IDENTIFIER_3 = "3";
+    private static final String IDENTIFIER_4 = "4";
     private static final String CHALLENGE_1 = "SomeCheck";
     private static final String CHALLENGE_2 = "SomeOtherCheck";
     private static final String CHALLENGE_3 = "AnotherCheck";
@@ -30,12 +31,19 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
             @Point(coordinates = @Loc(value = CENTER), id = "1", tags = { "iso_country_code=USA" }),
             @Point(coordinates = @Loc(value = CENTER), id = "2", tags = { "iso_country_code=CAN" }),
             @Point(coordinates = @Loc(value = CENTER), id = "3", tags = {
-                    "iso_country_code=MEX,BLZ" }) })
+                    "iso_country_code=MEX,BLZ" }),
+            @Point(coordinates = @Loc(value = CENTER), id = "4", tags = {
+                    "iso_country_code=URY" }) })
     private Atlas basicAtlas;
 
     public CheckFlagEvent getAnotherBasicFlag()
     {
         return this.getBasicFlag(IDENTIFIER_2, this.basicAtlas.point(2L), CHALLENGE_2);
+    }
+
+    public CheckFlagEvent getFlagSameCheck()
+    {
+        return this.getBasicFlag(IDENTIFIER_4, this.basicAtlas.point(4L), CHALLENGE_1);
     }
 
     public CheckFlagEvent getOneBasicFlag()

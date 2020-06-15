@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Latitude;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
@@ -61,8 +62,8 @@ public class TaskDeserializer implements JsonDeserializer<Task>
     }
 
     /**
-     * The opposite of getPointsFromGeojson -- get all geojson features which do contain a
-     * properties field from a {@link JsonArray}.
+     * The opposite of getPointsFromGeojson -- get all osm features from the geojson. This will
+     * filter all synthetic CheckFlag Points.
      *
      * @param features
      *            a {@link JsonArray} of geojson features
@@ -71,7 +72,8 @@ public class TaskDeserializer implements JsonDeserializer<Task>
      */
     private JsonArray filterOutPointsFromGeojson(final JsonArray features)
     {
-        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES))
+        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES)
+                && !feature.get(PROPERTIES).getAsJsonObject().has(SyntheticHighlightPointTag.KEY))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
