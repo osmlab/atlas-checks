@@ -30,7 +30,7 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
     private static final List<String> RESTRICTION_TYPES = List.of("access", "restriction",
             "maxspeed", "minspeed", "maxweight", "maxaxleload", "maxheight", "maxlength", "maxstay",
             "maxgcweight", "maxgcweightrating", "interval", "duration", "overtaking", "oneway",
-            "fee", "toll", "noexit", "snowplowing", "disabled");
+            "fee", "toll", "noexit", "snowplowing", "disabled", "lanes", "parking");
     private static final List<String> TRANSPORTATION_MODE = List.of("foot", "ski", "inline_skates",
             "horse", "vehicle", "bicycle", "carriage", "trailer", "caravan", "motor_vehicle",
             "motorcycle", "moped", "mofa", "motorcar", "motorhome", "tourist_bus", "coach", "goods",
@@ -152,7 +152,7 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
     {
         boolean isValid = true;
         final Pattern valuePattern = Pattern.compile(
-                "([a-zA-Z0-9_-]*?)\\s@\\s(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*)\\s*(;\\s*([^@\\s][^@]*?)\\s*@\\s*(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*?)\\s*)*");
+                "([a-zA-Z0-9_.-]*?)\\s@\\s(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*)\\s*(;\\s*([^@\\s][^@]*?)\\s*@\\s*(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*?)\\s*)*");
         final Matcher matcher = valuePattern.matcher(value);
         if (matcher.matches())
         {
