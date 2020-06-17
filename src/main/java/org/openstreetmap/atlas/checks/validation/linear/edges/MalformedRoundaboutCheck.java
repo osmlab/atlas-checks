@@ -92,7 +92,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         final Set<String> instructions = new HashSet<>();
 
-        //Skip if roundabout contains synthetic node. bug fix: https://github.com/osmlab/atlas-checks/issues/316
+        // Skip if roundabout contains synthetic node. bug fix:
+        // https://github.com/osmlab/atlas-checks/issues/316
         if (isEdgeWithSyntheticBoundaryNode(object))
         {
             return Optional.empty();
@@ -176,13 +177,15 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
 
     /**
      * Checks if {@link AtlasObject} contains synthetic boundary Node
+     * 
      * @param object
      * @return true if roundabout contains synthetic boundary Node.
      */
     private boolean isEdgeWithSyntheticBoundaryNode(final AtlasObject object)
     {
-        return object instanceof Edge &&
-                new SimpleEdgeWalker((Edge)object, this.isRoundaboutEdge()).collectEdges().stream()
+        return object instanceof Edge
+                && new SimpleEdgeWalker((Edge) object, this.isRoundaboutEdge()).collectEdges()
+                        .stream()
                         .anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()
                                 .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
     }
