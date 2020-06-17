@@ -25,8 +25,8 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.LayerTag;
-import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
+import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -93,7 +93,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
         final Set<String> instructions = new HashSet<>();
 
         //Skip if roundabout contains synthetic node. bug fix: https://github.com/osmlab/atlas-checks/issues/316
-        if (isEdgeWithSyntheticBoundaryNode(object)) {
+        if (isEdgeWithSyntheticBoundaryNode(object))
+        {
             return Optional.empty();
         }
 
@@ -178,7 +179,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
      * @param object
      * @return true if roundabout contains synthetic boundary Node.
      */
-    private boolean isEdgeWithSyntheticBoundaryNode(AtlasObject object)
+    private boolean isEdgeWithSyntheticBoundaryNode(final AtlasObject object)
     {
         return object instanceof Edge &&
                 new SimpleEdgeWalker((Edge)object, this.isRoundaboutEdge()).collectEdges().stream()
