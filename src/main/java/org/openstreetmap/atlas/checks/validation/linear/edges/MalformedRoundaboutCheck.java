@@ -185,9 +185,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         return object instanceof Edge
                 && new SimpleEdgeWalker((Edge) object, this.isRoundaboutEdge()).collectEdges()
-                        .stream()
-                        .anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()
-                                .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
+                        .stream().anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes()
+                            .stream().anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
     }
 
     /**
