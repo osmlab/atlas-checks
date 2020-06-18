@@ -135,12 +135,9 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
 
         // Build original OSM polyline
         PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
-        for (int i = 0; i < sortedEdges.size(); i++)
+        for (int i = 1; i < sortedEdges.size(); i++)
         {
-            if (i > 0)
-            {
-                geometry = geometry.append(sortedEdges.get(i).asPolyLine());
-            }
+            geometry = geometry.append(sortedEdges.get(i).asPolyLine());
         }
         return geometry;
     }
