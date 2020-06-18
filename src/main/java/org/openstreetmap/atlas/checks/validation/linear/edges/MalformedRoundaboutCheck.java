@@ -183,10 +183,9 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
      */
     private boolean isEdgeWithSyntheticBoundaryNode(final AtlasObject object)
     {
-        return new SimpleEdgeWalker((Edge) object, this.isRoundaboutEdge()).collectEdges()
-                        .stream()
-                        .anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()
-                                .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
+        return new SimpleEdgeWalker((Edge) object, this.isRoundaboutEdge()).collectEdges().stream()
+                .anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()
+                        .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
     }
 
     /**
