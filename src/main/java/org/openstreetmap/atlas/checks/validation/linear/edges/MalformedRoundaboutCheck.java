@@ -94,7 +94,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
 
         // Skip if roundabout contains synthetic node. bug fix:
         // https://github.com/osmlab/atlas-checks/issues/316
-        if (isEdgeWithSyntheticBoundaryNode(object))
+        if (this.isEdgeWithSyntheticBoundaryNode(object))
         {
             return Optional.empty();
         }
