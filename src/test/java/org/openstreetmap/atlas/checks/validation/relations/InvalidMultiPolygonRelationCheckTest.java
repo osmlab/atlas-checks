@@ -64,6 +64,17 @@ public class InvalidMultiPolygonRelationCheckTest
     }
 
     @Test
+    public void innerTouchSyntheticInvalidTest()
+    {
+        this.verifyCheck(this.setup.innerTouchSyntheticInvalidAtlas(),
+                ConfigurationResolver.emptyConfiguration(), 1,
+                Collections.singletonList(
+                        String.format(referenceDefaultLocaleCheck.getLocalizedInstruction(
+                                InvalidMultiPolygonRelationCheck.GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT_INDEX,
+                                1), "1")));
+    }
+
+    @Test
     public void innerTouchTest()
     {
         this.verifyCheck(this.setup.innerTouchAtlas(), ConfigurationResolver.emptyConfiguration(),

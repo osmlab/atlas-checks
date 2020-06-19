@@ -565,6 +565,29 @@ public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
                     @Member(id = "2000000", type = "area", role = "inner") }, tags = "type=multipolygon") })
     private Atlas innerOutsideOuterAtlas;
 
+    @TestAtlas(
+            // Areas
+            areas = { @Area(id = "1000000", coordinates = { @Loc(value = TEST_VALIDRELATION_10),
+                    @Loc(value = TEST_VALIDRELATION_11), @Loc(value = TEST_VALIDRELATION_14),
+                    @Loc(value = TEST_VALIDRELATION_6), @Loc(value = TEST_VALIDRELATION_10) }),
+                    @Area(id = "2000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_8),
+                            @Loc(value = TEST_INVALIDMEMBERTYPE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_1) }),
+                    @Area(id = "3000000", coordinates = {
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_8),
+                            @Loc(value = TEST_INVALIDMEMBERTYPE_6),
+                            @Loc(value = TEST_VALIDRELATIONTWONOROLE_15) }) },
+            // Relations
+            relations = { @Relation(id = "1000000", members = {
+                    @Member(id = "1000000", type = "area", role = "outer"),
+                    @Member(id = "2000000", type = "area", role = "inner"),
+                    @Member(id = "3000000", type = "area", role = "inner") }, tags = {
+                            "type=multipolygon", "synthetic_invalid_geometry=yes" }) })
+    private Atlas innerTouchSyntheticInvalidAtlas;
+
     public Atlas getAtlas()
     {
         return this.atlas;
@@ -623,6 +646,11 @@ public class InvalidMultiPolygonRelationCheckTestRule extends CoreTestRule
     public Atlas innerTouchAtlas()
     {
         return this.innerTouchAtlas;
+    }
+
+    public Atlas innerTouchSyntheticInvalidAtlas()
+    {
+        return this.innerTouchSyntheticInvalidAtlas;
     }
 
     public Atlas outerInHoleAtlas()
