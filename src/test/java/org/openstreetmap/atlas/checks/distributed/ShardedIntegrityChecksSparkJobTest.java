@@ -49,10 +49,9 @@ public class ShardedIntegrityChecksSparkJobTest
                 .collect(Collectors.toSet());
         for (final File file : flagFiles)
         {
-            Assert.assertEquals(2,
-                    new BufferedReader(
-                            new InputStreamReader(new FileInputStream(file.getAbsolutePath())))
-                                    .lines().count());
+            Assert.assertEquals(2, new BufferedReader(
+                    new InputStreamReader(new FileInputStream(file.getAbsolutePathString())))
+                            .lines().count());
         }
     }
 
@@ -90,17 +89,17 @@ public class ShardedIntegrityChecksSparkJobTest
     private void generateAtlases()
     {
         final File countryFolder = new File(
-                FilenameUtils.concat(INPUT.getAbsolutePath(), COUNTRY_CODE));
+                FilenameUtils.concat(INPUT.getAbsolutePathString(), COUNTRY_CODE));
         countryFolder.mkdirs();
 
         final SlippyTileSharding sharding = new SlippyTileSharding(ZOOM_LEVEL);
 
         this.setup.bcAtlas()
-                .save(new File(FilenameUtils.concat(countryFolder.getAbsolutePath(),
+                .save(new File(FilenameUtils.concat(countryFolder.getAbsolutePathString(),
                         String.format("UNK_%s.atlas", sharding.shards(this.setup.bcAtlas().bounds())
                                 .iterator().next().getName()))));
         this.setup.nzAtlas()
-                .save(new File(FilenameUtils.concat(countryFolder.getAbsolutePath(),
+                .save(new File(FilenameUtils.concat(countryFolder.getAbsolutePathString(),
                         String.format("UNK_%s.atlas", sharding.shards(this.setup.nzAtlas().bounds())
                                 .iterator().next().getName()))));
     }
@@ -122,9 +121,10 @@ public class ShardedIntegrityChecksSparkJobTest
      */
     private void runShardedIntegrityChecksSparkJob()
     {
-        final String[] arguments = { String.format("-inputFolder=%s", INPUT.getAbsolutePath()),
-                String.format("-startedFolder=%s", INPUT.getAbsolutePath()),
-                String.format("-output=%s", OUTPUT.getAbsolutePath()),
+        final String[] arguments = {
+                String.format("-inputFolder=%s", INPUT.getAbsolutePathString()),
+                String.format("-startedFolder=%s", INPUT.getAbsolutePathString()),
+                String.format("-output=%s", OUTPUT.getAbsolutePathString()),
                 String.format("-sharding=slippy@%s", ZOOM_LEVEL), "-maxShardLoad=1",
                 "-outputFormats=flags,geojson,metrics,tippecanoe", "-compressOutput=false",
                 String.format("-countries=%s", COUNTRY_CODE), "-saveCheckOutput=true",
