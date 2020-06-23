@@ -72,7 +72,12 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier());
+        return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
+        // process only first sectioned Edge.
+                && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
+                && ((Edge) object).isMasterEdge() && HighwayTag.isCarNavigableHighway(object)
+                && object.getTag(JunctionTag.KEY).isEmpty() && object.getTag(AreaTag.KEY).isEmpty()
+                && isPartOfClosedWay((Edge) object) && intersectingWithMoreThan((Edge) object);
     }
 
     /**
@@ -85,28 +90,21 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
 
-        // process only first sectioned Edge
-        if (edge.getIdentifier() % MODULUS == FIRST_EDGE_SECTION && edge.isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(edge) && edge.getTag(JunctionTag.KEY).isEmpty()
-                && edge.getTag(AreaTag.KEY).isEmpty() && isPartOfClosedWay(edge)
-                && intersectingWithMoreThan(edge))
-        {
-            // rebuild original OSM Way geometry
-            final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
-            // check maximum angle
-            final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
-                    .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
-            // check minimum angle
-            final List<Tuple<Angle, Location>> minOffendingAngles = originalGeom
-                    .anglesLessThanOrEqualTo(this.minAngleThreshold);
+        final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
+        // check maximum angle
+        final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
+                .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
+        // check minimum angle
+        final List<Tuple<Angle, Location>> minOffendingAngles = originalGeom
+                .anglesLessThanOrEqualTo(this.minAngleThreshold);
 
-            if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
-            {
-                this.markAsFlagged(object.getOsmIdentifier());
-                return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
-                        this.getLocalizedInstruction(0)));
-            }
+        if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
+        {
+            this.markAsFlagged(object.getOsmIdentifier());
+            return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+                    this.getLocalizedInstruction(0)));
         }
+
         return Optional.empty();
     }
 
