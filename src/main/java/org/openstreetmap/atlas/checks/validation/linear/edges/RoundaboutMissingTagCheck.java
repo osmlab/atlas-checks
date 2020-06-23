@@ -73,7 +73,6 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
-        // process only first sectioned Edge.
                 && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
                 && ((Edge) object).isMasterEdge() && HighwayTag.isCarNavigableHighway(object)
                 && object.getTag(JunctionTag.KEY).isEmpty() && object.getTag(AreaTag.KEY).isEmpty()
