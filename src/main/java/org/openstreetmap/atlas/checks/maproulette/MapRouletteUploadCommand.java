@@ -196,6 +196,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         result.setStatus(ChallengeStatus.READY.intValue());
         // Set challenged disabled
         result.setEnabled(false);
+        // Set update tasks to false
+        result.setUpdateTasks(false);
         return result;
     }
 

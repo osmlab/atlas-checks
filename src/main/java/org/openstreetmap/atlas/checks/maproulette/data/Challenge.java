@@ -58,6 +58,7 @@ public class Challenge implements Serializable
     private final String lowPriorityRule;
     private long status;
     private boolean enabled;
+    private boolean updateTasks;
 
     public Challenge(final Challenge challenge)
     {
@@ -98,6 +99,7 @@ public class Challenge implements Serializable
         this.lowPriorityRule = lowPriorityRule;
         this.tags = tags;
         this.checkinComment = "#maproulette";
+        this.updateTasks = true;
     }
 
     public String getBlurb()
@@ -175,6 +177,11 @@ public class Challenge implements Serializable
         return this.enabled;
     }
 
+    public boolean isUpdateTasks()
+    {
+        return this.updateTasks;
+    }
+
     public void setCheckinComment(final String checkinComment)
     {
         this.checkinComment = checkinComment;
@@ -205,12 +212,17 @@ public class Challenge implements Serializable
         this.status = status;
     }
 
+    public void setUpdateTasks(final boolean updateTasks)
+    {
+        this.updateTasks = updateTasks;
+    }
+
     public JsonObject toJson(final String challengeName)
     {
         // if the challenge doesn't exist yet then create/update it
         final JsonObject challengeJson = CHALLENGE_GSON.toJsonTree(this).getAsJsonObject();
         challengeJson.add(KEY_ACTIVE, new JsonPrimitive(true));
-        challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(true));
+        challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(this.updateTasks));
 
         // Do not override the name if it's already set
         if (this.name.isEmpty())
