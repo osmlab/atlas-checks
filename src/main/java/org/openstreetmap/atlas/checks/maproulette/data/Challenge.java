@@ -36,6 +36,7 @@ public class Challenge implements Serializable
     public static final String VALUE_RULE_OPERATOR = "equal";
     public static final String KEY_RULE_VALUE = "value";
     public static final String KEY_TAGS = "tags";
+    public static final String DEFAULT_CHECKIN_COMMENT = "#maproulette";
 
     private static final long serialVersionUID = -8034692909431083341L;
     private static final Gson CHALLENGE_GSON = new GsonBuilder().disableHtmlEscaping()
@@ -98,7 +99,7 @@ public class Challenge implements Serializable
         this.mediumPriorityRule = mediumPriorityRule;
         this.lowPriorityRule = lowPriorityRule;
         this.tags = tags;
-        this.checkinComment = "#maproulette";
+        this.checkinComment = DEFAULT_CHECKIN_COMMENT;
         this.updateTasks = true;
     }
 
