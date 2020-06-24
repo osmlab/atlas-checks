@@ -77,7 +77,10 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 // Make sure that we are only looking at master edges
                 && ((Edge) object).isMasterEdge()
                 // Check for excluded highway types
-                && !this.isExcludedHighway(object);
+                && !this.isExcludedHighway(object)
+                // Check if object doesn't contain synthetic node.
+                // https://github.com/osmlab/atlas-checks/issues/316
+                && !this.isEdgeWithSyntheticBoundaryNode(object);
     }
 
     /**
@@ -91,13 +94,6 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Set<String> instructions = new HashSet<>();
-
-        // Skip if roundabout contains synthetic node. bug fix:
-        // https://github.com/osmlab/atlas-checks/issues/316
-        if (this.isEdgeWithSyntheticBoundaryNode(object))
-        {
-            return Optional.empty();
-        }
 
         // Create a ComplexRoundabout based on object
         final ComplexRoundabout complexRoundabout = new ComplexRoundabout((Edge) object,
@@ -179,6 +175,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
      * Checks if {@link AtlasObject} contains synthetic boundary Node
      * 
      * @param object
+     *            the {@link AtlasObject} to check
      * @return true if roundabout contains synthetic boundary Node.
      */
     private boolean isEdgeWithSyntheticBoundaryNode(final AtlasObject object)
@@ -211,7 +208,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         return edge -> edge.connectedEdges().stream()
                 .filter(connected -> JunctionTag.isRoundabout(connected)
-                        && HighwayTag.isCarNavigableHighway(connected));
+                        && !this.isExcludedHighway(connected));
     }
 
     /**
