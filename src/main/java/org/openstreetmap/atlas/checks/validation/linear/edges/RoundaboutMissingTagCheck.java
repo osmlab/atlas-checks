@@ -73,7 +73,8 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                 && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
                 && ((Edge) object).isMasterEdge() && HighwayTag.isCarNavigableHighway(object)
                 && object.getTag(JunctionTag.KEY).isEmpty() && object.getTag(AreaTag.KEY).isEmpty()
-                && isPartOfClosedWay((Edge) object) && intersectingWithMoreThan((Edge) object);
+                && this.isPartOfClosedWay((Edge) object)
+                && this.intersectingWithMoreThan((Edge) object);
     }
 
     /**
