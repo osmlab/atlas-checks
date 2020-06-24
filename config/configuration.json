@@ -722,6 +722,20 @@
       "difficulty": "NORMAL"
     }
   },
+  "RoundaboutMissingTagCheck": {
+    "angle.threshold": {
+      "maximum_degree": 40.0,
+      "minimum_degree": 10.0
+    },
+    "challenge": {
+      "description": "This check is to look for suspicious circular junctions that may be roundabout without the “junction=roundabout” tag.",
+      "blurb": "Modify roundabouts such that they have proper tagging.",
+      "instruction": "Open your favorite editor and add junction=roundabout tag.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "tags":"highway"
+    }
+  },
   "SelfIntersectingPolylineCheck": {
     "tags.filter":"highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
     "minimum.highway.type":"service",
