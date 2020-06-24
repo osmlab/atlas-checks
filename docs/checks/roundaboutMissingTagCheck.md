@@ -12,7 +12,6 @@ Roundabout without `junction=roundabout` tag.
 4) [id:287957529](https://www.openstreetmap.org/way/287957529)
 
 #### Code Review
-
 In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, 
 Nodes & Relations; in our case, we’re working with [Edges](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java).
 In OpenStreetMap, roundabouts are [Ways](https://wiki.openstreetmap.org/wiki/Way) classified with

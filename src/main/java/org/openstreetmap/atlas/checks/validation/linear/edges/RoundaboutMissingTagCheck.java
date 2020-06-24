@@ -1,13 +1,11 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -20,17 +18,16 @@ import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
- * Flags edges that are closed shaped and have minimum of two intersections with navigable roads.
- * {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION} connections. See
- * https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout for more information about
- * roundabouts
- *
+ * Flags edges that are closed and round shaped without junction=roundabout tag and have minimum of
+ * two intersections with navigable roads {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
+ * connections. See https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout for more
+ * information about roundabouts
+ * 
  * @author vladlemberg
  */
 
@@ -42,8 +39,8 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     private static final int MINIMUM_INTERSECTION = 2;
     private static final int MODULUS = 10;
     private static final int FIRST_EDGE_SECTION = 1;
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(MISSING_JUNCTION_TAG_INSTRUCTION);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
     private static final double MIN_THRESHOLD_DEGREES_DEFAULT = 10.0;
     private final Angle maxAngleThreshold;
@@ -58,9 +55,9 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public RoundaboutMissingTagCheck(final Configuration configuration)
     {
         super(configuration);
-        this.maxAngleThreshold = configurationValue(configuration, "threshold.degrees",
+        this.maxAngleThreshold = configurationValue(configuration, "angle.threshold.maximum_degree",
                 MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
-        this.minAngleThreshold = configurationValue(configuration, "threshold.degrees",
+        this.minAngleThreshold = configurationValue(configuration, "angle.threshold.minimum_degree",
                 MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
     }
 
@@ -122,19 +119,13 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
      */
     private PolyLine buildOriginalOsmWayGeometry(final Edge edge)
     {
-        // Identify all sections of original OSM way
-        final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
-                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
-
-        // Sort sectioned Edges by Ids
-        final List<Edge> sortedEdges = new ArrayList<>(edgesFormingOSMWay);
-        sortedEdges.sort(Comparator.comparingLong(AtlasObject::getIdentifier));
-
+        // Identify and sort by IDs all sections of original OSM way
+        final List<Edge> sortedEdges = new ArrayList<>(new OsmWayWalker(edge).collectEdges());
         // Build original OSM polyline
         PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
-        for (int i = 1; i < sortedEdges.size(); i++)
+        for (int index = 1; index < sortedEdges.size(); index++)
         {
-            geometry = geometry.append(sortedEdges.get(i).asPolyLine());
+            geometry = geometry.append(sortedEdges.get(index).asPolyLine());
         }
         return geometry;
     }
@@ -150,15 +141,15 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     private boolean intersectingWithMoreThan(final Edge edge)
     {
         // Identify all sections of original OSM way
-        final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
-                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+        final Set<Edge> edgesFormingOSMWay = new HashSet<>(new OsmWayWalker(edge).collectEdges());
         final Set<Long> connectedEdges = new HashSet<>();
-        edgesFormingOSMWay.forEach(obj -> obj.connectedEdges().stream().filter(Edge::isMasterEdge)
-                // intersection with navigable roads
-                .filter(HighwayTag::isCarNavigableHighway)
-                .filter(e -> e.getTag(ServiceTag.KEY).isEmpty())
-                // de-duplication sectioned edges
-                .forEach(wayId -> connectedEdges.add(wayId.getOsmIdentifier())));
+        edgesFormingOSMWay.forEach(
+                connectedEdge -> connectedEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
+                        // intersection with navigable roads
+                        .filter(HighwayTag::isCarNavigableHighway)
+                        .filter(obj -> obj.getTag(ServiceTag.KEY).isEmpty())
+                        // de-duplication sectioned edges
+                        .forEach(wayId -> connectedEdges.add(wayId.getOsmIdentifier())));
         return connectedEdges.size() > MINIMUM_INTERSECTION;
     }
 
@@ -171,23 +162,8 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
      */
     private boolean isPartOfClosedWay(final Edge edge)
     {
-        final HashSet<Long> wayIds = new HashSet<>();
-        Edge nextEdge = edge;
-        // Loop through out going edges with the same OSM id
-        while (nextEdge != null)
-        {
-            wayIds.add(nextEdge.getIdentifier());
-            final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(Edge::isMasterEdge)
-                    .filter(outEdge -> outEdge.getOsmIdentifier() == edge.getOsmIdentifier())
-                    .collectToList();
-            nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
-            // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
-            {
-                return true;
-            }
-        }
-        return false;
+        return edge.inEdges().stream().filter(Edge::isMasterEdge)
+                .filter(inEdge -> inEdge.getOsmIdentifier() == edge.getOsmIdentifier())
+                .count() == 1;
     }
 }

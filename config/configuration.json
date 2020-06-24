@@ -712,7 +712,10 @@
     }
   },
   "RoundaboutMissingTagCheck": {
-    "enabled": true,
+    "angle.threshold": {
+      "maximum_degree": 40.0,
+      "minimum_degree": 10.0
+    },
     "challenge": {
       "description": "This check is to look for suspicious circular junctions that may be roundabout without the “junction=roundabout” tag.",
       "blurb": "Modify roundabouts such that they have proper tagging.",
