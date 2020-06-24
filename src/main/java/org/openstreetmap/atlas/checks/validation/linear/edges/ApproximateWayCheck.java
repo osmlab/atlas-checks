@@ -180,12 +180,12 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         final double endY = end.getLatitude().onEarth().asMeters();
 
         double min = Double.POSITIVE_INFINITY;
-        for (double i = 0; i <= 1; i += bezierStep)
+        for (double step = 0; step <= 1; step += bezierStep)
         {
-            final double pointX = (pow(1 - i, 2) * startX)
-                    + (2 * i * (1 - i) * anchorX + pow(i, 2) * endX);
-            final double pointY = (pow(1 - i, 2) * startY)
-                    + (2 * i * (1 - i) * anchorY + pow(i, 2) * endY);
+            final double pointX = (pow(1 - step, 2) * startX)
+                    + (2 * step * (1 - step) * anchorX + pow(step, 2) * endX);
+            final double pointY = (pow(1 - step, 2) * startY)
+                    + (2 * step * (1 - step) * anchorY + pow(step, 2) * endY);
             // distance from point on bezier curve to anchor
             final double distance = distance(pointX, pointY, anchorX, anchorY);
             if (distance < min)
