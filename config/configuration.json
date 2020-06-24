@@ -55,7 +55,13 @@
     "deviation.minimum.meters": 35.0,
     "angle.minimum": 100.0,
     "bezierStep": 0.01,
-    "highway.minimum": "service"
+    "highway.minimum": "service",
+    "challenge": {
+      "description": "Tasks contain ways that are crudely drawn, curves with too few nodes",
+      "blurb": "Crudely drawn ways",
+      "instructions": "Improve the accuracy of the way by adding more nodes to better match the road",
+      "difficulty": "EASY"
+    }
   },
   "AreasWithHighwayTagCheck":{
     "tag.filters":"highway->*&area->yes",
