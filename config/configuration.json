@@ -723,6 +723,7 @@
     }
   },
   "RoundaboutMissingTagCheck": {
+    "enabled": false,
     "angle.threshold": {
       "maximum_degree": 40.0,
       "minimum_degree": 10.0
