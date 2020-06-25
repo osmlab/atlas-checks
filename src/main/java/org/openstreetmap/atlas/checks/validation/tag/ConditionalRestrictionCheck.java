@@ -1,8 +1,10 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,8 +46,9 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
             "dismount", "agricultural", "forestry", "discouraged", "official", "lane");
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "The conditional key {0} does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format",
-            "The conditional value {0} does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ");
+            "The conditional key \"{0}\" does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format",
+            "The conditional value \"{0}\" does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ",
+            "The element with id {0,number,#} does not follow the conditional restriction pattern.");
     public static final int TWO_PARTS = 2;
     public static final int THREE_PARTS = 3;
     public static final int FOUR_PARTS = 4;
@@ -72,19 +75,28 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        final Set<String> instructions = new HashSet<>();
+
         final List<String> conditionalKeys = object.getOsmTags().keySet().stream()
                 .filter(key -> key.contains(CONDITIONAL)).collect(Collectors.toList());
         for (final String key : conditionalKeys)
         {
             if (!isKeyValid(key))
             {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, key)));
+                instructions.add(this.getLocalizedInstruction(0, key));
             }
             final String value = object.getOsmTags().get(key);
             if (!isValueValid(value, key))
             {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1, value)));
+                instructions.add(this.getLocalizedInstruction(1, value));
             }
+        }
+        if (!instructions.isEmpty())
+        {
+            final CheckFlag flag = this.createFlag(object,
+                    this.getLocalizedInstruction(2, object.getOsmIdentifier()));
+            instructions.forEach(flag::addInstruction);
+            return Optional.of(flag);
         }
         return Optional.empty();
     }
