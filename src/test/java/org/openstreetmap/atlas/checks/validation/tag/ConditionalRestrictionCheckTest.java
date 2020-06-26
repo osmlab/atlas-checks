@@ -25,7 +25,7 @@ public class ConditionalRestrictionCheckTest
                 new ConditionalRestrictionCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "The conditional value notallowed @ (Sa 08:00-16:00) does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ")));
+                "The conditional value \"notallowed @ (Sa 08:00-16:00)\" does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ")));
 
     }
 
@@ -36,7 +36,7 @@ public class ConditionalRestrictionCheckTest
                 new ConditionalRestrictionCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "The conditional value no@(Sa 08:00-16:00) does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ")));
+                "The conditional value \"no@(Sa 08:00-16:00)\" does not respect the format \"<restriction-value> @ <condition>[;<restriction-value> @ <condition>]\" ")));
 
     }
 
@@ -47,7 +47,7 @@ public class ConditionalRestrictionCheckTest
                 new ConditionalRestrictionCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "The conditional key hgv:maxweight:conditional does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format")));
+                "The conditional key \"hgv:maxweight:conditional\" does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format")));
     }
 
     @Test
