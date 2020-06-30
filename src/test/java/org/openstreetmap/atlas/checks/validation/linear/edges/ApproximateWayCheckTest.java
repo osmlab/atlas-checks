@@ -18,9 +18,11 @@ public class ApproximateWayCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private final ApproximateWayCheck check = new ApproximateWayCheck(
-            ConfigurationResolver.inlineConfiguration(
-                    "{\"ApproximateWayCheck\":{\"deviation.minimum.meters\": 35.0,\"angle.minimum\": 100.0,\"bezierStep\": 0.01,\"highway.minimum\": \"service\"}}"));
+    private final ApproximateWayCheck check = new ApproximateWayCheck(ConfigurationResolver
+            .inlineConfiguration("{\"ApproximateWayCheck\":{" + "\"deviation\": {"
+                    + "\"minimum.meters\": 10.0," + "\"ratio\": {" + "\"max\": 0.04" + "}" + "},"
+                    + "\"angle\": {" + "\"min\": 60.0," + "\"max\": 160.0" + "},"
+                    + "\"bezierStep\": 0.01," + "\"highway.minimum\": \"service\"" + "}}"));
 
     @Test
     public void testInvalidApproximateWay()

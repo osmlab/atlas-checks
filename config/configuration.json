@@ -52,10 +52,18 @@
     }
   },
   "ApproximateWayCheck": {
-    "deviation.minimum.meters": 35.0,
-    "angle.minimum": 100.0,
+    "deviation": {
+      "minimum.meters": 10.0,
+      "ratio": {
+        "max": 0.13
+      }
+    },
+    "angle": {
+      "max": 140.0,
+      "min": 60.0
+    },
     "bezierStep": 0.01,
-    "highway.minimum": "service",
+    "highway.minimum": "secondary",
     "challenge": {
       "description": "Tasks contain ways that are crudely drawn, curves with too few nodes",
       "blurb": "Crudely drawn ways",

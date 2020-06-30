@@ -6,7 +6,6 @@ import static java.lang.Math.sqrt;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.stream.IntStream;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
@@ -22,7 +21,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * This check flags edges that deviate from the assumed curve of a road by at least
- * {@value DEVIATION_MINIMUM_METERS_DEFAULT} meters.
+ * {@value DEVIATION_MINIMUM_LENGTH_DEFAULT} meters.
  *
  * @author v-brjor
  */
@@ -30,17 +29,21 @@ public class ApproximateWayCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 1L;
-    private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} deviates by {1,number,#} meters";
+    private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} is crude";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(EDGE_DEVIATION_INSTRUCTION);
-    public static final double DEVIATION_MINIMUM_METERS_DEFAULT = 35.0;
+    public static final double DEVIATION_MAXIMUM_RATIO_DEFAULT = 0.04;
+    public static final double DEVIATION_MINIMUM_LENGTH_DEFAULT = 10;
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
-    public static final double MINIMUM_ANGLE_DEFAULT = 100.0;
+    public static final double MIN_ANGLE_DEFAULT = 60.0;
+    public static final double MAX_ANGLE_DEFAULT = 160.0;
     public static final double BEZIER_STEP_DEFAULT = 0.01;
 
-    private final Distance minimumDeviation;
+    private final double maxDeviationRatio;
+    private final Distance minDeviationLength;
     private final HighwayTag highwayMinimum;
-    private final double minimumAngle;
+    private final double minAngle;
+    private final double maxAngle;
     private final double bezierStep;
 
     /**
@@ -54,13 +57,15 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     public ApproximateWayCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumDeviation = configurationValue(configuration, "deviation.minimum.meters",
-                DEVIATION_MINIMUM_METERS_DEFAULT, Distance::meters);
+        this.maxDeviationRatio = configurationValue(configuration, "deviation.ratio.max",
+                DEVIATION_MAXIMUM_RATIO_DEFAULT, Double::doubleValue);
+        this.minDeviationLength = configurationValue(configuration, "deviation.minimum.meters",
+                DEVIATION_MINIMUM_LENGTH_DEFAULT, Distance::meters);
         final String highwayType = this.configurationValue(configuration, "highway.minimum",
                 HIGHWAY_MINIMUM_DEFAULT);
         this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.minimumAngle = configurationValue(configuration, "angle.minimum",
-                MINIMUM_ANGLE_DEFAULT);
+        this.minAngle = configurationValue(configuration, "angle.minimum", MIN_ANGLE_DEFAULT);
+        this.maxAngle = configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
         this.bezierStep = configurationValue(configuration, "bezierStep", BEZIER_STEP_DEFAULT);
     }
 
@@ -97,21 +102,26 @@ public class ApproximateWayCheck extends BaseCheck<Long>
             return Optional.empty();
         }
 
-        final OptionalDouble max = IntStream.range(0, segments.size() - 1).mapToDouble(index ->
+        final boolean isCrude = IntStream.range(0, segments.size() - 1).anyMatch(index ->
         {
             final Segment seg1 = segments.get(index);
             final Segment seg2 = segments.get(index + 1);
-            if (findAngle(seg1, seg2) < minimumAngle)
+            final double angle = findAngle(seg1, seg2);
+            // ignore sharp turns and almost straightaways
+            if (angle < minAngle || angle > maxAngle)
             {
-                return 0;
+                return false;
             }
-            return quadraticBezier(seg1.first(), seg2.first(), seg2.end());
-        }).reduce(Math::max);
+            final double distance = quadraticBezier(seg1.first(), seg2.first(), seg2.end());
+            final double legsLength = seg1.length().asMeters() + seg2.length().asMeters();
+            return distance > this.minDeviationLength.asMeters()
+                    && distance / legsLength > maxDeviationRatio;
+        });
 
-        if (max.isPresent() && max.getAsDouble() > this.minimumDeviation.asMeters())
+        if (isCrude)
         {
-            return Optional.of(createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier(), max.getAsDouble())));
+            return Optional.of(
+                    createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
 
         return Optional.empty();
@@ -123,6 +133,9 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Finds the distance between two points
+     */
     private double distance(final double startX, final double startY, final double endX,
             final double endY)
     {
@@ -130,7 +143,9 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     }
 
     /**
-     * Calculates the angle between the two segments.
+     * Calculates the angle between the two segments. Uses the Law of Cosines to find the angle.
+     * Assumes that the segments connect at an end point.
+     * @return the angle between the two segments <= 180 degrees
      */
     private double findAngle(final Segment seg1, final Segment seg2)
     {
@@ -159,8 +174,10 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     }
 
     /**
-     * Constructs a quadratic bezier curve and finds the closest distance of the curve to the
-     * anchor.
+     * Constructs a quadratic bezier curve. This give us a way that is a smooth curve that
+     * approximates the real way. We then find the closest distance of the curve to the anchor
+     * and return that value.
+     * https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves
      * 
      * @param start
      *            start point of bezier curve
@@ -182,6 +199,7 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         double min = Double.POSITIVE_INFINITY;
         for (double step = 0; step <= 1; step += bezierStep)
         {
+            // https://stackoverflow.com/questions/5634460/quadratic-b%C3%A9zier-curve-calculate-points
             final double pointX = (pow(1 - step, 2) * startX)
                     + (2 * step * (1 - step) * anchorX + pow(step, 2) * endX);
             final double pointY = (pow(1 - step, 2) * startY)
