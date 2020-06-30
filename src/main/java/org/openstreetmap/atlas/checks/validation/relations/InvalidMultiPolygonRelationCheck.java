@@ -28,6 +28,7 @@ import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMul
 import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
 import org.openstreetmap.atlas.geography.converters.jts.JtsPolygonConverter;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.SyntheticInvalidGeometryTag;
 import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -143,7 +144,7 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
         final List<String> instructions = new ArrayList<>();
         final Set<Location> issueLocations = new HashSet<>();
 
-        if (object.getTag("synthetic_invalid_geometry").isPresent())
+        if (Validators.hasValuesFor(object, SyntheticInvalidGeometryTag.class))
         {
             instructions.add(
                     this.getLocalizedInstruction(GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT_INDEX,
