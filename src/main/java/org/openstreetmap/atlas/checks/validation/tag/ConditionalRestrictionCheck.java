@@ -38,12 +38,13 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
             "motorcycle", "moped", "mofa", "motorcar", "motorhome", "tourist_bus", "coach", "goods",
             "hgv", "hgv_articulated", "agricultural", "golf_cart", "atv", "snowmobile", "psv",
             "bus", "minibus", "share_taxi", "taxi", "hov", "hazmat", "emergency", "canoe",
-            "electric_vehicle");
+            "electric_vehicle", "cycleway", "busway");
     private static final List<String> DIRECTION = List.of("forward", "backward", "left", "right",
             "both");
     private static final List<String> ACCESS_RESTRICTION_VALUE = List.of("yes", "no", "private",
             "permissive", "destination", "delivery", "customers", "designated", "use_sidepath",
-            "dismount", "agricultural", "forestry", "discouraged", "official", "lane");
+            "dismount", "agricultural", "forestry", "discouraged", "official", "lane",
+            "share_busway", "opposite_share_busway");
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "The conditional key \"{0}\" does not respect the \"<restriction-type>[:<transportation mode>][:<direction>]:conditional\" format",
@@ -120,6 +121,11 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
         return false;
     }
 
+    private boolean isAccessType(final String value)
+    {
+        return "access".equals(value);
+    }
+
     private boolean isAccessValue(final String value)
     {
         return ACCESS_RESTRICTION_VALUE.contains(value);
@@ -133,21 +139,41 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
     private boolean isKeyValid(final String key)
     {
         final String[] parts = key.split(":");
+        // access:lanes is a valid exception for lanes on second position
+        final boolean isAccessLanes = parts.length > 2
+                && (isAccessType(parts[0]) && isLanes(parts[1]));
         switch (parts.length)
         {
             // starts with 2 because they all contain the conditional part
             case TWO_PARTS:
                 return isRestrictionType(parts[0]) || isTransportationMode(parts[0]);
             case THREE_PARTS:
-                return (isRestrictionType(parts[0])
-                        && (isTransportationMode(parts[1]) || isDirection(parts[1])))
-                        || (isTransportationMode(parts[0]) && isDirection(parts[1]));
+                final boolean isRestrictionTypeFormat = isRestrictionType(parts[0])
+                        && (isTransportationMode(parts[1]) || isDirection(parts[1]));
+                final boolean isTransportTypeFormat = isTransportationMode(parts[0])
+                        && (isDirection(parts[1]) || isLanes(parts[1]));
+                return isRestrictionTypeFormat || isTransportTypeFormat || isAccessLanes;
             case FOUR_PARTS:
-                return isRestrictionType(parts[0]) && isTransportationMode(parts[1])
+                final boolean isRestrictionTransport = isRestrictionType(parts[0])
+                        && isTransportationMode(parts[1]);
+                final boolean isTransportLanes = isTransportationMode(parts[0])
+                        && isLanes(parts[1]);
+                return (isRestrictionTransport || isTransportLanes || isAccessLanes)
                         && isDirection(parts[2]);
             default:
                 return false;
         }
+    }
+
+    private boolean isLanes(final String value)
+    {
+        return "lanes".equals(value);
+    }
+
+    private boolean isNotLanesType(final String key)
+    {
+        final String[] parts = key.split(":");
+        return !isLanes(parts[0]);
     }
 
     private boolean isRestrictionType(final String value)
@@ -164,19 +190,26 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
     {
         boolean isValid = true;
         final Pattern valuePattern = Pattern.compile(
-                "([a-zA-Z0-9_.-]*?)\\s@\\s(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*)\\s*(;\\s*([^@\\s][^@]*?)\\s*@\\s*(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*?)\\s*)*");
+                "([a-zA-Z0-9_.-|\\s]*?)\\s@\\s(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*)\\s*(;\\s*([^@\\s][^@]*?)\\s*@\\s*(\\([^)\\s][^)]+?\\)|[^();\\s][^();]*?)\\s*)*");
         final Matcher matcher = valuePattern.matcher(value);
         if (matcher.matches())
         {
-            if (containsTransportationMode(key))
+            if (containsTransportationMode(key) && isNotLanesType(key))
             {
                 final String[] parts = value.split("@");
                 for (int i = 0; i < parts.length - 1; i += 2)
                 {
-                    if (!isAccessValue(parts[i].trim()))
+                    // the character | is used to display lanes and can accompany a access value in
+                    // cases of lanes
+                    final String[] subParts = parts[i].split("\\|");
+                    for (final String part : subParts)
                     {
-                        isValid = false;
-                        break;
+                        final String trimmedPart = part.trim();
+                        if (!trimmedPart.isEmpty() && !isAccessValue(trimmedPart))
+                        {
+                            isValid = false;
+                            break;
+                        }
                     }
                 }
             }
