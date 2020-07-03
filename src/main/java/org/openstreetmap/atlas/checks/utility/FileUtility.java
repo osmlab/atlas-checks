@@ -72,10 +72,10 @@ public final class FileUtility
     {
         if (fileType == LogOutputFileType.LOG)
         {
-            return new BufferedReader(new FileReader(inputFile.getPath()));
+            return new BufferedReader(new FileReader(inputFile.getPathString()));
         }
         return new BufferedReader(new InputStreamReader(
-                new GZIPInputStream(new FileInputStream(inputFile.getPath()))));
+                new GZIPInputStream(new FileInputStream(inputFile.getPathString()))));
     }
 
     private FileUtility()

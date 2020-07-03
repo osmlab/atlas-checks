@@ -355,6 +355,15 @@
       "tags":"access,highway"
     }
   },
+  "InvalidGeometryCheck": {
+    "challenge": {
+      "description": "Tasks containing Ways with invalid geometries",
+      "blurb": "Invalid Geometries",
+      "instruction": "Correct the geometries of the displayed ways",
+      "difficulty": "NORMAL",
+      "tags":"geometry"
+    }
+  },
   "InvalidLanesTagCheck": {
     "lanes.filter": "lanes->1,1.5,2,3,4,5,6,7,8,9,10",
     "challenge":{
@@ -374,7 +383,17 @@
       "difficulty":"NORMAL"
     }
   },
-  "InvalidMultiPolygonRelationCheck": {},
+  "InvalidMultiPolygonRelationCheck": {
+    "members.one.ignore": true,
+    "overlap.points.minimum": 0,
+    "overlap.points.maximum": 2000000,
+    "challenge": {
+      "description": "Tasks containing improperly formed multipolygon relations.",
+      "blurb": "Invalid Multipolygon Relations",
+      "instruction": "Open your favorite editor and fix the issues listed in the instructions for each multipolygon relation.",
+      "difficulty": "HARD"
+    }
+  },
   "InvalidSignBoardRelationCheck": {
     "countries": [
       "RUS"
@@ -388,8 +407,13 @@
     }
   },
   "InvalidTagsCheck": {
+    "filters.resource": {
+      "override": true,
+      "append": false
+    },
     "filters.classes.tags": [
-      ["area,relation","boundary->protected_area&protect_class->!"]
+      ["area","boundary->protected_area&protect_class->!"],
+      ["relation","boundary->protected_area&protect_class->!"]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, or incorrect values",
@@ -442,7 +466,8 @@
       "bus_guideway"
     ],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
-    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|ford->yes|winter_road->yes|snowmobile->yes|ski->yes",
+    "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|ford->!no&ford->*",
+    "nodes.intersecting.non_offending": "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal",
     "buildings.flag": true,
     "challenge": {
       "description": "Certain OSM features should not cross waterbodies.",
@@ -695,6 +720,20 @@
       "blurb": "Modify Polyline intersections with the roundabout edges",
       "instruction": "Open your favorite editor and move modify polyline intersections with the roundabout.",
       "difficulty": "NORMAL"
+    }
+  },
+  "RoundaboutMissingTagCheck": {
+    "angle.threshold": {
+      "maximum_degree": 40.0,
+      "minimum_degree": 10.0
+    },
+    "challenge": {
+      "description": "This check is to look for suspicious circular junctions that may be roundabout without the “junction=roundabout” tag.",
+      "blurb": "Modify roundabouts such that they have proper tagging.",
+      "instruction": "Open your favorite editor and add junction=roundabout tag.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW",
+      "tags":"highway"
     }
   },
   "SelfIntersectingPolylineCheck": {
@@ -974,7 +1013,8 @@
   "OceanBleedingCheck": {
     "ocean": {
       "valid": "natural->strait,channel,fjord,sound,bay|harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock",
-      "invalid": "man_made->breakwater,pier|natural->beach,marsh,swamp|water->marsh|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow|landuse->*"
+      "invalid": "man_made->breakwater,pier|natural->beach,marsh,swamp|water->marsh|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow|landuse->*",
+      "boundary": "natural->coastline"
     },
     "highway": {
       "minimum": "path",
