@@ -16,7 +16,6 @@ public final class CommonConstants
     // Common string literals
     public static final String COMMA = ",";
     public static final String SEMI_COLON = ";";
-    public static final String COLON = ":";
     public static final String NEW_LINE = "\n";
     public static final String SINGLE_SPACE = " ";
     public static final String EMPTY_STRING = "";
