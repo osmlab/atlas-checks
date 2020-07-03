@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.openstreetmap.atlas.checks.flag.serializer.CheckFlagDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.geography.Latitude;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
@@ -30,6 +32,7 @@ public class TaskDeserializer implements JsonDeserializer<Task>
     private static final String GENERATOR = "generator";
     private static final String INSTRUCTIONS = "instructions";
     private static final String ID = "id";
+    private static final String IDENTIFIERS = "identifiers";
     private static final String FEATURES = "features";
     private static final String GEOMETRY = "geometry";
     private static final String COORDINATES = "coordinates";
@@ -48,7 +51,9 @@ public class TaskDeserializer implements JsonDeserializer<Task>
         final JsonObject properties = full.get(PROPERTIES).getAsJsonObject();
         final String challengeName = properties.get(GENERATOR).getAsString();
         final String instruction = properties.get(INSTRUCTIONS).getAsString();
-        final String taskID = properties.get(ID).getAsString();
+        final String taskID = properties.get(IDENTIFIERS) == null ? properties.get(ID).getAsString()
+                : CheckFlagDeserializer
+                        .parseIdentifiers(properties.get(IDENTIFIERS).getAsJsonArray());
         final JsonArray geojson = full.get(FEATURES).getAsJsonArray();
         final Task result = new Task();
         result.setChallengeName(challengeName);
@@ -61,8 +66,8 @@ public class TaskDeserializer implements JsonDeserializer<Task>
     }
 
     /**
-     * The opposite of getPointsFromGeojson -- get all geojson features which do contain a
-     * properties field from a {@link JsonArray}.
+     * The opposite of getPointsFromGeojson -- get all osm features from the geojson. This will
+     * filter all synthetic CheckFlag Points.
      *
      * @param features
      *            a {@link JsonArray} of geojson features
@@ -71,7 +76,8 @@ public class TaskDeserializer implements JsonDeserializer<Task>
      */
     private JsonArray filterOutPointsFromGeojson(final JsonArray features)
     {
-        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES))
+        return this.objectStream(features).filter(feature -> feature.has(PROPERTIES)
+                && !feature.get(PROPERTIES).getAsJsonObject().has(SyntheticHighlightPointTag.KEY))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 
@@ -97,7 +103,7 @@ public class TaskDeserializer implements JsonDeserializer<Task>
 
     /**
      * Stream all of the {@link JsonObject}s in a {@link JsonArray}.
-     * 
+     *
      * @param features
      *            a {@link JsonArray} containing only {@link JsonObject}s
      * @return a {@link Stream} containing all {@link JsonObject}s inside features.

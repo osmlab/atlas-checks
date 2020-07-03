@@ -159,4 +159,12 @@ public class MalformedRoundaboutCheckTest
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
+
+    @Test
+    public void testRoundaboutWithSyntheticNode()
+    {
+        this.verifier.actual(this.setup.syntheticNode(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
 }

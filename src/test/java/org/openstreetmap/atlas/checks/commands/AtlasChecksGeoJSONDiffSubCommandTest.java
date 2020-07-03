@@ -57,7 +57,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "geojson-diff", String.format("-reference=%s", SOURCE_DIRECTORY),
                 String.format("-input=%s", TARGET_DIRECTORY),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -78,7 +78,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "geojson-diff", String.format("-reference=%s", this.sourceFile),
                 String.format("-input=%s", this.targetFile),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -116,7 +116,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "geojson-diff", String.format("-reference=%s", this.sourceFileGZ),
                 String.format("-input=%s", this.targetFile),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -137,7 +137,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "geojson-diff", String.format("-reference=%s", GZ_SOURCE_DIRECTORY),
                 String.format("-input=%s", GZ_TARGET_DIRECTORY),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -158,7 +158,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         // Run AtlasJoinerSubCommand
         final String[] args = { "geojson-diff", String.format("-reference=%s", this.sourceFileGZ),
                 String.format("-input=%s", this.targetFileGZ),
-                String.format("-output=%s", temp.getPath()) };
+                String.format("-output=%s", temp.getPathString()) };
         new AtlasChecksCommand(args).runWithoutQuitting(args);
 
         final List<File> outputFiles = temp.listFilesRecursively();
@@ -186,7 +186,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
     {
 
         final CheckFlagGeoJsonProcessor sourceProcessor = new CheckFlagGeoJsonProcessor(
-                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePath())
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePathString())
                         .withBatchSizeOverride(2).withCompression(compression);
         sourceProcessor.process(this.setup.getConstantCheckFlagEvent());
         sourceProcessor.process(this.setup.getSubtractionCheckFlagEvent());
@@ -194,7 +194,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         sourceProcessor.process(new ShutdownEvent());
 
         final CheckFlagGeoJsonProcessor targetProcessor = new CheckFlagGeoJsonProcessor(
-                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePath())
+                new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePathString())
                         .withBatchSizeOverride(2).withCompression(compression);
         targetProcessor.process(this.setup.getConstantCheckFlagEvent());
         targetProcessor.process(this.setup.getAdditionCheckFlagEvent());
@@ -215,6 +215,6 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
         return directory.listFilesRecursively().stream()
                 .filter(file -> file.getName().endsWith(".geojson")
                         || file.getName().endsWith(".geojson.gz"))
-                .sorted().collect(Collectors.toList()).get(0).getPath();
+                .sorted().collect(Collectors.toList()).get(0).getPathString();
     }
 }

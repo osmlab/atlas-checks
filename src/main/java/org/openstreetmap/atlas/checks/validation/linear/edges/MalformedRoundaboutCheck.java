@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -17,11 +19,13 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Route;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
+import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -73,7 +77,10 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 // Make sure that we are only looking at master edges
                 && ((Edge) object).isMasterEdge()
                 // Check for excluded highway types
-                && !this.isExcludedHighway(object);
+                && !this.isExcludedHighway(object)
+                // Check if object doesn't contain synthetic node.
+                // https://github.com/osmlab/atlas-checks/issues/316
+                && !this.isEdgeWithSyntheticBoundaryNode(object);
     }
 
     /**
@@ -87,6 +94,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Set<String> instructions = new HashSet<>();
+
         // Create a ComplexRoundabout based on object
         final ComplexRoundabout complexRoundabout = new ComplexRoundabout((Edge) object,
                 this.leftDrivingCountries);
@@ -164,6 +172,20 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     }
 
     /**
+     * Checks if {@link AtlasObject} contains synthetic boundary Node
+     * 
+     * @param object
+     *            the {@link AtlasObject} to check
+     * @return true if roundabout contains synthetic boundary Node.
+     */
+    private boolean isEdgeWithSyntheticBoundaryNode(final AtlasObject object)
+    {
+        return new SimpleEdgeWalker((Edge) object, this.isRoundaboutEdge()).collectEdges().stream()
+                .anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()
+                        .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
+    }
+
+    /**
      * Checks if an {@link AtlasObject} has a highway value that excludes it from this check. These
      * have been excluded because they commonly act differently from car navigable roundabouts.
      *
@@ -174,6 +196,19 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         return Validators.isOfType(object, HighwayTag.class, HighwayTag.CYCLEWAY,
                 HighwayTag.PEDESTRIAN, HighwayTag.FOOTWAY);
+    }
+
+    /**
+     * Function for {@link SimpleEdgeWalker} that gathers connected edges that are part of a
+     * roundabout.
+     *
+     * @return {@link Function} for {@link SimpleEdgeWalker}
+     */
+    private Function<Edge, Stream<Edge>> isRoundaboutEdge()
+    {
+        return edge -> edge.connectedEdges().stream()
+                .filter(connected -> JunctionTag.isRoundabout(connected)
+                        && !this.isExcludedHighway(connected));
     }
 
     /**

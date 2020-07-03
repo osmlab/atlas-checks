@@ -511,6 +511,34 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
                                     "iso_country_code=USA", "highway=cycleway" }) })
     private Atlas counterClockwiseRoundaboutRightDrivingCyclewayAtlas;
 
+    // Check Synthetic Node with Counterclockwise roundabout, left driving country
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_1)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_2)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_3), tags = {
+                            "synthetic_boundary_node=YES" }),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_4)),
+                    @Node(coordinates = @Loc(value = COUNTER_CLOCKWISE_5)) },
+            // edges
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = COUNTER_CLOCKWISE_1),
+                            @Loc(value = COUNTER_CLOCKWISE_2) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = COUNTER_CLOCKWISE_2),
+                            @Loc(value = COUNTER_CLOCKWISE_3) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = COUNTER_CLOCKWISE_3),
+                            @Loc(value = COUNTER_CLOCKWISE_4) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = COUNTER_CLOCKWISE_4),
+                            @Loc(value = COUNTER_CLOCKWISE_5) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = COUNTER_CLOCKWISE_5),
+                            @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
+                                    "iso_country_code=SGP", "highway=primary" }) })
+    private Atlas syntheticNode;
+
     public Atlas clockwiseRoundaboutLeftDrivingAtlas()
     {
         return this.clockwiseRoundaboutLeftDrivingAtlas;
@@ -589,5 +617,10 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
     public Atlas multiDirectionalRoundaboutAtlas()
     {
         return this.multiDirectionalRoundaboutAtlas;
+    }
+
+    public Atlas syntheticNode()
+    {
+        return this.syntheticNode;
     }
 }

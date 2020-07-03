@@ -1,0 +1,5 @@
+area:invalid-tags-check-filter.json
+relation:invalid-tags-check-filter.json
+line:invalid-tags-check-filter.json
+point:invalid-tags-check-filter.json
+node:invalid-tags-check-filter.json

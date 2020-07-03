@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.serializer.CheckFlagDeserializer;
 import org.openstreetmap.atlas.checks.utility.FileUtility;
+import org.openstreetmap.atlas.checks.utility.tags.SyntheticHighlightPointTag;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.command.abstractcommand.AbstractAtlasShellToolsCommand;
@@ -239,7 +240,8 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         try
         {
-            sql.setString(1, flag.getIdentifier());
+            sql.setString(1, flag.getUniqueIdentifiers().stream().sorted().map(String::toString)
+                    .collect(Collectors.joining(",")));
             sql.setString(2, flag.getChallengeName().orElse(""));
             sql.setString(THREE, flag.getInstructions().replace("\n", " ").replace("'", "''"));
             sql.setString(FOUR, this.optionAndArgumentDelegate.getOptionArgument(RUN_URI_INPUT)
@@ -389,7 +391,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     }
 
     /**
-     * Get all geojson features which do contain a properties field from a {@link JsonArray}.
+     * Filter all synthetic CheckFlag points from {@link JsonArray}.
      *
      * @param features
      *            a {@link JsonArray} of geojson features
@@ -399,7 +401,9 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         return StreamSupport.stream(features.spliterator(), false).map(JsonElement::getAsJsonObject)
                 .filter(feature -> feature.has(PROPERTIES)
-                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty())
+                        && !feature.get(PROPERTIES).getAsJsonObject().entrySet().isEmpty()
+                        && !feature.get(PROPERTIES).getAsJsonObject()
+                                .has(SyntheticHighlightPointTag.KEY))
                 .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     }
 }
