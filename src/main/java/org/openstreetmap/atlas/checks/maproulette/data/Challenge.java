@@ -36,6 +36,7 @@ public class Challenge implements Serializable
     public static final String VALUE_RULE_OPERATOR = "equal";
     public static final String KEY_RULE_VALUE = "value";
     public static final String KEY_TAGS = "tags";
+    public static final String DEFAULT_CHECKIN_COMMENT = "#maproulette";
 
     private static final long serialVersionUID = -8034692909431083341L;
     private static final Gson CHALLENGE_GSON = new GsonBuilder().disableHtmlEscaping()
@@ -56,6 +57,9 @@ public class Challenge implements Serializable
     private final String highPriorityRule;
     private final String mediumPriorityRule;
     private final String lowPriorityRule;
+    private long status;
+    private boolean enabled;
+    private boolean updateTasks;
 
     public Challenge(final Challenge challenge)
     {
@@ -95,7 +99,8 @@ public class Challenge implements Serializable
         this.mediumPriorityRule = mediumPriorityRule;
         this.lowPriorityRule = lowPriorityRule;
         this.tags = tags;
-        this.checkinComment = "#maproulette";
+        this.checkinComment = DEFAULT_CHECKIN_COMMENT;
+        this.updateTasks = true;
     }
 
     public String getBlurb()
@@ -158,14 +163,34 @@ public class Challenge implements Serializable
         return this.parent;
     }
 
+    public long getStatus()
+    {
+        return this.status;
+    }
+
     public String getTags()
     {
         return this.tags;
     }
 
+    public boolean isEnabled()
+    {
+        return this.enabled;
+    }
+
+    public boolean isUpdateTasks()
+    {
+        return this.updateTasks;
+    }
+
     public void setCheckinComment(final String checkinComment)
     {
         this.checkinComment = checkinComment;
+    }
+
+    public void setEnabled(final boolean enabled)
+    {
+        this.enabled = enabled;
     }
 
     public void setId(final long identifier)
@@ -183,12 +208,22 @@ public class Challenge implements Serializable
         this.parent = identifier;
     }
 
+    public void setStatus(final long status)
+    {
+        this.status = status;
+    }
+
+    public void setUpdateTasks(final boolean updateTasks)
+    {
+        this.updateTasks = updateTasks;
+    }
+
     public JsonObject toJson(final String challengeName)
     {
         // if the challenge doesn't exist yet then create/update it
         final JsonObject challengeJson = CHALLENGE_GSON.toJsonTree(this).getAsJsonObject();
         challengeJson.add(KEY_ACTIVE, new JsonPrimitive(true));
-        challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(true));
+        challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(this.updateTasks));
 
         // Do not override the name if it's already set
         if (this.name.isEmpty())

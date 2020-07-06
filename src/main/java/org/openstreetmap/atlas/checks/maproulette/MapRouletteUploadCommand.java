@@ -16,7 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
+import org.openstreetmap.atlas.checks.maproulette.data.ChallengeStatus;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.serializer.TaskDeserializer;
@@ -58,6 +60,14 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private static final Switch<List<String>> CHECKS = new Switch<>("checks",
             "A comma separated list of check names to filter flags by.",
             string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL);
+    private static final Switch<String> CHECKIN_COMMENT_PREFIX = new Switch<>(
+            "checkinCommentPrefix",
+            "MapRoulette checkinComment prefix. This will be prepended to the check name (e.g. #prefix: [ISO - CheckName] ).",
+            String::toString, Optionality.OPTIONAL, Challenge.DEFAULT_CHECKIN_COMMENT);
+    private static final Switch<String> CHECKIN_COMMENT = new Switch<>("checkinComment",
+            "MapRoulette checkinComment prefix. If supplied, this would overwrite the checkinCommentPrefix",
+            String::toString, Optionality.OPTIONAL, StringUtils.EMPTY);
+
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
 
@@ -93,7 +103,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     public SwitchList switches()
     {
         return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
-                CHECKS);
+                CHECKS, CHECKIN_COMMENT_PREFIX, CHECKIN_COMMENT);
     }
 
     @Override
@@ -108,6 +118,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 .getOption(COUNTRIES);
         // Get the checks filter
         final Optional<List<String>> checks = (Optional<List<String>>) commandMap.getOption(CHECKS);
+        final String checkinCommentPrefix = (String) commandMap.get(CHECKIN_COMMENT_PREFIX);
+        final String checkinComment = (String) commandMap.get(CHECKIN_COMMENT);
 
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
@@ -145,7 +157,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                 final Challenge challenge = countryToChallengeMap.computeIfAbsent(
                                         countryCode.orElse(""),
                                         ignore -> this.getChallenge(task.getChallengeName(),
-                                                instructions, countryCode));
+                                                instructions, countryCode, checkinCommentPrefix,
+                                                checkinComment));
                                 this.addTask(challenge, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
@@ -175,10 +188,15 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *            the full configuration, which contains challenge parameters for checkName.
      * @param countryCode
      *            the CheckFlag iso3 country code
+     * @param checkinCommentPrefix
+     *            the MapRoulette checkinComment prefix
+     * @param checkinComment
+     *            the MapRoulette checkinComment
      * @return the check's challenge parameters, stored as a Challenge object.
      */
     private Challenge getChallenge(final String checkName,
-            final Configuration fallbackConfiguration, final Optional<String> countryCode)
+            final Configuration fallbackConfiguration, final Optional<String> countryCode,
+            final String checkinCommentPrefix, final String checkinComment)
     {
         final Map<String, String> challengeMap = fallbackConfiguration
                 .get(getChallengeParameter(checkName), Collections.emptyMap()).value();
@@ -189,6 +207,17 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
                 result.getName().isEmpty() ? checkName : result.getName());
         result.setName(challengeName);
+        // Set check-in comment to checkinComment if provided, otherwise, set as #prefix: [ISO -
+        // CheckName]
+        result.setCheckinComment(checkinComment.isEmpty()
+                ? String.format("%s: %s", checkinCommentPrefix, challengeName)
+                : checkinComment);
+        // Set challenge status to ready
+        result.setStatus(ChallengeStatus.READY.intValue());
+        // Set challenged disabled
+        result.setEnabled(false);
+        // Set update tasks to false
+        result.setUpdateTasks(false);
         return result;
     }
 
