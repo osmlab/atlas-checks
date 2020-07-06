@@ -145,6 +145,7 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     /**
      * Calculates the angle between the two segments. Uses the Law of Cosines to find the angle.
      * Assumes that the segments connect at an end point.
+     * 
      * @return the angle between the two segments <= 180 degrees
      */
     private double findAngle(final Segment seg1, final Segment seg2)
@@ -175,9 +176,8 @@ public class ApproximateWayCheck extends BaseCheck<Long>
 
     /**
      * Constructs a quadratic bezier curve. This give us a way that is a smooth curve that
-     * approximates the real way. We then find the closest distance of the curve to the anchor
-     * and return that value.
-     * https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves
+     * approximates the real way. We then find the closest distance of the curve to the anchor and
+     * return that value. https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves
      * 
      * @param start
      *            start point of bezier curve
