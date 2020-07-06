@@ -25,17 +25,17 @@ public class ApproximateWayCheckTest
                     + "\"bezierStep\": 0.01," + "\"highway.minimum\": \"service\"" + "}}"));
 
     @Test
+    public void testSingleSegmentAtlas()
+    {
+        this.verifier.actual(this.setup.singleSegmentAtlas(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testInvalidApproximateWay()
     {
         this.verifier.actual(this.setup.invalidApproximateWayAtlas(), this.check);
         this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void testRightAngle()
-    {
-        this.verifier.actual(this.setup.rightAngleAtlas(), this.check);
-        this.verifier.verifyEmpty();
     }
 
     @Test

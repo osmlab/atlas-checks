@@ -28,12 +28,10 @@ public class ApproximateWayCheckTestRule extends CoreTestRule
     private static final String TEST_10 = "-45.9275439, 168.2805558";
     private static final String TEST_11 = "-45.9272734, 168.2805397";
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-            @Node(coordinates = @Loc(value = TEST_2)),
-            @Node(coordinates = @Loc(value = TEST_3)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = "highway=SECONDARY") })
-    private Atlas rightAngleAtlas;
+    @TestAtlas(nodes = {@Node(coordinates = @Loc(value = TEST_1)),
+            @Node(coordinates = @Loc(value = TEST_2))}, edges = {
+                @Edge(coordinates = {@Loc(value = TEST_1), @Loc(value = TEST_2)}) })
+    private Atlas singleSegmentAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_4)),
             @Node(coordinates = @Loc(value = TEST_5)),
@@ -50,14 +48,14 @@ public class ApproximateWayCheckTestRule extends CoreTestRule
                     @Loc(value = TEST_10), @Loc(value = TEST_11) }, tags = "highway=SECONDARY") })
     private Atlas validApproximateWayAtlas;
 
+    public Atlas singleSegmentAtlas()
+    {
+        return this.singleSegmentAtlas;
+    }
+
     public Atlas invalidApproximateWayAtlas()
     {
         return this.invalidApproximateWayAtlas;
-    }
-
-    public Atlas rightAngleAtlas()
-    {
-        return this.rightAngleAtlas;
     }
 
     public Atlas validApproximateWayAtlas()
