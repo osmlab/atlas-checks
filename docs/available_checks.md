@@ -81,6 +81,7 @@ This document is a list of tables with a description and link to documentation f
 | ShortNameCheck | The short name check will validate that any and all names contain at least 2 letters in the name. |
 | [StreetNameIntegersOnlyCheck](checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
+| [ConditionalRestrictionCheck](checks/conditionalRestrictionCheck.md) | The purpose of this check is to identify elements that have a :conditional tag that does not respect the established format. |
 
 ## Ways
 | Check Name | Check Description |
