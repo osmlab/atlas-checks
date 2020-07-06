@@ -28,7 +28,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class ApproximateWayCheck extends BaseCheck<Long>
 {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 125449616392217396L;
     private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} is crude";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(EDGE_DEVIATION_INSTRUCTION);
