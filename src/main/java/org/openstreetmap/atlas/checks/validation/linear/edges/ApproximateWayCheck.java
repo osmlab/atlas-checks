@@ -29,7 +29,7 @@ public class ApproximateWayCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 125449616392217396L;
-    private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} is crude";
+    private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} is crude. Please add more nodes/rearrange current nodes to more closely match the road from imagery";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(EDGE_DEVIATION_INSTRUCTION);
     public static final double DEVIATION_MAXIMUM_RATIO_DEFAULT = 0.04;
