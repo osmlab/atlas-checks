@@ -28,6 +28,7 @@ import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMul
 import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
 import org.openstreetmap.atlas.geography.converters.jts.JtsPolygonConverter;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.SyntheticInvalidGeometryTag;
 import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -64,6 +65,7 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
     public static final int SINGLE_MEMBER_RELATION_INSTRUCTION_FORMAT_INDEX;
     public static final int INVALID_OVERLAP_INSTRUCTION_FORMAT_INDEX;
     public static final int INNER_MISSING_OUTER_INSTRUCTION_FORMAT_INDEX;
+    public static final int GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT_INDEX;
     private static final String CLOSED_LOOP_INSTRUCTION_FORMAT = "The Multipolygon relation {0,number,#} with members : {1} is not closed at some locations : {2}";
     private static final String INVALID_OSM_TYPE_INSTRUCTION_FORMAT = "{0} relation member(s) are an invalid type in relation {1,number,#}. Multipolygon relations can only have ways as members. The first object id(s) are {2}";
     private static final String INVALID_ROLE_INSTRUCTION_FORMAT = "{0} ways have an invalid or missing role in multipolygon relation {1,number,#}. The role must be either outer or inner. The way id(s) are {2}";
@@ -71,11 +73,12 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
     private static final String INNER_MISSING_OUTER_INSTRUCTION_FORMAT = "Relation {0,number,#} has an inner member that is not contained by an outer member.";
     private static final String MISSING_OUTER_INSTRUCTION_FORMAT = "Multipolygon relation {0,number,#} has no outer member(s). Must have 1 or more.";
     private static final String SINGLE_MEMBER_RELATION_INSTRUCTION_FORMAT = "Multipolygon relation {0,number,#} has only one member.";
+    private static final String GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT = "Multipolygon relation {0,number,#} has invalid geometry.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             CLOSED_LOOP_INSTRUCTION_FORMAT, SINGLE_MEMBER_RELATION_INSTRUCTION_FORMAT,
             MISSING_OUTER_INSTRUCTION_FORMAT, INVALID_ROLE_INSTRUCTION_FORMAT,
             INVALID_OSM_TYPE_INSTRUCTION_FORMAT, INVALID_OVERLAP_INSTRUCTION_FORMAT,
-            INNER_MISSING_OUTER_INSTRUCTION_FORMAT);
+            INNER_MISSING_OUTER_INSTRUCTION_FORMAT, GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT);
     private static final RelationOrAreaToMultiPolygonConverter RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
     private static final EnumMap<ItemType, String> atlasToOsmType = new EnumMap<>(ItemType.class);
     private static final Logger logger = LoggerFactory
@@ -101,6 +104,8 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
                 .indexOf(INVALID_OVERLAP_INSTRUCTION_FORMAT);
         INNER_MISSING_OUTER_INSTRUCTION_FORMAT_INDEX = FALLBACK_INSTRUCTIONS
                 .indexOf(INNER_MISSING_OUTER_INSTRUCTION_FORMAT);
+        GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT_INDEX = FALLBACK_INSTRUCTIONS
+                .indexOf(GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT);
         atlasToOsmType.put(ItemType.EDGE, "way");
         atlasToOsmType.put(ItemType.AREA, "way");
         atlasToOsmType.put(ItemType.LINE, "way");
@@ -138,6 +143,13 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
         final Relation multipolygonRelation = (Relation) object;
         final List<String> instructions = new ArrayList<>();
         final Set<Location> issueLocations = new HashSet<>();
+
+        if (Validators.hasValuesFor(object, SyntheticInvalidGeometryTag.class))
+        {
+            instructions.add(
+                    this.getLocalizedInstruction(GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT_INDEX,
+                            multipolygonRelation.getOsmIdentifier()));
+        }
 
         this.checkGeometry(multipolygonRelation).ifPresent(tuple ->
         {
