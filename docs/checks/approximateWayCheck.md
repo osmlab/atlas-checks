@@ -26,7 +26,7 @@ We first validate that the incoming object is:
 ##### Flagging the Edge
 We split the edge into it's segments. If there is less than two segments we don't flag the edge. 
 Otherwise, we will go through adjacent pairs of segments, first checking that the angle between 
-them are within a configurable angle. We get the minimum distance that the middle point is from a bezier curve using points from the 
+them are within a configurable angle. We get the minimum distance that the middle point is from a bezier curve using 
 points from the segments. We then check if the distance is greater than the minDeviationLength and if the ratio between 
 the distance and the length of both segments is greater than the configured maxDeviationRatio.
 
