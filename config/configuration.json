@@ -51,6 +51,26 @@
       "difficulty": "HARD"
     }
   },
+  "ApproximateWayCheck": {
+    "deviation": {
+      "minimum.meters": 10.0,
+      "ratio": {
+        "max": 0.12
+      }
+    },
+    "angle": {
+      "max": 140.0,
+      "min": 60.0
+    },
+    "bezierStep": 0.01,
+    "highway.minimum": "secondary",
+    "challenge": {
+      "description": "Tasks contain ways that are crudely drawn.",
+      "blurb": "Crudely drawn ways",
+      "instructions": "Improve the accuracy of the way by adding more nodes and/or readjusting existing nodes to better match the actual road",
+      "difficulty": "EASY"
+    }
+  },
   "AreasWithHighwayTagCheck":{
     "tag.filters":"highway->*&area->yes",
     "challenge":{
