@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,8 @@ import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Flags line items (edges or lines) and optionally buildings that are crossing water bodies
@@ -93,6 +96,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
     private static final String DEFAULT_VALID_INTERSECTING_NODE = "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
     private final TaggableFilter intersectingNodesNonoffending;
+
+    private static final int NUMBER = 350;
+    private static final Logger logger = LoggerFactory.getLogger(LineCrossingWaterBodyCheck.class);
 
     private static final String WATER_BODY_TAGS =
             // Lakes
@@ -241,6 +247,19 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // First convert the waterbody to a GeometricSurface for use in querying
         final GeometricSurface waterbody = object instanceof Area ? ((Area) object).asPolygon()
                 : new RelationOrAreaToMultiPolygonConverter().convert((Relation) object);
+
+        if (waterbody instanceof MultiPolygon)
+        {
+            final long shapepoints = ((MultiPolygon) waterbody).outers().stream()
+                    .mapToLong(Collection::size).sum();
+            if (shapepoints > NUMBER)
+            {
+                logger.info(
+                        "Skipping processing of multipolygon relation {} since it has {} shapepoints, which is beyond the threshold of {}",
+                        object.getOsmIdentifier(), shapepoints, NUMBER);
+                return Optional.empty();
+            }
+        }
         // Then retrieve the invalid crossing edges, lines, buildings
         final Atlas atlas = object.getAtlas();
         final Iterable<AtlasItem> invalidCrossingItems = this.flagBuildings
@@ -346,7 +365,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     /**
      * Collects line items that are attributed such that their intersection with the waterbody is
      * invalid.
-     * 
+     *
      * @param atlas
      *            the atlas
      * @param object

@@ -109,6 +109,8 @@ public final class IntersectionUtilities
      *            {@link PolyLine} being crossed
      * @param crossingItem
      *            {@link LineItem} crossing
+     * @param intersections
+     *            the intersections between lineCrossed and crossingItem
      * @return whether given {@link PolyLine} and {@link LineItem}'s intersections are actual
      *         {@link Location}s for both items
      */
