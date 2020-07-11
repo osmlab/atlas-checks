@@ -97,7 +97,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private static final String DEFAULT_VALID_INTERSECTING_NODE = "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
     private final TaggableFilter intersectingNodesNonoffending;
 
-    private static final int NUMBER = 350;
+    private static final int NUMBER = 5000;
     private static final Logger logger = LoggerFactory.getLogger(LineCrossingWaterBodyCheck.class);
 
     private static final String WATER_BODY_TAGS =
@@ -235,8 +235,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         // We only consider water body areas or multipolygon relations, not linear water bodies
-        return (TypePredicates.IS_AREA.test(object)
-                || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
+        return !this.isFlagged(object.getOsmIdentifier())
+                && (TypePredicates.IS_AREA.test(object)
+                        || (object instanceof Relation && ((Relation) object).isMultiPolygon()))
                 && !INVALID_WATER_BODY_TAGS.test(object) && VALID_WATER_BODY_TAGS.test(object);
     }
 
@@ -244,6 +245,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     @SuppressWarnings("squid:S2293")
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        // Immediately mark as processed so other shards do not pick this up
+        this.markAsFlagged(object.getOsmIdentifier());
         // First convert the waterbody to a GeometricSurface for use in querying
         final GeometricSurface waterbody = object instanceof Area ? ((Area) object).asPolygon()
                 : new RelationOrAreaToMultiPolygonConverter().convert((Relation) object);
