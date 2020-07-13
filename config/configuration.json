@@ -244,6 +244,7 @@
   "EdgeCrossingEdgeCheck": {
     "minimum.highway.type": "no",
     "challenge": {
+      "name": "Overlapping Roads Check / Перекрывающиеся Пути",
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
       "instruction": "Open your favorite editor and connect the ways at the point of intersection.",
@@ -628,6 +629,7 @@
     "highway.priority.minimum": "residential",
     "pedestrian.areas.filter": true,
     "challenge": {
+      "name": "Overlapping Roads Check / Перекрывающиеся Пути",
       "description": "Tasks will include highways that are overlapped by another highway.",
       "blurb": "Overlapping Highways",
       "instruction": "Open your favorite editor and either remove the overlap way segment or correct tagging so that only a single highway remains.",
@@ -874,6 +876,7 @@
     "minimum.highway.type": "service",
     "filter.pedestrian.network": false,
     "challenge": {
+      "name": "Sink Island and Impossible Routing Check / Невозможная маршрутизаци",
       "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
       "blurb": "Identify islands of roads.",
       "instruction": "Open your favorite editor and apply tags (if need to change one way roads), or update roads to remove any islands of roads",
