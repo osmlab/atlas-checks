@@ -426,7 +426,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                     .intersections(intersectingFeature);
             if (intersectionLocations.isEmpty())
             {
-                return Set.of();
+                return Set.of(Tuple.createTuple((Polygon) waterbody, Set.of()));
             }
             return Set.of(Tuple.createTuple((Polygon) waterbody, intersectionLocations));
         }
