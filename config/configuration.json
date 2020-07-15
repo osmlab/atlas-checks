@@ -475,7 +475,7 @@
       "instruction": "Open your favorite editor and edit the features overlapping the waterbody so they either validly overlap or do not overlap.",
       "difficulty": "EASY"
     },
-    "shapepoints.max": 1,
+    "shapepoints.min": 1,
     "shapepoints.max": 5000
   },
   "LongSegmentCheck": {
