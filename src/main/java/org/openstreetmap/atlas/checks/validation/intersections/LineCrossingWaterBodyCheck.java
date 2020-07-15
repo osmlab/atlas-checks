@@ -97,7 +97,11 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private static final String DEFAULT_VALID_INTERSECTING_NODE = "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
     private final TaggableFilter intersectingNodesNonoffending;
 
-    private static final int NUMBER = 5000;
+    private static final long SHAPEPOINTS_MIN_DEFAULT = 1;
+    private static final long SHAPEPOINTS_MAX_DEFAULT = 5000;
+    private final long shapepointsMin;
+    private final long shapepointsMax;
+
     private static final Logger logger = LoggerFactory.getLogger(LineCrossingWaterBodyCheck.class);
 
     private static final String WATER_BODY_TAGS =
@@ -229,6 +233,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         this.intersectingNodesNonoffending = TaggableFilter
                 .forDefinition(this.configurationValue(configuration,
                         "nodes.intersecting.non_offending", DEFAULT_VALID_INTERSECTING_NODE));
+        this.shapepointsMin = this.configurationValue(configuration, "shapepoints.min",
+                SHAPEPOINTS_MIN_DEFAULT);
+        this.shapepointsMax = this.configurationValue(configuration, "shapepoints.max",
+                SHAPEPOINTS_MAX_DEFAULT);
     }
 
     @Override
@@ -255,11 +263,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         {
             final long shapepoints = ((MultiPolygon) waterbody).outers().stream()
                     .mapToLong(Collection::size).sum();
-            if (shapepoints > NUMBER)
+            if (shapepoints > this.shapepointsMax || shapepoints < this.shapepointsMin)
             {
                 logger.info(
-                        "Skipping processing of multipolygon relation {} since it has {} shapepoints, which is beyond the threshold of {}",
-                        object.getOsmIdentifier(), shapepoints, NUMBER);
+                        "Skipping processing of multipolygon relation {} since it has {} shapepoints, which is outside the range of {}-{}",
+                        object.getOsmIdentifier(), shapepoints, this.shapepointsMin,
+                        this.shapepointsMax);
                 return Optional.empty();
             }
         }
