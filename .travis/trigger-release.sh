@@ -10,7 +10,7 @@ GITHUB_REPOSITORY_NAME=atlas-checks
 # - The travis client is installed: gem install travis
 # - travis login --org has been called to authenticate
 
-TRAVIS_PERSONAL_TOKEN=$(d4f235d37440307220eebc7dfb2b38f09d06a461)
+TRAVIS_PERSONAL_TOKEN=$(travis token)
 
 :${TRAVIS_PERSONAL_TOKEN:?"TRAVIS_PERSONAL_TOKEN needs to be set to access the Travis API to trigger the build"}
 
