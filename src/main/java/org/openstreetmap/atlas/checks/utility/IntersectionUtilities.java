@@ -102,6 +102,36 @@ public final class IntersectionUtilities
         return true;
     }
 
+    /**
+     * Overloaded: avoid recomputing the intersection locations if they're given.
+     *
+     * @param lineCrossed
+     *            {@link PolyLine} being crossed
+     * @param crossingItem
+     *            {@link LineItem} crossing
+     * @param intersections
+     *            the intersections between lineCrossed and crossingItem
+     * @return whether given {@link PolyLine} and {@link LineItem}'s intersections are actual
+     *         {@link Location}s for both items
+     */
+    public static boolean haveExplicitLocationsForIntersections(final PolyLine lineCrossed,
+            final LineItem crossingItem, final Set<Location> intersections)
+    {
+        // Find out intersections
+        final PolyLine crossingItemAsPolyLine = crossingItem.asPolyLine();
+
+        // Verify intersections are explicit locations for both geometries
+        for (final Location intersection : intersections)
+        {
+            if (!lineCrossed.contains(intersection)
+                    || !crossingItemAsPolyLine.contains(intersection))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private IntersectionUtilities()
     {
     }
