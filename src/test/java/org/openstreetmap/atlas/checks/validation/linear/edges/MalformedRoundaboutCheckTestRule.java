@@ -522,20 +522,24 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     // parts of roundabout
-                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1), @Loc(value = CLOCKWISE_2) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_2), @Loc(value = CLOCKWISE_3) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_3), @Loc(value = CLOCKWISE_4) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_4), @Loc(value = CLOCKWISE_5) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_5), @Loc(value = CLOCKWISE_1) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_2) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_3) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_5),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
                     // enclosed navigable roads
-                    @Edge(id = "4321", coordinates = { @Loc(value = CLOCKWISE_1), @Loc(value = CLOCKWISE_4) },
-                            tags = {"highway=primary"})
-            })
+                    @Edge(id = "4321", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "highway=primary" }) })
     private Atlas enclosedNavigableRoad;
 
     // Check enclosed navigable road with Area tag.
@@ -549,20 +553,25 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     // parts of roundabout
-                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1), @Loc(value = CLOCKWISE_2) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_2), @Loc(value = CLOCKWISE_3) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_3), @Loc(value = CLOCKWISE_4) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_4), @Loc(value = CLOCKWISE_5) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_5), @Loc(value = CLOCKWISE_1) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_2) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_3) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_5),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
                     // enclosed navigable roads
-                    @Edge(id = "4321", coordinates = { @Loc(value = CLOCKWISE_1), @Loc(value = CLOCKWISE_4) },
-                            tags = {"highway=primary", "area=yes"})
-            })
+                    @Edge(id = "4321", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "highway=primary",
+                                    "area=yes" }) })
     private Atlas enclosedNavigableRoadArea;
 
     // Check enclosed MultiLayer navigable road: tunnel, bridge, layer=*
@@ -576,26 +585,33 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     // parts of roundabout
-                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1), @Loc(value = CLOCKWISE_2) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_2), @Loc(value = CLOCKWISE_3) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_3), @Loc(value = CLOCKWISE_4) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_4), @Loc(value = CLOCKWISE_5) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
-                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_5), @Loc(value = CLOCKWISE_1) },
-                            tags = { "iso_country_code=USA", "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1234", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_2) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_3) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = CLOCKWISE_4),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = CLOCKWISE_5),
+                            @Loc(value = CLOCKWISE_1) }, tags = { "iso_country_code=USA",
+                                    "junction=roundabout", "highway=primary" }),
                     // enclosed multilayer navigable roads
-                    @Edge(id = "4321", coordinates = { @Loc(value = CLOCKWISE_1), @Loc(value = CLOCKWISE_4) },
-                            tags = {"highway=primary", "tunnel=yes"}),
-                    @Edge(id = "4322", coordinates = { @Loc(value = CLOCKWISE_2), @Loc(value = CLOCKWISE_5) },
-                            tags = {"highway=secondary", "bridge=yes"}),
-                    @Edge(id = "4323", coordinates = { @Loc(value = CLOCKWISE_2), @Loc(value = CLOCKWISE_4) },
-                            tags = {"highway=trunk", "layer=1"}),
-                    @Edge(id = "4324", coordinates = { @Loc(value = CLOCKWISE_3), @Loc(value = CLOCKWISE_5) },
-                            tags = {"highway=motorway", "layer=-1"})
-            })
+                    @Edge(id = "4321", coordinates = { @Loc(value = CLOCKWISE_1),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "highway=primary",
+                                    "tunnel=yes" }),
+                    @Edge(id = "4322", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "highway=secondary",
+                                    "bridge=yes" }),
+                    @Edge(id = "4323", coordinates = { @Loc(value = CLOCKWISE_2),
+                            @Loc(value = CLOCKWISE_4) }, tags = { "highway=trunk", "layer=1" }),
+                    @Edge(id = "4324", coordinates = { @Loc(value = CLOCKWISE_3),
+                            @Loc(value = CLOCKWISE_5) }, tags = { "highway=motorway",
+                                    "layer=-1" }) })
     private Atlas enclosedMultiLayerNavigableRoad;
 
     // Check Synthetic Node with Counterclockwise roundabout, left driving country

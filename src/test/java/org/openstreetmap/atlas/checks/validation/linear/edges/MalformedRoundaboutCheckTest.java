@@ -173,8 +173,10 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.enclosedNavigableRoad(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals("1. This roundabout is malformed.\n" +
-                "2. This roundabout has car navigable ways inside it." , flags.get(0).getInstructions()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout has car navigable ways inside it.",
+                flags.get(0).getInstructions()));
     }
 
     @Test
