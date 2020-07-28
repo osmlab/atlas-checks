@@ -250,6 +250,28 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    private Set<AtlasEntity> attachedLinkRoadsForNavigation(final Edge inEdge,
+            final Set<AtlasEntity> outEdges)
+    {
+        final Set<AtlasEntity> validLinkRoads = new HashSet<>();
+        // Find all connected link roads to the start of the inEdge
+        final Set<Edge> connectedLinks = inEdge.start().outEdges().stream()
+                .filter(outEdge -> outEdge.isMasterEdge()
+                        && outEdge.getIdentifier() != inEdge.getIdentifier()
+                        && outEdge.highwayTag().isLink())
+                .collect(Collectors.toSet());
+        // Verify if each of the link road is also connected to any of the outEdges.
+        // Collect all link roads that have a connection between the inEdge and any of the outEdges.
+        connectedLinks.forEach(connectedLink ->
+        {
+            if (connectedLink.end().connectedEdges().stream().anyMatch(outEdges::contains))
+            {
+                validLinkRoads.add(connectedLink);
+            }
+        });
+        return validLinkRoads;
+    }
+
     /**
      * Collects all edges that are not part of a relation
      *
@@ -681,27 +703,5 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         mapOfMatchingInAndOutEdges.put(ROUNDABOUT_INTERSECTION_MAP, roundAboutInEdgeToOutEdgeMap);
         mapOfMatchingInAndOutEdges.put(NODE_LINK_ROAD_INTERSECTION_MAP, nodeToLinkEdgeMap);
         return mapOfMatchingInAndOutEdges;
-    }
-
-    private Set<AtlasEntity> attachedLinkRoadsForNavigation(final Edge inEdge,
-            final Set<AtlasEntity> outEdges)
-    {
-        final Set<AtlasEntity> validLinkRoads = new HashSet<>();
-        // Find all connected link roads to the start of the inEdge
-        final Set<Edge> connectedLinks = inEdge.start().outEdges().stream()
-                .filter(outEdge -> outEdge.isMasterEdge()
-                        && outEdge.getIdentifier() != inEdge.getIdentifier()
-                        && outEdge.highwayTag().isLink())
-                .collect(Collectors.toSet());
-        // Verify if each of the link road is also connected to any of the outEdges.
-        // Collect all link roads that have a connection between the inEdge and any of the outEdges.
-        connectedLinks.forEach(connectedLink ->
-        {
-            if (connectedLink.end().connectedEdges().stream().anyMatch(outEdges::contains))
-            {
-                validLinkRoads.add(connectedLink);
-            }
-        });
-        return validLinkRoads;
     }
 }
