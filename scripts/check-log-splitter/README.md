@@ -15,7 +15,7 @@ Atlas Checks logs are found under `atlas-checks/build/flag/ISO3`
 
 ## Output
 
-Lets say my input is `/Users/abc/github/atlas-checks/build/flag/CYP/` and this folder contains:
+Lets say my input is `/Users/abc/github/atlas-checks/build/flag/UNK/` and this folder contains:
  - 1542061154375-135.log
  - 1542090421076-1042.log
  - 1545678119687-135.log
