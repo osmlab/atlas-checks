@@ -257,8 +257,6 @@ public class InvalidTagsCheck extends BaseCheck<String>
                     final List<String> classTagList = (List<String>) classTagValue;
                     if (classTagList.size() > 1)
                     {
-                        System.out.println(
-                                stringsToClassTagFilter(classTagList.get(0), classTagList.get(1)));
                         return Optional.of(
                                 stringsToClassTagFilter(classTagList.get(0), classTagList.get(1)));
                     }
