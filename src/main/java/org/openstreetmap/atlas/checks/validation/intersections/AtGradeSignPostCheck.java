@@ -35,8 +35,6 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
-import org.openstreetmap.atlas.utilities.scalars.Angle;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -116,15 +114,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     private static final int INSTRUCTION_INDEX_THREE = 3;
     private static final int INSTRUCTION_INDEX_FOUR = 4;
     private static final int INSTRUCTION_INDEX_FIVE = 5;
-
     private static final int MINIMUM_NODE_VALENCE = 3;
-    private static final Angle DEFAULT_OPPOSITE_DIRECTION_LOWER_LIMIT = Angle.degrees(171);
-    private static final Angle DEFAULT_OPPOSITE_DIRECTION_UPPER_LIMIT = Angle.degrees(-171);
-    private static final Angle DEFAULT_SAME_DIRECTION_LOWER_LIMIT = Angle.degrees(-100);
-    private static final Angle DEFAULT_SAME_DIRECTION_UPPER_LIMIT = Angle.degrees(9);
-    private static final EdgeDirectionComparator EDGE_DIRECTION_COMPARATOR = new EdgeDirectionComparator(
-            DEFAULT_OPPOSITE_DIRECTION_LOWER_LIMIT, DEFAULT_OPPOSITE_DIRECTION_UPPER_LIMIT,
-            DEFAULT_SAME_DIRECTION_LOWER_LIMIT, DEFAULT_SAME_DIRECTION_UPPER_LIMIT);
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             NO_DESTINATION_SIGN_RELATION_INSTRUCTION,
@@ -250,28 +240,6 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private Set<AtlasEntity> attachedLinkRoadsForNavigation(final Edge inEdge,
-            final Set<AtlasEntity> outEdges)
-    {
-        final Set<AtlasEntity> validLinkRoads = new HashSet<>();
-        // Find all connected link roads to the start of the inEdge
-        final Set<Edge> connectedLinks = inEdge.start().outEdges().stream()
-                .filter(outEdge -> outEdge.isMasterEdge()
-                        && outEdge.getIdentifier() != inEdge.getIdentifier()
-                        && outEdge.highwayTag().isLink())
-                .collect(Collectors.toSet());
-        // Verify if each of the link road is also connected to any of the outEdges.
-        // Collect all link roads that have a connection between the inEdge and any of the outEdges.
-        connectedLinks.forEach(connectedLink ->
-        {
-            if (connectedLink.end().connectedEdges().stream().anyMatch(outEdges::contains))
-            {
-                validLinkRoads.add(connectedLink);
-            }
-        });
-        return validLinkRoads;
-    }
-
     /**
      * Collects all edges that are not part of a relation
      *
@@ -353,6 +321,35 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             }
         });
         return entitiesToBeFlagged;
+    }
+
+    /**
+     * This method collects link roads that are the most logically route between the inEdge and the outEdges.
+     *
+     * @param inEdge any inEdge
+     * @param outEdges set of outEdges
+     * @return Set of link roads between inEdge and each of the out edges
+     */
+    private Set<AtlasEntity> getAttachedLinkRoadsForNavigation(final Edge inEdge,
+            final Set<AtlasEntity> outEdges)
+    {
+        final Set<AtlasEntity> validLinkRoads = new HashSet<>();
+        // Find all connected link roads to the start of the inEdge
+        final Set<Edge> connectedLinks = inEdge.start().outEdges().stream()
+                .filter(outEdge -> outEdge.isMasterEdge()
+                        && outEdge.getIdentifier() != inEdge.getIdentifier()
+                        && outEdge.highwayTag().isLink())
+                .collect(Collectors.toSet());
+        // Verify if each of the link road is also connected to any of the outEdges.
+        // Collect all link roads that have a connection between the inEdge and any of the outEdges.
+        connectedLinks.forEach(connectedLink ->
+        {
+            if (connectedLink.end().connectedEdges().stream().anyMatch(outEdges::contains))
+            {
+                validLinkRoads.add(connectedLink);
+            }
+        });
+        return validLinkRoads;
     }
 
     /**
@@ -683,7 +680,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
                     else if (!filteredByHighways.isEmpty())
                     {
                         final Set<AtlasEntity> linkEdges = this
-                                .attachedLinkRoadsForNavigation(inEdge, filteredByHighways);
+                                .getAttachedLinkRoadsForNavigation(inEdge, filteredByHighways);
                         if (!linkEdges.isEmpty())
                         {
                             nodeToLinkEdgeMap.put(junctionNode, linkEdges);
