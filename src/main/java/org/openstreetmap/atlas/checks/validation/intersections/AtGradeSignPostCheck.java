@@ -324,10 +324,13 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
     }
 
     /**
-     * This method collects link roads that are the most logically route between the inEdge and the outEdges.
+     * This method collects link roads that are the most logically route between the inEdge and the
+     * outEdges.
      *
-     * @param inEdge any inEdge
-     * @param outEdges set of outEdges
+     * @param inEdge
+     *            any inEdge
+     * @param outEdges
+     *            set of outEdges
      * @return Set of link roads between inEdge and each of the out edges
      */
     private Set<AtlasEntity> getAttachedLinkRoadsForNavigation(final Edge inEdge,

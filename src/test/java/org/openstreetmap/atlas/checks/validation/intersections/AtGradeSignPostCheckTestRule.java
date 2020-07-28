@@ -200,17 +200,18 @@ public class AtGradeSignPostCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = LINK_JUNCTION_OUT_EDGE_END)) },
             // Edges
             edges = {
-                    @Edge(id = "100010001", coordinates = { @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC),
+                    @Edge(id = "100010001", coordinates = {
+                            @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC),
                             @Loc(value = ATGRADE_LINK_JUNCTION) }, tags = { "highway=primary" }),
-                    @Edge(id = "100010002", coordinates = { @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC),
+                    @Edge(id = "100010002", coordinates = {
+                            @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC),
                             @Loc(value = LINK_ROAD_END_LOC) }, tags = { "highway=primary_link" }),
                     @Edge(id = "100010003", coordinates = { @Loc(value = ATGRADE_LINK_JUNCTION),
                             @Loc(value = LINK_ROAD_END_LOC) }, tags = { "highway=secondary" }),
                     @Edge(id = "100010004", coordinates = { @Loc(value = ATGRADE_LINK_JUNCTION),
                             @Loc(value = LINK_JUNCTION_OUT_EDGE_END) }, tags = {
-                            "highway=secondary" }) })
+                                    "highway=secondary" }) })
     private Atlas linkRoadConnectedAtGradeJunctionAtlas;
-
 
     public Atlas getIncompleteDestinationSignRelationAtlas()
     {
