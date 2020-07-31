@@ -1,0 +1,6 @@
+area:bad-value-tag-check-filter.json
+relation:bad-value-tag-check-filter.json
+line:bad-value-tag-check-filter.json
+point:bad-value-tag-check-filter.json
+node:bad-value-tag-check-filter.json
+edge:bad-value-tag-check-filter.json

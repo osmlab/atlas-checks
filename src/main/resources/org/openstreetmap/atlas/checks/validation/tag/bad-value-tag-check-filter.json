@@ -1,0 +1,13 @@
+{
+  "filters": [
+    {
+      "tagName": "source",
+      "regex": [
+        ".*(?i)\\bgoogle\\b.*",
+        ".*(?i)\\bhere\\b.*",
+        ".*(?i)\\bvworld\\b.*",
+        ".*(?i)\\bxdworld\\b.*"
+      ]
+    }
+  ]
+}

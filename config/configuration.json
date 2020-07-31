@@ -443,6 +443,15 @@
       "tags":"tags"
     }
   },
+  "BadValueTagCheck": {
+    "challenge": {
+      "description": "Tasks containing features with tags containing unacceptable values",
+      "blurb": "Features with unacceptable tag values",
+      "instruction": "Open your favorite editor and check that the listed tag values are accepted by OSM.",
+      "difficulty": "Medium",
+      "tags":"tags"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
