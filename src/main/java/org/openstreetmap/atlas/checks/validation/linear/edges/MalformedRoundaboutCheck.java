@@ -20,6 +20,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Route;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
+import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
@@ -224,7 +225,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         final Polygon roundaboutPoly = new Polygon(roundabout.asPolyLine());
         return roundabout.start().getAtlas().edgesIntersecting(roundaboutPoly,
-                edge -> HighwayTag.isCarNavigableHighway(edge) && !JunctionTag.isRoundabout(edge)
+                edge -> edge.isMasterEdge() && HighwayTag.isCarNavigableHighway(edge)
+                        && !JunctionTag.isRoundabout(edge) && edge.getTag(AreaTag.KEY).isEmpty()
                         && !this.ignoreBridgeTunnelCrossings(edge)
                         && this.intersectsWithEnclosedGeometry(roundaboutPoly, edge))
                 .iterator().hasNext();
