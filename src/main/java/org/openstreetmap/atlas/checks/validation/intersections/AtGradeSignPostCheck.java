@@ -171,6 +171,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         // Filter and sort all in edges that have valid highway types
         final List<Edge> inEdges = intersectingNode.inEdges().stream()
                 .filter(this::isValidIntersectingEdge)
+                .filter(inEdge -> this.connectedHighwayTypes
+                        .containsKey(inEdge.highwayTag().getTagValue()))
                 .sorted(Comparator.comparingLong(AtlasObject::getIdentifier))
                 .collect(Collectors.toList());
         // Filter all out edges that have valid highway types
@@ -653,48 +655,43 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         inEdges.forEach(inEdge ->
         {
             final Optional<HighwayTag> highwayTag = HighwayTag.highwayTag(inEdge);
-            if (highwayTag.isPresent()
-                    && this.connectedHighwayTypes.containsKey(highwayTag.get().getTagValue()))
+            // Filter out edges based on level and layer tags and valid highway types
+            final Set<AtlasEntity> filteredOutEdges = outEdges.stream()
+                    .filter(outEdge -> this.isMatchingOutEdge(inEdge, outEdge))
+                    .collect(Collectors.toSet());
+            // There should be at least 2 valid outEdges
+            if (filteredOutEdges.size() >= 2 && highwayTag.isPresent())
             {
-                // Filter out edges based on level and layer tags and valid highway types
-                final Set<AtlasEntity> filteredOutEdges = outEdges.stream()
-                        .filter(outEdge -> this.isMatchingOutEdge(inEdge, outEdge))
-                        .collect(Collectors.toSet());
-                // There should be at least 2 valid outEdges
-                if (filteredOutEdges.size() >= 2)
+                final String inEdgeHighwayType = highwayTag.get().getTagValue();
+                final List<String> validHighwayTypesOfOutEdge = this.connectedHighwayTypes
+                        .get(inEdgeHighwayType);
+                final Set<AtlasEntity> filteredByHighways = filteredOutEdges.stream()
+                        .filter(atlasEntity ->
+                        {
+                            final Optional<HighwayTag> atlasEntityHighway = HighwayTag
+                                    .highwayTag(atlasEntity);
+                            return atlasEntityHighway.isPresent() && validHighwayTypesOfOutEdge
+                                    .contains(atlasEntityHighway.get().getTagValue());
+                        }).collect(Collectors.toSet());
+                // If any of the edges is a roundabout, add it to roundabout map
+                if (filteredByHighways.stream().anyMatch(JunctionTag::isRoundabout)
+                        || JunctionTag.isRoundabout(inEdge))
                 {
-                    final String inEdgeHighwayType = highwayTag.get().getTagValue();
-                    final List<String> validHighwayTypesOfOutEdge = this.connectedHighwayTypes
-                            .get(inEdgeHighwayType);
-                    final Set<AtlasEntity> filteredByHighways = filteredOutEdges.stream()
-                            .filter(atlasEntity ->
-                            {
-                                final Optional<HighwayTag> atlasEntityHighway = HighwayTag
-                                        .highwayTag(atlasEntity);
-                                return atlasEntityHighway.isPresent() && validHighwayTypesOfOutEdge
-                                        .contains(atlasEntityHighway.get().getTagValue());
-                            }).collect(Collectors.toSet());
-                    // If any of the edges is a roundabout, add it to roundabout map
-                    if (filteredByHighways.stream().anyMatch(JunctionTag::isRoundabout)
-                            || JunctionTag.isRoundabout(inEdge))
+                    roundAboutInEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
+                }
+                else if (!filteredByHighways.isEmpty())
+                {
+                    final Set<AtlasEntity> linkEdges = this
+                            .getAttachedLinkRoadsForNavigation(inEdge, filteredByHighways);
+                    if (!linkEdges.isEmpty())
                     {
-                        roundAboutInEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
+                        nodeToLinkEdgeMap.put(junctionNode, linkEdges);
                     }
-                    else if (!filteredByHighways.isEmpty())
+                    else
                     {
-                        final Set<AtlasEntity> linkEdges = this
-                                .getAttachedLinkRoadsForNavigation(inEdge, filteredByHighways);
-                        if (!linkEdges.isEmpty())
-                        {
-                            nodeToLinkEdgeMap.put(junctionNode, linkEdges);
-                        }
-                        else
-                        {
-                            nonRoundaboutInEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
-                        }
+                        nonRoundaboutInEdgeToOutEdgeMap.put(inEdge, filteredByHighways);
                     }
                 }
-
             }
         });
         final Map<String, Map<AtlasEntity, Set<AtlasEntity>>> mapOfMatchingInAndOutEdges = new HashMap<>();
