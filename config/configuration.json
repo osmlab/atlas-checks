@@ -413,7 +413,8 @@
     },
     "filters.classes.tags": [
       ["area","boundary->protected_area&protect_class->!"],
-      ["relation","boundary->protected_area&protect_class->!"]
+      ["relation","boundary->protected_area&protect_class->!"],
+      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, or incorrect values",
