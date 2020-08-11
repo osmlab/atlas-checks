@@ -26,7 +26,10 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.Sets;
@@ -126,6 +129,27 @@ public class WaterWayCheck extends BaseCheck<Long>
             }
         }
         return intersectingSegments;
+    }
+
+    /**
+     * Check the atlas object for boundary nodes at its end
+     *
+     * @param object
+     *            The atlas object to check
+     * @return {@code true} if the object ends on a boundary
+     */
+    private static boolean endsWithBoundaryNode(final AtlasObject object)
+    {
+        if (!(object instanceof LineItem))
+        {
+            return false;
+        }
+        final LineItem lineItem = (LineItem) object;
+        final Atlas atlas = object.getAtlas();
+        final Location last = lineItem.asPolyLine().last();
+        final Stream<Point> points = Iterables.asList(atlas.pointsAt(last)).stream();
+        final Stream<Node> nodes = Iterables.asList(atlas.nodesAt(last)).stream();
+        return Stream.concat(points, nodes).anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
     }
 
     /**
@@ -332,7 +356,7 @@ public class WaterWayCheck extends BaseCheck<Long>
             {
                 flag = createUphillFlag(object, first);
             }
-            else
+            else if (!endsWithBoundaryNode(object))
             {
                 flag = createFlag(object,
                         this.getLocalizedInstruction(
