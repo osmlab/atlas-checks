@@ -174,6 +174,21 @@ public class WaterWayCheckTestRule extends CoreTestRule
     private Atlas deadendWaterways;
 
     @TestAtlas(nodes = {
+            @Node(id = "1286958997", coordinates = @Loc(value = "43.940881,12.5169471"), tags = {
+                    "man_made=manhole", "manhole=drain" }),
+            @Node(id = "1286961206", coordinates = @Loc(value = "43.9228377,12.497902")),
+            @Node(id = "5278469506", coordinates = @Loc(value = "43.9230335,12.497702")),
+            @Node(id = "5548727896", coordinates = @Loc(value = "43.9232093,12.4972691")) }, lines = {
+                    @Line(id = "579368984", coordinates = { @Loc(value = "43.9230335,12.497702"),
+                            @Loc(value = "43.9228377,12.497902"),
+                            @Loc(value = "43.940881,12.5169471") }, tags = { "name=Marano",
+                                    "waterway=stream" }),
+                    @Line(id = "579368987", coordinates = { @Loc(value = "43.9232093,12.4972691"),
+                            @Loc(value = "43.9230335,12.497702") }, tags = { "layer=-1",
+                                    "name=Marano", "tunnel=culvert", "waterway=stream" }) })
+    private Atlas differingLayersConnectedWaterway;
+
+    @TestAtlas(nodes = {
             @Node(id = "5215738262", coordinates = @Loc(value = "39.2176586,-105.4097737")),
             @Node(id = "5215738336", coordinates = @Loc(value = "39.2193545,-105.4093126")),
             @Node(id = "5215738538", coordinates = @Loc(value = "39.2211332,-105.4101387")),
@@ -353,6 +368,16 @@ public class WaterWayCheckTestRule extends CoreTestRule
     public Atlas getDeadendWaterways()
     {
         return this.deadendWaterways;
+    }
+
+    /**
+     * Get two waterways that differ by a layer tag and are connected
+     *
+     * @return An atlas with two connected waterway that have a different layer
+     */
+    public Atlas getDifferingLayersConnectedWaterway()
+    {
+        return this.differingLayersConnectedWaterway;
     }
 
     /**

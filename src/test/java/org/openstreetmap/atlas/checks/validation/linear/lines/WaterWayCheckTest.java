@@ -120,6 +120,18 @@ public class WaterWayCheckTest
     }
 
     /**
+     * Check that layers are properly accounted for when two waterways connect, but have different
+     * layers
+     */
+    @Test
+    public void testDifferingLayersConnectedWaterway()
+    {
+        this.verifier.actual(this.atlases.getDifferingLayersConnectedWaterway(),
+                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    /**
      * Check that a waterway ending inside a sinkhole area is not flagged
      */
     @Test
