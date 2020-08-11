@@ -1,20 +1,17 @@
 package org.openstreetmap.atlas.checks.utility;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.openstreetmap.atlas.geography.Location;
@@ -273,31 +270,10 @@ public final class ElevationUtilities implements Serializable
         {
             return null;
         }
-        try (InputStream is = new FileInputStream(path.toFile()))
+        try (InputStream is = CompressionUtilities
+                .getUncompressedInputStream(Files.newInputStream(path)))
         {
-            InputStream toRead = is;
-            try
-            {
-                if (path.toString().endsWith(".zip"))
-                {
-                    final BufferedInputStream bis = new BufferedInputStream(is);
-                    final ZipInputStream zis = new ZipInputStream(bis);
-                    ZipEntry zipEntry;
-                    while ((zipEntry = zis.getNextEntry()) != null)
-                    {
-                        if (zipEntry.getName().endsWith(this.srtmExt))
-                        {
-                            toRead = zis;
-                            break;
-                        }
-                    }
-                }
-                return readStream(toRead);
-            }
-            finally
-            {
-                toRead.close();
-            }
+            return readStream(is);
         }
         catch (final IOException e)
         {

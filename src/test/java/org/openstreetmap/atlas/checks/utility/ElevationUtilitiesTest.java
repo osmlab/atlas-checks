@@ -22,6 +22,7 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.geography.Latitude;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * Test class for {@link ElevationUtilities}.
@@ -106,7 +107,8 @@ public class ElevationUtilitiesTest
                 new Location(Latitude.degrees(degrees), Longitude.degrees(-degrees))));
         assertEquals(6, elevationUtilities.getElevation(
                 new Location(Latitude.degrees(-degrees), Longitude.degrees(-degrees))));
-
+        assertEquals(ElevationUtilities.NO_ELEVATION, elevationUtilities
+                .getElevation(new Location(Latitude.degrees(89), Longitude.degrees(0))));
     }
 
     /**
@@ -122,6 +124,21 @@ public class ElevationUtilitiesTest
                 100 * (elevationUtilities.getElevation(two) - elevationUtilities.getElevation(one))
                         / two.distanceTo(one).asMeters(),
                 0.001);
+        final Location fakeLocation = new Location(Latitude.degrees(89), Longitude.degrees(0));
+        assertTrue(Double.isNaN(elevationUtilities.getIncline(fakeLocation, two)));
+        assertTrue(Double.isNaN(elevationUtilities.getIncline(two, fakeLocation)));
+
+    }
+
+    /**
+     * Test method for {@link ElevationUtilities#getResolution(Location)}.
+     */
+    @Test
+    public void testGetResolution()
+    {
+        final Distance resolution = elevationUtilities.getResolution(Location.CENTER);
+        // 2 * pi * 6371 / (360 * 4) -- 6371 is the average earths radius used by Atlas
+        assertEquals(27798.73166, resolution.asMeters(), 0.001);
     }
 
     /**
