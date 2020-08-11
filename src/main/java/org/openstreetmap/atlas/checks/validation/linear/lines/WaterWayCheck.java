@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.ElevationUtilities;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Segment;
@@ -87,9 +88,10 @@ public class WaterWayCheck extends BaseCheck<Long>
     private static final String DOES_NOT_END_IN_SINK = "The waterway {0} does not end in a sink (ocean/sinkhole/waterway/drain)";
     private static final String CIRCULAR_WATERWAY = "The waterway {0} loops back on itself. This is typically impossible.";
     private static final String CROSSES_WATERWAY = "The waterway {0} crosses the waterway {1}.";
+    private static final String GOES_UPHILL = "The waterway {0} probably does not go up hill.\nPlease check (source elevation data resolution was about {1} meters).";
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(DOES_NOT_END_IN_SINK,
-            CIRCULAR_WATERWAY, CROSSES_WATERWAY);
+            CIRCULAR_WATERWAY, CROSSES_WATERWAY, GOES_UPHILL);
 
     private final TaggableFilter waterwaySinkTagFilter;
     private final TaggableFilter waterwayTagFilter;
@@ -97,6 +99,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     private final TaggableFilter validOceanTags;
 
     private final TaggableFilter oceanBoundaryTags;
+    private final ElevationUtilities elevationUtils;
 
     /**
      * Get intersecting segments of two polylines
@@ -134,6 +137,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     public WaterWayCheck(final Configuration configuration)
     {
         super(configuration);
+        this.elevationUtils = new ElevationUtilities(configuration);
         this.waterwaySinkTagFilter = this.configurationValue(configuration,
                 "waterway.sink.tags.filters", WATERWAY_SINK_TAG_FILTER_DEFAULT,
                 TaggableFilter::forDefinition);
@@ -305,16 +309,37 @@ public class WaterWayCheck extends BaseCheck<Long>
     {
         final LineItem line = (LineItem) object;
         final Location last = line.asPolyLine().last();
+        final Location first = line.asPolyLine().first();
         CheckFlag flag = null;
+        final double incline = this.elevationUtils.getIncline(first, last);
+        final boolean uphill = !Double.isNaN(incline) && incline > 0
+                && last.distanceTo(first).isGreaterThan(Distance.FIFTEEN_HUNDRED_FEET);
         if (line.isClosed())
         {
-            flag = createFlag(object, this.getLocalizedInstruction(1, object.getOsmIdentifier()),
+            flag = createFlag(object,
+                    this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS.indexOf(CIRCULAR_WATERWAY),
+                            object.getOsmIdentifier()),
                     Collections.singletonList(line.asPolyLine().first()));
+        }
+        else if (uphill && Distance.ONE_METER
+                .isGreaterThanOrEqualTo(this.elevationUtils.getResolution(first)))
+        {
+            flag = createUphillFlag(object, first);
         }
         else if (isValidEndToCheck(line.getAtlas(), last) && !doesWaterwayEndInSink(line))
         {
-            flag = createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier()),
-                    Collections.singletonList(last));
+            if (uphill)
+            {
+                flag = createUphillFlag(object, first);
+            }
+            else
+            {
+                flag = createFlag(object,
+                        this.getLocalizedInstruction(
+                                FALLBACK_INSTRUCTIONS.indexOf(DOES_NOT_END_IN_SINK),
+                                object.getOsmIdentifier()),
+                        Collections.singletonList(last));
+            }
         }
         final LineItem crossed = intersectsAnotherWaterWay(line);
         if (flag == null && crossed != null)
@@ -323,8 +348,9 @@ public class WaterWayCheck extends BaseCheck<Long>
                     .intersections(line.asPolyLine()).iterator();
             if (intersections.hasNext())
             {
-                flag = createFlag(
-                        Sets.hashSet(object, crossed), this.getLocalizedInstruction(2,
+                flag = createFlag(Sets.hashSet(object, crossed),
+                        this.getLocalizedInstruction(
+                                FALLBACK_INSTRUCTIONS.indexOf(CROSSES_WATERWAY),
                                 object.getOsmIdentifier(), crossed.getOsmIdentifier()),
                         Arrays.asList(intersections.next()));
             }
@@ -341,6 +367,14 @@ public class WaterWayCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    private CheckFlag createUphillFlag(final AtlasObject object, final Location first)
+    {
+        return createFlag(object,
+                this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL),
+                        object.getOsmIdentifier(),
+                        this.elevationUtils.getResolution(first).asMeters()));
     }
 
     private boolean doesWaterwayEndInSink(final LineItem line)
