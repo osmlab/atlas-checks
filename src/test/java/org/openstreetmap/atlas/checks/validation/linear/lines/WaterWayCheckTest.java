@@ -1,9 +1,13 @@
 package org.openstreetmap.atlas.checks.validation.linear.lines;
 
+import java.lang.reflect.Field;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
+import org.openstreetmap.atlas.checks.utility.ElevationUtilities;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.geography.Location;
 
 /**
  * WaterWayCheck test
@@ -12,6 +16,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class WaterWayCheckTest
 {
+
     /** The rule to get atlases from */
     @Rule
     public WaterWayCheckTestRule atlases = new WaterWayCheckTestRule();
@@ -50,7 +55,74 @@ public class WaterWayCheckTest
         this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(),
                 new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
+    }
 
+    @Test
+    public void testCoastWaterwayConnectedElevation() throws ReflectiveOperationException
+    {
+        final short[][] map = new short[][] { { 15, 14, 13, 12 }, { 11, 10, 9, 8 }, { 7, 6, 5, 4 },
+                { 3, 2, 1, 0 } };
+        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.inlineConfiguration(
+                "{\"WaterWayCheck.waterway.elevation.resolution.min.uphill\": 30000.0}"));
+        final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
+        elevationUtilsField.setAccessible(true);
+        final ElevationUtilities elevationUtils = (ElevationUtilities) elevationUtilsField
+                .get(check);
+        elevationUtils.putMap(Location.forString("16.9906416,-88.3188021"), map);
+        this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testCoastWaterwayConnectedElevationReversed() throws ReflectiveOperationException
+    {
+        final short[][] map = new short[][] { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 },
+                { 12, 13, 14, 15 } };
+        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.inlineConfiguration(
+                "{\"WaterWayCheck.waterway.elevation.resolution.min.uphill\": 30000.0}"));
+
+        final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
+        elevationUtilsField.setAccessible(true);
+        final ElevationUtilities elevationUtils = (ElevationUtilities) elevationUtilsField
+                .get(check);
+        elevationUtils.putMap(Location.forString("16.9906416,-88.3188021"), map);
+        this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(), check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testCoastWaterwayConnectedElevationReversedLongDistance()
+            throws ReflectiveOperationException
+    {
+        final short[][] map = new short[][] { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 },
+                { 12, 13, 14, 15 } };
+        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.inlineConfiguration(
+                "{\"WaterWayCheck\": {\"waterway.elevation.resolution.min.uphill\": 30000.0, \"waterway.elevation.distance.min.start.end\": 1.0}}"));
+
+        final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
+        elevationUtilsField.setAccessible(true);
+        final ElevationUtilities elevationUtils = (ElevationUtilities) elevationUtilsField
+                .get(check);
+        elevationUtils.putMap(Location.forString("16.9906416,-88.3188021"), map);
+        this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(), check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void testCoastWaterwayConnectedElevationReversedLowResolution()
+            throws ReflectiveOperationException
+    {
+        final short[][] map = new short[][] { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 },
+                { 12, 13, 14, 15 } };
+        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.emptyConfiguration());
+
+        final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
+        elevationUtilsField.setAccessible(true);
+        final ElevationUtilities elevationUtils = (ElevationUtilities) elevationUtilsField
+                .get(check);
+        elevationUtils.putMap(Location.forString("16.9906416,-88.3188021"), map);
+        this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(), check);
+        this.verifier.verifyEmpty();
     }
 
     /**

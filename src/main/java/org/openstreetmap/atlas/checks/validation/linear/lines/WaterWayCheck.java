@@ -92,6 +92,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     private static final String CIRCULAR_WATERWAY = "The waterway {0} loops back on itself. This is typically impossible.";
     private static final String CROSSES_WATERWAY = "The waterway {0} crosses the waterway {1}.";
     private static final String GOES_UPHILL = "The waterway {0} probably does not go up hill.\nPlease check (source elevation data resolution was about {1} meters).";
+    private static final Distance MIN_RESOLUTION_DISTANCE = Distance.ONE_METER;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(DOES_NOT_END_IN_SINK,
             CIRCULAR_WATERWAY, CROSSES_WATERWAY, GOES_UPHILL);
@@ -103,6 +104,8 @@ public class WaterWayCheck extends BaseCheck<Long>
 
     private final TaggableFilter oceanBoundaryTags;
     private final ElevationUtilities elevationUtils;
+    private final Distance minResolutionDistance;
+    private final Distance minDistanceStartEndElevationUphill;
 
     /**
      * Get intersecting segments of two polylines
@@ -173,7 +176,16 @@ public class WaterWayCheck extends BaseCheck<Long>
                 this.configurationValue(configuration, "ocean.valid", DEFAULT_VALID_OCEAN_TAGS));
         this.oceanBoundaryTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
                 "ocean.boundary", DEFAULT_OCEAN_BOUNDARY_TAGS));
+
         /* End ocean data */
+        /* Elevation settings */
+        this.minResolutionDistance = this.configurationValue(configuration,
+                "waterway.elevation.resolution.min.uphill", MIN_RESOLUTION_DISTANCE.asMeters(),
+                Distance::meters);
+        this.minDistanceStartEndElevationUphill = this.configurationValue(configuration,
+                "waterway.elevation.distance.min.start.end",
+                Distance.FIFTEEN_HUNDRED_FEET.asMeters(), Distance::meters);
+        /* End elevation settings */
 
     }
 
@@ -337,7 +349,7 @@ public class WaterWayCheck extends BaseCheck<Long>
         CheckFlag flag = null;
         final double incline = this.elevationUtils.getIncline(first, last);
         final boolean uphill = !Double.isNaN(incline) && incline > 0
-                && last.distanceTo(first).isGreaterThan(Distance.FIFTEEN_HUNDRED_FEET);
+                && last.distanceTo(first).isGreaterThan(this.minDistanceStartEndElevationUphill);
         if (line.isClosed())
         {
             flag = createFlag(object,
@@ -345,7 +357,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                             object.getOsmIdentifier()),
                     Collections.singletonList(line.asPolyLine().first()));
         }
-        else if (uphill && Distance.ONE_METER
+        else if (uphill && this.minResolutionDistance
                 .isGreaterThanOrEqualTo(this.elevationUtils.getResolution(first)))
         {
             flag = createUphillFlag(object, first);

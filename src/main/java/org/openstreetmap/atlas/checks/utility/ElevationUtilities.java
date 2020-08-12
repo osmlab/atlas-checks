@@ -136,6 +136,57 @@ public final class ElevationUtilities implements Serializable
     }
 
     /**
+     * Get the index to use for a short[latitude][longitude] = height in meters array. Generally,
+     * this is used to get data from a map obtained via {@link #getMap(Location)}. You also need
+     * that map for the {@code mapSize} parameter.
+     *
+     * @param location
+     *            The location to get the index for
+     * @param mapSize
+     *            The size of the map
+     * @return A [latitude, longitude] = int (index) array.
+     */
+    public int[] getIndex(final Location location, final int mapSize)
+    {
+        final double latDegrees = location.getLatitude().asDegrees();
+        final double lonDegrees = location.getLongitude().asDegrees();
+
+        final float fraction = ((float) this.srtmExtent) / mapSize;
+        int latitude = (int) Math.floor(Math.abs(latDegrees - (int) latDegrees) / fraction);
+        int longitude = (int) Math.floor(Math.abs(lonDegrees - (int) lonDegrees) / fraction);
+        if (latDegrees >= 0)
+        {
+            latitude = mapSize - 1 - latitude;
+        }
+        if (lonDegrees < 0)
+        {
+            longitude = mapSize - 1 - longitude;
+        }
+        return new int[] { latitude, longitude };
+    }
+
+    /**
+     * Get the map for a specified location. Unless you need the raw map, you should prefer
+     * {@link #getElevation}. This also allows you to directly modify a map (i.e., you know that
+     * there is elevation data around a point, but the point is in a {@link #NO_ELEVATION} area). To
+     * get the index of a {@link Location}, use {@link #getIndex(Location, int)}. You need the
+     * {@code short[][]} from this method.
+     *
+     * @param location
+     *            The location to get the height map for
+     * @return A short[latitude][longitude] = height in meters array
+     */
+    public short[][] getMap(final Location location)
+    {
+        final double latDegrees = location.getLatitude().asDegrees();
+        final double lonDegrees = location.getLongitude().asDegrees();
+        final int lat = (int) Math.floor(latDegrees);
+        final int lon = (int) Math.floor(lonDegrees);
+        return this.loadedSrtm.computeIfAbsent(Pair.of(lat, lon),
+                pair -> loadMap(pair.getLeft(), pair.getRight()));
+    }
+
+    /**
      * Get the resolution of the data at the location.
      *
      * @param location
@@ -153,6 +204,37 @@ public final class ElevationUtilities implements Serializable
         final Location temp = new Location(location.getLatitude(),
                 Longitude.degrees(location.getLongitude().asDegrees() + difference));
         return temp.distanceTo(location);
+    }
+
+    /**
+     * The lower-left corner of each file is the file name. This does not append any archive
+     * extensions, it is just the name of the file with the configured SRTM extension.
+     *
+     * @param latitude
+     *            The latitude (lower left)
+     * @param longitude
+     *            The longitude (lower left)
+     * @return The expected filename for the location. You should also check for archives.
+     */
+    public String getSrtmFileName(final int latitude, final int longitude)
+    {
+        int lat = latitude;
+        int lon = longitude;
+        String latPrefix = "N";
+        if (lat < 0)
+        {
+            lat = Math.abs(lat);
+            latPrefix = "S";
+        }
+
+        String lonPrefix = "E";
+        if (lon < 0)
+        {
+            lon = Math.abs(lon);
+            lonPrefix = "W";
+        }
+
+        return String.format("%s%02d%s%03d.%s", latPrefix, lat, lonPrefix, lon, this.srtmExt);
     }
 
     /**
@@ -181,78 +263,22 @@ public final class ElevationUtilities implements Serializable
     }
 
     /**
-     * Get the index to use for a short[latitude][longitude] = height in meters array
+     * Associate a map with a location. This is mostly useful for test methods. You should use
+     * {@link #getElevation} instead (it automatically loads appropriate maps).
      *
      * @param location
-     *            The location to get the index for
-     * @param mapSize
-     *            The size of the map
-     * @return A [latitude, longitude] = int (index) array.
+     *            The location to use for the map location (uses the lower-left corner of the 1
+     *            degree by 1 degree box).
+     * @param map
+     *            The map to associate
      */
-    private int[] getIndex(final Location location, final int mapSize)
-    {
-        final double latDegrees = location.getLatitude().asDegrees();
-        final double lonDegrees = location.getLongitude().asDegrees();
-
-        final float fraction = ((float) this.srtmExtent) / mapSize;
-        int latitude = (int) Math.floor(Math.abs(latDegrees - (int) latDegrees) / fraction);
-        int longitude = (int) Math.floor(Math.abs(lonDegrees - (int) lonDegrees) / fraction);
-        if (latDegrees >= 0)
-        {
-            latitude = mapSize - 1 - latitude;
-        }
-        if (lonDegrees < 0)
-        {
-            longitude = mapSize - 1 - longitude;
-        }
-        return new int[] { latitude, longitude };
-    }
-
-    /**
-     * Get the map for a specified location
-     *
-     * @param location
-     *            The location to get the height map for
-     * @return A short[latitude][longitude] = height in meters array
-     */
-    private short[][] getMap(final Location location)
+    public void putMap(final Location location, final short[][] map)
     {
         final double latDegrees = location.getLatitude().asDegrees();
         final double lonDegrees = location.getLongitude().asDegrees();
         final int lat = (int) Math.floor(latDegrees);
         final int lon = (int) Math.floor(lonDegrees);
-        return this.loadedSrtm.computeIfAbsent(Pair.of(lat, lon),
-                pair -> loadMap(pair.getLeft(), pair.getRight()));
-    }
-
-    /**
-     * The lower-left corner of each file is the file name.
-     *
-     * @param latitude
-     *            The latitude (lower left)
-     * @param longitude
-     *            The longitude (lower left)
-     * @return The expected filename for the location. You should also check for zip archives.
-     */
-    private String getSrtmFileName(final int latitude, final int longitude)
-    {
-        int lat = latitude;
-        int lon = longitude;
-        String latPrefix = "N";
-        if (lat < 0)
-        {
-            lat = Math.abs(lat);
-            latPrefix = "S";
-        }
-
-        String lonPrefix = "E";
-        if (lon < 0)
-        {
-            lon = Math.abs(lon);
-            lonPrefix = "W";
-        }
-
-        return String.format("%s%02d%s%03d.%s", latPrefix, lat, lonPrefix, lon, this.srtmExt);
+        this.loadedSrtm.put(Pair.of(lat, lon), map);
     }
 
     /**
@@ -270,7 +296,14 @@ public final class ElevationUtilities implements Serializable
         Path path = Paths.get(this.srtmPath, filename);
         if (!path.toFile().isFile())
         {
-            path = Paths.get(this.srtmPath, filename + ".zip");
+            for (final String ext : new String[] { "zip", "gz", "xz", "bz", "bz2", "tar" })
+            {
+                path = Paths.get(this.srtmPath, filename + "." + ext);
+                if (path.toFile().isFile())
+                {
+                    break;
+                }
+            }
         }
         if (!path.toFile().isFile())
         {
