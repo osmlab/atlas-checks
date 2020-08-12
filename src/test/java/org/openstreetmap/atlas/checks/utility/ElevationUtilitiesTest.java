@@ -139,6 +139,8 @@ public class ElevationUtilitiesTest
         final Distance resolution = elevationUtilities.getResolution(Location.CENTER);
         // 2 * pi * 6371 / (360 * 4) -- 6371 is the average earths radius used by Atlas
         assertEquals(27798.73166, resolution.asMeters(), 0.001);
+
+        assertEquals(Distance.MAXIMUM, elevationUtilities.getResolution(Location.CROSSING_85_280));
     }
 
     /**
@@ -156,6 +158,10 @@ public class ElevationUtilitiesTest
         assertFalse(elevationUtilities.inSameDataPoint(one, two));
         one = new Location(Latitude.degrees(-0.74), Longitude.degrees(0.74));
         assertFalse(elevationUtilities.inSameDataPoint(one, two));
+
+        assertFalse(elevationUtilities.inSameDataPoint(Location.CROSSING_85_17,
+                Location.CROSSING_85_280));
+        assertFalse(elevationUtilities.inSameDataPoint(one, Location.CROSSING_85_280));
     }
 
 }
