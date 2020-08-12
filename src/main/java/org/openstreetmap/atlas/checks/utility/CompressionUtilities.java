@@ -70,15 +70,16 @@ public final class CompressionUtilities
     {
         final InputStream uncompressed = new CompressorStreamFactory()
                 .createCompressorInputStream(inputStream);
+        final BufferedInputStream buffered = new BufferedInputStream(uncompressed);
         try
         {
-            return unarchivedInputStream(uncompressed);
+            return unarchivedInputStream(buffered);
         }
         catch (final ArchiveException | IOException e)
         {
-            // OK. Not archived.
-            return uncompressed;
+            // OK. Probably not archived.
         }
+        return buffered;
     }
 
     /**
