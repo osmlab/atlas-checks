@@ -43,6 +43,8 @@ public final class ElevationUtilities implements Serializable
      */
     public static final short NO_ELEVATION = Short.MIN_VALUE;
 
+    private static final short[][] EMPTY_MAP = new short[][] {};
+
     /** Just an int for converting a decimal to a percentage */
     private static final int DECIMAL_TO_PERCENTAGE = 100;
 
@@ -102,7 +104,7 @@ public final class ElevationUtilities implements Serializable
     public short getElevation(final Location location)
     {
         final short[][] map = getMap(location);
-        if (map == null)
+        if (Arrays.equals(EMPTY_MAP, map))
         {
             return NO_ELEVATION;
         }
@@ -138,11 +140,15 @@ public final class ElevationUtilities implements Serializable
      *
      * @param location
      *            The location to get the resolution of
-     * @return The resolution of the data
+     * @return The resolution of the data, or {@link Distance#MAXIMUM} if there is no data.
      */
     public Distance getResolution(final Location location)
     {
         final short[][] map = getMap(location);
+        if (Arrays.equals(EMPTY_MAP, map))
+        {
+            return Distance.MAXIMUM;
+        }
         final float difference = ((float) this.srtmExtent) / map.length;
         final Location temp = new Location(location.getLatitude(),
                 Longitude.degrees(location.getLongitude().asDegrees() + difference));
@@ -162,7 +168,7 @@ public final class ElevationUtilities implements Serializable
     {
         final short[][] mapOne = getMap(one);
         final short[][] mapTwo = getMap(two);
-        if (Arrays.equals(mapOne, mapTwo))
+        if (Arrays.equals(mapOne, mapTwo) && !Arrays.equals(EMPTY_MAP, mapOne))
         {
             final int[] indexOne = getIndex(one, mapOne.length);
             final int[] indexTwo = getIndex(two, mapTwo.length);
@@ -268,7 +274,7 @@ public final class ElevationUtilities implements Serializable
         }
         if (!path.toFile().isFile())
         {
-            return null;
+            return EMPTY_MAP;
         }
         try (InputStream is = CompressionUtilities
                 .getUncompressedInputStream(Files.newInputStream(path)))
@@ -277,7 +283,7 @@ public final class ElevationUtilities implements Serializable
         }
         catch (final IOException e)
         {
-            return null;
+            return EMPTY_MAP;
         }
     }
 
