@@ -32,11 +32,11 @@ public final class ElevationUtilities implements Serializable
     /**
      * The assumed file extension
      */
-    private static String SRTM_EXT = "hgt";
+    private static final String SRTM_EXT = "hgt";
     /**
      * The assumed extent of a HGT SRTM file (lat/lon) in degrees
      */
-    private static int SRTM_EXTENT = 1;
+    private static final int SRTM_EXTENT = 1;
     /**
      * A non-number when there is no elevation data available. This is currently returns
      * {@link Short#MIN_VALUE}.
