@@ -29,6 +29,10 @@ public class AtGradeSignPostCheckTestRule extends CoreTestRule
     private static final String ROUNDABOUT_LOC_FIVE = "43.2095410, 23.5532935";
     private static final String ROUNDABOUT_LOC_SIX = "43.2097333, 23.5533566";
     private static final String ROUNDABOUT_CONNECTOR_LOC_ONE = "43.2100746, 23.5528153";
+    private static final String ATGRADE_LINK_JUNCTION = "2.2293749, 102.2986680";
+    private static final String LINK_JUNCTION_IN_EDGE_START_LOC = "2.2294533, 102.2991744";
+    private static final String LINK_ROAD_END_LOC = "2.2290532, 102.2987598";
+    private static final String LINK_JUNCTION_OUT_EDGE_END = "2.2293645, 102.2985750";
 
     @TestAtlas(
             // Nodes
@@ -188,9 +192,35 @@ public class AtGradeSignPostCheckTestRule extends CoreTestRule
                                     "highway=primary", "oneway=yes" }) })
     private Atlas roundaboutIntersectionMissingDestinationSignRelationAtlas;
 
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(id = "300010000", coordinates = @Loc(value = ATGRADE_LINK_JUNCTION)),
+                    @Node(coordinates = @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC)),
+                    @Node(coordinates = @Loc(value = LINK_ROAD_END_LOC)),
+                    @Node(coordinates = @Loc(value = LINK_JUNCTION_OUT_EDGE_END)) },
+            // Edges
+            edges = {
+                    @Edge(id = "100010001", coordinates = {
+                            @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC),
+                            @Loc(value = ATGRADE_LINK_JUNCTION) }, tags = { "highway=primary" }),
+                    @Edge(id = "100010002", coordinates = {
+                            @Loc(value = LINK_JUNCTION_IN_EDGE_START_LOC),
+                            @Loc(value = LINK_ROAD_END_LOC) }, tags = { "highway=primary_link" }),
+                    @Edge(id = "100010003", coordinates = { @Loc(value = ATGRADE_LINK_JUNCTION),
+                            @Loc(value = LINK_ROAD_END_LOC) }, tags = { "highway=secondary" }),
+                    @Edge(id = "100010004", coordinates = { @Loc(value = ATGRADE_LINK_JUNCTION),
+                            @Loc(value = LINK_JUNCTION_OUT_EDGE_END) }, tags = {
+                                    "highway=secondary" }) })
+    private Atlas linkRoadConnectedAtGradeJunctionAtlas;
+
     public Atlas getIncompleteDestinationSignRelationAtlas()
     {
         return this.incompleteDestinationSignRelationAtlas;
+    }
+
+    public Atlas getLinkRoadConnectedAtGradeJunctionAtlas()
+    {
+        return this.linkRoadConnectedAtGradeJunctionAtlas;
     }
 
     public Atlas getMissingDestinationSignRelationAtlas()

@@ -24,7 +24,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": false,\"append\": true},\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": false,\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
                                 + "[\"point\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
@@ -34,7 +34,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[[\"area\",\"boundary->protected_area&protect_class->!\"], [\"relation\",\"boundary->protected_area&protect_class->!\"]]}}")));
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[[\"area\",\"boundary->protected_area&protect_class->!\"], [\"relation\",\"boundary->protected_area&protect_class->!\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
 
@@ -43,7 +43,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[[\"edge\",\"route->ferry&highway->*\"], [\"line\",\"route->ferry&highway->*\"],[\"edge\",\"construction->*&highway->!construction\"],"
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[[\"edge\",\"route->ferry&highway->*\"], [\"line\",\"route->ferry&highway->*\"],[\"edge\",\"construction->*&highway->!construction\"],"
                                 + "[\"line\",\"construction->*&highway->!construction\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
@@ -53,7 +53,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[[\"edge\",\"route->ferry&highway->*\"]]}}")));
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[[\"edge\",\"route->ferry&highway->*\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
@@ -62,7 +62,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[[\"line\",\"construction->*&highway->!construction\"],[\"line\",\"water->*&natural->!water\"]]}}")));
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[[\"line\",\"construction->*&highway->!construction\"],[\"line\",\"water->*&natural->!water\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.globallyVerify(flags -> flags.forEach(flag -> Assert.assertEquals(
                 "1. OSM feature 6 has invalid tags.\n"
@@ -76,7 +76,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[[\"node\",\"crossing->traffic_signals&highway->!crossing\"],"
                                 + "[\"point\",\"crossing->traffic_signals&highway->!crossing\"]]}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
@@ -86,7 +86,7 @@ public class InvalidTagsCheckTest
     {
         this.verifier.actual(this.setup.testAtlas(),
                 new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[]}}")));
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[]}}")));
         this.verifier.verifyEmpty();
     }
 }
