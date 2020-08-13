@@ -43,6 +43,22 @@ public class AtGradeSignPostCheckTest
     }
 
     @Test
+    public void testLinkRoadConnectedAtGradeJunctions()
+    {
+        this.verifier.actual(this.setup.getLinkRoadConnectedAtGradeJunctionAtlas(),
+                new AtGradeSignPostCheck(this.inlineConfiguration));
+        this.verifier.verifyNotEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions().contains(
+                    "is the most logical route between the OSM ways connected to this node, but is either not part of a destination sign relation or is missing a destination sign tag."));
+        });
+
+    }
+
+    @Test
     public void testMissingDestinationSignRelation()
     {
         this.verifier.actual(this.setup.getMissingDestinationSignRelationAtlas(),
@@ -105,5 +121,4 @@ public class AtGradeSignPostCheckTest
                     + "edges"));
         });
     }
-
 }

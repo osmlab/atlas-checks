@@ -161,6 +161,33 @@ public class MalformedRoundaboutCheckTest
     }
 
     @Test
+    public void testRoundaboutWithEnclosedMultiLayerNavigableRoad()
+    {
+        this.verifier.actual(this.setup.enclosedMultiLayerNavigableRoad(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testRoundaboutWithEnclosedNavigableRoad()
+    {
+        this.verifier.actual(this.setup.enclosedNavigableRoad(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout has car navigable ways inside it.",
+                flags.get(0).getInstructions()));
+    }
+
+    @Test
+    public void testRoundaboutWithEnclosedNavigableRoadArea()
+    {
+        this.verifier.actual(this.setup.enclosedNavigableRoadArea(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testRoundaboutWithSyntheticNode()
     {
         this.verifier.actual(this.setup.syntheticNode(),

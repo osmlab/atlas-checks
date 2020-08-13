@@ -57,8 +57,6 @@ public class InvalidTagsCheck extends BaseCheck<String>
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
 
     private final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> classTagFilters;
-    private final boolean overrideResourceFilters;
-    private final boolean appendToResourceFilters;
 
     /**
      * @return a List of Tuple containing AtlasEntity and a list of TaggableFilters read from the
@@ -148,7 +146,8 @@ public class InvalidTagsCheck extends BaseCheck<String>
     {
         final List<TaggableFilter> filters = new ArrayList<>();
         filters.add(TaggableFilter.forDefinition(tagFilterString));
-        return new Tuple<>(ItemType.valueOf(classString.toUpperCase()).getMemberClass(), filters);
+        return Tuple.createTuple(ItemType.valueOf(classString.toUpperCase()).getMemberClass(),
+                filters);
     }
 
     /**
@@ -162,28 +161,22 @@ public class InvalidTagsCheck extends BaseCheck<String>
     public InvalidTagsCheck(final Configuration configuration)
     {
         super(configuration);
-        this.overrideResourceFilters = this.configurationValue(configuration,
+        final boolean overrideResourceFilters = this.configurationValue(configuration,
                 "filters.resource.override", false);
-        this.appendToResourceFilters = this.configurationValue(configuration,
-                "filters.resource.append", false);
         // If the "filters.resource.override" key in the config is set to true, use only the filters
         // passed through the config,
-        if (this.overrideResourceFilters && !this.appendToResourceFilters)
+        if (overrideResourceFilters)
         {
             this.classTagFilters = this.getFiltersFromConfiguration(configuration);
         }
         // Append filters from config to the default list of filters if "filters.resource.append"
         // is set to true
-        else if (!this.overrideResourceFilters && this.appendToResourceFilters)
+        else
         {
             final List<Tuple<? extends Class<AtlasEntity>, List<TaggableFilter>>> defaultFilters = getDefaultFilters();
             // Add all filters from the config file to the default list of filters
             defaultFilters.addAll(this.getFiltersFromConfiguration(configuration));
             this.classTagFilters = defaultFilters;
-        }
-        else
-        {
-            this.classTagFilters = Collections.emptyList();
         }
     }
 
