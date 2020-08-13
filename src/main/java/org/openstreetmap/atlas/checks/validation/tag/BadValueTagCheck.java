@@ -51,12 +51,6 @@ public class BadValueTagCheck extends BaseCheck<String>
     private static final String DEFAULT_FILTER_RESOURCE = "badTagValue.txt";
     private final List<Tuple<? extends Class<AtlasEntity>, List<RegexTaggableFilter>>> classTagFilters;
 
-    public BadValueTagCheck(final Configuration configuration)
-    {
-        super(configuration);
-        classTagFilters = getFilters();
-    }
-
     private static List<Tuple<? extends Class<AtlasEntity>, List<RegexTaggableFilter>>> getFilters()
     {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -110,6 +104,12 @@ public class BadValueTagCheck extends BaseCheck<String>
         }
     }
 
+    public BadValueTagCheck(final Configuration configuration)
+    {
+        super(configuration);
+        this.classTagFilters = getFilters();
+    }
+
     /**
      * This function will validate if the supplied atlas object is valid for the check.
      *
@@ -120,7 +120,6 @@ public class BadValueTagCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        //TODO check that object has tags from filters
         return !this.isFlagged(this.getUniqueOSMIdentifier(object));
     }
 
@@ -170,12 +169,22 @@ public class BadValueTagCheck extends BaseCheck<String>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * The {@code RegexTaggableFilter} predicate is used to test an Atlas Object tag with multiple
+     * regex patterns.
+     */
     private static class RegexTaggableFilter implements Predicate<AtlasObject>, Serializable
     {
 
         private final List<Pattern> regexPatterns;
         private final String tagName;
 
+        /**
+         * @param tagName
+         *            - the tag key who's value will be tested
+         * @param definition
+         *            - a list of regex strings
+         */
         RegexTaggableFilter(final String tagName, final List<String> definition)
         {
             this.tagName = tagName;
@@ -183,13 +192,18 @@ public class BadValueTagCheck extends BaseCheck<String>
                     .collect(Collectors.toList());
         }
 
+        public String getTagName()
+        {
+            return this.tagName;
+        }
+
         @Override
         public boolean test(final AtlasObject atlasObject)
         {
-            final Optional<String> tagValue = atlasObject.getTag(tagName);
+            final Optional<String> tagValue = atlasObject.getTag(this.tagName);
             if (tagValue.isPresent())
             {
-                Optional<Matcher> match = regexPatterns.stream()
+                final Optional<Matcher> match = this.regexPatterns.stream()
                         .map(pattern -> pattern.matcher(tagValue.get())).filter(Matcher::matches)
                         .findAny();
                 return match.isPresent();
@@ -198,9 +212,5 @@ public class BadValueTagCheck extends BaseCheck<String>
             return false;
         }
 
-        public String getTagName()
-        {
-            return tagName;
-        }
     }
 }
