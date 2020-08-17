@@ -170,8 +170,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
                 .flatMap(crossEdge -> getIntersection(edge, crossEdge).stream())
                 .collect(Collectors.toSet());
-        newFlag.addInstruction(this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges
-                .stream().map(AtlasObject::getIdentifier).collect(Collectors.toList())));
+        newFlag.addInstruction(
+                this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges.stream()
+                        .map(AtlasObject::getIdentifier).collect(Collectors.toList())));
         newFlag.addPoints(points);
         newFlag.addObject(edge);
         return Optional.of(newFlag);
