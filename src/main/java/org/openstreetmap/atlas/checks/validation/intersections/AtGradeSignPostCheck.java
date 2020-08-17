@@ -233,7 +233,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
         return Optional.of(
                 this.createFlag(entitiesToBeFlagged, this.getLocalizedInstruction(instructionIndex,
-                        intersectingNode.getIdentifier(), new StringList(identifiers).join(", "))));
+                        intersectingNode.getOsmIdentifier(), new StringList(identifiers).join(", "))));
     }
 
     @Override
