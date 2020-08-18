@@ -1057,5 +1057,8 @@
       "difficulty": "EASY",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "BridgeDetailedInfoCheck": {
+    "bridge.length.minimum.meters": 500.0
   }
 }
