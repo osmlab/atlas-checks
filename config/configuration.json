@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -917,6 +917,16 @@
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
       },
       "tags":"highway"
+    }
+  },
+
+  "SuddenHighwayChange": {
+    "enabled": true,
+    "challenge": {
+      "description": "When the priority of a way changes there must be a link which assumes the higher priority highway tag.",
+      "blur": "Sudden highway tag change without link",
+      "instruction": "Highways need to have a connecting link of the highest priority.",
+      "difficulty": "EASY"
     }
   },
   "UnusualLayerTagsCheck": {
