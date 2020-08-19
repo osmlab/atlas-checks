@@ -31,7 +31,7 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
     public static final String BRIDGE_TAG = "bridge";
     public static final String BRIDGE_STRUCTURE_TAG = "bridge:structure";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "The length of this bridge ({0,number,#}) makes it deserve more details than just 'bridge=yes'. Add an appropriate 'bridge=*' or 'bridge:structure=*' tag.");
+            "The length of this bridge (OSM ID: {0,number,#}) makes it deserve more details than just 'bridge=yes'. Add an appropriate 'bridge=*' or 'bridge:structure=*' tag.");
     private final Distance minimumLength;
 
     /**
@@ -79,7 +79,7 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
                 && !bridgeStructureTag.isPresent())
         {
             return Optional
-                    .of(createFlag(object, getLocalizedInstruction(0, object.getIdentifier())));
+                    .of(createFlag(object, getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         return Optional.empty();
     }
