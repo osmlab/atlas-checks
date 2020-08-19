@@ -59,7 +59,8 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && isGenericBridge(object)
+        // only master edges shall be flagged to avoid duplicate flags on the same OSM Way
+        return object instanceof Edge && ((Edge) object).isMasterEdge() && isGenericBridge(object)
                 && (isRailway(object) || isMajorHighway(object));
     }
 

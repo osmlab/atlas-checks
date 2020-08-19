@@ -91,6 +91,20 @@ public class BridgeDetailedInfoCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            // edges
+            edges = {
+                    @TestAtlas.Edge(id = "1000000001", coordinates = {
+                            @TestAtlas.Loc(value = LOC_3), @TestAtlas.Loc(value = LOC_4) }, tags = {
+                                    "railway=yes", "bridge=yes" }),
+                    @TestAtlas.Edge(id = "-1000000001", coordinates = {
+                            @TestAtlas.Loc(value = LOC_4), @TestAtlas.Loc(value = LOC_3) }, tags = {
+                                    "railway=yes", "bridge=yes" }) })
+    private Atlas masterAndReversedEdges;
+
+    @TestAtlas(
+            // nodes
             nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_1)),
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_2)) },
             // edges
@@ -132,6 +146,11 @@ public class BridgeDetailedInfoCheckTestRule extends CoreTestRule
     public Atlas longRailwayBridgeWithType()
     {
         return this.longRailwayBridgeWithType;
+    }
+
+    public Atlas masterAndReversedEdges()
+    {
+        return this.masterAndReversedEdges;
     }
 
     public Atlas shortGenericHighwayBridge()
