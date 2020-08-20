@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import static org.openstreetmap.atlas.utilities.testing.TestAtlas.*;
+import static org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
+import static org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
+import static org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
