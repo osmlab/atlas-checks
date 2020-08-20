@@ -42,10 +42,10 @@ public class InvalidTagsCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_2) }, tags = { "route=ferry", "highway=ferry" }),
                     @Edge(id = "5000003", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_2) }, tags = { "junction=roundabout",
-                            "highway=primary", "area=yes" }),
+                                    "highway=primary", "area=yes" }),
                     @Edge(id = "5000004", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_2) }, tags = { "junction=roundabout",
-                            "highway=secondary", "area=no" }) },
+                                    "highway=secondary", "area=no" }) },
             // lines
             lines = { @Line(id = "6000000", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "construction=primary", "water=lake" }) },
