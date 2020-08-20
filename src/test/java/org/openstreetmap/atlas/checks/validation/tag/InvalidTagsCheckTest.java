@@ -82,6 +82,18 @@ public class InvalidTagsCheckTest
     }
 
     @Test
+    public void invalidRoundaboutAreaTest()
+    {
+        this.verifier.actual(this.setup.testAtlas(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource\": {\"override\": true,\"append\": false},\"filters.classes.tags\":[[\"edge\",\"highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*\"]]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. OSM feature 5 has invalid tags.\n"
+                        + "2. Check the following tags for missing, conflicting, or incorrect values: [junction, area, highway]",
+                flags.get(0).getInstructions()));
+    }
+
+    @Test
     public void validEmptyConfigTest()
     {
         this.verifier.actual(this.setup.testAtlas(),
