@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1059,6 +1059,14 @@
     }
   },
   "BridgeDetailedInfoCheck": {
-    "bridge.length.minimum.meters": 500.0
+    "enabled": true,
+    "bridge.length.minimum.meters": 500.0,
+    "challenge": {
+      "description": "Bridge is long enough to deserve a more detailed description than just bridge=yes",
+      "blurb": "Bridge without structure",
+      "instruction": "Open your favorite editor and add a more specific 'bridge=*' or 'bridge:structure=*' tag.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
   }
 }

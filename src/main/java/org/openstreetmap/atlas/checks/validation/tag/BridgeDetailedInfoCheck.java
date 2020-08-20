@@ -9,7 +9,10 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.RailwayTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -27,8 +30,6 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
     private static final EnumSet<HighwayTag> MAJOR_HIGHWAYS = EnumSet.of(HighwayTag.MOTORWAY,
             HighwayTag.TRUNK, HighwayTag.PRIMARY, HighwayTag.SECONDARY);
     private static final Double MINIMUM_LENGTH = 500.0;
-    public static final String RAILWAY_TAG = "railway";
-    public static final String BRIDGE_TAG = "bridge";
     public static final String BRIDGE_STRUCTURE_TAG = "bridge:structure";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "The length of this bridge (OSM ID: {0,number,#}) makes it deserve more details than just 'bridge=yes'. Add an appropriate 'bridge=*' or 'bridge:structure=*' tag.");
@@ -92,8 +93,7 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
 
     private boolean isGenericBridge(final AtlasObject object)
     {
-        final Optional<String> bridgeTag = object.getTag(BRIDGE_TAG);
-        return bridgeTag.isPresent() && "yes".equals(bridgeTag.get());
+        return Validators.isOfType(object, BridgeTag.class, BridgeTag.YES);
     }
 
     private boolean isMajorHighway(final AtlasObject object)
@@ -103,6 +103,6 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
 
     private boolean isRailway(final AtlasObject object)
     {
-        return object.getTag(RAILWAY_TAG).isPresent();
+        return Validators.hasValuesFor(object, RailwayTag.class);
     }
 }
