@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
+import static org.openstreetmap.atlas.utilities.testing.TestAtlas.*;
+
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
@@ -21,96 +23,87 @@ public class BridgeDetailedInfoCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3),
-                    @TestAtlas.Loc(value = LOC_4) }, tags = { "railway=yes" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "railway=rail" }) })
     private Atlas longEdgeThatIsNotABridge;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3),
-                    @TestAtlas.Loc(value = LOC_4) }, tags = { "bridge=yes" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "bridge=yes" }) })
     private Atlas longGenericBridge;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3),
-                    @TestAtlas.Loc(value = LOC_4) }, tags = { "highway=motorway", "bridge=yes" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "highway=motorway", "bridge=yes" }) })
     private Atlas longGenericMajorHighwayBridge;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3),
-                    @TestAtlas.Loc(value = LOC_4) }, tags = { "highway=tertiary", "bridge=yes" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "highway=tertiary", "bridge=yes" }) })
     private Atlas longGenericMinorHighwayBridge;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3),
-                    @TestAtlas.Loc(value = LOC_4) }, tags = { "railway=yes", "bridge=yes" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "railway=rail", "bridge=yes" }) })
     private Atlas longGenericRailwayBridge;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3), @TestAtlas.Loc(value = LOC_4) }, tags = {
-                            "highway=motorway", "bridge=yes", "bridge:structure=arch" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "highway=motorway", "bridge=yes",
+                            "bridge:structure=arch" }) })
     private Atlas longRailwayBridgeWithStructure;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_3), @TestAtlas.Loc(value = LOC_4) }, tags = {
-                            "railway=yes", "bridge=cantilever" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                    @Loc(value = LOC_4) }, tags = { "railway=rail", "bridge=cantilever" }) })
     private Atlas longRailwayBridgeWithType;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_3)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_4)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_3)),
+                    @Node(coordinates = @Loc(value = LOC_4)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1000000001", coordinates = {
-                            @TestAtlas.Loc(value = LOC_3), @TestAtlas.Loc(value = LOC_4) }, tags = {
-                                    "railway=yes", "bridge=yes" }),
-                    @TestAtlas.Edge(id = "-1000000001", coordinates = {
-                            @TestAtlas.Loc(value = LOC_4), @TestAtlas.Loc(value = LOC_3) }, tags = {
-                                    "railway=yes", "bridge=yes" }) })
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_3),
+                            @Loc(value = LOC_4) }, tags = { "railway=rail", "bridge=yes" }),
+                    @Edge(id = "-1000000001", coordinates = { @Loc(value = LOC_4),
+                            @Loc(value = LOC_3) }, tags = { "railway=rail", "bridge=yes" }) })
     private Atlas masterAndReversedEdges;
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_1)),
-                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOC_2)) },
+            nodes = { @Node(coordinates = @Loc(value = LOC_1)),
+                    @Node(coordinates = @Loc(value = LOC_2)) },
             // edges
-            edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
-                    @TestAtlas.Loc(value = LOC_1),
-                    @TestAtlas.Loc(value = LOC_2) }, tags = { "highway=motorway", "bridge=yes" }) })
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = LOC_1),
+                    @Loc(value = LOC_2) }, tags = { "highway=motorway", "bridge=yes" }) })
     private Atlas shortGenericHighwayBridge;
 
     public Atlas getLongEdgeThatIsNotABridge()

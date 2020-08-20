@@ -1,9 +1,9 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -27,11 +27,12 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
 
     private static final long serialVersionUID = -8915653487119336836L;
 
-    private static final EnumSet<HighwayTag> MAJOR_HIGHWAYS = EnumSet.of(HighwayTag.MOTORWAY,
-            HighwayTag.TRUNK, HighwayTag.PRIMARY, HighwayTag.SECONDARY);
+    private static final Predicate<AtlasObject> IS_MAJOR_HIGHWAY = object -> Validators.isOfType(
+            object, HighwayTag.class, HighwayTag.MOTORWAY, HighwayTag.TRUNK, HighwayTag.PRIMARY,
+            HighwayTag.SECONDARY);
     private static final Double MINIMUM_LENGTH = 500.0;
-    public static final String BRIDGE_STRUCTURE_TAG = "bridge:structure";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+    private static final String BRIDGE_STRUCTURE_TAG = "bridge:structure";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "The length of this bridge (OSM ID: {0,number,#}) makes it deserve more details than just 'bridge=yes'. Add an appropriate 'bridge=*' or 'bridge:structure=*' tag.");
     private final Distance minimumLength;
 
@@ -61,8 +62,9 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         // only master edges shall be flagged to avoid duplicate flags on the same OSM Way
-        return object instanceof Edge && ((Edge) object).isMasterEdge() && isGenericBridge(object)
-                && (isRailway(object) || isMajorHighway(object));
+        return object instanceof Edge && ((Edge) object).isMasterEdge()
+                && Validators.isOfType(object, BridgeTag.class, BridgeTag.YES)
+                && (RailwayTag.isRailway(object) || IS_MAJOR_HIGHWAY.test(object));
     }
 
     /**
@@ -77,7 +79,7 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
     {
         final Optional<String> bridgeStructureTag = object.getTag(BRIDGE_STRUCTURE_TAG);
         if (((Edge) object).length().isGreaterThan(this.minimumLength)
-                && !bridgeStructureTag.isPresent())
+                && bridgeStructureTag.isEmpty())
         {
             return Optional
                     .of(createFlag(object, getLocalizedInstruction(0, object.getOsmIdentifier())));
@@ -89,20 +91,5 @@ public class BridgeDetailedInfoCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
-    }
-
-    private boolean isGenericBridge(final AtlasObject object)
-    {
-        return Validators.isOfType(object, BridgeTag.class, BridgeTag.YES);
-    }
-
-    private boolean isMajorHighway(final AtlasObject object)
-    {
-        return MAJOR_HIGHWAYS.contains(((Edge) object).highwayTag());
-    }
-
-    private boolean isRailway(final AtlasObject object)
-    {
-        return Validators.hasValuesFor(object, RailwayTag.class);
     }
 }
