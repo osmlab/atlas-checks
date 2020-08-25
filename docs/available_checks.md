@@ -68,6 +68,7 @@ This document is a list of tables with a description and link to documentation f
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | AbbreviatedNameCheck |  The purpose of this check is to flag names that have abbreviations in them. |
+| [BridgeDetailedInfoCheck](checks/bridgeDetailedInfoCheck.md) | The purpose of this check is to identify prominent bridges with unspecified type or structure. |
 | [ConflictingAreaTagCombination](checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
