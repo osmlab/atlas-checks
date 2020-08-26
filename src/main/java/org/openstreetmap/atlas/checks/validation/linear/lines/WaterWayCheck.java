@@ -422,9 +422,9 @@ public class WaterWayCheck extends BaseCheck<Long>
     private LineItem intersectsAnotherWaterWay(final LineItem line)
     {
         final Atlas atlas = line.getAtlas();
-        final Iterable<LineItem> intersectinWaterways = atlas.lineItemsIntersecting(line.bounds(),
+        final Iterable<LineItem> intersectingWaterways = atlas.lineItemsIntersecting(line.bounds(),
                 this.waterwayTagFilter::test);
-        final Set<LineItem> sameLayerWays = Iterables.stream(intersectinWaterways)
+        final Set<LineItem> sameLayerWays = Iterables.stream(intersectingWaterways)
                 .filter(potential -> LayerTag.areOnSameLayer(line, potential)
                         && !waterwayConnects(line, potential))
                 .collectToSet();
