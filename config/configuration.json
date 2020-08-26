@@ -1110,5 +1110,14 @@
       "difficulty": "NORMAL",
       "defaultPriority": "LOW"
     }
+  },
+  "TunnelBridgeHeightLimitCheck": {
+    "challenge": {
+      "description": "Tunnels, covered roads and roads crossing with bridges should have a 'maxheight' or 'maxheight:physical' tags.",
+      "blurb": "Missing maxheight tag",
+      "instruction": "Open your favorite editor and check the instruction for the task instructions, then add missing tags to each of the flagged ways.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW"
+    }
   }
 }
