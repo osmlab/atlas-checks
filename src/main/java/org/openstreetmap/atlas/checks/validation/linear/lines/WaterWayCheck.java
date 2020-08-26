@@ -40,7 +40,8 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 /**
  * This check flags waterways that do not have a sink (i.e., are not connected to another waterway),
  * are circular (so first node and last node are the same), or cross another waterway with the same
- * layer.
+ * layer. It also looks for ways that may be going uphill (requires elevation data, see
+ * {@link ElevationUtilities}
  *
  * @author Taylor Smock
  */

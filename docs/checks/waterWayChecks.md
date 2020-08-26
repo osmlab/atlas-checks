@@ -1,7 +1,7 @@
 # WaterWay Checks
 
 #### Description
-This check identifies waterways that are closed (i.e., would have a circular water flow), waterways that do not have a place for the water to go (a "sink"), and waterways crossing waterways.
+This check identifies waterways that are closed (i.e., would have a circular water flow), waterways that do not have a place for the water to go (a "sink"), and waterways crossing waterways. It also looks for ways that may be going uphill (requires elevation data, see [ElevationUtilities](../elevationUtilities.md))
 
 #### Live Example
 1) This canal ([osm id: 46115760 version 5](https://www.openstreetmap.org/way/46115760)) is a closed waterway, which makes no semantic sense without a pump somewhere in the waterway. In this case, it should be tagged `natural=water` + `water=canal`.
