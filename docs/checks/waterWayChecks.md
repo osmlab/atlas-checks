@@ -47,7 +47,7 @@ the following conditions:
     }
 ```
 
-After the preliminary filtering, each object goes through a series of `if` statements. The first checks if the line is closed, as this is a very cheap check. The second checks if the waterway is going uphill (requires elevation data), and if the resolution of the elevation data is good enough to determine that the waterway goes uphill, the object is flagged. At this point, we check to see if the waterway ends in a sink, for this check, we attempt ensure that the waterway ends inside the boundaries, and not in a neighboring area. Furthermore, we reuse the check for uphill ways to help improve the error message. Once all of those checks have finished, if no flag has yet been found, we check for waterway intersections.
+After the preliminary filtering, each object goes through a series of `if` statements. The first checks if the line is closed. The second checks if the waterway is going uphill (requires elevation data), and if the resolution of the elevation data is good enough to determine that the waterway goes uphill, the object is flagged. At this point, we check to see if the waterway ends in a sink, for this check, we attempt ensure that the waterway ends inside the boundaries, and not in a neighboring area. Furthermore, we reuse the check for uphill ways to help improve the error message. Once all of those checks have finished, we check for waterway intersections. If more than one check flags the object, instructions and offending objects are appended to the CheckFlag.
 
 
 To learn more about the code, please look at the comments in the source code for the check.
