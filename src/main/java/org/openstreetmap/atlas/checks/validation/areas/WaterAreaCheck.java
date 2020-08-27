@@ -110,13 +110,11 @@ public class WaterAreaCheck extends BaseCheck<Long>
         final Polygon areaPolygon = area.getClosedGeometry();
         final List<Line> waterways = Iterables.stream(area.getAtlas().linesIntersecting(areaPolygon,
                 o -> matchesFilter(this.waterwayFilters, o))).collectToList();
-        final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
-        flag.addObject(object);
+        CheckFlag flag = null;
         if (waterways.isEmpty() && matchesFilter(this.waterRequiringWaterwayFilters, object))
         {
+            flag = new CheckFlag(this.getTaskIdentifier(object));
             flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(flag);
         }
         if (!waterways.isEmpty())
         {
@@ -126,9 +124,11 @@ public class WaterAreaCheck extends BaseCheck<Long>
                     .collect(Collectors.toList());
             if (areaSegments.isEmpty())
             {
+                if (flag == null)
+                {
+                    flag = new CheckFlag(this.getTaskIdentifier(object));
+                }
                 flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier()));
-                this.markAsFlagged(object.getOsmIdentifier());
-                return Optional.of(flag);
             }
         }
         final List<Pair<Segment, List<Area>>> possibleAreaIntersections = area.getClosedGeometry()
@@ -153,6 +153,10 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         if (!areaIntersections.isEmpty() && !alreadyFlagged(areaIntersections))
         {
+            if (flag == null)
+            {
+                flag = new CheckFlag(this.getTaskIdentifier(object));
+            }
             flag.addPoints(
                     possibleAreaIntersections.stream().filter(p -> !alreadyFlagged(p.getRight()))
                             .map(Pair::getLeft).map(Segment::middle).collect(Collectors.toList()));
@@ -160,8 +164,8 @@ public class WaterAreaCheck extends BaseCheck<Long>
                     areaIntersections.stream().map(AtlasObject::getOsmIdentifier).distinct()
                             .map(Objects::toString).collect(Collectors.joining(", "))));
             areaIntersections.forEach(flag::addObject);
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(flag);
+            areaIntersections.stream().map(AtlasObject::getOsmIdentifier)
+                    .forEach(super::markAsFlagged);
         }
 
         // Sometimes there will be two waterways that share every exterior intersection,
@@ -173,14 +177,20 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         if (!areaOverlaps.isEmpty())
         {
+            if (flag == null)
+            {
+                flag = new CheckFlag(this.getTaskIdentifier(object));
+            }
             flag.addInstruction(this.getLocalizedInstruction(2, object.getOsmIdentifier(),
                     areaOverlaps.stream().map(AtlasObject::getOsmIdentifier).distinct()
                             .map(Objects::toString).collect(Collectors.joining(", "))));
             areaOverlaps.forEach(flag::addObject);
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(flag);
         }
-        return Optional.empty();
+        if (flag != null)
+        {
+            super.markAsFlagged(object.getOsmIdentifier());
+        }
+        return Optional.ofNullable(flag);
     }
 
     @Override
