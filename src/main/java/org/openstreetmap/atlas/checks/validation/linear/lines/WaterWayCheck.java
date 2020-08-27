@@ -348,9 +348,6 @@ public class WaterWayCheck extends BaseCheck<Long>
         final Location last = line.asPolyLine().last();
         final Location first = line.asPolyLine().first();
         CheckFlag flag = null;
-        final double incline = this.elevationUtils.getIncline(first, last);
-        final boolean uphill = !Double.isNaN(incline) && incline > 0
-                && last.distanceTo(first).isGreaterThan(this.minDistanceStartEndElevationUphill);
         if (line.isClosed())
         {
             flag = createFlag(object,
@@ -358,38 +355,48 @@ public class WaterWayCheck extends BaseCheck<Long>
                             object.getOsmIdentifier()),
                     Collections.singletonList(line.asPolyLine().first()));
         }
-        else if (uphill && this.minResolutionDistance
+        final double incline = this.elevationUtils.getIncline(first, last);
+        final boolean uphill = !Double.isNaN(incline) && incline > 0
+                && last.distanceTo(first).isGreaterThan(this.minDistanceStartEndElevationUphill);
+        if (uphill && this.minResolutionDistance
                 .isGreaterThanOrEqualTo(this.elevationUtils.getResolution(first)))
         {
-            flag = createUphillFlag(object, first);
+            flag = createUphillFlag(flag, object, first);
         }
-        else if (isValidEndToCheck(line.getAtlas(), last) && !doesWaterwayEndInSink(line))
+        if (isValidEndToCheck(line.getAtlas(), last) && !doesWaterwayEndInSink(line)
+                && !endsWithBoundaryNode(object))
         {
-            if (uphill)
+            final String instruction = this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(DOES_NOT_END_IN_SINK), object.getOsmIdentifier());
+            if (flag == null)
             {
-                flag = createUphillFlag(object, first);
+                flag = createFlag(object, instruction, Collections.singletonList(last));
             }
-            else if (!endsWithBoundaryNode(object))
+            else
             {
-                flag = createFlag(object,
-                        this.getLocalizedInstruction(
-                                FALLBACK_INSTRUCTIONS.indexOf(DOES_NOT_END_IN_SINK),
-                                object.getOsmIdentifier()),
-                        Collections.singletonList(last));
+                flag.addObject(object, last, instruction);
             }
+
         }
         final LineItem crossed = intersectsAnotherWaterWay(line);
-        if (flag == null && crossed != null)
+        if (crossed != null)
         {
             final Iterator<Location> intersections = crossed.asPolyLine()
                     .intersections(line.asPolyLine()).iterator();
             if (intersections.hasNext())
             {
-                flag = createFlag(Sets.hashSet(object, crossed),
-                        this.getLocalizedInstruction(
-                                FALLBACK_INSTRUCTIONS.indexOf(CROSSES_WATERWAY),
-                                object.getOsmIdentifier(), crossed.getOsmIdentifier()),
-                        Arrays.asList(intersections.next()));
+                final String instruction = this.getLocalizedInstruction(
+                        FALLBACK_INSTRUCTIONS.indexOf(CROSSES_WATERWAY), object.getOsmIdentifier(),
+                        crossed.getOsmIdentifier());
+                if (flag == null)
+                {
+                    flag = createFlag(Sets.hashSet(object, crossed), instruction,
+                            Arrays.asList(intersections.next()));
+                }
+                else
+                {
+                    flag.addObject(crossed, intersections.next(), instruction);
+                }
             }
         }
         if (flag == null)
@@ -406,12 +413,18 @@ public class WaterWayCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private CheckFlag createUphillFlag(final AtlasObject object, final Location first)
+    private CheckFlag createUphillFlag(final CheckFlag flag, final AtlasObject object,
+            final Location first)
     {
-        return createFlag(object,
-                this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL),
-                        object.getOsmIdentifier(),
-                        this.elevationUtils.getResolution(first).asMeters()));
+        final String instruction = this.getLocalizedInstruction(
+                FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL), object.getOsmIdentifier(),
+                this.elevationUtils.getResolution(first).asMeters());
+        if (flag == null)
+        {
+            return createFlag(object, instruction);
+        }
+        flag.addInstruction(instruction);
+        return flag;
     }
 
     private boolean doesWaterwayEndInSink(final LineItem line)
