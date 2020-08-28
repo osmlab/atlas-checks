@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
@@ -34,7 +35,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             LayerTag.getMinValue(), LayerTag.getMaxValue());
     public static final String JUNCTION_INSTRUCTION = "Junctions with valid layer values "
             + "must include bridge or tunnel tags";
-    private static final Predicate<Taggable> ALLOWED_TAGS;
+    @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
+    static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
     // Constants for bridge checks
     private static final long BRIDGE_LAYER_TAG_MIN_VALUE = 1;

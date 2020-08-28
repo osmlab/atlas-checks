@@ -12,7 +12,7 @@ import org.openstreetmap.atlas.geography.atlas.items.ItemType;
  *
  * @author Taylor Smock, extracted from {@link InvalidMultiPolygonRelationCheck}.
  */
-public class AtlasToOsmType
+public final class AtlasToOsmType
 {
     private static final EnumMap<ItemType, String> ATLAS_TO_OSM_TYPE = new EnumMap<>(
             ItemType.class);
@@ -27,11 +27,6 @@ public class AtlasToOsmType
 
     }
 
-    private AtlasToOsmType()
-    {
-        // utility class
-    }
-
     /**
      * Convert an Atlas {@link ItemType} into an OSM type
      *
@@ -43,5 +38,10 @@ public class AtlasToOsmType
     public static String convert(final ItemType itemType)
     {
         return ATLAS_TO_OSM_TYPE.getOrDefault(itemType, null);
+    }
+
+    private AtlasToOsmType()
+    {
+        // utility class
     }
 }
