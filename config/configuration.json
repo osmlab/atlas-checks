@@ -924,8 +924,8 @@
     "enabled": true,
     "minHighwayClass": "tertiary",
     "angle": {
-      "max": 165.0,
-      "min": 115.0
+      "max": 170.0,
+      "min": 100.0
     },
     "challenge": {
       "description": "When the priority of a way changes there must be a link which assumes the higher priority highway tag.",
