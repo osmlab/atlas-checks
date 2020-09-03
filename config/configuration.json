@@ -189,6 +189,16 @@
       "tags": "highway"
     }
   },
+  "ConstructionCheck": {
+    "oldConstructionDays": 730.0,
+    "oldCheckDateMonths": 6.0,
+    "challenge": {
+      "description": "Tasks contain construction features where the expected completion date has passed, check_date is older than 6 months, has a construction tag with no dates and has not been modified for at least 2 years.",
+      "blurb": "Old Construction",
+      "instructions": "Correct the construction date or update the check_date or modify the feature to not be under construction.",
+      "difficulty": "NORMAL"
+    }
+  },
   "DuplicateLocationInPolyLineCheck": {
     "challenge": {
       "description": "Tasks will include locations that have been repeated within a single polyline.",
