@@ -9,8 +9,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -37,15 +39,25 @@ public class ConstructionCheck extends BaseCheck<Long>
             CONSTRUCTION_CHECK_DATE_OLD,
             CONSTRUCTION_LAST_EDITED_OLD
     );
-    private static final DateTimeFormatter YEAR_FORMAT = DateTimeFormatter.ofPattern("yyyy");
-    private static final DateTimeFormatter YEAR_MONTH_FORMAT = DateTimeFormatter.ofPattern("yyyy-M");
-    private static final DateTimeFormatter YEAR_MONTH_DAY_FORMAT = DateTimeFormatter.ofPattern("yyyy-M-d");
-
+    private static final List<DateTimeFormatter> YEAR_FORMATTERS = Collections.singletonList(
+            DateTimeFormatter.ofPattern("yyyy")         // 2020
+    );
+    private static final List<DateTimeFormatter> YEAR_MONTH_FORMATTERS = Arrays.asList(
+            DateTimeFormatter.ofPattern("yyyy-M"),      // 2020-1
+            DateTimeFormatter.ofPattern("MMM-yyyy"),    // Jan-2020
+            DateTimeFormatter.ofPattern("MMMM yyyy")    // January 2020
+    );
+    private static final List<DateTimeFormatter> FULL_DATE_FORMATTERS = Arrays.asList(
+            DateTimeFormatter.ofPattern("yyyy-M-d"),    // 2020-1-1
+            DateTimeFormatter.ofPattern("d-MMM-yyyy"),  // 1-Jan-2020
+            DateTimeFormatter.ofPattern("d MMMM yyyy")  // 1 January 2020
+    );
     private static final LocalDate TODAYS_DATE = LocalDate.now();
     private static final List<String> DATE_TAGS = Arrays.asList(
             "opening_date", "open_date", "construction:date", "temporary:date_on", "date_on"
     );
     private static final List<String> CONSTRUCTION_TAGS = List.of("highway", "landuse", "building");
+
     private final int oldConstructionDays;
     private final int oldCheckDateMonths;
 
@@ -114,6 +126,9 @@ public class ConstructionCheck extends BaseCheck<Long>
             String tagDate = keySet.get(dateTag.get());
 
             Optional<LocalDate> parsedDate = parseDate(tagDate);
+            if (parsedDate.isEmpty()) {
+                System.out.println("Could not parse date: " + tagDate);
+            }
             if (parsedDate.isPresent() && parsedDate.get().isBefore(TODAYS_DATE))
             {
                 return Optional.of(
@@ -135,7 +150,6 @@ public class ConstructionCheck extends BaseCheck<Long>
                 }
             }
         }
-
 
         if (keySet.containsKey("last_edit_time"))
         {
@@ -163,27 +177,28 @@ public class ConstructionCheck extends BaseCheck<Long>
 
     private Optional<LocalDate> parseDate(String tagDate)
     {
-        LocalDate date = null;
-        try
-        {
-            date = LocalDate.parse(tagDate, YEAR_MONTH_DAY_FORMAT);
-        } catch (DateTimeParseException dtpe1)
-        {
-            try
-            {
-                date = YearMonth.parse(tagDate, YEAR_MONTH_FORMAT).atDay(28);
-            } catch (DateTimeParseException dtpe2)
-            {
-                try
-                {
-                    date = Year.parse(tagDate, YEAR_FORMAT).atMonth(12).atDay(31);
-                } catch (DateTimeParseException dtpe3)
-                {
-                    System.out.println("Could not parse date: " + tagDate);
-                }
-            }
-        }
-        return Optional.ofNullable(date);
+        return Stream.of(
+                YEAR_FORMATTERS.stream().map(format -> {
+                    try {
+                        return Year.parse(tagDate, format).atMonth(12).atEndOfMonth();
+                    } catch (DateTimeParseException ignored) {}
+                    return null;
+                }),
+                YEAR_MONTH_FORMATTERS.stream().map(format -> {
+                    try {
+                        return YearMonth.parse(tagDate, format).atEndOfMonth();
+                    } catch (Exception ignored) {}
+                    return null;
+                }),
+                FULL_DATE_FORMATTERS.stream().map(format -> {
+                    try {
+                        return LocalDate.parse(tagDate, format);
+                    } catch (Exception ignored) {}
+                    return null;
+                }))
+                .flatMap(s -> s)
+                .filter(Objects::nonNull)
+                .findAny();
     }
 
     @Override
