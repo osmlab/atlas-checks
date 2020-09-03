@@ -923,6 +923,7 @@
   "SuddenHighwayChange": {
     "enabled": true,
     "minHighwayClass": "tertiary",
+    "longEdgeThreshold": 150.0,
     "angle": {
       "max": 170.0,
       "min": 100.0

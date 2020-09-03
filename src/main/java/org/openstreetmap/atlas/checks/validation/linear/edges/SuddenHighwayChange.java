@@ -8,11 +8,11 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-
-import javax.swing.text.html.Option;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 import static java.lang.Math.pow;
 
@@ -21,19 +21,21 @@ import static java.lang.Math.pow;
  *
  * @author v-garei
  */
-public class SuddenHighwayChange extends BaseCheck
+public class SuddenHighwayChange extends BaseCheck<Long>
 {
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
-    private final double minAngle;
-    private final double maxAngle;
-    private final HighwayTag minHighwayClass;
     public static final double MIN_ANGLE_DEFAULT = 90.0;
     public static final double MAX_ANGLE_DEFAULT = 160;
+    public static final double LONG_EDGE_THRESHOLD_DEFAULT = 150.0;
     private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} is crude. Please add more nodes/rearrange current nodes to more closely match the road from imagery";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(EDGE_DEVIATION_INSTRUCTION);
+    private final double minAngle;
+    private final double maxAngle;
+    private final HighwayTag minHighwayClass;
+    private final Distance longEdgeThreshold;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -50,6 +52,7 @@ public class SuddenHighwayChange extends BaseCheck
         this.minAngle = (double) configurationValue(configuration, "angle.min", MIN_ANGLE_DEFAULT);
         this.maxAngle = (double) configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
         this.minHighwayClass = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
+        this.longEdgeThreshold = configurationValue(configuration, "longEdgeThreshold", LONG_EDGE_THRESHOLD_DEFAULT, Distance::meters);
     }
 
     /**
@@ -66,13 +69,10 @@ public class SuddenHighwayChange extends BaseCheck
         if (object instanceof Edge && ((Edge) object).isMasterEdge() &&
                 !isFlagged(object.getOsmIdentifier())) {
             final Edge edge = (Edge) object;
-//            JsonElement endHighWayField = edge.end().getGeoJsonProperties().get("highway");
-//            JsonElement startHighWayField = edge.start().getGeoJsonProperties().get("highway");
 
             return !isEdgeLink(edge) && HighwayTag.isCarNavigableHighway(object) &&
-                    !isFlagged(object.getOsmIdentifier()) &&
-                    hasInAndOutEdges(edge) &&
                     baseEdgeAtLeaseTwoInEdges(edge) &&
+                    lengthOfWay(edge) <= this.longEdgeThreshold.asMeters() &&
                     edge.highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayClass) &&
                     baseEdgeBetweenTwoAndFourOutEdges(edge) &&
                     !JunctionTag.isRoundabout(edge) &&
@@ -83,8 +83,7 @@ public class SuddenHighwayChange extends BaseCheck
     }
 
     @Override
-    protected List<String> getFallbackInstructions()
-    {
+    protected List<String> getFallbackInstructions() {
         return FALLBACK_INSTRUCTIONS;
     }
 
@@ -93,22 +92,38 @@ public class SuddenHighwayChange extends BaseCheck
      * we don't want either
      */
     private boolean isTrafficSignalRoundabout(JsonElement element) {
-//        if (element == null) {
-//            return false;
-//        }
         if (element != null) {
             return element.toString().contains("traffic_signal") || element.toString().equals("mini_roundabout");
         }
         return false;
     }
 
-    private boolean hasInAndOutEdges(Edge edge) {
-        Set inEdges = edge.inEdges();
-        Set outEdges = edge.outEdges();
-
-        return inEdges.size() > 0 && outEdges.size() > 0;
+    /**
+     * return length of whole way
+     * @param object
+     * @return
+     */
+//    Edge e = (Edge) object;
+//    OsmWayWalker walker = new OsmWayWalker(e);
+//    Optional<Double> d = walker.collectEdges().stream()
+//            .map(edge -> edge.length().asMeters())
+//            .reduce((len, n) -> len += n);
+    
+    private double lengthOfWay(AtlasObject object) {
+        double lengthSum = 0;
+        Set<Edge> completeWay = new OsmWayWalker((Edge) object).collectEdges();
+        for (Edge edge : completeWay) {
+            List<Segment> edgeSegments = edge.asPolyLine().segments();
+            for (Segment segment : edgeSegments) {
+                lengthSum += segment.length().asMeters();
+            }
+        }
+        return lengthSum;
     }
 
+    /**
+     * in or out edge should not be a roundabout.
+     */
     private boolean hasInOrOutEdgeAsRoundabout(Set<Edge> inEdges, Set<Edge> outEdges) {
         boolean hasRoundaboutTouching = false;
         for (Edge inEdge : inEdges) {
@@ -150,6 +165,86 @@ public class SuddenHighwayChange extends BaseCheck
     }
 
     /**
+     * merge list of sets of edges together
+     * @param sets
+     * @return
+     */
+    private Set<Edge> mergeAllEdges(List<Set<Edge>> sets) {
+            Set<Edge> allEdges = new HashSet<>();
+            for(Set<Edge> s : sets) {
+                allEdges.addAll(s);
+            }
+            return allEdges;
+    }
+
+    /**
+     * Checks if split road away from intersection shares other split road with 2 iterations of connected edges
+     * @param connectedStartNodeEdges
+     * @param connectedEndNodeEdges
+     * @return
+     */
+    private boolean splitRoadOut(Edge baseEdge, Set<Edge> connectedStartNodeEdges, Set<Edge> connectedEndNodeEdges) {
+        boolean splitRoadNotLink = false;
+        Set<Long> osmIdentifiers = new HashSet<>();
+        Set<Edge> allMergedEdges;
+        List<Set<Edge>> connectedEdgeSets = new ArrayList<>();
+        for (Edge connectedEdge : connectedStartNodeEdges) {
+            if (connectedEdge.equals(baseEdge)) {
+                continue;
+            }
+            if (connectedEdge.isMasterEdge()) {
+                connectedEdgeSets.add(connectedEdge.connectedEdges());
+            }
+//            connectedEdgeSets.add(connectedEdge.connectedStartNodeEdges());
+        }
+        allMergedEdges = mergeAllEdges(connectedEdgeSets);
+        for (Edge mergedEdge : allMergedEdges) {
+            osmIdentifiers.add(mergedEdge.getOsmIdentifier());
+        }
+
+        for (Edge endNodeEdge : connectedEndNodeEdges) {
+            if (osmIdentifiers.contains(endNodeEdge.getOsmIdentifier())) {
+                splitRoadNotLink = true;
+            }
+        }
+        return splitRoadNotLink;
+    }
+
+    /**
+     * Checks if split road toward intersection shares other split road with 2 iterations of connected edges
+     * @param connectedStartNodeEdges
+     * @param connectedEndNodeEdges
+     * @return
+     */
+    private boolean splitRoadIn(Edge baseEdge, Set<Edge> connectedStartNodeEdges, Set<Edge> connectedEndNodeEdges) {
+        boolean splitRoadNotLink = false;
+        Set<Long> osmIdentifiers = new HashSet<>();
+        Set<Edge> allMergedEdges;
+        List<Set<Edge>> connectedEdgeSets = new ArrayList<>();
+        for (Edge connectedEdge : connectedEndNodeEdges) {
+            if (connectedEdge.equals(baseEdge)) {
+                continue;
+            }
+            if (connectedEdge.isMasterEdge()) {
+                connectedEdgeSets.add(connectedEdge.connectedEdges());
+            }
+//            connectedEdgeSets.add(connectedEdge.connectedEndNodeEdges());
+        }
+        allMergedEdges = mergeAllEdges(connectedEdgeSets);
+        for (Edge mergedEdge : allMergedEdges) {
+            osmIdentifiers.add(mergedEdge.getOsmIdentifier());
+        }
+
+        for (Edge startNodeEdge : connectedStartNodeEdges) {
+            if (osmIdentifiers.contains(startNodeEdge.getOsmIdentifier())) {
+                splitRoadNotLink = true;
+            }
+        }
+        return splitRoadNotLink;
+
+    }
+
+    /**
      * Checks if edge is a link - we want to exclude links
      * @param edge
      * @return
@@ -164,7 +259,7 @@ public class SuddenHighwayChange extends BaseCheck
      * @return
      */
     private boolean baseEdgeBetweenTwoAndFourOutEdges(Edge baseEdge) {
-        return baseEdge.outEdges().size() >= 2 && baseEdge.outEdges().size() <= 4;
+        return baseEdge.outEdges().size() >= 2 && baseEdge.outEdges().size() <=3;
     }
 
     /**
@@ -176,6 +271,12 @@ public class SuddenHighwayChange extends BaseCheck
         return baseEdge.start().outEdges().size() > 1;
     }
 
+    /**
+     * in and out edge should not sahre a name
+     * @param inEdges
+     * @param outEdges
+     * @return
+     */
     private boolean inAndOutEdgeShareName(Set<Edge> inEdges, Set<Edge> outEdges) {
         boolean edgesShareName = false;
         for (Edge inEdge : inEdges) {
@@ -205,27 +306,32 @@ public class SuddenHighwayChange extends BaseCheck
     protected Optional<CheckFlag> flag(final AtlasObject object) {
 
         /**
-         * Consecutive segment angle must be greater than 90 degrees
-         * touching segments must be different highway tag
-         * out edge must not be *_link
+         * Consecutive segment angle must be greater than 100-ish degrees and less than 170-ish
+         * in or out edge must be different highway tag from base
+         * in and out edge must not be *_link
          */
 
         final Edge baseEdge = (Edge) object;
 
         this.markAsFlagged(baseEdge.getOsmIdentifier());
 
-        List baseSegments = baseEdge.asPolyLine().segments();
-        Segment firstBaseSegment = (Segment) baseSegments.get(0);
-        Segment lastBaseSegment = (Segment) baseSegments.get(baseSegments.size() - 1);
-
+        List<Segment> baseSegments = baseEdge.asPolyLine().segments();
+        Segment firstBaseSegment = baseSegments.get(0);
+        Segment lastBaseSegment = baseSegments.get(baseSegments.size() - 1);
+//        long baseEdgeOsmId = baseEdge.getOsmIdentifier();
         JsonElement endHighWayField = baseEdge.end().getGeoJsonProperties().get("highway");
         JsonElement startHighWayField = baseEdge.start().getGeoJsonProperties().get("highway");
+
+        Set<Edge> connectedToBaseStartEdges = baseEdge.start().connectedEdges();
+        Set<Edge> connectedToBaseEndEdges = baseEdge.end().connectedEdges();
 
         Set<Edge> inEdges = baseEdge.inEdges();
         Set<Edge> outEdges = baseEdge.outEdges();
 
         if (!hasInOrOutEdgeAsRoundabout(inEdges, outEdges) && !isTrafficSignalRoundabout(startHighWayField) &&
-                !isTrafficSignalRoundabout(endHighWayField) && !inAndOutEdgeShareName(inEdges, outEdges)) {
+                !isTrafficSignalRoundabout(endHighWayField) && !inAndOutEdgeShareName(inEdges, outEdges) &&
+                !splitRoadIn(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges)) {
+//            !splitRoadIn(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges) && !splitRoadOut(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges)
             label:
             for (Edge inEdge : inEdges) {
                 if (isEdgeLink(inEdge) || !inEdge.highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayClass) ||
@@ -239,20 +345,24 @@ public class SuddenHighwayChange extends BaseCheck
                         break label;
                     }
 
-                    List inEdgeSegments = inEdge.asPolyLine().segments();
-                    Segment lastInEdgeSegment = (Segment) inEdgeSegments.get(inEdgeSegments.size() - 1);
-                    Double angleBetweenInAndBaseSegments = findAngle(lastInEdgeSegment, firstBaseSegment);
+                    List<Segment> inEdgeSegments = inEdge.asPolyLine().segments();
+                    Segment lastInEdgeSegment = inEdgeSegments.get(inEdgeSegments.size() - 1);
+                    double angleBetweenInAndBaseSegments = findAngle(lastInEdgeSegment, firstBaseSegment);
 
-                    List outEdgeSegments = outEdge.asPolyLine().segments();
-                    Segment firstOutEdgeSegment = (Segment) outEdgeSegments.get(0);
-                    Double angleBetweenOutAndBaseSegments = findAngle(lastBaseSegment, firstOutEdgeSegment);
+                    List<Segment> outEdgeSegments = outEdge.asPolyLine().segments();
+                    Segment firstOutEdgeSegment = outEdgeSegments.get(0);
+                    double angleBetweenOutAndBaseSegments = findAngle(lastBaseSegment, firstOutEdgeSegment);
 
                     if (angleBetweenOutAndBaseSegments > minAngle && angleBetweenOutAndBaseSegments < maxAngle &&
                             angleBetweenInAndBaseSegments > minAngle && angleBetweenInAndBaseSegments < maxAngle &&
                             HighwayTag.isCarNavigableHighway(outEdge) &&
                             isInOrOutEdgeDiffHighwayTag(baseEdge, inEdge, outEdge)) {
+                        //345406086 way for checking split edge rule.
+                        //32806120
                         System.out.println("base edge osm object identifier: " + baseEdge.getOsmIdentifier());
                         System.out.println("out edge osm object identifier: " + outEdge.getOsmIdentifier());
+
+                        System.out.println("length of flagged edge: " + lengthOfWay(baseEdge));
                         System.out.println("base edge start node: " + baseEdge.start().getOsmIdentifier());
                         System.out.println("base edge end node: " + baseEdge.end().getOsmIdentifier());
                         System.out.println("In and base angle: " + angleBetweenInAndBaseSegments);
