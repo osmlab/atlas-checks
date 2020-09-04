@@ -35,10 +35,10 @@ import org.slf4j.LoggerFactory;
  */
 public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 {
+    public static final Integer THREE = 3;
     private static final String AREA_INSTRUCTION = "Feature {0,number,#} has invalid geometry at {1}";
     private static final String POLYLINE_BUILDING_INSTRUCTION = "Feature {0,number,#} is a incomplete "
             + "building at {1}";
-
     private static final String DUPLICATE_EDGE_INSTRUCTION = "Feature {0,number,#} has a duplicate "
             + "Edge at {1}";
     private static final String POLYLINE_INSTRUCTION = "Self-intersecting polyline for feature "
@@ -48,7 +48,6 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     private static final Logger logger = LoggerFactory
             .getLogger(SelfIntersectingPolylineCheck.class);
     private static final String MINIMUM_HIGHWAY_TYPE_DEFAULT = "SERVICE";
-    public static final Integer THREE = 3;
     private static final long serialVersionUID = 2722288442633787006L;
     private final HighwayTag minimumHighwayType;
 
@@ -80,8 +79,8 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // Master edges with building tags or with eligible highway tags
-        return object instanceof Edge && ((Edge) object).isMasterEdge()
+        // Main edges with building tags or with eligible highway tags
+        return object instanceof Edge && ((Edge) object).isMainEdge()
                 && (Validators.hasValuesFor(object, BuildingTag.class) || ((Edge) object)
                         .highwayTag().isMoreImportantThanOrEqualTo(this.minimumHighwayType))
                 // Areas

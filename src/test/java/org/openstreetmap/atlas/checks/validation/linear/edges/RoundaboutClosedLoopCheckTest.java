@@ -20,9 +20,9 @@ public class RoundaboutClosedLoopCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void masterRoundaboutEdgeWithValence1NodesAtlas()
+    public void mainRoundaboutEdgeWithValence1NodesAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgeWithValence1NodesAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgeWithValence1NodesAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotNull();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
@@ -31,41 +31,41 @@ public class RoundaboutClosedLoopCheckTest
     }
 
     @Test
-    public void masterRoundaboutEdgesWithMiniRoundaboutTagAtlas()
+    public void mainRoundaboutEdgesWithMiniRoundaboutTagAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithMiniRoundaboutTagAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithMiniRoundaboutTagAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void masterRoundaboutEdgesWithTrafficCalmingTagAtlas()
+    public void mainRoundaboutEdgesWithTrafficCalmingTagAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithTrafficCalmingTagAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithTrafficCalmingTagAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void masterRoundaboutEdgesWithTurningCircleTagAtlas()
+    public void mainRoundaboutEdgesWithTurningCircleTagAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithTurningCircleTagAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithTurningCircleTagAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void masterRoundaboutEdgesWithTurningLoopTagAtlas()
+    public void mainRoundaboutEdgesWithTurningLoopTagAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithTurningLoopTagAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithTurningLoopTagAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMasterRoundaboutEdgesWithABidirectionalRoadAtlas()
+    public void testMainRoundaboutEdgesWithABidirectionalRoadAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithABidirectionalRoadAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithABidirectionalRoadAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyNotNull();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
@@ -74,9 +74,9 @@ public class RoundaboutClosedLoopCheckTest
     }
 
     @Test
-    public void testMasterRoundaboutEdgesWithDeadEndNodesAtlas()
+    public void testMainRoundaboutEdgesWithDeadEndNodesAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithDeadEndNodesAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithDeadEndNodesAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
@@ -84,17 +84,17 @@ public class RoundaboutClosedLoopCheckTest
     }
 
     @Test
-    public void testMasterRoundaboutEdgesWithOneMissingOneWayTagAtlas()
+    public void testMainRoundaboutEdgesWithOneMissingOneWayTagAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithOneMissingOneWayTagAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithOneMissingOneWayTagAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMasterRoundaboutEdgesWithValence2NodesAtlas()
+    public void testMainRoundaboutEdgesWithValence2NodesAtlas()
     {
-        this.verifier.actual(this.setup.masterRoundaboutEdgesWithValence2NodesAtlas(),
+        this.verifier.actual(this.setup.mainRoundaboutEdgesWithValence2NodesAtlas(),
                 new RoundaboutClosedLoopCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }

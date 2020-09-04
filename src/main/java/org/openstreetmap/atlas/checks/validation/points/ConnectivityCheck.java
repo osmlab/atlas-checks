@@ -121,9 +121,9 @@ public class ConnectivityCheck extends BaseCheck<Long>
         }
         for (final Edge edgeNearby : nearbyEdges)
         {
-            // There is a valid master edge close by that is not validly connected to the start
+            // There is a valid main edge close by that is not validly connected to the start
             // node.
-            if (edgeNearby.isMasterEdge() && validEdgeFilter(edgeNearby)
+            if (edgeNearby.isMainEdge() && validEdgeFilter(edgeNearby)
                     && !connectedEdges.contains(edgeNearby)
                     && !hasValidConnection(node, connectedEdges, edgeNearby)
                     // Make sure that the spatial index did not over estimate.
@@ -342,7 +342,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
                 checking.connectedEdges().forEach(edge ->
                 {
                     if (!visitedEdges.contains(edge) && !firstEdges.contains(edge)
-                            && edge.isMasterEdge())
+                            && edge.isMainEdge())
                     {
                         edgesToCheck.push(edge);
                         visitedEdges.add(edge);
@@ -406,7 +406,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
                 checking.connectedEdges().forEach(edge ->
                 {
                     if (!visitedEdges.contains(edge) && !firstEdges.contains(edge)
-                            && edge.isMasterEdge())
+                            && edge.isMainEdge())
                     {
                         edgesToCheck.push(edge);
                         visitedEdges.add(edge);

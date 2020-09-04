@@ -42,7 +42,7 @@ The following are brief descriptions of the parameters that Sharded Atlas Checks
 | Output Formats | Comma separated list of output types (flags,geojson,metrics,tippecanoe); MapRoulette output is not available in Sharded Checks |
 | Countries | Comma separated list of ISO3 country codes of countries to run |
 | Configuration File | Comma separated list of resource URIs for checks configuration json files |
-| Master | Spark cluster master URL (just `local` for local environments) |
+| Cluster | Spark cluster URL (just `local` for local environments) |
 
 ## Limitations
 

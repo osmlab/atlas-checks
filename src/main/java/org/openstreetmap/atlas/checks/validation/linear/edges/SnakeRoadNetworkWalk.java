@@ -107,10 +107,10 @@ public class SnakeRoadNetworkWalk
         {
             // Gather all connected edges for the first and last edge of this road
             final Set<Edge> connections = new HashSet<>();
-            connections.addAll(getMasterEdgesForConnectedEdgesOfDifferentWays(
-                    (Edge) getVisitedEdges().first()));
-            connections.addAll(getMasterEdgesForConnectedEdgesOfDifferentWays(
-                    (Edge) getVisitedEdges().last()));
+            connections.addAll(
+                    getMainEdgesForConnectedEdgesOfDifferentWays((Edge) getVisitedEdges().first()));
+            connections.addAll(
+                    getMainEdgesForConnectedEdgesOfDifferentWays((Edge) getVisitedEdges().last()));
 
             // Check their connections for connected names and ref tags
             for (final Edge connection : connections)
@@ -127,17 +127,17 @@ public class SnakeRoadNetworkWalk
     }
 
     /**
-     * Returns all connected master, non-visited {@link Edge}s that are a continuation of the same
-     * OSM way
+     * Returns all connected main, non-visited {@link Edge}s that are a continuation of the same OSM
+     * way
      *
      * @param edge
      *            the {@link Edge} from which we're seeking connections
      * @return a set of {@link Edge}s
      */
-    protected Set<Edge> getConnectedMasterEdgeOfTheSameWay(final Edge edge)
+    protected Set<Edge> getConnectedMainEdgeOfTheSameWay(final Edge edge)
     {
         return edge.connectedEdges().stream()
-                .filter(connection -> connection.isMasterEdge()
+                .filter(connection -> connection.isMainEdge()
                         && connection.getOsmIdentifier() == edge.getOsmIdentifier()
                         && !this.visitedEdges.contains(connection))
                 .collect(Collectors.toSet());
@@ -189,16 +189,16 @@ public class SnakeRoadNetworkWalk
     }
 
     /**
-     * Returns all connected master {@link Edge}s that are NOT part of the same way as the given
+     * Returns all connected main {@link Edge}s that are NOT part of the same way as the given
      * target {@link Edge}
      *
      * @param edge
      *            the target {@link Edge} for which we're seeking connections
      * @return the {@link Set} of {@link Edge}s we found
      */
-    private Set<Edge> getMasterEdgesForConnectedEdgesOfDifferentWays(final Edge edge)
+    private Set<Edge> getMainEdgesForConnectedEdgesOfDifferentWays(final Edge edge)
     {
-        return Iterables.stream(edge.connectedEdges()).filter(candidate -> candidate.isMasterEdge()
+        return Iterables.stream(edge.connectedEdges()).filter(candidate -> candidate.isMainEdge()
                 && candidate.getOsmIdentifier() != edge.getOsmIdentifier()).collectToSet();
     }
 

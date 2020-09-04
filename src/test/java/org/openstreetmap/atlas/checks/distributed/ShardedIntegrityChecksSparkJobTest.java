@@ -128,7 +128,7 @@ public class ShardedIntegrityChecksSparkJobTest
                 String.format("-sharding=slippy@%s", ZOOM_LEVEL), "-maxShardLoad=1",
                 "-outputFormats=flags,geojson,metrics,tippecanoe", "-compressOutput=false",
                 String.format("-countries=%s", COUNTRY_CODE), "-saveCheckOutput=true",
-                "-master=local",
+                "-cluster=local",
                 String.format("-configFiles=file:%s",
                         ShardedIntegrityChecksSparkJobTest.class
                                 .getResource("test_configuration.json").getPath()),

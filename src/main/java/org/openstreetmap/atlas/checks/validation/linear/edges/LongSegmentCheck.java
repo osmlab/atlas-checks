@@ -36,14 +36,14 @@ public class LongSegmentCheck extends BaseCheck<Long>
     }
 
     /**
-     * Validate if given {@link AtlasObject} is actually an {@link Edge}, which is a Master Edge and
+     * Validate if given {@link AtlasObject} is actually an {@link Edge}, which is a Main Edge and
      * is not a Ferry
      */
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
         // TODO replace FERRY check with Predicate
-        return object instanceof Edge && ((Edge) object).isMasterEdge()
+        return object instanceof Edge && ((Edge) object).isMainEdge()
                 && !Validators.isOfType(object, RouteTag.class, RouteTag.FERRY);
     }
 

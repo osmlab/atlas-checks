@@ -176,7 +176,7 @@ public class InvalidSignBoardRelationCheckTestRule extends CoreTestRule
                                                     "destination=Space Needle" }))
     private Atlas toFromNoMeeting;
 
-    // From's reversed meets to's master
+    // From's reversed meets to's main
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = START), id = ONE),
             @Node(coordinates = @Loc(value = MIDDLE), id = TWO),
             @Node(coordinates = @Loc(value = END), id = THREE) }, points = {
@@ -194,7 +194,7 @@ public class InvalidSignBoardRelationCheckTestRule extends CoreTestRule
                                                     "destination=Space Needle" }))
     private Atlas reverseFromMeetsTo;
 
-    // From's master meets to's reversed
+    // From's main meets to's reversed
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = START), id = ONE),
             @Node(coordinates = @Loc(value = MIDDLE), id = TWO),
             @Node(coordinates = @Loc(value = END), id = THREE) }, points = {

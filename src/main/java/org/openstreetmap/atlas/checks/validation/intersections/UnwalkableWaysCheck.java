@@ -78,8 +78,8 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
         }
         final Edge edge = (Edge) object;
 
-        // Check that the Edge is a master edge
-        return edge.isMasterEdge()
+        // Check that the Edge is a main edge
+        return edge.isMainEdge()
                 // For all connected nodes to the Edge, check that none of them have
                 // Highway=crossing
                 && edge.connectedNodes().stream().noneMatch(

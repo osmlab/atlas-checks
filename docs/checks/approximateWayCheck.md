@@ -19,7 +19,7 @@ This check evaluates [Edges](https://github.com/osmlab/atlas/blob/dev/src/main/j
 ##### Validating the Object
 We first validate that the incoming object is: 
 * An Edge
-* A Master edge
+* A Main edge
 * The Edge is Car Navigable
 * The Edge is of a specified minimum highway type
 
