@@ -76,13 +76,13 @@ public class ConstructionCheckTestRule extends CoreTestRule
     }
 
     @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = TEST_1), tags = {"any=construction", "open_date=2017"})})
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"construction=any", "open_date=2017"})})
     private Atlas isConstructionAtlas;
     @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = TEST_1), tags = {"any=construction:", "open_date=2017"})})
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"construction:=any", "open_date=2017"})})
     private Atlas isStartsWithConstructionColonAtlas;
     @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = TEST_1), tags = {"any=construction:date", "open_date=2017"})})
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"construction:date=any", "open_date=2017"})})
     private Atlas isNotConstructionColonDateAtlas;
 
     public Atlas isConstructionAtlas()
@@ -99,7 +99,30 @@ public class ConstructionCheckTestRule extends CoreTestRule
     }
 
     @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = TEST_1), tags = {"check_date=2017", "any=construction"})})
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"highway=construction", "open_date=2017"})})
+    private Atlas isHighwayConstructionAtlas;
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"landuse=construction", "open_date=2017"})})
+    private Atlas isLandUseConstructionAtlas;
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"building=construction", "open_date=2017"})})
+    private Atlas isBuildingConstructionAtlas;
+
+    public Atlas isHighwayConstructionAtlas()
+    {
+        return this.isHighwayConstructionAtlas;
+    }
+    public Atlas isLandUseConstructionAtlas()
+    {
+        return this.isLandUseConstructionAtlas;
+    }
+    public Atlas isBuildingConstructionAtlas()
+    {
+        return this.isBuildingConstructionAtlas;
+    }
+
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"check_date=2017", "construction=any"})})
     private Atlas oldCheckDateAtlas;
 
     public Atlas oldCheckDateAtlas()
@@ -108,7 +131,7 @@ public class ConstructionCheckTestRule extends CoreTestRule
     }
 
     @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = TEST_1), tags = {"last_edit_time=1483257600", "any=construction"})})
+            @Node(coordinates = @Loc(value = TEST_1), tags = {"last_edit_time=1483257600", "construction=any"})})
     private Atlas oldLastEditTimeAtlas;
 
     public Atlas oldLastEditTimeAtlas()

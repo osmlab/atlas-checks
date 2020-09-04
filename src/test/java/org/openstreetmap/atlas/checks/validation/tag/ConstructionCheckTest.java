@@ -98,6 +98,25 @@ public class ConstructionCheckTest
     }
 
     @Test
+    public void testIsHighwayConstruction()
+    {
+        this.verifier.actual(this.setup.isHighwayConstructionAtlas(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+    @Test
+    public void testIsLanduseConstruction()
+    {
+        this.verifier.actual(this.setup.isLandUseConstructionAtlas(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+    @Test
+    public void testIsBuildingConstruction()
+    {
+        this.verifier.actual(this.setup.isBuildingConstructionAtlas(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
     public void testOldCheckDateAtlas()
     {
         this.verifier.actual(this.setup.oldCheckDateAtlas(), this.check);
