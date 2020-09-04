@@ -86,11 +86,7 @@ public class ConstructionCheck extends BaseCheck<Long>
                 value.equals("construction")
                         || value.startsWith("construction:")
                         && !value.equals("construction:date")
-        )
-                || CONSTRUCTION_TAGS.stream()
-                .map(tag -> "construction".equals(keySet.get(tag)))
-                .reduce(Boolean::logicalOr)
-                .orElse(false);
+        );
     }
 
     /**
