@@ -82,11 +82,11 @@ public class ConstructionCheck extends BaseCheck<Long>
 
     private boolean isConstruction(Map<String, String> keySet)
     {
-        return keySet.values().stream().anyMatch(value ->
+        return keySet.keySet().stream().anyMatch(value ->
                 value.equals("construction")
                         || value.startsWith("construction:")
-                        && !value.equals("construction:date")
-        );
+                        && !value.equals("construction:date"))
+                || CONSTRUCTION_TAGS.stream().anyMatch(tag -> "construction".equals(keySet.get(tag)));
     }
 
     /**
