@@ -63,7 +63,7 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
+        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && Validators.isOfType(object, RouteTag.class, RouteTag.FERRY)
                 && this.isMinimumHighwayType(object) && !this.isFlagged(object.getOsmIdentifier());
     }

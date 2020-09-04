@@ -66,8 +66,8 @@ public class ConflictingTagCombinationCheck extends BaseCheck<String>
             // ref: http://wiki.openstreetmap.org/wiki/Key:service
             "service->*&highway->!service&highway->!construction&railway->!&waterway->!canal");
 
-    private List<TaggableFilter> conflictingTagFilters;
-    private List<String> filterKeys;
+    private final List<TaggableFilter> conflictingTagFilters;
+    private final List<String> filterKeys;
 
     /**
      * Gathers the keys from a {@link TaggableFilter} using regex.
@@ -98,7 +98,7 @@ public class ConflictingTagCombinationCheck extends BaseCheck<String>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return ((object instanceof Edge && HighwayTag.isCarNavigableHighway(object)
-                && ((Edge) object).isMasterEdge()) || (object instanceof Line))
+                && ((Edge) object).isMainEdge()) || (object instanceof Line))
                 && !this.isFlagged(this.getUniqueOSMIdentifier(object));
     }
 

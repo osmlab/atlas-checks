@@ -92,7 +92,7 @@ Atlas Checks locally. The following variables are set in the [gradle.properties]
 - checks.local.outputFormat - Which output formats to produced.
 - checks.local.startedFolder - A folder used for Spark to work in, this should generally remain unchanged.
 - checks.local.countries - The country that is being used to run the checks over. Currently for local standalone this is limited to a single country.
-- checks.local.master - This defines the master URL for the cluster, for running locally this should never be changed and remain "local".
+- checks.local.cluster - This defines the URL for the cluster, for running locally this should never be changed and remain "local".
 - checks.local.sparkOptions - Any custom options that are subsequently sent to Spark. See [Spark Configuration](https://spark.apache.org/docs/1.6.0/configuration.html) for more information.
 - checks.local.compressOutput - Whether to create compressed output files or not.
 

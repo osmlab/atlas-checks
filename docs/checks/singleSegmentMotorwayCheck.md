@@ -13,7 +13,7 @@ It is also connected to a roundabout tagged as motorway, but this is ignored (se
 In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, Nodes, Areas & Relations; in our case, we’re are looking at
 [Edges](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java).
 
-This check first validates object by checking that they are master Edges, tagged as motorways, not roundabouts, and their OSM id has not already been flagged.
+This check first validates object by checking that they are main Edges, tagged as motorways, not roundabouts, and their OSM id has not already been flagged.
 
 Next the valid objects have their connected edges checked to see if there are any tagged with motorway that are not roundabouts.
 If none are found the edge is flagged.

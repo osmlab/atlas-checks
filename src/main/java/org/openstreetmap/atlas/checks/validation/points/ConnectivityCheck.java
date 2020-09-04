@@ -35,8 +35,8 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
  * Checks for {@link Node}s that should be connected to nearby {@link Node}s or {@link Edge}s. The
- * {@link Node}s and {@link Edge}s must be car navigable and not in the blacklisted highway filter
- * in the config.
+ * {@link Node}s and {@link Edge}s must be car navigable and not in the denylisted highway filter in
+ * the config.
  *
  * @author matthieun
  * @author cuthbertm
@@ -51,9 +51,9 @@ public class ConnectivityCheck extends BaseCheck<Long>
     private static final double THRESHOLD_SCALE = 1.5;
     private static final int MAXIMUM_ANGLE = 180;
     // Highways to be ignored
-    private static final String DEFAULT_BLACKLISTED_HIGHWAYS_TAG_FILTER = "highway->no";
+    private static final String DEFAULT_DENYLISTED_HIGHWAYS_TAG_FILTER = "highway->no";
     private static final long serialVersionUID = -380675222726130708L;
-    private final TaggableFilter blacklistedHighwaysTaggableFilter;
+    private final TaggableFilter denylistedHighwaysTaggableFilter;
     private final Distance threshold;
 
     public ConnectivityCheck(final Configuration configuration)
@@ -61,9 +61,9 @@ public class ConnectivityCheck extends BaseCheck<Long>
         super(configuration);
         this.threshold = configurationValue(configuration, "nearby.edge.distance.meters",
                 NEARBY_EDGE_THRESHOLD_DISTANCE_METERS_DEFAULT, Distance::meters);
-        this.blacklistedHighwaysTaggableFilter = TaggableFilter
-                .forDefinition(configurationValue(configuration, "blacklisted.highway.filter",
-                        DEFAULT_BLACKLISTED_HIGHWAYS_TAG_FILTER));
+        this.denylistedHighwaysTaggableFilter = TaggableFilter
+                .forDefinition(configurationValue(configuration, "denylisted.highway.filter",
+                        DEFAULT_DENYLISTED_HIGHWAYS_TAG_FILTER));
     }
 
     @Override
@@ -121,9 +121,9 @@ public class ConnectivityCheck extends BaseCheck<Long>
         }
         for (final Edge edgeNearby : nearbyEdges)
         {
-            // There is a valid master edge close by that is not validly connected to the start
+            // There is a valid main edge close by that is not validly connected to the start
             // node.
-            if (edgeNearby.isMasterEdge() && validEdgeFilter(edgeNearby)
+            if (edgeNearby.isMainEdge() && validEdgeFilter(edgeNearby)
                     && !connectedEdges.contains(edgeNearby)
                     && !hasValidConnection(node, connectedEdges, edgeNearby)
                     // Make sure that the spatial index did not over estimate.
@@ -342,7 +342,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
                 checking.connectedEdges().forEach(edge ->
                 {
                     if (!visitedEdges.contains(edge) && !firstEdges.contains(edge)
-                            && edge.isMasterEdge())
+                            && edge.isMainEdge())
                     {
                         edgesToCheck.push(edge);
                         visitedEdges.add(edge);
@@ -406,7 +406,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
                 checking.connectedEdges().forEach(edge ->
                 {
                     if (!visitedEdges.contains(edge) && !firstEdges.contains(edge)
-                            && edge.isMasterEdge())
+                            && edge.isMainEdge())
                     {
                         edgesToCheck.push(edge);
                         visitedEdges.add(edge);
@@ -531,7 +531,6 @@ public class ConnectivityCheck extends BaseCheck<Long>
     private boolean validEdgeFilter(final Edge edge)
     {
         return HighwayTag.isCarNavigableHighway(edge)
-                && !this.blacklistedHighwaysTaggableFilter.test(edge)
-                && !BarrierTag.isBarrier(edge);
+                && !this.denylistedHighwaysTaggableFilter.test(edge) && !BarrierTag.isBarrier(edge);
     }
 }

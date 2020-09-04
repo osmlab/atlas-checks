@@ -72,10 +72,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(WATERBODY_INSTRUCTION,
             LINEAR_INSTRUCTION, BUILDING_INSTRUCTION);
     private static final String ADDRESS_PREFIX_KEY = "addr";
-    // Whitelist for line tags
+    // Permitlist for line tags
     private static final Set<String> VALID_LINE_TAGS = Stream.of(NotesTag.KEY, SourceTag.KEY,
             NaturalTag.KEY, PlaceTag.KEY, AdministrativeLevelTag.KEY).collect(Collectors.toSet());
-    // Whitelisted tags filter for multipolygon relations. Multipolygon relations with these tags
+    // Permitlisted tags filter for multipolygon relations. Multipolygon relations with these tags
     // are expected to cross water bodies.
     private static final TaggableFilter VALID_RELATIONS_TAG_FILTER = TaggableFilter
             .forDefinition("natural->*|place->*|landuse->*|waterway->*|admin_level->*|boundary->*");
@@ -84,26 +84,15 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "embankment->yes|location->underwater,underground|power->line,minor_line|"
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|"
             + "ford->!no&ford->*";
-    private final TaggableFilter canCrossWaterBodyFilter;
-    private final TaggableFilter lineItemsOffending;
-    private final boolean flagBuildings;
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
-    private final HighwayTag highwayMinimum;
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
-    private final List<HighwayTag> highwaysExclude;
     private static final String BUILDING_TAGS_DO_NOT_FLAG = "public_transport->station,aerialway=station";
     private static final TaggableFilter NONOFFENDING_BUILDINGS = TaggableFilter
             .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
     private static final String DEFAULT_VALID_INTERSECTING_NODE = "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
-    private final TaggableFilter intersectingNodesNonoffending;
-
     private static final long SHAPEPOINTS_MIN_DEFAULT = 1;
     private static final long SHAPEPOINTS_MAX_DEFAULT = 5000;
-    private final long shapepointsMin;
-    private final long shapepointsMax;
-
     private static final Logger logger = LoggerFactory.getLogger(LineCrossingWaterBodyCheck.class);
-
     private static final String WATER_BODY_TAGS =
             // Lakes
             "natural->spring,hot_spring&name->*" + "|natural->lake,pond" + "|water:type->lake"
@@ -137,7 +126,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                     "|waterway->billabong,navigablechannel,river;stream,reservoir";
     private static final TaggableFilter VALID_WATER_BODY_TAGS = TaggableFilter
             .forDefinition(WATER_BODY_TAGS);
-
     private static final String WATER_BODY_EXCLUDE_TAGS = "natural->dock,water_point,floodway,spillway,wastewater,waterhole"
             + "|waterway->lock_gate,dock,water_point,floodway,spillway,wastewater,waterhole,culvert,dam,waterfall,fish_pass,dry_dock,construction,boat_lift,weir,breakwater,boatyard"
             + "|water->lock_gate,dock,water_point,floodway,spillway,wastewater,waterhole,pool,reflecting_pool,swimming_pool,salt_pool,fountain,tank,fish_pass"
@@ -155,11 +143,18 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "|water->tank,Earth_Tank_,_Off_Stream_Flow_Dam,treatment_pond,re#,swamp_-_occasional,trough,Trough,waste_water";
     private static final TaggableFilter INVALID_WATER_BODY_TAGS = TaggableFilter
             .forDefinition(WATER_BODY_EXCLUDE_TAGS);
-
     private static final long serialVersionUID = 6048659185833217159L;
+    private final TaggableFilter canCrossWaterBodyFilter;
+    private final TaggableFilter lineItemsOffending;
+    private final boolean flagBuildings;
+    private final HighwayTag highwayMinimum;
+    private final List<HighwayTag> highwaysExclude;
+    private final TaggableFilter intersectingNodesNonoffending;
+    private final long shapepointsMin;
+    private final long shapepointsMax;
 
     /**
-     * Checks if the relation has whitelisted tags that makes its members cross water bodies
+     * Checks if the relation has permitlisted tags that makes its members cross water bodies
      * validly.
      *
      * @param multipolygonRelations
@@ -192,9 +187,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * checking if any of the following three conditions are met: 1) If the line has no osm tags and
      * has no relations - if a line meets this criteria, it is essentially a part of boundary
      * relation and the boundary relation was not ingested into atlas. 2) If it is part of a
-     * multipolygon relation and the relation has any of the whitelisted tags for multipolygon
+     * multipolygon relation and the relation has any of the permitlisted tags for multipolygon
      * relations. 3) If the crossing line has only the white listed tags in the VALID_LINE_TAGS list
-     * and has no other tags. Whitelisted tags for relations and lines make the line valid to cross
+     * and has no other tags. Permitlisted tags for relations and lines make the line valid to cross
      * water body.
      *
      * @param crossingLine

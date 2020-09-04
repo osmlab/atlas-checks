@@ -251,7 +251,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      */
     private boolean isValidCrossingEdge(final AtlasObject object)
     {
-        if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
+        if (Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !TagPredicates.IS_AREA.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);

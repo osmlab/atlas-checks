@@ -1,9 +1,9 @@
 # Atlas Checks
 
-[![Build Status](https://travis-ci.org/osmlab/atlas-checks.svg?branch=master)](https://travis-ci.org/osmlab/atlas-checks)
+[![Build Status](https://travis-ci.org/osmlab/atlas-checks.svg?branch=main)](https://travis-ci.org/osmlab/atlas-checks)
 [![quality gate](https://sonarcloud.io/api/project_badges/measure?project=org.openstreetmap.atlas%3Aatlas-checks&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.openstreetmap.atlas%3Aatlas-checks)
 [![Maven Central](https://img.shields.io/maven-central/v/org.openstreetmap.atlas/atlas-checks.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.openstreetmap.atlas%22%20AND%20a:%22atlas-checks%22)
-[![CircleCI](https://circleci.com/gh/osmlab/atlas-checks/tree/master.svg?style=svg)](https://circleci.com/gh/osmlab/atlas-checks/tree/master)
+[![CircleCI](https://circleci.com/gh/osmlab/atlas-checks/tree/main.svg?style=svg)](https://circleci.com/gh/osmlab/atlas-checks/tree/main)
 
 ---
 

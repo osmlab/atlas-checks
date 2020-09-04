@@ -18,7 +18,7 @@ In OpenStreetMap, roundabouts are [Ways](https://wiki.openstreetmap.org/wiki/Way
 the `junction=roundabout` tag. We’ll identify ways that are roundabouts without `junction=roundabout` tag.
 
 Our first goal is to validate the incoming Atlas Object.
-* Must be a first section of valid master Edge
+* Must be a first section of valid main Edge
 * Must have not already been flagged
 * Must be car navigable
 * Must have not `junction` and `area` tag

@@ -82,7 +82,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         {
             result = Optional
                     .of(this.flagNode(node, carNavigableEdges, this.getLocalizedInstruction(1,
-                            node.getOsmIdentifier(), getMasterEdgeCount(carNavigableEdges))));
+                            node.getOsmIdentifier(), getMainEdgeCount(carNavigableEdges))));
         }
         return result;
     }
@@ -128,20 +128,20 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
     }
 
     /**
-     * Given a list of carNavigableEdges, get the number of those edges which are master edges.
+     * Given a list of carNavigableEdges, get the number of those edges which are main edges.
      *
      * @param carNavigableEdges
      *            The carNavigable edges we would like to filter.
-     * @return The number of edges in carNavigableEdges which are master edges.
+     * @return The number of edges in carNavigableEdges which are main edges.
      */
-    private long getMasterEdgeCount(final Collection<Edge> carNavigableEdges)
+    private long getMainEdgeCount(final Collection<Edge> carNavigableEdges)
     {
-        return carNavigableEdges.stream().filter(Edge::isMasterEdge).count();
+        return carNavigableEdges.stream().filter(Edge::isMainEdge).count();
     }
 
     /**
      * Determines whether or not a set of Edges is a turnaround or not, where a turnaround is
-     * defined as a collection containing a master Edge and its reverse Edge. This function is only
+     * defined as a collection containing a main Edge and its reverse Edge. This function is only
      * guaranteed to return sensible results when carNavigableEdges is a collection of the connected
      * car-navigable Edges for a single Node.
      *
@@ -152,6 +152,6 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
      */
     private boolean isTurnaround(final Collection<Edge> carNavigableEdges)
     {
-        return getMasterEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
+        return getMainEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
     }
 }

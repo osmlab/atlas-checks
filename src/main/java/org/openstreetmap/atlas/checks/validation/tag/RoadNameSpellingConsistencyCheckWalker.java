@@ -68,9 +68,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
     // flag for spelling inconsistencies between identifiers.
     private static final String ALPHANUMERIC_IDENTIFIER_STRING_REGEX = ".*\\p{Nd}+.*";
     private static final String CHARACTER_IDENTIFIER_STRING_REGEX = "\\p{P}.\\p{P}|.\\p{P}|\\p{P}.|^.$";
-
     private static final String WHITESPACE_REGEX = "\\s+";
-
     private static final Pattern ALPHANUMERIC_IDENTIFIER_STRING_PATTERN = Pattern
             .compile(ALPHANUMERIC_IDENTIFIER_STRING_REGEX);
     private static final Pattern CHARACTER_IDENTIFIER_STRING_PATTERN = Pattern
@@ -119,8 +117,8 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
         return incomingEdge -> incomingEdge.end().getLocation().distanceTo(startEdge.start()
                 .getLocation()).isLessThanOrEqualTo(maximumSearchDistance) ? incomingEdge
                         .connectedEdges().stream()
-                        .filter(connectedEdge -> connectedEdge.isMasterEdge()
-                                && !exploredEdges.contains(connectedEdge.getMasterEdgeIdentifier()))
+                        .filter(connectedEdge -> connectedEdge.isMainEdge()
+                                && !exploredEdges.contains(connectedEdge.getMainEdgeIdentifier()))
                         : Stream.empty();
     }
 
@@ -273,6 +271,7 @@ class RoadNameSpellingConsistencyCheckWalker extends EdgeWalker
             final Distance maximumSearchDistance)
     {
         super(startEdge, edgesWithinMaximumSearchDistance(startEdge, maximumSearchDistance));
-        exploredEdges.add(startEdge.getMasterEdgeIdentifier());
+        exploredEdges.add(startEdge.getMainEdgeIdentifier());
     }
+
 }

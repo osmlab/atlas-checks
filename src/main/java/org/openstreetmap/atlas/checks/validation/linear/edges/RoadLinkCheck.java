@@ -41,7 +41,7 @@ public class RoadLinkCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && ((Edge) object).highwayTag().isLink()
-                && ((Edge) object).isMasterEdge() && !this.isFlagged(object.getOsmIdentifier());
+                && ((Edge) object).isMainEdge() && !this.isFlagged(object.getOsmIdentifier());
     }
 
     @Override
@@ -54,12 +54,12 @@ public class RoadLinkCheck extends BaseCheck<Long>
             return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
                     this.getLocalizedInstruction(0, edge.length(), this.maximumLength)));
         }
-        else if (edge.connectedEdges().stream().filter(Edge::isMasterEdge).noneMatch(
+        else if (edge.connectedEdges().stream().filter(Edge::isMainEdge).noneMatch(
                 connected -> connected.highwayTag().isOfEqualClassification(edge.highwayTag())))
         {
             final Set<AtlasObject> geometry = new HashSet<>();
             geometry.add(edge);
-            geometry.addAll(edge.connectedEdges().stream().filter(Edge::isMasterEdge)
+            geometry.addAll(edge.connectedEdges().stream().filter(Edge::isMainEdge)
                     .collect(Collectors.toSet()));
             final Set<Edge> flagEdges = geometry.stream()
                     .flatMap(obj -> new OsmWayWalker((Edge) obj).collectEdges().stream())

@@ -28,17 +28,17 @@ public class TagTest
 
     /**
      * Test combination tags. In the two cases first, filter by any features that contain the tag
-     * and value "whitelist=true" but does not contain the value "blacklist=false". We specifically
+     * and value "permitlist=true" but does not contain the value "denylist=false". We specifically
      * used the filter "!true" even though we could have used "false" to test negation in filters.
-     * Second, Test the OR functionality, process all features that contain "whitelist=true" or
+     * Second, Test the OR functionality, process all features that contain "permitlist=true" or
      * "highway=trunk".
      */
     @Test
     public void testCombinationTags()
     {
-        final String config = "{\"BaseTestCheck\":{\"tags.filter\":\"whitelist->true&blacklist->!true\"}}";
+        final String config = "{\"BaseTestCheck\":{\"tags.filter\":\"permitlist->true&denylist->!true\"}}";
         this.testConfiguration(config, 1);
-        final String config2 = "{\"BaseTestCheck\":{\"tags.filter\":\"whitelist->true|highway->trunk\"}}";
+        final String config2 = "{\"BaseTestCheck\":{\"tags.filter\":\"permitlist->true|highway->trunk\"}}";
         this.testConfiguration(config2, 5);
     }
 
@@ -49,7 +49,7 @@ public class TagTest
     @Test
     public void testNoRestrictions()
     {
-        final String config = "{\"BaseTestCheck\":{\"tags.whitelist.filter\":\"\"}}";
+        final String config = "{\"BaseTestCheck\":{\"tags.permitlist.filter\":\"\"}}";
         this.testConfiguration(config, 8);
     }
 

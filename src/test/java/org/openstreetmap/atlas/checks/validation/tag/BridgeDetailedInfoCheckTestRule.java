@@ -97,7 +97,7 @@ public class BridgeDetailedInfoCheckTestRule extends CoreTestRule
                             @Loc(value = LOC_4) }, tags = { "railway=rail", "bridge=yes" }),
                     @Edge(id = "-1000000001", coordinates = { @Loc(value = LOC_4),
                             @Loc(value = LOC_3) }, tags = { "railway=rail", "bridge=yes" }) })
-    private Atlas masterAndReversedEdges;
+    private Atlas mainAndReversedEdges;
 
     @TestAtlas(
             // nodes
@@ -143,9 +143,9 @@ public class BridgeDetailedInfoCheckTestRule extends CoreTestRule
         return this.longRailwayBridgeWithType;
     }
 
-    public Atlas masterAndReversedEdges()
+    public Atlas mainAndReversedEdges()
     {
-        return this.masterAndReversedEdges;
+        return this.mainAndReversedEdges;
     }
 
     public Atlas shortGenericHighwayBridge()

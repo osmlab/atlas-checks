@@ -19,15 +19,15 @@ public class ConnectivityCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private Configuration blacklistedHighwayFilterConfig = ConfigurationResolver
+    private final Configuration denylistedHighwayFilterConfig = ConfigurationResolver
             .inlineConfiguration(
-                    "{\"ConnectivityCheck\":{\"blacklisted.highway.filter\":\"highway->secondary\"}}");
+                    "{\"ConnectivityCheck\":{\"denylisted.highway.filter\":\"highway->secondary\"}}");
 
     @Test
     public void highwayFilterOnInvalidDisconnectedEdgeCrossingTest()
     {
         this.verifier.actual(this.setup.invalidDisconnectedEdgesAtlas(),
-                new ConnectivityCheck(this.blacklistedHighwayFilterConfig));
+                new ConnectivityCheck(this.denylistedHighwayFilterConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -35,7 +35,7 @@ public class ConnectivityCheckTest
     public void highwayFilterOnInvalidDisconnectedNodeOnEdgeTest()
     {
         this.verifier.actual(this.setup.invalidDisconnectedNodeOnEdgeAtlas(),
-                new ConnectivityCheck(this.blacklistedHighwayFilterConfig));
+                new ConnectivityCheck(this.denylistedHighwayFilterConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -43,7 +43,7 @@ public class ConnectivityCheckTest
     public void highwayFilterOnInvalidDisconnectedNodesTest()
     {
         this.verifier.actual(this.setup.invalidDisconnectedNodesAtlas(),
-                new ConnectivityCheck(this.blacklistedHighwayFilterConfig));
+                new ConnectivityCheck(this.denylistedHighwayFilterConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 

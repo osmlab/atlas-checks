@@ -29,8 +29,8 @@ public class RoadNameGapCheck extends BaseCheck<Long>
      */
     static class EdgePredicate
     {
-        private Edge edge;
-        private EdgeDirectionComparator edgeDirectionComparator = new EdgeDirectionComparator();
+        private final Edge edge;
+        private final EdgeDirectionComparator edgeDirectionComparator = new EdgeDirectionComparator();
 
         EdgePredicate(final Edge edge)
         {
@@ -80,7 +80,7 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+        return object instanceof Edge && Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !JunctionTag.isRoundabout(object)
                 && Validators.hasValuesFor(object, HighwayTag.class)
                 && this.validHighwayTag.contains(object.tag(HighwayTag.KEY));

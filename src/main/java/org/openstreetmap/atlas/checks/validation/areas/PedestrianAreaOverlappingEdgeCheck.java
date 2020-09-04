@@ -229,7 +229,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
         return
         // We do not want any pedestrian edges that are also pedestrian areas.
         // Currently, pedestrian ways are ingested as both edges and as areas.
-        edge.getOsmIdentifier() != area.getOsmIdentifier() && edge.isMasterEdge()
+        edge.getOsmIdentifier() != area.getOsmIdentifier() && edge.isMainEdge()
                 && !HighwayTag.isPedestrianNavigableHighway(edge)
                 // Valid edge should be a car navigable highway
                 && (HighwayTag.isCarNavigableHighway(edge)

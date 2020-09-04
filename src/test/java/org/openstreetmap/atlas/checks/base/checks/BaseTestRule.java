@@ -21,9 +21,9 @@ public class BaseTestRule extends CoreTestRule
             @TestAtlas.Node(id = "2", coordinates = @TestAtlas.Loc(value = TWO), tags = {
                     "test=ignore" }),
             @TestAtlas.Node(id = "3", coordinates = @TestAtlas.Loc(value = THREE), tags = {
-                    "whitelist=true" }),
+                    "permitlist=true" }),
             @TestAtlas.Node(id = "4", coordinates = @TestAtlas.Loc(value = FOUR), tags = {
-                    "whitelist=true", "blacklist=true" }),
+                    "permitlist=true", "denylist=true" }),
             @TestAtlas.Node(id = "5", coordinates = @TestAtlas.Loc(value = FIVE)) },
 
             edges = {
