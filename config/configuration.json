@@ -923,10 +923,13 @@
   "SuddenHighwayChange": {
     "enabled": true,
     "minHighwayClass": "tertiary",
-    "longEdgeThreshold": 150.0,
+    "length": {
+      "min": 20.0,
+      "max": 300.0
+    },
     "angle": {
-      "max": 170.0,
-      "min": 100.0
+      "max": 175.0,
+      "min": 120.0
     },
     "challenge": {
       "description": "When the priority of a way changes there must be a link which assumes the higher priority highway tag.",
