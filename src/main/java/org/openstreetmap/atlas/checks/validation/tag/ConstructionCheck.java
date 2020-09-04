@@ -44,11 +44,13 @@ public class ConstructionCheck extends BaseCheck<Long>
     );
     private static final List<DateTimeFormatter> YEAR_MONTH_FORMATTERS = Arrays.asList(
             DateTimeFormatter.ofPattern("yyyy-M"),      // 2020-1
+            DateTimeFormatter.ofPattern("M-yyyy"),      // 1-2020
             DateTimeFormatter.ofPattern("MMM-yyyy"),    // Jan-2020
             DateTimeFormatter.ofPattern("MMMM yyyy")    // January 2020
     );
     private static final List<DateTimeFormatter> FULL_DATE_FORMATTERS = Arrays.asList(
             DateTimeFormatter.ofPattern("yyyy-M-d"),    // 2020-1-1
+            DateTimeFormatter.ofPattern("d-M-yyyy"),    // 1-1-2020
             DateTimeFormatter.ofPattern("d-MMM-yyyy"),  // 1-Jan-2020
             DateTimeFormatter.ofPattern("d MMMM yyyy")  // 1 January 2020
     );
