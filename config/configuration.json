@@ -161,7 +161,7 @@
   },
   "ConnectivityCheck": {
     "nearby.edge.distance.meters": 2.0,
-    "blacklisted.highway.filter": "highway->no",
+    "denylisted.highway.filter": "highway->no",
     "challenge": {
       "description": "Checks if a node should be connected to a nearby node or edge.",
       "blurb": "Connectivity Check",

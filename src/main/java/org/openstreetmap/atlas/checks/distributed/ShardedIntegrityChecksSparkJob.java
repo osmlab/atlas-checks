@@ -123,10 +123,11 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 .concat(Stream.of(ConfigurationResolver.loadConfiguration(commandMap,
                         CONFIGURATION_FILES, CONFIGURATION_JSON)),
                         Stream.of(checkFilter
-                                .<Configuration> map(whitelist -> new StandardConfiguration(
-                                        "WhiteListConfiguration",
+                                .<Configuration> map(permitlist -> new StandardConfiguration(
+                                        "PermitListConfiguration",
                                         Collections.singletonMap(
-                                                "CheckResourceLoader.checks.whitelist", whitelist)))
+                                                "CheckResourceLoader.checks.permitlist",
+                                                permitlist)))
                                 .orElse(ConfigurationResolver.emptyConfiguration())))
                 .collect(Collectors.toList()));
 

@@ -74,17 +74,17 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(CheckFlag.class, new CheckFlagDeserializer()).create();
     private static final Logger logger = LoggerFactory.getLogger(FlagDatabaseSubCommand.class);
-    private static final Set<String> blacklistKeys = new HashSet<>();
+    private static final Set<String> denylistKeys = new HashSet<>();
 
     static
     {
-        blacklistKeys.add("itemType");
-        blacklistKeys.add("identifier");
-        blacklistKeys.add(OSM_ID_LEGACY);
-        blacklistKeys.add("osmIdentifier");
-        blacklistKeys.add("relations");
-        blacklistKeys.add("members");
-        blacklistKeys.add(ISO_COUNTRY_CODE);
+        denylistKeys.add("itemType");
+        denylistKeys.add("identifier");
+        denylistKeys.add(OSM_ID_LEGACY);
+        denylistKeys.add("osmIdentifier");
+        denylistKeys.add("relations");
+        denylistKeys.add("members");
+        denylistKeys.add(ISO_COUNTRY_CODE);
     }
 
     private final OptionAndArgumentDelegate optionAndArgumentDelegate;
@@ -297,7 +297,7 @@ public class FlagDatabaseSubCommand extends AbstractAtlasShellToolsCommand
     {
         final Map<String, String> hstore = new HashMap<>();
 
-        properties.entrySet().stream().filter(key -> !blacklistKeys.contains(key.getKey()))
+        properties.entrySet().stream().filter(key -> !denylistKeys.contains(key.getKey()))
                 .map(Map.Entry::getKey)
                 .forEach(key -> hstore.put(key, properties.get(key).getAsString()));
 
