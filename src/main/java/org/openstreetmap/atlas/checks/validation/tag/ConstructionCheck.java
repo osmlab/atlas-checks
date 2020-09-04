@@ -124,9 +124,6 @@ public class ConstructionCheck extends BaseCheck<Long>
             String tagDate = keySet.get(dateTag.get());
 
             Optional<LocalDate> parsedDate = parseDate(tagDate);
-            if (parsedDate.isEmpty()) {
-                System.out.println("Could not parse date: " + tagDate);
-            }
             if (parsedDate.isPresent() && parsedDate.get().isBefore(TODAYS_DATE))
             {
                 return Optional.of(
