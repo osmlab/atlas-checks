@@ -35,7 +35,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 /**
- * TODO
+ * This check allows verifying certain tag values using regex patterns based on configurable filters
+ * stored in files. Based on configuration, each {@link AtlasEntity} is associated with a list of
+ * {@code RegexTaggableFilter}. Each filter contains a tag name for which the value must be checked
+ * and a list of regex strings with which the value will be checked against.
  *
  * @author mm-ciub
  */
@@ -47,7 +50,7 @@ public class BadValueTagCheck extends BaseCheck<String>
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "OSM feature {0,number,#} has unacceptable tag values.",
-            "Check the following source tag for illegal values: {0}");
+            "Check the following tag for illegal values: {0}");
     private static final String DEFAULT_FILTER_RESOURCE = "badTagValue.txt";
     private final List<Tuple<? extends Class<AtlasEntity>, List<RegexTaggableFilter>>> classTagFilters;
 
@@ -204,7 +207,7 @@ public class BadValueTagCheck extends BaseCheck<String>
             if (tagValue.isPresent())
             {
                 final Optional<Matcher> match = this.regexPatterns.stream()
-                        .map(pattern -> pattern.matcher(tagValue.get())).filter(Matcher::matches)
+                        .map(pattern -> pattern.matcher(tagValue.get())).filter(Matcher::find)
                         .findAny();
                 return match.isPresent();
 
