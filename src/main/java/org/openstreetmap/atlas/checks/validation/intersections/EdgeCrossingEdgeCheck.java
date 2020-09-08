@@ -172,7 +172,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 .collect(Collectors.toSet());
         newFlag.addInstruction(
                 this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges.stream()
-                        .map(AtlasObject::getIdentifier).collect(Collectors.toList())));
+                        .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList())));
         newFlag.addPoints(points);
         newFlag.addObject(edge);
         return Optional.of(newFlag);
