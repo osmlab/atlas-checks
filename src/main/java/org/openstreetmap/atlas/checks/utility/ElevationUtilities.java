@@ -36,7 +36,7 @@ public final class ElevationUtilities implements Serializable
     /**
      * The assumed extent of a HGT SRTM file (lat/lon) in degrees
      */
-    private static final int SRTM_EXTENT = 1;
+    private static final double SRTM_EXTENT = 1;
     /**
      * A non-number when there is no elevation data available. This is currently returns
      * {@link Short#MIN_VALUE}.
@@ -51,7 +51,7 @@ public final class ElevationUtilities implements Serializable
     /** A map of {lat, lon} pairs with a loaded srtm in a byte array */
     private final Map<Pair<Integer, Integer>, short[][]> loadedSrtm = new HashMap<>();
 
-    private final int srtmExtent;
+    private final double srtmExtent;
 
     private final String srtmExtension;
 
@@ -88,11 +88,28 @@ public final class ElevationUtilities implements Serializable
      */
     public ElevationUtilities(final Configuration configuration)
     {
-        this.srtmExtent = configurationValue(configuration, "elevation.srtm_extent", SRTM_EXTENT,
-                i -> i);
-        this.srtmExtension = configurationValue(configuration, "elevation.srtm_ext", SRTM_EXTENSION,
-                i -> i);
-        this.srtmPath = configurationValue(configuration, "elevation.path", "elevation", i -> i);
+        this(configurationValue(configuration, "elevation.srtm_extent", SRTM_EXTENT, i -> i),
+                configurationValue(configuration, "elevation.srtm_ext", SRTM_EXTENSION, i -> i),
+                configurationValue(configuration, "elevation.path", "elevation", i -> i));
+    }
+
+    /**
+     * Create a configured ElevationUtilities
+     *
+     * @param srtmExtent
+     *            The extent of the files. The units are in degrees, and the default is 1 degree.
+     * @param srtmExtension
+     *            The extension of the files. Archive/compression file endings are not required
+     *            (they will be automatically detected).
+     * @param srtmPath
+     *            The path for the files.
+     */
+    public ElevationUtilities(final double srtmExtent, final String srtmExtension,
+            final String srtmPath)
+    {
+        this.srtmExtension = srtmExtension;
+        this.srtmExtent = srtmExtent;
+        this.srtmPath = srtmPath;
     }
 
     /**
