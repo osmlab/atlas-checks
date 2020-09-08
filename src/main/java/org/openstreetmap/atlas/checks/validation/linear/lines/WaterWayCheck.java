@@ -288,9 +288,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     public boolean doesLineEndOnWaterway(final LineItem line)
     {
         final List<LineItem> waterways = new ArrayList<>();
-        line.getAtlas()
-                .lineItemsIntersecting(line.asPolyLine().last().boxAround(Distance.ONE_METER),
-                        this.waterwayTagFilter::test)
+        line.getAtlas().lineItemsContaining(line.asPolyLine().last(), this.waterwayTagFilter::test)
                 .forEach(waterways::add);
 
         waterways.removeIf(line::equals);
