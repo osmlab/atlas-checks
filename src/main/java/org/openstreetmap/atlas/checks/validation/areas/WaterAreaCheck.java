@@ -55,8 +55,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
     private final double minimumIntersect;
 
     // List of TaggableFilters where each filter represents all tags for water areas
-    // that
-    // should not overlap
+    // that should not overlap
     private final List<TaggableFilter> areaFilters = new ArrayList<>();
     private final List<TaggableFilter> waterRequiringWaterwayFilters = new ArrayList<>();
     private final List<TaggableFilter> waterwayFilters = new ArrayList<>();
