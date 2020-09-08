@@ -72,6 +72,7 @@ This document is a list of tables with a description and link to documentation f
 | [BridgeDetailedInfoCheck](checks/bridgeDetailedInfoCheck.md) | The purpose of this check is to identify prominent bridges with unspecified type or structure. |
 | [ConflictingAreaTagCombination](checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
+| [ConstructionCheck](checks/constructionCheck.md) | The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or the expected finish date has been passed.
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
 | [InvalidAccessTagCheck](checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |

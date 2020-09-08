@@ -22,7 +22,8 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
+ * The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or
+ * the expected finish date has been passed.
  *
  * @author v-brjor
  */
@@ -80,6 +81,13 @@ public class ConstructionCheck extends BaseCheck<Long>
                 OLD_CHECK_DATE_MONTHS_DEFAULT, Double::intValue);
     }
 
+    /**
+     * Checks if the tags of an object signify it as being under construction.
+     *
+     * @param tags
+     *         Tags from the object
+     * @return true if the object is under construction, otherwise false
+     */
     private boolean isConstruction(Map<String, String> tags)
     {
         return tags.keySet().stream().anyMatch(tag ->
@@ -163,6 +171,13 @@ public class ConstructionCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    /**
+     * Gets the tag that holds a date.
+     *
+     * @param keySet
+     *         Tags from the object.
+     * @return a tag that is considered a date for construction.
+     */
     private Optional<String> getDateTag(Map<String, String> keySet)
     {
         return DATE_TAGS.stream()
@@ -170,6 +185,13 @@ public class ConstructionCheck extends BaseCheck<Long>
                 .findFirst();
     }
 
+    /**
+     * Attempts to parse the date string to ISO 8601 yyyy-mm-dd.
+     *
+     * @param tagDate
+     *         String representation of a date from a tag.
+     * @return the parsed date.
+     */
     private Optional<LocalDate> parseDate(String tagDate)
     {
         return Stream.of(
