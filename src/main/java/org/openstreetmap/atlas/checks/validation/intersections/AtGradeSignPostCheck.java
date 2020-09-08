@@ -228,7 +228,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             return Optional.empty();
         }
         final Set<AtlasEntity> entitiesToBeFlagged = flaggedIntersection.getFlaggedItems();
-        final List<String> identifiers = this.getUniqueOSMIdentifier(entitiesToBeFlagged);
+        final List<String> identifiers = this.getOSMIdentifiers(entitiesToBeFlagged);
         entitiesToBeFlagged.add(intersectingNode);
         this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
         return Optional.of(this.createFlag(entitiesToBeFlagged,
