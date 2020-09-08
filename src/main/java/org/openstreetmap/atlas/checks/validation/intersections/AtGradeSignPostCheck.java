@@ -464,7 +464,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      */
     private List<String> getIdentifiers(final Set<AtlasEntity> objects)
     {
-        return Iterables.stream(objects).map(AtlasEntity::getIdentifier).map(String::valueOf)
+        return Iterables.stream(objects).map(AtlasEntity::getOsmIdentifier).map(String::valueOf)
                 .collectToList();
     }
 
