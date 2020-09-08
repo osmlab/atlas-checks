@@ -80,13 +80,13 @@ public class ConstructionCheck extends BaseCheck<Long>
                 OLD_CHECK_DATE_MONTHS_DEFAULT, Double::intValue);
     }
 
-    private boolean isConstruction(Map<String, String> keySet)
+    private boolean isConstruction(Map<String, String> tags)
     {
-        return keySet.keySet().stream().anyMatch(value ->
-                value.equals("construction")
-                        || value.startsWith("construction:")
-                        && !value.equals("construction:date"))
-                || CONSTRUCTION_TAGS.stream().anyMatch(tag -> "construction".equals(keySet.get(tag)));
+        return tags.keySet().stream().anyMatch(tag ->
+                tag.equals("construction")
+                        || tag.startsWith("construction:")
+                        && !tag.equals("construction:date"))
+                || CONSTRUCTION_TAGS.stream().anyMatch(tag -> "construction".equals(tags.get(tag)));
     }
 
     /**
@@ -116,12 +116,12 @@ public class ConstructionCheck extends BaseCheck<Long>
     {
         this.markAsFlagged(object.getOsmIdentifier());
 
-        Map<String, String> keySet = object.getTags();
+        Map<String, String> tags = object.getTags();
 
-        Optional<String> dateTag = getDateTag(keySet);
+        Optional<String> dateTag = getDateTag(tags);
         if (dateTag.isPresent())
         {
-            String tagDate = keySet.get(dateTag.get());
+            String tagDate = tags.get(dateTag.get());
 
             Optional<LocalDate> parsedDate = parseDate(tagDate);
             if (parsedDate.isPresent() && parsedDate.get().isBefore(TODAYS_DATE))
@@ -131,9 +131,9 @@ public class ConstructionCheck extends BaseCheck<Long>
             }
         }
 
-        if (keySet.containsKey("check_date"))
+        if (tags.containsKey("check_date"))
         {
-            Optional<LocalDate> parseDateChecked = parseDate(keySet.get("check_date"));
+            Optional<LocalDate> parseDateChecked = parseDate(tags.get("check_date"));
             if (parseDateChecked.isPresent())
             {
                 long numberOfMonths = ChronoUnit.MONTHS.between(parseDateChecked.get(), TODAYS_DATE);
@@ -146,9 +146,9 @@ public class ConstructionCheck extends BaseCheck<Long>
             }
         }
 
-        if (keySet.containsKey("last_edit_time"))
+        if (tags.containsKey("last_edit_time"))
         {
-            long timestamp = Long.parseLong(keySet.get("last_edit_time"));
+            long timestamp = Long.parseLong(tags.get("last_edit_time"));
             LocalDate lastEditDate = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate();
 
             long numberOfDays = ChronoUnit.DAYS.between(lastEditDate, TODAYS_DATE);
