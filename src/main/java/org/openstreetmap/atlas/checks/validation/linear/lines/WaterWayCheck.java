@@ -215,14 +215,21 @@ public class WaterWayCheck extends BaseCheck<Long>
         final SegmentIndexComparator segmentComparator = new SegmentIndexComparator(linePolyline);
         for (final LineItem lineItem : intersecting)
         {
+            // Get way segments from the two lines that intersect
             final Collection<Pair<Segment, Segment>> segs = getIntersectingSegments(linePolyline,
                     lineItem.asPolyLine());
+            // Get the *latest* crossing segment of the waterway
+            // (just in case the waterway crosses a coastline multiple times)
             final Segment max = segs.stream().map(Pair::getKey).distinct().max(segmentComparator)
                     .orElse(null);
+            // Get the crossing segments of the coastline (probably just one)
             final Collection<Segment> crosses = segs.stream().filter(p -> p.getLeft().equals(max))
                     .map(Pair::getValue).collect(Collectors.toSet());
+            // Create a shortened coastline to use to check if the waterway ends inside the ocean
             final PolyLine coast = new PolyLine(crosses.stream()
                     .flatMap(c -> Stream.of(c.first(), c.last())).toArray(Location[]::new));
+            // If the waterway ends to the right of the coastline, it ended in an ocean.
+            // If the waterway ends on the coastline, it ended in an ocean.
             if (isRightOf(coast, linePolyline.last())
                     || lineItem.asPolyLine().contains(linePolyline.last()))
             {
