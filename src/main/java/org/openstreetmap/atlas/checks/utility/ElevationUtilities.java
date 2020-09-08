@@ -32,7 +32,7 @@ public final class ElevationUtilities implements Serializable
     /**
      * The assumed file extension
      */
-    private static final String SRTM_EXT = "hgt";
+    private static final String SRTM_EXTENSION = "hgt";
     /**
      * The assumed extent of a HGT SRTM file (lat/lon) in degrees
      */
@@ -53,7 +53,7 @@ public final class ElevationUtilities implements Serializable
 
     private final int srtmExtent;
 
-    private final String srtmExt;
+    private final String srtmExtension;
 
     private final String srtmPath;
 
@@ -90,7 +90,8 @@ public final class ElevationUtilities implements Serializable
     {
         this.srtmExtent = configurationValue(configuration, "elevation.srtm_extent", SRTM_EXTENT,
                 i -> i);
-        this.srtmExt = configurationValue(configuration, "elevation.srtm_ext", SRTM_EXT, i -> i);
+        this.srtmExtension = configurationValue(configuration, "elevation.srtm_ext", SRTM_EXTENSION,
+                i -> i);
         this.srtmPath = configurationValue(configuration, "elevation.path", "elevation", i -> i);
     }
 
@@ -234,7 +235,7 @@ public final class ElevationUtilities implements Serializable
             lonPrefix = "W";
         }
 
-        return String.format("%s%02d%s%03d.%s", latPrefix, lat, lonPrefix, lon, this.srtmExt);
+        return String.format("%s%02d%s%03d.%s", latPrefix, lat, lonPrefix, lon, this.srtmExtension);
     }
 
     /**
