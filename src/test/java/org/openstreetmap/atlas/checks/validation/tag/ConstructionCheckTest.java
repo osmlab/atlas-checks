@@ -30,9 +30,9 @@ public class ConstructionCheckTest
         this.verifier.verifyExpectedSize(1);
     }
     @Test
-    public void testyyyydDateFormatter()
+    public void testyyyyMDateFormatter()
     {
-        this.verifier.actual(this.setup.yyyydDateFormatterAtlas(), this.check);
+        this.verifier.actual(this.setup.yyyyMDateFormatterAtlas(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
     @Test

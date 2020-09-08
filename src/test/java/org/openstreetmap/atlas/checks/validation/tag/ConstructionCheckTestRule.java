@@ -15,7 +15,7 @@ public class ConstructionCheckTestRule extends CoreTestRule
     private Atlas yyyyDateFormatterAtlas;
     @TestAtlas(nodes = {
             @Node(coordinates = @Loc(value = TEST_1), tags = {"open_date=2017-1", "highway=construction"})})
-    private Atlas yyyydDateFormatterAtlas;
+    private Atlas yyyyMDateFormatterAtlas;
     @TestAtlas(nodes = {
             @Node(coordinates = @Loc(value = TEST_1), tags = {"open_date=1-2017", "highway=construction"})})
     private Atlas dyyyyDateFormatterAtlas;
@@ -42,9 +42,9 @@ public class ConstructionCheckTestRule extends CoreTestRule
     {
         return this.yyyyDateFormatterAtlas;
     }
-    public Atlas yyyydDateFormatterAtlas()
+    public Atlas yyyyMDateFormatterAtlas()
     {
-        return this.yyyydDateFormatterAtlas;
+        return this.yyyyMDateFormatterAtlas;
     }
     public Atlas dyyyyDateFormatterAtlas()
     {
