@@ -45,10 +45,13 @@ public class WaterAreaCheck extends BaseCheck<Long>
     // Probably should not cross other waterways with the same tag though.
     private static final List<String> WATERWAY_CROSSING_IGNORE = Arrays.asList("waterway->dam");
 
+    private static final String INSTRUCTION_MISSING_WATERWAY = "Waterway area (id={0,number,#}) is missing a waterway way.";
+    private static final String INSTRUCTION_NO_EXITING_WATERWAY = "Waterway area (id={0,number,#}) has a waterway way, but there are none entering/exiting.";
+    private static final String INSTRUCTION_WATERWAY_INTERSECTION = "Waterway area (id={0,number,#}) intersects with at least one other waterway area (id={1}).";
+
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "Waterway area (id={0,number,#}) is missing a waterway way.",
-            "Waterway area (id={0,number,#}) has a waterway way, but there are none entering/exiting.",
-            "Waterway area (id={0,number,#}) intersects with at least one other waterway area (id={1}).");
+            INSTRUCTION_MISSING_WATERWAY, INSTRUCTION_NO_EXITING_WATERWAY,
+            INSTRUCTION_WATERWAY_INTERSECTION);
 
     private static final double MINIMUM_PROPORTION_DEFAULT = 0.01;
 
@@ -61,12 +64,32 @@ public class WaterAreaCheck extends BaseCheck<Long>
     private final List<TaggableFilter> waterwayFilters = new ArrayList<>();
     private final List<TaggableFilter> waterwayCrossingIgnore = new ArrayList<>();
 
+    /**
+     * Check if an object matches a filter
+     * 
+     * @param filters
+     *            The filters to check against
+     * @param object
+     *            The object to check
+     * @return {@code true} if the object matches *any* filter
+     */
     public static boolean matchesFilter(final List<TaggableFilter> filters,
             final AtlasObject object)
     {
         return filters.parallelStream().anyMatch(filter -> filter.test(object));
     }
 
+    /**
+     * Check if two objects match the same filter
+     * 
+     * @param filters
+     *            The filters to check
+     * @param object1
+     *            An AtlasObject to check
+     * @param object2
+     *            Another AtlasObject to check
+     * @return {@code true} if both objects match the same filter
+     */
     public static boolean matchesSameFilter(final List<TaggableFilter> filters,
             final AtlasObject object1, final AtlasObject object2)
     {
@@ -74,6 +97,12 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .anyMatch(filter -> filter.test(object1) && filter.test(object2));
     }
 
+    /**
+     * Create a new WaterAreaCheck
+     * 
+     * @param configuration
+     *            The configuration for the new Check
+     */
     public WaterAreaCheck(final Configuration configuration)
     {
         super(configuration);
@@ -112,12 +141,81 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .stream(area.getAtlas().linesIntersecting(areaPolygon,
                         atlasObject -> matchesFilter(this.waterwayFilters, atlasObject)))
                 .collectToList();
-        CheckFlag flag = null;
-        if (waterways.isEmpty() && matchesFilter(this.waterRequiringWaterwayFilters, object))
+        CheckFlag flag = checkForMissingWaterway(null, area, waterways);
+        flag = checkForNoExitingWays(flag, areaPolygon, area, waterways);
+        flag = checkForOverlappingWaterways(flag, area);
+
+        if (flag != null)
         {
-            flag = new CheckFlag(this.getTaskIdentifier(object));
-            flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+            super.markAsFlagged(object.getOsmIdentifier());
         }
+        return Optional.ofNullable(flag);
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Check if an object is already flagged
+     * 
+     * @param objects
+     *            The objects to check
+     * @return {@code true} if *all* objects are flagged
+     */
+    private boolean alreadyFlagged(final List<? extends AtlasObject> objects)
+    {
+        return this.getFlaggedIdentifiers().containsAll(objects.parallelStream()
+                .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList()));
+    }
+
+    /**
+     * Check a waterway area for a missing waterway way
+     * 
+     * @param flag
+     *            The flag to add data to. May be null.
+     * @param area
+     *            The area to check
+     * @param waterways
+     *            The waterways intersecting with the waterway area
+     * @return The modified CheckFlag (or new CheckFlag, if the passed CheckFlag was null)
+     */
+    private CheckFlag checkForMissingWaterway(final CheckFlag flag, final Area area,
+            final List<Line> waterways)
+    {
+        CheckFlag returnFlag = flag;
+        if (waterways.isEmpty() && matchesFilter(this.waterRequiringWaterwayFilters, area))
+        {
+            if (returnFlag == null)
+            {
+                returnFlag = new CheckFlag(this.getTaskIdentifier(area));
+            }
+            returnFlag.addInstruction(this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_MISSING_WATERWAY),
+                    area.getOsmIdentifier()));
+        }
+        return returnFlag;
+    }
+
+    /**
+     * Check a waterway area for exiting and entering waterways (only checks for one or the other)
+     * 
+     * @param flag
+     *            The flag to add data to. May be null.
+     * @param areaPolygon
+     *            The area polygon (needed to avoid recalculating the area polygon)
+     * @param area
+     *            The area to check for exiting waterways
+     * @param waterways
+     *            The waterways that intersect with the waterway area
+     * @return The modified CheckFlag (or new CheckFlag, if the passed CheckFlag was null)
+     */
+    private CheckFlag checkForNoExitingWays(final CheckFlag flag, final Polygon areaPolygon,
+            final Area area, final List<Line> waterways)
+    {
+        CheckFlag returnFlag = flag;
         if (!waterways.isEmpty())
         {
             final List<Segment> areaSegments = areaPolygon
@@ -126,20 +224,38 @@ public class WaterAreaCheck extends BaseCheck<Long>
                     .collect(Collectors.toList());
             if (areaSegments.isEmpty())
             {
-                if (flag == null)
+                if (returnFlag == null)
                 {
-                    flag = new CheckFlag(this.getTaskIdentifier(object));
+                    returnFlag = new CheckFlag(this.getTaskIdentifier(area));
                 }
-                flag.addInstruction(this.getLocalizedInstruction(1, object.getOsmIdentifier()));
+                returnFlag.addInstruction(this.getLocalizedInstruction(
+                        FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_NO_EXITING_WATERWAY),
+                        area.getOsmIdentifier()));
             }
         }
+        return returnFlag;
+    }
+
+    /**
+     * Check for overlapping waterways
+     * 
+     * @param flag
+     *            The flag to add data to. May be null.
+     * @param area
+     *            The area to check for overlapping waterways
+     * @return The modified CheckFlag (or new CheckFlag, if the passed CheckFlag was null)
+     */
+    private CheckFlag checkForOverlappingWaterways(final CheckFlag flag, final Area area)
+    {
+        CheckFlag returnFlag = flag;
+
         final List<Pair<Segment, List<Area>>> possibleAreaIntersections = area.getClosedGeometry()
                 .segments().stream()
                 .map(segment -> Pair.of(segment,
                         Iterables
-                                .stream(object.getAtlas().areasIntersecting(segment.bounds(),
+                                .stream(area.getAtlas().areasIntersecting(segment.bounds(),
                                         atlasObject -> matchesFilter(this.areaFilters, atlasObject)
-                                                && !object.equals(atlasObject)
+                                                && !area.equals(atlasObject)
                                                 && area.getClosedGeometry().intersects(
                                                         atlasObject.getClosedGeometry())))
                                 .collectToList()))
@@ -156,17 +272,19 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         if (!areaIntersections.isEmpty() && !alreadyFlagged(areaIntersections))
         {
-            if (flag == null)
+            if (returnFlag == null)
             {
-                flag = new CheckFlag(this.getTaskIdentifier(object));
+                returnFlag = new CheckFlag(this.getTaskIdentifier(area));
             }
-            flag.addPoints(possibleAreaIntersections.stream()
+            returnFlag.addPoints(possibleAreaIntersections.stream()
                     .filter(pair -> !alreadyFlagged(pair.getRight())).map(Pair::getLeft)
                     .map(Segment::middle).collect(Collectors.toList()));
-            flag.addInstruction(this.getLocalizedInstruction(2, object.getOsmIdentifier(),
+            returnFlag.addInstruction(this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_WATERWAY_INTERSECTION),
+                    area.getOsmIdentifier(),
                     areaIntersections.stream().map(AtlasObject::getOsmIdentifier).distinct()
                             .map(Objects::toString).collect(Collectors.joining(", "))));
-            areaIntersections.forEach(flag::addObject);
+            areaIntersections.forEach(returnFlag::addObject);
             areaIntersections.stream().map(AtlasObject::getOsmIdentifier)
                     .forEach(super::markAsFlagged);
         }
@@ -181,32 +299,18 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         if (!areaOverlaps.isEmpty())
         {
-            if (flag == null)
+            if (returnFlag == null)
             {
-                flag = new CheckFlag(this.getTaskIdentifier(object));
+                returnFlag = new CheckFlag(this.getTaskIdentifier(area));
             }
-            flag.addInstruction(this.getLocalizedInstruction(2, object.getOsmIdentifier(),
+            returnFlag.addInstruction(this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_WATERWAY_INTERSECTION),
+                    area.getOsmIdentifier(),
                     areaOverlaps.stream().map(AtlasObject::getOsmIdentifier).distinct()
                             .map(Objects::toString).collect(Collectors.joining(", "))));
-            areaOverlaps.forEach(flag::addObject);
+            areaOverlaps.forEach(returnFlag::addObject);
         }
-        if (flag != null)
-        {
-            super.markAsFlagged(object.getOsmIdentifier());
-        }
-        return Optional.ofNullable(flag);
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
-    private boolean alreadyFlagged(final List<? extends AtlasObject> objects)
-    {
-        return this.getFlaggedIdentifiers().containsAll(objects.parallelStream()
-                .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList()));
+        return returnFlag;
     }
 
     /**
