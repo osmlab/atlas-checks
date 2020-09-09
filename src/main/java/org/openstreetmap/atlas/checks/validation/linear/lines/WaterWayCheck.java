@@ -371,6 +371,7 @@ public class WaterWayCheck extends BaseCheck<Long>
         final LineItem line = (LineItem) object;
         final Location last = line.asPolyLine().last();
         final Location first = line.asPolyLine().first();
+        final Atlas atlas = line.getAtlas();
         CheckFlag flag = null;
         if (line.isClosed())
         {
@@ -404,7 +405,7 @@ public class WaterWayCheck extends BaseCheck<Long>
             }
 
         }
-        final LineItem crossed = intersectsAnotherWaterWay(line);
+        final LineItem crossed = intersectsAnotherWaterWay(atlas, line);
         if (crossed != null)
         {
             final Iterator<Location> intersections = crossed.asPolyLine()
@@ -458,9 +459,15 @@ public class WaterWayCheck extends BaseCheck<Long>
         return doesLineEndOnWaterway(line) || doesLineEndInSink(line) || doesLineEndInOcean(line);
     }
 
-    private LineItem intersectsAnotherWaterWay(final LineItem line)
+    /**
+     * Get an intersecting waterway, if one exists.
+     *
+     * @param line
+     *            The waterway to look for intersections for.
+     * @return A crossing waterway, or {@code null} if no crossing waterway exists.
+     */
+    private LineItem intersectsAnotherWaterWay(final Atlas atlas, final LineItem line)
     {
-        final Atlas atlas = line.getAtlas();
         final Iterable<LineItem> intersectingWaterways = atlas.lineItemsIntersecting(line.bounds(),
                 this.waterwayTagFilter::test);
         final Set<LineItem> sameLayerWays = Iterables.stream(intersectingWaterways)
