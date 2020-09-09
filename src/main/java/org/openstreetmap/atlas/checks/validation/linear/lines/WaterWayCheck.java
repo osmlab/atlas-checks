@@ -440,20 +440,40 @@ public class WaterWayCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Create a flag for an object that goes uphill
+     *
+     * @param flag
+     *            The flag to create/modify. May be {@code null}.
+     * @param object
+     *            The object to flag
+     * @param first
+     *            The first node of the way
+     * @return The new CheckFlag (if the passed flag was {@code null}) or the modified CheckFlag.
+     */
     private CheckFlag createUphillFlag(final CheckFlag flag, final AtlasObject object,
             final Location first)
     {
+        CheckFlag returnFlag = flag;
         final String instruction = this.getLocalizedInstruction(
                 FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL), object.getOsmIdentifier(),
                 this.elevationUtils.getResolution(first).asMeters());
-        if (flag == null)
+        if (returnFlag == null)
         {
             return createFlag(object, instruction);
         }
-        flag.addInstruction(instruction);
-        return flag;
+        returnFlag.addInstruction(instruction);
+        return returnFlag;
     }
 
+    /**
+     * Check if the waterway ends in a sink (i.e., a location that can reasonably expected to have
+     * no outflow).
+     *
+     * @param line
+     *            The waterway item to check
+     * @return {@code true} if the waterway ends in a sink.
+     */
     private boolean doesWaterwayEndInSink(final LineItem line)
     {
         return doesLineEndOnWaterway(line) || doesLineEndInSink(line) || doesLineEndInOcean(line);
@@ -482,6 +502,15 @@ public class WaterWayCheck extends BaseCheck<Long>
         return sameLayerWays.iterator().next();
     }
 
+    /**
+     * Check if two waterways are connected
+     *
+     * @param line
+     *            A waterway
+     * @param potential
+     *            Another waterway which may connect
+     * @return {@code true} if both waterways share a location
+     */
     private boolean waterwayConnects(final LineItem line, final LineItem potential)
     {
         final PolyLine linePoly = line.asPolyLine();
