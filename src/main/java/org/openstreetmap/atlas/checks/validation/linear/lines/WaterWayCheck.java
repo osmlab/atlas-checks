@@ -475,6 +475,13 @@ public class WaterWayCheck extends BaseCheck<Long>
     private CheckFlag flagIncline(final CheckFlag flag, final LineItem line, final Location first,
             final Location last)
     {
+        /*
+         * While this could be modified to check the incline between each node in the way, it
+         * currently isn't realistic (the NASA SRTM mission has a max resolution of ~30m). If better
+         * resolution datasets become available, it may be worthwhile to check each node in the way.
+         * I would expect the resolution of the dataset to be ~1m, but good results may be had with
+         * more than 1m resolution.
+         */
         final double incline = this.elevationUtils.getIncline(first, last);
         final boolean uphill = !Double.isNaN(incline) && incline > 0
                 && last.distanceTo(first).isGreaterThan(this.minDistanceStartEndElevationUphill);
