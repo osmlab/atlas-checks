@@ -1091,12 +1091,18 @@
     }
   },
   "WaterWayCheck": {
-    "ocean.boundary": "natural->coastline",
-    "ocean.valid": "natural->strait,channel,fjord,sound,bay|harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock",
-    "waterway.elevation.distance.min.start.end": 450.0,
-    "waterway.elevation.resolution.min.uphill": 1.0,
-    "waterway.sink.tags.filters": "natural->sinkhole|waterway->tidal_channel,drain|manhole->drain",
-    "waterway.tags.filters": "waterway->river,stream,tidal_channel,canal,drain,ditch,pressurised",
+    "ocean": {
+      "boundary": "natural->coastline",
+      "valid": "natural->strait,channel,fjord,sound,bay|harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock"
+    },
+    "waterway": {
+      "elevation": {
+        "distance.min.start.end": 450.0,
+        "resolution.min.uphill": 1.0
+      },
+      "sink.tags.filters": "natural->sinkhole|waterway->tidal_channel,drain|manhole->drain",
+      "tags.filters": "waterway->river,stream,tidal_channel,canal,drain,ditch,pressurised"
+    },
     "challenge": {
       "description": "Waterways that have circular flows, are crossing, do not have a sink, or are going uphill (if elevation data was provided)",
       "blurb": "Fix waterways such that they make physical sense",
