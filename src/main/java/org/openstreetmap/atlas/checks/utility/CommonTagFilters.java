@@ -5,8 +5,13 @@ package org.openstreetmap.atlas.checks.utility;
  * 
  * @author Taylor Smock
  */
-public class CommonTagFilters
+public final class CommonTagFilters
 {
+    private CommonTagFilters()
+    {
+        // Hide constructor
+    }
+
     /** Boundary filter for ocean boundaries */
     public static final String DEFAULT_OCEAN_BOUNDARY_TAGS = "natural->coastline";
     /** Tag filter for oceans (without coastline) */

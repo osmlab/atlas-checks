@@ -189,22 +189,6 @@ public class WaterWayCheck extends BaseCheck<Long>
     }
 
     /**
-     * Check if a line crosses an coastline line
-     *
-     * @param line
-     *            The line to check
-     * @return {@code true} if the line crosses a coastline
-     */
-    private boolean doesLineCrossCoast(final LineItem line)
-    {
-        final List<LineItem> lines = new ArrayList<>();
-        line.getAtlas()
-                .lineItemsIntersecting(line.asPolyLine().bounds(), this.oceanBoundaryTags::test)
-                .forEach(lines::add);
-        return !lines.isEmpty();
-    }
-
-    /**
      * Check if a line ends in an ocean
      *
      * @param line
@@ -451,7 +435,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     private CheckFlag createUphillFlag(final CheckFlag flag, final AtlasObject object,
             final Location first)
     {
-        CheckFlag returnFlag = flag;
+        final CheckFlag returnFlag = flag;
         final String instruction = this.getLocalizedInstruction(
                 FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL), object.getOsmIdentifier(),
                 this.elevationUtils.getResolution(first).asMeters());
@@ -461,6 +445,22 @@ public class WaterWayCheck extends BaseCheck<Long>
         }
         returnFlag.addInstruction(instruction);
         return returnFlag;
+    }
+
+    /**
+     * Check if a line crosses an coastline line
+     *
+     * @param line
+     *            The line to check
+     * @return {@code true} if the line crosses a coastline
+     */
+    private boolean doesLineCrossCoast(final LineItem line)
+    {
+        final List<LineItem> lines = new ArrayList<>();
+        line.getAtlas()
+                .lineItemsIntersecting(line.asPolyLine().bounds(), this.oceanBoundaryTags::test)
+                .forEach(lines::add);
+        return !lines.isEmpty();
     }
 
     /**
