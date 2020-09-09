@@ -89,14 +89,17 @@ public class WaterWayCheck extends BaseCheck<Long>
             + "harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock";
 
     private static final String DEFAULT_OCEAN_BOUNDARY_TAGS = "natural->coastline";
-    private static final String DOES_NOT_END_IN_SINK = "The waterway {0} does not end in a sink (ocean/sinkhole/waterway/drain)";
+    private static final String DOES_NOT_END_IN_SINK = "The waterway {0} does not end in a sink (ocean/sinkhole/waterway/drain).";
+    private static final String DOES_NOT_END_IN_SINK_BUT_CROSSING_OCEAN = DOES_NOT_END_IN_SINK
+            + "\nThe waterway crosses a coastline, which means it is possible for the coastline to have an incorrect direction.\nLand should be to the LEFT of the coastline and the ocean should be to the RIGHT of the coastline (for more information, see https://wiki.osm.org/Tag:natural=coastline).";
     private static final String CIRCULAR_WATERWAY = "The waterway {0} loops back on itself. This is typically impossible.";
     private static final String CROSSES_WATERWAY = "The waterway {0} crosses the waterway {1}.";
     private static final String GOES_UPHILL = "The waterway {0} probably does not go up hill.\nPlease check (source elevation data resolution was about {1} meters).";
     private static final Distance MIN_RESOLUTION_DISTANCE = Distance.ONE_METER;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(DOES_NOT_END_IN_SINK,
-            CIRCULAR_WATERWAY, CROSSES_WATERWAY, GOES_UPHILL);
+            CIRCULAR_WATERWAY, CROSSES_WATERWAY, GOES_UPHILL,
+            DOES_NOT_END_IN_SINK_BUT_CROSSING_OCEAN);
 
     private final TaggableFilter waterwaySinkTagFilter;
     private final TaggableFilter waterwayTagFilter;
@@ -188,6 +191,22 @@ public class WaterWayCheck extends BaseCheck<Long>
                 Distance.FIFTEEN_HUNDRED_FEET.asMeters(), Distance::meters);
         /* End elevation settings */
 
+    }
+
+    /**
+     * Check if a line crosses an coastline line
+     *
+     * @param line
+     *            The line to check
+     * @return {@code true} if the line crosses a coastline
+     */
+    private boolean doesLineCrossCoast(final LineItem line)
+    {
+        final List<LineItem> lines = new ArrayList<>();
+        line.getAtlas()
+                .lineItemsIntersecting(line.asPolyLine().bounds(), this.oceanBoundaryTags::test)
+                .forEach(lines::add);
+        return !lines.isEmpty();
     }
 
     /**
@@ -371,8 +390,10 @@ public class WaterWayCheck extends BaseCheck<Long>
         if (isValidEndToCheck(line.getAtlas(), last) && !doesWaterwayEndInSink(line)
                 && !endsWithBoundaryNode(object))
         {
-            final String instruction = this.getLocalizedInstruction(
-                    FALLBACK_INSTRUCTIONS.indexOf(DOES_NOT_END_IN_SINK), object.getOsmIdentifier());
+            final String instruction = this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS
+                    .indexOf(this.doesLineCrossCoast(line) ? DOES_NOT_END_IN_SINK_BUT_CROSSING_OCEAN
+                            : DOES_NOT_END_IN_SINK),
+                    object.getOsmIdentifier());
             if (flag == null)
             {
                 flag = createFlag(object, instruction, Collections.singletonList(last));
