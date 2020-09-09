@@ -42,17 +42,17 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private class EdgeCrossingEdgeWalker extends EdgeWalker
     {
         EdgeCrossingEdgeWalker(final Edge startingEdge,
-                final Function<Edge, Stream<Edge>> nextCandidates)
+                               final Function<Edge, Stream<Edge>> nextCandidates)
         {
             super(startingEdge, nextCandidates);
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings with {1}."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings with {1}."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly with {1}.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
@@ -76,8 +76,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      * @return {@code true} if given {@link PolyLine}s can cross each other
      */
     private static boolean canCross(final PolyLine edgeAsPolyLine, final Optional<Long> edgeLayer,
-            final PolyLine crossingEdgeAsPolyLine, final Optional<Long> crossingEdgeLayer,
-            final Location intersection)
+                                    final PolyLine crossingEdgeAsPolyLine, final Optional<Long> crossingEdgeLayer,
+                                    final Location intersection)
     {
         // If crossing edges have nodes at intersections points, then crossing is valid
         return edgeAsPolyLine.contains(intersection)
@@ -85,7 +85,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 // Otherwise, if crossing edges has valid, but different tag values
                 // Then that is still a valid crossing
                 || edgeLayer.isPresent() && crossingEdgeLayer.isPresent()
-                        && !edgeLayer.get().equals(crossingEdgeLayer.get());
+                && !edgeLayer.get().equals(crossingEdgeLayer.get());
     }
 
     public EdgeCrossingEdgeCheck(final Configuration configuration)
@@ -130,9 +130,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         .collect(Collectors.toList());
                 final Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
                         .reduce((edge1, edge2) ->
-                        // reduce to get the minimum osm identifier edge pair.
-                        edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1
-                                : edge2);
+                                // reduce to get the minimum osm identifier edge pair.
+                                edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1
+                                        : edge2);
                 if (minIdentifierPair.isPresent())
                 {
                     final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
@@ -154,7 +154,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
     /**
      * Function creates edge cross check flag.
-     * 
+     *
      * @param edge
      *            Atlas object.
      * @param collectedEdges
@@ -162,7 +162,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      * @return newly created edge cross check glag including crossing edges locations.
      */
     private Optional<CheckFlag> createEdgeCrossCheckFlag(final Edge edge,
-            final Set<Edge> collectedEdges)
+                                                         final Set<Edge> collectedEdges)
     {
         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(edge));
         this.markAsFlagged(edge.getIdentifier());
@@ -180,7 +180,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
     /**
      * This function returns set of intersections locations for given params.
-     * 
+     *
      * @param edge1
      *            Atlas object
      * @param edge2
@@ -233,8 +233,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
                         final Optional<Long> crossingEdgeLayer = Validators
                                 .hasValuesFor(crossingEdge, LayerTag.class)
-                                        ? LayerTag.getTaggedValue(crossingEdge)
-                                        : Optional.of(OSM_LAYER_DEFAULT);
+                                ? LayerTag.getTaggedValue(crossingEdge)
+                                : Optional.of(OSM_LAYER_DEFAULT);
                         return edgeAsPolyLine.intersections(crossingEdgeAsPolyLine).stream()
                                 .anyMatch(intersection -> !canCross(edgeAsPolyLine, edgeLayer,
                                         crossingEdgeAsPolyLine, crossingEdgeLayer, intersection));
