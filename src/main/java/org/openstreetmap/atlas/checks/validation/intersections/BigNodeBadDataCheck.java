@@ -10,7 +10,6 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
-import org.openstreetmap.atlas.geography.atlas.items.complex.Finder;
 import org.openstreetmap.atlas.geography.atlas.items.complex.bignode.BigNode;
 import org.openstreetmap.atlas.geography.atlas.items.complex.bignode.BigNodeFinder;
 import org.openstreetmap.atlas.geography.atlas.items.complex.bignode.RestrictedPath;
@@ -59,7 +58,7 @@ public class BigNodeBadDataCheck extends BaseCheck<Long>
     }
 
     @Override
-    public Optional<Finder> finder()
+    public Optional<BigNodeFinder> finder()
     {
         return Optional.of(new BigNodeFinder());
     }

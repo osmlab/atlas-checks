@@ -75,20 +75,19 @@ public abstract class BaseCheck<T> implements Check, Serializable
      * @param configuration
      *            {@link Configuration} required to construct any Check
      */
-    @SuppressWarnings("unchecked")
     public BaseCheck(final Configuration configuration)
     {
         this.acceptPiers = configurationValue(configuration, PARAMETER_ACCEPT_PIERS, false);
         this.countries = Collections.unmodifiableList(configurationValue(configuration,
-                PARAMETER_PERMITLIST_COUNTRIES, Collections.EMPTY_LIST));
+                PARAMETER_PERMITLIST_COUNTRIES, Collections.emptyList()));
         this.denylistCountries = Collections.unmodifiableList(configurationValue(configuration,
-                PARAMETER_DENYLIST_COUNTRIES, Collections.EMPTY_LIST));
+                PARAMETER_DENYLIST_COUNTRIES, Collections.emptyList()));
         this.tagFilter = TaggableFilter
                 .forDefinition(configurationValue(configuration, PARAMETER_PERMITLIST_TAGS, ""));
         final Map<String, String> challengeMap = configurationValue(configuration,
-                PARAMETER_CHALLENGE, Collections.EMPTY_MAP);
+                PARAMETER_CHALLENGE, Collections.emptyMap());
         this.flagLanguageMap = configurationValue(configuration, PARAMETER_FLAG,
-                Collections.EMPTY_MAP);
+                Collections.emptyMap());
         this.locale = configurationValue(configuration, PARAMETER_LOCALE_KEY,
                 DEFAULT_LOCALE.getLanguage(), Locale::new);
         if (challengeMap.isEmpty())
@@ -292,7 +291,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
         this.getFlaggedIdentifiers().clear();
     }
 
-    protected final String configurationKey(final Class type, final String key)
+    protected final String configurationKey(final Class<?> type, final String key)
     {
         return formatKey(type.getSimpleName(), key);
     }

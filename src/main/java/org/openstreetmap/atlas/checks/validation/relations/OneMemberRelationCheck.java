@@ -20,7 +20,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author savannahostrowski
  */
-public class OneMemberRelationCheck extends BaseCheck
+public class OneMemberRelationCheck extends BaseCheck<Object>
 {
     public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
             + "one member.";

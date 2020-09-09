@@ -31,7 +31,7 @@ import org.openstreetmap.atlas.utilities.scalars.Surface;
  *
  * @author danielbaah
  */
-public class WaterbodyAndIslandSizeCheck extends BaseCheck
+public class WaterbodyAndIslandSizeCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 4105386144665109331L;

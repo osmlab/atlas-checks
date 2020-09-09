@@ -28,7 +28,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author savannahostrowski
  * @author bbreithaupt
  */
-public class RoundaboutValenceCheck extends BaseCheck
+public class RoundaboutValenceCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 1L;
