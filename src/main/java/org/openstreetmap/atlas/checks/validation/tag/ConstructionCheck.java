@@ -31,7 +31,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class ConstructionCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = -5857500094506755337L;
-    private static final double OLD_CONSTRUCTION_DAYS_DEFAULT = 365 * 2;
+    private static final double OLD_CONSTRUCTION_DAYS_DEFAULT = (double) 365 * 2;
     private static final double OLD_CHECK_DATE_MONTHS_DEFAULT = 6;
     private static final String CONSTRUCTION_PASSED_DATE = "The {0} tag has been exceeded. If the construction is still ongoing please update the date with a new completion date from an official source. Otherwise please modify this to be a completed feature";
     private static final String CONSTRUCTION_CHECK_DATE_OLD = "It has been more than {0} months since this construction was last checked. If this is still under construction please update the check_date tag. Otherwise please modify this to be a completed feature.";
