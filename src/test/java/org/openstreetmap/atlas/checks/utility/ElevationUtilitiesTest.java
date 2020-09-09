@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -82,6 +83,42 @@ public class ElevationUtilitiesTest
                 | IllegalArgumentException | InvocationTargetException | NoSuchFieldException e)
         {
             throw new AssertionError(e);
+        }
+    }
+
+    /**
+     * Test method for {@link ElevationUtilities#ElevationUtilities}
+     * 
+     * @throws ReflectiveOperationException
+     *             when something goes wrong with reflection
+     */
+    @Test
+    public void testConstructors() throws ReflectiveOperationException
+    {
+        final double expectedSrtmExtent = 2;
+        final String expectedSrtmExtension = "srtm";
+        final String expectedSrtmPath = "/tmp";
+        final String configuration = MessageFormat.format(
+                "'{'\"ElevationUtilities\":'{'\"elevation.srtm_extent\": {0}, \"elevation.srtm_ext\": \"{1}\", \"elevation.path\": \"{2}\"'}}'",
+                Double.toString(expectedSrtmExtent), expectedSrtmExtension, expectedSrtmPath);
+        final ElevationUtilities config = new ElevationUtilities(
+                ConfigurationResolver.inlineConfiguration(configuration));
+        final ElevationUtilities custom = new ElevationUtilities(expectedSrtmExtent,
+                expectedSrtmExtension, expectedSrtmPath);
+        final Field srtmExtentField = ElevationUtilities.class.getDeclaredField("srtmExtent");
+        final Field srtmExtensionField = ElevationUtilities.class.getDeclaredField("srtmExtension");
+        final Field srtmPathField = ElevationUtilities.class.getDeclaredField("srtmPath");
+        for (final Field field : Arrays.asList(srtmExtentField, srtmExtensionField, srtmPathField))
+        {
+            field.setAccessible(true);
+        }
+        for (final ElevationUtilities elevationUtility : Arrays.asList(config, custom))
+        {
+            assertEquals(expectedSrtmExtent, srtmExtentField.getDouble(elevationUtility), 0.001);
+            assertEquals(expectedSrtmExtension,
+                    srtmExtensionField.get(elevationUtility).toString());
+            assertEquals(expectedSrtmPath, srtmPathField.get(elevationUtility).toString());
+
         }
     }
 

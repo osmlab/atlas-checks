@@ -7,8 +7,8 @@ This is a general utilities class that allows checks to get elevation data. The 
 
 ```json
 {
-    "elevationutilities": {
-        "elevation.srtm_extent": "1" (degree),
+    "ElevationUtilities": {
+        "elevation.srtm_extent": 1.0 (degree),
         "elevation.srtm_ext": "hgt" (file extension),
         "elevation.path": "elevation"
     }

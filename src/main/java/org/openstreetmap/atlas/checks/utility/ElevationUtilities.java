@@ -66,7 +66,7 @@ public final class ElevationUtilities implements Serializable
      */
     private static String configurationKey(final String key)
     {
-        return formatKey("elevationutilities", key);
+        return formatKey(ElevationUtilities.class.getSimpleName(), key);
     }
 
     private static <U, V> V configurationValue(final Configuration configuration, final String key,
