@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonTagFilters;
 import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
@@ -37,15 +38,12 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class OceanBleedingCheck extends BaseCheck<Long>
 {
-    private static final String DEFAULT_VALID_OCEAN_TAGS = "natural->strait,channel,fjord,sound,bay|"
-            + "harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock";
     private final TaggableFilter validOceanTags;
     private static final String DEFAULT_INVALID_OCEAN_TAGS = "man_made->breakwater,pier"
             + "|natural->beach,marsh,swamp" + "|water->marsh"
             + "|wetland->bog,fen,mangrove,marsh,saltern,saltmarsh,string_bog,swamp,wet_meadow"
             + "|landuse->*";
     private final TaggableFilter invalidOceanTags;
-    private static final String DEFAULT_OCEAN_BOUNDARY_TAGS = "natural->coastline";
     private final TaggableFilter oceanBoundaryTags;
     private static final String DEFAULT_OFFENDING_MISCELLANEOUS_LINEITEMS = "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature";
     private final TaggableFilter defaultOffendingLineitems;
@@ -71,8 +69,8 @@ public class OceanBleedingCheck extends BaseCheck<Long>
     public OceanBleedingCheck(final Configuration configuration)
     {
         super(configuration);
-        this.validOceanTags = TaggableFilter.forDefinition(
-                this.configurationValue(configuration, "ocean.valid", DEFAULT_VALID_OCEAN_TAGS));
+        this.validOceanTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
+                "ocean.valid", CommonTagFilters.DEFAULT_VALID_OCEAN_TAGS));
         this.invalidOceanTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
                 "ocean.invalid", DEFAULT_INVALID_OCEAN_TAGS));
         this.defaultOffendingLineitems = TaggableFilter.forDefinition(this.configurationValue(
@@ -85,7 +83,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                 .stream().map(element -> Enum.valueOf(HighwayTag.class, element.toUpperCase()))
                 .collect(Collectors.toList());
         this.oceanBoundaryTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
-                "ocean.boundary", DEFAULT_OCEAN_BOUNDARY_TAGS));
+                "ocean.boundary", CommonTagFilters.DEFAULT_OCEAN_BOUNDARY_TAGS));
     }
 
     /**

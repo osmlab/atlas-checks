@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonTagFilters;
 import org.openstreetmap.atlas.checks.utility.ElevationUtilities;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
@@ -85,10 +86,6 @@ public class WaterWayCheck extends BaseCheck<Long>
     private static final String WATERWAY_SINK_TAG_FILTER_DEFAULT = "natural->sinkhole|waterway->tidal_channel,drain|manhole->drain";
     private static final String WATERWAY_TAG_FILTER_DEFAULT = "waterway->river,stream,tidal_channel,canal,drain,ditch,pressurised";
 
-    private static final String DEFAULT_VALID_OCEAN_TAGS = "natural->strait,channel,fjord,sound,bay|"
-            + "harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock";
-
-    private static final String DEFAULT_OCEAN_BOUNDARY_TAGS = "natural->coastline";
     private static final String DOES_NOT_END_IN_SINK = "The waterway {0} does not end in a sink (ocean/sinkhole/waterway/drain).";
     private static final String DOES_NOT_END_IN_SINK_BUT_CROSSING_OCEAN = DOES_NOT_END_IN_SINK
             + "\nThe waterway crosses a coastline, which means it is possible for the coastline to have an incorrect direction.\nLand should be to the LEFT of the coastline and the ocean should be to the RIGHT of the coastline (for more information, see https://wiki.osm.org/Tag:natural=coastline).";
@@ -174,10 +171,10 @@ public class WaterWayCheck extends BaseCheck<Long>
                 WATERWAY_TAG_FILTER_DEFAULT, TaggableFilter::forDefinition);
 
         /* Ocean data */
-        this.validOceanTags = TaggableFilter.forDefinition(
-                this.configurationValue(configuration, "ocean.valid", DEFAULT_VALID_OCEAN_TAGS));
+        this.validOceanTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
+                "ocean.valid", CommonTagFilters.DEFAULT_VALID_OCEAN_TAGS));
         this.oceanBoundaryTags = TaggableFilter.forDefinition(this.configurationValue(configuration,
-                "ocean.boundary", DEFAULT_OCEAN_BOUNDARY_TAGS));
+                "ocean.boundary", CommonTagFilters.DEFAULT_OCEAN_BOUNDARY_TAGS));
 
         /* End ocean data */
         /* Elevation settings */
