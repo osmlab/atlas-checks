@@ -270,7 +270,7 @@ public class WaterWayCheck extends BaseCheck<Long>
 
     /**
      * Check if the last location on a line also happens to be connected to a waterway.
-     * 
+     *
      * @param atlas
      *            The atlas of the object
      * @param line
@@ -343,97 +343,21 @@ public class WaterWayCheck extends BaseCheck<Long>
         final Location first = line.asPolyLine().first();
         final Atlas atlas = line.getAtlas();
         CheckFlag flag = null;
-        if (line.isClosed())
+        flag = flagCircularWaterway(flag, line);
+        flag = flagIncline(flag, line, first, last);
+        flag = flagNoSink(flag, atlas, line, last);
+        flag = flagCrossingWays(flag, atlas, line);
+        if (flag != null)
         {
-            flag = createFlag(object,
-                    this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS.indexOf(CIRCULAR_WATERWAY),
-                            object.getOsmIdentifier()),
-                    Collections.singletonList(line.asPolyLine().first()));
+            super.markAsFlagged(object.getOsmIdentifier());
         }
-        final double incline = this.elevationUtils.getIncline(first, last);
-        final boolean uphill = !Double.isNaN(incline) && incline > 0
-                && last.distanceTo(first).isGreaterThan(this.minDistanceStartEndElevationUphill);
-        if (uphill && this.minResolutionDistance
-                .isGreaterThanOrEqualTo(this.elevationUtils.getResolution(first)))
-        {
-            flag = createUphillFlag(flag, object, first);
-        }
-        if (isValidEndToCheck(atlas, last) && !doesWaterwayEndInSink(atlas, line)
-                && !endsWithBoundaryNode(atlas, object))
-        {
-            final String instruction = this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS.indexOf(
-                    this.doesLineCrossCoast(atlas, line) ? DOES_NOT_END_IN_SINK_BUT_CROSSING_OCEAN
-                            : DOES_NOT_END_IN_SINK),
-                    object.getOsmIdentifier());
-            if (flag == null)
-            {
-                flag = createFlag(object, instruction, Collections.singletonList(last));
-            }
-            else
-            {
-                flag.addObject(object, last, instruction);
-            }
-
-        }
-        final Collection<LineItem> crossed = getIntersectingWaterways(atlas, line);
-        for (final LineItem lineItemCrossed : crossed)
-        {
-            final Iterator<Location> intersections = lineItemCrossed.asPolyLine()
-                    .intersections(line.asPolyLine()).iterator();
-            if (intersections.hasNext())
-            {
-                final String instruction = this.getLocalizedInstruction(
-                        FALLBACK_INSTRUCTIONS.indexOf(CROSSES_WATERWAY), object.getOsmIdentifier(),
-                        lineItemCrossed.getOsmIdentifier());
-                if (flag == null)
-                {
-                    flag = createFlag(Sets.hashSet(object, lineItemCrossed), instruction,
-                            Arrays.asList(intersections.next()));
-                }
-                else
-                {
-                    flag.addObject(lineItemCrossed, intersections.next(), instruction);
-                }
-            }
-        }
-        if (flag == null)
-        {
-            return Optional.empty();
-        }
-        super.markAsFlagged(object.getOsmIdentifier());
-        return Optional.of(flag);
+        return Optional.ofNullable(flag);
     }
 
     @Override
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
-    }
-
-    /**
-     * Create a flag for an object that goes uphill
-     *
-     * @param flag
-     *            The flag to create/modify. May be {@code null}.
-     * @param object
-     *            The object to flag
-     * @param first
-     *            The first node of the way
-     * @return The new CheckFlag (if the passed flag was {@code null}) or the modified CheckFlag.
-     */
-    private CheckFlag createUphillFlag(final CheckFlag flag, final AtlasObject object,
-            final Location first)
-    {
-        final CheckFlag returnFlag = flag;
-        final String instruction = this.getLocalizedInstruction(
-                FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL), object.getOsmIdentifier(),
-                this.elevationUtils.getResolution(first).asMeters());
-        if (returnFlag == null)
-        {
-            return createFlag(object, instruction);
-        }
-        returnFlag.addInstruction(instruction);
-        return returnFlag;
     }
 
     /**
@@ -454,7 +378,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     /**
      * Check if the waterway ends in a sink (i.e., a location that can reasonably expected to have
      * no outflow).
-     * 
+     *
      * @param atlas
      *            The atlas of the object
      * @param line
@@ -465,6 +389,148 @@ public class WaterWayCheck extends BaseCheck<Long>
     {
         return this.doesLineEndOnWaterway(atlas, line) || this.doesLineEndInSink(atlas, line)
                 || this.doesLineEndInOcean(atlas, line);
+    }
+
+    /**
+     * Flag circular waterways (how do they have circular flow?)
+     *
+     * @param flag
+     *            The pre-existing flag (or {@code null})
+     * @param line
+     *            The line to check
+     * @return The pre-existing check flag, or a new check flag, or {@code null}
+     */
+    private CheckFlag flagCircularWaterway(final CheckFlag flag, final LineItem line)
+    {
+        if (line.isClosed())
+        {
+            CheckFlag returnFlag = flag;
+            final String instructions = this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(CIRCULAR_WATERWAY), line.getOsmIdentifier());
+            if (returnFlag == null)
+            {
+                returnFlag = createFlag(line, instructions,
+                        Collections.singletonList(line.asPolyLine().first()));
+            }
+            else
+            {
+                returnFlag.addObject(line, instructions);
+            }
+            return returnFlag;
+        }
+        return flag;
+    }
+
+    /**
+     * Flag crossing ways
+     *
+     * @param flag
+     *            The pre-existing flag (or {@code null})
+     * @param atlas
+     *            The atlas to check
+     * @param line
+     *            The line to check
+     * @return The pre-existing check flag, or a new check flag, or {@code null}
+     */
+    private CheckFlag flagCrossingWays(final CheckFlag flag, final Atlas atlas, final LineItem line)
+    {
+        CheckFlag returnFlag = flag;
+        final Collection<LineItem> crossed = getIntersectingWaterways(atlas, line);
+        for (final LineItem lineItemCrossed : crossed)
+        {
+            final Iterator<Location> intersections = lineItemCrossed.asPolyLine()
+                    .intersections(line.asPolyLine()).iterator();
+            if (intersections.hasNext())
+            {
+                final String instruction = this.getLocalizedInstruction(
+                        FALLBACK_INSTRUCTIONS.indexOf(CROSSES_WATERWAY), line.getOsmIdentifier(),
+                        lineItemCrossed.getOsmIdentifier());
+                if (returnFlag == null)
+                {
+                    returnFlag = createFlag(Sets.hashSet(line, lineItemCrossed), instruction,
+                            Arrays.asList(intersections.next()));
+                }
+                else
+                {
+                    returnFlag.addObject(lineItemCrossed, intersections.next(), instruction);
+                }
+            }
+        }
+        return returnFlag;
+    }
+
+    /**
+     * Flag the waterway if it goes uphill
+     *
+     * @param flag
+     *            The pre-existing flag (or {@code null})
+     * @param line
+     *            The line to check
+     * @param first
+     *            The location of the first node of the waterway
+     * @param last
+     *            The location of the last node of the waterway
+     * @return The pre-existing check flag, or a new check flag, or {@code null}
+     */
+    private CheckFlag flagIncline(final CheckFlag flag, final LineItem line, final Location first,
+            final Location last)
+    {
+        final double incline = this.elevationUtils.getIncline(first, last);
+        final boolean uphill = !Double.isNaN(incline) && incline > 0
+                && last.distanceTo(first).isGreaterThan(this.minDistanceStartEndElevationUphill);
+        if (uphill && this.minResolutionDistance
+                .isGreaterThanOrEqualTo(this.elevationUtils.getResolution(first)))
+        {
+            final CheckFlag returnFlag = flag;
+            final String instruction = this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL), line.getOsmIdentifier(),
+                    this.elevationUtils.getResolution(first).asMeters());
+            if (returnFlag == null)
+            {
+                return createFlag(line, instruction);
+            }
+            returnFlag.addInstruction(instruction);
+            return returnFlag;
+        }
+        return flag;
+    }
+
+    /**
+     * Flag if the way has no sink
+     *
+     * @param flag
+     *            The pre-existing flag (or {@code null})
+     * @param atlas
+     *            The atlas to check
+     * @param line
+     *            The line to check
+     * @param last
+     *            The location of the last node in the line
+     * @return The pre-existing check flag, or a new check flag, or {@code null}
+     */
+    private CheckFlag flagNoSink(final CheckFlag flag, final Atlas atlas, final LineItem line,
+            final Location last)
+    {
+        if (isValidEndToCheck(atlas, last) && !doesWaterwayEndInSink(atlas, line)
+                && !endsWithBoundaryNode(atlas, line))
+        {
+            CheckFlag returnFlag = flag;
+            final String instruction = this.getLocalizedInstruction(FALLBACK_INSTRUCTIONS.indexOf(
+                    this.doesLineCrossCoast(atlas, line) ? DOES_NOT_END_IN_SINK_BUT_CROSSING_OCEAN
+                            : DOES_NOT_END_IN_SINK),
+                    line.getOsmIdentifier());
+            if (returnFlag == null)
+            {
+                returnFlag = createFlag(line, instruction, Collections.singletonList(last));
+            }
+            else
+            {
+                returnFlag.addObject(line, last, instruction);
+            }
+            return returnFlag;
+
+        }
+        return flag;
     }
 
     /**
