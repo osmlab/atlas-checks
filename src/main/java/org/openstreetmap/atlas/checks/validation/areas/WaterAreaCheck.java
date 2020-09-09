@@ -115,7 +115,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 WATERWAY_FILTERS);
         filtersString
                 .forEach(string -> this.waterwayFilters.add(TaggableFilter.forDefinition(string)));
-        filtersString = configurationValue(configuration, "water.tags.filters.requireswaterway",
+        filtersString = configurationValue(configuration, "water.tags.filtersrequireswaterway",
                 WATER_FILTERS_WATERWAY);
         filtersString.forEach(string -> this.waterRequiringWaterwayFilters
                 .add(TaggableFilter.forDefinition(string)));

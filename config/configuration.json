@@ -1077,7 +1077,7 @@
     "water.tags.filters": [
       "natural->water&water->*|waterway->riverbank"
     ],
-    "water.tags.filters.requireswaterway": [
+    "water.tags.filtersrequireswaterway": [
       "natural->water&water->river,stream_pool,canal,lock|waterway->riverbank"
     ],
     "waterway.tags.filters": [
