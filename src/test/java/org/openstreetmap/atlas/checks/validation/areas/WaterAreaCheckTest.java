@@ -78,7 +78,6 @@ public class WaterAreaCheckTest
         this.verifier.actual(this.setup.getOverlappingPonds(),
                 new WaterAreaCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        // TODO verify actual check
     }
 
     @Test
