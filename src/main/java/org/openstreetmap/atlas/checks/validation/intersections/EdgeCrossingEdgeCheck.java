@@ -42,7 +42,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private class EdgeCrossingEdgeWalker extends EdgeWalker
     {
         EdgeCrossingEdgeWalker(final Edge startingEdge,
-                               final Function<Edge, Stream<Edge>> nextCandidates)
+                final Function<Edge, Stream<Edge>> nextCandidates)
         {
             super(startingEdge, nextCandidates);
         }
@@ -76,8 +76,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      * @return {@code true} if given {@link PolyLine}s can cross each other
      */
     private static boolean canCross(final PolyLine edgeAsPolyLine, final Optional<Long> edgeLayer,
-                                    final PolyLine crossingEdgeAsPolyLine, final Optional<Long> crossingEdgeLayer,
-                                    final Location intersection)
+            final PolyLine crossingEdgeAsPolyLine, final Optional<Long> crossingEdgeLayer,
+            final Location intersection)
     {
         // If crossing edges have nodes at intersections points, then crossing is valid
         return edgeAsPolyLine.contains(intersection)
@@ -85,7 +85,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 // Otherwise, if crossing edges has valid, but different tag values
                 // Then that is still a valid crossing
                 || edgeLayer.isPresent() && crossingEdgeLayer.isPresent()
-                && !edgeLayer.get().equals(crossingEdgeLayer.get());
+                        && !edgeLayer.get().equals(crossingEdgeLayer.get());
     }
 
     public EdgeCrossingEdgeCheck(final Configuration configuration)
@@ -130,9 +130,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         .collect(Collectors.toList());
                 final Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
                         .reduce((edge1, edge2) ->
-                                // reduce to get the minimum osm identifier edge pair.
-                                edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1
-                                        : edge2);
+                        // reduce to get the minimum osm identifier edge pair.
+                        edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1
+                                : edge2);
                 if (minIdentifierPair.isPresent())
                 {
                     final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
@@ -162,7 +162,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      * @return newly created edge cross check glag including crossing edges locations.
      */
     private Optional<CheckFlag> createEdgeCrossCheckFlag(final Edge edge,
-                                                         final Set<Edge> collectedEdges)
+            final Set<Edge> collectedEdges)
     {
         final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(edge));
         this.markAsFlagged(edge.getIdentifier());
@@ -233,8 +233,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
                         final Optional<Long> crossingEdgeLayer = Validators
                                 .hasValuesFor(crossingEdge, LayerTag.class)
-                                ? LayerTag.getTaggedValue(crossingEdge)
-                                : Optional.of(OSM_LAYER_DEFAULT);
+                                        ? LayerTag.getTaggedValue(crossingEdge)
+                                        : Optional.of(OSM_LAYER_DEFAULT);
                         return edgeAsPolyLine.intersections(crossingEdgeAsPolyLine).stream()
                                 .anyMatch(intersection -> !canCross(edgeAsPolyLine, edgeLayer,
                                         crossingEdgeAsPolyLine, crossingEdgeLayer, intersection));
