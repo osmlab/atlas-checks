@@ -231,9 +231,9 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final List<String> identifiers = this.getIdentifiers(entitiesToBeFlagged);
         entitiesToBeFlagged.add(intersectingNode);
         this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
-        return Optional.of(
-                this.createFlag(entitiesToBeFlagged, this.getLocalizedInstruction(instructionIndex,
-                        intersectingNode.getIdentifier(), new StringList(identifiers).join(", "))));
+        return Optional.of(this.createFlag(entitiesToBeFlagged,
+                this.getLocalizedInstruction(instructionIndex, intersectingNode.getOsmIdentifier(),
+                        new StringList(identifiers).join(", "))));
     }
 
     @Override
@@ -464,7 +464,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      */
     private List<String> getIdentifiers(final Set<AtlasEntity> objects)
     {
-        return Iterables.stream(objects).map(AtlasEntity::getIdentifier).map(String::valueOf)
+        return Iterables.stream(objects).map(AtlasEntity::getOsmIdentifier).map(String::valueOf)
                 .collectToList();
     }
 
