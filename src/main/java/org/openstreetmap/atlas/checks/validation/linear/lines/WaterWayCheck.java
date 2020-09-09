@@ -476,8 +476,10 @@ public class WaterWayCheck extends BaseCheck<Long>
      */
     private Collection<LineItem> getIntersectingWaterways(final Atlas atlas, final LineItem line)
     {
+        final PolyLine linePoly = line.asPolyLine();
         final Iterable<LineItem> intersectingWaterways = atlas.lineItemsIntersecting(line.bounds(),
-                this.waterwayTagFilter::test);
+                lineItem -> this.waterwayTagFilter.test(lineItem)
+                        && lineItem.asPolyLine().intersects(linePoly));
         final Set<LineItem> sameLayerWays = Iterables.stream(intersectingWaterways)
                 .filter(potential -> LayerTag.areOnSameLayer(line, potential)
                         && !waterwayConnects(line, potential))
