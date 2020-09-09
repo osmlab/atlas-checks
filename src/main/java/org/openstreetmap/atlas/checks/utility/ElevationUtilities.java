@@ -88,9 +88,13 @@ public final class ElevationUtilities implements Serializable
      */
     public ElevationUtilities(final Configuration configuration)
     {
-        this(configurationValue(configuration, "elevation.srtm_extent", SRTM_EXTENT, i -> i),
-                configurationValue(configuration, "elevation.srtm_ext", SRTM_EXTENSION, i -> i),
-                configurationValue(configuration, "elevation.path", "elevation", i -> i));
+        this(configurationValue(configuration, "elevation.srtm_extent", SRTM_EXTENT,
+                Function.identity()),
+                configurationValue(configuration, "elevation.srtm_ext", SRTM_EXTENSION,
+                        Function.identity()),
+                configurationValue(configuration, "elevation.path", "elevation",
+                        Function.identity()));
+
     }
 
     /**

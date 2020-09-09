@@ -242,11 +242,13 @@ public class WaterWayCheck extends BaseCheck<Long>
             final Segment max = segs.stream().map(Pair::getKey).distinct().max(segmentComparator)
                     .orElse(null);
             // Get the crossing segments of the coastline (probably just one)
-            final Collection<Segment> crosses = segs.stream().filter(p -> p.getLeft().equals(max))
-                    .map(Pair::getValue).collect(Collectors.toSet());
+            final Collection<Segment> crosses = segs.stream()
+                    .filter(pair -> pair.getLeft().equals(max)).map(Pair::getValue)
+                    .collect(Collectors.toSet());
             // Create a shortened coastline to use to check if the waterway ends inside the ocean
-            final PolyLine coast = new PolyLine(crosses.stream()
-                    .flatMap(c -> Stream.of(c.first(), c.last())).toArray(Location[]::new));
+            final PolyLine coast = new PolyLine(
+                    crosses.stream().flatMap(pCoast -> Stream.of(pCoast.first(), pCoast.last()))
+                            .toArray(Location[]::new));
             // If the waterway ends to the right of the coastline, it ended in an ocean.
             // If the waterway ends on the coastline, it ended in an ocean.
             if (isRightOf(coast, linePolyline.last())
@@ -312,8 +314,8 @@ public class WaterWayCheck extends BaseCheck<Long>
 
         waterways.removeIf(line::equals);
         final Location last = line.asPolyLine().last();
-        return waterways.stream().anyMatch(
-                l -> l.asPolyLine().contains(last) && !last.equals(l.asPolyLine().last()));
+        return waterways.stream().anyMatch(tLine -> tLine.asPolyLine().contains(last)
+                && !last.equals(tLine.asPolyLine().last()));
     }
 
     /**
