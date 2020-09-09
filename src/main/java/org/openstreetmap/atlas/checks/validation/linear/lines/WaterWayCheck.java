@@ -103,9 +103,7 @@ public class WaterWayCheck extends BaseCheck<Long>
 
     private final TaggableFilter waterwaySinkTagFilter;
     private final TaggableFilter waterwayTagFilter;
-
     private final TaggableFilter validOceanTags;
-
     private final TaggableFilter oceanBoundaryTags;
     private final ElevationUtilities elevationUtils;
     private final Distance minResolutionDistance;
