@@ -1068,5 +1068,26 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW"
     }
+  },
+  "WaterAreaCheck": {
+    "intersect.minimum.limit": 0.01,
+    "water.tags.crossing.ignore": [
+      "waterway->dam"
+    ],
+    "water.tags.filters": [
+      "natural->water&water->*|waterway->riverbank"
+    ],
+    "water.tags.filtersrequireswaterway": [
+      "natural->water&water->river,stream_pool,canal,lock|waterway->riverbank"
+    ],
+    "waterway.tags.filters": [
+      "waterway->*"
+    ],
+    "challenge": {
+      "description": "Overlapping waterway areas",
+      "blurb": "Edit overlapping waterway features so they either validly intersect or do not overlap.",
+      "instruction": "Open your favorite editor and edit the features overlapping the ocean so they either validly overlap or do not overlap.",
+      "difficulty": "MEDIUM"
+    }
   }
 }
