@@ -64,13 +64,14 @@ public class WaterAreaCheck extends BaseCheck<Long>
     public static boolean matchesFilter(final List<TaggableFilter> filters,
             final AtlasObject object)
     {
-        return filters.parallelStream().anyMatch(f -> f.test(object));
+        return filters.parallelStream().anyMatch(filter -> filter.test(object));
     }
 
     public static boolean matchesSameFilter(final List<TaggableFilter> filters,
             final AtlasObject object1, final AtlasObject object2)
     {
-        return filters.parallelStream().anyMatch(f -> f.test(object1) && f.test(object2));
+        return filters.parallelStream()
+                .anyMatch(filter -> filter.test(object1) && filter.test(object2));
     }
 
     public WaterAreaCheck(final Configuration configuration)
@@ -107,8 +108,10 @@ public class WaterAreaCheck extends BaseCheck<Long>
     {
         final Area area = (Area) object;
         final Polygon areaPolygon = area.getClosedGeometry();
-        final List<Line> waterways = Iterables.stream(area.getAtlas().linesIntersecting(areaPolygon,
-                o -> matchesFilter(this.waterwayFilters, o))).collectToList();
+        final List<Line> waterways = Iterables
+                .stream(area.getAtlas().linesIntersecting(areaPolygon,
+                        atlasObject -> matchesFilter(this.waterwayFilters, atlasObject)))
+                .collectToList();
         CheckFlag flag = null;
         if (waterways.isEmpty() && matchesFilter(this.waterRequiringWaterwayFilters, object))
         {
@@ -118,8 +121,8 @@ public class WaterAreaCheck extends BaseCheck<Long>
         if (!waterways.isEmpty())
         {
             final List<Segment> areaSegments = areaPolygon
-                    .segments().stream().filter(s -> waterways.parallelStream()
-                            .map(LineItem::asPolyLine).anyMatch(s::intersects))
+                    .segments().stream().filter(segment -> waterways.parallelStream()
+                            .map(LineItem::asPolyLine).anyMatch(segment::intersects))
                     .collect(Collectors.toList());
             if (areaSegments.isEmpty())
             {
@@ -132,22 +135,23 @@ public class WaterAreaCheck extends BaseCheck<Long>
         }
         final List<Pair<Segment, List<Area>>> possibleAreaIntersections = area.getClosedGeometry()
                 .segments().stream()
-                .map(b -> Pair.of(b,
+                .map(segment -> Pair.of(segment,
                         Iterables
-                                .stream(object.getAtlas().areasIntersecting(b.bounds(),
-                                        o -> matchesFilter(this.areaFilters, o) && !object.equals(o)
-                                                && area.getClosedGeometry()
-                                                        .intersects(o.getClosedGeometry())))
+                                .stream(object.getAtlas().areasIntersecting(segment.bounds(),
+                                        atlasObject -> matchesFilter(this.areaFilters, atlasObject)
+                                                && !object.equals(atlasObject)
+                                                && area.getClosedGeometry().intersects(
+                                                        atlasObject.getClosedGeometry())))
                                 .collectToList()))
-                .filter(p -> !p.getRight().isEmpty()).collect(Collectors.toList());
+                .filter(pair -> !pair.getRight().isEmpty()).collect(Collectors.toList());
 
         final List<Area> areaIntersections = possibleAreaIntersections.stream()
-                .flatMap(p -> p.getRight().stream()).distinct()
-                .filter(a -> !intersections(area.getClosedGeometry(), a.getClosedGeometry())
+                .flatMap(pair -> pair.getRight().stream()).distinct()
+                .filter(tArea -> !intersections(area.getClosedGeometry(), tArea.getClosedGeometry())
                         .isEmpty())
-                .filter(a -> matchesFilter(this.waterwayCrossingIgnore, a)
+                .filter(tArea -> matchesFilter(this.waterwayCrossingIgnore, tArea)
                         && matchesFilter(this.waterwayCrossingIgnore, area)
-                        || !matchesFilter(this.waterwayCrossingIgnore, a)
+                        || !matchesFilter(this.waterwayCrossingIgnore, tArea)
                                 && !matchesFilter(this.waterwayCrossingIgnore, area))
                 .collect(Collectors.toList());
         if (!areaIntersections.isEmpty() && !alreadyFlagged(areaIntersections))
@@ -156,9 +160,9 @@ public class WaterAreaCheck extends BaseCheck<Long>
             {
                 flag = new CheckFlag(this.getTaskIdentifier(object));
             }
-            flag.addPoints(
-                    possibleAreaIntersections.stream().filter(p -> !alreadyFlagged(p.getRight()))
-                            .map(Pair::getLeft).map(Segment::middle).collect(Collectors.toList()));
+            flag.addPoints(possibleAreaIntersections.stream()
+                    .filter(pair -> !alreadyFlagged(pair.getRight())).map(Pair::getLeft)
+                    .map(Segment::middle).collect(Collectors.toList()));
             flag.addInstruction(this.getLocalizedInstruction(2, object.getOsmIdentifier(),
                     areaIntersections.stream().map(AtlasObject::getOsmIdentifier).distinct()
                             .map(Objects::toString).collect(Collectors.joining(", "))));
@@ -170,8 +174,9 @@ public class WaterAreaCheck extends BaseCheck<Long>
         // Sometimes there will be two waterways that share every exterior intersection,
         // but one or the other cuts a corner somewhere.
         final List<Area> areaOverlaps = possibleAreaIntersections.stream()
-                .flatMap(p -> p.getRight().stream()).distinct()
-                .filter(a -> IntersectionUtilities.findIntersectionPercentage(a.getClosedGeometry(),
+                .flatMap(pair -> pair.getRight().stream()).distinct()
+                .filter(tArea -> IntersectionUtilities.findIntersectionPercentage(
+                        tArea.getClosedGeometry(),
                         area.getClosedGeometry()) >= this.minimumIntersect)
                 .collect(Collectors.toList());
         if (!areaOverlaps.isEmpty())
@@ -221,7 +226,8 @@ public class WaterAreaCheck extends BaseCheck<Long>
         {
             final Set<Location> intersections = line1.intersections(line2);
             // Remove intersections that are points on both lines
-            intersections.removeIf(l -> line1.contains(l) && line2.contains(l));
+            intersections.removeIf(
+                    intersection -> line1.contains(intersection) && line2.contains(intersection));
             if (!intersections.isEmpty())
             {
                 return intersections;
