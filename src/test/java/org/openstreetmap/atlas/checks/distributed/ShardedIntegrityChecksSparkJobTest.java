@@ -42,7 +42,7 @@ public class ShardedIntegrityChecksSparkJobTest
     @Test
     public void countFlagsTest() throws FileNotFoundException, IOException
     {
-        generateData();
+        this.generateData();
 
         Assert.assertTrue(OUTPUT.child("flag").child(COUNTRY_CODE).exists());
         final Set<File> flagFiles = OUTPUT.child("flag").child(COUNTRY_CODE).listFilesRecursively()
@@ -59,7 +59,7 @@ public class ShardedIntegrityChecksSparkJobTest
     @Test
     public void countGeojsonTest()
     {
-        generateData();
+        this.generateData();
 
         Assert.assertTrue(OUTPUT.child("geojson").child(COUNTRY_CODE).exists());
         Assert.assertTrue(OUTPUT.child("geojson").child(COUNTRY_CODE).listFilesRecursively()
@@ -69,7 +69,7 @@ public class ShardedIntegrityChecksSparkJobTest
     @Test
     public void countMetricsTest()
     {
-        generateData();
+        this.generateData();
 
         Assert.assertTrue(OUTPUT.child("metric").child(COUNTRY_CODE).exists());
         Assert.assertEquals(2, OUTPUT.child("metric").child(COUNTRY_CODE).listFilesRecursively()
@@ -79,7 +79,7 @@ public class ShardedIntegrityChecksSparkJobTest
     @Test
     public void tippecanoeTest()
     {
-        generateData();
+        this.generateData();
 
         Assert.assertTrue(OUTPUT.child("tippecanoe").child(COUNTRY_CODE).exists());
     }

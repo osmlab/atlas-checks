@@ -114,7 +114,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
         {
             polyline = ((Area) object).asPolygon();
             // Send duplicate Edge instructions if duplicate Edges exist
-            localizedInstructionIndex = hasDuplicateSegments(polyline) ? THREE : 1;
+            localizedInstructionIndex = this.hasDuplicateSegments(polyline) ? THREE : 1;
         }
         else
         {
@@ -153,7 +153,7 @@ public class SelfIntersectingPolylineCheck extends BaseCheck<Long>
 
             if (!isJtsValid)
             {
-                response = Optional.of(createFlag(object,
+                response = Optional.of(this.createFlag(object,
                         this.getLocalizedInstruction(localizedInstructionIndex)));
             }
             else

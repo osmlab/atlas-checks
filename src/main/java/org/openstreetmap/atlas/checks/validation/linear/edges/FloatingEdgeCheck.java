@@ -83,15 +83,16 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         /*
          * This will retrieve two values, minimum and maximum length in the JSON configuration.
          */
-        this.minimumDistance = configurationValue(configuration, "length.minimum.meters",
+        this.minimumDistance = this.configurationValue(configuration, "length.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
-        this.maximumDistance = configurationValue(configuration, "length.maximum.kilometers",
+        this.maximumDistance = this.configurationValue(configuration, "length.maximum.kilometers",
                 DISTANCE_MAXIMUM_KILOMETERS_DEFAULT, Distance::kilometers);
         // This retrieves the minimum highway type from the config
         final String highwayType = this.configurationValue(configuration, "highway.minimum",
                 HIGHWAY_MINIMUM_DEFAULT);
         this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.checkConstructionRoad = configurationValue(configuration, "construction.check", false);
+        this.checkConstructionRoad = this.configurationValue(configuration, "construction.check",
+                false);
     }
 
     /**
@@ -111,7 +112,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     {
         // Consider navigable main edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
-                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object)
+                && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object)
                 && !intersectsAirport((Edge) object);
     }
 

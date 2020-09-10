@@ -106,9 +106,9 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public CheckFlag(final String identifier, final Set<? extends AtlasObject> objects,
             final List<String> instructions, final List<Location> points)
     {
-        addObjects(objects);
-        addPoints(points);
-        addInstructions(instructions);
+        this.addObjects(objects);
+        this.addPoints(points);
+        this.addInstructions(instructions);
         this.identifier = identifier;
     }
 
@@ -234,12 +234,12 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     public JsonObject asGeoJsonFeature()
     {
-        final JsonObject geometry = boundsGeoJsonGeometry();
+        final JsonObject geometry = this.boundsGeoJsonGeometry();
 
         final JsonObject properties = new JsonObject();
         properties.addProperty("flag:type", CheckFlag.class.getSimpleName());
-        properties.addProperty("flag:id", getIdentifier());
-        properties.addProperty("flag:instructions", getInstructions());
+        properties.addProperty("flag:id", this.getIdentifier());
+        properties.addProperty("flag:instructions", this.getInstructions());
 
         // The legacy GeoJSON FeatureCollection doesn't actually provide this,
         // but I figure this might be useful to know about if it's there...
@@ -376,14 +376,14 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         task.setTaskIdentifier(this.identifier);
 
         // Add custom pin point(s), if supplied.
-        final Set<Location> points = getPoints();
+        final Set<Location> points = this.getPoints();
         if (!points.isEmpty())
         {
             task.setPoints(points);
         }
         else
         {
-            final Set<PolyLine> polyLines = getPolyLines();
+            final Set<PolyLine> polyLines = this.getPolyLines();
             if (!polyLines.isEmpty())
             {
                 // Retrieve the first item in the list and retrieve the first point in the
@@ -435,7 +435,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public Iterable<Iterable<Location>> getShapes()
     {
-        return Iterables.asIterable(getPolyLines().stream()
+        return Iterables.asIterable(this.getPolyLines().stream()
                 .map(polyLine -> (Iterable<Location>) polyLine).collect(Collectors.toList()));
     }
 
@@ -466,7 +466,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     @Override
     public Iterator<Location> iterator()
     {
-        return new MultiIterable<>(getShapes()).iterator();
+        return new MultiIterable<>(this.getShapes()).iterator();
     }
 
     /**
@@ -496,7 +496,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         try (BufferedWriter out = new BufferedWriter(
                 new OutputStreamWriter(writableResource.write(), StandardCharsets.UTF_8)))
         {
-            out.write(toString());
+            out.write(this.toString());
         }
         catch (final Exception e)
         {

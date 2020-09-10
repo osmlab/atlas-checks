@@ -81,12 +81,12 @@ public class ShortSegmentCheck extends BaseCheck<Long>
     public ShortSegmentCheck(final Configuration configuration)
     {
         super(configuration);
-        this.maximumLength = configurationValue(configuration, "edge.length.maximum.meters",
+        this.maximumLength = this.configurationValue(configuration, "edge.length.maximum.meters",
                 MAXIMUM_LENGTH_DEFAULT, Distance::meters);
-        this.minimumValence = configurationValue(configuration, "node.valence.minimum",
+        this.minimumValence = this.configurationValue(configuration, "node.valence.minimum",
                 MINIMUM_VALENCE_DEFAULT);
         this.minimumHighwayPriority = Enum.valueOf(HighwayTag.class,
-                configurationValue(configuration, "highway.priority.minimum",
+                this.configurationValue(configuration, "highway.priority.minimum",
                         MINIMUM_HIGHWAY_PRIORITY_DEFAULT).toUpperCase());
     }
 
@@ -113,9 +113,9 @@ public class ShortSegmentCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
         final Optional<Node> lowValenceNodes = getConnectedNodesWithValenceLessThan(edge,
                 this.minimumValence);
-        if (lowValenceNodes.isPresent() && !isGateLike((Edge) object))
+        if (lowValenceNodes.isPresent() && !this.isGateLike((Edge) object))
         {
-            return Optional.of(createFlag(object,
+            return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getIdentifier(),
                             this.maximumLength.asMeters(), lowValenceNodes.get().getIdentifier(),
                             this.minimumValence),
