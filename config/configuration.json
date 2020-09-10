@@ -923,13 +923,19 @@
   "SuddenHighwayChange": {
     "enabled": true,
     "minHighwayClass": "tertiary",
+    "edgeCounts": {
+      "inEdgeMin":  2,
+      "inEdgeMax": 6,
+      "outEdgeMin":  2,
+      "outEdgeMax": 6
+    },
     "length": {
-      "min": 20.0,
-      "max": 300.0
+      "min": 15.0,
+      "max": 250.0
     },
     "angle": {
-      "max": 175.0,
-      "min": 120.0
+      "max": 160.0,
+      "min": 130.0
     },
     "challenge": {
       "description": "When the priority of a way changes there must be a link which assumes the higher priority highway tag.",
