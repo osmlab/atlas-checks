@@ -10,7 +10,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 public class SuddenHighwayTypeChangeTestRule extends CoreTestRule {
 
     private static final String WAY1_LOC1 = "37.4060235, 41.3680762";
-    private static final String WAY1_WAY2_INSTERSECTION = "37.4055918, 41.3698508";
+    private static final String WAY1_WAY2_INTERSECTION = "37.4055918, 41.3698508";
     private static final String WAY1_LOC3 = "37.4054417, 41.3705483";
 
     private static final String WAY2_LOC1  = "37.4054258, 41.3702144";
@@ -25,7 +25,7 @@ public class SuddenHighwayTypeChangeTestRule extends CoreTestRule {
     @TestAtlas(
             nodes = {
                 @Node(coordinates = @Loc(value = WAY1_LOC1)),
-                @Node(coordinates = @Loc(value = WAY1_WAY2_INSTERSECTION)),
+                @Node(coordinates = @Loc(value = WAY1_WAY2_INTERSECTION)),
                 @Node(coordinates = @Loc(value = WAY1_LOC3)),
                 @Node(coordinates = @Loc(value = WAY2_LOC1)),
                 @Node(coordinates = @Loc(value = WAY2_LOC2)),
@@ -35,9 +35,9 @@ public class SuddenHighwayTypeChangeTestRule extends CoreTestRule {
                 @Node(coordinates = @Loc(value = WAY3_LOC2))},
 
             edges = {
-                @Edge(coordinates = {@Loc(value = WAY1_LOC1), @Loc(value = WAY1_WAY2_INSTERSECTION)}, tags = {"highway=secondary"}),
-                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INSTERSECTION), @Loc(value = WAY1_LOC3)}, tags = {"highway=secondary"}),
-                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INSTERSECTION), @Loc(value = WAY2_LOC1),
+                @Edge(coordinates = {@Loc(value = WAY1_LOC1), @Loc(value = WAY1_WAY2_INTERSECTION)}, tags = {"highway=secondary"}),
+                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION), @Loc(value = WAY1_LOC3)}, tags = {"highway=secondary"}),
+                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION), @Loc(value = WAY2_LOC1),
                     @Loc(value = WAY2_LOC2), @Loc(value = WAY2_LOC3), @Loc(value = WAY2_LOC4), @Loc(value = WAY2_WAY3_INTERSECTION)}, tags = {"highway=tertiary"}),
                 @Edge(coordinates = {@Loc(value = WAY2_WAY3_INTERSECTION), @Loc(value = WAY3_LOC2)}, tags = {"highway=tertiary"})
                     }
@@ -47,7 +47,7 @@ public class SuddenHighwayTypeChangeTestRule extends CoreTestRule {
     @TestAtlas(
             nodes = {
                 @Node(coordinates = @Loc(value = WAY1_LOC1)),
-                @Node(coordinates = @Loc(value = WAY1_WAY2_INSTERSECTION)),
+                @Node(coordinates = @Loc(value = WAY1_WAY2_INTERSECTION)),
                 @Node(coordinates = @Loc(value = WAY1_LOC3)),
                 @Node(coordinates = @Loc(value = WAY2_LOC1)),
                 @Node(coordinates = @Loc(value = WAY2_LOC2)),
@@ -57,9 +57,9 @@ public class SuddenHighwayTypeChangeTestRule extends CoreTestRule {
                 @Node(coordinates = @Loc(value = WAY3_LOC2))},
 
             edges = {
-                @Edge(coordinates = {@Loc(value = WAY1_LOC1), @Loc(value = WAY1_WAY2_INSTERSECTION)}, tags = {"highway=secondary"}),
-                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INSTERSECTION), @Loc(value = WAY1_LOC3)}, tags = {"highway=secondary"}),
-                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INSTERSECTION), @Loc(value = WAY2_LOC1),
+                @Edge(coordinates = {@Loc(value = WAY1_LOC1), @Loc(value = WAY1_WAY2_INTERSECTION)}, tags = {"highway=secondary"}),
+                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION), @Loc(value = WAY1_LOC3)}, tags = {"highway=secondary"}),
+                @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION), @Loc(value = WAY2_LOC1),
                         @Loc(value = WAY2_LOC2), @Loc(value = WAY2_LOC3), @Loc(value = WAY2_LOC4), @Loc(value = WAY2_WAY3_INTERSECTION)}, tags = {"highway=secondary_link"}),
                 @Edge(coordinates = {@Loc(value = WAY2_WAY3_INTERSECTION), @Loc(value = WAY3_LOC2)}, tags = {"highway=tertiary"})
             }

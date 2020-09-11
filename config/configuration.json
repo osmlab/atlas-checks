@@ -924,10 +924,10 @@
     "enabled": true,
     "minHighwayClass": "tertiary",
     "edgeCounts": {
-      "inEdgeMin":  2,
-      "inEdgeMax": 6,
-      "outEdgeMin":  2,
-      "outEdgeMax": 6
+      "inEdgeMin":  2.0,
+      "inEdgeMax": 6.0,
+      "outEdgeMin":  2.0,
+      "outEdgeMax": 6.0
     },
     "length": {
       "min": 15.0,
