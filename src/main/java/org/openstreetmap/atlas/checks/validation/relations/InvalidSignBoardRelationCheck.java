@@ -57,6 +57,7 @@ public class InvalidSignBoardRelationCheck extends BaseCheck<Long>
     private static final int FROM_TO_NO_MEETING_INDEX = 4;
     private static final int TEMP_RELATION_ID_INDEX = 5;
     private static final int DISCONNECTED_FROM_INDEX = 6;
+    private static final long serialVersionUID = 7761409062471623430L;
 
     public InvalidSignBoardRelationCheck(final Configuration configuration)
     {
@@ -142,12 +143,12 @@ public class InvalidSignBoardRelationCheck extends BaseCheck<Long>
         final Optional<Edge> fromReversedOptional = fromRoute.reverse().map(Route::end);
         final Optional<Edge> toReversedOptional = toRoute.reverse().map(Route::start);
 
-        // Both masters meet
+        // Both mains meet
         return this.edgesMeet(fromRoute.end(), toRoute.start())
-                // From master meets to reversed
+                // From main meets to reversed
                 || toReversedOptional.map(toReversed -> this.edgesMeet(fromRoute.end(), toReversed))
                         .orElse(false)
-                // From reverse meets to master
+                // From reverse meets to main
                 || fromReversedOptional
                         .map(fromReversed -> this.edgesMeet(fromReversed, toRoute.start()))
                         .orElse(false)
@@ -234,8 +235,7 @@ public class InvalidSignBoardRelationCheck extends BaseCheck<Long>
     private Set<Edge> getOsmEdges(final Edge edge)
     {
         final EdgeWalker walker = new OsmWayWalker(edge);
-        return walker.collectEdges().stream().filter(Edge::isMasterEdge)
-                .collect(Collectors.toSet());
+        return walker.collectEdges().stream().filter(Edge::isMainEdge).collect(Collectors.toSet());
     }
 
     /**

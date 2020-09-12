@@ -52,7 +52,7 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && ((Edge) object).isMasterEdge()
+        return object instanceof Edge && ((Edge) object).isMainEdge()
                 && this.isMotorwayNotRoundabout((Edge) object)
                 && !this.isFlagged(object.getOsmIdentifier()) && ((Edge) object).connectedNodes()
                         .stream().noneMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
@@ -69,7 +69,7 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        if (edge.connectedEdges().stream().filter(Edge::isMasterEdge)
+        if (edge.connectedEdges().stream().filter(Edge::isMainEdge)
                 .noneMatch(this::isMotorwayNotRoundabout))
         {
             this.markAsFlagged(edge.getOsmIdentifier());

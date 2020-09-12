@@ -43,7 +43,7 @@ In Intellij, a configuration is used to run a project. With the setup above you 
             - countries=[ISO3 country code comma separated list]
             - maproulette=[Maproulette configuration in format "server:host:project:api_key"]
             - saveCheckOutput=false
-            - master=local
+            - cluster=local
             - configFiles=[Points to the configuration file, should be something like file:/atlas_checks_root_dir/config/configuration.json]
             - sparkOptions=spark.executor.memory->4g,spark.driver.memory->4g,spark.rdd.compress->true
             

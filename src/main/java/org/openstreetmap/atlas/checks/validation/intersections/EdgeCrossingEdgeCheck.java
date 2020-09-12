@@ -48,11 +48,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings with {1}."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings with {1}."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly with {1}.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
@@ -154,7 +154,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
     /**
      * Function creates edge cross check flag.
-     * 
+     *
      * @param edge
      *            Atlas object.
      * @param collectedEdges
@@ -170,8 +170,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
                 .flatMap(crossEdge -> getIntersection(edge, crossEdge).stream())
                 .collect(Collectors.toSet());
-        newFlag.addInstruction(this.getLocalizedInstruction(0, edge.getIdentifier(), collectedEdges
-                .stream().map(AtlasObject::getIdentifier).collect(Collectors.toList())));
+        newFlag.addInstruction(
+                this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges.stream()
+                        .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList())));
         newFlag.addPoints(points);
         newFlag.addObject(edge);
         return Optional.of(newFlag);
@@ -179,7 +180,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
     /**
      * This function returns set of intersections locations for given params.
-     * 
+     *
      * @param edge1
      *            Atlas object
      * @param edge2
@@ -251,7 +252,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      */
     private boolean isValidCrossingEdge(final AtlasObject object)
     {
-        if (Edge.isMasterEdgeIdentifier(object.getIdentifier())
+        if (Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !TagPredicates.IS_AREA.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);

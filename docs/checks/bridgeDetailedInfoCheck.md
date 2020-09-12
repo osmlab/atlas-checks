@@ -17,7 +17,7 @@ Way [id:4407849](https://www.openstreetmap.org/way/4407849) represents a promine
 The validation section ensures that the Atlas object being evaluated is an [Edge](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java) with the following tags:
 * `bridge=yes`
 * `railway` -or- `highway` with one of the values: `motorway`, `trunk`, `primary`, `secondary`.
-Only _master_ Edges are valid candidates for this check, to avoid duplicate flags on a single bi-directional Way.
+Only _main_ Edges are valid candidates for this check, to avoid duplicate flags on a single bi-directional Way.
  
 The check section flags a valid candidate Edge if it is longer than the configurable minimum but does not have a `bridge:structure` tag.
  

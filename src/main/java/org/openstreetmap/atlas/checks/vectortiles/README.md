@@ -25,7 +25,7 @@ java -Xmx12G -cp ./atlas-checks.jar org.openstreetmap.atlas.checks.distributed.I
 -compressOutput=false \
 -countries=ECU \
 -saveCheckOutput=true \
--master=local \
+-cluster=local \
 -configFiles=file:/Users/n/code/atlas-checks/config/configuration.json \
 -sparkOptions=spark.executor.memory->4g,spark.driver.memory->4g,spark.rdd.compress->true
 ```

@@ -127,8 +127,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
                         && Validators.hasValuesFor(object, NameTag.class)
-                        // And if an Edge, is a master edge
-                        && (!(object instanceof Edge) || ((Edge) object).isMasterEdge())
+                        // And if an Edge, is a main edge
+                        && (!(object instanceof Edge) || ((Edge) object).isMainEdge())
                         // Or it must have a specific language name tag from languageNameTags
                         || this.languageNameTags.stream()
                                 .anyMatch(key -> object.getOsmTags().containsKey(key)));

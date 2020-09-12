@@ -54,7 +54,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
      * <li>3) {@link Edge} is not a roundabout
      * <li>4) {@link Edge} is not an Open Highway Area
      * <li>5) {@link Edge} is way-sectioned
-     * <li>6) {@link Edge} is the master edge
+     * <li>6) {@link Edge} is the main edge
      * </ul>
      *
      * @param candidate
@@ -63,7 +63,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
      */
     private static boolean isValidEdgeToConsider(final Edge candidate)
     {
-        return candidate.isMasterEdge()
+        return candidate.isMainEdge()
                 && candidate.highwayTag().isMoreImportantThanOrEqualTo(HighwayTag.RESIDENTIAL)
                 && candidate.highwayTag().isLessImportantThan(HighwayTag.TRUNK_LINK)
                 && !JunctionTag.isRoundabout(candidate)
@@ -131,7 +131,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
     {
         final SnakeRoadNetworkWalk walk = new SnakeRoadNetworkWalk(edge,
                 EDGE_HEADING_DIFFERENCE_THRESHOLD);
-        walk.addDirectConnections(walk.getConnectedMasterEdgeOfTheSameWay(edge));
+        walk.addDirectConnections(walk.getConnectedMainEdgeOfTheSameWay(edge));
         return walk;
     }
 
@@ -170,7 +170,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
             walk.visitEdge(current, connection);
 
             final Set<Edge> oneLayerRemovedConnections = walk
-                    .getConnectedMasterEdgeOfTheSameWay(connection);
+                    .getConnectedMainEdgeOfTheSameWay(connection);
             oneLayerRemovedConnections.forEach(
                     onceRemovedConnection -> walk.checkIfEdgeHeadingDifferenceExceedsThreshold(
                             connection, onceRemovedConnection));

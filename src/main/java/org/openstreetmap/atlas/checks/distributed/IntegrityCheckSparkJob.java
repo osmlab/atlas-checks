@@ -155,10 +155,11 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 .concat(Stream.of(ConfigurationResolver.loadConfiguration(commandMap,
                         CONFIGURATION_FILES, CONFIGURATION_JSON)),
                         Stream.of(checkFilter
-                                .<Configuration> map(whitelist -> new StandardConfiguration(
-                                        "WhiteListConfiguration",
+                                .<Configuration> map(permitlist -> new StandardConfiguration(
+                                        "PermitListConfiguration",
                                         Collections.singletonMap(
-                                                "CheckResourceLoader.checks.whitelist", whitelist)))
+                                                "CheckResourceLoader.checks.permitlist",
+                                                permitlist)))
                                 .orElse(ConfigurationResolver.emptyConfiguration())))
                 .collect(Collectors.toList()));
 
@@ -167,12 +168,12 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         final Rectangle pbfBoundary = ((Optional<Rectangle>) commandMap.getOption(PBF_BOUNDING_BOX))
                 .orElse(Rectangle.MAXIMUM);
         final boolean compressOutput = Boolean
-                .valueOf((String) commandMap.get(SparkJob.COMPRESS_OUTPUT));
+                .parseBoolean((String) commandMap.get(SparkJob.COMPRESS_OUTPUT));
 
         final Map<String, String> sparkContext = configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
         // check configuration and country list
-        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadChecks();
+        final Set<BaseCheck<?>> preOverriddenChecks = checkLoader.loadChecks();
         if (!isValidInput(countries, preOverriddenChecks))
         {
             logger.error("No countries supplied or checks enabled, exiting!");
@@ -181,7 +182,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 
         // Read priority countries from the configuration
         final List<String> priorityCountries = checksConfiguration
-                .get("priority.countries", Collections.EMPTY_LIST).value();
+                .get("priority.countries", Collections.emptyList()).value();
 
         // Create a list of Country to Check tuples
         // Add priority countries first if they are supplied by parameter
@@ -395,12 +396,9 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
      *            set of {@link BaseCheck}s to execute
      * @return {@code true} if sanity check passes, {@code false} otherwise
      */
-    private boolean isValidInput(final StringList countries, final Set<BaseCheck> checksToExecute)
+    private boolean isValidInput(final StringList countries,
+            final Set<BaseCheck<?>> checksToExecute)
     {
-        if (countries.size() == 0 || checksToExecute.size() == 0)
-        {
-            return false;
-        }
-        return true;
+        return !(countries.isEmpty() || checksToExecute.isEmpty());
     }
 }

@@ -46,8 +46,8 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
                 .connectedNodes().stream()
                 // check if any of them has less than given valence value
                 .anyMatch(node -> node.connectedEdges().stream()
-                        // counting only master edge connections
-                        .filter(Edge::isMasterEdge).count() < valence);
+                        // counting only main edge connections
+                        .filter(Edge::isMainEdge).count() < valence);
     }
 
     /**
@@ -100,10 +100,10 @@ public class RoundaboutClosedLoopCheck extends BaseCheck<Long>
 
         // Rule: a roundabout edge must be one-way
         // Since Atlas creates two edges for a bidirectional in OSM,
-        // a one-way road must be the master edge
+        // a one-way road must be the main edge
         // Rule: a roundabout is assumed to be one-way by default
         // If a one-way tag explicitly says otherwise, then flag it
-        if (!edge.isMasterEdge() || OneWayTag.isExplicitlyTwoWay(edge))
+        if (!edge.isMainEdge() || OneWayTag.isExplicitlyTwoWay(edge))
         {
             this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),

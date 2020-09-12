@@ -24,7 +24,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author danielbaah
  */
-public class ConflictingAreaTagCombination extends BaseCheck
+public class ConflictingAreaTagCombination extends BaseCheck<Long>
 {
 
     private static final String INVALID_COMBINATION_INSTRUCTION = "OSM feature {0,number,#} has invalid tag combinations.";

@@ -8,9 +8,10 @@ This document is a list of tables with a description and link to documentation f
 | [OceanBleedingCheck](checks/oceanBleedingCheck.md) | The purpose of this check is to identify streets, buildings, and railways that bleed into (intersect) an ocean feature. |
 | [OverlappingAOIPolygonCheck](checks/overlappingAOIPolygonCheck.md) | The purpose of this check is to identify areas of interest (AOIs) that are overlapping one another. |
 | [PedestrianAreaOverlappingEdgeCheck](checks/pedestrianAreaOverlappingEdgeCheck.md) | The purpose of this check is to identify pedestrian areas overlapping with roads that are not snapped to car navigable edges. |
-| [PoolSizeCheck](tutorials/tutorial1-PoolSizeCheck.md) | The purpose of this check is to identify pools that are larger than 5,000,000 square meters or smaller than 5 square meters.  This check was created to be used as a tutorial for developing new checks. |  
+| [PoolSizeCheck](tutorials/tutorial1-PoolSizeCheck.md) | The purpose of this check is to identify pools that are larger than 5,000,000 square meters or smaller than 5 square meters.  This check was created to be used as a tutorial for developing new checks. |
 | [ShadowDetectionCheck](checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
 | [SpikyBuildingCheck](checks/spikyBuildingCheck.md) | The purpose of this check is to identify buildings with extremely sharp angles in their geometry. |
+| [WaterAreaCheck](checks/waterAreaCheck.md) | Find overlapping water areas and water areas that should have a waterway. |
 | [WaterbodyAndIslandSizeCheck](checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
 
 ## Highways
@@ -98,3 +99,4 @@ This document is a list of tables with a description and link to documentation f
 | LineCrossingWaterBodyCheck | The purpose of this check is to identify line items (edges or lines) and optionally buildings, that cross water bodies invalidly. |
 | MalformedPolyLineCheck | This check identifies lines that have only one point, or none, and the ones that are too long. |
 | [SelfIntersectingPolylineCheck](checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
+| [WaterWayCheck](checks/waterWayCheck.md) | This check finds closed waterways (circular water motion), waterways without a place for water to go (a "sink"), crossing waterways, and waterways that go uphill (requires elevation data). |

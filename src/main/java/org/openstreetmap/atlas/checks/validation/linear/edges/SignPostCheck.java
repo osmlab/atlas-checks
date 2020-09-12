@@ -101,8 +101,8 @@ public class SignPostCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // Must be a master Edge, and must not have been flagged already
-        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
+        // Must be a main Edge, and must not have been flagged already
+        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && !this.isFlagged(String.valueOf(object.getOsmIdentifier()))
                 // Must be a link defined in the rampEdgeFilter
                 && this.rampEdgeFilter.test(object) && ((Edge) object).highwayTag().isLink()

@@ -20,7 +20,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  *
  * @author savannahostrowski
  */
-public class DuplicateWaysCheck extends BaseCheck
+public class DuplicateWaysCheck extends BaseCheck<Long>
 {
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
@@ -40,8 +40,8 @@ public class DuplicateWaysCheck extends BaseCheck
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge
-                // Check to see that the Edge is a master Edge
-                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                // Check to see that the Edge is a main Edge
+                && Edge.isMainEdgeIdentifier(object.getIdentifier())
                 // Check to see that the edge has not already been seen
                 && !this.isFlagged(object.getIdentifier())
                 // Check to see that the edge is car navigable
@@ -58,9 +58,9 @@ public class DuplicateWaysCheck extends BaseCheck
 
         final Rectangle bounds = edge.asPolyLine().bounds();
         // Get Edges which are contained by or intersect the bounds, and then filter
-        // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
+        // Out the non-main Edges as the bounds Edges are not guaranteed to be uni-directional
         final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds,
-                Edge::isMasterEdge);
+                Edge::isMainEdge);
 
         for (final Edge edgeInBounds : edgesInBounds)
         {

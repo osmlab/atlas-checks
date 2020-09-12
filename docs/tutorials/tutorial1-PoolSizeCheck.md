@@ -73,6 +73,10 @@ intensive code over a smaller problem set.
 
 #### Generate the Check
 ```java
+//add above in import section
+import org.openstreetmap.atlas.tags.LeisureTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+
 protected Optional<CheckFlag> flag(final AtlasObject object)
 {
     final Area area = (Area) object;
@@ -130,8 +134,8 @@ any checks to explicitly be turned on, which we will do in the next step.
   "PoolSizeCheck": {
     "enabled": true,
     "surface": {
-      "maximum": 1000,
-      "minimum": 50
+      "maximum": 1000.0,
+      "minimum": 50.0
     }
   }
 }
