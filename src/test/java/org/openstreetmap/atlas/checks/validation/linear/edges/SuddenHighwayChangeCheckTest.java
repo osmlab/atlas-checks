@@ -24,14 +24,14 @@ public class SuddenHighwayChangeCheckTest
                             + "\"angle\": {" + "\"min\": 100.0," + "\"max\": 170.0" + "}"));
 
     @Test
-    public void testInvalidSuddenHighwayChange()
+    public void testValidSuddenHighwayChange()
     {
         this.verifier.actual(this.setup.truePositiveSuddenHighwayChangeCheck(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testValidSuddenHighwayChange()
+    public void testInvalidSuddenHighwayChange()
     {
         this.verifier.actual(this.setup.falsePositiveSuddenHighwayChangeCheck(), this.check);
         this.verifier.verifyEmpty();
