@@ -89,4 +89,31 @@ public class InvalidTagsCheckTest
                         "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[]}}")));
         this.verifier.verifyEmpty();
     }
+
+    @Test
+    public void inlineRegexConfigurationTest()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkEdge(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.regex\": ["
+                                + "      [\"edge\", [\"source\", \"highway\"],[\".*(?i)\\\\bgoogle\\\\b.*\"]]"
+                                + "    ]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void illegalSourceEdgeRegex()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkEdge(),
+                new InvalidTagsCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void illegalSourceNode()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkNode(),
+                new InvalidTagsCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+    }
 }
