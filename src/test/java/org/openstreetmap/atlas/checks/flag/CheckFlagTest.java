@@ -14,7 +14,10 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteNode;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 
@@ -25,6 +28,7 @@ import com.google.gson.JsonObject;
  *
  * @author mkalender
  * @author sayas01
+ * @author bbreithaupt
  */
 public class CheckFlagTest
 {
@@ -80,6 +84,20 @@ public class CheckFlagTest
         final String geoJsonFeatureString = geoJsonFeature.toString();
 
         Assert.assertEquals(GEO_JSON_FEATURE_STRING, geoJsonFeatureString);
+    }
+
+    @Test
+    public void testFixSuggestions()
+    {
+        final CheckFlag flag = new CheckFlag("1");
+        final Atlas atlas = this.setup.getAtlas();
+        final FeatureChange change1 = FeatureChange.add(CompleteNode.from(atlas.node(1)));
+        final FeatureChange change2 = FeatureChange.add(CompleteNode.from(atlas.node(2)));
+
+        flag.addFixSuggestion(change1);
+        flag.addFixSuggestion(change2);
+        Assert.assertTrue(flag.getFixSuggestions().contains(change1));
+        Assert.assertTrue(flag.getFixSuggestions().contains(change2));
     }
 
     @Test

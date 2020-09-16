@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.areas;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -11,10 +10,12 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
-import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -25,6 +26,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author matthieun
  * @author cuthbertm
+ * @author bbreithaupt
  */
 public class AreasWithHighwayTagCheck extends BaseCheck<Long>
 {
@@ -71,33 +73,41 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                 // If the tag isn't one of the VALID_HIGHWAY_TAGS, we want to flag it.
                 .filter(tag -> isUnacceptableAreaHighwayTagCombination(object, tag)).map(tag ->
                 {
-                    final String instruction;
+                    this.markAsFlagged(object.getOsmIdentifier());
+
                     if (tag.equals(HighwayTag.FOOTWAY))
                     {
-                        instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                                tag, HighwayTag.PEDESTRIAN);
+                        final Set<AtlasObject> objectsToFlag = this.getObjectsToFlag(object);
+                        return this
+                                .createFlag(objectsToFlag,
+                                        this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                                                tag, HighwayTag.PEDESTRIAN))
+                                .addFixSuggestions(objectsToFlag.stream()
+                                        .map(toFlag -> FeatureChange.add(
+                                                (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                        .shallowFrom((AtlasEntity) toFlag))
+                                                                .withTags(toFlag.getTags())
+                                                                .withReplacedTag(HighwayTag.KEY,
+                                                                        HighwayTag.KEY,
+                                                                        HighwayTag.PEDESTRIAN
+                                                                                .getTagValue()),
+                                                object.getAtlas()))
+                                        .collect(Collectors.toSet()));
                     }
-                    else
-                    {
-                        instruction = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
-                                tag.getTagValue());
-                    }
-                    final Set<AtlasObject> results;
-                    if (object instanceof Edge)
-                    {
-                        final EdgeWalker walker = new AreasWithHighwayTagCheckWalker((Edge) object);
-                        final Set<Edge> connectedBadEdges = walker.collectEdges().stream()
-                                .filter(Edge::isMainEdge).collect(Collectors.toSet());
-                        connectedBadEdges
-                                .forEach(badEdge -> this.markAsFlagged(badEdge.getOsmIdentifier()));
-                        results = new HashSet<>(connectedBadEdges);
-                    }
-                    else
-                    {
-                        results = Collections.singleton(object);
-                        this.markAsFlagged(object.getOsmIdentifier());
-                    }
-                    return this.createFlag(results, instruction);
+
+                    final Set<AtlasObject> objectsToFlag = this.getObjectsToFlag(object);
+                    return this
+                            .createFlag(objectsToFlag,
+                                    this.getLocalizedInstruction(1, object.getOsmIdentifier(), tag,
+                                            tag.getTagValue()))
+                            .addFixSuggestions(objectsToFlag.stream()
+                                    .map(toFlag -> FeatureChange.add(
+                                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                    .shallowFrom((AtlasEntity) toFlag))
+                                                            .withTags(toFlag.getTags())
+                                                            .withRemovedTag(HighwayTag.KEY),
+                                            object.getAtlas()))
+                                    .collect(Collectors.toSet()));
                 });
     }
 
@@ -105,5 +115,17 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    private Set<AtlasObject> getObjectsToFlag(final AtlasObject object)
+    {
+        if (object instanceof Edge)
+        {
+            return new AreasWithHighwayTagCheckWalker((Edge) object).collectEdges().stream()
+                    .filter(Edge::isMainEdge).collect(Collectors.toSet());
+        }
+
+        return Collections.singleton(object);
+
     }
 }
