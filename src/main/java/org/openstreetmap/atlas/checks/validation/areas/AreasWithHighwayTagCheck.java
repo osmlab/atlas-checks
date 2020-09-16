@@ -105,7 +105,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                                             (AtlasEntity) ((CompleteEntity) CompleteEntity
                                                     .shallowFrom((AtlasEntity) toFlag))
                                                             .withTags(toFlag.getTags())
-                                                            .withRemovedTag(HighwayTag.KEY),
+                                                            .withRemovedTag(AreaTag.KEY),
                                             object.getAtlas()))
                                     .collect(Collectors.toSet()));
                 });
