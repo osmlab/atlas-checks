@@ -1,24 +1,14 @@
 import click
-from atlas_checks_pyspark_tools.commands import maproulette_upload_command
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-class Config(object):
-
-    def __init__(self):
-        self.verbose = False
-
-
-pass_config = click.make_pass_decorator(Config, ensure=True)
+from atlas_checks_pyspark_tools.commands import maproulette_upload_command, log_diff, log_count
 
 
 @click.group()
 @click.option('--verbose', is_flag=True)
-@pass_config
-def cli(config, verbose):
-    config.verbose = verbose
+@click.pass_context
+def cli(ctx, verbose):
+    ctx.obj = {
+        'verbose': verbose
+    }
 
 
 @cli.command()
@@ -42,11 +32,12 @@ def cli(config, verbose):
               help='A comma-separated list of ISO3 country codes to filter flags by')
 @click.option('--checks', default=None, type=str,
               help='A comma-separated list of check names to filter flags by')
-@pass_config
-def mr_upload(config, input_folder, hostname, api_key, cert_fp, key_fp, verify, checks_config, project_name, countries,
+@click.pass_context
+def mr_upload(ctx, input_folder, hostname, api_key, cert_fp, key_fp, verify, checks_config, project_name, countries,
               checks):
     """Post flags from one or more log files to MapRoulette
     """
+    verbose = ctx.obj['verbose']
     maproulette_upload_command.run(
         input_folder=input_folder,
         hostname=hostname,
@@ -59,3 +50,28 @@ def mr_upload(config, input_folder, hostname, api_key, cert_fp, key_fp, verify, 
         countries=countries,
         checks=checks
     )
+
+
+@cli.command()
+@click.argument('baseline')
+@click.argument('current')
+@click.argument('output')
+@click.pass_context
+def log_difference(ctx, baseline, current, output):
+    """Find the difference between two log files
+    """
+    verbose = ctx.obj['verbose']
+    runner = log_diff.LogDiff(
+        baseline=baseline,
+        current=current,
+        output=output
+    )
+    runner.run()
+
+
+@cli.command()
+@click.argument('input')
+@click.pass_context
+def log_counter(ctx, input_log):
+    verbose = ctx.obj['verbose']
+    click.echo(f"Total log count: {log_count.run(input_log)}")
