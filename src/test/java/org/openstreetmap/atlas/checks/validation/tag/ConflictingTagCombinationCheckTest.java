@@ -21,7 +21,7 @@ public class ConflictingTagCombinationCheckTest
     private static final String NATURAL = "natural";
     private static final String SERVICE = "service";
 
-    private static final BaseCheck check = new ConflictingTagCombinationCheck(
+    private static final BaseCheck<String> check = new ConflictingTagCombinationCheck(
             ConfigurationResolver.emptyConfiguration());
 
     @Rule

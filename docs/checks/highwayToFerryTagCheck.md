@@ -22,7 +22,7 @@ has *route=FERRY* and *highway=TERTIARY* Tags. Since this is a ferry route, the 
 In Atlas, OSM elements are represented as Points, Lines, Edges, Areas and Relations. In our case, we're
 looking at edges. 
 The incoming Atlas object must meet the following criteria to be considered for flagging:
-* Has to be a Master Edge and its OSM id should not have already been flagged
+* Has to be a Main Edge and its OSM id should not have already been flagged
 * Has a *route=FERRY* Tag
 * Has a highway Tag  with priority greater than or equal to a minimum highway type. The default 
 minimum highway type is PATH which includes MOTORWAY, MOTORWAY_LINK, TRUNK,TRUNK_LINK, PRIMARY, 

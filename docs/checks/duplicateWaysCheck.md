@@ -21,7 +21,7 @@ We’ll use this information to filter our potential flag candidates.
 
 Our first goal is to validate the incoming Atlas Object. We know two things about roundabouts:
 * Must be a valid Edge
-* Must be a master Edge
+* Must be a main Edge
 * Must be car-navigable
 * Must not be part of an area
 * Must have not already been flagged
@@ -32,8 +32,8 @@ Our first goal is to validate the incoming Atlas Object. We know two things abou
        public boolean validCheckForObject(final AtlasObject object)
        {
            return object instanceof Edge
-                   // Check to see that the Edge is a master Edge
-                   && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                   // Check to see that the Edge is a main Edge
+                   && Edge.isMainEdgeIdentifier(object.getIdentifier())
                    // Check to see that the edge has not already been seen
                    && !this.isFlagged(object.getIdentifier())
                    // Check to see that the edge is car navigable
@@ -55,9 +55,9 @@ statements to validate whether we do in fact want to flag the feature for inspec
     
             final Rectangle bounds = edge.asPolyLine().bounds();
             // Get Edges which are contained by or intersect the bounds, and then filter
-            // Out the non-master Edges as the bounds Edges are not guaranteed to be uni-directional
+            // Out the non-main Edges as the bounds Edges are not guaranteed to be uni-directional
             final Iterable<Edge> edgesInBounds = edge.getAtlas().edgesIntersecting(bounds,
-                    Edge::isMasterEdge);
+                    Edge::isMainEdge);
     
             for (final Edge edgeInBounds : edgesInBounds)
             {

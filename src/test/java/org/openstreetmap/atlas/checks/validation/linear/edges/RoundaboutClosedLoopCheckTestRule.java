@@ -34,7 +34,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
             // edges
             edges = { @Edge(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_2) }, tags = {
                     "junction=roundabout", "oneway=yes" }) })
-    private Atlas masterRoundaboutEdgeWithValence1NodesAtlas;
+    private Atlas mainRoundaboutEdgeWithValence1NodesAtlas;
 
     @TestAtlas(
             // nodes
@@ -52,7 +52,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "junction=roundabout" }),
                     @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_1) }, tags = {
                             "junction=roundabout" }) })
-    private Atlas masterRoundaboutEdgesWithValence2NodesAtlas;
+    private Atlas mainRoundaboutEdgesWithValence2NodesAtlas;
 
     @TestAtlas(
             // nodes
@@ -70,7 +70,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "highway=mini_roundabout" }),
                     @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_1) }, tags = {
                             "highway=mini_roundabout" }) })
-    private Atlas masterRoundaboutEdgesWithMiniRoundaboutTagAtlas;
+    private Atlas mainRoundaboutEdgesWithMiniRoundaboutTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -88,7 +88,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "highway=turning_circle" }),
                     @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_1) }, tags = {
                             "highway=turning_circle" }) })
-    private Atlas masterRoundaboutEdgesWithTurningCircleTagAtlas;
+    private Atlas mainRoundaboutEdgesWithTurningCircleTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -106,7 +106,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "highway=turning_loop" }),
                     @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_1) }, tags = {
                             "highway=turning_loop" }) })
-    private Atlas masterRoundaboutEdgesWithTurningLoopTagAtlas;
+    private Atlas mainRoundaboutEdgesWithTurningLoopTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -124,7 +124,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "traffic_calming=island" }),
                     @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_1) }, tags = {
                             "traffic_calming=island" }) })
-    private Atlas masterRoundaboutEdgesWithTrafficCalmingTagAtlas;
+    private Atlas mainRoundaboutEdgesWithTrafficCalmingTagAtlas;
 
     @TestAtlas(
             // nodes
@@ -140,7 +140,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout" }),
                     @Edge(id = "3234567891000000", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "junction=roundabout" }) })
-    private Atlas masterRoundaboutEdgesWithDeadEndNodesAtlas;
+    private Atlas mainRoundaboutEdgesWithDeadEndNodesAtlas;
 
     @TestAtlas(
             // nodes
@@ -160,7 +160,7 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout" }),
                     @Edge(id = "-10", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_4) }, tags = { "junction=roundabout" }) })
-    private Atlas masterRoundaboutEdgesWithABidirectionalRoadAtlas;
+    private Atlas mainRoundaboutEdgesWithABidirectionalRoadAtlas;
 
     @TestAtlas(
             // nodes
@@ -178,51 +178,51 @@ public class RoundaboutClosedLoopCheckTestRule extends CoreTestRule
                             "junction=roundabout", "oneway=yes" }),
                     @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_1) }, tags = {
                             "junction=roundabout" }) })
-    private Atlas masterRoundaboutEdgesWithOneMissingOneWayTagAtlas;
+    private Atlas mainRoundaboutEdgesWithOneMissingOneWayTagAtlas;
 
-    public Atlas masterRoundaboutEdgeWithValence1NodesAtlas()
+    public Atlas mainRoundaboutEdgeWithValence1NodesAtlas()
     {
-        return this.masterRoundaboutEdgeWithValence1NodesAtlas;
+        return this.mainRoundaboutEdgeWithValence1NodesAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithABidirectionalRoadAtlas()
+    public Atlas mainRoundaboutEdgesWithABidirectionalRoadAtlas()
     {
-        return this.masterRoundaboutEdgesWithABidirectionalRoadAtlas;
+        return this.mainRoundaboutEdgesWithABidirectionalRoadAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithDeadEndNodesAtlas()
+    public Atlas mainRoundaboutEdgesWithDeadEndNodesAtlas()
     {
-        return this.masterRoundaboutEdgesWithDeadEndNodesAtlas;
+        return this.mainRoundaboutEdgesWithDeadEndNodesAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithMiniRoundaboutTagAtlas()
+    public Atlas mainRoundaboutEdgesWithMiniRoundaboutTagAtlas()
     {
-        return this.masterRoundaboutEdgesWithMiniRoundaboutTagAtlas;
+        return this.mainRoundaboutEdgesWithMiniRoundaboutTagAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithOneMissingOneWayTagAtlas()
+    public Atlas mainRoundaboutEdgesWithOneMissingOneWayTagAtlas()
     {
-        return this.masterRoundaboutEdgesWithOneMissingOneWayTagAtlas;
+        return this.mainRoundaboutEdgesWithOneMissingOneWayTagAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithTrafficCalmingTagAtlas()
+    public Atlas mainRoundaboutEdgesWithTrafficCalmingTagAtlas()
     {
-        return this.masterRoundaboutEdgesWithTrafficCalmingTagAtlas;
+        return this.mainRoundaboutEdgesWithTrafficCalmingTagAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithTurningCircleTagAtlas()
+    public Atlas mainRoundaboutEdgesWithTurningCircleTagAtlas()
     {
-        return this.masterRoundaboutEdgesWithTurningCircleTagAtlas;
+        return this.mainRoundaboutEdgesWithTurningCircleTagAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithTurningLoopTagAtlas()
+    public Atlas mainRoundaboutEdgesWithTurningLoopTagAtlas()
     {
-        return this.masterRoundaboutEdgesWithTurningLoopTagAtlas;
+        return this.mainRoundaboutEdgesWithTurningLoopTagAtlas;
     }
 
-    public Atlas masterRoundaboutEdgesWithValence2NodesAtlas()
+    public Atlas mainRoundaboutEdgesWithValence2NodesAtlas()
     {
-        return this.masterRoundaboutEdgesWithValence2NodesAtlas;
+        return this.mainRoundaboutEdgesWithValence2NodesAtlas;
     }
 
     public Atlas nonRoundaboutEdgeAtlas()

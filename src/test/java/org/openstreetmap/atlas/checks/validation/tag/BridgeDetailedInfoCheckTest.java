@@ -81,9 +81,9 @@ public class BridgeDetailedInfoCheckTest
     }
 
     @Test
-    public void masterAndReversedEdgesAreOnlyFlaggedOnce()
+    public void mainAndReversedEdgesAreOnlyFlaggedOnce()
     {
-        this.verifier.actual(this.setup.masterAndReversedEdges(),
+        this.verifier.actual(this.setup.mainAndReversedEdges(),
                 new BridgeDetailedInfoCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }

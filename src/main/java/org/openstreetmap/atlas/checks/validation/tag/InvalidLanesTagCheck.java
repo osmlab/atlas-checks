@@ -67,7 +67,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
     {
         return Validators.hasValuesFor(object, LanesTag.class)
                 && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && ((Edge) object).isMasterEdge() && !this.lanesFilter.test(object)
+                && ((Edge) object).isMainEdge() && !this.lanesFilter.test(object)
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -125,7 +125,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
             polledEdge = toProcess.poll();
             for (final Edge edge : polledEdge.connectedEdges())
             {
-                if (!connectedEdges.contains(edge) && ((Edge) object).isMasterEdge()
+                if (!connectedEdges.contains(edge) && ((Edge) object).isMainEdge()
                         && Validators.hasValuesFor(edge, LanesTag.class)
                         && HighwayTag.isCarNavigableHighway(edge) && !this.lanesFilter.test(edge))
                 {

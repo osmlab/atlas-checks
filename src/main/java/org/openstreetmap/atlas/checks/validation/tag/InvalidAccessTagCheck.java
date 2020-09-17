@@ -73,7 +73,7 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return AccessTag.isNo(object) && ((object instanceof Edge) || (object instanceof Line))
-                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+                && Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !this.isFlagged(object.getOsmIdentifier()) && isMinimumHighway(object);
     }
 

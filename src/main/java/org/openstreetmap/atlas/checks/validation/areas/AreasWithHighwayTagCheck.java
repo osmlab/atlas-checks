@@ -60,8 +60,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return (object instanceof Area
-                || (object instanceof Edge && ((Edge) object).isMasterEdge()))
+        return (object instanceof Area || (object instanceof Edge && ((Edge) object).isMainEdge()))
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -88,7 +87,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                     {
                         final EdgeWalker walker = new AreasWithHighwayTagCheckWalker((Edge) object);
                         final Set<Edge> connectedBadEdges = walker.collectEdges().stream()
-                                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+                                .filter(Edge::isMainEdge).collect(Collectors.toSet());
                         connectedBadEdges
                                 .forEach(badEdge -> this.markAsFlagged(badEdge.getOsmIdentifier()));
                         results = new HashSet<>(connectedBadEdges);

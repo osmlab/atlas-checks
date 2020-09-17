@@ -85,7 +85,8 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
         subtractions
                 .forEach((check, set) -> System.out.printf(CHECK_COUNT_FORMAT, check, set.size()));
 
-        final Optional output = command.getOption(OUTPUT_FOLDER_PARAMETER);
+        final Optional<String> output = (Optional<String>) command
+                .getOption(OUTPUT_FOLDER_PARAMETER);
         if (output.isPresent())
         {
             writeSetToGeoJSON(additions,

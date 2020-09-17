@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.distributed;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,7 +40,7 @@ public class ShardedIntegrityChecksSparkJobTest
     }
 
     @Test
-    public void countFlagsTest() throws FileNotFoundException
+    public void countFlagsTest() throws FileNotFoundException, IOException
     {
         generateData();
 
@@ -128,7 +129,7 @@ public class ShardedIntegrityChecksSparkJobTest
                 String.format("-sharding=slippy@%s", ZOOM_LEVEL), "-maxShardLoad=1",
                 "-outputFormats=flags,geojson,metrics,tippecanoe", "-compressOutput=false",
                 String.format("-countries=%s", COUNTRY_CODE), "-saveCheckOutput=true",
-                "-master=local",
+                "-cluster=local",
                 String.format("-configFiles=file:%s",
                         ShardedIntegrityChecksSparkJobTest.class
                                 .getResource("test_configuration.json").getPath()),

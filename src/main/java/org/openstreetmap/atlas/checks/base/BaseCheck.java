@@ -45,17 +45,17 @@ import com.google.gson.GsonBuilder;
 public abstract class BaseCheck<T> implements Check, Serializable
 {
     public static final String PARAMETER_ACCEPT_PIERS = "accept.piers";
-    public static final String PARAMETER_BLACKLIST_COUNTRIES = "countries.blacklist";
+    public static final String PARAMETER_DENYLIST_COUNTRIES = "countries.denylist";
     public static final String PARAMETER_CHALLENGE = "challenge";
     public static final String PARAMETER_FLAG = "flags";
-    public static final String PARAMETER_WHITELIST_COUNTRIES = "countries.whitelist";
-    public static final String PARAMETER_WHITELIST_TAGS = "tags.filter";
+    public static final String PARAMETER_PERMITLIST_COUNTRIES = "countries.permitlist";
+    public static final String PARAMETER_PERMITLIST_TAGS = "tags.filter";
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
     private static final String PARAMETER_LOCALE_KEY = "locale";
     private static final Logger logger = LoggerFactory.getLogger(BaseCheck.class);
     private static final long serialVersionUID = 4427673331949586822L;
     private final boolean acceptPiers;
-    private final List<String> blacklistCountries;
+    private final List<String> denylistCountries;
     private final Challenge challenge;
     private final List<String> countries;
     private final Map<String, List<String>> flagLanguageMap;
@@ -75,20 +75,19 @@ public abstract class BaseCheck<T> implements Check, Serializable
      * @param configuration
      *            {@link Configuration} required to construct any Check
      */
-    @SuppressWarnings("unchecked")
     public BaseCheck(final Configuration configuration)
     {
         this.acceptPiers = configurationValue(configuration, PARAMETER_ACCEPT_PIERS, false);
         this.countries = Collections.unmodifiableList(configurationValue(configuration,
-                PARAMETER_WHITELIST_COUNTRIES, Collections.EMPTY_LIST));
-        this.blacklistCountries = Collections.unmodifiableList(configurationValue(configuration,
-                PARAMETER_BLACKLIST_COUNTRIES, Collections.EMPTY_LIST));
+                PARAMETER_PERMITLIST_COUNTRIES, Collections.emptyList()));
+        this.denylistCountries = Collections.unmodifiableList(configurationValue(configuration,
+                PARAMETER_DENYLIST_COUNTRIES, Collections.emptyList()));
         this.tagFilter = TaggableFilter
-                .forDefinition(configurationValue(configuration, PARAMETER_WHITELIST_TAGS, ""));
+                .forDefinition(configurationValue(configuration, PARAMETER_PERMITLIST_TAGS, ""));
         final Map<String, String> challengeMap = configurationValue(configuration,
-                PARAMETER_CHALLENGE, Collections.EMPTY_MAP);
+                PARAMETER_CHALLENGE, Collections.emptyMap());
         this.flagLanguageMap = configurationValue(configuration, PARAMETER_FLAG,
-                Collections.EMPTY_MAP);
+                Collections.emptyMap());
         this.locale = configurationValue(configuration, PARAMETER_LOCALE_KEY,
                 DEFAULT_LOCALE.getLanguage(), Locale::new);
         if (challengeMap.isEmpty())
@@ -161,11 +160,6 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 .translate(new MultiIterable<>(atlas.items(), atlas.relations()), this::check));
     }
 
-    public List<String> getBlacklistCountries()
-    {
-        return this.blacklistCountries;
-    }
-
     @Override
     public Challenge getChallenge()
     {
@@ -184,14 +178,19 @@ public abstract class BaseCheck<T> implements Check, Serializable
     }
 
     /**
-     * Gets the whitelisted countries for this check. If an empty list is returned it safe to assume
-     * this check applies to all countries.
+     * Gets the permitlisted countries for this check. If an empty list is returned it safe to
+     * assume this check applies to all countries.
      *
      * @return a list of country ISO3 codes
      */
     public List<String> getCountries()
     {
         return this.countries;
+    }
+
+    public List<String> getDenylistCountries()
+    {
+        return this.denylistCountries;
     }
 
     public AtlasEntityPolygonsFilter getGlobalPolygonFilter()
@@ -250,9 +249,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     }
 
     /**
-     * The country check will first check the country whitelist and if the country is contained in
-     * the whitelist it is allowed, after that the country is checked it against blacklist and if
-     * contained in the blacklist will not be allowed.
+     * The country check will first check the country permitlist and if the country is contained in
+     * the permitlist it is allowed, after that the country is checked it against denylist and if
+     * contained in the denylist will not be allowed.
      *
      * @param country
      *            country ISO3 code to check
@@ -261,8 +260,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
     @Override
     public boolean validCheckForCountry(final String country)
     {
-        // whitelist is valid if country list is empty or country within the country list. It always
-        // takes precedence over blacklist and blacklist is essentially ignored if whitelist is non
+        // permitlist is valid if country list is empty or country within the country list. It
+        // always
+        // takes precedence over denylist and denylist is essentially ignored if permitlist is non
         // empty
         if (!this.getCountries().isEmpty())
         {
@@ -270,8 +270,8 @@ public abstract class BaseCheck<T> implements Check, Serializable
         }
         else
         {
-            return this.getBlacklistCountries().isEmpty()
-                    || !this.getBlacklistCountries().contains(country);
+            return this.getDenylistCountries().isEmpty()
+                    || !this.getDenylistCountries().contains(country);
         }
     }
 
@@ -291,7 +291,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
         this.getFlaggedIdentifiers().clear();
     }
 
-    protected final String configurationKey(final Class type, final String key)
+    protected final String configurationKey(final Class<?> type, final String key)
     {
         return formatKey(type.getSimpleName(), key);
     }

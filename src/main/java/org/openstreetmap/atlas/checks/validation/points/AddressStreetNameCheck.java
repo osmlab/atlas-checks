@@ -77,7 +77,7 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
         final Set<String> streetNameValues = Iterables
                 .stream(object.getAtlas().edgesIntersecting(
                         ((Point) object).getLocation().boxAround(this.searchDistance),
-                        Edge::isMasterEdge))
+                        Edge::isMainEdge))
                 .flatMap(edge -> edge.getTags(tag -> tag.startsWith(NameTag.KEY)).values())
                 .collectToSet();
 

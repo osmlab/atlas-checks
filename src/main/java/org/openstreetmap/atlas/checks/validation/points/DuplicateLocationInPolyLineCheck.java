@@ -53,7 +53,7 @@ public class DuplicateLocationInPolyLineCheck extends BaseCheck<Long>
             {
                 this.markAsFlagged(object.getOsmIdentifier());
                 return Optional.of(createFlag(object, this.getLocalizedInstruction(0,
-                        currentLocation.toString(), object.getIdentifier())));
+                        currentLocation.toString(), object.getOsmIdentifier())));
             }
             else
             {

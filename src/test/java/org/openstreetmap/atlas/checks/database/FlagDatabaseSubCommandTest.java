@@ -36,21 +36,20 @@ import com.google.gson.JsonParser;
  */
 public class FlagDatabaseSubCommandTest
 {
-    private String flag1 = CheckFlagTest.class.getResource("checkflags1.log").getPath();
-    private String testDatabaseURI = String.format("localhost/%s", Instant.now().getNano());
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(CheckFlag.class, new CheckFlagDeserializer()).create();
-
+    private final String flag1 = CheckFlagTest.class.getResource("checkflags1.log").getPath();
+    private final String testDatabaseURI = String.format("localhost/%s", Instant.now().getNano());
     @Mock
-    private DatabaseConnection dbConnection = Mockito.mock(DatabaseConnection.class);
+    private final DatabaseConnection dbConnection = Mockito.mock(DatabaseConnection.class);
     @Mock
-    private Connection connection = Mockito.mock(Connection.class);
+    private final Connection connection = Mockito.mock(Connection.class);
     @Mock
-    private Statement statement = Mockito.mock(Statement.class);
+    private final Statement statement = Mockito.mock(Statement.class);
     @Mock
-    private PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
+    private final PreparedStatement preparedStatement = Mockito.mock(PreparedStatement.class);
     @Mock
-    private PreparedStatement preparedStatement2 = Mockito.mock(PreparedStatement.class);
+    private final PreparedStatement preparedStatement2 = Mockito.mock(PreparedStatement.class);
 
     @Test
     public void batchFeatureStatementTest() throws IOException, SQLException
@@ -148,7 +147,7 @@ public class FlagDatabaseSubCommandTest
     }
 
     @Test
-    public void tagBlacklistTest() throws IOException
+    public void tagDenylistTest() throws IOException
     {
         final FlagDatabaseSubCommand command = new FlagDatabaseSubCommand();
 

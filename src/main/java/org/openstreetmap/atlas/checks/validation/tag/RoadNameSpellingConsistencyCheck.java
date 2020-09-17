@@ -55,7 +55,7 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
         return object instanceof Edge
                 && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(
                         MINIMUM_NAME_PRIORITY_DEFAULT)
-                && ((Edge) object).isMasterEdge() && !this.isFlagged(object.getIdentifier())
+                && ((Edge) object).isMainEdge() && !this.isFlagged(object.getIdentifier())
                 && ((Edge) object).getName().isPresent();
     }
 
