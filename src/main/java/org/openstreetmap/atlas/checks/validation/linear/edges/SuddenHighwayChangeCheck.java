@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Heading;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -215,15 +216,14 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
      * Calculates the angle between the two segments. Uses the Law of Cosines to find the angle.
      * Assumes that the segments connect at an end point.
      *
-     * @return the angle between the two segments baseed on config values.
+     * @return the angle between the two segments based on config values.
      */
     private double findAngle(final Segment segment1, final Segment segment2)
     {
-        final double aLength = segment1.length().asMeters();
-        final double bLength = segment2.length().asMeters();
-        final double cLength = new Segment(segment1.start(), segment2.end()).length().asMeters();
-        return Math.toDegrees(Math.acos(
-                (pow(aLength, 2) + pow(bLength, 2) - pow(cLength, 2)) / (2 * aLength * bLength)));
+        if (segment1.heading().isPresent() && segment2.heading().isPresent()) {
+            return segment1.heading().get().difference(segment2.heading().get()).asDegrees();
+        }
+        return 0;
     }
 
     /**
