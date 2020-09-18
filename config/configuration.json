@@ -72,6 +72,7 @@
     }
   },
   "AreasWithHighwayTagCheck":{
+    "enabled": true,
     "tag.filters":"highway->*&area->yes",
     "challenge":{
       "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
@@ -920,8 +921,7 @@
     }
   },
 
-  "SuddenHighwayChange": {
-    "enabled": true,
+  "SuddenHighwayChangeCheck": {
     "minHighwayClass": "tertiary",
     "edgeCounts": {
       "inEdgeMin":  2.0,
