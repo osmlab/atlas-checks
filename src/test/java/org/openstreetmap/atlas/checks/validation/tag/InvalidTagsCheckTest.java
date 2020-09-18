@@ -30,6 +30,18 @@ public class InvalidTagsCheckTest
     }
 
     @Test
+    public void illegalSourceEdge()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkEdge(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.regex\": ["
+                                + "      [\"edge\", [\"source\"],[\".*(?i)\\\\bgoogle\\\\b.*\", \".*(?i)\\\\bhere\\\\b(?=.*map|.com)\",\n"
+                                + "        \".*(?i)\\\\bvworld\\\\b.*\", \".*(?i)\\\\bxdworld\\\\b.*\"]]"
+                                + "    ]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void illegalSourceNode()
     {
         this.verifier.actual(this.setup.getIllegalSourceLinkNode(),
