@@ -427,24 +427,15 @@
     }
   },
   "InvalidTagsCheck": {
-    "filters.resource.override": true,
+    "filters.resource.override": false,
     "filters.classes.tags": [
       ["area","boundary->protected_area&protect_class->!"],
       ["relation","boundary->protected_area&protect_class->!"]
     ],
     "challenge": {
-      "description": "Tasks containing features with tags containing missing, conflicting, or incorrect values",
+      "description": "Tasks containing features with tags containing missing, conflicting, incorrect or illegal values",
       "blurb": "Features with invalid tags",
       "instruction": "Open your favorite editor and check that the listed tags are correct.",
-      "difficulty": "Medium",
-      "tags":"tags"
-    }
-  },
-  "BadValueTagCheck": {
-    "challenge": {
-      "description": "Tasks containing features with tags containing unacceptable values",
-      "blurb": "Features with unacceptable tag values",
-      "instruction": "Open your favorite editor and check that the listed tag values are accepted by OSM.",
       "difficulty": "Medium",
       "tags":"tags"
     }

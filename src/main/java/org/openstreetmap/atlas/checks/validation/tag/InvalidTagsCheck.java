@@ -39,14 +39,14 @@ import com.google.gson.JsonParser;
 
 /**
  * This flags features based on configurable filters. Each filter passed contains the
- * {@link AtlasEntity} classes to check and a {@link TaggableFilter} to test objects against. If a
- * feature is of one of the given classes and passes the associated {@link TaggableFilter} then it
- * is flagged. In addition to the taggable filters, there are two configurable boolean values,
- * "filters.resource.append.override" and "filters.resource.append". If the
- * "filters.resource.append.override" key is set to true, only the filters passed through config are
- * used to flag the atlas features. If the "filters.resource.append" is set to true, the filters
- * passed through the config are appended to the default filters that are in the "invalidTags.txt"
- * resource file.
+ * {@link AtlasEntity} classes to check and a {@link TaggableFilter} or a
+ * {@link RegexTaggableFilter} to test objects against. If a feature is of one of the given classes
+ * and passes the associated filter then it is flagged. In addition to the taggable filters, there
+ * are two configurable boolean values, "filters.resource.append.override" and
+ * "filters.resource.append". If the "filters.resource.append.override" key is set to true, only the
+ * filters passed through config are used to flag the atlas features. If the
+ * "filters.resource.append" is set to true, the filters passed through the config are appended to
+ * the default filters that are in the "invalidTags.txt" resource file.
  *
  * @author bbreithaupt
  * @author sayas01
@@ -60,13 +60,16 @@ public class InvalidTagsCheck extends BaseCheck<String>
     private static final String KEY_VALUE_SEPARATOR = "->";
     private static final String DEFAULT_FILTER_RESOURCE = "invalidTags.txt";
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
+    public static final int INLINE_REGEX_FILTER_SIZE = 3;
 
     private final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> classTagFilters;
 
     /**
-     * @return a List of Tuple containing AtlasEntity and a list of TaggableFilters read from the
-     *         json files of each AtlasEntity. DEFAULT_FILTER_RESOURCE file maps each AtlasEntity to
-     *         its corresponding filter files.
+     * @return a List of Tuple containing AtlasEntity and a list of both TaggableFilters and
+     *         RegexTaggableFilters read from the json files of each AtlasEntity.
+     *         DEFAULT_FILTER_RESOURCE file maps each AtlasEntity to its corresponding filter files.
+     *         The RegexTaggableFilter file must contain the word regex in it's naming. ex.
+     *         bad-source-regex-filter.json
      */
     private static List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> getDefaultFilters()
     {
@@ -80,11 +83,11 @@ public class InvalidTagsCheck extends BaseCheck<String>
                 final String[] split = line.split(COLON);
                 if (split.length == 2)
                 {
-                    final List<? extends Predicate<Taggable>> predicate = split[1].contains("regex")
+                    final List<? extends Predicate<Taggable>> filters = split[1].contains("regex")
                             ? getRegexFiltersFromResource(split[1])
                             : getFiltersFromResource(split[1]);
                     listOfClassToFilters.add(new Tuple<>(
-                            ItemType.valueOf(split[0].toUpperCase()).getMemberClass(), predicate));
+                            ItemType.valueOf(split[0].toUpperCase()).getMemberClass(), filters));
                 }
             }
             return listOfClassToFilters;
@@ -147,10 +150,10 @@ public class InvalidTagsCheck extends BaseCheck<String>
             return StreamSupport.stream(filters.spliterator(), false)
                     .map(JsonElement::getAsJsonObject).map(jsonObject ->
                     {
-                        final JsonArray tagNamesArray = jsonObject.getAsJsonArray("tagNames");
-                        final Set<String> tagNames = getSetFromJsonArray(tagNamesArray);
-                        final JsonArray regexArray = jsonObject.getAsJsonArray("regex");
-                        final Set<String> regex = getSetFromJsonArray(regexArray);
+                        final Set<String> tagNames = getSetFromJsonArray(
+                                jsonObject.getAsJsonArray("tagNames"));
+                        final Set<String> regex = getSetFromJsonArray(
+                                jsonObject.getAsJsonArray("regex"));
                         final JsonArray exceptionArray = jsonObject.getAsJsonArray("exceptions");
                         final HashMap<String, Set<String>> exceptions = new HashMap<>();
                         StreamSupport.stream(exceptionArray.spliterator(), false)
@@ -195,15 +198,6 @@ public class InvalidTagsCheck extends BaseCheck<String>
     {
         final List<TaggableFilter> filters = new ArrayList<>();
         filters.add(TaggableFilter.forDefinition(tagFilterString));
-        return Tuple.createTuple(ItemType.valueOf(classString.toUpperCase()).getMemberClass(),
-                filters);
-    }
-
-    private static Tuple<? extends Class<AtlasEntity>, List<RegexTaggableFilter>> stringsToClassTagRegexFilter(
-            final String classString, final Set<String> tagNames, final Set<String> regexValues)
-    {
-        final List<RegexTaggableFilter> filters = new ArrayList<>();
-        filters.add(new RegexTaggableFilter(tagNames, regexValues, null));
         return Tuple.createTuple(ItemType.valueOf(classString.toUpperCase()).getMemberClass(),
                 filters);
     }
@@ -268,17 +262,17 @@ public class InvalidTagsCheck extends BaseCheck<String>
                 .map(Tuple::getSecond).flatMap(Collection::stream)
                 .filter(filter -> filter.test(object))
                 // Map the filters that were passed to instructions
-                .map(taggableFilter ->
+                .map(filter ->
                 {
-                    if (taggableFilter instanceof TaggableFilter)
+                    if (filter instanceof TaggableFilter)
                     {
                         return this.getLocalizedInstruction(1,
-                                getFilterKeys((TaggableFilter) taggableFilter));
+                                getFilterKeys((TaggableFilter) filter));
                     }
                     else
                     {
                         return this.getLocalizedInstruction(1,
-                                ((RegexTaggableFilter) taggableFilter).getMatchedTags(object));
+                                ((RegexTaggableFilter) filter).getMatchedTags(object));
                     }
                 }).collect(Collectors.toList());
         if (!instructions.isEmpty())
@@ -310,59 +304,58 @@ public class InvalidTagsCheck extends BaseCheck<String>
 
     /**
      * From the config file, create a list of Tuples with atlas entity and corresponding list of
-     * taggable filters
+     * taggable and regex filters
      *
      * @param configuration
      *            configuration
      * @return List of Tuples containing AtlasEntity and its corresponding list of TaggableFilter
+     *         and RegexTaggableFilter
      */
     private List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> getFiltersFromConfiguration(
             final Configuration configuration)
     {
-        List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> filters = getConfigurationFilters(
-                configuration);
-        List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> allFilters = new ArrayList<>(
+        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> filters = readConfigurationFilter(
+                configuration, "filters.classes.tags");
+        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> allFilters = new ArrayList<>(
                 filters);
-        List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> regexFilters = getConfigurationRegexFilters(
-                configuration);
-        allFilters.addAll(new ArrayList<>(regexFilters));
+        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> regexFilters = readConfigurationFilter(
+                configuration, "filters.classes.regex");
+        allFilters.addAll(regexFilters);
         return allFilters;
     }
 
-    private List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> getConfigurationFilters(
-            Configuration configuration)
+    @SuppressWarnings("unchecked")
+    private List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> readConfigurationFilter(
+            final Configuration configuration, final String key)
     {
-        return this.configurationValue(configuration, "filters.classes.tags",
-                Collections.emptyList(), configList -> configList.stream().map(classTagValue ->
+        return this.configurationValue(configuration, key, Collections.emptyList(),
+                configList -> configList.stream().map(classTagValue ->
                 {
-                    final List<String> classTagList = (List<String>) classTagValue;
-                    if (classTagList.size() > 1)
-                    {
-                        return Optional.of(
-                                stringsToClassTagFilter(classTagList.get(0), classTagList.get(1)));
-                    }
-                    return Optional.empty();
-                }).filter(Optional::isPresent).map(
-                        tuple -> (Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>) tuple
-                                .get())
-                        .collect(Collectors.toList()));
-    }
 
-    private List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> getConfigurationRegexFilters(
-            Configuration configuration)
-    {
-        return this.configurationValue(configuration, "filters.classes.regex",
-                Collections.emptyList(), configList -> configList.stream().map(classTagValue ->
-                {
-                    final List<Object> classTagList = (List<Object>) classTagValue;
-                    if (classTagList.size() == 3)
+                    if (key.contains("regex"))
                     {
-                        final String element = (String) classTagList.get(0);
-                        final List<String> tagNames = (List<String>) classTagList.get(1);
-                        final List<String> regex = (List<String>) classTagList.get(2);
-                        return Optional
-                                .of(stringsToClassTagRegexFilter((String) classTagList.get(0),
-                                        new HashSet<>(tagNames), new HashSet<>(regex)));
+                        final List<Object> classTagList = (List<Object>) classTagValue;
+                        if (classTagList.size() == INLINE_REGEX_FILTER_SIZE)
+                        {
+                            final String element = (String) classTagList.get(0);
+                            final List<String> tagNames = (List<String>) classTagList.get(1);
+                            final List<String> regex = (List<String>) classTagList.get(2);
+                            final List<RegexTaggableFilter> filters = new ArrayList<>();
+                            filters.add(new RegexTaggableFilter(new HashSet<>(tagNames),
+                                    new HashSet<>(regex), null));
+                            return Optional.of(Tuple.createTuple(
+                                    ItemType.valueOf(element.toUpperCase()).getMemberClass(),
+                                    filters));
+                        }
+                    }
+                    else
+                    {
+                        final List<String> classTagList = (List<String>) classTagValue;
+                        if (classTagList.size() > 1)
+                        {
+                            return Optional.of(stringsToClassTagFilter(classTagList.get(0),
+                                    classTagList.get(1)));
+                        }
                     }
                     return Optional.empty();
                 }).filter(Optional::isPresent).map(
