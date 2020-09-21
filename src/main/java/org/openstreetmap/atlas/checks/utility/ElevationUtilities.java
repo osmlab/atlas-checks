@@ -125,12 +125,12 @@ public final class ElevationUtilities implements Serializable
      */
     public short getElevation(final Location location)
     {
-        final short[][] map = getMap(location);
+        final short[][] map = this.getMap(location);
         if (Arrays.equals(EMPTY_MAP, map))
         {
             return NO_ELEVATION;
         }
-        final int[] index = getIndex(location, map.length);
+        final int[] index = this.getIndex(location, map.length);
         return map[index[0]][index[1]];
     }
 
@@ -147,8 +147,8 @@ public final class ElevationUtilities implements Serializable
      */
     public double getIncline(final Location start, final Location end)
     {
-        final short startElevation = getElevation(start);
-        final short endElevation = getElevation(end);
+        final short startElevation = this.getElevation(start);
+        final short endElevation = this.getElevation(end);
         if (startElevation == NO_ELEVATION || endElevation == NO_ELEVATION)
         {
             return Double.NaN;
@@ -205,7 +205,7 @@ public final class ElevationUtilities implements Serializable
         final int lat = (int) Math.floor(latDegrees);
         final int lon = (int) Math.floor(lonDegrees);
         return this.loadedSrtm.computeIfAbsent(Pair.of(lat, lon),
-                pair -> loadMap(pair.getLeft(), pair.getRight()));
+                pair -> this.loadMap(pair.getLeft(), pair.getRight()));
     }
 
     /**
@@ -217,7 +217,7 @@ public final class ElevationUtilities implements Serializable
      */
     public Distance getResolution(final Location location)
     {
-        final short[][] map = getMap(location);
+        final short[][] map = this.getMap(location);
         if (Arrays.equals(EMPTY_MAP, map))
         {
             return Distance.MAXIMUM;
@@ -270,12 +270,12 @@ public final class ElevationUtilities implements Serializable
      */
     public boolean inSameDataPoint(final Location one, final Location two)
     {
-        final short[][] mapOne = getMap(one);
-        final short[][] mapTwo = getMap(two);
+        final short[][] mapOne = this.getMap(one);
+        final short[][] mapTwo = this.getMap(two);
         if (Arrays.equals(mapOne, mapTwo) && !Arrays.equals(EMPTY_MAP, mapOne))
         {
-            final int[] indexOne = getIndex(one, mapOne.length);
-            final int[] indexTwo = getIndex(two, mapTwo.length);
+            final int[] indexOne = this.getIndex(one, mapOne.length);
+            final int[] indexTwo = this.getIndex(two, mapTwo.length);
             if (Arrays.equals(indexOne, indexTwo))
             {
                 return true;
@@ -314,7 +314,7 @@ public final class ElevationUtilities implements Serializable
      */
     private synchronized short[][] loadMap(final int lat, final int lon)
     {
-        final String filename = getSrtmFileName(lat, lon);
+        final String filename = this.getSrtmFileName(lat, lon);
         Path path = Paths.get(this.srtmPath, filename);
         if (!path.toFile().isFile())
         {
@@ -334,7 +334,7 @@ public final class ElevationUtilities implements Serializable
         try (InputStream is = CompressionUtilities
                 .getUncompressedInputStream(Files.newInputStream(path)))
         {
-            return readStream(is);
+            return this.readStream(is);
         }
         catch (final IOException e)
         {

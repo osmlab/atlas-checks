@@ -342,7 +342,7 @@ public final class CheckFlagEvent extends Event
 
     public String asLineDelimitedGeoJsonFeatures()
     {
-        return asLineDelimitedGeoJsonFeatures(jsonObject ->
+        return this.asLineDelimitedGeoJsonFeatures(jsonObject ->
         {
         });
     }
@@ -352,8 +352,8 @@ public final class CheckFlagEvent extends Event
         final JsonObject flagGeoJsonFeature = this.flag.asGeoJsonFeature();
         final JsonObject flagGeoJsonProperties = flagGeoJsonFeature.get("properties")
                 .getAsJsonObject();
-        flagGeoJsonProperties.addProperty("flag:check", getCheckName());
-        flagGeoJsonProperties.addProperty("flag:timestamp", getTimestamp().toString());
+        flagGeoJsonProperties.addProperty("flag:check", this.getCheckName());
+        flagGeoJsonProperties.addProperty("flag:timestamp", this.getTimestamp().toString());
 
         jsonMutator.accept(flagGeoJsonFeature);
 

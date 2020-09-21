@@ -55,8 +55,8 @@ public class FlaggedPolyline extends FlaggedObject
         {
             this.polyLine = new PolyLine(atlasItem.getRawGeometry());
         }
-        this.properties = initProperties(atlasItem);
-        this.country = initCountry(atlasItem);
+        this.properties = this.initProperties(atlasItem);
+        this.country = this.initCountry(atlasItem);
     }
 
     @Override

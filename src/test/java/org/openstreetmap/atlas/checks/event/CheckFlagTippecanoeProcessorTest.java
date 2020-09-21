@@ -39,31 +39,31 @@ public class CheckFlagTippecanoeProcessorTest
     @Test
     public void testHundredEvent() throws IOException
     {
-        processCompleteAndValidate(100);
+        this.processCompleteAndValidate(100);
     }
 
     @Test
     public void testOneEvent() throws IOException
     {
-        processCompleteAndValidate(1);
+        this.processCompleteAndValidate(1);
     }
 
     @Test
     public void testTenEvent() throws IOException
     {
-        processCompleteAndValidate(10);
+        this.processCompleteAndValidate(10);
     }
 
     @Test
     public void testTwoEvent() throws IOException
     {
-        processCompleteAndValidate(2);
+        this.processCompleteAndValidate(2);
     }
 
     @Test
     public void testZeroEvent() throws IOException
     {
-        processCompleteAndValidate(0);
+        this.processCompleteAndValidate(0);
     }
 
     private void processCompleteAndValidate(final int eventCount)
@@ -86,7 +86,7 @@ public class CheckFlagTippecanoeProcessorTest
         Assert.assertEquals(Math.max((int) Math.ceil(eventCount / (double) BATCH_SIZE), 1),
                 files.size());
 
-        processTippecanoeLineDelimitedGeoJson(eventCount, files);
+        this.processTippecanoeLineDelimitedGeoJson(eventCount, files);
 
         // Cleanup
         tempDirectory.delete();

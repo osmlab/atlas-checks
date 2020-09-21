@@ -56,7 +56,7 @@ public class AddressPointMatchCheck extends BaseCheck<Object>
     {
         super(configuration);
         this.boundsSize = Distance
-                .meters(configurationValue(configuration, "bounds.size", BOUNDS_SIZE_DEFAULT));
+                .meters(this.configurationValue(configuration, "bounds.size", BOUNDS_SIZE_DEFAULT));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class AddressPointMatchCheck extends BaseCheck<Object>
         // Object is an instance of Point
         return object instanceof Point
                 // And does not have an Associated Street Relation
-                && !hasAssociatedStreetRelation(object)
+                && !this.hasAssociatedStreetRelation(object)
                 // And has an AddressHouseNumberTag
                 && object.getTag(AddressHousenumberTag.KEY).isPresent()
                 // And either doesn't have the addr:street tag, has the tag but has a null value,

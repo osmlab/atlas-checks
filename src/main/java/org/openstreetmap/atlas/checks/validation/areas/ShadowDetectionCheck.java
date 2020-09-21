@@ -208,7 +208,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
             final AtlasObject checking = toCheck.poll();
 
             // If a connection to the ground is found the parts are not floating
-            if (!isOffGround(checking))
+            if (!this.isOffGround(checking))
             {
                 isFloating = false;
             }
@@ -335,7 +335,7 @@ public class ShadowDetectionCheck extends BaseCheck<Long>
                             ? objectPolygon.overlaps((Polygon) partPolygon)
                             : objectPolygon.overlaps((MultiPolygon) partPolygon))
                     // Check 3D overlap
-                    && neighborsHeightContains(part, object);
+                    && this.neighborsHeightContains(part, object);
         }
         // Ignore malformed MultiPolygons
         catch (final CoreException invalidMultiPolygon)
