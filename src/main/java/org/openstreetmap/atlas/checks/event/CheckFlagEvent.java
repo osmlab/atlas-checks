@@ -47,6 +47,7 @@ public final class CheckFlagEvent extends Event
     private static final String FEATURE_COLLECTION = "FeatureCollection";
     private static final String INSTRUCTIONS = "instructions";
     private static final String IDENTIFIERS = "identifiers";
+    private static final String FIX_SUGGESTIONS = "fix_suggestions";
 
     private static final Gson GSON = new Gson();
 
@@ -151,7 +152,7 @@ public final class CheckFlagEvent extends Event
         flagProperties.add("feature_osmids", uniqueFeatureOsmIds);
         flagProperties.addProperty("feature_count", featureProperties.size());
         flagProperties.add(IDENTIFIERS, GSON.toJsonTree(flag.getUniqueIdentifiers()));
-        flagProperties.add("fix_suggestions", getFixSuggestionDescriptions(flag));
+        flagProperties.add(FIX_SUGGESTIONS, getFixSuggestionDescriptions(flag));
 
         feature.addProperty("id", flag.getIdentifier());
         feature.add("properties", flagProperties);
@@ -207,7 +208,7 @@ public final class CheckFlagEvent extends Event
         flagJson.add("properties", flagPropertiesJson);
 
         // Add fix suggestions as their own foreign object in the geojson
-        flagJson.add("fix_suggestions", getFixSuggestionDescriptions(flag));
+        flagJson.add(FIX_SUGGESTIONS, getFixSuggestionDescriptions(flag));
 
         return flagJson;
     }
