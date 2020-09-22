@@ -115,7 +115,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     /**
      * Creates a {@link CheckFlag} with the addition of a list of {@code point} {@link Location}s
-     * that highlight specific points in the geometry that caused the rule violation
+     * that highlight specific points and a {@link Set} of {@link FeatureChange}s that suggest how
+     * to fix the flagged objects.
      *
      * @param identifier
      *            the identifying value to flag
