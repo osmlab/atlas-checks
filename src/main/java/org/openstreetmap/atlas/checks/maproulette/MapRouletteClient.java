@@ -136,7 +136,7 @@ public class MapRouletteClient implements Serializable
         {
             task.setChallengeName(challenge.getName());
         }
-        updateChallengeTaskList(challenge, task, projectConfiguration);
+        this.updateChallengeTaskList(challenge, task, projectConfiguration);
     }
 
     public int getCurrentBatchSize()
@@ -184,7 +184,7 @@ public class MapRouletteClient implements Serializable
             final long challengeId = this.connection.createChallenge(project, challenge);
             if (challengeId != -1 && project.getId() != -1)
             {
-                writeChallengeIdsToFile(challengeId, project.getId());
+                this.writeChallengeIdsToFile(challengeId, project.getId());
             }
             challenge.setId(challengeId);
             challengeMap.put(challenge.getName(), challenge);

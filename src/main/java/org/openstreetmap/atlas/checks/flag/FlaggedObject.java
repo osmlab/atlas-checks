@@ -87,7 +87,7 @@ public abstract class FlaggedObject implements Serializable, Located
      */
     public boolean hasCountry()
     {
-        return !getCountry().equals(COUNTRY_MISSING);
+        return !this.getCountry().equals(COUNTRY_MISSING);
     }
 
     @Override

@@ -59,10 +59,10 @@ public class ConnectivityCheck extends BaseCheck<Long>
     public ConnectivityCheck(final Configuration configuration)
     {
         super(configuration);
-        this.threshold = configurationValue(configuration, "nearby.edge.distance.meters",
+        this.threshold = this.configurationValue(configuration, "nearby.edge.distance.meters",
                 NEARBY_EDGE_THRESHOLD_DISTANCE_METERS_DEFAULT, Distance::meters);
         this.denylistedHighwaysTaggableFilter = TaggableFilter
-                .forDefinition(configurationValue(configuration, "denylisted.highway.filter",
+                .forDefinition(this.configurationValue(configuration, "denylisted.highway.filter",
                         DEFAULT_DENYLISTED_HIGHWAYS_TAG_FILTER));
     }
 
@@ -82,7 +82,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
     {
         final Node node = (Node) object;
         final Rectangle box = node.getLocation().boxAround(this.threshold);
-        final CheckFlag connectivityFlag = new CheckFlag(getTaskIdentifier(object));
+        final CheckFlag connectivityFlag = new CheckFlag(this.getTaskIdentifier(object));
         final ArrayList<String> disconnectedObjects = new ArrayList<>();
         final Map<Long, Set<Edge>> nodeLayerMap = this.getLayerMap(node);
         // Get nearby Edges, ignoring ones that have a level tag or for whom themselves or their
@@ -112,7 +112,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
                     && !node.equals(nodeNearby) && !BarrierTag.isBarrier(nodeNearby)
                     && !Validators.isOfType(nodeNearby, NoExitTag.class, NoExitTag.YES)
                     && nodeNearby.connectedEdges().stream().anyMatch(this::validEdgeFilter)
-                    && !hasValidConnection(node, connectedEdges, nodeNearby))
+                    && !this.hasValidConnection(node, connectedEdges, nodeNearby))
             {
                 this.markAsFlagged(nodeNearby.getOsmIdentifier());
                 connectivityFlag.addObject(nodeNearby);
@@ -123,9 +123,9 @@ public class ConnectivityCheck extends BaseCheck<Long>
         {
             // There is a valid main edge close by that is not validly connected to the start
             // node.
-            if (edgeNearby.isMainEdge() && validEdgeFilter(edgeNearby)
+            if (edgeNearby.isMainEdge() && this.validEdgeFilter(edgeNearby)
                     && !connectedEdges.contains(edgeNearby)
-                    && !hasValidConnection(node, connectedEdges, edgeNearby)
+                    && !this.hasValidConnection(node, connectedEdges, edgeNearby)
                     // Make sure that the spatial index did not over estimate.
                     && node.snapTo(edgeNearby).getDistance()
                             .isLessThanOrEqualTo(this.threshold.scaleBy(THRESHOLD_SCALE)))
@@ -332,7 +332,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
             }
             // If toFind is found, check the connecting route for convergence
             else if (checking.connectedNodes().contains(toFind)
-                    && isConverging(node, rootEdge, toFind, checking))
+                    && this.isConverging(node, rootEdge, toFind, checking))
             {
                 return true;
             }
@@ -394,8 +394,8 @@ public class ConnectivityCheck extends BaseCheck<Long>
                 secondEdges.clear();
             }
             // If toFind is found, check the connecting route for convergence
-            else if (checking.equals(toFind)
-                    && isConverging(node, rootEdge, secondEdge ? rootEdge : previousEdge, checking))
+            else if (checking.equals(toFind) && this.isConverging(node, rootEdge,
+                    secondEdge ? rootEdge : previousEdge, checking))
             {
                 return true;
             }
@@ -467,16 +467,16 @@ public class ConnectivityCheck extends BaseCheck<Long>
             final Edge lastEdge)
     {
         // Get the heading from node along the connection route
-        final Optional<Heading> firstHeading = getEdgeHeadingFromNode(firstEdge, node);
+        final Optional<Heading> firstHeading = this.getEdgeHeadingFromNode(firstEdge, node);
         // Get the heading from endNode along the connection route
         final Optional<Heading> lastHeading = lastEdge.start().equals(endNode)
                 ? lastEdge.asPolyLine().initialHeading()
                 : lastEdge.asPolyLine().reversed().initialHeading();
         // Get the heading from node to endNode
-        final Optional<Heading> connectionHeading = getConnectedHeading(node.getLocation(),
+        final Optional<Heading> connectionHeading = this.getConnectedHeading(node.getLocation(),
                 endNode.getLocation());
         // Return true if the headings form a triangle
-        return headingsFormTriangle(firstHeading, connectionHeading, lastHeading);
+        return this.headingsFormTriangle(firstHeading, connectionHeading, lastHeading);
     }
 
     /**
@@ -507,15 +507,15 @@ public class ConnectivityCheck extends BaseCheck<Long>
         if (!node.getLocation().equals(snappedLocation))
         {
             // Get the heading from node along the connection route
-            final Optional<Heading> firstHeading = getEdgeHeadingFromNode(firstEdge, node);
+            final Optional<Heading> firstHeading = this.getEdgeHeadingFromNode(firstEdge, node);
             // Get the heading from snappedLocation along the route
-            final Optional<Heading> lastHeading = getHeadingFromSnap(snappedLocation, previousEdge,
-                    lastEdge);
+            final Optional<Heading> lastHeading = this.getHeadingFromSnap(snappedLocation,
+                    previousEdge, lastEdge);
             // Get the heading from node to snappedLocation
-            final Optional<Heading> connectionHeading = getConnectedHeading(node.getLocation(),
+            final Optional<Heading> connectionHeading = this.getConnectedHeading(node.getLocation(),
                     snappedLocation);
             // Return true if the headings form a triangle
-            return headingsFormTriangle(firstHeading, connectionHeading, lastHeading);
+            return this.headingsFormTriangle(firstHeading, connectionHeading, lastHeading);
         }
         return false;
     }

@@ -82,9 +82,9 @@ public class GeneralizedCoastlineCheck extends BaseCheck<Long>
         final Predicate<Relation> memberIsSourcePGS = this.coastlineTagFilter::test;
 
         return object instanceof LineItem
-                && (isCoastline(object) && this.coastlineTagFilter.test(object)
-                        || hasRelationMembers(object, memberIsCoastline)
-                                && hasRelationMembers(object, memberIsSourcePGS));
+                && (this.isCoastline(object) && this.coastlineTagFilter.test(object)
+                        || this.hasRelationMembers(object, memberIsCoastline)
+                                && this.hasRelationMembers(object, memberIsSourcePGS));
     }
 
     /**

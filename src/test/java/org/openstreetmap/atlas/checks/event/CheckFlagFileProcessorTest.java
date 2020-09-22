@@ -40,49 +40,49 @@ public class CheckFlagFileProcessorTest
     @Test
     public void testBatchSizeEvent() throws IOException
     {
-        processCompleteAndValidate(BATCH_SIZE);
+        this.processCompleteAndValidate(BATCH_SIZE);
     }
 
     @Test
     public void testBatchSizeMinusOneEvent() throws IOException
     {
-        processCompleteAndValidate(BATCH_SIZE - 1);
+        this.processCompleteAndValidate(BATCH_SIZE - 1);
     }
 
     @Test
     public void testBatchSizePlusOneEvent() throws IOException
     {
-        processCompleteAndValidate(BATCH_SIZE + 1);
+        this.processCompleteAndValidate(BATCH_SIZE + 1);
     }
 
     @Test
     public void testOneEvent() throws IOException
     {
-        processCompleteAndValidate(1);
+        this.processCompleteAndValidate(1);
     }
 
     @Test
     public void testTenEvent() throws IOException
     {
-        processCompleteAndValidate(10);
+        this.processCompleteAndValidate(10);
     }
 
     @Test
     public void testTwoBatchSizeEvent() throws IOException
     {
-        processCompleteAndValidate(2 * BATCH_SIZE);
+        this.processCompleteAndValidate(2 * BATCH_SIZE);
     }
 
     @Test
     public void testTwoEvent() throws IOException
     {
-        processCompleteAndValidate(2);
+        this.processCompleteAndValidate(2);
     }
 
     @Test
     public void testZeroEvent() throws IOException
     {
-        processCompleteAndValidate(0);
+        this.processCompleteAndValidate(0);
     }
 
     private void compareJsonAndEventObject(final String json, final CheckFlagEvent event)
@@ -114,7 +114,7 @@ public class CheckFlagFileProcessorTest
             for (final String line : file.lines())
             {
                 actualEventCount++;
-                compareJsonAndEventObject(line, SAMPLE_EVENT);
+                this.compareJsonAndEventObject(line, SAMPLE_EVENT);
             }
         }
 
