@@ -134,7 +134,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Map<String, String> sparkContext = this.configurationMap();
 
         // File loading helpers
-        final AtlasFilePathResolver resolver = new AtlasFilePathResolver(checksConfiguration);
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
