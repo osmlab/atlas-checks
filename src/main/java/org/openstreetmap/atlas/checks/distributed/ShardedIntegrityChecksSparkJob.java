@@ -134,7 +134,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Map<String, String> sparkContext = this.configurationMap();
 
         // File loading helpers
-        final AtlasFilePathResolver resolver = new AtlasFilePathResolver(checksConfiguration);
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
@@ -174,7 +173,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         // Find the shards for each country atlas files
         final MultiMap<String, Shard> countryShards = countryShardMapFromShardFiles(
-                countries.stream().collect(Collectors.toSet()), resolver, input, sparkContext);
+                countries.stream().collect(Collectors.toSet()), input, sparkContext);
         if (countryShards.isEmpty())
         {
             throw new CoreException("No atlas files found in input.");
