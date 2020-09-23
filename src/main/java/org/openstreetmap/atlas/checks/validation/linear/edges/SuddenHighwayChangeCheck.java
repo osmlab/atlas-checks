@@ -356,7 +356,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     private boolean splitRoadIn(final Edge baseEdge, final Set<Edge> connectedStartNodeEdges, final Set<Edge> connectedEndNodeEdges)
     {
         boolean splitRoadNotLink = false;
-        if (baseEdge.getTag("oneway").isPresent() && baseEdge.getTag("oneway").equals("yes"))
+        if (baseEdge.getTag("oneway").isPresent() && baseEdge.getTag("oneway").get().equals("yes"))
         {
             final Set<Long> osmIdentifiers = new HashSet<>();
             final Set<Edge> allMergedEdges;
@@ -376,7 +376,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
             allMergedEdges = mergeAllEdges(connectedEdgeSets);
             for (final Edge mergedEdge : allMergedEdges)
             {
-                if (mergedEdge.getTag("oneway").isPresent() && mergedEdge.getTag("oneway").equals("yes"))
+                if (mergedEdge.getTag("oneway").isPresent() && mergedEdge.getTag("oneway").get().equals("yes"))
                 {
                     osmIdentifiers.add(mergedEdge.getOsmIdentifier());
                 }
@@ -408,7 +408,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
         final Set<Long> osmIdentifiers = new HashSet<>();
         final Set<Edge> allMergedEdges;
         final List<Set<Edge>> connectedEdgeSets = new ArrayList<>();
-        if (baseEdge.getTag("oneway").isPresent() && baseEdge.getTag("oneway").equals("yes"))
+        if (baseEdge.getTag("oneway").isPresent() && baseEdge.getTag("oneway").get().equals("yes"))
         {
             for (final Edge connectedEdge : connectedStartNodeEdges)
             {
@@ -424,7 +424,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
             allMergedEdges = mergeAllEdges(connectedEdgeSets);
             for (final Edge mergedEdge : allMergedEdges)
             {
-                if (mergedEdge.getTag("oneway").isPresent() && mergedEdge.getTag("oneway").equals("yes"))
+                if (mergedEdge.getTag("oneway").isPresent() && mergedEdge.getTag("oneway").get().equals("yes"))
                 {
                     osmIdentifiers.add(mergedEdge.getOsmIdentifier());
                 }
