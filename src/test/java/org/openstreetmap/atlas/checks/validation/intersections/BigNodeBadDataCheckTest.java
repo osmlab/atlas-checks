@@ -40,26 +40,27 @@ public class BigNodeBadDataCheckTest
     @Test
     public void testBigNodeAtlas()
     {
-        Assert.assertTrue(runTest(this.setup.getBigNodeAtlas(), this.configNormalThreshold, 1));
+        Assert.assertTrue(
+                this.runTest(this.setup.getBigNodeAtlas(), this.configNormalThreshold, 1));
     }
 
     @Test
     public void testCheckBasedOnJunctionEdges()
     {
-        Assert.assertTrue(runTest(this.setup.getAtlas(), this.configLowJunctionsThreshold, 3));
+        Assert.assertTrue(this.runTest(this.setup.getAtlas(), this.configLowJunctionsThreshold, 3));
     }
 
     @Test
     public void testCheckBasedOnPaths()
     {
-        Assert.assertTrue(runTest(this.setup.getAtlas(), this.configLowPathsThreshold, 6));
+        Assert.assertTrue(this.runTest(this.setup.getAtlas(), this.configLowPathsThreshold, 6));
     }
 
     @Test
     public void testConnectedEdgesHighwayFiltering()
     {
-        Assert.assertTrue(
-                runTest(this.setup.getAtlas(), this.configLowPathsThresholdWithHighwayFilter, 4));
+        Assert.assertTrue(this.runTest(this.setup.getAtlas(),
+                this.configLowPathsThresholdWithHighwayFilter, 4));
     }
 
     private boolean runTest(final Atlas atlas, final Configuration config,

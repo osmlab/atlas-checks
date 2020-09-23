@@ -106,10 +106,10 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     {
         final Time start = Time.now();
         final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
-        final String input = Optional.ofNullable(input(commandMap)).orElse(atlasDirectory);
+        final String input = Optional.ofNullable(this.input(commandMap)).orElse(atlasDirectory);
 
         // Gather arguments
-        final String output = output(commandMap);
+        final String output = this.output(commandMap);
         @SuppressWarnings("unchecked")
         final Set<OutputFormats> outputFormats = (Set<OutputFormats>) commandMap
                 .get(OUTPUT_FORMATS);
@@ -131,10 +131,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                                 .orElse(ConfigurationResolver.emptyConfiguration())))
                 .collect(Collectors.toList()));
 
-        final Map<String, String> sparkContext = configurationMap();
+        final Map<String, String> sparkContext = this.configurationMap();
 
         // File loading helpers
-        final AtlasFilePathResolver resolver = new AtlasFilePathResolver(checksConfiguration);
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
 
@@ -174,7 +173,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         // Find the shards for each country atlas files
         final MultiMap<String, Shard> countryShards = countryShardMapFromShardFiles(
-                countries.stream().collect(Collectors.toSet()), resolver, input, sparkContext);
+                countries.stream().collect(Collectors.toSet()), input, sparkContext);
         if (countryShards.isEmpty())
         {
             throw new CoreException("No atlas files found in input.");
@@ -209,12 +208,12 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
 
                     this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
-                            .mapToPair(produceFlags(input, output, this.configurationMap(),
+                            .mapToPair(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
                             .reduceByKey(UniqueCheckFlagContainer::combine)
                             // Generate outputs
-                            .foreach(processFlags(output, fileHelper, outputFormats));
+                            .foreach(this.processFlags(output, fileHelper, outputFormats));
                 });
             }
         }

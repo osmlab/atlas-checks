@@ -67,8 +67,8 @@ public class ValenceOneImportantRoadCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final boolean beginsWithValence1 = inboundValence(edge) == ONE;
-        final boolean endsWithValence1 = outboundValence(edge) == ONE;
+        final boolean beginsWithValence1 = this.inboundValence(edge) == ONE;
+        final boolean endsWithValence1 = this.outboundValence(edge) == ONE;
 
         if (beginsWithValence1 || endsWithValence1)
         {
@@ -89,13 +89,14 @@ public class ValenceOneImportantRoadCheck extends BaseCheck<Long>
                             edge.end().getIdentifier()));
 
                     // edge-case, check for reversed segments
-                    if (reverseOutboundValence(edge) >= ONE && reverseInboundValence(edge) >= ONE)
+                    if (this.reverseOutboundValence(edge) >= ONE
+                            && this.reverseInboundValence(edge) >= ONE)
                     {
                         instructions.add(this.getLocalizedInstruction(2));
                     }
                     // check for Line connections
-                    construction = hasConstructionConnection(edge.end());
-                    accessNo = hasNoAccessConnection(edge.end());
+                    construction = this.hasConstructionConnection(edge.end());
+                    accessNo = this.hasNoAccessConnection(edge.end());
                 }
                 else
                 {
@@ -106,11 +107,11 @@ public class ValenceOneImportantRoadCheck extends BaseCheck<Long>
                 // check for Line connections
                 if (!construction)
                 {
-                    construction = hasConstructionConnection(edge.start());
+                    construction = this.hasConstructionConnection(edge.start());
                 }
                 if (!accessNo)
                 {
-                    accessNo = hasNoAccessConnection(edge.start());
+                    accessNo = this.hasNoAccessConnection(edge.start());
                 }
             }
             else
@@ -119,8 +120,8 @@ public class ValenceOneImportantRoadCheck extends BaseCheck<Long>
                 locations = Collections.singletonList(edge.end().getLocation());
                 instructions.add(this.getLocalizedInstruction(FOUR, edge.end().getIdentifier()));
                 // check for Line connections
-                construction = hasConstructionConnection(edge.end());
-                accessNo = hasNoAccessConnection(edge.end());
+                construction = this.hasConstructionConnection(edge.end());
+                accessNo = this.hasNoAccessConnection(edge.end());
             }
 
             if (construction)
@@ -132,7 +133,7 @@ public class ValenceOneImportantRoadCheck extends BaseCheck<Long>
                 instructions.add(this.getLocalizedInstruction(SIX));
             }
 
-            return Optional.of(createFlag(edge, instructions.join(SINGLE_SPACE), locations));
+            return Optional.of(this.createFlag(edge, instructions.join(SINGLE_SPACE), locations));
         }
         return Optional.empty();
     }
@@ -207,21 +208,21 @@ public class ValenceOneImportantRoadCheck extends BaseCheck<Long>
 
     private long inboundValence(final Edge edge)
     {
-        return directionalValence(edge.start(), INWARD);
+        return this.directionalValence(edge.start(), INWARD);
     }
 
     private long outboundValence(final Edge edge)
     {
-        return directionalValence(edge.end(), OUTWARD);
+        return this.directionalValence(edge.end(), OUTWARD);
     }
 
     private long reverseInboundValence(final Edge edge)
     {
-        return directionalValence(edge.end(), INWARD);
+        return this.directionalValence(edge.end(), INWARD);
     }
 
     private long reverseOutboundValence(final Edge edge)
     {
-        return directionalValence(edge.start(), OUTWARD);
+        return this.directionalValence(edge.start(), OUTWARD);
     }
 }

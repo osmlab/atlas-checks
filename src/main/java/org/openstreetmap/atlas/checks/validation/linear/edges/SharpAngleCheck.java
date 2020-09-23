@@ -43,7 +43,7 @@ public class SharpAngleCheck extends BaseCheck<Long>
     public SharpAngleCheck(final Configuration configuration)
     {
         super(configuration);
-        this.threshold = configurationValue(configuration, "threshold.degrees",
+        this.threshold = this.configurationValue(configuration, "threshold.degrees",
                 THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
     }
 
@@ -66,9 +66,9 @@ public class SharpAngleCheck extends BaseCheck<Long>
 
         final List<Tuple<Angle, Location>> offendingAngles = edge.asPolyLine()
                 .anglesGreaterThanOrEqualTo(this.threshold);
-        if (!offendingAngles.isEmpty() && !hasBeenFlagged(edge))
+        if (!offendingAngles.isEmpty() && !this.hasBeenFlagged(edge))
         {
-            flagEdge(edge);
+            this.flagEdge(edge);
             final String checkMessage;
 
             if (offendingAngles.size() == 1)
@@ -84,8 +84,8 @@ public class SharpAngleCheck extends BaseCheck<Long>
                         offendingAngles.size());
             }
 
-            final List<Location> offendingLocations = buildLocationList(offendingAngles);
-            return Optional.of(createFlag(object, checkMessage, offendingLocations));
+            final List<Location> offendingLocations = this.buildLocationList(offendingAngles);
+            return Optional.of(this.createFlag(object, checkMessage, offendingLocations));
         }
 
         return Optional.empty();
@@ -107,7 +107,7 @@ public class SharpAngleCheck extends BaseCheck<Long>
 
     /**
      * Flags the given edge and its reverse edge
-     * 
+     *
      * @param edge
      *            The edge to flag
      */
@@ -123,7 +123,7 @@ public class SharpAngleCheck extends BaseCheck<Long>
 
     /**
      * Checks if the supplied edge or its reverse edge has already been flagged
-     * 
+     *
      * @param edge
      *            edge to check
      * @return {@code true} if the reverse edge has already been flagged

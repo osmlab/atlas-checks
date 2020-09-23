@@ -209,8 +209,8 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
             if (this.overlapMinimumPoints <= shapePoints
                     && shapePoints <= this.overlapMaximumPoints)
             {
-                return Optional
-                        .of(checkOverlap(multiPolygon, multipolygonRelation.getOsmIdentifier()));
+                return Optional.of(
+                        this.checkOverlap(multiPolygon, multipolygonRelation.getOsmIdentifier()));
             }
             return Optional.empty();
         }

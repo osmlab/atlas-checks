@@ -230,7 +230,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                             .toArray(Location[]::new));
             // If the waterway ends to the right of the coastline, it ended in an ocean.
             // If the waterway ends on the coastline, it ended in an ocean.
-            if (isRightOf(coast, linePolyline.last())
+            if (this.isRightOf(coast, linePolyline.last())
                     || lineItem.asPolyLine().contains(linePolyline.last()))
             {
                 return true;
@@ -331,7 +331,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !isFlagged(object.getOsmIdentifier()) && object instanceof LineItem
+        return !this.isFlagged(object.getOsmIdentifier()) && object instanceof LineItem
                 && this.waterwayTagFilter.test(object);
     }
 
@@ -343,10 +343,10 @@ public class WaterWayCheck extends BaseCheck<Long>
         final Location first = line.asPolyLine().first();
         final Atlas atlas = line.getAtlas();
         CheckFlag flag = null;
-        flag = flagCircularWaterway(flag, line);
-        flag = flagIncline(flag, line, first, last);
-        flag = flagNoSink(flag, atlas, line, last);
-        flag = flagCrossingWays(flag, atlas, line);
+        flag = this.flagCircularWaterway(flag, line);
+        flag = this.flagIncline(flag, line, first, last);
+        flag = this.flagNoSink(flag, atlas, line, last);
+        flag = this.flagCrossingWays(flag, atlas, line);
         if (flag != null)
         {
             super.markAsFlagged(object.getOsmIdentifier());
@@ -409,7 +409,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                     FALLBACK_INSTRUCTIONS.indexOf(CIRCULAR_WATERWAY), line.getOsmIdentifier());
             if (returnFlag == null)
             {
-                returnFlag = createFlag(line, instructions,
+                returnFlag = this.createFlag(line, instructions,
                         Collections.singletonList(line.asPolyLine().first()));
             }
             else
@@ -435,7 +435,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     private CheckFlag flagCrossingWays(final CheckFlag flag, final Atlas atlas, final LineItem line)
     {
         CheckFlag returnFlag = flag;
-        final Collection<LineItem> crossed = getIntersectingWaterways(atlas, line);
+        final Collection<LineItem> crossed = this.getIntersectingWaterways(atlas, line);
         for (final LineItem lineItemCrossed : crossed)
         {
             final Iterator<Location> intersections = lineItemCrossed.asPolyLine()
@@ -447,7 +447,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                         lineItemCrossed.getOsmIdentifier());
                 if (returnFlag == null)
                 {
-                    returnFlag = createFlag(Sets.hashSet(line, lineItemCrossed), instruction,
+                    returnFlag = this.createFlag(Sets.hashSet(line, lineItemCrossed), instruction,
                             Arrays.asList(intersections.next()));
                 }
                 else
@@ -494,7 +494,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                     this.elevationUtils.getResolution(first).asMeters());
             if (returnFlag == null)
             {
-                return createFlag(line, instruction);
+                return this.createFlag(line, instruction);
             }
             returnFlag.addInstruction(instruction);
             return returnFlag;
@@ -518,7 +518,7 @@ public class WaterWayCheck extends BaseCheck<Long>
     private CheckFlag flagNoSink(final CheckFlag flag, final Atlas atlas, final LineItem line,
             final Location last)
     {
-        if (isValidEndToCheck(atlas, last) && !doesWaterwayEndInSink(atlas, line)
+        if (this.isValidEndToCheck(atlas, last) && !this.doesWaterwayEndInSink(atlas, line)
                 && !endsWithBoundaryNode(atlas, line))
         {
             CheckFlag returnFlag = flag;
@@ -528,7 +528,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                     line.getOsmIdentifier());
             if (returnFlag == null)
             {
-                returnFlag = createFlag(line, instruction, Collections.singletonList(last));
+                returnFlag = this.createFlag(line, instruction, Collections.singletonList(last));
             }
             else
             {
@@ -555,7 +555,7 @@ public class WaterWayCheck extends BaseCheck<Long>
                         && lineItem.asPolyLine().intersects(linePoly));
         final Set<LineItem> sameLayerWays = Iterables.stream(intersectingWaterways)
                 .filter(potential -> LayerTag.areOnSameLayer(line, potential)
-                        && !waterwayConnects(line, potential))
+                        && !this.waterwayConnects(line, potential))
                 .collectToSet();
         sameLayerWays.removeIf(line::equals);
         return sameLayerWays;

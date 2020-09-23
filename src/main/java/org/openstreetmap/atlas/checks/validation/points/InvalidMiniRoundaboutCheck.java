@@ -82,7 +82,7 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
         {
             result = Optional
                     .of(this.flagNode(node, carNavigableEdges, this.getLocalizedInstruction(1,
-                            node.getOsmIdentifier(), getMainEdgeCount(carNavigableEdges))));
+                            node.getOsmIdentifier(), this.getMainEdgeCount(carNavigableEdges))));
         }
         return result;
     }
@@ -152,6 +152,6 @@ public class InvalidMiniRoundaboutCheck extends BaseCheck<Long>
      */
     private boolean isTurnaround(final Collection<Edge> carNavigableEdges)
     {
-        return getMainEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
+        return this.getMainEdgeCount(carNavigableEdges) == 1 && carNavigableEdges.size() == 2;
     }
 }

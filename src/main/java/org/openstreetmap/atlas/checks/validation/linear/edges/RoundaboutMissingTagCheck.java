@@ -27,7 +27,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * two intersections with navigable roads {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
  * connections. See https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout for more
  * information about roundabouts
- * 
+ *
  * @author vladlemberg
  */
 
@@ -56,10 +56,10 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public RoundaboutMissingTagCheck(final Configuration configuration)
     {
         super(configuration);
-        this.maxAngleThreshold = configurationValue(configuration, "angle.threshold.maximum_degree",
-                MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
-        this.minAngleThreshold = configurationValue(configuration, "angle.threshold.minimum_degree",
-                MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
+        this.maxAngleThreshold = this.configurationValue(configuration,
+                "angle.threshold.maximum_degree", MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
+        this.minAngleThreshold = this.configurationValue(configuration,
+                "angle.threshold.minimum_degree", MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
     }
 
     /**
@@ -88,7 +88,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
 
-        final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
+        final PolyLine originalGeom = this.buildOriginalOsmWayGeometry(edge);
         // check maximum angle
         final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
                 .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
@@ -99,7 +99,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+            return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
                     this.getLocalizedInstruction(0)));
         }
 
