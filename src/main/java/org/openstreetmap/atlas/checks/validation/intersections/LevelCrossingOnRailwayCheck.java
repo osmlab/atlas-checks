@@ -221,31 +221,11 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
                         .intersections(highway.asPolyLine());
                 for (final Location location : locations)
                 {
-                    if (!(railway.asPolyLine().contains(location)
-                            && highway.asPolyLine().contains(location))
-                            && Iterables.asList(atlas.pointsAt(location)).isEmpty())
+                    final Optional<CheckFlag> flagIntersection = this.flaggedIntersection(railway,
+                            highway, location);
+                    if (!flagIntersection.isEmpty())
                     {
-                        if (Validators.isOfType(railway, TunnelTag.class,
-                                TunnelTag.YES) != Validators.isOfType(highway, TunnelTag.class,
-                                        TunnelTag.YES))
-                        {
-                            return Optional.of(this.createFlag(object,
-                                    this.getLocalizedInstruction(INVALID_TUNNEL_INTERSECTION_INDEX,
-                                            railway.getOsmIdentifier(),
-                                            highway.getOsmIdentifier())));
-                        }
-                        if (Validators.isOfType(railway, BridgeTag.class,
-                                BridgeTag.YES) != Validators.isOfType(highway, BridgeTag.class,
-                                        BridgeTag.YES))
-                        {
-                            return Optional.of(this.createFlag(object,
-                                    this.getLocalizedInstruction(INVALID_BRIDGE_INTERSECTION_INDEX,
-                                            railway.getOsmIdentifier(),
-                                            highway.getOsmIdentifier())));
-                        }
-                        return Optional.of(this.createFlag(object,
-                                this.getLocalizedInstruction(INVALID_INTERSECTION_INDEX,
-                                        railway.getOsmIdentifier(), highway.getOsmIdentifier())));
+                        return flagIntersection;
                     }
                 }
             }
@@ -267,6 +247,44 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
         {
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
                     INVALID_TAGGED_OBJECT_INDEX, object.getOsmIdentifier())));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Flag an invalid intersection of a railway and highway at a specific location
+     *
+     * @param railway
+     *            the Line that represents the railway for evaluation
+     * @param highway
+     *            the Edge that represents the highway for evaluation
+     * @param location
+     *            the Location to check for valid intersection.
+     * @return an optional {@link CheckFlag} object that contains flagged issue details
+     */
+    private Optional<CheckFlag> flaggedIntersection(final Line railway, final Edge highway,
+            final Location location)
+    {
+        if (!(railway.asPolyLine().contains(location) && highway.asPolyLine().contains(location))
+                && Iterables.asList(railway.getAtlas().pointsAt(location)).isEmpty())
+        {
+            if (Validators.isOfType(railway, TunnelTag.class, TunnelTag.YES) != Validators
+                    .isOfType(highway, TunnelTag.class, TunnelTag.YES))
+            {
+                return Optional.of(this.createFlag(railway,
+                        this.getLocalizedInstruction(INVALID_TUNNEL_INTERSECTION_INDEX,
+                                railway.getOsmIdentifier(), highway.getOsmIdentifier())));
+            }
+            if (Validators.isOfType(railway, BridgeTag.class, BridgeTag.YES) != Validators
+                    .isOfType(highway, BridgeTag.class, BridgeTag.YES))
+            {
+                return Optional.of(this.createFlag(railway,
+                        this.getLocalizedInstruction(INVALID_BRIDGE_INTERSECTION_INDEX,
+                                railway.getOsmIdentifier(), highway.getOsmIdentifier())));
+            }
+            return Optional.of(this.createFlag(railway,
+                    this.getLocalizedInstruction(INVALID_INTERSECTION_INDEX,
+                            railway.getOsmIdentifier(), highway.getOsmIdentifier())));
         }
         return Optional.empty();
     }
