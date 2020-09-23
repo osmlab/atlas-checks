@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
@@ -38,7 +37,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class LevelCrossingOnRailwayCheck extends BaseCheck
 {
     private static final Long OSM_LAYER_DEFAULT = 0L;
-
+    private final Long layerDefault;
     private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) is tagged with "
             + "railway=level_crossing but is not a node. Remove tag.";
     private static final int INVALID_TAGGED_OBJECT_INDEX = 0;
@@ -73,7 +72,11 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
      */
     public LevelCrossingOnRailwayCheck(final Configuration configuration)
     {
+
         super(configuration);
+        this.layerDefault = (Long) this.configurationValue(configuration, "layer.default",
+                OSM_LAYER_DEFAULT);
+
     }
 
     /**
@@ -103,7 +106,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
-     * @return an optional {@link CheckFlag} object that
+     * @return an optional {@link CheckFlag} object that contains flagged issue details
      */
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
@@ -117,7 +120,39 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
          *  3) object is railway and intersects a highway on the same layer but there is no node.
          */
 
-        // flag nodes incorrectly tagged with level_crossing or missing level_crossing tag
+        final Optional<CheckFlag> flagIncorrectlyTagged = this.flagIncorrectlyTagged(object);
+        if (!flagIncorrectlyTagged.isEmpty())
+        {
+            return flagIncorrectlyTagged;
+        }
+        final Optional<CheckFlag> flagNonNodeTagged = this.flagNonNodeTagged(object);
+        if (!flagNonNodeTagged.isEmpty())
+        {
+            return flagNonNodeTagged;
+        }
+        final Optional<CheckFlag> flagInvalidIntersections = this.flagInvalidIntersections(object);
+        if (!flagInvalidIntersections.isEmpty())
+        {
+            return flagInvalidIntersections;
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Flag nodes incorrectly tagged with level_crossing or missing level_crossing tag.
+     *
+     * @param object
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     * @return an optional {@link CheckFlag} object that contains flagged issue details
+     */
+    private Optional<CheckFlag> flagIncorrectlyTagged(final AtlasObject object)
+    {
         if (object instanceof Node)
         {
             final Node node = (Node) object;
@@ -125,15 +160,14 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
             // Count car navigable connections to this node
             final List<AtlasItem> connectedHighways = Iterables
                     .asList(atlas.itemsContaining(node.getLocation())).stream()
-                    .filter(item -> HighwayTag.isCarNavigableHighway(item))
-                    .collect(Collectors.toList());
+                    .filter(HighwayTag::isCarNavigableHighway).collect(Collectors.toList());
             // Count railway connections to this node
             final List<AtlasItem> connectedRailways = Iterables
                     .asList(atlas.itemsContaining(node.getLocation())).stream()
                     .filter(item -> Validators.isOfType(item, RailwayTag.class, RailwayTag.RAIL,
                             RailwayTag.TRAM, RailwayTag.DISUSED, RailwayTag.PRESERVED))
                     .collect(Collectors.toList());
-            if (connectedHighways.size() > 0 && connectedRailways.size() > 0
+            if (!connectedHighways.isEmpty() && !connectedRailways.isEmpty()
                     && !Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
             {
                 // This is a railway/highway intersect node that is not tagged with
@@ -141,7 +175,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
                         INVALID_TAGGED_INTERSECTION_INDEX, object.getOsmIdentifier())));
             }
-            if ((connectedHighways.size() == 0 || connectedRailways.size() == 0)
+            if ((connectedHighways.isEmpty() || connectedRailways.isEmpty())
                     && Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
             {
                 // This is a node that is tagged with railway=level_crossing and is not a
@@ -150,16 +184,18 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
                         INVALID_TAGGED_NODE_INDEX, object.getOsmIdentifier())));
             }
         }
+        return Optional.empty();
+    }
 
-        // flag all objects that are not nodes or points that are tagged with railway=level_crossing
-        if (!(object instanceof Node || object instanceof Point)
-                && Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
-        {
-            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                    INVALID_TAGGED_OBJECT_INDEX, object.getOsmIdentifier())));
-        }
-
-        // flag all railway/highway intersections that are missing an intersection node
+    /**
+     * Flag all railway/highway intersections that are missing an intersection node
+     *
+     * @param object
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     * @return an optional {@link CheckFlag} object that contains flagged issue details
+     */
+    private Optional<CheckFlag> flagInvalidIntersections(final AtlasObject object)
+    {
         if (object instanceof Line && Validators.isOfType(object, RailwayTag.class, RailwayTag.RAIL,
                 RailwayTag.TRAM, RailwayTag.DISUSED, RailwayTag.PRESERVED))
         {
@@ -167,14 +203,14 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
             final Atlas atlas = railway.getAtlas();
             final Optional<Long> railwayLayer = Validators.hasValuesFor(railway, LayerTag.class)
                     ? LayerTag.getTaggedValue(railway)
-                    : Optional.of(OSM_LAYER_DEFAULT);
+                    : Optional.of(this.layerDefault);
 
             final List<Edge> intersectingHighways = Iterables
                     .asList(atlas.edgesIntersecting(railway.bounds())).stream().filter(item ->
                     {
                         final Optional<Long> edgeLayer = Validators.hasValuesFor(item,
                                 LayerTag.class) ? LayerTag.getTaggedValue(item)
-                                        : Optional.of(OSM_LAYER_DEFAULT);
+                                        : Optional.of(this.layerDefault);
                         return Edge.isMainEdgeIdentifier(item.getIdentifier())
                                 && HighwayTag.isCarNavigableHighway(item)
                                 && edgeLayer.get().equals(railwayLayer.get());
@@ -217,10 +253,22 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
         return Optional.empty();
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
+    /**
+     * Flag all objects that are not nodes or points that are tagged with railway=level_crossing
+     *
+     * @param object
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     * @return an optional {@link CheckFlag} object that contains flagged issue details
+     */
+    private Optional<CheckFlag> flagNonNodeTagged(final AtlasObject object)
     {
-        return FALLBACK_INSTRUCTIONS;
+        if (!(object instanceof Node || object instanceof Point)
+                && Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
+        {
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                    INVALID_TAGGED_OBJECT_INDEX, object.getOsmIdentifier())));
+        }
+        return Optional.empty();
     }
 
 }
