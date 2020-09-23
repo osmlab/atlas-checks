@@ -1,5 +1,5 @@
 from maproulette import TaskModel
-from atlas_checks_pyspark_tools.maproulette_utilities.utilities import *
+from pyatlas_checks.maproulette_utilities.utilities import *
 
 
 def task_deserializer(data):

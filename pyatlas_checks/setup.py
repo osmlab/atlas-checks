@@ -9,12 +9,13 @@ exclude_dirs = ['tests', 'venv']
 
 packs = find_packages(exclude=exclude_dirs)
 
-setup(name='pyspark_tools',
+setup(name='pyatlas_checks',
       version="1.0",
-      py_modules=['cli'],
+      packages=find_packages(),
+      include_package_data=True,
       install_requires=["Click"],
       entry_points='''
             [console_scripts]
-            pyspark=cli:cli
+            pyatlas=pyatlas_checks.cli.cli:cli
       '''
       )

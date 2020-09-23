@@ -1,5 +1,5 @@
 from maproulette import ChallengeModel, PriorityRuleModel, PriorityRule, priority_rule
-from atlas_checks_pyspark_tools.maproulette_utilities.utilities import *
+from pyatlas_checks.maproulette_utilities.utilities import *
 
 
 def get_check_name(data):

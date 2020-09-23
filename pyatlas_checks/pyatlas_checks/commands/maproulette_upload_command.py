@@ -13,9 +13,9 @@
 import urllib3
 from maproulette import Configuration, Project, Challenge, Task, ProjectModel
 from maproulette.api.errors import NotFoundError
-from atlas_checks_pyspark_tools.maproulette_utilities.utilities import *
-from atlas_checks_pyspark_tools.maproulette_utilities.task_deserializer import construct_task
-from atlas_checks_pyspark_tools.maproulette_utilities.challenge_deserializer import get_check_name, construct_challenge
+from pyatlas_checks.maproulette_utilities.utilities import *
+from pyatlas_checks.maproulette_utilities.task_deserializer import construct_task
+from pyatlas_checks.maproulette_utilities.challenge_deserializer import get_check_name, construct_challenge
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

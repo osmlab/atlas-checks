@@ -1,5 +1,7 @@
 import click
-from atlas_checks_pyspark_tools.commands import maproulette_upload_command, log_diff, log_count
+from pyatlas_checks.commands import log_count
+from pyatlas_checks.commands import log_diff
+from pyatlas_checks.commands import maproulette_upload_command
 
 
 @click.group()
@@ -70,7 +72,7 @@ def log_difference(ctx, baseline, current, output):
 
 
 @cli.command()
-@click.argument('input')
+@click.argument('input_log')
 @click.pass_context
 def log_counter(ctx, input_log):
     verbose = ctx.obj['verbose']
