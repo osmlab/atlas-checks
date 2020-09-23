@@ -175,7 +175,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
                         final Optional<Long> edgeLayer = Validators.hasValuesFor(item,
                                 LayerTag.class) ? LayerTag.getTaggedValue(item)
                                         : Optional.of(OSM_LAYER_DEFAULT);
-                        return this.isValidHighwayCrossingEdge(item)
+                        return Edge.isMainEdgeIdentifier(item.getIdentifier())
+                                && HighwayTag.isCarNavigableHighway(item)
                                 && edgeLayer.get().equals(railwayLayer.get());
                     }).collect(Collectors.toList());
             for (final Edge highway : intersectingHighways)
@@ -220,22 +221,6 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
-    }
-
-    /**
-     * Validates given {@link AtlasObject} (assumed to be an {@link Edge}) whether it is a valid
-     * crossing highway edge or not
-     *
-     * @param object
-     *            {@link AtlasObject} to test
-     * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
-     */
-    private boolean isValidHighwayCrossingEdge(final AtlasObject object)
-    {
-        return Edge.isMainEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object) && object.getTag(HighwayTag.KEY).isPresent()
-                && HighwayTag.isCarNavigableHighway(object)
-                && !HighwayTag.CROSSING.equals(object.getTag(HighwayTag.KEY));
     }
 
 }
