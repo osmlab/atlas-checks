@@ -271,11 +271,11 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                     final Optional<String> outEdgeRef = outEdge.getTag("ref");
                     if (outEdgeName.isPresent() || outEdgeRef.isPresent())
                     {
-                        if (inEdgeName.equals(outEdgeName))
+                        if (inEdgeName.get().equals(outEdgeName.get()))
                         {
                             edgesShareName = true;
                         }
-                        if (inEdgeRef.equals(outEdgeRef))
+                        if (inEdgeRef.get().equals(outEdgeRef.get()))
                         {
                             edgesShareRef = true;
                         }
