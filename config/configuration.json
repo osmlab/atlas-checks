@@ -3,8 +3,7 @@
     "scanUrls": [
       "org.openstreetmap.atlas.checks.validation"
     ],
-    "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "type": "org.openstreetmap.atlas.checks.base.BaseCheck"
   },
   "PoolSizeCheck": {
     "surface": {
@@ -72,7 +71,6 @@
     }
   },
   "AreasWithHighwayTagCheck":{
-    "enabled": true,
     "tag.filters":"highway->*&area->yes",
     "challenge":{
       "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",

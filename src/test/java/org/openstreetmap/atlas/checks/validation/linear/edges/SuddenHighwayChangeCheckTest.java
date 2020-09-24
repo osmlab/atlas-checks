@@ -18,20 +18,19 @@ public class SuddenHighwayChangeCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private final SuddenHighwayChangeCheck check = new SuddenHighwayChangeCheck(
-            ConfigurationResolver.inlineConfiguration(
-                    "{\"SuddenHighwayChangeCheck\":{" + "\"minHighwayClass\": tertiary,"
-                            + "\"angle\": {" + "\"min\": 100.0," + "\"max\": 170.0" + "}"));
+    private final SuddenHighwayChangeCheck check = new SuddenHighwayChangeCheck(ConfigurationResolver.
+            inlineConfiguration("{\"SuddenHighwayChangeCheck\":{" + "\"minHighwayClass\": tertiary,"
+                            + "\"angle\": {" + "\"min\": 100.0," + "\"max\": 170.0" + "}}}"));
 
     @Test
-    public void testInvalidSuddenHighwayChange()
+    public void testFalsePositiveSuddenHighwayChange()
     {
         this.verifier.actual(this.setup.falsePositiveSuddenHighwayChangeCheck(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testValidSuddenHighwayChange()
+    public void testTruePositiveSuddenHighwayChange()
     {
         this.verifier.actual(this.setup.truePositiveSuddenHighwayChangeCheck(), this.check);
         this.verifier.verifyExpectedSize(1);
