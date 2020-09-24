@@ -14,7 +14,6 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  */
 public class SuddenHighwayChangeCheckTestRule extends CoreTestRule
 {
-
     private static final String WAY1_LOC1 = "37.4060235, 41.3680762";
     private static final String WAY1_WAY2_INTERSECTION = "37.4055918, 41.3698508";
     private static final String WAY1_LOC3 = "37.4054417, 41.3705483";
