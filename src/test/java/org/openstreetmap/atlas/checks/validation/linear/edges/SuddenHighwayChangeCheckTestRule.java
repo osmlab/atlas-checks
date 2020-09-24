@@ -24,56 +24,61 @@ public class SuddenHighwayChangeCheckTestRule extends CoreTestRule
     private static final String WAY2_LOC4 = "37.4050835, 41.3704055";
     private static final String WAY2_WAY3_INTERSECTION = "37.4049012, 41.3704203";
 
-    private static final String WAY3_LOC2 = "37.4043780, 41.3701141";
+    private static final String WAY3_LOC1 = "37.4054417, 41.3705483";
+    private static final String WAY3_LOC3 = "37.4043780, 41.3701141";
 
-    @TestAtlas(
-            nodes = {
-                    @Node(coordinates = @Loc(value = WAY1_LOC1)),
-                    @Node(coordinates = @Loc(value = WAY1_WAY2_INTERSECTION)),
-                    @Node(coordinates = @Loc(value = WAY1_LOC3)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC1)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC2)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC3)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC4)),
-                    @Node(coordinates = @Loc(value = WAY2_WAY3_INTERSECTION)),
-                    @Node(coordinates = @Loc(value = WAY3_LOC2)) },
+
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_LOC1)),
+            @Node(coordinates = @Loc(value = WAY1_WAY2_INTERSECTION)),
+            @Node(coordinates = @Loc(value = WAY1_LOC3)),
+            @Node(coordinates = @Loc(value = WAY2_LOC1)),
+            @Node(coordinates = @Loc(value = WAY2_LOC2)),
+            @Node(coordinates = @Loc(value = WAY2_LOC3)),
+            @Node(coordinates = @Loc(value = WAY2_LOC4)),
+            @Node(coordinates = @Loc(value = WAY2_WAY3_INTERSECTION)),
+            @Node(coordinates = @Loc(value = WAY3_LOC3)),
+            @Node(coordinates = @Loc(value = WAY3_LOC1))},
 
             edges = {
-                    @Edge(coordinates = {@Loc(value = WAY1_LOC1),
-                            @Loc(value = WAY1_WAY2_INTERSECTION)}, tags = {"highway=secondary"}),
-                    @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION),
-                            @Loc(value = WAY1_LOC3)}, tags = {"highway=secondary"}),
-                    @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION),
+                    @Edge(coordinates = { @Loc(value = WAY1_LOC1),
+                            @Loc(value = WAY1_WAY2_INTERSECTION) }, tags = { "highway=secondary" }),
+                    @Edge(coordinates = { @Loc(value = WAY1_WAY2_INTERSECTION),
+                            @Loc(value = WAY1_LOC3) }, tags = { "highway=secondary" }),
+                    @Edge(coordinates = { @Loc(value = WAY1_WAY2_INTERSECTION),
                             @Loc(value = WAY2_LOC1), @Loc(value = WAY2_LOC2),
                             @Loc(value = WAY2_LOC3), @Loc(value = WAY2_LOC4),
-                            @Loc(value = WAY2_WAY3_INTERSECTION)}, tags = { "highway=tertiary"}),
-                    @Edge(coordinates = {@Loc(value = WAY2_WAY3_INTERSECTION),
-                            @Loc(value = WAY3_LOC2)}, tags = {"highway=tertiary"})})
+                            @Loc(value = WAY2_WAY3_INTERSECTION) }, tags = { "highway=tertiary" }),
+                    @Edge(coordinates = { @Loc(value = WAY2_WAY3_INTERSECTION),
+                            @Loc(value = WAY3_LOC3) }, tags = { "highway=tertiary"}),
+                    @Edge(coordinates = {@Loc(value = WAY3_LOC1), @Loc(value = WAY2_WAY3_INTERSECTION)}, tags = { "highway=tertiary"})})
+
     private Atlas truePositiveSuddenHighwayChangeCheck;
 
-    @TestAtlas(
-            nodes = {
-                    @Node(coordinates = @Loc(value = WAY1_LOC1)),
-                    @Node(coordinates = @Loc(value = WAY1_WAY2_INTERSECTION)),
-                    @Node(coordinates = @Loc(value = WAY1_LOC3)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC1)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC2)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC3)),
-                    @Node(coordinates = @Loc(value = WAY2_LOC4)),
-                    @Node(coordinates = @Loc(value = WAY2_WAY3_INTERSECTION)),
-                    @Node(coordinates = @Loc(value = WAY3_LOC2)) },
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_LOC1)),
+            @Node(coordinates = @Loc(value = WAY1_WAY2_INTERSECTION)),
+            @Node(coordinates = @Loc(value = WAY1_LOC3)),
+            @Node(coordinates = @Loc(value = WAY2_LOC1)),
+            @Node(coordinates = @Loc(value = WAY2_LOC2)),
+            @Node(coordinates = @Loc(value = WAY2_LOC3)),
+            @Node(coordinates = @Loc(value = WAY2_LOC4)),
+            @Node(coordinates = @Loc(value = WAY2_WAY3_INTERSECTION)),
+            @Node(coordinates = @Loc(value = WAY3_LOC3)),
+            @Node(coordinates = @Loc(value = WAY3_LOC1))},
 
             edges = {
-                    @Edge(coordinates = {@Loc(value = WAY1_LOC1),
-                            @Loc(value = WAY1_WAY2_INTERSECTION)}, tags = {"highway=secondary"}),
-                    @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION),
-                            @Loc(value = WAY1_LOC3)}, tags = {"highway=secondary"}),
-                    @Edge(coordinates = {@Loc(value = WAY1_WAY2_INTERSECTION),
+                    @Edge(coordinates = { @Loc(value = WAY1_LOC1),
+                            @Loc(value = WAY1_WAY2_INTERSECTION) }, tags = { "highway=secondary" }),
+                    @Edge(coordinates = { @Loc(value = WAY1_WAY2_INTERSECTION),
+                            @Loc(value = WAY1_LOC3) }, tags = { "highway=secondary"}),
+                    @Edge(coordinates = { @Loc(value = WAY1_WAY2_INTERSECTION),
                             @Loc(value = WAY2_LOC1), @Loc(value = WAY2_LOC2),
                             @Loc(value = WAY2_LOC3), @Loc(value = WAY2_LOC4),
-                            @Loc(value = WAY2_WAY3_INTERSECTION)}, tags = {"highway=secondary_link"}),
+                            @Loc(value = WAY2_WAY3_INTERSECTION) }, tags = {
+                                    "highway=secondary_link" }),
                     @Edge(coordinates = { @Loc(value = WAY2_WAY3_INTERSECTION),
-                            @Loc(value = WAY3_LOC2)}, tags = {"highway=tertiary"})})
+                            @Loc(value = WAY3_LOC3) }, tags = { "highway=secondary" }),
+                    @Edge(coordinates = {@Loc(value = WAY3_LOC1), @Loc(value = WAY2_WAY3_INTERSECTION)}, tags = { "highway=tertiary"})})
     private Atlas falsePositiveSuddenHighwayChangeCheck;
 
     public Atlas falsePositiveSuddenHighwayChangeCheck()

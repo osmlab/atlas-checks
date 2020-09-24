@@ -1,5 +1,4 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
-;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,12 +105,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
 
-        /**
-         * Consecutive segment angle must be greater than 100-ish degrees and less than 170-ish
-         * in or out edge must be different highway tag from base
-         * in and out edge must not be *_link
-         */
-
         final Edge baseEdge = (Edge) object;
 
         this.markAsFlagged(baseEdge.getOsmIdentifier());
@@ -134,8 +127,8 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                 .filter(Edge::isMainEdge).collect(Collectors.toSet());
 
         if (!this.hasInOrOutEdgeAsRoundabout(inEdges, outEdges)
-                && !this.isNodeTrafficSignalOrRoundabout(startHighWayField)
-                && !this.isNodeTrafficSignalOrRoundabout(endHighWayField)
+                && this.isNodeTrafficSignalOrRoundabout(startHighWayField)
+                && this.isNodeTrafficSignalOrRoundabout(endHighWayField)
                 && !this.inAndOutEdgeShareNameOrRef(inEdges, outEdges)
                 && !this.splitRoadIn(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges)
                 && !this.splitRoadOut(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges))
@@ -186,8 +179,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * Check if base edge has at least 2 outedges not including self
-     * @param baseEdge
-     * @return
      */
     private boolean baseEdgeEndHasAtLeastTwoConnectedEdges(final Edge baseEdge)
     {
@@ -199,8 +190,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * Checks if base edge has at least 2 inedges not including self
-     * @param baseEdge
-     * @return
      */
     private boolean baseEdgeStartHasAtLeastTwoConnectedEdges(final Edge baseEdge)
     {
@@ -213,8 +202,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     /**
      * Calculates the angle between the two segments. Uses the Law of Cosines to find the angle.
      * Assumes that the segments connect at an end point.
-     *
-     * @return the angle between the two segments based on config values.
      */
     private double findAngle(final Segment segment1, final Segment segment2)
     {
@@ -250,9 +237,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * in and out edge should not share a name
-     * @param inEdges
-     * @param outEdges
-     * @return
      */
     private boolean inAndOutEdgeShareNameOrRef(final Set<Edge> inEdges, final Set<Edge> outEdges)
     {
@@ -268,12 +252,14 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                 {
                     final Optional<String> outEdgeName = outEdge.getTag("name");
                     final Optional<String> outEdgeRef = outEdge.getTag("ref");
-                    if (outEdgeName.isPresent() || outEdgeRef.isPresent())
-                    {
+                    if (inEdgeName.isPresent() && outEdgeName.isPresent()) {
                         if (inEdgeName.get().equals(outEdgeName.get()))
                         {
                             edgesShareName = true;
                         }
+                    }
+                    if (inEdgeRef.isPresent() && outEdgeRef.isPresent())
+                    {
                         if (inEdgeRef.get().equals(outEdgeRef.get()))
                         {
                             edgesShareRef = true;
@@ -287,8 +273,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * Checks if edge is a link - we want to exclude links
-     * @param edge
-     * @return
      */
     private boolean isEdgeLink(final Edge edge)
     {
@@ -297,9 +281,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * Checks if outEdge different highway tag from baseEdge
-     * @param baseEdge
-     * @param outEdge
-     * @return
      */
     private boolean isInOrOutEdgeDiffHighwayTag(final Edge baseEdge, final Edge inEdge, final Edge outEdge)
     {
@@ -307,18 +288,16 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if json element highway field is signal or roundabout
+     * Checks if highway field is signal or roundabout
      * we don't want either
      */
     private boolean isNodeTrafficSignalOrRoundabout(final Optional<String> tag)
     {
-        return tag.filter(s -> s.contains("traffic_signal") || s.contains("roundabout")).isPresent();
+        return tag.filter(s -> s.contains("signal") || s.contains("roundabout")).isPresent();
     }
 
     /**
      * return length of whole way
-     * @param object
-     * @return
      */
     private double lengthOfWay(final AtlasObject object)
     {
@@ -333,8 +312,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * merge list of sets of edges together
-     * @param sets
-     * @return
      */
     private Set<Edge> mergeAllEdges(final List<Set<Edge>> sets)
     {
@@ -348,9 +325,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * Checks if split road toward intersection shares other split road with 2 iterations of connected edges
-     * @param connectedStartNodeEdges
-     * @param connectedEndNodeEdges
-     * @return
      */
     private boolean splitRoadIn(final Edge baseEdge, final Set<Edge> connectedStartNodeEdges, final Set<Edge> connectedEndNodeEdges)
     {
@@ -397,9 +371,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
     /**
      * Checks if split road away from intersection shares other split road with 2 iterations of connected edges
-     * @param connectedStartNodeEdges
-     * @param connectedEndNodeEdges
-     * @return
      */
     private boolean splitRoadOut(final Edge baseEdge, final Set<Edge> connectedStartNodeEdges, final Set<Edge> connectedEndNodeEdges)
     {
