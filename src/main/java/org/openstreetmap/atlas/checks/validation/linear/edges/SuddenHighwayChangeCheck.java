@@ -39,7 +39,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     private final double minAngle;
     private final double maxAngle;
     private final double connectedEdgeMin;
-    private final double connectedEdgeMax;
     private final HighwayTag minHighwayClass;
     private final Distance shortEdgeThreshold;
     private final Distance longEdgeThreshold;
@@ -60,7 +59,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
         this.maxAngle = configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
         this.minHighwayClass = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
         this.connectedEdgeMin = configurationValue(configuration, "edgeCounts.connectedEdgeMin", 2.0);
-        this.connectedEdgeMax = configurationValue(configuration, "edgeCounts.connectedEdgeMin", 3.0);
         this.shortEdgeThreshold = configurationValue(configuration, "length.min", SHORT_EDGE_THRESHOLD_DEFAULT, Distance::meters);
         this.longEdgeThreshold = configurationValue(configuration, "length.max", LONG_EDGE_THRESHOLD_DEFAULT, Distance::meters);
     }
@@ -163,24 +161,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                             HighwayTag.isCarNavigableHighway(outEdge) &&
                             this.isInOrOutEdgeDiffHighwayTag(baseEdge, inEdge, outEdge))
                     {
-                        final Set<Edge> baseEdgeStartConnectedEdges = baseEdge.start().connectedEdges();
-                        final Set<Edge> baseEdgeEndConnectedEdges = baseEdge.end().connectedEdges();
-
-                        Set<Edge> filteredStartNodeEdges = baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdge.getIdentifier()
-                                && baseEdgeConnectedEdge.getIdentifier() > 0
-                                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).collect(Collectors.toSet());
-
-                        Set<Edge> filteredEndNodeEdges = baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdge.getIdentifier()
-                                && baseEdgeConnectedEdge.getIdentifier() > 0
-                                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).collect(Collectors.toSet());
-
-
                         System.out.println("osm id: " + baseEdge.getOsmIdentifier());
-//                        System.out.println("startNodeEdges: " + filteredStartNodeEdges);
-//                        System.out.println("endNodeEdges: " + filteredEndNodeEdges);
-//                        System.out.println("angle between in and base: " + angleBetweenInAndBaseSegments);
-//                        System.out.println("angle between out and base: " + angleBetweenOutAndBaseSegments);
-
 //                        return Optional.of(
 //                                createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
                     }
@@ -206,10 +187,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
         return (baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
                 && baseEdgeConnectedEdge.getIdentifier() > 0
                 && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
-//                &&
-//                (baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
-//                && baseEdgeConnectedEdge.getIdentifier() > 0
-//                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() >= connectedEdgeMax);
     }
 
     /**
@@ -222,10 +199,6 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
         return (baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
                 && baseEdgeConnectedEdge.getIdentifier() > 0
                 && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
-//                &&
-//                (baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
-//                && baseEdgeConnectedEdge.getIdentifier() > 0
-//                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() >= connectedEdgeMax);
     }
 
     /**
