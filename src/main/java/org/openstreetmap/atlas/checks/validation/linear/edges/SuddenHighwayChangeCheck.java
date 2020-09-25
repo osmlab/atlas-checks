@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import static java.lang.Math.pow;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,8 +38,8 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
             .singletonList(LINK_UPDATE_INSTRUCTION);
     private final double minAngle;
     private final double maxAngle;
-    private final double inEdgeMin;
-    private final double outEdgeMin;
+    private final double connectedEdgeMin;
+    private final double connectedEdgeMax;
     private final HighwayTag minHighwayClass;
     private final Distance shortEdgeThreshold;
     private final Distance longEdgeThreshold;
@@ -58,8 +59,8 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
         this.minAngle = configurationValue(configuration, "angle.min", MIN_ANGLE_DEFAULT);
         this.maxAngle = configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
         this.minHighwayClass = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.inEdgeMin = configurationValue(configuration, "edgeCounts.inEdgeMin", 2.0);
-        this.outEdgeMin = configurationValue(configuration, "edgeCounts.outEdgeMin", 2.0);
+        this.connectedEdgeMin = configurationValue(configuration, "edgeCounts.connectedEdgeMin", 2.0);
+        this.connectedEdgeMax = configurationValue(configuration, "edgeCounts.connectedEdgeMin", 3.0);
         this.shortEdgeThreshold = configurationValue(configuration, "length.min", SHORT_EDGE_THRESHOLD_DEFAULT, Distance::meters);
         this.longEdgeThreshold = configurationValue(configuration, "length.max", LONG_EDGE_THRESHOLD_DEFAULT, Distance::meters);
     }
@@ -82,8 +83,8 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
 
             return !this.isEdgeLink(edge)
                     && HighwayTag.isCarNavigableHighway(object)
-                    && this.baseEdgeStartHasAtLeastTwoConnectedEdges(edge)
-                    && this.baseEdgeEndHasAtLeastTwoConnectedEdges(edge)
+                    && this.baseEdgeStartHasTwoOrThreeConnectedEdges(edge)
+                    && this.baseEdgeEndHasTwoOrThreeConnectedEdges(edge)
                     && this.lengthOfWay(edge) >= this.shortEdgeThreshold.asMeters()
                     && this.lengthOfWay(edge) <= this.longEdgeThreshold.asMeters()
                     && edge.highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayClass)
@@ -127,8 +128,8 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                 .filter(Edge::isMainEdge).collect(Collectors.toSet());
 
         if (!this.hasInOrOutEdgeAsRoundabout(inEdges, outEdges)
-                && this.isNodeTrafficSignalOrRoundabout(startHighWayField)
-                && this.isNodeTrafficSignalOrRoundabout(endHighWayField)
+                && !this.isNodeTrafficSignalOrRoundabout(startHighWayField)
+                && !this.isNodeTrafficSignalOrRoundabout(endHighWayField)
                 && !this.inAndOutEdgeShareNameOrRef(inEdges, outEdges)
                 && !this.splitRoadIn(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges)
                 && !this.splitRoadOut(baseEdge, connectedToBaseStartEdges, connectedToBaseEndEdges))
@@ -162,8 +163,26 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                             HighwayTag.isCarNavigableHighway(outEdge) &&
                             this.isInOrOutEdgeDiffHighwayTag(baseEdge, inEdge, outEdge))
                     {
-                        return Optional.of(
-                                createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                        final Set<Edge> baseEdgeStartConnectedEdges = baseEdge.start().connectedEdges();
+                        final Set<Edge> baseEdgeEndConnectedEdges = baseEdge.end().connectedEdges();
+
+                        Set<Edge> filteredStartNodeEdges = baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdge.getIdentifier()
+                                && baseEdgeConnectedEdge.getIdentifier() > 0
+                                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).collect(Collectors.toSet());
+
+                        Set<Edge> filteredEndNodeEdges = baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdge.getIdentifier()
+                                && baseEdgeConnectedEdge.getIdentifier() > 0
+                                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).collect(Collectors.toSet());
+
+
+                        System.out.println("osm id: " + baseEdge.getOsmIdentifier());
+//                        System.out.println("startNodeEdges: " + filteredStartNodeEdges);
+//                        System.out.println("endNodeEdges: " + filteredEndNodeEdges);
+//                        System.out.println("angle between in and base: " + angleBetweenInAndBaseSegments);
+//                        System.out.println("angle between out and base: " + angleBetweenOutAndBaseSegments);
+
+//                        return Optional.of(
+//                                createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
                     }
                 }
             }
@@ -180,36 +199,45 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     /**
      * Check if base edge has at least 2 outedges not including self
      */
-    private boolean baseEdgeEndHasAtLeastTwoConnectedEdges(final Edge baseEdge)
+    private boolean baseEdgeEndHasTwoOrThreeConnectedEdges(final Edge baseEdge)
     {
-        final long baseEdgeOsmId = baseEdge.getOsmIdentifier();
+        final long baseEdgeOsmId = baseEdge.getIdentifier();
         final Set<Edge> baseEdgeEndConnectedEdges = baseEdge.end().connectedEdges();
-        baseEdgeEndConnectedEdges.removeIf(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getOsmIdentifier() == baseEdgeOsmId);
-        return baseEdgeEndConnectedEdges.size() >= outEdgeMin;
+        return (baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
+                && baseEdgeConnectedEdge.getIdentifier() > 0
+                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
+//                &&
+//                (baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
+//                && baseEdgeConnectedEdge.getIdentifier() > 0
+//                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() >= connectedEdgeMax);
     }
 
     /**
      * Checks if base edge has at least 2 inedges not including self
      */
-    private boolean baseEdgeStartHasAtLeastTwoConnectedEdges(final Edge baseEdge)
+    private boolean baseEdgeStartHasTwoOrThreeConnectedEdges(final Edge baseEdge)
     {
-        final long baseEdgeOsmId = baseEdge.getOsmIdentifier();
+        final long baseEdgeOsmId = baseEdge.getIdentifier();
         final Set<Edge> baseEdgeStartConnectedEdges = baseEdge.start().connectedEdges();
-        baseEdgeStartConnectedEdges.removeIf(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getOsmIdentifier() == baseEdgeOsmId);
-        return baseEdgeStartConnectedEdges.size() >= inEdgeMin;
+        return (baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
+                && baseEdgeConnectedEdge.getIdentifier() > 0
+                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
+//                &&
+//                (baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
+//                && baseEdgeConnectedEdge.getIdentifier() > 0
+//                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() >= connectedEdgeMax);
     }
 
     /**
-     * Calculates the angle between the two segments. Uses the Law of Cosines to find the angle.
+     * Calculates the angle between the two segments.
      * Assumes that the segments connect at an end point.
      */
     private double findAngle(final Segment segment1, final Segment segment2)
     {
-        if (segment1.heading().isPresent() && segment2.heading().isPresent())
-        {
-            return segment1.heading().get().difference(segment2.heading().get()).asDegrees();
-        }
-        return 0;
+        final double aLength = segment1.length().asMeters();
+        final double bLength = segment2.length().asMeters();
+        final double cLength = new Segment(segment1.start(), segment2.end()).length().asMeters();
+        return Math.toDegrees(Math.acos((pow(aLength, 2) + pow(bLength, 2) - pow(cLength, 2)) / (2 * aLength * bLength)));
     }
 
     /**
@@ -252,15 +280,16 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                 {
                     final Optional<String> outEdgeName = outEdge.getTag("name");
                     final Optional<String> outEdgeRef = outEdge.getTag("ref");
-                    if (inEdgeName.isPresent() && outEdgeName.isPresent()) {
-                        if (inEdgeName.get().equals(outEdgeName.get()))
+                    if (inEdgeName.isPresent() && outEdgeName.isPresent())
+                    {
+                        if (inEdgeName.equals(outEdgeName))
                         {
                             edgesShareName = true;
                         }
                     }
                     if (inEdgeRef.isPresent() && outEdgeRef.isPresent())
                     {
-                        if (inEdgeRef.get().equals(outEdgeRef.get()))
+                        if (inEdgeRef.equals(outEdgeRef))
                         {
                             edgesShareRef = true;
                         }
