@@ -157,17 +157,26 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
         {
             final Node node = (Node) object;
             final Atlas atlas = node.getAtlas();
-            // Count car navigable connections to this node
-            final List<AtlasItem> connectedHighways = Iterables
-                    .asList(atlas.itemsContaining(node.getLocation())).stream()
-                    .filter(HighwayTag::isCarNavigableHighway).collect(Collectors.toList());
             // Count railway connections to this node
             final List<AtlasItem> connectedRailways = Iterables
                     .asList(atlas.itemsContaining(node.getLocation())).stream()
                     .filter(item -> Validators.isOfType(item, RailwayTag.class, RailwayTag.RAIL,
                             RailwayTag.TRAM, RailwayTag.DISUSED, RailwayTag.PRESERVED))
                     .collect(Collectors.toList());
+            // Count car navigable connections to this node
+            final List<AtlasItem> connectedHighways = Iterables
+                    .asList(atlas.itemsContaining(node.getLocation())).stream()
+                    .filter(HighwayTag::isCarNavigableHighway).collect(Collectors.toList());
+            final List<AtlasItem> connectedRailHighways = Iterables
+                    .asList(atlas.itemsContaining(node.getLocation())).stream()
+                    .filter(item -> HighwayTag.isCarNavigableHighway(item)
+                            && Validators.isOfType(item, RailwayTag.class, RailwayTag.RAIL,
+                            RailwayTag.TRAM, RailwayTag.DISUSED, RailwayTag.PRESERVED)).collect(Collectors.toList());
+            // If some highways and railways are connected then it should be a level_crossing
+            // but if all connected ways are highways AND railways then skip it.
             if (!connectedHighways.isEmpty() && !connectedRailways.isEmpty()
+                    && (connectedHighways.size() > connectedRailHighways.size()
+                    || connectedRailways.size() > connectedRailHighways.size())
                     && !Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
             {
                 // This is a railway/highway intersect node that is not tagged with

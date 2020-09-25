@@ -2,7 +2,7 @@
 
 #### Description
 
-The Purpose of this check is to detect and flag nodes under the three scenarios below:
+The Purpose of this check is to detect and flag nodes under the four scenarios below:
 
 1. When a railway crosses a highway on the same layer and intersection node is missing.
 2. When a railway crosses a highway on the same layer and intersection node `railway=level_crossing` tag doesn't exist.
