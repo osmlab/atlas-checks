@@ -20,6 +20,16 @@ import java.util.stream.Stream;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
+import org.openstreetmap.atlas.tags.BuildingTag;
+import org.openstreetmap.atlas.tags.ConstructionDateTag;
+import org.openstreetmap.atlas.tags.ConstructionTag;
+import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.LandUseTag;
+import org.openstreetmap.atlas.tags.OpenDateTag;
+import org.openstreetmap.atlas.tags.OpeningDateTag;
+import org.openstreetmap.atlas.tags.TemporaryDateOnTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -60,9 +70,10 @@ public class ConstructionCheck extends BaseCheck<Long>
             // 1 January 2020
             DateTimeFormatter.ofPattern("d MMMM yyyy"));
     private static final LocalDate TODAYS_DATE = LocalDate.now();
-    private static final List<String> DATE_TAGS = Arrays.asList("opening_date", "open_date",
-            "construction:date", "temporary:date_on", "date_on");
-    private static final List<String> CONSTRUCTION_TAGS = List.of("highway", "landuse", "building");
+    private static final List<String> DATE_TAGS = Arrays.asList(OpeningDateTag.KEY, OpenDateTag.KEY,
+            ConstructionDateTag.KEY, TemporaryDateOnTag.KEY, "date_on");
+    private static final List<String> CONSTRUCTION_TAGS = List.of(HighwayTag.KEY, LandUseTag.KEY,
+            BuildingTag.KEY);
 
     private final int oldConstructionDays;
     private final int oldCheckDateMonths;
@@ -95,7 +106,17 @@ public class ConstructionCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         final Map<String, String> keySet = object.getOsmTags();
-        return !this.isFlagged(object.getOsmIdentifier()) && isConstruction(keySet);
+        return !this.isFlagged(object.getOsmIdentifier()) && this.isConstruction(keySet);
+    }
+
+    @Override
+    protected CheckFlag createFlag(final AtlasObject object, final String instruction)
+    {
+        if (object instanceof Edge)
+        {
+            return super.createFlag(new OsmWayWalker((Edge) object).collectEdges(), instruction);
+        }
+        return super.createFlag(object, instruction);
     }
 
     /**
@@ -112,29 +133,29 @@ public class ConstructionCheck extends BaseCheck<Long>
 
         final Map<String, String> tags = object.getTags();
 
-        final Optional<String> dateTag = getDateTag(tags);
+        final Optional<String> dateTag = this.getDateTag(tags);
         if (dateTag.isPresent())
         {
             final String tagDate = tags.get(dateTag.get());
 
-            final Optional<LocalDate> parsedDate = parseDate(tagDate);
+            final Optional<LocalDate> parsedDate = this.parseDate(tagDate);
             if (parsedDate.isPresent() && parsedDate.get().isBefore(TODAYS_DATE))
             {
-                return Optional
-                        .of(createFlag(object, this.getLocalizedInstruction(0, dateTag.get())));
+                return Optional.of(
+                        this.createFlag(object, this.getLocalizedInstruction(0, dateTag.get())));
             }
         }
 
         if (tags.containsKey("check_date"))
         {
-            final Optional<LocalDate> parseDateChecked = parseDate(tags.get("check_date"));
+            final Optional<LocalDate> parseDateChecked = this.parseDate(tags.get("check_date"));
             if (parseDateChecked.isPresent())
             {
                 final long monthsBetween = ChronoUnit.MONTHS.between(parseDateChecked.get(),
                         TODAYS_DATE);
                 if (monthsBetween > this.oldCheckDateMonths)
                 {
-                    return Optional.of(createFlag(object,
+                    return Optional.of(this.createFlag(object,
                             this.getLocalizedInstruction(1, this.oldCheckDateMonths)));
                 }
             }
@@ -149,7 +170,7 @@ public class ConstructionCheck extends BaseCheck<Long>
             final long numberOfDays = ChronoUnit.DAYS.between(lastEditDate, TODAYS_DATE);
             if (numberOfDays > this.oldConstructionDays)
             {
-                return Optional.of(createFlag(object,
+                return Optional.of(this.createFlag(object,
                         this.getLocalizedInstruction(2, this.oldConstructionDays)));
             }
         }
@@ -185,9 +206,10 @@ public class ConstructionCheck extends BaseCheck<Long>
     private boolean isConstruction(final Map<String, String> tags)
     {
         return tags.keySet().stream()
-                .anyMatch(tag -> tag.equals("construction")
-                        || tag.startsWith("construction:") && !tag.equals("construction:date"))
-                || CONSTRUCTION_TAGS.stream().anyMatch(tag -> "construction".equals(tags.get(tag)));
+                .anyMatch(tag -> tag.equals(ConstructionTag.KEY)
+                        || tag.startsWith("construction:") && !tag.equals(ConstructionDateTag.KEY))
+                || CONSTRUCTION_TAGS.stream()
+                        .anyMatch(tag -> ConstructionTag.KEY.equals(tags.get(tag)));
     }
 
     /**
