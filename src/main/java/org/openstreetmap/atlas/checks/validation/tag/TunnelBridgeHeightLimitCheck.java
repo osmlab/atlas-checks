@@ -70,7 +70,7 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && ((Edge) object).isMasterEdge()
+        return object instanceof Edge && ((Edge) object).isMainEdge()
                 && !isFlagged(object.getOsmIdentifier());
     }
 
@@ -101,7 +101,7 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
             final PolyLine bridgeAsPolyLine = bridge.asPolyLine();
             final Set<Edge> edgesToFlag = new HashSet<>();
             Iterables.stream(bridge.getAtlas().edgesIntersecting(bridge.bounds()))
-                    .filter(edge -> edge.isMasterEdge()
+                    .filter(edge -> edge.isMainEdge()
                             && edge.getOsmIdentifier() != bridge.getOsmIdentifier()
                             && !isFlagged(edge.getOsmIdentifier())
                             && isHighwayWithoutMaxHeight(edge)
