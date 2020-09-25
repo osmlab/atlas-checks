@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
@@ -78,11 +79,13 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
                 && ((Edge) object).isMainEdge())
         {
             final Edge edge = (Edge) object;
-
+            final long baseEdgeAtlasId = edge.getIdentifier();
+            final Node baseEdgeStartNode = edge.start();
+            final Node baseEdgeEndNode = edge.end();
             return !this.isEdgeLink(edge)
                     && HighwayTag.isCarNavigableHighway(object)
-                    && this.baseEdgeStartHasTwoOrThreeConnectedEdges(edge)
-                    && this.baseEdgeEndHasTwoOrThreeConnectedEdges(edge)
+                    && this.nodeHasTwoConnectedEdges(baseEdgeStartNode, baseEdgeAtlasId)
+                    && this.nodeHasTwoConnectedEdges(baseEdgeEndNode, baseEdgeAtlasId)
                     && this.lengthOfWay(edge) >= this.shortEdgeThreshold.asMeters()
                     && this.lengthOfWay(edge) <= this.longEdgeThreshold.asMeters()
                     && edge.highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayClass)
@@ -180,25 +183,12 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     /**
      * Check if base edge has at least 2 outedges not including self
      */
-    private boolean baseEdgeEndHasTwoOrThreeConnectedEdges(final Edge baseEdge)
+    private boolean nodeHasTwoConnectedEdges(final Node node, final long baseEdgeAtlasId)
     {
-        final long baseEdgeOsmId = baseEdge.getIdentifier();
-        final Set<Edge> baseEdgeEndConnectedEdges = baseEdge.end().connectedEdges();
-        return (baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
+        final Set<Edge> baseEdgeEndConnectedEdges = node.connectedEdges();
+        return (baseEdgeEndConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeAtlasId
                 && baseEdgeConnectedEdge.getIdentifier() > 0
-                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
-    }
-
-    /**
-     * Checks if base edge has at least 2 inedges not including self
-     */
-    private boolean baseEdgeStartHasTwoOrThreeConnectedEdges(final Edge baseEdge)
-    {
-        final long baseEdgeOsmId = baseEdge.getIdentifier();
-        final Set<Edge> baseEdgeStartConnectedEdges = baseEdge.start().connectedEdges();
-        return (baseEdgeStartConnectedEdges.stream().filter(baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeOsmId
-                && baseEdgeConnectedEdge.getIdentifier() > 0
-                && !baseEdgeConnectedEdge.highwayTag().isLessImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
+                && baseEdgeConnectedEdge.highwayTag().isMoreImportantThan(this.minHighwayClass)).count() == connectedEdgeMin);
     }
 
     /**
