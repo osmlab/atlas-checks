@@ -85,7 +85,8 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         // case 1 (tunnel) & 2 (covered highway)
-        if ((TunnelTag.isTunnel(object) || isCovered(object)) && isHighwayWithoutMaxHeight(object))
+        if ((TunnelTag.isTunnel(object) || this.isCovered(object))
+                && this.isHighwayWithoutMaxHeight(object))
         {
             final Long osmId = object.getOsmIdentifier();
             markAsFlagged(osmId);
@@ -104,8 +105,8 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
                     .filter(edge -> edge.isMainEdge()
                             && edge.getOsmIdentifier() != bridge.getOsmIdentifier()
                             && !isFlagged(edge.getOsmIdentifier())
-                            && isHighwayWithoutMaxHeight(edge)
-                            && edgeCrossesBridge(edge.asPolyLine(), bridgeAsPolyLine))
+                            && this.isHighwayWithoutMaxHeight(edge)
+                            && this.edgeCrossesBridge(edge.asPolyLine(), bridgeAsPolyLine))
                     .forEach(edge ->
                     {
                         markAsFlagged(edge.getOsmIdentifier());
