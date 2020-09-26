@@ -924,8 +924,7 @@
     "enabled": true,
     "minHighwayClass": "tertiary",
     "edgeCounts": {
-      "connectedEdgeMin":  2.0,
-      "connectedEdgeMax": 3.0
+      "connectedEdgeMin":  2.0
     },
     "length": {
       "min": 15.0,
