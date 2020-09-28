@@ -22,17 +22,17 @@ public class SuddenHighwayChangeCheckTest
             ConfigurationResolver.inlineConfiguration("{\"SuddenHighwayChangeCheck\":{"
                     + "\"minHighwayClass\": tertiary," + "\"angle\": {" + "\"min\": 115.0,"
                     + "\"max\": 165.0}," + "\"edgeCounts\": {" + "\"connectedEdgeMin\": 2.0,"
-                    + "\"length\": {" + "\"min\": 15.0," + "\"max\": 250.0}}}"));
+                    + "\"length\": {" + "\"min\": 15.0," + "\"max\": 250.0}}}}"));
 
     @Test
-    public void testFalsePositiveSuddenHighwayChange()
+    public void testFalsePositiveSuddenHighwayChangeCheck()
     {
         this.verifier.actual(this.setup.falsePositiveSuddenHighwayChangeCheck(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testTruePositiveSuddenHighwayChange()
+    public void testTruePositiveSuddenHighwayChangeCheck()
     {
         this.verifier.actual(this.setup.truePositiveSuddenHighwayChangeCheck(), this.check);
         this.verifier.verifyExpectedSize(1);
