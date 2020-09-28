@@ -40,6 +40,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     private final double minAngle;
     private final double maxAngle;
     private final double connectedEdgeMin;
+    private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.TERTIARY.toString();
     private final HighwayTag minHighwayClass;
     private final Distance shortEdgeThreshold;
     private final Distance longEdgeThreshold;
@@ -55,15 +56,16 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     public SuddenHighwayChangeCheck(final Configuration configuration)
     {
         super(configuration);
-        final String highwayType = configurationValue(configuration, "minHighwayType", "tertiary");
-        this.minAngle = configurationValue(configuration, "angle.min", MIN_ANGLE_DEFAULT);
-        this.maxAngle = configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
+        final String highwayType = this.configurationValue(configuration, "minHighwayType",
+                HIGHWAY_MINIMUM_DEFAULT);
+        this.minAngle = this.configurationValue(configuration, "angle.min", MIN_ANGLE_DEFAULT);
+        this.maxAngle = this.configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
         this.minHighwayClass = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.connectedEdgeMin = configurationValue(configuration, "edgeCounts.connectedEdgeMin",
-                2.0);
-        this.shortEdgeThreshold = configurationValue(configuration, "length.min",
+        this.connectedEdgeMin = this.configurationValue(configuration,
+                "edgeCounts.connectedEdgeMin", 2.0);
+        this.shortEdgeThreshold = this.configurationValue(configuration, "length.min",
                 SHORT_EDGE_THRESHOLD_DEFAULT, Distance::meters);
-        this.longEdgeThreshold = configurationValue(configuration, "length.max",
+        this.longEdgeThreshold = this.configurationValue(configuration, "length.max",
                 LONG_EDGE_THRESHOLD_DEFAULT, Distance::meters);
     }
 

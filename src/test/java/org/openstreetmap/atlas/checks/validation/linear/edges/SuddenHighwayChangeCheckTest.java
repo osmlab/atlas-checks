@@ -21,8 +21,8 @@ public class SuddenHighwayChangeCheckTest
     private final SuddenHighwayChangeCheck check = new SuddenHighwayChangeCheck(
             ConfigurationResolver.inlineConfiguration("{\"SuddenHighwayChangeCheck\":{"
                     + "\"minHighwayClass\": tertiary," + "\"angle\": {" + "\"min\": 115.0,"
-                    + "\"max\": 165.0}," + "\"edgeCounts\": {" + "\"connectedEdgeMin\": 2.0,"
-                    + "\"length\": {" + "\"min\": 15.0," + "\"max\": 250.0}}}}"));
+                    + "\"max\": 165.0}," + "\"edgeCounts\": {" + "\"connectedEdgeMin\": 2.0},"
+                    + "\"length\": {" + "\"min\": 15.0," + "\"max\": 250.0}}}"));
 
     @Test
     public void testFalsePositiveSuddenHighwayChangeCheck()
