@@ -322,7 +322,7 @@ public class SuddenHighwayChangeCheck extends BaseCheck<Long>
     {
         final Set<Edge> baseEdgeConnectedEdges = node.connectedEdges();
 
-        //final double maxConnectedEdgeCount = 3.0;
+        // final double maxConnectedEdgeCount = 3.0;
         return baseEdgeConnectedEdges.stream().filter(
                 baseEdgeConnectedEdge -> baseEdgeConnectedEdge.getIdentifier() != baseEdgeAtlasId
                         && baseEdgeConnectedEdge.getIdentifier() > 0
