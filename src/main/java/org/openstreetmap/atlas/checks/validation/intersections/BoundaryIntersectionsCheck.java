@@ -5,8 +5,8 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
+import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
@@ -32,7 +32,7 @@ public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
     private static final String INSTRUCTION_FORMAT = INVALID_BOUNDARY_FORMAT + " Two boundaries should not intersect each other.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT, INVALID_BOUNDARY_FORMAT);
     
-    private static final Predicate<Edge> EDGE_AS_BOUNDARY = edge -> edge.relations()
+    private static final Predicate<LineItem> LINE_ITEM_AS_BOUNDARY = lineItem -> lineItem.relations()
             .stream()
             .anyMatch(BoundaryIntersectionsCheck::isTypeBoundaryWithBoundaryTag);
     public static final String DELIMITER = ", ";
@@ -56,57 +56,58 @@ public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object) {
         Relation relation = (Relation) object;
-        RelationMemberList relationMembersEdges = relation.membersOfType(ItemType.EDGE);
-        List<Edge> edges = getEdges(relationMembersEdges);
-        CheckFlag checkFlag = prepareCheckFlag(object, relation, edges);
+        RelationMemberList relationMemberLineItems = relation.membersOfType(ItemType.EDGE);
+        relationMemberLineItems.addAll(relation.membersOfType(ItemType.LINE));
+        List<LineItem> lineItems = getLineItems(relationMemberLineItems);
+        CheckFlag checkFlag = prepareCheckFlag(object, relation, lineItems);
         if (checkFlag.getFlaggedObjects().isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(checkFlag);
     }
     
-    private List<Edge> getEdges(RelationMemberList relationMembersEdges) {
+    private List<LineItem> getLineItems(RelationMemberList relationMembersEdges) {
         return relationMembersEdges
                 .stream()
-                .map(this::castToEdge)
+                .map(this::castToLineItem)
                 .collect(Collectors.toList());
     }
     
-    private Edge castToEdge(RelationMember relationMember) {
-        return (Edge) relationMember.getEntity();
+    private LineItem castToLineItem(RelationMember relationMember) {
+        return (LineItem) relationMember.getEntity();
     }
     
-    private CheckFlag prepareCheckFlag(AtlasObject object, Relation relation, List<Edge> edges) {
+    private CheckFlag prepareCheckFlag(AtlasObject object, Relation relation, List<LineItem> lineItems) {
         CheckFlag checkFlag = new CheckFlag(this.getTaskIdentifier(object));
-        edges.forEach(edge -> analyzeIntersections(object.getAtlas(), relation, checkFlag, edges, edge));
+        lineItems.forEach(lineItem -> analyzeIntersections(object.getAtlas(), relation, checkFlag, lineItems, lineItem));
         return checkFlag;
     }
     
-    private void analyzeIntersections(Atlas atlas, Relation relation, CheckFlag checkFlag, List<Edge> edges, Edge edge) {
-        Set<Edge> knownIntersections = new HashSet<>();
-        Iterable<Edge> intersections = atlas.edgesIntersecting(edge.bounds(), getPredicateForEdgesSelection(edges));
-        for (Edge currentEdge : intersections) {
-            if (!knownIntersections.contains(currentEdge)) {
-                Set<Relation> intersectingBoundaries = getBoundary(currentEdge);
-                addInformationToFlag(relation, checkFlag, edge, currentEdge, intersectingBoundaries);
-                knownIntersections.add(currentEdge);
+    private void analyzeIntersections(Atlas atlas, Relation relation, CheckFlag checkFlag, List<LineItem> lineItems, LineItem lineItem) {
+        Set<LineItem> knownIntersections = new HashSet<>();
+        Iterable<LineItem> intersections = atlas.lineItemsIntersecting(lineItem.bounds(), getPredicateForLineItemsSelection(lineItems));
+        for (LineItem currentLineItem : intersections) {
+            if (!knownIntersections.contains(currentLineItem)) {
+                Set<Relation> intersectingBoundaries = getBoundary(currentLineItem);
+                addInformationToFlag(relation, checkFlag, lineItem, currentLineItem, intersectingBoundaries);
+                knownIntersections.add(currentLineItem);
             }
         }
     }
     
-    private void addInformationToFlag(Relation relation, CheckFlag checkFlag, Edge edge, Edge currentEdge, Set<Relation> intersectingBoundaries) {
-        checkFlag.addPoints(getIntersectingPoints(edge, currentEdge));
-        checkFlag.addObject(currentEdge);
+    private void addInformationToFlag(Relation relation, CheckFlag checkFlag, LineItem lineItem, LineItem currentLineItem, Set<Relation> intersectingBoundaries) {
+        checkFlag.addPoints(getIntersectingPoints(lineItem, currentLineItem));
+        checkFlag.addObject(currentLineItem);
         checkFlag.addObjects(intersectingBoundaries);
         checkFlag.addInstruction(this.getLocalizedInstruction(INDEX,
                 relation.getOsmIdentifier(),
-                edge.getOsmIdentifier(),
-                currentEdge.getOsmIdentifier(),
+                lineItem.getOsmIdentifier(),
+                currentLineItem.getOsmIdentifier(),
                 asList(intersectingBoundaries)));
     }
     
-    private Predicate<Edge> getPredicateForEdgesSelection(List<Edge> edges) {
-        return edgeToCheck -> EDGE_AS_BOUNDARY.test(edgeToCheck) && !edges.contains(edgeToCheck);
+    private Predicate<LineItem> getPredicateForLineItemsSelection(List<LineItem> lineItems) {
+        return lineItemToCheck -> LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) && !lineItems.contains(lineItemToCheck);
     }
     
     private String asList(Set<Relation> intersectingBoundaries) {
@@ -116,15 +117,15 @@ public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
                 .collect(Collectors.joining(DELIMITER));
     }
     
-    private Set<Relation> getBoundary(Edge currentEdge) {
-        return currentEdge.relations()
+    private Set<Relation> getBoundary(LineItem currentLineItem) {
+        return currentLineItem.relations()
                 .stream()
                 .filter(BoundaryIntersectionsCheck::isTypeBoundaryWithBoundaryTag)
                 .collect(Collectors.toSet());
     }
     
-    private Set<Location> getIntersectingPoints(Edge edge, Edge currentEdge) {
-        return currentEdge.asPolyLine().intersections(edge.asPolyLine());
+    private Set<Location> getIntersectingPoints(LineItem lineItem, LineItem currentLineItem) {
+        return currentLineItem.asPolyLine().intersections(lineItem.asPolyLine());
     }
     
     @Override
