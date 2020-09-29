@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -915,9 +915,19 @@
       "mediumPriorityRule": {
         "condition":"OR",
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
-      },
+      }},
       "tags":"highway"
-    }
+  },
+  "SuddenHighwayTypeChangeCheck":{
+    "enabled": true,
+    "challenge": {
+      "description": "Tasks will include ways that are drawn as a single way, when in reality they should be two or more distinct ways",
+      "blurb": "Snake Roads",
+      "instruction": "Open your favorite editor and split the snake road into two or more distinct ways. You can do this by splitting or separating the existing way at an intersection or where you think a road should end. This check also flags roundabouts that aren’t properly tagged. If you see that’s the case - add a junction=roundabout tag when needed.",
+      "difficulty": "MEDIUM",
+      "defaultPriority": "LOW"
+    },
+    "minimumHighwayType": "tertiary"
   },
   "UnusualLayerTagsCheck": {
     "challenge": {
