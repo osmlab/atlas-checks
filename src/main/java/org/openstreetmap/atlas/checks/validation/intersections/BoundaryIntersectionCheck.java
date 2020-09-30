@@ -4,7 +4,6 @@ import io.netty.util.internal.StringUtil;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
@@ -17,10 +16,8 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -90,10 +87,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
     
     private void analyzeIntersections(Atlas atlas, Relation relation, CheckFlag checkFlag, List<LineItem> lineItems, LineItem lineItem) {
         Set<LineItem> knownIntersections = new HashSet<>();
-        List<PolyLine> polyLines = getPolyLines(lineItem);
-        Set<LineItem> intersections = polyLines
+        Set<LineItem> intersections = lineItems
                 .stream()
-                .map(polyLine -> atlas.lineItemsIntersecting(polyLine.bounds(), getPredicateForLineItemsSelection(lineItems)))
+                .map(currentLineItem -> atlas.lineItemsIntersecting(currentLineItem.bounds(), getPredicateForLineItemsSelection(lineItems, currentLineItem)))
                 .flatMap(iterable -> StreamSupport.stream(iterable.spliterator(), false))
                 .collect(Collectors.toSet());
         for (LineItem currentLineItem : intersections) {
@@ -103,25 +99,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
                 knownIntersections.add(currentLineItem);
             }
         }
-    }
-    
-    private List<PolyLine> getPolyLines(LineItem lineItem) {
-        List<PolyLine> polyLines = new ArrayList<>();
-        Iterator<Location> iterator = lineItem.asPolyLine().iterator();
-        if(iterator.hasNext()) {
-            Location lastLocation = iterator.next();
-            for (int i = 0; i < lineItem.asPolyLine().size() - 1; i++) {
-                Location location1 = lastLocation;
-                Location location2 = iterator.next();
-                polyLines.add(PolyLine.wkt(String.format("LINESTRING(%s %s, %s %s)",
-                        location1.getLatitude(),
-                        location1.getLongitude(),
-                        location2.getLatitude(),
-                        location2.getLongitude())));
-                lastLocation = location2;
-            }
-        }
-        return polyLines;
     }
     
     private void addInformationToFlag(Relation relation, CheckFlag checkFlag, LineItem lineItem, LineItem currentLineItem, Set<Relation> intersectingBoundaries) {
@@ -137,9 +114,10 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
         }
     }
     
-    private Predicate<LineItem> getPredicateForLineItemsSelection(List<LineItem> lineItems) {
+    private Predicate<LineItem> getPredicateForLineItemsSelection(List<LineItem> lineItems, LineItem currentLineItem) {
         return lineItemToCheck -> LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) &&
-                !lineItems.contains(lineItemToCheck);
+                !lineItems.contains(lineItemToCheck) &&
+                lineItemToCheck.asPolyLine().intersects(currentLineItem.asPolyLine());
     }
     
     private String asList(Set<Relation> intersectingBoundaries) {
