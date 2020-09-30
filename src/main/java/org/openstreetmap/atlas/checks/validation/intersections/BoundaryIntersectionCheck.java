@@ -1,8 +1,10 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import io.netty.util.internal.StringUtil;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
@@ -15,30 +17,33 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author srachanski
  */
-public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
+public class BoundaryIntersectionCheck extends BaseCheck<Long> {
     
-    private static final String INVALID_BOUNDARY_FORMAT = "Boundary {0,number,#} with edge {1} is crossing invalidly with boundary(ies) {3} with edge {2}.";
+    private static final String INVALID_BOUNDARY_FORMAT = "Boundary {0,number,#} with way {1} is crossing invalidly with boundary(ies) {3} with way {2}.";
     private static final String INSTRUCTION_FORMAT = INVALID_BOUNDARY_FORMAT + " Two boundaries should not intersect each other.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT, INVALID_BOUNDARY_FORMAT);
     
     private static final Predicate<LineItem> LINE_ITEM_AS_BOUNDARY = lineItem -> lineItem.relations()
             .stream()
-            .anyMatch(BoundaryIntersectionsCheck::isTypeBoundaryWithBoundaryTag);
+            .anyMatch(BoundaryIntersectionCheck::isTypeBoundaryWithBoundaryTag);
     public static final String DELIMITER = ", ";
     public static final int INDEX = 0;
     
-    public BoundaryIntersectionsCheck(final Configuration configuration) {
+    public BoundaryIntersectionCheck(final Configuration configuration) {
         super(configuration);
     }
     
@@ -85,7 +90,12 @@ public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
     
     private void analyzeIntersections(Atlas atlas, Relation relation, CheckFlag checkFlag, List<LineItem> lineItems, LineItem lineItem) {
         Set<LineItem> knownIntersections = new HashSet<>();
-        Iterable<LineItem> intersections = atlas.lineItemsIntersecting(lineItem.bounds(), getPredicateForLineItemsSelection(lineItems));
+        List<PolyLine> polyLines = getPolyLines(lineItem);
+        Set<LineItem> intersections = polyLines
+                .stream()
+                .map(polyLine -> atlas.lineItemsIntersecting(polyLine.bounds(), getPredicateForLineItemsSelection(lineItems)))
+                .flatMap(iterable -> StreamSupport.stream(iterable.spliterator(), false))
+                .collect(Collectors.toSet());
         for (LineItem currentLineItem : intersections) {
             if (!knownIntersections.contains(currentLineItem)) {
                 Set<Relation> intersectingBoundaries = getBoundary(currentLineItem);
@@ -95,19 +105,41 @@ public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
         }
     }
     
+    private List<PolyLine> getPolyLines(LineItem lineItem) {
+        List<PolyLine> polyLines = new ArrayList<>();
+        Iterator<Location> iterator = lineItem.asPolyLine().iterator();
+        if(iterator.hasNext()) {
+            Location lastLocation = iterator.next();
+            for (int i = 0; i < lineItem.asPolyLine().size() - 1; i++) {
+                Location location1 = lastLocation;
+                Location location2 = iterator.next();
+                polyLines.add(PolyLine.wkt(String.format("LINESTRING(%s %s, %s %s)",
+                        location1.getLatitude(),
+                        location1.getLongitude(),
+                        location2.getLatitude(),
+                        location2.getLongitude())));
+                lastLocation = location2;
+            }
+        }
+        return polyLines;
+    }
+    
     private void addInformationToFlag(Relation relation, CheckFlag checkFlag, LineItem lineItem, LineItem currentLineItem, Set<Relation> intersectingBoundaries) {
         checkFlag.addPoints(getIntersectingPoints(lineItem, currentLineItem));
         checkFlag.addObject(currentLineItem);
         checkFlag.addObjects(intersectingBoundaries);
-        checkFlag.addInstruction(this.getLocalizedInstruction(INDEX,
-                relation.getOsmIdentifier(),
-                lineItem.getOsmIdentifier(),
-                currentLineItem.getOsmIdentifier(),
-                asList(intersectingBoundaries)));
+        if(StringUtil.isNullOrEmpty(checkFlag.getInstructions())) {
+            checkFlag.addInstruction(this.getLocalizedInstruction(INDEX,
+                    relation.getOsmIdentifier(),
+                    lineItem.getOsmIdentifier(),
+                    currentLineItem.getOsmIdentifier(),
+                    asList(intersectingBoundaries)));
+        }
     }
     
     private Predicate<LineItem> getPredicateForLineItemsSelection(List<LineItem> lineItems) {
-        return lineItemToCheck -> LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) && !lineItems.contains(lineItemToCheck);
+        return lineItemToCheck -> LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) &&
+                !lineItems.contains(lineItemToCheck);
     }
     
     private String asList(Set<Relation> intersectingBoundaries) {
@@ -120,7 +152,7 @@ public class BoundaryIntersectionsCheck extends BaseCheck<Long> {
     private Set<Relation> getBoundary(LineItem currentLineItem) {
         return currentLineItem.relations()
                 .stream()
-                .filter(BoundaryIntersectionsCheck::isTypeBoundaryWithBoundaryTag)
+                .filter(BoundaryIntersectionCheck::isTypeBoundaryWithBoundaryTag)
                 .collect(Collectors.toSet());
     }
     
