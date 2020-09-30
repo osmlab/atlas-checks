@@ -38,7 +38,7 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
     private static final String COORD_21 = "1, 2";
     
     
-    private static final String LINE_ONE = "123456781000001";
+    private static final String LINE_ONE = "1000001";
     private static final String LINE_TWO = "2000001";
     private static final String LINE_THREE = "3000001";
     private static final String LINE_FOUR = "4000001";

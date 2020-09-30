@@ -12,9 +12,6 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class BoundaryIntersectionCheckTest {
     
-    
-//    private static final Logger logger = LoggerFactory.getLogger(BoundaryIntersectionsCheckTest.class);
-    
     @Rule
     public BoundaryIntersectionCheckTestRule setup = new BoundaryIntersectionCheckTestRule();
     
@@ -28,7 +25,7 @@ public class BoundaryIntersectionCheckTest {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectEachOther(),
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
     }
     
     @Test
@@ -43,7 +40,7 @@ public class BoundaryIntersectionCheckTest {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectEachOtherWithEdges(),
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
     }
     
     @Test
