@@ -104,6 +104,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
     private void addInformationToFlag(Relation relation, CheckFlag checkFlag, LineItem lineItem, LineItem currentLineItem, Set<Relation> intersectingBoundaries) {
         checkFlag.addPoints(getIntersectingPoints(lineItem, currentLineItem));
         checkFlag.addObject(currentLineItem);
+        checkFlag.addObject(lineItem);
         checkFlag.addObjects(intersectingBoundaries);
         if(StringUtil.isNullOrEmpty(checkFlag.getInstructions())) {
             checkFlag.addInstruction(this.getLocalizedInstruction(INDEX,
