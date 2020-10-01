@@ -23,10 +23,12 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.BuildingTag;
+import org.openstreetmap.atlas.tags.CheckDateTag;
 import org.openstreetmap.atlas.tags.ConstructionDateTag;
 import org.openstreetmap.atlas.tags.ConstructionTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
+import org.openstreetmap.atlas.tags.LastEditTimeTag;
 import org.openstreetmap.atlas.tags.OpenDateTag;
 import org.openstreetmap.atlas.tags.OpeningDateTag;
 import org.openstreetmap.atlas.tags.TemporaryDateOnTag;
@@ -146,9 +148,9 @@ public class ConstructionCheck extends BaseCheck<Long>
             }
         }
 
-        if (tags.containsKey("check_date"))
+        if (tags.containsKey(CheckDateTag.KEY))
         {
-            final Optional<LocalDate> parseDateChecked = this.parseDate(tags.get("check_date"));
+            final Optional<LocalDate> parseDateChecked = this.parseDate(tags.get(CheckDateTag.KEY));
             if (parseDateChecked.isPresent())
             {
                 final long monthsBetween = ChronoUnit.MONTHS.between(parseDateChecked.get(),
@@ -161,9 +163,9 @@ public class ConstructionCheck extends BaseCheck<Long>
             }
         }
 
-        if (tags.containsKey("last_edit_time"))
+        if (tags.containsKey(LastEditTimeTag.KEY))
         {
-            final long timestamp = Long.parseLong(tags.get("last_edit_time"));
+            final long timestamp = Long.parseLong(tags.get(LastEditTimeTag.KEY));
             final LocalDate lastEditDate = Instant.ofEpochMilli(timestamp)
                     .atZone(ZoneId.systemDefault()).toLocalDate();
 
