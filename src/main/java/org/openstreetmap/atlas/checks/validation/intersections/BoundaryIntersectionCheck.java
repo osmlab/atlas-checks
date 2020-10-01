@@ -107,6 +107,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
         checkFlag.addObject(lineItem);
         checkFlag.addObjects(intersectingBoundaries);
         if(StringUtil.isNullOrEmpty(checkFlag.getInstructions())) {
+            checkFlag.addObject(relation);
             checkFlag.addInstruction(this.getLocalizedInstruction(INDEX,
                     relation.getOsmIdentifier(),
                     lineItem.getOsmIdentifier(),
