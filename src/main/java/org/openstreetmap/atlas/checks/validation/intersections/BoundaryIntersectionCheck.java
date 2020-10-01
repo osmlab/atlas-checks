@@ -30,7 +30,7 @@ import java.util.stream.StreamSupport;
  */
 public class BoundaryIntersectionCheck extends BaseCheck<Long> {
     
-    private static final String INVALID_BOUNDARY_FORMAT = "Boundary {0,number,#} with way {1} is crossing invalidly with boundary(ies) {3} with way {2}.";
+    private static final String INVALID_BOUNDARY_FORMAT = "Boundary {0} with way {1} is crossing invalidly with boundary(ies) {3} with way {2} at coordinates {4}.";
     private static final String INSTRUCTION_FORMAT = INVALID_BOUNDARY_FORMAT + " Two boundaries should not intersect each other.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT, INVALID_BOUNDARY_FORMAT);
     
@@ -89,7 +89,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
         Set<LineItem> knownIntersections = new HashSet<>();
         Set<LineItem> intersections = lineItems
                 .stream()
-                .map(currentLineItem -> atlas.lineItemsIntersecting(currentLineItem.bounds(), getPredicateForLineItemsSelection(lineItems, currentLineItem)))
+                .map(currentLineItem -> atlas.lineItemsIntersecting(currentLineItem.bounds(), getPredicateForLineItemsSelection(lineItems, lineItem)))
                 .flatMap(iterable -> StreamSupport.stream(iterable.spliterator(), false))
                 .collect(Collectors.toSet());
         for (LineItem currentLineItem : intersections) {
@@ -102,15 +102,17 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
     }
     
     private void addInformationToFlag(Relation relation, CheckFlag checkFlag, LineItem lineItem, LineItem currentLineItem, Set<Relation> intersectingBoundaries) {
-        checkFlag.addPoints(getIntersectingPoints(lineItem, currentLineItem));
+        Set<Location> intersectingPoints = getIntersectingPoints(lineItem, currentLineItem);
+        checkFlag.addPoints(intersectingPoints);
         checkFlag.addObject(currentLineItem);
         checkFlag.addObjects(intersectingBoundaries);
         String instruction = this.getLocalizedInstruction(INDEX,
-                relation.getOsmIdentifier(),
-                lineItem.getOsmIdentifier(),
-                currentLineItem.getOsmIdentifier(),
-                asList(intersectingBoundaries));
-        if(StringUtil.isNullOrEmpty(checkFlag.getInstructions()) || !checkFlag.getInstructions().contains(instruction)) {
+                Long.toString(relation.getOsmIdentifier()),
+                Long.toString(lineItem.getOsmIdentifier()),
+                Long.toString(currentLineItem.getOsmIdentifier()),
+                relationsToList(intersectingBoundaries),
+                locationsToList(intersectingPoints));
+        if (StringUtil.isNullOrEmpty(checkFlag.getInstructions()) || !checkFlag.getInstructions().contains(instruction)) {
             checkFlag.addObject(lineItem);
             checkFlag.addObject(relation);
             checkFlag.addInstruction(instruction);
@@ -123,10 +125,17 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long> {
                 lineItemToCheck.asPolyLine().intersects(currentLineItem.asPolyLine());
     }
     
-    private String asList(Set<Relation> intersectingBoundaries) {
-        return intersectingBoundaries
+    private String relationsToList(Set<Relation> relations) {
+        return relations
                 .stream()
                 .map(relation -> Long.toString(relation.getOsmIdentifier()))
+                .collect(Collectors.joining(DELIMITER));
+    }
+    
+    private String locationsToList(Set<Location> locations) {
+        return locations
+                .stream()
+                .map(location -> String.format("(%s, %s)", location.getLatitude(), location.getLongitude()))
                 .collect(Collectors.joining(DELIMITER));
     }
     
