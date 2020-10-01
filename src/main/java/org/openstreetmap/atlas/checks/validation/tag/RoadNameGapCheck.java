@@ -29,8 +29,8 @@ public class RoadNameGapCheck extends BaseCheck<Long>
      */
     static class EdgePredicate
     {
-        private Edge edge;
-        private EdgeDirectionComparator edgeDirectionComparator = new EdgeDirectionComparator();
+        private final Edge edge;
+        private final EdgeDirectionComparator edgeDirectionComparator = new EdgeDirectionComparator();
 
         EdgePredicate(final Edge edge)
         {
@@ -65,9 +65,9 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     public RoadNameGapCheck(final Configuration configuration)
     {
         super(configuration);
-        this.validHighwayTag = configurationValue(configuration, "valid.highway.tag",
-                VALID_HIGHWAY_TAG_DEFAULT).stream().map(String::toLowerCase)
-                        .collect(Collectors.toList());
+        this.validHighwayTag = this
+                .configurationValue(configuration, "valid.highway.tag", VALID_HIGHWAY_TAG_DEFAULT)
+                .stream().map(String::toLowerCase).collect(Collectors.toList());
     }
 
     /**
@@ -80,7 +80,7 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && Edge.isMasterEdgeIdentifier(object.getIdentifier())
+        return object instanceof Edge && Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !JunctionTag.isRoundabout(object)
                 && Validators.hasValuesFor(object, HighwayTag.class)
                 && this.validHighwayTag.contains(object.tag(HighwayTag.KEY));
@@ -99,17 +99,17 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
         final EdgePredicate edgePredicate = new EdgePredicate(edge);
         final Set<Edge> inEdges = edge.inEdges().stream()
-                .filter(obj -> validCheckForObject(obj) && edgePredicate.isSameHeading(obj))
+                .filter(obj -> this.validCheckForObject(obj) && edgePredicate.isSameHeading(obj))
                 .collect(Collectors.toSet());
         final Set<Edge> outEdges = edge.outEdges().stream()
-                .filter(obj -> validCheckForObject(obj) && edgePredicate.isSameHeading(obj))
+                .filter(obj -> this.validCheckForObject(obj) && edgePredicate.isSameHeading(obj))
                 .collect(Collectors.toSet());
         if (inEdges.isEmpty() || outEdges.isEmpty())
         {
             return Optional.empty();
         }
 
-        final Set<String> matchingInAndOutEdgeNames = getMatchingInAndOutEdgeNames(inEdges,
+        final Set<String> matchingInAndOutEdgeNames = this.getMatchingInAndOutEdgeNames(inEdges,
                 outEdges);
         if (matchingInAndOutEdgeNames.isEmpty())
         {
@@ -121,8 +121,8 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         // doesn't have a name.
         if (!edge.getName().isPresent())
         {
-            return Optional.of(
-                    createFlag(object, this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
         }
         final Optional<String> edgeName = edge.getName();
 
@@ -130,9 +130,9 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
-            return findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
+            return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
                     ? Optional.empty()
-                    : Optional.of(createFlag(object, this.getLocalizedInstruction(1,
+                    : Optional.of(this.createFlag(object, this.getLocalizedInstruction(1,
                             edge.getOsmIdentifier(), edgeName.get())));
 
         }

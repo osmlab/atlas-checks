@@ -89,7 +89,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
                 // and one of the following
                 && ALLOWED_TAGS.test(object)
                 // removes one of two bi-directional edge candidates
-                && ((Edge) object).isMasterEdge()
+                && ((Edge) object).isMainEdge()
                 // remove way sectioned duplicates
                 && !this.isFlagged(object.getOsmIdentifier());
     }

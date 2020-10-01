@@ -23,7 +23,7 @@ In OpenStreetMap, roundabouts are [Ways](https://wiki.openstreetmap.org/wiki/Way
 the `junction=roundabout` tag. We’ll use this information to filter our potential flag candidates.
 
 Our first goal is to validate the incoming Atlas Object. We know two things about roundabouts:
-* Must be a valid master Edge
+* Must be a valid main Edge
 * Must have not already been flagged
 * Must have `junction=roundabout` tag
 * Must be car navigable

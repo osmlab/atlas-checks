@@ -50,7 +50,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
 
     MapRouletteConnection(final MapRouletteConfiguration configuration)
     {
-        if (configuration == null || !isAbleToConnectToMapRoulette(configuration))
+        if (configuration == null || !this.isAbleToConnectToMapRoulette(configuration))
         {
             throw new IllegalArgumentException(
                     "configuration can't be null and must be able to connect to MapRouletteServers to create a connection.");
@@ -146,7 +146,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         final String type = challengeJson.has(Survey.KEY_ANSWERS) ? KEY_SURVEY : KEY_CHALLENGE;
         final String encodedChallengeQuery = URLEncoder
                 .encode(challenge.getName(), StandardCharsets.UTF_8).replace("+", "%20");
-        return create(
+        return this.create(
                 String.format("/api/v2/project/%d/challenge/%s", project.getId(),
                         encodedChallengeQuery),
                 String.format("/api/v2/%s", type), String.format("/api/v2/%s/", type) + "%s",
@@ -158,7 +158,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     public long createProject(final Project project)
             throws UnsupportedEncodingException, URISyntaxException
     {
-        return create(String.format("/api/v2/projectByName/%s", project.getName()),
+        return this.create(String.format("/api/v2/projectByName/%s", project.getName()),
                 "/api/v2/project", "/api/v2/project/%s", project.toJson(),
                 String.format("Created/Updated Project with ID {} and name %s", project.getName()));
     }
@@ -190,7 +190,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         {
             endIndex = Math.min(startIndex + MAXIMUM_BATCH_SIZE, uniqueTasks.size());
             final List<Task> uploadList = uniqueTasks.subList(startIndex, endIndex);
-            succeeded &= internalUploadBatchTasks(challengeId, uploadList);
+            succeeded &= this.internalUploadBatchTasks(challengeId, uploadList);
             startIndex += MAXIMUM_BATCH_SIZE;
         }
         while (endIndex != uniqueTasks.size() - 1 && startIndex < uniqueTasks.size());
@@ -204,7 +204,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         final String challengeName = task.getChallengeName();
         final String taskIdentifier = task.getTaskIdentifier();
         logger.debug("Uploading task {} for challenge {}", taskIdentifier, challengeName);
-        return uploadTask(challengeId, Collections.singletonList(task), true);
+        return this.uploadTask(challengeId, Collections.singletonList(task), true);
     }
 
     private boolean internalUploadBatchTasks(final long parentChallengeId, final List<Task> data)
@@ -216,7 +216,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         }
         logger.debug("Uploading batch of {} tasks for project/challenge {}/{}", data.size(),
                 data.get(0).getProjectName(), data.get(0).getChallengeName());
-        return uploadTask(parentChallengeId, data, true);
+        return this.uploadTask(parentChallengeId, data, true);
     }
 
     private boolean isAbleToConnectToMapRoulette(final MapRouletteConfiguration configuration)

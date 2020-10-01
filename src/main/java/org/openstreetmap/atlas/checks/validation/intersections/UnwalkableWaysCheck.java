@@ -57,15 +57,15 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
     {
         super(configuration);
 
-        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
+        this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
                 MINIMUM_HIGHWAY_TYPE_DEFAULT.toString(),
                 tag -> HighwayTag.valueOf(tag.toUpperCase()));
 
-        this.walkwayTags = configurationValue(configuration, "walkway.tags", DEFAULT_WALKWAY_TAGS)
-                .stream().map(value -> HighwayTag.valueOf(value.toUpperCase()))
-                .toArray(HighwayTag[]::new);
+        this.walkwayTags = this
+                .configurationValue(configuration, "walkway.tags", DEFAULT_WALKWAY_TAGS).stream()
+                .map(value -> HighwayTag.valueOf(value.toUpperCase())).toArray(HighwayTag[]::new);
 
-        this.includeDualCrossingDualCarriageways = configurationValue(configuration,
+        this.includeDualCrossingDualCarriageways = this.configurationValue(configuration,
                 "includeDualCrossingDualCarriageways", false);
     }
 
@@ -78,8 +78,8 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
         }
         final Edge edge = (Edge) object;
 
-        // Check that the Edge is a master edge
-        return edge.isMasterEdge()
+        // Check that the Edge is a main edge
+        return edge.isMainEdge()
                 // For all connected nodes to the Edge, check that none of them have
                 // Highway=crossing
                 && edge.connectedNodes().stream().noneMatch(
@@ -103,9 +103,9 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
 
         // Filter the connected edges on either end of this edge to narrow down to potential
         // dual carriageways.
-        final Set<Edge> startEdges = filterConnectedEdgesToCandidates(
+        final Set<Edge> startEdges = this.filterConnectedEdgesToCandidates(
                 crossingEdge.start().connectedEdges(), crossingEdge);
-        final Set<Edge> endEdges = filterConnectedEdgesToCandidates(
+        final Set<Edge> endEdges = this.filterConnectedEdgesToCandidates(
                 crossingEdge.end().connectedEdges(), crossingEdge);
 
         // used for comparing directions of candidate edges to find ones in opposite directions
@@ -146,7 +146,7 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
                 // Based on that, we can then do a basic check if the original edge is also a dual
                 // carriageway.
                 if (!this.includeDualCrossingDualCarriageways
-                        && hasReverseCarriageway(crossingEdge))
+                        && this.hasReverseCarriageway(crossingEdge))
                 {
                     logger.trace("Skipping {} as possible dual carriageway.",
                             matchingEndEdge.get().getOsmIdentifier());
@@ -155,7 +155,7 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
 
                 // create the flag for the original edge.
                 logger.info("Flagging {}", crossingEdge.getOsmIdentifier());
-                final CheckFlag flag = createFlag(crossingEdge,
+                final CheckFlag flag = this.createFlag(crossingEdge,
                         this.getLocalizedInstruction(0, crossingEdge.getOsmIdentifier()));
                 return Optional.of(flag);
             }

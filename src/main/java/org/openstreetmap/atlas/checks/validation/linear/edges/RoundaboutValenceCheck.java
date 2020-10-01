@@ -23,12 +23,12 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * This check ensures that roundabouts with unreasonable valences are flagged. In reference to OSM
  * Wiki, each roundabout should have greater than 1 connection as 1 connection should be tagged as a
  * turning point, and no connections is obviously not a valid way. In addition, no individual Node
- * within a roundabout should have more than one master Edge connecting from outside the roundabout.
+ * within a roundabout should have more than one main Edge connecting from outside the roundabout.
  *
  * @author savannahostrowski
  * @author bbreithaupt
  */
-public class RoundaboutValenceCheck extends BaseCheck
+public class RoundaboutValenceCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 1L;
@@ -60,8 +60,8 @@ public class RoundaboutValenceCheck extends BaseCheck
                 && JunctionTag.isRoundabout(object)
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
-                // Make sure that we are only looking at master edges
-                && ((Edge) object).isMasterEdge()
+                // Make sure that we are only looking at main edges
+                && ((Edge) object).isMainEdge()
                 // Check for excluded highway types
                 && HighwayTag.isCarNavigableHighway(object);
     }
@@ -95,7 +95,7 @@ public class RoundaboutValenceCheck extends BaseCheck
         {
             final int nodeValence = node.connectedEdges().stream()
                     .filter(currentEdge -> HighwayTag.isCarNavigableHighway(currentEdge)
-                            && currentEdge.isMasterEdge() && !JunctionTag.isRoundabout(currentEdge)
+                            && currentEdge.isMainEdge() && !JunctionTag.isRoundabout(currentEdge)
                             && !roundaboutEdges.contains(currentEdge))
                     .collect(Collectors.toSet()).size();
             // If a Node has a valance of more than 1, flag it and the roundabout

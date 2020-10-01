@@ -83,24 +83,25 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         /*
          * This will retrieve two values, minimum and maximum length in the JSON configuration.
          */
-        this.minimumDistance = configurationValue(configuration, "length.minimum.meters",
+        this.minimumDistance = this.configurationValue(configuration, "length.minimum.meters",
                 DISTANCE_MINIMUM_METERS_DEFAULT, Distance::meters);
-        this.maximumDistance = configurationValue(configuration, "length.maximum.kilometers",
+        this.maximumDistance = this.configurationValue(configuration, "length.maximum.kilometers",
                 DISTANCE_MAXIMUM_KILOMETERS_DEFAULT, Distance::kilometers);
         // This retrieves the minimum highway type from the config
         final String highwayType = this.configurationValue(configuration, "highway.minimum",
                 HIGHWAY_MINIMUM_DEFAULT);
         this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.checkConstructionRoad = configurationValue(configuration, "construction.check", false);
+        this.checkConstructionRoad = this.configurationValue(configuration, "construction.check",
+                false);
     }
 
     /**
-     * Checks if the supplied object is of {@link ItemType} {@link Edge} and that it is the
-     * MasterEdge and whether a car can navigate on the edge. So we would ignore any pedestrian
-     * paths in this particular check. An {@link Edge} contains a master edge and a reserve edge,
-     * unless it is a oneway edge in which case it will only contain the master edge. Either way we
-     * want to ignore the reverse edge so that we don't produce duplicate flags for what is
-     * essentially the same feature.
+     * Checks if the supplied object is of {@link ItemType} {@link Edge} and that it is the MainEdge
+     * and whether a car can navigate on the edge. So we would ignore any pedestrian paths in this
+     * particular check. An {@link Edge} contains a main edge and a reserve edge, unless it is a
+     * oneway edge in which case it will only contain the main edge. Either way we want to ignore
+     * the reverse edge so that we don't produce duplicate flags for what is essentially the same
+     * feature.
      *
      * @param object
      *            the {@link AtlasObject} you are checking
@@ -109,9 +110,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // Consider navigable master edges
-        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object)
+        // Consider navigable main edges
+        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
+                && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object)
                 && !intersectsAirport((Edge) object);
     }
 

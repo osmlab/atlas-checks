@@ -51,7 +51,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
     public InvalidLanesTagCheck(final Configuration configuration)
     {
         super(configuration);
-        this.lanesFilter = (TaggableFilter) configurationValue(configuration, "lanes.filter",
+        this.lanesFilter = this.configurationValue(configuration, "lanes.filter",
                 LANES_FILTER_DEFAULT, value -> TaggableFilter.forDefinition(value.toString()));
     }
 
@@ -67,7 +67,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
     {
         return Validators.hasValuesFor(object, LanesTag.class)
                 && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && ((Edge) object).isMasterEdge() && !this.lanesFilter.test(object)
+                && ((Edge) object).isMainEdge() && !this.lanesFilter.test(object)
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -81,7 +81,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (this.isChecked.contains(object.getIdentifier()) || !partOfTollBooth(object))
+        if (this.isChecked.contains(object.getIdentifier()) || !this.partOfTollBooth(object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
 
@@ -125,7 +125,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
             polledEdge = toProcess.poll();
             for (final Edge edge : polledEdge.connectedEdges())
             {
-                if (!connectedEdges.contains(edge) && ((Edge) object).isMasterEdge()
+                if (!connectedEdges.contains(edge) && ((Edge) object).isMainEdge()
                         && Validators.hasValuesFor(edge, LanesTag.class)
                         && HighwayTag.isCarNavigableHighway(edge) && !this.lanesFilter.test(edge))
                 {
@@ -150,7 +150,7 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
      */
     private boolean partOfTollBooth(final AtlasObject object)
     {
-        final HashSet<Edge> connectedInvalidEdges = connectedInvalidLanes(object);
+        final HashSet<Edge> connectedInvalidEdges = this.connectedInvalidLanes(object);
 
         // check for toll booths
         for (final Edge edge : connectedInvalidEdges)

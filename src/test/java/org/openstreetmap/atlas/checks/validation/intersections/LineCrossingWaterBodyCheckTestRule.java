@@ -334,7 +334,7 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                     // Line crossing waterbody with no tags
                     @Line(id = "2", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_2),
                             @Loc(value = LOCATION_OUTSIDE_AREA_4) }),
-                    // Line crossing water body with tags not in whitelist, will be flagged
+                    // Line crossing water body with tags not in permitlist, will be flagged
                     @Line(id = "3", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_1),
                             @Loc(value = AREA_LOCATION_5),
                             @Loc(value = LOCATION_OUTSIDE_AREA_3) }, tags = { "route=road" }),
@@ -344,12 +344,12 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_OUTSIDE_AREA_4) }) },
             // Relations
             relations = {
-                    // Multipolygon relation with no whitelisted tags - will be flagged
+                    // Multipolygon relation with no permitlisted tags - will be flagged
                     @Relation(members = {
                             @Member(id = "1", type = "line", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER),
                             @Member(id = "2", type = "line", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER) }, tags = {
                                     "type=multipolygon" }),
-                    // Multipolygon relation with whitelisted tag - will not be flagged
+                    // Multipolygon relation with permitlisted tag - will not be flagged
                     @Relation(members = {
                             @Member(id = "4", type = "line", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) }, tags = {
                                     "type=multipolygon", "place=village" }) })

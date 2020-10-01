@@ -28,17 +28,16 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class ApproximateWayCheck extends BaseCheck<Long>
 {
 
+    public static final double DEVIATION_MAXIMUM_RATIO_DEFAULT = 0.04;
+    public static final double DEVIATION_MINIMUM_LENGTH_DEFAULT = 10;
+    public static final double MIN_ANGLE_DEFAULT = 60.0;
+    public static final double MAX_ANGLE_DEFAULT = 160.0;
+    public static final double BEZIER_STEP_DEFAULT = 0.01;
     private static final long serialVersionUID = 125449616392217396L;
     private static final String EDGE_DEVIATION_INSTRUCTION = "Way {0,number,#} is crude. Please add more nodes/rearrange current nodes to more closely match the road from imagery";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(EDGE_DEVIATION_INSTRUCTION);
-    public static final double DEVIATION_MAXIMUM_RATIO_DEFAULT = 0.04;
-    public static final double DEVIATION_MINIMUM_LENGTH_DEFAULT = 10;
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
-    public static final double MIN_ANGLE_DEFAULT = 60.0;
-    public static final double MAX_ANGLE_DEFAULT = 160.0;
-    public static final double BEZIER_STEP_DEFAULT = 0.01;
-
     private final double maxDeviationRatio;
     private final Distance minDeviationLength;
     private final HighwayTag highwayMinimum;
@@ -57,16 +56,16 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     public ApproximateWayCheck(final Configuration configuration)
     {
         super(configuration);
-        this.maxDeviationRatio = configurationValue(configuration, "deviation.ratio.max",
+        this.maxDeviationRatio = this.configurationValue(configuration, "deviation.ratio.max",
                 DEVIATION_MAXIMUM_RATIO_DEFAULT, Double::doubleValue);
-        this.minDeviationLength = configurationValue(configuration, "deviation.minimum.meters",
+        this.minDeviationLength = this.configurationValue(configuration, "deviation.minimum.meters",
                 DEVIATION_MINIMUM_LENGTH_DEFAULT, Distance::meters);
         final String highwayType = this.configurationValue(configuration, "highway.minimum",
                 HIGHWAY_MINIMUM_DEFAULT);
         this.highwayMinimum = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.minAngle = configurationValue(configuration, "angle.minimum", MIN_ANGLE_DEFAULT);
-        this.maxAngle = configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
-        this.bezierStep = configurationValue(configuration, "bezierStep", BEZIER_STEP_DEFAULT);
+        this.minAngle = this.configurationValue(configuration, "angle.minimum", MIN_ANGLE_DEFAULT);
+        this.maxAngle = this.configurationValue(configuration, "angle.max", MAX_ANGLE_DEFAULT);
+        this.bezierStep = this.configurationValue(configuration, "bezierStep", BEZIER_STEP_DEFAULT);
     }
 
     /**
@@ -79,8 +78,8 @@ public class ApproximateWayCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMasterEdge()
-                && HighwayTag.isCarNavigableHighway(object) && isMinimumHighwayType(object);
+        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
+                && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object);
     }
 
     /**
@@ -106,22 +105,22 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         {
             final Segment seg1 = segments.get(index);
             final Segment seg2 = segments.get(index + 1);
-            final double angle = findAngle(seg1, seg2);
+            final double angle = this.findAngle(seg1, seg2);
             // ignore sharp turns and almost straightaways
-            if (angle < minAngle || angle > maxAngle)
+            if (angle < this.minAngle || angle > this.maxAngle)
             {
                 return false;
             }
-            final double distance = quadraticBezier(seg1.first(), seg2.first(), seg2.end());
+            final double distance = this.quadraticBezier(seg1.first(), seg2.first(), seg2.end());
             final double legsLength = seg1.length().asMeters() + seg2.length().asMeters();
             return distance > this.minDeviationLength.asMeters()
-                    && distance / legsLength > maxDeviationRatio;
+                    && distance / legsLength > this.maxDeviationRatio;
         });
 
         if (isCrude)
         {
-            return Optional.of(
-                    createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
 
         return Optional.empty();
@@ -197,7 +196,7 @@ public class ApproximateWayCheck extends BaseCheck<Long>
         final double endY = end.getLatitude().onEarth().asMeters();
 
         double min = Double.POSITIVE_INFINITY;
-        for (double step = 0; step <= 1; step += bezierStep)
+        for (double step = 0; step <= 1; step += this.bezierStep)
         {
             // https://stackoverflow.com/questions/5634460/quadratic-b%C3%A9zier-curve-calculate-points
             final double pointX = (pow(1 - step, 2) * startX)
@@ -205,7 +204,7 @@ public class ApproximateWayCheck extends BaseCheck<Long>
             final double pointY = (pow(1 - step, 2) * startY)
                     + (2 * step * (1 - step) * anchorY + pow(step, 2) * endY);
             // distance from point on bezier curve to anchor
-            final double distance = distance(pointX, pointY, anchorX, anchorY);
+            final double distance = this.distance(pointX, pointY, anchorX, anchorY);
             if (distance < min)
             {
                 min = distance;

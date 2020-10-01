@@ -87,7 +87,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         if (object instanceof Edge && !isFlagged(object.getOsmIdentifier())
-                && ((Edge) object).isMasterEdge())
+                && ((Edge) object).isMainEdge())
         {
             final Edge edge = (Edge) object;
 
@@ -98,7 +98,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
                     && edge.overallHeading().isPresent() &&
                     // Way must not continue beyond this edge
                     edge.outEdges().stream().noneMatch(connectedEdge -> edge
-                            .getMasterEdgeIdentifier() != connectedEdge.getMasterEdgeIdentifier()
+                            .getMainEdgeIdentifier() != connectedEdge.getMainEdgeIdentifier()
                             && edge.getOsmIdentifier() == connectedEdge.getOsmIdentifier());
         }
         return false;
@@ -121,16 +121,16 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
             {
                 final Edge inconsistentEdge = inconsistentEdgeTuple.getFirst();
 
-                // Get the incoming and outgoing master edges from each edge
+                // Get the incoming and outgoing main edges from each edge
                 final Set<Edge> inEdges = inconsistentEdge.inEdges().stream()
-                        .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+                        .filter(Edge::isMainEdge).collect(Collectors.toSet());
                 final Set<Edge> outEdges = inconsistentEdge.outEdges().stream()
-                        .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+                        .filter(Edge::isMainEdge).collect(Collectors.toSet());
 
                 // Get the length of each edge
                 final Distance edgeLength = inconsistentEdge.asPolyLine().length();
 
-                // If both the incoming and outgoing master edges are less than or equal to 2 or
+                // If both the incoming and outgoing main edges are less than or equal to 2 or
                 // the length of the edge is less than the maximum allowed edge length configured
                 if ((inEdges.size() <= TWO_CONNECTED_EDGES
                         && outEdges.size() <= TWO_CONNECTED_EDGES)
@@ -232,7 +232,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
     private Stream<Edge> connectionsSimilarToReferenceEdge(final HighwayTag referenceHighwayType,
             final Edge edge)
     {
-        return edge.outEdges().stream().filter(Edge::isMasterEdge)
+        return edge.outEdges().stream().filter(Edge::isMainEdge)
                 .filter(connectedEdge -> referenceHighwayType
                         .isOfEqualClassification(connectedEdge.highwayTag())
                         && this.areInTheSimilarDirection(edge, connectedEdge));
@@ -251,7 +251,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
 
         // Split the outEdges into those that are inconsistent links and those that are not
         final Map<Boolean, List<Edge>> edgesAreProblematicLinks = referenceEdge.outEdges().stream()
-                .filter(Edge::isMasterEdge)
+                .filter(Edge::isMainEdge)
                 .filter(this.allConnectedEdgesFilter(referenceEdge, referenceHighwayType))
                 .collect(Collectors.partitioningBy(
                         edge -> this.isProblematicLink(edge, referenceHighwayType)));
@@ -296,9 +296,9 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
     {
         return connectedEdge ->
         {
-            final Set<Edge> inEdges = connectedEdge.inEdges().stream().filter(Edge::isMasterEdge)
+            final Set<Edge> inEdges = connectedEdge.inEdges().stream().filter(Edge::isMainEdge)
                     .collect(Collectors.toSet());
-            final Set<Edge> outEdges = connectedEdge.outEdges().stream().filter(Edge::isMasterEdge)
+            final Set<Edge> outEdges = connectedEdge.outEdges().stream().filter(Edge::isMainEdge)
                     .collect(Collectors.toSet());
             // Get similar connections using first edge identifier and type as reference
             final Set<Edge> similarConnections = this
@@ -328,7 +328,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
      */
     private boolean isBypassed(final Edge inconsistency, final HighwayTag referenceHighwayTag)
     {
-        return inconsistency.start().outEdges().stream().filter(Edge::isMasterEdge)
+        return inconsistency.start().outEdges().stream().filter(Edge::isMainEdge)
                 .anyMatch(edge -> !edge.equals(inconsistency)
                         && edge.end().equals(inconsistency.end())
                         && edge.highwayTag().isIdenticalClassification(referenceHighwayTag));
@@ -343,7 +343,7 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
      */
     private boolean isContinuousOutgoingEdge(final Edge edge)
     {
-        return edge.outEdges().stream().filter(Edge::isMasterEdge)
+        return edge.outEdges().stream().filter(Edge::isMainEdge)
                 .anyMatch(connectedEdge -> edge.highwayTag()
                         .isOfEqualClassification(connectedEdge.highwayTag())
                         && this.areInTheSimilarDirection(edge, connectedEdge));
@@ -382,8 +382,8 @@ public class InconsistentRoadClassificationCheck extends BaseCheck<Long>
         return edge.highwayTag().isMoreImportantThan(referenceHighwayType) && (edge.length()
                 .isGreaterThanOrEqualTo(this.longEdgeThreshold)
                 || edge.connectedNodes().stream().allMatch(node -> node.connectedEdges().stream()
-                        .anyMatch(connectedEdge -> edge.getMasterEdgeIdentifier() != connectedEdge
-                                .getMasterEdgeIdentifier()
+                        .anyMatch(connectedEdge -> edge.getMainEdgeIdentifier() != connectedEdge
+                                .getMainEdgeIdentifier()
                                 && edge.highwayTag()
                                         .isOfEqualClassification(connectedEdge.highwayTag()))));
     }

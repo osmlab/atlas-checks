@@ -32,7 +32,7 @@ Our first goal is to validate the incoming Atlas Object. We know two things abou
 * Must have an `iso_country_code` tag
 * Must have not already been flagged
 * Must have `junction=roundabout` tag
-* Must be master edge
+* Must be main edge
 * Must not have a highway tag value of `cycleway`, `footway`, or `pedestrian`
 
 After the preliminary filtering of features, we need to get all the roundabout's edges. We use a

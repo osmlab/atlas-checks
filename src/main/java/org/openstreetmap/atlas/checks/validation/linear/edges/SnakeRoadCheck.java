@@ -54,7 +54,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
      * <li>3) {@link Edge} is not a roundabout
      * <li>4) {@link Edge} is not an Open Highway Area
      * <li>5) {@link Edge} is way-sectioned
-     * <li>6) {@link Edge} is the master edge
+     * <li>6) {@link Edge} is the main edge
      * </ul>
      *
      * @param candidate
@@ -63,7 +63,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
      */
     private static boolean isValidEdgeToConsider(final Edge candidate)
     {
-        return candidate.isMasterEdge()
+        return candidate.isMainEdge()
                 && candidate.highwayTag().isMoreImportantThanOrEqualTo(HighwayTag.RESIDENTIAL)
                 && candidate.highwayTag().isLessImportantThan(HighwayTag.TRUNK_LINK)
                 && !JunctionTag.isRoundabout(candidate)
@@ -98,15 +98,15 @@ public class SnakeRoadCheck extends BaseCheck<Long>
         this.markAsFlagged(object.getOsmIdentifier());
 
         // Instantiate the network walk with the starting edge
-        final SnakeRoadNetworkWalk walk = initializeNetworkWalk(edge);
+        final SnakeRoadNetworkWalk walk = this.initializeNetworkWalk(edge);
 
         // Walk the road
-        walkNetwork(edge, walk);
+        this.walkNetwork(edge, walk);
 
         // If we've found a snake road, create a flag
-        if (networkWalkQualifiesAsSnakeRoad(walk))
+        if (this.networkWalkQualifiesAsSnakeRoad(walk))
         {
-            return Optional.of(createFlag(walk.getVisitedEdges(),
+            return Optional.of(this.createFlag(walk.getVisitedEdges(),
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
 
@@ -131,7 +131,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
     {
         final SnakeRoadNetworkWalk walk = new SnakeRoadNetworkWalk(edge,
                 EDGE_HEADING_DIFFERENCE_THRESHOLD);
-        walk.addDirectConnections(walk.getConnectedMasterEdgeOfTheSameWay(edge));
+        walk.addDirectConnections(walk.getConnectedMainEdgeOfTheSameWay(edge));
         return walk;
     }
 
@@ -170,7 +170,7 @@ public class SnakeRoadCheck extends BaseCheck<Long>
             walk.visitEdge(current, connection);
 
             final Set<Edge> oneLayerRemovedConnections = walk
-                    .getConnectedMasterEdgeOfTheSameWay(connection);
+                    .getConnectedMainEdgeOfTheSameWay(connection);
             oneLayerRemovedConnections.forEach(
                     onceRemovedConnection -> walk.checkIfEdgeHeadingDifferenceExceedsThreshold(
                             connection, onceRemovedConnection));

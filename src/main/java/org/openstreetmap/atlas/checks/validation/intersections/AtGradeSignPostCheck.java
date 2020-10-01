@@ -54,8 +54,8 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      */
     private class FlaggedIntersection
     {
-        private int instructionIndex;
-        private Set<AtlasEntity> setOfFlaggedItems;
+        private final int instructionIndex;
+        private final Set<AtlasEntity> setOfFlaggedItems;
 
         FlaggedIntersection(final int instructionIndex, final Set<AtlasEntity> setOfFlaggedItems)
         {
@@ -125,7 +125,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
             LINK_WITH_NO_DESTINATION_SIGN_RELATION);
 
     private final Set<String> highwayFilter;
-    private Map<String, List<String>> connectedHighwayTypes;
+    private final Map<String, List<String>> connectedHighwayTypes;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -231,9 +231,9 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final List<String> identifiers = this.getIdentifiers(entitiesToBeFlagged);
         entitiesToBeFlagged.add(intersectingNode);
         this.markAsFlagged(String.valueOf(intersectingNode.getIdentifier()));
-        return Optional.of(
-                this.createFlag(entitiesToBeFlagged, this.getLocalizedInstruction(instructionIndex,
-                        intersectingNode.getIdentifier(), new StringList(identifiers).join(", "))));
+        return Optional.of(this.createFlag(entitiesToBeFlagged,
+                this.getLocalizedInstruction(instructionIndex, intersectingNode.getOsmIdentifier(),
+                        new StringList(identifiers).join(", "))));
     }
 
     @Override
@@ -341,7 +341,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
         final Set<AtlasEntity> validLinkRoads = new HashSet<>();
         // Find all connected link roads to the start of the inEdge
         final Set<Edge> connectedLinks = inEdge.start().outEdges().stream()
-                .filter(outEdge -> outEdge.isMasterEdge()
+                .filter(outEdge -> outEdge.isMainEdge()
                         && outEdge.getIdentifier() != inEdge.getIdentifier()
                         && outEdge.highwayTag().isLink())
                 .collect(Collectors.toSet());
@@ -464,7 +464,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      */
     private List<String> getIdentifiers(final Set<AtlasEntity> objects)
     {
-        return Iterables.stream(objects).map(AtlasEntity::getIdentifier).map(String::valueOf)
+        return Iterables.stream(objects).map(AtlasEntity::getOsmIdentifier).map(String::valueOf)
                 .collectToList();
     }
 
@@ -631,7 +631,7 @@ public class AtGradeSignPostCheck extends BaseCheck<String>
      */
     private boolean isValidIntersectingEdge(final Edge edge)
     {
-        return edge.isMasterEdge() && HighwayTag.highwayTag(edge).isPresent()
+        return edge.isMainEdge() && HighwayTag.highwayTag(edge).isPresent()
                 && this.highwayFilter.contains(edge.highwayTag().getTagValue());
     }
 

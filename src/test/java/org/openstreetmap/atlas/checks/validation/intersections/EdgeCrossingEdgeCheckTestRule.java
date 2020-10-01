@@ -105,7 +105,7 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_5) }, tags = { "highway=motorway" }),
                     @Edge(id = "-423456789000000", coordinates = { @Loc(value = LOCATION_1),
                             @Loc(value = LOCATION_4) }, tags = { "highway=motorway" }) })
-    private Atlas invalidCrossingNonMasterItemsAtlas;
+    private Atlas invalidCrossingNonMainItemsAtlas;
 
     @TestAtlas(
             // nodes
@@ -204,9 +204,9 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
         return this.invalidCrossingItemsWithSameLayerTagAtlas;
     }
 
-    public Atlas invalidCrossingNonMasterItemsAtlas()
+    public Atlas invalidCrossingNonMainItemsAtlas()
     {
-        return this.invalidCrossingNonMasterItemsAtlas;
+        return this.invalidCrossingNonMainItemsAtlas;
     }
 
     public Atlas noCrossingItemsAtlas()

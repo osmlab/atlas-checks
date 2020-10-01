@@ -45,7 +45,7 @@ public class MalformedPolyLineCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && ((Edge) object).isMasterEdge() || object instanceof Line;
+        return object instanceof Edge && ((Edge) object).isMainEdge() || object instanceof Line;
     }
 
     @Override
