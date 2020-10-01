@@ -74,7 +74,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
     {
         // Valid object for the check is a pedestrian area that has not been flagged
         return object instanceof Area && this.isPedestrianArea(object)
-                && !isFlagged(object.getOsmIdentifier());
+                && !this.isFlagged(object.getOsmIdentifier());
     }
 
     @Override
@@ -143,7 +143,7 @@ public class PedestrianAreaOverlappingEdgeCheck extends BaseCheck<Long>
             this.markAsFlagged(object.getOsmIdentifier());
             final CheckFlag flag = this.createFlag(overlappingEdges,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                            new StringList(getIdentifiers(overlappingEdges)).join(", ")));
+                            new StringList(this.getIdentifiers(overlappingEdges)).join(", ")));
             flag.addObject(object);
             return Optional.of(flag);
         }

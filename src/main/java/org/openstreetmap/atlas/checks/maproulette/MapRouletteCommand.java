@@ -103,7 +103,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
             }
         }
         this.mapRouletteClient.setOutputPath((Optional<String>) commandMap.getOption(OUTPUT_PATH));
-        execute(commandMap, mapRoulette);
+        this.execute(commandMap, mapRoulette);
         return 0;
     }
 

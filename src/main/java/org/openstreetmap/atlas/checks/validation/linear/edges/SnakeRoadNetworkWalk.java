@@ -75,7 +75,7 @@ public class SnakeRoadNetworkWalk
     protected void checkIfEdgeHeadingDifferenceExceedsThreshold(final Edge incoming,
             final Edge outgoing)
     {
-        if (!isSnakeRoad())
+        if (!this.isSnakeRoad())
         {
             final Optional<Heading> incomingHeading = incoming.overallHeading();
             final Optional<Heading> outgoingHeading = outgoing.overallHeading();
@@ -83,7 +83,7 @@ public class SnakeRoadNetworkWalk
                     && incomingHeading.get().difference(outgoingHeading.get())
                             .isGreaterThanOrEqualTo(this.edgeHeadingDifferenceThreshold))
             {
-                setSnakeRoadStatus(true);
+                this.setSnakeRoadStatus(true);
             }
         }
     }
@@ -103,23 +103,23 @@ public class SnakeRoadNetworkWalk
      */
     protected void filterFalsePositives()
     {
-        if (isSnakeRoad() && (hasRoadName() || hasRefTag()))
+        if (this.isSnakeRoad() && (this.hasRoadName() || this.hasRefTag()))
         {
             // Gather all connected edges for the first and last edge of this road
             final Set<Edge> connections = new HashSet<>();
-            connections.addAll(
-                    getMainEdgesForConnectedEdgesOfDifferentWays((Edge) getVisitedEdges().first()));
-            connections.addAll(
-                    getMainEdgesForConnectedEdgesOfDifferentWays((Edge) getVisitedEdges().last()));
+            connections.addAll(this.getMainEdgesForConnectedEdgesOfDifferentWays(
+                    (Edge) this.getVisitedEdges().first()));
+            connections.addAll(this.getMainEdgesForConnectedEdgesOfDifferentWays(
+                    (Edge) this.getVisitedEdges().last()));
 
             // Check their connections for connected names and ref tags
             for (final Edge connection : connections)
             {
                 final Optional<String> connectionName = connection.getTag(NameTag.KEY);
                 final Optional<String> refTag = connection.getTag(ReferenceTag.KEY);
-                if (connectionName.equals(getRoadName()) || refTag.equals(getRefTag()))
+                if (connectionName.equals(this.getRoadName()) || refTag.equals(this.getRefTag()))
                 {
-                    setSnakeRoadStatus(false);
+                    this.setSnakeRoadStatus(false);
                     break;
                 }
             }

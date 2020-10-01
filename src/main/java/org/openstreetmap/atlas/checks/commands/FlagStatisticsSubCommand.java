@@ -107,12 +107,13 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             // Write the counts for the input logs is requested
             if (outputTypes.contains(OutputTypes.RUN_SUMMARY.toString()))
             {
-                this.writeCSV(outputFolder + "/runSummary.csv", generateFullOutput(inputCounts));
+                this.writeCSV(outputFolder + "/runSummary.csv",
+                        this.generateFullOutput(inputCounts));
             }
             // Generate the totals output
-            List<List<String>> totalsOutput = generateTotalsOutput(inputCounts);
+            List<List<String>> totalsOutput = this.generateTotalsOutput(inputCounts);
             // Generate the counts output if requested
-            List<List<String>> countsOutput = generateCountsOutput(inputCounts);
+            List<List<String>> countsOutput = this.generateCountsOutput(inputCounts);
 
             // Get the optional reference input
             final Optional<String> referenceFilePath = this.optionAndArgumentDelegate
@@ -132,14 +133,14 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                 if (outputTypes.contains(OutputTypes.RUN_SUMMARY.toString()))
                 {
                     this.writeCSV(outputFolder + "/runSummaryDifference.csv",
-                            generateFullOutput(differenceCounts));
+                            this.generateFullOutput(differenceCounts));
                 }
 
                 // Add the reference and difference metrics to the totals output
-                totalsOutput = addReferenceAndDifferenceToTotalsOutput(totalsOutput,
+                totalsOutput = this.addReferenceAndDifferenceToTotalsOutput(totalsOutput,
                         referenceCounts, differenceCounts);
                 // Add the reference and difference metrics to the counts output
-                countsOutput = addReferenceAndDifferenceToCountsOutput(countsOutput,
+                countsOutput = this.addReferenceAndDifferenceToCountsOutput(countsOutput,
                         referenceCounts, differenceCounts);
             }
 
@@ -232,15 +233,16 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
         for (int index = 1; index < outputLines.size(); index++)
         {
             // Get the reference value for the country and check
-            final Optional<Long> referenceCount = getCountryCheckCount(referenceCountryCheckCounts,
-                    stage1Output.get(index).get(0), stage1Output.get(index).get(1));
+            final Optional<Long> referenceCount = this.getCountryCheckCount(
+                    referenceCountryCheckCounts, stage1Output.get(index).get(0),
+                    stage1Output.get(index).get(1));
             // Append the value or an empty string
             stage1Output.get(index).add(2,
                     referenceCount.isPresent() ? String.valueOf(referenceCount.get())
                             : EMPTY_STRING);
 
             // Get the difference value for the country and check
-            final Optional<Long> differenceCount = getCountryCheckCount(diffCountryCheckCounts,
+            final Optional<Long> differenceCount = this.getCountryCheckCount(diffCountryCheckCounts,
                     stage1Output.get(index).get(0), stage1Output.get(index).get(1));
             // Append the value or an empty string
             stage1Output.get(index)
@@ -285,10 +287,10 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             final String check = outputLines.get(index).get(0);
             // Add the reference total
             outputLines.get(index).add(1,
-                    String.valueOf(getCheckTotal(referenceCountryCheckCounts, check)));
+                    String.valueOf(this.getCheckTotal(referenceCountryCheckCounts, check)));
             // Add the difference total
             outputLines.get(index)
-                    .add(String.valueOf(getCheckTotal(diffCountryCheckCounts, check)));
+                    .add(String.valueOf(this.getCheckTotal(diffCountryCheckCounts, check)));
         }
 
         return outputLines;
@@ -334,7 +336,8 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             countryCheckRow.add(check);
 
             // Get the optional country check count
-            final Optional<Long> count = getCountryCheckCount(countryCheckCounts, country, check);
+            final Optional<Long> count = this.getCountryCheckCount(countryCheckCounts, country,
+                    check);
             if (count.isPresent())
             {
                 // If present add the value
@@ -390,7 +393,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             // Get the value of the check for each country
             checkRow.addAll(countries.stream().map(country ->
             {
-                final Optional<Long> count = getCountryCheckCount(countryCheckCounts, country,
+                final Optional<Long> count = this.getCountryCheckCount(countryCheckCounts, country,
                         check);
 
                 if (count.isPresent())
@@ -401,7 +404,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
                 return EMPTY_STRING;
             }).collect(Collectors.toList()));
             // Get the total count for this check across all countries
-            checkRow.add(String.valueOf(getCheckTotal(countryCheckCounts, check)));
+            checkRow.add(String.valueOf(this.getCheckTotal(countryCheckCounts, check)));
             outputLines.add(checkRow);
         });
 
@@ -455,7 +458,7 @@ public class FlagStatisticsSubCommand extends AbstractAtlasShellToolsCommand
             // Add the check name
             checkRow.add(check);
             // Add the total count
-            checkRow.add(String.valueOf(getCheckTotal(countryCheckCounts, check)));
+            checkRow.add(String.valueOf(this.getCheckTotal(countryCheckCounts, check)));
             outputLines.add(checkRow);
         });
 

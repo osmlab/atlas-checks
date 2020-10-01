@@ -48,11 +48,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with id {0} has invalid crossings with {1}."
+    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings with {1}."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0} is crossing invalidly with {1}.";
+    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
@@ -91,14 +91,14 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     public EdgeCrossingEdgeCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
+        this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
                 MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object) && isValidCrossingEdge(object);
+        return TypePredicates.IS_EDGE.test(object) && this.isValidCrossingEdge(object);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
                     if (!this.isFlagged(minPair._1().getIdentifier()))
                     {
-                        return createEdgeCrossCheckFlag(minPair._1(), minPair._2());
+                        return this.createEdgeCrossCheckFlag(minPair._1(), minPair._2());
                     }
                 }
             }
@@ -154,7 +154,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
     /**
      * Function creates edge cross check flag.
-     * 
+     *
      * @param edge
      *            Atlas object.
      * @param collectedEdges
@@ -164,14 +164,15 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private Optional<CheckFlag> createEdgeCrossCheckFlag(final Edge edge,
             final Set<Edge> collectedEdges)
     {
-        final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(edge));
+        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(edge));
         this.markAsFlagged(edge.getIdentifier());
         final Set<Location> points = collectedEdges.stream()
                 .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
-                .flatMap(crossEdge -> getIntersection(edge, crossEdge).stream())
+                .flatMap(crossEdge -> this.getIntersection(edge, crossEdge).stream())
                 .collect(Collectors.toSet());
-        newFlag.addInstruction(this.getLocalizedInstruction(0, edge.getIdentifier(), collectedEdges
-                .stream().map(AtlasObject::getIdentifier).collect(Collectors.toList())));
+        newFlag.addInstruction(
+                this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges.stream()
+                        .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList())));
         newFlag.addPoints(points);
         newFlag.addObject(edge);
         return Optional.of(newFlag);
@@ -179,7 +180,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 
     /**
      * This function returns set of intersections locations for given params.
-     * 
+     *
      * @param edge1
      *            Atlas object
      * @param edge2

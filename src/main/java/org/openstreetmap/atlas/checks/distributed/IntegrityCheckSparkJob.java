@@ -138,8 +138,8 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     public void start(final CommandMap commandMap)
     {
         final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
-        final String input = Optional.ofNullable(input(commandMap)).orElse(atlasDirectory);
-        final String output = output(commandMap);
+        final String input = Optional.ofNullable(this.input(commandMap)).orElse(atlasDirectory);
+        final String output = this.output(commandMap);
         @SuppressWarnings("unchecked")
         final Set<OutputFormats> outputFormats = (Set<OutputFormats>) commandMap
                 .get(OUTPUT_FORMATS);
@@ -168,13 +168,13 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         final Rectangle pbfBoundary = ((Optional<Rectangle>) commandMap.getOption(PBF_BOUNDING_BOX))
                 .orElse(Rectangle.MAXIMUM);
         final boolean compressOutput = Boolean
-                .valueOf((String) commandMap.get(SparkJob.COMPRESS_OUTPUT));
+                .parseBoolean((String) commandMap.get(SparkJob.COMPRESS_OUTPUT));
 
-        final Map<String, String> sparkContext = configurationMap();
+        final Map<String, String> sparkContext = this.configurationMap();
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
         // check configuration and country list
-        final Set<BaseCheck> preOverriddenChecks = checkLoader.loadChecks();
-        if (!isValidInput(countries, preOverriddenChecks))
+        final Set<BaseCheck<?>> preOverriddenChecks = checkLoader.loadChecks();
+        if (!this.isValidInput(countries, preOverriddenChecks))
         {
             logger.error("No countries supplied or checks enabled, exiting!");
             return;
@@ -182,7 +182,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 
         // Read priority countries from the configuration
         final List<String> priorityCountries = checksConfiguration
-                .get("priority.countries", Collections.EMPTY_LIST).value();
+                .get("priority.countries", Collections.emptyList()).value();
 
         // Create a list of Country to Check tuples
         // Add priority countries first if they are supplied by parameter
@@ -204,7 +204,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         logger.info("Initialized checks: {}", infoMessage2);
 
         // Parallelize on the countries
-        final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = getContext()
+        final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = this.getContext()
                 .parallelizePairs(countryCheckTuples, countryCheckTuples.size());
 
         // Set target and temporary folders
@@ -378,11 +378,11 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     @Override
     protected List<String> outputToClean(final CommandMap command)
     {
-        final String output = output(command);
+        final String output = this.output(command);
         final List<String> staticPaths = super.outputToClean(command);
-        staticPaths.add(getAlternateSubFolderOutput(output, OUTPUT_FLAG_FOLDER));
-        staticPaths.add(getAlternateSubFolderOutput(output, OUTPUT_GEOJSON_FOLDER));
-        staticPaths.add(getAlternateSubFolderOutput(output, OUTPUT_ATLAS_FOLDER));
+        staticPaths.add(this.getAlternateSubFolderOutput(output, OUTPUT_FLAG_FOLDER));
+        staticPaths.add(this.getAlternateSubFolderOutput(output, OUTPUT_GEOJSON_FOLDER));
+        staticPaths.add(this.getAlternateSubFolderOutput(output, OUTPUT_ATLAS_FOLDER));
         return staticPaths;
     }
 
@@ -396,12 +396,9 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
      *            set of {@link BaseCheck}s to execute
      * @return {@code true} if sanity check passes, {@code false} otherwise
      */
-    private boolean isValidInput(final StringList countries, final Set<BaseCheck> checksToExecute)
+    private boolean isValidInput(final StringList countries,
+            final Set<BaseCheck<?>> checksToExecute)
     {
-        if (countries.size() == 0 || checksToExecute.size() == 0)
-        {
-            return false;
-        }
-        return true;
+        return !(countries.isEmpty() || checksToExecute.isEmpty());
     }
 }

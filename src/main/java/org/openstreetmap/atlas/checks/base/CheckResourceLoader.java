@@ -139,12 +139,12 @@ public class CheckResourceLoader
 
     public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled)
     {
-        return loadChecks(isEnabled, this.configuration);
+        return this.loadChecks(isEnabled, this.configuration);
     }
 
     public <T extends Check> Set<T> loadChecks(final Configuration configuration)
     {
-        return loadChecks(this::isEnabledByConfiguration, configuration);
+        return this.loadChecks(this::isEnabledByConfiguration, configuration);
     }
 
     /**
@@ -178,13 +178,13 @@ public class CheckResourceLoader
      */
     public <T extends Check> Set<T> loadChecks()
     {
-        return loadChecks(this::isEnabledByConfiguration, this.configuration);
+        return this.loadChecks(this::isEnabledByConfiguration, this.configuration);
     }
 
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
         final Configuration countryConfiguration = this.getConfigurationForCountry(country);
-        return loadChecks(checkClass -> this.isEnabledByConfiguration(countryConfiguration,
+        return this.loadChecks(checkClass -> this.isEnabledByConfiguration(countryConfiguration,
                 checkClass, country), countryConfiguration);
     }
 
@@ -303,7 +303,7 @@ public class CheckResourceLoader
 
     private boolean isEnabledByConfiguration(final Class checkClass)
     {
-        return isEnabledByConfiguration(this.configuration, checkClass);
+        return this.isEnabledByConfiguration(this.configuration, checkClass);
     }
 
     private boolean isEnabledByConfiguration(final Configuration configuration,

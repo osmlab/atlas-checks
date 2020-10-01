@@ -75,21 +75,20 @@ public abstract class BaseCheck<T> implements Check, Serializable
      * @param configuration
      *            {@link Configuration} required to construct any Check
      */
-    @SuppressWarnings("unchecked")
     public BaseCheck(final Configuration configuration)
     {
-        this.acceptPiers = configurationValue(configuration, PARAMETER_ACCEPT_PIERS, false);
-        this.countries = Collections.unmodifiableList(configurationValue(configuration,
-                PARAMETER_PERMITLIST_COUNTRIES, Collections.EMPTY_LIST));
-        this.denylistCountries = Collections.unmodifiableList(configurationValue(configuration,
-                PARAMETER_DENYLIST_COUNTRIES, Collections.EMPTY_LIST));
-        this.tagFilter = TaggableFilter
-                .forDefinition(configurationValue(configuration, PARAMETER_PERMITLIST_TAGS, ""));
-        final Map<String, String> challengeMap = configurationValue(configuration,
-                PARAMETER_CHALLENGE, Collections.EMPTY_MAP);
-        this.flagLanguageMap = configurationValue(configuration, PARAMETER_FLAG,
-                Collections.EMPTY_MAP);
-        this.locale = configurationValue(configuration, PARAMETER_LOCALE_KEY,
+        this.acceptPiers = this.configurationValue(configuration, PARAMETER_ACCEPT_PIERS, false);
+        this.countries = Collections.unmodifiableList(this.configurationValue(configuration,
+                PARAMETER_PERMITLIST_COUNTRIES, Collections.emptyList()));
+        this.denylistCountries = Collections.unmodifiableList(this.configurationValue(configuration,
+                PARAMETER_DENYLIST_COUNTRIES, Collections.emptyList()));
+        this.tagFilter = TaggableFilter.forDefinition(
+                this.configurationValue(configuration, PARAMETER_PERMITLIST_TAGS, ""));
+        final Map<String, String> challengeMap = this.configurationValue(configuration,
+                PARAMETER_CHALLENGE, Collections.emptyMap());
+        this.flagLanguageMap = this.configurationValue(configuration, PARAMETER_FLAG,
+                Collections.emptyMap());
+        this.locale = this.configurationValue(configuration, PARAMETER_LOCALE_KEY,
                 DEFAULT_LOCALE.getLanguage(), Locale::new);
         if (challengeMap.isEmpty())
         {
@@ -104,14 +103,14 @@ public abstract class BaseCheck<T> implements Check, Serializable
         }
         this.globalPolygonFilter = AtlasEntityPolygonsFilter.forConfiguration(configuration);
         this.checkPolygonFilter = AtlasEntityPolygonsFilter.forConfigurationValues(
-                configurationValue(configuration, AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY,
-                        Collections.emptyMap()),
-                configurationValue(configuration,
+                this.configurationValue(configuration,
+                        AtlasEntityPolygonsFilter.INCLUDED_POLYGONS_KEY, Collections.emptyMap()),
+                this.configurationValue(configuration,
                         AtlasEntityPolygonsFilter.INCLUDED_MULTIPOLYGONS_KEY,
                         Collections.emptyMap()),
-                configurationValue(configuration, AtlasEntityPolygonsFilter.EXCLUDED_POLYGONS_KEY,
-                        Collections.emptyMap()),
-                configurationValue(configuration,
+                this.configurationValue(configuration,
+                        AtlasEntityPolygonsFilter.EXCLUDED_POLYGONS_KEY, Collections.emptyMap()),
+                this.configurationValue(configuration,
                         AtlasEntityPolygonsFilter.EXCLUDED_MULTIPOLYGONS_KEY,
                         Collections.emptyMap()));
     }
@@ -151,7 +150,7 @@ public abstract class BaseCheck<T> implements Check, Serializable
     @Override
     public void clear()
     {
-        clearFlaggedIdentifiers();
+        this.clearFlaggedIdentifiers();
     }
 
     @Override
@@ -292,9 +291,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
         this.getFlaggedIdentifiers().clear();
     }
 
-    protected final String configurationKey(final Class type, final String key)
+    protected final String configurationKey(final Class<?> type, final String key)
     {
-        return formatKey(type.getSimpleName(), key);
+        return this.formatKey(type.getSimpleName(), key);
     }
 
     /**
@@ -306,19 +305,19 @@ public abstract class BaseCheck<T> implements Check, Serializable
      */
     protected final String configurationKey(final String key)
     {
-        return formatKey(getCheckName(), key);
+        return this.formatKey(this.getCheckName(), key);
     }
 
     protected <U> U configurationValue(final Configuration configuration, final String key,
             final U defaultValue)
     {
-        return configuration.get(configurationKey(key), defaultValue).value();
+        return configuration.get(this.configurationKey(key), defaultValue).value();
     }
 
     protected <U, V> V configurationValue(final Configuration configuration, final String key,
             final U defaultValue, final Function<U, V> transform)
     {
-        return configuration.get(configurationKey(key), defaultValue, transform).value();
+        return configuration.get(this.configurationKey(key), defaultValue, transform).value();
     }
 
     protected CheckFlag createFlag(final AtlasObject object, final String instruction)

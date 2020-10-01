@@ -51,7 +51,7 @@ public class FlaggedPoint extends FlaggedObject
     {
         this.locationItem = locationItem;
         this.point = locationItem.getLocation();
-        this.properties = initProperties(locationItem);
+        this.properties = this.initProperties(locationItem);
     }
 
     @Override

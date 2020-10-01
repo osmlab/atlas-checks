@@ -94,7 +94,7 @@ public class ChallengeSerializationTest
         final String raw = challenge.readAndClose();
 
         final JsonObject deserializedJson = deserializedChallenge.toJson("123456789");
-        final JsonObject rawJson = getGson().fromJson(raw, JsonObject.class);
+        final JsonObject rawJson = this.getGson().fromJson(raw, JsonObject.class);
 
         Assert.assertEquals(deserializedJson.get("name"), rawJson.get("name"));
         Assert.assertEquals(deserializedJson.get("description"), rawJson.get("description"));
@@ -118,7 +118,7 @@ public class ChallengeSerializationTest
         final String raw = challenge.readAndClose();
 
         final JsonObject deserializedJson = deserializedChallenge.toJson("123456789");
-        final JsonObject rawJson = getGson().fromJson(raw, JsonObject.class);
+        final JsonObject rawJson = this.getGson().fromJson(raw, JsonObject.class);
 
         Assert.assertEquals("123456789", deserializedJson.get("name").getAsString());
         Assert.assertNull(rawJson.get("name"));
@@ -138,7 +138,7 @@ public class ChallengeSerializationTest
     {
         final ClassResource challengeResource = new ClassResource(resource);
         final JsonObject challengeJSON = challengeResource.getJSONResourceObject(JsonObject.class);
-        return getGson().fromJson(challengeJSON, Challenge.class);
+        return this.getGson().fromJson(challengeJSON, Challenge.class);
     }
 
     /**

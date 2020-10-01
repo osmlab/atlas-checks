@@ -47,7 +47,7 @@ public class ImproperAndUnknownRoadNameCheck extends BaseCheck<Long>
     public ImproperAndUnknownRoadNameCheck(final Configuration configuration)
     {
         super(configuration);
-        this.improperNames = configurationValue(configuration, "names.improper",
+        this.improperNames = this.configurationValue(configuration, "names.improper",
                 IMPROPER_NAMES_DEFAULT);
     }
 
@@ -63,14 +63,14 @@ public class ImproperAndUnknownRoadNameCheck extends BaseCheck<Long>
         if (!this.isFlagged(object.getOsmIdentifier()))
         {
             final Set<String> instructions = new HashSet<>();
-            getAllNameTags(object).entrySet().forEach(
-                    entry -> updateInstructions(entry, instructions, object.getOsmIdentifier()));
+            this.getAllNameTags(object).entrySet().forEach(entry -> this.updateInstructions(entry,
+                    instructions, object.getOsmIdentifier()));
 
             if (!instructions.isEmpty())
             {
                 this.markAsFlagged(object.getOsmIdentifier());
-                final CheckFlag flag = createFlag(new OsmWayWalker((Edge) object).collectEdges(),
-                        "");
+                final CheckFlag flag = this
+                        .createFlag(new OsmWayWalker((Edge) object).collectEdges(), "");
                 flag.addInstructions(instructions);
                 return Optional.of(flag);
             }

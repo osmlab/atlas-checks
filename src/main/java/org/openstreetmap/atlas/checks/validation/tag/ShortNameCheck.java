@@ -74,10 +74,10 @@ public class ShortNameCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        final String objectIsoCountry = object.tag(ISOCountryTag.KEY).toUpperCase();
+        final String objectIsoCountry = object.tag(ISOCountryTag.KEY);
         final String nameTag = object.tag(NameTag.KEY);
-        return nameTag != null
-                && nameTag.length() < (this.nonLatinScriptCountries.contains(objectIsoCountry)
+        return nameTag != null && objectIsoCountry != null && nameTag
+                .length() < (this.nonLatinScriptCountries.contains(objectIsoCountry.toUpperCase())
                         ? this.nonLatinThreshold
                         : this.threshold);
     }

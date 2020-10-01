@@ -92,7 +92,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
                     // add all overlapping edges not yet flagged and not pedestrian areas
                     overlappingItems.addAll(Iterables
                             .stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
-                            .filter(notEqual(object).and(notIn(object))
+                            .filter(notEqual(object).and(this.notIn(object))
                                     .and(this.overlapsSegment(start, end))
                                     .and(this.filterPedestrianAreas ? edge -> !this.edgeIsArea(edge)
                                             : this.notPedestrianAreas((Edge) object))
@@ -109,7 +109,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
                         .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getIdentifier()));
                 final CheckFlag flag = this.createFlag(overlappingItems,
                         this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                                new StringList(osmIdentifiers(overlappingItems)).join(", ")));
+                                new StringList(this.osmIdentifiers(overlappingItems)).join(", ")));
                 // If the edges are part of the same way, give special instructions
                 if (overlappingItems.stream().anyMatch(
                         overlapEdge -> overlapEdge.getOsmIdentifier() == object.getOsmIdentifier()))
@@ -143,7 +143,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     {
         return (Validators.isOfType(edge, HighwayTag.class, HighwayTag.PEDESTRIAN)
                 || Validators.isOfType(edge, ManMadeTag.class, ManMadeTag.PIER))
-                && (AREA_YES_TAG.test(edge) || isPartOfClosedWay(edge))
+                && (AREA_YES_TAG.test(edge) || this.isPartOfClosedWay(edge))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && AREA_YES_TAG.test(edge));
     }
@@ -217,9 +217,9 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
         return edge ->
         {
             // Check if the edge is a pedestrian area
-            final boolean edgeIsPedArea = edgeIsArea(edge);
+            final boolean edgeIsPedArea = this.edgeIsArea(edge);
             // Check if the object is a pedestrian area
-            final boolean objectIsPedArea = edgeIsArea(object);
+            final boolean objectIsPedArea = this.edgeIsArea(object);
             // If both are pedestrian areas, or one is a pedestrian area and the other is a lower
             // priority highway than the configurable return false
             return !((edgeIsPedArea && objectIsPedArea)

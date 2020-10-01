@@ -93,7 +93,7 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
             bucketLock.readLock().unlock();
         }
 
-        final int batchSize = computeBatchSize();
+        final int batchSize = this.computeBatchSize();
         if (featureBucket.size() >= batchSize)
         {
             bucketLock.writeLock().lock();
