@@ -110,7 +110,7 @@
         <module name="PackageDeclaration"/>
         <module name="ParameterAssignment"/>
         <module name="RequireThis">
-            <property name="checkMethods" value="false"/>
+            <property name="checkMethods" value="true"/>
             <property name="validateOnlyOverlapping" value="false"/>
         </module>
         <module name="SimplifyBooleanExpression" />

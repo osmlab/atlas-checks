@@ -7,17 +7,17 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Test the countries.whitelist and countries.blacklist functionality. This allows users to filter
- * checks based on countries, by either allowing only countries in the whitelist or not allowing any
- * countries in the blacklist
+ * Test the countries.permitlist and countries.denylist functionality. This allows users to filter
+ * checks based on countries, by either allowing only countries in the permitlist or not allowing
+ * any countries in the denylist
  * 
  * @author cuthbertm
  */
 public class CountryTest
 {
     /**
-     * Test to make sure both the keys "countries" and "countries.whitelist" work for the whitelist
-     * option
+     * Test to make sure both the keys "countries" and "countries.permitlist" work for the
+     * permitlist option
      */
     @Test
     public void testBackwardsCompatibility()
@@ -27,55 +27,55 @@ public class CountryTest
     }
 
     /**
-     * Test that all countries included in the blacklist are ignored, and any countries not included
-     * in the blacklist are used.
-     */
-    @Test
-    public void testBlacklistCountries()
-    {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries.blacklist\":[\"AIA\",\"DOM\"]}}";
-        this.testConfiguration(countryConfig, "AIA", false);
-        this.testConfiguration(countryConfig, "DOM", false);
-        this.testConfiguration(countryConfig, "IRN", true);
-    }
-
-    /**
-     * Two tests: 1. Test that if containing whitelist and blacklist, that only countries in the
-     * whitelist are used and all countries in the blacklist are ignored. 2. Test that if a country
-     * is both in the whitelist and the blacklist that the country value in the whitelist takes
+     * Two tests: 1. Test that if containing permitlist and denylist, that only countries in the
+     * permitlist are used and all countries in the denylist are ignored. 2. Test that if a country
+     * is both in the permitlist and the denylist that the country value in the permitlist takes
      * precedence
      */
     @Test
     public void testCombinationCountries()
     {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[\"IRN\",\"IRQ\"],\"countries.blacklist\":[\"AIA\",\"DOM\"]}}";
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries.permitlist\":[\"IRN\",\"IRQ\"],\"countries.denylist\":[\"AIA\",\"DOM\"]}}";
         this.testConfiguration(countryConfig, "IRN", true);
         this.testConfiguration(countryConfig, "IRQ", true);
         this.testConfiguration(countryConfig, "AIA", false);
         this.testConfiguration(countryConfig, "DOM", false);
-        final String countryConfig2 = "{\"BaseTestCheck\":{\"countries.whitelist\":[\"IRN\"],\"countries.blacklist\":[\"IRN\"]}}";
+        final String countryConfig2 = "{\"BaseTestCheck\":{\"countries.permitlist\":[\"IRN\"],\"countries.denylist\":[\"IRN\"]}}";
         this.testConfiguration(countryConfig2, "IRN", true);
     }
 
     /**
-     * Test that if you supply an empty country whitelist, that the option is essentially ignored
+     * Test that all countries included in the denylist are ignored, and any countries not included
+     * in the denylist are used.
+     */
+    @Test
+    public void testDenylistCountries()
+    {
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries.denylist\":[\"AIA\",\"DOM\"]}}";
+        this.testConfiguration(countryConfig, "AIA", false);
+        this.testConfiguration(countryConfig, "DOM", false);
+        this.testConfiguration(countryConfig, "IRN", true);
+    }
+
+    /**
+     * Test that if you supply an empty country permitlist, that the option is essentially ignored
      * and all countries are allowed.
      */
     @Test
     public void testNoCountries()
     {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[]}}";
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries.permitlist\":[]}}";
         this.testConfiguration(countryConfig, "AIA", true);
     }
 
     /**
-     * Test that only countries included in the whitelist are used, and any countries not included
-     * in the whitelist are ignored.
+     * Test that only countries included in the permitlist are used, and any countries not included
+     * in the permitlist are ignored.
      */
     @Test
-    public void testWhitelistCountries()
+    public void testPermitlistCountries()
     {
-        final String countryConfig = "{\"BaseTestCheck\":{\"countries.whitelist\":[\"AIA\",\"DOM\"]}}";
+        final String countryConfig = "{\"BaseTestCheck\":{\"countries.permitlist\":[\"AIA\",\"DOM\"]}}";
         this.testConfiguration(countryConfig, "AIA", true);
         this.testConfiguration(countryConfig, "DOM", true);
         this.testConfiguration(countryConfig, "IRN", false);

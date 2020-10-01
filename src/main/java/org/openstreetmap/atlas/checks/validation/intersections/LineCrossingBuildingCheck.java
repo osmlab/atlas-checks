@@ -116,14 +116,14 @@ public class LineCrossingBuildingCheck extends BaseCheck<Long>
         // MapRoulette will display way-sectioned edges in case there is an invalid crossing.
         // Therefore, if an OSM way crosses a building multiple times in separate edges, then
         // each edge will be marked explicitly.
-        final List<Edge> edges = findCrossingItems(atlas.edgesIntersecting(areaAsPolygon),
+        final List<Edge> edges = this.findCrossingItems(atlas.edgesIntersecting(areaAsPolygon),
                 areaAsPolygon);
-        final List<Line> lines = findCrossingItems(atlas.linesIntersecting(areaAsPolygon),
+        final List<Line> lines = this.findCrossingItems(atlas.linesIntersecting(areaAsPolygon),
                 areaAsPolygon);
 
         if (edges != null || lines != null)
         {
-            final CheckFlag flag = new CheckFlag(getTaskIdentifier(object));
+            final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
             flag.addObject(object);
             flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
 

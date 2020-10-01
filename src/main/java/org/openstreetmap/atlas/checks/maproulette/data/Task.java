@@ -100,9 +100,9 @@ public class Task
         final JsonObject task = new JsonObject();
         final JsonObject result = new JsonObject();
         result.addProperty(TASK_TYPE, "FeatureCollection");
-        result.add(TASK_FEATURES, generateTaskFeatures(this.points, this.geoJson));
+        result.add(TASK_FEATURES, this.generateTaskFeatures(this.points, this.geoJson));
         task.add(TASK_INSTRUCTION, new JsonPrimitive(this.instruction));
-        task.add(TASK_NAME, new JsonPrimitive(getTaskIdentifier()));
+        task.add(TASK_NAME, new JsonPrimitive(this.getTaskIdentifier()));
         task.add(TASK_PARENT_ID, new JsonPrimitive(parentIdentifier));
         task.add(TASK_GEOMETRIES, result);
         return task;

@@ -17,7 +17,7 @@ The check provides the user with a collection of flagged road segments and their
 
 ### Code Review
 
-The check starts by ensuring a given AtlasObject is a named Master Edge that has not been flagged and is of a high enough HighwayTag priority. The check then collects all Edges that have a common connection to the starting Edge and are also within a configurable search area. The collected Edges are filtered for those that have names that are at an edit distance of 1 from the starting Edge's name. However, there are exceptions in this process. If two Edges' names contain different numbers or space-delimited characters, they are not considered to have inconsistent spelling with one another and are not flagged.
+The check starts by ensuring a given AtlasObject is a named Main Edge that has not been flagged and is of a high enough HighwayTag priority. The check then collects all Edges that have a common connection to the starting Edge and are also within a configurable search area. The collected Edges are filtered for those that have names that are at an edit distance of 1 from the starting Edge's name. However, there are exceptions in this process. If two Edges' names contain different numbers or space-delimited characters, they are not considered to have inconsistent spelling with one another and are not flagged.
 Any Edges whose names are within 1 edit distance of each other are flagged.
 
 For the source code for this check, please refer to [RoadNameSpellingConsistencyCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/RoadNameSpellingConsistencyCheck.java)

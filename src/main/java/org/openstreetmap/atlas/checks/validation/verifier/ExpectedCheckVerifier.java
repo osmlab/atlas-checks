@@ -16,7 +16,7 @@ import com.google.common.collect.Iterables;
 /**
  * JUnit verifier for comparing an expected list of CheckFlags with those actually created by the
  * checks under test
- * 
+ *
  * @author cstaylor
  */
 public class ExpectedCheckVerifier extends Verifier
@@ -42,7 +42,7 @@ public class ExpectedCheckVerifier extends Verifier
      * @param check
      *            the {@link Check} under test
      */
-    public void actual(final Atlas atlas, final BaseCheck check)
+    public void actual(final Atlas atlas, final BaseCheck<?> check)
     {
         Iterables.addAll(this.actual, check.flags(atlas));
     }
@@ -50,7 +50,7 @@ public class ExpectedCheckVerifier extends Verifier
     /**
      * Verifies that the expected {@link CheckFlag}s are returned when the {@link Check} is run over
      * the test {@link Atlas}
-     * 
+     *
      * @param flags
      *            expected {@link CheckFlag}s
      * @return the {@link ExpectedCheckVerifier}

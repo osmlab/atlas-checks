@@ -5,8 +5,10 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.openstreetmap.atlas.geography.Located;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
@@ -61,6 +64,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     private Set<FlaggedObject> flaggedObjects = new LinkedHashSet<>();
     private final String identifier;
     private final List<String> instructions = new ArrayList<>();
+    private final Set<FeatureChange> fixSuggestions = new HashSet<>();
 
     /**
      * A basic constructor that simply flags some identifying value
@@ -106,10 +110,65 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public CheckFlag(final String identifier, final Set<? extends AtlasObject> objects,
             final List<String> instructions, final List<Location> points)
     {
-        addObjects(objects);
-        addPoints(points);
-        addInstructions(instructions);
+        this(identifier, objects, instructions, points, new HashSet<>());
+    }
+
+    /**
+     * Creates a {@link CheckFlag} with the addition of a list of {@code point} {@link Location}s
+     * that highlight specific points and a {@link Set} of {@link FeatureChange}s that suggest how
+     * to fix the flagged objects.
+     *
+     * @param identifier
+     *            the identifying value to flag
+     * @param objects
+     *            {@link AtlasObject}s to flag
+     * @param instructions
+     *            a list of free form instructions
+     * @param points
+     *            {@code point} {@link Location}s to highlight
+     * @param fixSuggestions
+     *            {@link Set} of {@link FeatureChange}s representing suggested fixes for flagged
+     *            features
+     */
+    public CheckFlag(final String identifier, final Set<? extends AtlasObject> objects,
+            final List<String> instructions, final List<Location> points,
+            final Set<FeatureChange> fixSuggestions)
+    {
+        this.addObjects(objects);
+        this.addPoints(points);
+        this.addInstructions(instructions);
         this.identifier = identifier;
+        this.addFixSuggestions(fixSuggestions);
+    }
+
+    /**
+     * Add a single {@link FeatureChange} to the fix suggestions. Fix suggestions should be
+     * {@link FeatureChange}s of
+     * {@link org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity}s created from flagged
+     * {@link org.openstreetmap.atlas.geography.atlas.items.AtlasEntity}s with changes suggesting
+     * how the flagged feature can be fixed.
+     *
+     * @param suggestion
+     *            {@link FeatureChange} with suggested alterations to a flagged feature
+     * @return this {@link CheckFlag}
+     */
+    public CheckFlag addFixSuggestion(final FeatureChange suggestion)
+    {
+        this.fixSuggestions.add(suggestion);
+        return this;
+    }
+
+    /**
+     * Add a {@link Set} of {@link FeatureChange}s to the fix suggestions.
+     *
+     * @param suggestions
+     *            {@link Collection} of {@link FeatureChange} fix suggestions
+     * @return this {@link CheckFlag}
+     */
+    public CheckFlag addFixSuggestions(final Collection<FeatureChange> suggestions)
+    {
+        this.fixSuggestions.addAll(suggestions);
+        return this;
     }
 
     /**
@@ -234,12 +293,12 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
 
     public JsonObject asGeoJsonFeature()
     {
-        final JsonObject geometry = boundsGeoJsonGeometry();
+        final JsonObject geometry = this.boundsGeoJsonGeometry();
 
         final JsonObject properties = new JsonObject();
         properties.addProperty("flag:type", CheckFlag.class.getSimpleName());
-        properties.addProperty("flag:id", getIdentifier());
-        properties.addProperty("flag:instructions", getInstructions());
+        properties.addProperty("flag:id", this.getIdentifier());
+        properties.addProperty("flag:instructions", this.getInstructions());
 
         // The legacy GeoJSON FeatureCollection doesn't actually provide this,
         // but I figure this might be useful to know about if it's there...
@@ -300,6 +359,14 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
             }
         }
         return FlaggedObject.COUNTRY_MISSING;
+    }
+
+    /**
+     * @return a {@link Set} of {@link FeatureChange} fix suggestions
+     */
+    public Set<FeatureChange> getFixSuggestions()
+    {
+        return this.fixSuggestions;
     }
 
     /**
@@ -376,14 +443,14 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         task.setTaskIdentifier(this.identifier);
 
         // Add custom pin point(s), if supplied.
-        final Set<Location> points = getPoints();
+        final Set<Location> points = this.getPoints();
         if (!points.isEmpty())
         {
             task.setPoints(points);
         }
         else
         {
-            final Set<PolyLine> polyLines = getPolyLines();
+            final Set<PolyLine> polyLines = this.getPolyLines();
             if (!polyLines.isEmpty())
             {
                 // Retrieve the first item in the list and retrieve the first point in the
@@ -435,7 +502,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public Iterable<Iterable<Location>> getShapes()
     {
-        return Iterables.asIterable(getPolyLines().stream()
+        return Iterables.asIterable(this.getPolyLines().stream()
                 .map(polyLine -> (Iterable<Location>) polyLine).collect(Collectors.toList()));
     }
 
@@ -466,7 +533,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     @Override
     public Iterator<Location> iterator()
     {
-        return new MultiIterable<>(getShapes()).iterator();
+        return new MultiIterable<>(this.getShapes()).iterator();
     }
 
     /**
@@ -496,7 +563,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         try (BufferedWriter out = new BufferedWriter(
                 new OutputStreamWriter(writableResource.write(), StandardCharsets.UTF_8)))
         {
-            out.write(toString());
+            out.write(this.toString());
         }
         catch (final Exception e)
         {

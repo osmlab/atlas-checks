@@ -161,7 +161,7 @@
   },
   "ConnectivityCheck": {
     "nearby.edge.distance.meters": 2.0,
-    "blacklisted.highway.filter": "highway->no",
+    "denylisted.highway.filter": "highway->no",
     "challenge": {
       "description": "Checks if a node should be connected to a nearby node or edge.",
       "blurb": "Connectivity Check",
@@ -430,7 +430,8 @@
     "filters.resource.override": false,
     "filters.classes.tags": [
       ["area","boundary->protected_area&protect_class->!"],
-      ["relation","boundary->protected_area&protect_class->!"]
+      ["relation","boundary->protected_area&protect_class->!"],
+      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, incorrect or illegal values",
@@ -1056,6 +1057,58 @@
       "instruction": "Open your favorite editor and check the instruction for the task and then update the conditional tag to the appropriate scheme.",
       "difficulty": "EASY",
       "defaultPriority": "MEDIUM"
+    }
+  },
+  "BridgeDetailedInfoCheck": {
+    "bridge.length.minimum.meters": 500.0,
+    "challenge": {
+      "description": "Bridge is long enough to deserve a more detailed description than just bridge=yes",
+      "blurb": "Bridge without structure",
+      "instruction": "Open your favorite editor and add a more specific 'bridge=*' or 'bridge:structure=*' tag.",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
+  },
+  "WaterAreaCheck": {
+    "intersect.minimum.limit": 0.01,
+    "water.tags.crossing.ignore": [
+      "waterway->dam"
+    ],
+    "water.tags.filters": [
+      "natural->water&water->*|waterway->riverbank"
+    ],
+    "water.tags.filtersrequireswaterway": [
+      "natural->water&water->river,stream_pool,canal,lock|waterway->riverbank"
+    ],
+    "waterway.tags.filters": [
+      "waterway->*"
+    ],
+    "challenge": {
+      "description": "Overlapping waterway areas",
+      "blurb": "Edit overlapping waterway features so they either validly intersect or do not overlap.",
+      "instruction": "Open your favorite editor and edit the features overlapping the ocean so they either validly overlap or do not overlap.",
+      "difficulty": "MEDIUM"
+    }
+  },
+  "WaterWayCheck": {
+    "ocean": {
+      "boundary": "natural->coastline",
+      "valid": "natural->strait,channel,fjord,sound,bay|harbour->*&harbour->!no|estuary->*&estuary->!no|bay->*&bay->!no|place->sea|seamark:type->harbour,harbour_basin,sea_area|water->bay,cove,harbour|waterway->artificial,dock"
+    },
+    "waterway": {
+      "elevation": {
+        "distance.min.start.end": 450.0,
+        "resolution.min.uphill": 1.0
+      },
+      "sink.tags.filters": "natural->sinkhole|waterway->tidal_channel,drain|manhole->drain",
+      "tags.filters": "waterway->river,stream,tidal_channel,canal,drain,ditch,pressurised"
+    },
+    "challenge": {
+      "description": "Waterways that have circular flows, are crossing, do not have a sink, or are going uphill (if elevation data was provided)",
+      "blurb": "Fix waterways such that they make physical sense",
+      "instruction": "Open your favorite editor and edit the waterways",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW"
     }
   }
 }

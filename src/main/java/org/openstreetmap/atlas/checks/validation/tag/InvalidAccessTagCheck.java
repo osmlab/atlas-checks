@@ -55,8 +55,8 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     {
         super(configuration);
 
-        final String highwayType = (String) this.configurationValue(configuration,
-                "minimum.highway.type", MINIMUM_HIGHWAY_TYPE_DEFAULT);
+        final String highwayType = this.configurationValue(configuration, "minimum.highway.type",
+                MINIMUM_HIGHWAY_TYPE_DEFAULT);
         this.minimumHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
     }
 
@@ -73,8 +73,8 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return AccessTag.isNo(object) && ((object instanceof Edge) || (object instanceof Line))
-                && Edge.isMasterEdgeIdentifier(object.getIdentifier())
-                && !this.isFlagged(object.getOsmIdentifier()) && isMinimumHighway(object);
+                && Edge.isMainEdgeIdentifier(object.getIdentifier())
+                && !this.isFlagged(object.getOsmIdentifier()) && this.isMinimumHighway(object);
     }
 
     /**
@@ -87,7 +87,7 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!isInMilitaryArea((LineItem) object))
+        if (!this.isInMilitaryArea((LineItem) object))
         {
             this.markAsFlagged(object.getOsmIdentifier());
 

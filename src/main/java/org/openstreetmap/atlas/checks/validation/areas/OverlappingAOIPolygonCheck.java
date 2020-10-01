@@ -24,7 +24,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * @author danielbaah
  * @author bbreithaupt
  */
-public class OverlappingAOIPolygonCheck extends BaseCheck
+public class OverlappingAOIPolygonCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = -3286838841854959683L;
@@ -60,9 +60,9 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
     public OverlappingAOIPolygonCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumIntersect = (Double) this.configurationValue(configuration,
-                "intersect.minimum.limit", MINIMUM_PROPORTION_DEFAULT);
-        final List<String> aoiFiltersString = (List<String>) configurationValue(configuration,
+        this.minimumIntersect = this.configurationValue(configuration, "intersect.minimum.limit",
+                MINIMUM_PROPORTION_DEFAULT);
+        final List<String> aoiFiltersString = this.configurationValue(configuration,
                 "aoi.tags.filters", AOI_FILTERS_DEFAULT);
         aoiFiltersString
                 .forEach(string -> this.aoiFilters.add(TaggableFilter.forDefinition(string)));
@@ -82,7 +82,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         // aoiFilters. aoiFiltersTest() and aoiFilters is used in place of a single TaggableFilter
         // so that each filter may be tested separately later.
         return object instanceof Area && !this.isFlagged(object.getIdentifier())
-                && aoiFiltersTest(object);
+                && this.aoiFiltersTest(object);
     }
 
     /**
@@ -105,7 +105,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
                 .stream(object.getAtlas().areasIntersecting(aoiBounds,
                         area -> area.getIdentifier() != aoi.getIdentifier()
                                 && !this.isFlagged(area.getIdentifier())
-                                && area.intersects(aoiPolygon) && aoiFiltersTest(area)))
+                                && area.intersects(aoiPolygon) && this.aoiFiltersTest(area)))
                 .collectToSet();
 
         final CheckFlag flag = new CheckFlag(this.getTaskIdentifier(object));
@@ -116,7 +116,7 @@ public class OverlappingAOIPolygonCheck extends BaseCheck
         for (final Area area : overlappingAreas)
         {
             if (IntersectionUtilities.findIntersectionPercentage(aoiPolygon,
-                    area.asPolygon()) >= this.minimumIntersect && aoiFiltersTest(object, area))
+                    area.asPolygon()) >= this.minimumIntersect && this.aoiFiltersTest(object, area))
             {
                 flag.addObject(area);
                 flag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier(),

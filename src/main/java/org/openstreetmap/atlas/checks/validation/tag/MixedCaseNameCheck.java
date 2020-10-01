@@ -81,20 +81,20 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     public MixedCaseNameCheck(final Configuration configuration)
     {
         super(configuration);
-        this.checkNameCountries = (List<String>) configurationValue(configuration,
-                "check_name.countries", CHECK_NAME_COUNTRIES_DEFAULT);
-        this.languageNameTags = (List<String>) configurationValue(configuration,
-                "name.language.keys", LANGUAGE_NAME_TAGS_DEFAULT);
-        this.lowerCasePrepositions = (List<String>) configurationValue(configuration,
-                "name.prepositions", LOWER_CASE_PREPOSITIONS_DEFAULT);
-        this.lowerCaseArticles = (List<String>) configurationValue(configuration, "name.articles",
+        this.checkNameCountries = this.configurationValue(configuration, "check_name.countries",
+                CHECK_NAME_COUNTRIES_DEFAULT);
+        this.languageNameTags = this.configurationValue(configuration, "name.language.keys",
+                LANGUAGE_NAME_TAGS_DEFAULT);
+        this.lowerCasePrepositions = this.configurationValue(configuration, "name.prepositions",
+                LOWER_CASE_PREPOSITIONS_DEFAULT);
+        this.lowerCaseArticles = this.configurationValue(configuration, "name.articles",
                 LOWER_CASE_ARTICLES_DEFAULT);
-        this.splitCharacters = (String) configurationValue(configuration, "regex.split",
+        this.splitCharacters = this.configurationValue(configuration, "regex.split",
                 SPLIT_CHARACTERS_DEFAULT);
-        this.nameAffixes = (String) configurationValue(configuration, "name.affixes",
-                NAME_AFFIXES_DEFAULT, value -> String.join("|", (List<String>) value));
-        this.mixedCaseUnits = (String) configurationValue(configuration, "name.units",
-                MIXED_CASE_UNITS_DEFAULT, value -> String.join("|", (List<String>) value));
+        this.nameAffixes = this.configurationValue(configuration, "name.affixes",
+                NAME_AFFIXES_DEFAULT, value -> String.join("|", value));
+        this.mixedCaseUnits = this.configurationValue(configuration, "name.units",
+                MIXED_CASE_UNITS_DEFAULT, value -> String.join("|", value));
 
         // Compile regex
         this.upperCasePattern = Pattern.compile("\\p{Lu}");
@@ -127,8 +127,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
                         && Validators.hasValuesFor(object, NameTag.class)
-                        // And if an Edge, is a master edge
-                        && (!(object instanceof Edge) || ((Edge) object).isMasterEdge())
+                        // And if an Edge, is a main edge
+                        && (!(object instanceof Edge) || ((Edge) object).isMainEdge())
                         // Or it must have a specific language name tag from languageNameTags
                         || this.languageNameTags.stream()
                                 .anyMatch(key -> object.getOsmTags().containsKey(key)));
@@ -151,14 +151,14 @@ public class MixedCaseNameCheck extends BaseCheck<String>
         final String country = object.tag(ISOCountryTag.KEY);
         if (country != null && this.checkNameCountries.contains(country.toUpperCase())
                 && Validators.hasValuesFor(object, NameTag.class)
-                && isMixedCase(osmTags.get(NameTag.KEY)))
+                && this.isMixedCase(osmTags.get(NameTag.KEY)))
         {
             mixedCaseNameTags.add(NameTag.KEY);
         }
         // Check all language name tags
         for (final String key : this.languageNameTags)
         {
-            if (osmTags.containsKey(key) && isMixedCase(osmTags.get(key)))
+            if (osmTags.containsKey(key) && this.isMixedCase(osmTags.get(key)))
             {
                 mixedCaseNameTags.add(key);
             }
@@ -210,7 +210,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
             for (final String word : wordArray)
             {
                 // Check if the word is intentionally mixed case
-                if (!isMixedCaseUnit(word))
+                if (!this.isMixedCaseUnit(word))
                 {
                     final Matcher firstLetterMatcher = this.anyLetterPattern.matcher(word);
                     // If the word is not in the list of prepositions, and the
@@ -227,8 +227,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                             // If the word is not all upper case: check if all the letters not
                             // following apostrophes, unless at the end of the word, are lower case
                             || this.lowerCasePattern.matcher(word).find()
-                                    && !isMixedCaseApostrophe(word)
-                                    && isProperNonFirstCapital(word))
+                                    && !this.isMixedCaseApostrophe(word)
+                                    && this.isProperNonFirstCapital(word))
                     {
                         return true;
                     }

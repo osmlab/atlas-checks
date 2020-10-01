@@ -47,7 +47,7 @@ public class ShortSegmentCheck extends BaseCheck<Long>
      * @param edge
      *            {@link Edge} to check the {@link Node}s of
      * @param valence
-     *            the minimum number of master edges for the node to have an acceptable valence
+     *            the minimum number of main edges for the node to have an acceptable valence
      * @return an {@link Optional} containing the first low valence node found
      */
     private static Optional<Node> getConnectedNodesWithValenceLessThan(final Edge edge,
@@ -56,18 +56,18 @@ public class ShortSegmentCheck extends BaseCheck<Long>
         // go through each connected node of given edge
         for (final Node node : edge.connectedNodes())
         {
-            // Get the connected master edges
-            final List<Edge> masterEdges = node.connectedEdges().stream().filter(Edge::isMasterEdge)
+            // Get the connected main edges
+            final List<Edge> mainEdges = node.connectedEdges().stream().filter(Edge::isMainEdge)
                     .collect(Collectors.toList());
             // check if any of them has less than given valence value
-            if (masterEdges.size() < valence
+            if (mainEdges.size() < valence
                     // Check if the low valence is the result of a closed way being way
                     // sectioned
                     // A short segment at the start or end of a closed way will have a node with
-                    // 2 connected master edges, and they will have the same OSM id
-                    && !(masterEdges.size() == 2
+                    // 2 connected main edges, and they will have the same OSM id
+                    && !(mainEdges.size() == 2
                             //
-                            && masterEdges.stream()
+                            && mainEdges.stream()
                                     .filter(connectedEdge -> connectedEdge
                                             .getOsmIdentifier() == edge.getOsmIdentifier())
                                     .count() > 1))
@@ -81,12 +81,12 @@ public class ShortSegmentCheck extends BaseCheck<Long>
     public ShortSegmentCheck(final Configuration configuration)
     {
         super(configuration);
-        this.maximumLength = configurationValue(configuration, "edge.length.maximum.meters",
+        this.maximumLength = this.configurationValue(configuration, "edge.length.maximum.meters",
                 MAXIMUM_LENGTH_DEFAULT, Distance::meters);
-        this.minimumValence = configurationValue(configuration, "node.valence.minimum",
+        this.minimumValence = this.configurationValue(configuration, "node.valence.minimum",
                 MINIMUM_VALENCE_DEFAULT);
         this.minimumHighwayPriority = Enum.valueOf(HighwayTag.class,
-                configurationValue(configuration, "highway.priority.minimum",
+                this.configurationValue(configuration, "highway.priority.minimum",
                         MINIMUM_HIGHWAY_PRIORITY_DEFAULT).toUpperCase());
     }
 
@@ -99,7 +99,7 @@ public class ShortSegmentCheck extends BaseCheck<Long>
         return object instanceof Edge
                 && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(
                         this.minimumHighwayPriority)
-                && ((Edge) object).isMasterEdge()
+                && ((Edge) object).isMainEdge()
                 && ((Edge) object).length().isLessThan(this.maximumLength);
     }
 
@@ -113,9 +113,9 @@ public class ShortSegmentCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
         final Optional<Node> lowValenceNodes = getConnectedNodesWithValenceLessThan(edge,
                 this.minimumValence);
-        if (lowValenceNodes.isPresent() && !isGateLike((Edge) object))
+        if (lowValenceNodes.isPresent() && !this.isGateLike((Edge) object))
         {
-            return Optional.of(createFlag(object,
+            return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getIdentifier(),
                             this.maximumLength.asMeters(), lowValenceNodes.get().getIdentifier(),
                             this.minimumValence),
@@ -140,9 +140,9 @@ public class ShortSegmentCheck extends BaseCheck<Long>
      */
     private boolean isGateLike(final Edge object)
     {
-        return (object.start().connectedEdges().stream().filter(Edge::isMasterEdge).count() > 1
+        return (object.start().connectedEdges().stream().filter(Edge::isMainEdge).count() > 1
                 && Validators.hasValuesFor(object.end(), BarrierTag.class))
-                || (object.end().connectedEdges().stream().filter(Edge::isMasterEdge).count() > 1
+                || (object.end().connectedEdges().stream().filter(Edge::isMainEdge).count() > 1
                         && Validators.hasValuesFor(object.start(), BarrierTag.class));
     }
 }

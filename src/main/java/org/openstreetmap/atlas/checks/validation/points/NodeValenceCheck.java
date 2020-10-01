@@ -52,7 +52,7 @@ public class NodeValenceCheck extends BaseCheck<Long>
 
         // Count car navigable connections
         final List<Edge> connectedCarNavigableEdges = node.connectedEdges().stream()
-                .filter(edge -> edge.isMasterEdge() && HighwayTag.isCarNavigableHighway(edge))
+                .filter(edge -> edge.isMainEdge() && HighwayTag.isCarNavigableHighway(edge))
                 .collect(Collectors.toList());
         final int valence = connectedCarNavigableEdges.size();
         if (valence > this.maximumConnections)

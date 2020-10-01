@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.maproulette.MapRouletteConfiguration;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
+import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * Handles arguments and base functionality for integrity check sparkjobs generating commands
  *
  * @author jklamer
+ * @author bbreithaupt
  */
 public abstract class IntegrityChecksCommandArguments extends SparkJob
 {
@@ -101,8 +103,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
      *
      * @param countries
      *            Set of countries to find out shards for
-     * @param pathResolver
-     *            {@link AtlasFilePathResolver} to search for {@link Atlas} files
      * @param atlasFolder
      *            Path to {@link Atlas} folder
      * @param sparkContext
@@ -110,22 +110,21 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
      * @return A map from country name to {@link List} of {@link Shard} definitions
      */
     public static MultiMap<String, Shard> countryShardMapFromShardFiles(final Set<String> countries,
-            final AtlasFilePathResolver pathResolver, final String atlasFolder,
-            final Map<String, String> sparkContext)
+            final String atlasFolder, final Map<String, String> sparkContext)
     {
         final MultiMap<String, Shard> countryShardMap = new MultiMap<>();
         logger.info("Building country shard map from country shard files.");
 
         countries.forEach(country ->
         {
-            final String countryDirectory = pathResolver.resolvePath(atlasFolder, country);
+            final String countryDirectory = SparkFileHelper.combine(atlasFolder, country);
             final CountrySpecificAtlasFilePathFilter atlasFilter = new CountrySpecificAtlasFilePathFilter(
                     country);
             final Pattern atlasFilePattern = Pattern
                     .compile(String.format(ATLAS_FILENAME_PATTERN_FORMAT, country));
 
             // Go over shard files for the country and use file name pattern to find out shards
-            FileSystemHelper.listResourcesRecursively(countryDirectory, sparkContext, atlasFilter)
+            FileSystemHelper.streamPathsRecursively(countryDirectory, sparkContext, atlasFilter, 0)
                     .forEach(shardFile ->
                     {
                         final String shardFileName = shardFile.getName();

@@ -75,8 +75,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 && JunctionTag.isRoundabout(object)
                 // And that the Edge has not already been marked as flagged
                 && !this.isFlagged(object.getIdentifier())
-                // Make sure that we are only looking at master edges
-                && ((Edge) object).isMasterEdge()
+                // Make sure that we are only looking at main edges
+                && ((Edge) object).isMainEdge()
                 // Check for excluded highway types
                 && !this.isExcludedHighway(object)
                 // Check if object doesn't contain synthetic node.
@@ -225,7 +225,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         final Polygon roundaboutPoly = new Polygon(roundabout.asPolyLine());
         return roundabout.start().getAtlas().edgesIntersecting(roundaboutPoly,
-                edge -> edge.isMasterEdge() && HighwayTag.isCarNavigableHighway(edge)
+                edge -> edge.isMainEdge() && HighwayTag.isCarNavigableHighway(edge)
                         && !JunctionTag.isRoundabout(edge) && edge.getTag(AreaTag.KEY).isEmpty()
                         && !this.ignoreBridgeTunnelCrossings(edge)
                         && this.intersectsWithEnclosedGeometry(roundaboutPoly, edge))

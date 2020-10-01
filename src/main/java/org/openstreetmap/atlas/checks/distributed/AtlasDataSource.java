@@ -115,7 +115,7 @@ public class AtlasDataSource implements Serializable, AutoCloseable
      */
     public Atlas load(final String input, final String country)
     {
-        return load(input, country, intermediateAtlas ->
+        return this.load(input, country, intermediateAtlas ->
         {
         });
     }

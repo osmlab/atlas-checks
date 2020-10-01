@@ -20,7 +20,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author savannahostrowski
  */
-public class OneMemberRelationCheck extends BaseCheck
+public class OneMemberRelationCheck extends BaseCheck<Object>
 {
     public static final String OMR_INSTRUCTIONS = "This relation, {0,number,#}, contains only "
             + "one member.";
@@ -56,17 +56,17 @@ public class OneMemberRelationCheck extends BaseCheck
         {
             if (members.get(0).getEntity().getType().equals(ItemType.RELATION))
             {
-                return Optional.of(createFlag(getRelationMembers((Relation) object),
+                return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
                         this.getLocalizedInstruction(2, relation.getOsmIdentifier(),
                                 members.get(0).getEntity().getOsmIdentifier())));
             }
             // If the relation is a multi-polygon,
             if (relation.isMultiPolygon())
             {
-                return Optional.of(createFlag(getRelationMembers((Relation) object),
+                return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
                         this.getLocalizedInstruction(1, relation.getOsmIdentifier())));
             }
-            return Optional.of(createFlag(getRelationMembers((Relation) object),
+            return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
                     this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
         }
         return Optional.empty();

@@ -27,7 +27,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * two intersections with navigable roads {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
  * connections. See https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout for more
  * information about roundabouts
- * 
+ *
  * @author vladlemberg
  */
 
@@ -43,6 +43,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
             .singletonList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
     private static final double MIN_THRESHOLD_DEGREES_DEFAULT = 10.0;
+    private static final long serialVersionUID = 5171171744111206429L;
     private final Angle maxAngleThreshold;
     private final Angle minAngleThreshold;
 
@@ -55,10 +56,10 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public RoundaboutMissingTagCheck(final Configuration configuration)
     {
         super(configuration);
-        this.maxAngleThreshold = configurationValue(configuration, "angle.threshold.maximum_degree",
-                MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
-        this.minAngleThreshold = configurationValue(configuration, "angle.threshold.minimum_degree",
-                MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
+        this.maxAngleThreshold = this.configurationValue(configuration,
+                "angle.threshold.maximum_degree", MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
+        this.minAngleThreshold = this.configurationValue(configuration,
+                "angle.threshold.minimum_degree", MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
     }
 
     /**
@@ -71,7 +72,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
                 && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
-                && ((Edge) object).isMasterEdge() && HighwayTag.isCarNavigableHighway(object)
+                && ((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
                 && object.getTag(JunctionTag.KEY).isEmpty() && object.getTag(AreaTag.KEY).isEmpty()
                 && this.isPartOfClosedWay((Edge) object)
                 && this.intersectingWithMoreThan((Edge) object);
@@ -87,7 +88,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
 
-        final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
+        final PolyLine originalGeom = this.buildOriginalOsmWayGeometry(edge);
         // check maximum angle
         final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
                 .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
@@ -98,7 +99,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+            return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
                     this.getLocalizedInstruction(0)));
         }
 
@@ -112,7 +113,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * Build original OSW way geometry from all MasterEdge sections
+     * Build original OSW way geometry from all MainEdge sections
      *
      * @param edge
      *            entity to check
@@ -145,7 +146,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         final Set<Edge> edgesFormingOSMWay = new HashSet<>(new OsmWayWalker(edge).collectEdges());
         final Set<Long> connectedEdges = new HashSet<>();
         edgesFormingOSMWay.forEach(
-                connectedEdge -> connectedEdge.connectedEdges().stream().filter(Edge::isMasterEdge)
+                connectedEdge -> connectedEdge.connectedEdges().stream().filter(Edge::isMainEdge)
                         // intersection with navigable roads
                         .filter(HighwayTag::isCarNavigableHighway)
                         .filter(obj -> obj.getTag(ServiceTag.KEY).isEmpty())
@@ -163,7 +164,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
      */
     private boolean isPartOfClosedWay(final Edge edge)
     {
-        return edge.inEdges().stream().filter(Edge::isMasterEdge)
+        return edge.inEdges().stream().filter(Edge::isMainEdge)
                 .filter(inEdge -> inEdge.getOsmIdentifier() == edge.getOsmIdentifier())
                 .count() == 1;
     }

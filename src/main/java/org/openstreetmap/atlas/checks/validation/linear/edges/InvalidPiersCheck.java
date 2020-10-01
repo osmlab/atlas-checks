@@ -94,7 +94,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
 
     /**
      * This function will validate if the supplied atlas object is valid for the check. Valid object
-     * for the check is a master edge with man_made=pier tag and does not have an area=yes tag.
+     * for the check is a main edge with man_made=pier tag and does not have an area=yes tag.
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
@@ -103,7 +103,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge && ((Edge) object).isMasterEdge() && ManMadeTag.isPier(object)
+        return object instanceof Edge && ((Edge) object).isMainEdge() && ManMadeTag.isPier(object)
                 && HAS_NO_AREA_TAG.test(object) && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -133,9 +133,9 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         // We will mark the edge as flagged as we will only be looking at all way sectioned edges of
         // a way once
         this.markAsFlagged(edge.getOsmIdentifier());
-        // Collect all master edges that form the OSM way
+        // Collect all main edges that form the OSM way
         final Set<Edge> edgesFormingOSMWay = new OsmWayWalker(edge).collectEdges().stream()
-                .filter(Edge::isMasterEdge).collect(Collectors.toSet());
+                .filter(Edge::isMainEdge).collect(Collectors.toSet());
         final List<Edge> listOfEdgesFormingOSMWay = new ArrayList<>(edgesFormingOSMWay);
         // We need to sort the edges to build the geometry of the OSM way in a deterministic manner
         listOfEdgesFormingOSMWay.sort(Comparator.comparingLong(AtlasObject::getIdentifier));
@@ -221,7 +221,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         {
             wayIds.add(nextEdge.getIdentifier());
             final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(outEdge -> outEdge.isMasterEdge()
+                    .filter(outEdge -> outEdge.isMainEdge()
                             && outEdge.getOsmIdentifier() == originalEdge.getOsmIdentifier())
                     .collectToList();
             nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
@@ -307,7 +307,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
     /**
      * Checks if the way formed from the input edges overlap a highway or not. We only consider
      * intersecting edges that have highway tags, are on the same level/layer as the pier and are
-     * master edges.
+     * main edges.
      *
      * @param originalEdge
      *            input edge
@@ -326,7 +326,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         return Iterables.stream(originalEdge.getAtlas().edgesIntersecting(osmWayAsPolygon))
                 .filter(intersectingEdge -> intersectingEdge.getOsmIdentifier() != originalEdge
                         .getOsmIdentifier())
-                .anyMatch(intersectingEdge -> intersectingEdge.isMasterEdge()
+                .anyMatch(intersectingEdge -> intersectingEdge.isMainEdge()
                         && HighwayTag.highwayTag(intersectingEdge).isPresent()
                         && HighwayTag.highwayTag(intersectingEdge).get()
                                 .isMoreImportantThanOrEqualTo(

@@ -55,18 +55,18 @@ public class CheckResourceLoader
     private static final String DEFAULT_PACKAGE = "org.openstreetmap.atlas.checks";
     private static final String DEFAULT_TYPE = Check.class.getName();
     private static final Logger logger = LoggerFactory.getLogger(CheckResourceLoader.class);
+    private static final String COUNTRY_PERMITLIST_TEMPLATE = "%s."
+            + BaseCheck.PARAMETER_PERMITLIST_COUNTRIES;
+    private static final String COUNTRY_DENYLIST_TEMPLATE = "%s."
+            + BaseCheck.PARAMETER_DENYLIST_COUNTRIES;
     private final Class<?> checkType;
     private final Configuration configuration;
     private final MultiMap<String, String> countryGroups = new MultiMap<>();
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
-    private static final String COUNTRY_WHITELIST_TEMPLATE = "%s."
-            + BaseCheck.PARAMETER_WHITELIST_COUNTRIES;
-    private static final String COUNTRY_BLACKLIST_TEMPLATE = "%s."
-            + BaseCheck.PARAMETER_BLACKLIST_COUNTRIES;
     private final Set<String> packages;
-    private final Optional<List<String>> checkWhiteList;
-    private final Optional<List<String>> checkBlackList;
+    private final Optional<List<String>> checkPermitList;
+    private final Optional<List<String>> checkDenyList;
 
     /**
      * Default constructor
@@ -103,10 +103,9 @@ public class CheckResourceLoader
                 .get("CheckResourceLoader.enabledKeyTemplate", DEFAULT_ENABLED_KEY_TEMPLATE)
                 .value();
         this.configuration = configuration;
-        this.checkWhiteList = configuration.get("CheckResourceLoader.checks.whitelist")
+        this.checkPermitList = configuration.get("CheckResourceLoader.checks.permitlist")
                 .valueOption();
-        this.checkBlackList = configuration.get("CheckResourceLoader.checks.blacklist")
-                .valueOption();
+        this.checkDenyList = configuration.get("CheckResourceLoader.checks.denylist").valueOption();
     }
 
     public Configuration getConfiguration()
@@ -140,12 +139,12 @@ public class CheckResourceLoader
 
     public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled)
     {
-        return loadChecks(isEnabled, this.configuration);
+        return this.loadChecks(isEnabled, this.configuration);
     }
 
     public <T extends Check> Set<T> loadChecks(final Configuration configuration)
     {
-        return loadChecks(this::isEnabledByConfiguration, configuration);
+        return this.loadChecks(this::isEnabledByConfiguration, configuration);
     }
 
     /**
@@ -179,13 +178,13 @@ public class CheckResourceLoader
      */
     public <T extends Check> Set<T> loadChecks()
     {
-        return loadChecks(this::isEnabledByConfiguration, this.configuration);
+        return this.loadChecks(this::isEnabledByConfiguration, this.configuration);
     }
 
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
         final Configuration countryConfiguration = this.getConfigurationForCountry(country);
-        return loadChecks(checkClass -> this.isEnabledByConfiguration(countryConfiguration,
+        return this.loadChecks(checkClass -> this.isEnabledByConfiguration(countryConfiguration,
                 checkClass, country), countryConfiguration);
     }
 
@@ -234,11 +233,11 @@ public class CheckResourceLoader
                         if (this.checkType.isAssignableFrom(checkClass)
                                 && !Modifier.isAbstract(checkClass.getModifiers())
                                 && isEnabled.test(checkClass)
-                                && this.checkWhiteList.map(
-                                        whitelist -> whitelist.contains(checkClass.getSimpleName()))
-                                        .orElse(true)
-                                && this.checkBlackList.map(blacklist -> !blacklist
-                                        .contains(checkClass.getSimpleName())).orElse(true))
+                                && this.checkPermitList.map(permitlist -> permitlist
+                                        .contains(checkClass.getSimpleName())).orElse(true)
+                                && this.checkDenyList.map(
+                                        denylist -> !denylist.contains(checkClass.getSimpleName()))
+                                        .orElse(true))
                         {
                             Streams.zip(Stream.of(constructorArgumentTypes),
                                     Stream.of(constructorArguments),
@@ -304,7 +303,7 @@ public class CheckResourceLoader
 
     private boolean isEnabledByConfiguration(final Class checkClass)
     {
-        return isEnabledByConfiguration(this.configuration, checkClass);
+        return this.isEnabledByConfiguration(this.configuration, checkClass);
     }
 
     private boolean isEnabledByConfiguration(final Configuration configuration,
@@ -317,16 +316,16 @@ public class CheckResourceLoader
     private boolean isEnabledByConfiguration(final Configuration configuration,
             final Class checkClass, final String country)
     {
-        final List<String> countryWhitelist = configuration
-                .get(String.format(COUNTRY_WHITELIST_TEMPLATE, checkClass.getSimpleName()),
+        final List<String> countryPermitlist = configuration
+                .get(String.format(COUNTRY_PERMITLIST_TEMPLATE, checkClass.getSimpleName()),
                         Collections.emptyList())
                 .value();
-        final List<String> countryBlacklist = configuration
-                .get(String.format(COUNTRY_BLACKLIST_TEMPLATE, checkClass.getSimpleName()),
+        final List<String> countryDenylist = configuration
+                .get(String.format(COUNTRY_DENYLIST_TEMPLATE, checkClass.getSimpleName()),
                         Collections.emptyList())
                 .value();
         return this.isEnabledByConfiguration(configuration, checkClass)
-                && countryWhitelist.isEmpty() ? !countryBlacklist.contains(country)
-                        : countryWhitelist.contains(country);
+                && countryPermitlist.isEmpty() ? !countryDenylist.contains(country)
+                        : countryPermitlist.contains(country);
     }
 }
