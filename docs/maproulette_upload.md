@@ -28,8 +28,8 @@ The following command will upload EdgeCrossingEdge & SinkIsland checks to the `c
 Please remember to change the MapRoulette API key. You can find this in your MapRoulette user settings.
 
 ```java
-java -cp build/libs/atlas-checks-6.1.3-SNAPSHOT-shaded.jar org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand \ 
--maproulette="https://staging.maproulette.org:443:checks_example_project:3427|17b28c97-b4d5-4758-9a83-8b9a8442c329" \
+java -cp build/libs/atlas-checks-6.1.3-SNAPSHOT-shaded.jar org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand \
+-maproulette="https://staging.maproulette.org:443:checks_example_project:api|key" \
 -logfiles=build/example/data/output/flag \
 -outputPath=build/example \
 -config=config/configuration.json \
