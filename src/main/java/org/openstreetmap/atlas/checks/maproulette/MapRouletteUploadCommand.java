@@ -65,7 +65,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             "MapRoulette checkinComment prefix. This will be prepended to the check name (e.g. #prefix: [ISO - CheckName] ).",
             String::toString, Optionality.OPTIONAL, Challenge.DEFAULT_CHECKIN_COMMENT);
     private static final Switch<String> CHECKIN_COMMENT = new Switch<>("checkinComment",
-            "MapRoulette checkinComment prefix. If supplied, this would overwrite the checkinCommentPrefix",
+            "MapRoulette checkinComment. If supplied, this would overwrite the checkinCommentPrefix",
             String::toString, Optionality.OPTIONAL, StringUtils.EMPTY);
 
     private static final String PARAMETER_CHALLENGE = "challenge";
