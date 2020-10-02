@@ -24,28 +24,35 @@ public class BoundaryIntersectionCheckTest {
     public void testInvalidTwoCrossingItemsAtlas() {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectEachOther(),
                 new BoundaryIntersectionCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
     }
     
     @Test
     public void testInvalidThreeCrossingItemsAtlas() {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectOneOther(),
                 new BoundaryIntersectionCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
     
     @Test
     public void testInvalidTwoCrossingItemsWithEdgesAtlas() {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectEachOtherWithEdges(),
                 new BoundaryIntersectionCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
     }
     
     @Test
     public void testValidNonCrossingObjects() {
         this.verifier.actual(this.setup.nonCrossingBoundariesTwoSeparate(),
+                new BoundaryIntersectionCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+    
+    @Test
+    public void testTouchingObjects() {
+        this.verifier.actual(this.setup.boundariesTouchEachOther(),
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
