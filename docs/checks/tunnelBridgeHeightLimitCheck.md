@@ -3,7 +3,7 @@
 #### Description
 
 This check identifies roads of limited vertical clearance (tunnels, covered roads, and roads crossed by bridges) that do not have 'maxheight' or 'maxheight:physical' tags set. 
-The valid highway classes for this check are:
+The valid highway classes for this check (configurable) are:
 MOTORWAY_LINK, TRUNK_LINK, PRIMARY, PRIMARY_LINK, SECONDARY, SECONDARY_LINK
 
 This is a port of Osmose check #7130.

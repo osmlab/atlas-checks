@@ -14,10 +14,10 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
-import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.MaxHeightTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -28,10 +28,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * 1. Tunnels<br>
  * 2. Covered ways<br>
  * 3. Ways passing under bridges<br>
- * <b>Target highway classes:</b><br>
+ * <b>Target highway classes (configurable):</b><br>
  * MOTORWAY_LINK, TRUNK_LINK, PRIMARY, PRIMARY_LINK, SECONDARY, SECONDARY_LINK
  *
- * @author wlodarsk
+ * @author ladwlo
  */
 public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
 {
@@ -48,6 +48,9 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
             .map(caseDescription -> String.format(FALLBACK_INSTRUCTION_TEMPLATE, caseDescription))
             .collect(Collectors.toList());
     private static final String MAXHEIGHT_PHYSICAL = "maxheight:physical";
+    private static final String HIGHWAY_FILTER_DEFAULT = "highway->motorway_link,trunk_link,primary,primary_link,secondary,secondary_link";
+
+    private final TaggableFilter highwayFilter;
 
     /**
      * Default constructor.
@@ -58,6 +61,8 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
     public TunnelBridgeHeightLimitCheck(final Configuration configuration)
     {
         super(configuration);
+        this.highwayFilter = configurationValue(configuration, "highway.filter",
+                HIGHWAY_FILTER_DEFAULT, TaggableFilter::forDefinition);
     }
 
     /**
@@ -145,10 +150,7 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
 
     private boolean isHighwayWithoutMaxHeight(final AtlasObject object)
     {
-        return Validators.isOfType(object, HighwayTag.class, HighwayTag.MOTORWAY_LINK,
-                HighwayTag.TRUNK_LINK, HighwayTag.PRIMARY, HighwayTag.PRIMARY_LINK,
-                HighwayTag.SECONDARY, HighwayTag.SECONDARY_LINK)
-                && !Validators.hasValuesFor(object, MaxHeightTag.class)
+        return highwayFilter.test(object) && !Validators.hasValuesFor(object, MaxHeightTag.class)
                 && object.getTag(MAXHEIGHT_PHYSICAL).isEmpty();
     }
 }
