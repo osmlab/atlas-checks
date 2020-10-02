@@ -76,7 +76,7 @@ configurations
         exclude group: 'org.apache.hadoop'
         exclude group: 'org.apache.spark'
         exclude group: 'org.scala-lang'
-        exclude group: 'org.slf4j'
+//        exclude group: 'org.slf4j'
     }
     runtime
     archives

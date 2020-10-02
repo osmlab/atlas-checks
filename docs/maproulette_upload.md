@@ -1,8 +1,8 @@
 # MapRoulette Upload Command
 
-The MapRouletteUploadCommand deserilizes line-delimited Atlas Check flags, and uploads them to the provided MapRoulette server.
+The [MapRouletteUploadCommand](/src/main/java/org/openstreetmap/atlas/checks/maproulette/MapRouletteUploadCommand.java) deserilizes line-delimited Atlas Check flags, and uploads them to the provided MapRoulette server.
 
-The command create a new Challenge for each Atlas Check and country in the input data. For example: If the input data contains flags for EdgeCrossingEdgeCheck and SinkIslandCHeck in USA and CAN, the following Challenges are created:
+The command creates a new Challenge for each Atlas Check and country in the input data. For example: the following Challenges are created if the input data contains flags for EdgeCrossingEdgeCheck and SinkIslandCheck in USA and CAN:
 
 1. CAN - EdgeCrossingEdgeCheck
 2. CAN - SinkIslandCheck
@@ -24,22 +24,26 @@ Each Challenge is added to the project provided in the MapRoulette connection ur
 
 ## Example
 
-The following command will upload EdgeCrossingEdge & SinkIsland checks to the `example_project` Project on staging.maproulette.org. Please remember to change the MapRoulette API key. You can find this in your MapRoulette user settings.
+The following command will upload EdgeCrossingEdge & SinkIsland checks to the `checks_example_project` Project on staging.maproulette.org. 
+Please remember to change the MapRoulette API key. You can find this in your MapRoulette user settings.
 
 ```java
-java -classpath /jar/path/atlas-checks-6.1.2.-fat.jar
-org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand
-  -maproulette="https://staging.maproulette.org:443:example_project:api_key"
-  -logfiles=/path/to/flag
-  -outputPath=/path/to/challenge/outputfile
-  -config=/path/to/checks/config.json
-  -checkinComment=#AtlasChecks
-  -countries=USA,CAN
-  -checks=EdgeCrossingEdgeCheck,SinkIslandCheck
+java -cp build/libs/atlas-checks-6.1.3-SNAPSHOT-shaded.jar org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand \ 
+-maproulette="https://staging.maproulette.org:443:checks_example_project:3427|17b28c97-b4d5-4758-9a83-8b9a8442c329" \
+-logfiles=build/example/data/output/flag \
+-outputPath=build/example \
+-config=config/configuration.json \
+-checkinComment="#AtlasChecks" \
+-countries=USA \
+-checks=EdgeCrossingEdgeCheck,SinkIslandCheck
 ```
 
+A `challenges.txt` file will write to the provided `outputPath`. The contents of this file will look like:
+```
+project:3646;challenge:4181
+project:3646;challenge:4182
+```
 
+Here's the project in MapRoulette:
 
-
-
-
+![Example Checks MapRoulette Project](/docs/images/example_mr_project.png)
