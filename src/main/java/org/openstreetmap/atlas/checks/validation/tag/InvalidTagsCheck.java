@@ -314,12 +314,12 @@ public class InvalidTagsCheck extends BaseCheck<String>
     private List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> getFiltersFromConfiguration(
             final Configuration configuration)
     {
-        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> filters = readConfigurationFilter(
-                configuration, "filters.classes.tags");
+        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> filters = this
+                .readConfigurationFilter(configuration, "filters.classes.tags");
         final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> allFilters = new ArrayList<>(
                 filters);
-        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> regexFilters = readConfigurationFilter(
-                configuration, "filters.classes.regex");
+        final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> regexFilters = this
+                .readConfigurationFilter(configuration, "filters.classes.regex");
         allFilters.addAll(regexFilters);
         return allFilters;
     }
