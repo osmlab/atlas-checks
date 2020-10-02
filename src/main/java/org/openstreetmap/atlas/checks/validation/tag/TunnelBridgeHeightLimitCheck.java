@@ -150,7 +150,8 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
 
     private boolean isHighwayWithoutMaxHeight(final AtlasObject object)
     {
-        return highwayFilter.test(object) && !Validators.hasValuesFor(object, MaxHeightTag.class)
+        return this.highwayFilter.test(object)
+                && !Validators.hasValuesFor(object, MaxHeightTag.class)
                 && object.getTag(MAXHEIGHT_PHYSICAL).isEmpty();
     }
 }
