@@ -450,6 +450,16 @@
       "tags":"highway"
     }
   },
+  "LevelCrossingOnRailwayCheck": {
+    "enabled": true,
+    "challenge": {
+      "description": "Tasks contain features which are missing or incorrectly tagged as railway:level_crossing.",
+      "blurb": "Fix level crossing railway/highway intersections",
+      "instruction": "Open your favorite editor and fix the railway/highway intersection nodes.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW"
+    }
+  },
   "LineCrossingBuildingCheck": {
     "challenge": {
       "description": "The water body has invalid crossings by line item(s).",

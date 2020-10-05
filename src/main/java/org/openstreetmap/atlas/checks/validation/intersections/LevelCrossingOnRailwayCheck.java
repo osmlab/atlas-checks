@@ -1,26 +1,28 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
-import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.RailwayTag;
-import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -38,30 +40,22 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
 {
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private final Long layerDefault;
-    private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) is tagged with "
-            + "railway=level_crossing but is not a node. Remove tag.";
+    private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) has `railway=level_crossing` "
+            + "but is not a node. To fix: Remove tag.";
     private static final int INVALID_TAGGED_OBJECT_INDEX = 0;
     private static final String INVALID_TAGGED_INTERSECTION = "The intersection node (OSM ID: {0,number,#}) is "
-            + "missing a railway=level_crossing tag. Add the appropriate tag to the node.";
+            + "missing a `railway=level_crossing` tag. To fix: Add the appropriate tag to the node.";
     private static final int INVALID_TAGGED_INTERSECTION_INDEX = 1;
-    private static final String INVALID_TAGGED_NODE = "The node (OSM ID: {0,number,#}) is tagged with "
-            + "railway=level_crossing but is not the intersection of a railway and highway. Remove tag or add missing way.";
+    private static final String INVALID_TAGGED_NODE = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` "
+            + "tag, but is not the intersection of a railway and highway. To fix: Remove tag or add missing way.";
     private static final int INVALID_TAGGED_NODE_INDEX = 2;
-    private static final String INVALID_TUNNEL_INTERSECTION = "The railway (OSM ID: {0,number,#}) and highway "
-            + "(OSM ID: {1,number,#}) tunnel intersection are on the same layer without a railway=level_crossing tag. "
-            + "Suggest setting the tunnel's layer=-1.";
-    private static final int INVALID_TUNNEL_INTERSECTION_INDEX = 3;
-    private static final String INVALID_BRIDGE_INTERSECTION = "The railway (OSM ID: {0,number,#}) and highway "
-            + "(OSM ID: {1,number,#}) bridge intersection are on the same layer without a railway=level_crossing tag. "
-            + "Suggest setting the bridge's layer=1.";
-    private static final int INVALID_BRIDGE_INTERSECTION_INDEX = 4;
-    private static final String INVALID_INTERSECTION = "The intersection of railway (OSM ID: {0,number,#}) and "
-            + "highway (OSM ID: {1,number,#}) is missing an intersection node. Add an appropriate intersection node.";
-    private static final int INVALID_INTERSECTION_INDEX = 5;
+    private static final String INVALID_INTERSECTION = "The railway (OSM ID: {0,number,#}) has one or more car "
+            + "navigable intersections on the same layer that are missing intersection nodes. To fix: "
+            + "Add appropriate intersection node(s) with `railway:level_crossing` tag, or fix layer tag on way.";
+    private static final int INVALID_INTERSECTION_INDEX = 3;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INVALID_TAGGED_OBJECT,
-            INVALID_TAGGED_INTERSECTION, INVALID_TAGGED_NODE, INVALID_TUNNEL_INTERSECTION,
-            INVALID_BRIDGE_INTERSECTION, INVALID_INTERSECTION);
+            INVALID_TAGGED_INTERSECTION, INVALID_TAGGED_NODE, INVALID_INTERSECTION);
     private static final long serialVersionUID = -2063033332877849846L;
 
     /**
@@ -182,16 +176,34 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
             {
                 // This is a railway/highway intersect node that is not tagged with
                 // railway=level_crossing
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                        INVALID_TAGGED_INTERSECTION_INDEX, object.getOsmIdentifier())));
+                return Optional.of(this
+                        .createFlag(object,
+                                this.getLocalizedInstruction(INVALID_TAGGED_INTERSECTION_INDEX,
+                                        object.getOsmIdentifier()))
+                        .addFixSuggestion(FeatureChange.add(
+                                (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                        .shallowFrom((AtlasEntity) object))
+                                                .withTags(object.getTags())
+                                                .withAddedTag(RailwayTag.KEY,
+                                                        RailwayTag.LEVEL_CROSSING.toString()
+                                                                .toLowerCase()),
+                                object.getAtlas())));
             }
             if ((connectedHighways.isEmpty() || connectedRailways.isEmpty())
                     && Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
             {
                 // This is a node that is tagged with railway=level_crossing and is not a
                 // railway/highway intersection
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                        INVALID_TAGGED_NODE_INDEX, object.getOsmIdentifier())));
+                return Optional.of(this
+                        .createFlag(object,
+                                this.getLocalizedInstruction(INVALID_TAGGED_NODE_INDEX,
+                                        object.getOsmIdentifier()))
+                        .addFixSuggestion(FeatureChange.add(
+                                (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                        .shallowFrom((AtlasEntity) object))
+                                                .withTags(object.getTags())
+                                                .withRemovedTag(RailwayTag.KEY),
+                                object.getAtlas())));
             }
         }
         return Optional.empty();
@@ -211,35 +223,20 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
         {
             final Line railway = (Line) object;
             final Atlas atlas = railway.getAtlas();
-            final Optional<Long> railwayLayer = Validators.hasValuesFor(railway, LayerTag.class)
-                    ? LayerTag.getTaggedValue(railway)
-                    : Optional.of(this.layerDefault);
+            final List<Location> badIntersectingHighways = new ArrayList<>();
 
-            final List<Edge> intersectingHighways = Iterables
-                    .asList(atlas.edgesIntersecting(railway.bounds())).stream().filter(item ->
-                    {
-                        final Optional<Long> edgeLayer = Validators.hasValuesFor(item,
-                                LayerTag.class) ? LayerTag.getTaggedValue(item)
-                                        : Optional.of(this.layerDefault);
-                        return Edge.isMainEdgeIdentifier(item.getIdentifier())
-                                && HighwayTag.isCarNavigableHighway(item)
-                                && edgeLayer.get().equals(railwayLayer.get());
-                    }).collect(Collectors.toList());
-            for (final Edge highway : intersectingHighways)
+            Iterables.asList(atlas.edgesIntersecting(railway.bounds()))
+                    .forEach(highway -> badIntersectingHighways
+                            .addAll(this.missingNodesAtIntersectionOnSameLayer(railway, highway)));
+            if (!badIntersectingHighways.isEmpty())
             {
-                final Set<Location> locations = railway.asPolyLine()
-                        .intersections(highway.asPolyLine());
-                for (final Location location : locations)
-                {
-                    final Optional<CheckFlag> flagIntersection = this.flaggedIntersection(railway,
-                            highway, location);
-                    if (!flagIntersection.isEmpty())
-                    {
-                        return flagIntersection;
-                    }
-                }
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(INVALID_INTERSECTION_INDEX,
+                                railway.getOsmIdentifier()),
+                        badIntersectingHighways));
             }
         }
+
         return Optional.empty();
     }
 
@@ -255,8 +252,16 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
         if (!(object instanceof Node || object instanceof Point)
                 && Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
         {
-            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                    INVALID_TAGGED_OBJECT_INDEX, object.getOsmIdentifier())));
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(INVALID_TAGGED_OBJECT_INDEX,
+                            object.getOsmIdentifier()))
+                    .addFixSuggestion(
+                            FeatureChange.add(
+                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                            .shallowFrom((AtlasEntity) object))
+                                                    .withTags(object.getTags())
+                                                    .withRemovedTag(RailwayTag.KEY),
+                                    object.getAtlas())));
         }
         return Optional.empty();
     }
@@ -268,35 +273,27 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
      *            the Line that represents the railway for evaluation
      * @param highway
      *            the Edge that represents the highway for evaluation
-     * @param location
-     *            the Location to check for valid intersection.
      * @return an optional {@link CheckFlag} object that contains flagged issue details
      */
-    private Optional<CheckFlag> flaggedIntersection(final Line railway, final Edge highway,
-            final Location location)
+    private List<Location> missingNodesAtIntersectionOnSameLayer(final Line railway,
+            final Edge highway)
     {
-        if (!(railway.asPolyLine().contains(location) && highway.asPolyLine().contains(location))
-                && Iterables.asList(railway.getAtlas().pointsAt(location)).isEmpty())
+        final Optional<Long> railwayLayer = Validators.hasValuesFor(railway, LayerTag.class)
+                ? LayerTag.getTaggedValue(railway)
+                : Optional.of(this.layerDefault);
+        final Optional<Long> highwayLayer = Validators.hasValuesFor(highway, LayerTag.class)
+                ? LayerTag.getTaggedValue(highway)
+                : Optional.of(this.layerDefault);
+
+        if (Edge.isMainEdgeIdentifier(highway.getIdentifier())
+                && HighwayTag.isCarNavigableHighway(highway) && railwayLayer.equals(highwayLayer))
         {
-            if (Validators.isOfType(railway, TunnelTag.class, TunnelTag.YES) != Validators
-                    .isOfType(highway, TunnelTag.class, TunnelTag.YES))
-            {
-                return Optional.of(this.createFlag(railway,
-                        this.getLocalizedInstruction(INVALID_TUNNEL_INTERSECTION_INDEX,
-                                railway.getOsmIdentifier(), highway.getOsmIdentifier())));
-            }
-            if (Validators.isOfType(railway, BridgeTag.class, BridgeTag.YES) != Validators
-                    .isOfType(highway, BridgeTag.class, BridgeTag.YES))
-            {
-                return Optional.of(this.createFlag(railway,
-                        this.getLocalizedInstruction(INVALID_BRIDGE_INTERSECTION_INDEX,
-                                railway.getOsmIdentifier(), highway.getOsmIdentifier())));
-            }
-            return Optional.of(this.createFlag(railway,
-                    this.getLocalizedInstruction(INVALID_INTERSECTION_INDEX,
-                            railway.getOsmIdentifier(), highway.getOsmIdentifier())));
+            return railway.asPolyLine().intersections(highway.asPolyLine()).stream()
+                    .filter(location -> !(railway.asPolyLine().contains(location))
+                            || !(highway.asPolyLine().contains(location)))
+                    .collect(Collectors.toList());
         }
-        return Optional.empty();
+        return Collections.emptyList();
     }
 
 }
