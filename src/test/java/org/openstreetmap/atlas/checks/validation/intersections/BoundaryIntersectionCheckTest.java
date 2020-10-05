@@ -85,4 +85,11 @@ public class BoundaryIntersectionCheckTest {
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
     
+    @Test
+    public void testValidCrossingObjectsWithDifferentTypes() {
+        this.verifier.actual(this.setup.crossingBoundariesWithDifferentTypes(),
+                new BoundaryIntersectionCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+    
 }
