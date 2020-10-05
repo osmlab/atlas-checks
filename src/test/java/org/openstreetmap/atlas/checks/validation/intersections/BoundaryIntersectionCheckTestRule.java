@@ -106,6 +106,44 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
             lines = {
                     @Line(coordinates = {
                             @Loc(value = COORD_1),
+                            @Loc(value = COORD_2),
+                            @Loc(value = COORD_3),
+                            @Loc(value = COORD_4),
+                            @Loc(value = COORD_1)},
+                            id = LINE_ONE),
+                    @Line(coordinates = {
+                            @Loc(value = COORD_1),
+                            @Loc(value = COORD_5),
+                            @Loc(value = COORD_6),
+                            @Loc(value = COORD_7),
+                            @Loc(value = COORD_1)},
+                            id = LINE_TWO)},
+            relations = {
+                    @Relation(id = RELATION_ONE,
+                            members = {
+                                    @Relation.Member(id = LINE_ONE, role = "outer", type = "line")}, tags = {
+                            "type=boundary",
+                            "boundary=political"}),
+                    @Relation(id = RELATION_TWO,
+                            members = {
+                                    @Relation.Member(id = LINE_TWO, role = "outer", type = "line")}, tags = {
+                            "type=boundary",
+                            "boundary=administrative"})})
+    private Atlas crossingBoundariesWithDifferentTypes;
+    
+    @TestAtlas(
+            nodes = {
+                    @Node(coordinates = @Loc(value = COORD_1)),
+                    @Node(coordinates = @Loc(value = COORD_2)),
+                    @Node(coordinates = @Loc(value = COORD_3)),
+                    @Node(coordinates = @Loc(value = COORD_4)),
+                    @Node(coordinates = @Loc(value = COORD_5)),
+                    @Node(coordinates = @Loc(value = COORD_6)),
+                    @Node(coordinates = @Loc(value = COORD_7))
+            },
+            lines = {
+                    @Line(coordinates = {
+                            @Loc(value = COORD_1),
                             @Loc(value = COORD_15),
                             @Loc(value = COORD_3),
                             @Loc(value = COORD_4),
@@ -477,6 +515,9 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
     }
     
     public Atlas boundariesTouchEachOther() {
+        return this.crossingBoundariesTwoAreasTouchEachOther;
+    }
+    public Atlas crossingBoundariesWithDifferentTypes() {
         return this.crossingBoundariesTwoAreasTouchEachOther;
     }
     
