@@ -45,13 +45,15 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     public static final int INDEX = 0;
     public static final String TYPE = "type";
     public static final String BOUNDARY = "boundary";
-    
     public static final String EMPTY = "";
+    
     private static final Predicate<LineItem> LINE_ITEM_AS_BOUNDARY = lineItem -> lineItem.relations()
             .stream()
             .anyMatch(lineToCheck -> BoundaryIntersectionCheck.isRelationTypeBoundaryWithBoundaryTag(lineToCheck) ||
                     (BOUNDARY.equals(lineToCheck.getTag(TYPE).orElse(EMPTY)) &&
                             lineToCheck.getTag(BOUNDARY).isPresent()));
+    
+    private final Map<Relation, Map<Long, Set<LineItem>>> relationIntersections = new HashMap<>();
     
     public BoundaryIntersectionCheck(final Configuration configuration)
     {
@@ -108,8 +110,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     
     private void analyzeIntersections(final Atlas atlas, final Relation relation, final CheckFlag checkFlag, final List<LineItem> lineItems, final LineItem lineItem)
     {
-        final Intersections intersections = new Intersections();
-    
         lineItems
             .stream()
             .map(currentLineItem -> atlas.lineItemsIntersecting(currentLineItem.bounds(), this.getPredicateForLineItemsSelection(lineItems, lineItem)))
@@ -117,20 +117,20 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             .forEach(currentLineItem ->
             {
                 final Set<Relation> boundaries = this.getBoundary(currentLineItem);
-                boundaries.forEach(boundary -> intersections.add(boundary, currentLineItem));
+                boundaries.forEach(boundary -> this.addIntersection(boundary, currentLineItem));
             });
-        for(final Relation currentRelation : intersections.getRelations())
+        this.relationIntersections.keySet().forEach(currentRelation ->
         {
             if(currentRelation.getOsmIdentifier() < relation.getOsmIdentifier())
             {
-                this.addInformationToFlag(checkFlag, relation, lineItem, currentRelation, intersections.getLineItemsMap(currentRelation));
+                this.addInformationToFlag(checkFlag, relation, lineItem, currentRelation, this.relationIntersections.get(currentRelation));
             }
-        }
+        });
     }
     
     private void addInformationToFlag(final CheckFlag checkFlag, final Relation relation, final LineItem lineItem, final Relation intersectingBoundary, final Map<Long, Set<LineItem>> lineItems)
     {
-        for(final Long osmId : lineItems.keySet())
+        lineItems.keySet().forEach(osmId ->
         {
             final Set<LineItem> currentLineItems = lineItems.get(osmId);
             final Set<Location> intersectingPoints = this.getIntersectingPoints(lineItem, currentLineItems);
@@ -149,7 +149,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                 checkFlag.addObject(relation);
                 checkFlag.addInstruction(instruction);
             }
-        }
+        });
     }
     
     private Predicate<LineItem> getPredicateForLineItemsSelection(final List<LineItem> lineItems, final LineItem currentLineItem)
@@ -207,38 +207,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
     
-}
-
-class Intersections
-{
-    private final Map<Relation, Map<Long, Set<LineItem>>> relationIntersections = new HashMap<>();
-    
-    void add(Relation relation, LineItem lineItem)
+    void addIntersection(final Relation relation, final LineItem lineItem)
     {
-        relationIntersections.computeIfAbsent(relation, k -> new HashMap<>());
-        long osmIdentifier = lineItem.getOsmIdentifier();
-        relationIntersections.get(relation).computeIfAbsent(osmIdentifier, k -> new HashSet<>());
-        relationIntersections.get(relation).get(osmIdentifier).add(lineItem);
-    }
-    
-    Set<Relation> getRelations()
-    {
-        return relationIntersections.keySet();
-    }
-    
-    Set<Long> getWayIdsForRelation(Relation relation)
-    {
-        return  relationIntersections.get(relation).keySet();
-    }
-    
-    Set<LineItem> getLineItems(Relation relation, Long osmId)
-    {
-        return relationIntersections.get(relation).get(osmId);
-    }
-    
-    Map<Long, Set<LineItem>> getLineItemsMap(Relation relation)
-    {
-        return relationIntersections.get(relation);
+        this.relationIntersections.computeIfAbsent(relation, k -> new HashMap<>());
+        final long osmIdentifier = lineItem.getOsmIdentifier();
+        this.relationIntersections.get(relation).computeIfAbsent(osmIdentifier, k -> new HashSet<>());
+        this.relationIntersections.get(relation).get(osmIdentifier).add(lineItem);
     }
     
 }
