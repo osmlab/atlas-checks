@@ -21,7 +21,7 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
     private static final String COORD_4 = "2, 0";
     private static final String COORD_5 = "0, 3";
     private static final String COORD_6 = "3, 3";
-    private static final String COORD_7 = "0, 0";
+    private static final String COORD_7 = "3, 0";
     private static final String COORD_8 = "0, 1";
     private static final String COORD_9 = "0, 2";
     private static final String COORD_10 = "2, 2";
@@ -51,8 +51,8 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
     private static final String EDGE_ONE = "11000001";
     private static final String EDGE_TWO = "12000001";
     
-    private static final String RELATION_ONE = "2001021000011";
-    private static final String RELATION_TWO = "3242222000011";
+    private static final String RELATION_ONE = "21000011";
+    private static final String RELATION_TWO = "22000011";
     private static final String RELATION_THREE = "23000011";
     
     @TestAtlas(
@@ -138,8 +138,7 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
                     @Node(coordinates = @Loc(value = COORD_3)),
                     @Node(coordinates = @Loc(value = COORD_4)),
                     @Node(coordinates = @Loc(value = COORD_5)),
-                    @Node(coordinates = @Loc(value = COORD_6)),
-                    @Node(coordinates = @Loc(value = COORD_7))
+                    @Node(coordinates = @Loc(value = COORD_6))
             },
             lines = {
                     @Line(coordinates = {
@@ -153,7 +152,6 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
                             @Loc(value = COORD_1),
                             @Loc(value = COORD_5),
                             @Loc(value = COORD_6),
-                            @Loc(value = COORD_7),
                             @Loc(value = COORD_1)},
                             id = LINE_TWO)},
             relations = {
@@ -176,8 +174,7 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
                     @Node(coordinates = @Loc(value = COORD_3)),
                     @Node(coordinates = @Loc(value = COORD_4)),
                     @Node(coordinates = @Loc(value = COORD_5)),
-                    @Node(coordinates = @Loc(value = COORD_6)),
-                    @Node(coordinates = @Loc(value = COORD_7))
+                    @Node(coordinates = @Loc(value = COORD_6))
             },
             edges = {
                     @Edge(coordinates = {
@@ -191,7 +188,6 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
                             @Loc(value = COORD_1),
                             @Loc(value = COORD_5),
                             @Loc(value = COORD_6),
-                            @Loc(value = COORD_7),
                             @Loc(value = COORD_1)},
                             id = EDGE_TWO)},
             relations = {
