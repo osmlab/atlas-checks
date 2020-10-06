@@ -29,7 +29,7 @@ Please remember to change the MapRoulette API key. You can find this in your Map
 
 ```java
 java -cp build/libs/atlas-checks-6.1.3-SNAPSHOT-shaded.jar org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand \
--maproulette="https://staging.maproulette.org:443:checks_example_project:api|key" \
+-maproulette="https://maproulette.org:443:checks_example_project:api|key" \
 -logfiles=build/example/data/output/flag \
 -outputPath=build/example \
 -config=config/configuration.json \
