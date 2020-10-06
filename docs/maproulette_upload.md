@@ -4,10 +4,10 @@ The [MapRouletteUploadCommand](/src/main/java/org/openstreetmap/atlas/checks/map
 
 The command creates a new Challenge for each Atlas Check and country in the input data. For example: the following Challenges are created if the input data contains flags for EdgeCrossingEdgeCheck and SinkIslandCheck in USA and CAN:
 
-1. CAN - EdgeCrossingEdgeCheck
+1. Canada - EdgeCrossingEdgeCheck
 2. Canada - SinkIslandCheck
-2. USA - EdgeCrossingEdgeCheck
-3. USA - SinkIslandCheck
+2. United States - EdgeCrossingEdgeCheck
+3. United States - SinkIslandCheck
 
 Each Challenge is added to the project provided in the MapRoulette connection url.
 
