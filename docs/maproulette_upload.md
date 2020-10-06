@@ -20,7 +20,7 @@ Each Challenge is added to the project provided in the MapRoulette connection ur
 * **checks** (optional) - Comma delimted list of checks permit list
 * **outputPath** (optional) - Path to store text file of new challenge ids
 * **checkinComment** (optional) - Value of Changeset check in comment
-* **checkinCommentPrefix** - Prefix added to default check in comment of [prefix ISO - CheckName]
+* **checkinCommentPrefix** (optional) - Prefix added to default check in comment of [prefix ISO - CheckName]
 
 ## Example
 
