@@ -21,17 +21,17 @@ public class SuddenHighwayTypeChangeCheckTest
 
     private final SuddenHighwayTypeChangeCheck check = new SuddenHighwayTypeChangeCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"ApproximateWayCheck\": {" + "\"minHighwayType\": tertiary" + "}}"));
+                    "{\"SuddenHighwayTypeChangeCheck\": {\"minHighwayType\": tertiary}}"));
 
     @Test
-    public void testFalsePositiveSuddenHighwayTypeChange()
+    public void testFalsePositiveSuddenHighwayTypeChangeCheck()
     {
         this.verifier.actual(this.setup.falsePositiveSuddenHighwayTypeChangeCheck(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testTruePositiveSuddenHighwayTypeChange()
+    public void testTruePositiveSuddenHighwayTypeChangeCheck()
     {
         this.verifier.actual(this.setup.truePositiveSuddenHighwayTypeChangeCheck(), this.check);
         this.verifier.verifyExpectedSize(1);

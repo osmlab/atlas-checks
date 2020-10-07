@@ -927,7 +927,7 @@
       "difficulty": "MEDIUM",
       "defaultPriority": "LOW"
     },
-    "minimumHighwayType": "tertiary"
+    "minHighwayType": "tertiary"
   },
   "UnusualLayerTagsCheck": {
     "challenge": {
