@@ -171,26 +171,31 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     {
         return lineItemToCheck ->
         {
-            final WKTReader wktReader = new WKTReader();
             if (LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) &&
                     !lineItems.contains(lineItemToCheck))
             {
-                try
-                {
-                    final Geometry line1 = wktReader.read(lineItemToCheck.asPolyLine().toWkt());
-                    final Geometry line2 = wktReader.read(currentLineItem.asPolyLine().toWkt());
-                    return line1.crosses(line2) &&
-                            !line1.touches(line2);
-                }
-                catch (final ParseException e)
-                {
-                    return false;
-                }
+                return this.isCrossingNotTouching(currentLineItem, lineItemToCheck);
             }
             return false;
         };
     }
- 
+    
+    private boolean isCrossingNotTouching(final LineItem currentLineItem, final LineItem lineItemToCheck)
+    {
+        final WKTReader wktReader = new WKTReader();
+        try
+        {
+            final Geometry line1 = wktReader.read(lineItemToCheck.asPolyLine().toWkt());
+            final Geometry line2 = wktReader.read(currentLineItem.asPolyLine().toWkt());
+            return line1.crosses(line2) &&
+                    !line1.touches(line2);
+        }
+        catch (final ParseException e)
+        {
+            return false;
+        }
+    }
+    
     private String locationsToList(final Set<Location> locations)
     {
         return locations
