@@ -53,6 +53,7 @@ import com.google.gson.JsonParser;
  */
 public class InvalidTagsCheck extends BaseCheck<String>
 {
+
     private static final long serialVersionUID = 5150282147895785829L;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             "OSM feature {0,number,#} has invalid tags.",
@@ -61,6 +62,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
     private static final String DEFAULT_FILTER_RESOURCE = "invalidTags.txt";
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
     public static final int INLINE_REGEX_FILTER_SIZE = 3;
+    private static final String REGEX = "regex";
 
     private final List<Tuple<? extends Class<AtlasEntity>, List<? extends Predicate<Taggable>>>> classTagFilters;
 
@@ -83,7 +85,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
                 final String[] split = line.split(COLON);
                 if (split.length == 2)
                 {
-                    final List<? extends Predicate<Taggable>> filters = split[1].contains("regex")
+                    final List<? extends Predicate<Taggable>> filters = split[1].contains(REGEX)
                             ? getRegexFiltersFromResource(split[1])
                             : getFiltersFromResource(split[1]);
                     listOfClassToFilters.add(new Tuple<>(
@@ -153,7 +155,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
                         final Set<String> tagNames = getSetFromJsonArray(
                                 jsonObject.getAsJsonArray("tagNames"));
                         final Set<String> regex = getSetFromJsonArray(
-                                jsonObject.getAsJsonArray("regex"));
+                                jsonObject.getAsJsonArray(REGEX));
                         final JsonArray exceptionArray = jsonObject.getAsJsonArray("exceptions");
                         final HashMap<String, Set<String>> exceptions = new HashMap<>();
                         StreamSupport.stream(exceptionArray.spliterator(), false)
@@ -169,8 +171,9 @@ public class InvalidTagsCheck extends BaseCheck<String>
         }
         catch (final Exception exception)
         {
-            logger.error("There was a problem parsing " + filterResourcePath
-                    + "Check if the JSON file has valid structure.", exception);
+            logger.error(
+                    "There was a problem parsing {}. Check if the JSON file has valid structure.",
+                    filterResourcePath, exception);
             return Collections.emptyList();
         }
     }
@@ -332,7 +335,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
                 configList -> configList.stream().map(classTagValue ->
                 {
 
-                    if (key.contains("regex"))
+                    if (key.contains(REGEX))
                     {
                         final List<Object> classTagList = (List<Object>) classTagValue;
                         if (classTagList.size() == INLINE_REGEX_FILTER_SIZE)
