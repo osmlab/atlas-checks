@@ -24,7 +24,7 @@ Each Challenge is added to the project provided in the MapRoulette connection ur
 
 ## Example
 
-The following command will upload EdgeCrossingEdge & SinkIsland checks to the `checks_example_project` Project on staging.maproulette.org. 
+The following command will upload EdgeCrossingEdge & SinkIsland checks to the `checks_example_project` Project on maproulette.org. 
 Please remember to change the MapRoulette API key. You can find this in your MapRoulette user settings.
 
 ```java
