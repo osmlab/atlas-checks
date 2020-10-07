@@ -94,25 +94,25 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         lastEdgeEndNodeEdges.removeIf(edge ->
                 edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
 
-        final String edgeBeingVerifiedHighwayTagString = HighwayTag.highwayTag(edgeBeingVerified).get().toString().toLowerCase();
-        final Set<String> firstEdgeStartNodeEdgesHighwayTags = this.getHighwayTags(firstEdgeStartNodeEdges);
-        final Set<String> lastEdgeEndNodeEdgesHighwayTags = this.getHighwayTags(lastEdgeEndNodeEdges);
+        final HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.highwayTag(edgeBeingVerified).get();
+        final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags = this.getHighwayTags(firstEdgeStartNodeEdges);
+        final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this.getHighwayTags(lastEdgeEndNodeEdges);
 
         for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
         {
             if (HighwayTag.highwayTag(firstEdgeEdge).isEmpty()
                     || isFlagged(firstEdgeEdge.getOsmIdentifier())
                     || isFlagged(edgeBeingVerified.getOsmIdentifier())
-                    || firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTagString)
+                    || firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
                     || this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
             {
                 continue;
             }
-            final String firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge).get().toString().toLowerCase();
+            final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge).get();
             markAsFlagged(firstEdgeEdge.getOsmIdentifier());
 
             //Case 1
-            if (this.edgeBeingVerifiedCaseOne(edgeBeingVerifiedHighwayTagString) && this.edgeCheckedAgainstCaseOne(firstEdgeEdgeHighwayTag))
+            if (this.edgeBeingVerifiedCaseOne(edgeBeingVerifiedHighwayTag) && this.edgeCheckedAgainstCaseOne(firstEdgeEdgeHighwayTag))
             {
                 markAsFlagged(edgeBeingVerified.getOsmIdentifier());
                 return Optional.of(this.createFlag(object,
@@ -120,7 +120,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             }
 
             //Case 2
-            if (this.edgeBeingVerifiedCaseTwo(edgeBeingVerifiedHighwayTagString) && this.edgeCheckedAgainstCaseTwo(firstEdgeEdgeHighwayTag))
+            if (this.edgeBeingVerifiedCaseTwo(edgeBeingVerifiedHighwayTag) && this.edgeCheckedAgainstCaseTwo(firstEdgeEdgeHighwayTag))
             {
                 markAsFlagged(edgeBeingVerified.getOsmIdentifier());
                 return Optional.of(this.createFlag(object,
@@ -128,7 +128,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             }
 
             //Case 3
-            if (this.edgeBeingVerifiedCaseThree(edgeBeingVerifiedHighwayTagString) && this.edgeCheckedAgainstCaseThree(firstEdgeEdgeHighwayTag))
+            if (this.edgeBeingVerifiedCaseThree(edgeBeingVerifiedHighwayTag) && this.edgeCheckedAgainstCaseThree(firstEdgeEdgeHighwayTag))
             {
                 markAsFlagged(edgeBeingVerified.getOsmIdentifier());
                 return Optional.of(this.createFlag(object,
@@ -140,16 +140,16 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 if (HighwayTag.highwayTag(lastEdgeEdge).isEmpty()
                         || isFlagged(lastEdgeEdge.getOsmIdentifier())
                         || isFlagged(edgeBeingVerified.getOsmIdentifier())
-                        || lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTagString)
+                        || lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
                         || this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
                 {
                     continue;
                 }
-                final String lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge).get().toString().toLowerCase();
+                final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge).get();
                 markAsFlagged(lastEdgeEdge.getOsmIdentifier());
 
                 //Case 1
-                if (this.edgeBeingVerifiedCaseOne(edgeBeingVerifiedHighwayTagString) && this.edgeCheckedAgainstCaseOne(lastEdgeEdgeHighwayTag))
+                if (this.edgeBeingVerifiedCaseOne(edgeBeingVerifiedHighwayTag) && this.edgeCheckedAgainstCaseOne(lastEdgeEdgeHighwayTag))
                 {
                     markAsFlagged(edgeBeingVerified.getOsmIdentifier());
                     return Optional.of(this.createFlag(object,
@@ -157,7 +157,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 }
 
                 //Case 2
-                if (this.edgeBeingVerifiedCaseTwo(edgeBeingVerifiedHighwayTagString) && this.edgeCheckedAgainstCaseTwo(lastEdgeEdgeHighwayTag))
+                if (this.edgeBeingVerifiedCaseTwo(edgeBeingVerifiedHighwayTag) && this.edgeCheckedAgainstCaseTwo(lastEdgeEdgeHighwayTag))
                 {
                     markAsFlagged(edgeBeingVerified.getOsmIdentifier());
                     return Optional.of(this.createFlag(object,
@@ -165,7 +165,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 }
 
                 //Case 3
-                if (this.edgeBeingVerifiedCaseThree(edgeBeingVerifiedHighwayTagString) && this.edgeCheckedAgainstCaseThree(lastEdgeEdgeHighwayTag))
+                if (this.edgeBeingVerifiedCaseThree(edgeBeingVerifiedHighwayTag) && this.edgeCheckedAgainstCaseThree(lastEdgeEdgeHighwayTag))
                 {
                     markAsFlagged(edgeBeingVerified.getOsmIdentifier());
                     return Optional.of(this.createFlag(object,
@@ -184,48 +184,48 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private boolean edgeBeingVerifiedCaseOne(final String edgeHighwayTag)
+    private boolean edgeBeingVerifiedCaseOne(final HighwayTag edgeHighwayTag)
     {
-        return "motorway".equals(edgeHighwayTag)
-                || "primary".equals(edgeHighwayTag)
-                || "trunk".equals(edgeHighwayTag);
+        return HighwayTag.MOTORWAY.equals(edgeHighwayTag)
+                || HighwayTag.PRIMARY.equals(edgeHighwayTag)
+                || HighwayTag.TRUNK.equals(edgeHighwayTag);
     }
 
-    private boolean edgeBeingVerifiedCaseThree(final String edgeHighwayTag)
+    private boolean edgeBeingVerifiedCaseThree(final HighwayTag edgeHighwayTag)
     {
-        return "tertiary".equals(edgeHighwayTag)
-                || "tertiary_link".equals(edgeHighwayTag);
+        return HighwayTag.TERTIARY.equals(edgeHighwayTag)
+                || HighwayTag.TERTIARY_LINK.equals(edgeHighwayTag);
     }
 
-    private boolean edgeBeingVerifiedCaseTwo(final String edgeHighwayTag)
+    private boolean edgeBeingVerifiedCaseTwo(final HighwayTag edgeHighwayTag)
     {
-        return "motorway_link".equals(edgeHighwayTag)
-                || "primary_link".equals(edgeHighwayTag)
-                || "trunk_link".equals(edgeHighwayTag)
-                || "secondary".equals(edgeHighwayTag)
-                || "secondary_link".equals(edgeHighwayTag);
+        return HighwayTag.MOTORWAY_LINK.equals(edgeHighwayTag)
+                || HighwayTag.PRIMARY_LINK.equals(edgeHighwayTag)
+                || HighwayTag.TRUNK_LINK.equals(edgeHighwayTag)
+                || HighwayTag.SECONDARY.equals(edgeHighwayTag)
+                || HighwayTag.SECONDARY_LINK.equals(edgeHighwayTag);
     }
 
-    private boolean edgeCheckedAgainstCaseOne(final String edgeHighwayTag)
+    private boolean edgeCheckedAgainstCaseOne(final HighwayTag edgeHighwayTag)
     {
-        return "tertiary".equals(edgeHighwayTag)
-                || "unclassified".equals(edgeHighwayTag)
-                || "residential".equals(edgeHighwayTag)
-                || "service".equals(edgeHighwayTag);
+        return HighwayTag.TERTIARY.equals(edgeHighwayTag)
+                || HighwayTag.UNCLASSIFIED.equals(edgeHighwayTag)
+                || HighwayTag.RESIDENTIAL.equals(edgeHighwayTag)
+                || HighwayTag.SERVICE.equals(edgeHighwayTag);
     }
 
-    private boolean edgeCheckedAgainstCaseThree(final String edgeHighwayTag)
+    private boolean edgeCheckedAgainstCaseThree(final HighwayTag edgeHighwayTag)
     {
-        return "living_street".equals(edgeHighwayTag)
-                || "track".equals(edgeHighwayTag)
-                || "service".equals(edgeHighwayTag);
+        return HighwayTag.LIVING_STREET.equals(edgeHighwayTag)
+                || HighwayTag.TRACK.equals(edgeHighwayTag)
+                || HighwayTag.SERVICE.equals(edgeHighwayTag);
     }
 
-    private boolean edgeCheckedAgainstCaseTwo(final String edgeHighwayTag)
+    private boolean edgeCheckedAgainstCaseTwo(final HighwayTag edgeHighwayTag)
     {
-        return "unclassified".equals(edgeHighwayTag)
-                || "residential".equals(edgeHighwayTag)
-                || "service".equals(edgeHighwayTag);
+        return HighwayTag.UNCLASSIFIED.equals(edgeHighwayTag)
+                || HighwayTag.RESIDENTIAL.equals(edgeHighwayTag)
+                || HighwayTag.SERVICE.equals(edgeHighwayTag);
     }
 
 
@@ -234,15 +234,15 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         return JunctionTag.isCircular(edge) || JunctionTag.isRoundabout(edge);
     }
 
-    private Set<String> getHighwayTags(final Set<Edge> edges)
+    private Set<HighwayTag> getHighwayTags(final Set<Edge> edges)
     {
-        final Set<String> highwayTags = new HashSet<>();
+        final Set<HighwayTag> highwayTags = new HashSet<>();
         for (final Edge edge : edges)
         {
             if (HighwayTag.highwayTag(edge).isPresent())
             {
-                final String highwayTagString = HighwayTag.highwayTag(edge).get().toString().toLowerCase();
-                highwayTags.add(highwayTagString);
+                final HighwayTag highwayTag = HighwayTag.highwayTag(edge).get();
+                highwayTags.add(highwayTag);
             }
         }
         return highwayTags;
