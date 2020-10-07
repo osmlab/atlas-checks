@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.CoveredTag;
 import org.openstreetmap.atlas.tags.MaxHeightTag;
@@ -95,16 +96,19 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
         {
             final Long osmId = object.getOsmIdentifier();
             markAsFlagged(osmId);
+            final Set<Edge> edgesToFlag = new OsmWayWalker((Edge) object).collectEdges();
             final int instructionIndex = TunnelTag.isTunnel(object) ? TUNNEL_CASE_INDEX
                     : COVERED_CASE_INDEX;
-            return Optional
-                    .of(createFlag(object, getLocalizedInstruction(instructionIndex, osmId)));
+            final String instruction = getLocalizedInstruction(instructionIndex, osmId);
+            final CheckFlag flag = createFlag(edgesToFlag, instruction);
+            return Optional.of(flag);
         }
         // case 3 (road passing under bridge)
         if (BridgeTag.isBridge(object))
         {
             final Edge bridge = (Edge) object;
             final PolyLine bridgeAsPolyLine = bridge.asPolyLine();
+            final Set<Long> wayIdsToFlag = new HashSet<>();
             final Set<Edge> edgesToFlag = new HashSet<>();
             Iterables.stream(bridge.getAtlas().edgesIntersecting(bridge.bounds()))
                     .filter(edge -> edge.isMainEdge()
@@ -114,15 +118,18 @@ public class TunnelBridgeHeightLimitCheck extends BaseCheck<Long>
                             && this.edgeCrossesBridge(edge.asPolyLine(), bridgeAsPolyLine))
                     .forEach(edge ->
                     {
-                        markAsFlagged(edge.getOsmIdentifier());
-                        edgesToFlag.add(edge);
+                        final long wayId = edge.getOsmIdentifier();
+                        markAsFlagged(wayId);
+                        wayIdsToFlag.add(wayId);
+                        edgesToFlag.addAll(new OsmWayWalker(edge).collectEdges());
                     });
-            if (!edgesToFlag.isEmpty())
+            if (!wayIdsToFlag.isEmpty())
             {
                 final CheckFlag checkFlag = new CheckFlag(getTaskIdentifier(bridge));
-                edgesToFlag.forEach(
-                        edge -> checkFlag.addObject(edge, getLocalizedInstruction(BRIDGE_CASE_INDEX,
-                                edge.getOsmIdentifier(), bridge.getOsmIdentifier())));
+                wayIdsToFlag.forEach(
+                        wayId -> checkFlag.addInstruction(getLocalizedInstruction(BRIDGE_CASE_INDEX,
+                                wayId, bridge.getOsmIdentifier())));
+                checkFlag.addObjects(edgesToFlag);
                 return Optional.of(checkFlag);
             }
         }

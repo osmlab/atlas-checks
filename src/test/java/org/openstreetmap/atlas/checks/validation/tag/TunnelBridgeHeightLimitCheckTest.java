@@ -7,8 +7,6 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-import com.google.common.collect.Iterables;
-
 /**
  * Test cases for {@link TunnelBridgeHeightLimitCheck}
  *
@@ -68,11 +66,11 @@ public class TunnelBridgeHeightLimitCheckTest
             Assert.assertEquals(1, flags.size());
             // task is created for the expected bridge object
             Assert.assertEquals("1000000001", flags.get(0).getIdentifier());
-            // only one edge is flagged
-            Assert.assertEquals(1, flags.get(0).getFlaggedObjects().size());
-            // the flagged edge has the expected OSM ID
-            Assert.assertEquals("4000", Iterables.getOnlyElement(flags.get(0).getFlaggedObjects())
-                    .getProperties().get("osmIdentifier"));
+            // both edges of the flagged Way are included
+            Assert.assertEquals(2, flags.get(0).getFlaggedObjects().size());
+            // both edges have the expected OSM ID
+            flags.get(0).getFlaggedObjects().forEach(object -> Assert.assertEquals("4000",
+                    object.getProperties().get("osmIdentifier")));
         });
     }
 
