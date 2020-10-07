@@ -21,7 +21,7 @@ public class SuddenHighwayTypeChangeCheckTest
 
     private final SuddenHighwayTypeChangeCheck check = new SuddenHighwayTypeChangeCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"SuddenHighwayTypeChangeCheck\": {\"minHighwayType\": tertiary}}"));
+                    "{\"SuddenHighwayTypeChangeCheck\": {\"minHighwayType\": \"tertiary\"}}"));
 
     @Test
     public void testFalsePositiveSuddenHighwayTypeChangeCheck()
