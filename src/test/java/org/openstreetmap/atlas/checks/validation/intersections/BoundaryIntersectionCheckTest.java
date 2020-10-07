@@ -25,7 +25,11 @@ public class BoundaryIntersectionCheckTest {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectEachOther(),
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertEquals(6, flag.getFlaggedObjects().size());
+            Assert.assertEquals(1, flag.getInstructions().split("\n").length);
+        });
     }
     
     @Test
@@ -40,7 +44,11 @@ public class BoundaryIntersectionCheckTest {
         this.verifier.actual(this.setup.crossingBoundariesTwoAreasIntersectEachOtherWithEdges(),
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertEquals(6, flag.getFlaggedObjects().size());
+            Assert.assertEquals(1, flag.getInstructions().split("\n").length);
+        });
     }
     
     @Test
