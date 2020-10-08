@@ -79,122 +79,85 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edgeBeingVerified = (Edge) object;
-        if (HighwayTag.highwayTag(edgeBeingVerified).isPresent())
+
+        final List<Edge> completeWayEdges = new ArrayList<>(
+                new OsmWayWalker(edgeBeingVerified).collectEdges());
+
+        final Node firstEdgeStartNode = completeWayEdges.get(0).start();
+        final Node lastEdgeEndNode = completeWayEdges.get(completeWayEdges.size() - 1).end();
+
+        final Set<Edge> firstEdgeStartNodeEdges = firstEdgeStartNode.connectedEdges();
+        firstEdgeStartNodeEdges.removeIf(
+                edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
+        final Set<Edge> lastEdgeEndNodeEdges = lastEdgeEndNode.connectedEdges();
+        lastEdgeEndNodeEdges.removeIf(
+                edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
+
+        HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.NO;
+        final Optional<HighwayTag> edgeBeingVerifiedHighwayTagOptional = HighwayTag
+                .highwayTag(edgeBeingVerified);
+        if (edgeBeingVerifiedHighwayTagOptional.isPresent())
         {
+            edgeBeingVerifiedHighwayTag = edgeBeingVerifiedHighwayTagOptional.get();
+        }
+        final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags = this
+                .getHighwayTags(firstEdgeStartNodeEdges);
+        final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this
+                .getHighwayTags(lastEdgeEndNodeEdges);
 
-            final List<Edge> completeWayEdges = new ArrayList<>(
-                    new OsmWayWalker(edgeBeingVerified).collectEdges());
-
-            final Node firstEdgeStartNode = completeWayEdges.get(0).start();
-            final Node lastEdgeEndNode = completeWayEdges.get(completeWayEdges.size() - 1).end();
-
-            final Set<Edge> firstEdgeStartNodeEdges = firstEdgeStartNode.connectedEdges();
-            firstEdgeStartNodeEdges.removeIf(
-                    edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
-            final Set<Edge> lastEdgeEndNodeEdges = lastEdgeEndNode.connectedEdges();
-            lastEdgeEndNodeEdges.removeIf(
-                    edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
-
-            HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.NO;
-            final Optional<HighwayTag> edgeBeingVerifiedHighwayTagOptional = HighwayTag
-                    .highwayTag(edgeBeingVerified);
-            if (edgeBeingVerifiedHighwayTagOptional.isPresent())
+        for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
+        {
+            if (HighwayTag.highwayTag(firstEdgeEdge).isPresent()
+                    && !isFlagged(firstEdgeEdge.getOsmIdentifier())
+                    && !isFlagged(edgeBeingVerified.getOsmIdentifier())
+                    && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
+                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
             {
-                edgeBeingVerifiedHighwayTag = edgeBeingVerifiedHighwayTagOptional.get();
-            }
-            final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags = this
-                    .getHighwayTags(firstEdgeStartNodeEdges);
-            final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this
-                    .getHighwayTags(lastEdgeEndNodeEdges);
-
-            for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
-            {
-                if (HighwayTag.highwayTag(firstEdgeEdge).isPresent()
-                        && !isFlagged(firstEdgeEdge.getOsmIdentifier())
-                        && !isFlagged(edgeBeingVerified.getOsmIdentifier())
-                        && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                        && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
+                HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.NO;
+                final Optional<HighwayTag> firstEdgeEdgeHighwayTagOptional = HighwayTag
+                        .highwayTag(firstEdgeEdge);
+                if (firstEdgeEdgeHighwayTagOptional.isPresent())
                 {
-                    HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.NO;
-                    final Optional<HighwayTag> firstEdgeEdgeHighwayTagOptional = HighwayTag
-                            .highwayTag(firstEdgeEdge);
-                    if (firstEdgeEdgeHighwayTagOptional.isPresent())
-                    {
-                        firstEdgeEdgeHighwayTag = firstEdgeEdgeHighwayTagOptional.get();
-                    }
-                    markAsFlagged(firstEdgeEdge.getOsmIdentifier());
+                    firstEdgeEdgeHighwayTag = firstEdgeEdgeHighwayTagOptional.get();
+                }
+                markAsFlagged(firstEdgeEdge.getOsmIdentifier());
 
-                    // Case 1
-                    if (this.edgeBeingVerifiedCaseOne(edgeBeingVerifiedHighwayTag)
-                            && this.edgeCheckedAgainstCaseOne(firstEdgeEdgeHighwayTag))
-                    {
-                        markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                        return Optional.of(this.createFlag(object,
-                                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-                    }
+                // Case 1
+                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag))
+                {
+                    markAsFlagged(edgeBeingVerified.getOsmIdentifier());
+                    return Optional.of(this.createFlag(object,
+                            this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                }
 
-                    // Case 2
-                    if (this.edgeBeingVerifiedCaseTwo(edgeBeingVerifiedHighwayTag)
-                            && this.edgeCheckedAgainstCaseTwo(firstEdgeEdgeHighwayTag))
+                for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
+                {
+                    if (HighwayTag.highwayTag(lastEdgeEdge).isPresent()
+                            && !isFlagged(lastEdgeEdge.getOsmIdentifier())
+                            && !isFlagged(edgeBeingVerified.getOsmIdentifier())
+                            && !lastEdgeEndNodeEdgesHighwayTags
+                                    .contains(edgeBeingVerifiedHighwayTag)
+                            && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
                     {
-                        markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                        return Optional.of(this.createFlag(object,
-                                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-                    }
-
-                    // Case 3
-                    if (this.edgeBeingVerifiedCaseThree(edgeBeingVerifiedHighwayTag)
-                            && this.edgeCheckedAgainstCaseThree(firstEdgeEdgeHighwayTag))
-                    {
-                        markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                        return Optional.of(this.createFlag(object,
-                                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-                    }
-
-                    for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
-                    {
-                        if (HighwayTag.highwayTag(lastEdgeEdge).isPresent()
-                                && !isFlagged(lastEdgeEdge.getOsmIdentifier())
-                                && !isFlagged(edgeBeingVerified.getOsmIdentifier())
-                                && !lastEdgeEndNodeEdgesHighwayTags
-                                        .contains(edgeBeingVerifiedHighwayTag)
-                                && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
+                        HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.NO;
+                        final Optional<HighwayTag> lastEdgeEdgeHighwayTagOptional = HighwayTag
+                                .highwayTag(lastEdgeEdge);
+                        if (lastEdgeEdgeHighwayTagOptional.isPresent())
                         {
-                            HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.NO;
-                            final Optional<HighwayTag> lastEdgeEdgeHighwayTagOptional = HighwayTag
-                                    .highwayTag(lastEdgeEdge);
-                            if (lastEdgeEdgeHighwayTagOptional.isPresent())
-                            {
-                                lastEdgeEdgeHighwayTag = lastEdgeEdgeHighwayTagOptional.get();
-                            }
-                            markAsFlagged(lastEdgeEdge.getOsmIdentifier());
+                            lastEdgeEdgeHighwayTag = lastEdgeEdgeHighwayTagOptional.get();
+                        }
+                        markAsFlagged(lastEdgeEdge.getOsmIdentifier());
 
-                            // Case 1
-                            if (this.edgeBeingVerifiedCaseOne(edgeBeingVerifiedHighwayTag)
-                                    && this.edgeCheckedAgainstCaseOne(lastEdgeEdgeHighwayTag))
-                            {
-                                markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                                return Optional.of(this.createFlag(object, this
-                                        .getLocalizedInstruction(0, object.getOsmIdentifier())));
-                            }
-
-                            // Case 2
-                            if (this.edgeBeingVerifiedCaseTwo(edgeBeingVerifiedHighwayTag)
-                                    && this.edgeCheckedAgainstCaseTwo(lastEdgeEdgeHighwayTag))
-                            {
-                                markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                                return Optional.of(this.createFlag(object, this
-                                        .getLocalizedInstruction(0, object.getOsmIdentifier())));
-                            }
-
-                            // Case 3
-                            if (this.edgeBeingVerifiedCaseThree(edgeBeingVerifiedHighwayTag)
-                                    && this.edgeCheckedAgainstCaseThree(lastEdgeEdgeHighwayTag))
-                            {
-                                markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                                return Optional.of(this.createFlag(object, this
-                                        .getLocalizedInstruction(0, object.getOsmIdentifier())));
-                            }
+                        // Case 1
+                        if (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                                || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                                || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag))
+                        {
+                            markAsFlagged(edgeBeingVerified.getOsmIdentifier());
+                            return Optional.of(this.createFlag(object, this
+                                    .getLocalizedInstruction(0, object.getOsmIdentifier())));
                         }
                     }
                 }
@@ -274,4 +237,21 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         }
         return highwayTags;
     }
+
+    private boolean isCaseOne(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
+    {
+        return edgeBeingVerifiedCaseOne(edgeHighwayTag1) && edgeCheckedAgainstCaseOne(edgeHighwayTag2);
+    }
+
+    private boolean isCaseThree(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
+    {
+        return edgeBeingVerifiedCaseThree(edgeHighwayTag1) && edgeCheckedAgainstCaseThree(edgeHighwayTag2);
+    }
+
+    private boolean isCaseTwo(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
+    {
+        return edgeBeingVerifiedCaseTwo(edgeHighwayTag1) && edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
+    }
+
+
 }
