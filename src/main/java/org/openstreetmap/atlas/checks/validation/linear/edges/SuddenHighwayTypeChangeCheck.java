@@ -242,20 +242,20 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     private boolean isCaseOne(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
-        return edgeBeingVerifiedCaseOne(edgeHighwayTag1)
-                && edgeCheckedAgainstCaseOne(edgeHighwayTag2);
+        return this.edgeBeingVerifiedCaseOne(edgeHighwayTag1)
+                && this.edgeCheckedAgainstCaseOne(edgeHighwayTag2);
     }
 
     private boolean isCaseThree(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
-        return edgeBeingVerifiedCaseThree(edgeHighwayTag1)
-                && edgeCheckedAgainstCaseThree(edgeHighwayTag2);
+        return this.edgeBeingVerifiedCaseThree(edgeHighwayTag1)
+                && this.edgeCheckedAgainstCaseThree(edgeHighwayTag2);
     }
 
     private boolean isCaseTwo(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
-        return edgeBeingVerifiedCaseTwo(edgeHighwayTag1)
-                && edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
+        return this.edgeBeingVerifiedCaseTwo(edgeHighwayTag1)
+                && this.edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
     }
 
 }
