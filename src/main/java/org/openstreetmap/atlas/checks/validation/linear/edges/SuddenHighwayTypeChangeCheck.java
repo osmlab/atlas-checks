@@ -95,8 +95,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             lastEdgeEndNodeEdges.removeIf(
                     edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
 
-            final HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.highwayTag(edgeBeingVerified)
-                    .get();
+            HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.NO;
+            if (HighwayTag.highwayTag(edgeBeingVerified).isPresent())
+            {
+                edgeBeingVerifiedHighwayTag = HighwayTag.highwayTag(edgeBeingVerified).get();
+            }
             final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags = this
                     .getHighwayTags(firstEdgeStartNodeEdges);
             final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this
@@ -110,8 +113,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                         && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
                         && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
                 {
-                    final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge)
-                            .get();
+                    HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.NO;
+                    if (HighwayTag.highwayTag(firstEdgeEdge).isPresent())
+                    {
+                        firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge).get();
+                    }
                     markAsFlagged(firstEdgeEdge.getOsmIdentifier());
 
                     // Case 1
@@ -150,9 +156,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                                         .contains(edgeBeingVerifiedHighwayTag)
                                 && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
                         {
-
-                            final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag
-                                    .highwayTag(lastEdgeEdge).get();
+                            HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.NO;
+                            if (HighwayTag.highwayTag(lastEdgeEdge).isPresent())
+                            {
+                                lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge).get();
+                            }
                             markAsFlagged(lastEdgeEdge.getOsmIdentifier());
 
                             // Case 1
@@ -251,9 +259,10 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         final Set<HighwayTag> highwayTags = new HashSet<>();
         for (final Edge edge : edges)
         {
-            if (HighwayTag.highwayTag(edge).isPresent())
+            Optional<HighwayTag> highwayTagOptional = HighwayTag.highwayTag(edge);
+            if (highwayTagOptional.isPresent())
             {
-                final HighwayTag highwayTag = HighwayTag.highwayTag(edge).get();
+                HighwayTag highwayTag = highwayTagOptional.get();
                 highwayTags.add(highwayTag);
             }
         }
