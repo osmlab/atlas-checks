@@ -106,7 +106,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this
                 .getHighwayTags(lastEdgeEndNodeEdges);
 
-        //Check ways' first edge's connected edges for suspiciously large highway tag jumps.
+        // Check ways' first edge's connected edges for suspiciously large highway tag jumps.
         for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
         {
             final Optional<HighwayTag> firstEdgeEdgeHighwayTagOptional = HighwayTag
@@ -130,7 +130,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             }
         }
 
-        //Check ways' last edge's connected edges for suspiciously large highway tag jumps
+        // Check ways' last edge's connected edges for suspiciously large highway tag jumps
         for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
         {
             final Optional<HighwayTag> lastEdgeEdgeHighwayTagOptional = HighwayTag
