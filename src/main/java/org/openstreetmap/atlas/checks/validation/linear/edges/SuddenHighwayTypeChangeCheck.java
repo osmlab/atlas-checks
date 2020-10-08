@@ -259,10 +259,10 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         final Set<HighwayTag> highwayTags = new HashSet<>();
         for (final Edge edge : edges)
         {
-            Optional<HighwayTag> highwayTagOptional = HighwayTag.highwayTag(edge);
+            final Optional<HighwayTag> highwayTagOptional = HighwayTag.highwayTag(edge);
             if (highwayTagOptional.isPresent())
             {
-                HighwayTag highwayTag = highwayTagOptional.get();
+                final HighwayTag highwayTag = highwayTagOptional.get();
                 highwayTags.add(highwayTag);
             }
         }
