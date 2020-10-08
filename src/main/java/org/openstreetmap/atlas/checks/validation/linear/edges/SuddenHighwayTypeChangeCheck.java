@@ -96,7 +96,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                     edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
 
             HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.NO;
-            Optional<HighwayTag> edgeBeingVerifiedHighwayTagOptional = HighwayTag
+            final Optional<HighwayTag> edgeBeingVerifiedHighwayTagOptional = HighwayTag
                     .highwayTag(edgeBeingVerified);
             if (edgeBeingVerifiedHighwayTagOptional.isPresent())
             {
@@ -116,7 +116,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                         && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
                 {
                     HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.NO;
-                    Optional<HighwayTag> firstEdgeEdgeHighwayTagOptional = HighwayTag
+                    final Optional<HighwayTag> firstEdgeEdgeHighwayTagOptional = HighwayTag
                             .highwayTag(firstEdgeEdge);
                     if (firstEdgeEdgeHighwayTagOptional.isPresent())
                     {
@@ -161,7 +161,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                                 && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
                         {
                             HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.NO;
-                            Optional<HighwayTag> lastEdgeEdgeHighwayTagOptional = HighwayTag
+                            final Optional<HighwayTag> lastEdgeEdgeHighwayTagOptional = HighwayTag
                                     .highwayTag(lastEdgeEdge);
                             if (lastEdgeEdgeHighwayTagOptional.isPresent())
                             {
