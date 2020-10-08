@@ -87,11 +87,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         final Node lastEdgeEndNode = completeWayEdges.get(completeWayEdges.size() - 1).end();
 
         final Set<Edge> firstEdgeStartNodeEdges = firstEdgeStartNode.connectedEdges();
-        firstEdgeStartNodeEdges.removeIf(
-                edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
+        firstEdgeStartNodeEdges
+                .removeIf(edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
         final Set<Edge> lastEdgeEndNodeEdges = lastEdgeEndNode.connectedEdges();
-        lastEdgeEndNodeEdges.removeIf(
-                edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
+        lastEdgeEndNodeEdges
+                .removeIf(edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
 
         HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.NO;
         final Optional<HighwayTag> edgeBeingVerifiedHighwayTagOptional = HighwayTag
@@ -152,12 +152,14 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
                         // Case 1
                         if (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                                || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                                || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag))
+                                || this.isCaseTwo(edgeBeingVerifiedHighwayTag,
+                                        lastEdgeEdgeHighwayTag)
+                                || this.isCaseThree(edgeBeingVerifiedHighwayTag,
+                                        lastEdgeEdgeHighwayTag))
                         {
                             markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                            return Optional.of(this.createFlag(object, this
-                                    .getLocalizedInstruction(0, object.getOsmIdentifier())));
+                            return Optional.of(this.createFlag(object,
+                                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
                         }
                     }
                 }
@@ -240,18 +242,20 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     private boolean isCaseOne(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
-        return edgeBeingVerifiedCaseOne(edgeHighwayTag1) && edgeCheckedAgainstCaseOne(edgeHighwayTag2);
+        return edgeBeingVerifiedCaseOne(edgeHighwayTag1)
+                && edgeCheckedAgainstCaseOne(edgeHighwayTag2);
     }
 
     private boolean isCaseThree(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
-        return edgeBeingVerifiedCaseThree(edgeHighwayTag1) && edgeCheckedAgainstCaseThree(edgeHighwayTag2);
+        return edgeBeingVerifiedCaseThree(edgeHighwayTag1)
+                && edgeCheckedAgainstCaseThree(edgeHighwayTag2);
     }
 
     private boolean isCaseTwo(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
-        return edgeBeingVerifiedCaseTwo(edgeHighwayTag1) && edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
+        return edgeBeingVerifiedCaseTwo(edgeHighwayTag1)
+                && edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
     }
-
 
 }
