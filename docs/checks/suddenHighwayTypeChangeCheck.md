@@ -2,7 +2,7 @@
 
 #### Description
 
-The purpose of this check is to identify ways that have sudden highway tag jumps that are at least 2 classifications a part.
+The purpose of this check is to identify ways that have sudden highway tag jumps based on 3 different classes.
 
 #### Live Examples
 Sudden Highway Type Changes
@@ -22,18 +22,19 @@ We first validate that the incoming object is:
 * The Edge is not a roundabout or circular
 
 ##### Flagging the Edge
-Gather the Edge' in and out edges. Iterate over these edges set a numeric value for the highway tag. (anything equal or above residential)
-FInd the tag difference between the edge being validated and the in and out edges. If the difference is greater than or 
-equal to 2 the edge is flagged. 
+Gather the ways' in and out edges. Iterate over these edges and determining if they fit within the 3 classifications of this check.
 
-##### Assigning doubles based on highway tag
-* Residential and Unclassified --> 0.0
-* Tertiary/Tertiary_link --> 2.0
-* Secondary/Secondary_link --> 3.0
-* Primary/Primary_link --> 4.0
-* Trunk/Trunk_link --> 5.0
-* Motorway/Motorway_link --> 6.0
-* All others --> -1.0
+##### Three classifications of Sudden Highway Tag Changes
+###### Class 1
+* Way with following classification: **Motorway, Trunk, or Primary**
+* Above way terminates and connects to following classification: **Tertiary, Unclassified, Residential, or Service**
+###### Class 2
+* Way with following classification: **Motorway_Link, Trunk_Link, Primary_Link, Secondary_Link, or Secondary**
+* Above way terminates and connects to following classification: **Unclassified, Residential, or Service**
+###### Class 3
+* Way with following classification: **Tertiary or Tertiary_Link**
+* Above way terminates and connects to following classification: **Living_Street, Service, or Track**
+
 
 To learn more about the code, please look at the comments in the source code for the check.  
 [SuddenHighwayTypeChangeCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/SuddenHighwayTypeChangeCheck.java)
