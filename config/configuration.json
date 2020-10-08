@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -929,7 +929,6 @@
       "tags":"highway"
   },
   "SuddenHighwayTypeChangeCheck":{
-    "enabled": true,
     "challenge": {
       "description": "Tasks will include ways that are drawn as a single way, when in reality they should be two or more distinct ways",
       "blurb": "Snake Roads",
