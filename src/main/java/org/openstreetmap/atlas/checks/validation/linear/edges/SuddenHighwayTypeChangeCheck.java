@@ -120,7 +120,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                             .highwayTag(firstEdgeEdge);
                     if (firstEdgeEdgeHighwayTagOptional.isPresent())
                     {
-                        firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge).get();
+                        firstEdgeEdgeHighwayTag = firstEdgeEdgeHighwayTagOptional.get();
                     }
                     markAsFlagged(firstEdgeEdge.getOsmIdentifier());
 
