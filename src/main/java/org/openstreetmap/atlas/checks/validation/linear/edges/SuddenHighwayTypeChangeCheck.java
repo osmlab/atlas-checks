@@ -141,7 +141,8 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                                     .contains(edgeBeingVerifiedHighwayTag)
                             && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
                     {
-                        final HighwayTag lastEdgeEdgeHighwayTag = lastEdgeEdgeHighwayTagOptional.get();
+                        final HighwayTag lastEdgeEdgeHighwayTag = lastEdgeEdgeHighwayTagOptional
+                                .get();
                         markAsFlagged(lastEdgeEdge.getOsmIdentifier());
 
                         // All cases
