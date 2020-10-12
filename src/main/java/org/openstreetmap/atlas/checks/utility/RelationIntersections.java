@@ -16,9 +16,12 @@ public class RelationIntersections
     
     private final Map<Relation, Map<Long, Set<LineItem>>> intersections = new HashMap<>();
     
-    public Set<Relation> getRelations()
+    public void addIntersection(final Relation relation, final LineItem lineItem)
     {
-        return this.intersections.keySet();
+        this.intersections.computeIfAbsent(relation, k -> new HashMap<>());
+        final long osmIdentifier = lineItem.getOsmIdentifier();
+        this.intersections.get(relation).computeIfAbsent(osmIdentifier, k -> new HashSet<>());
+        this.intersections.get(relation).get(osmIdentifier).add(lineItem);
     }
     
     public Map<Long, Set<LineItem>> getLineItemMap(final Relation relation)
@@ -26,12 +29,9 @@ public class RelationIntersections
         return this.intersections.get(relation);
     }
     
-    public void addIntersection(final Relation relation, final LineItem lineItem)
+    public Set<Relation> getRelations()
     {
-        this.intersections.computeIfAbsent(relation, k -> new HashMap<>());
-        final long osmIdentifier = lineItem.getOsmIdentifier();
-        this.intersections.get(relation).computeIfAbsent(osmIdentifier, k -> new HashSet<>());
-        this.intersections.get(relation).get(osmIdentifier).add(lineItem);
+        return this.intersections.keySet();
     }
     
 }
