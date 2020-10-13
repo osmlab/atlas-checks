@@ -12,15 +12,15 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class BoundaryIntersectionCheckTest
 {
-    
+
     @Rule
     public BoundaryIntersectionCheckTestRule setup = new BoundaryIntersectionCheckTestRule();
-    
+
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
-    
+
     private final Configuration configuration = ConfigurationResolver.emptyConfiguration();
-    
+
     @Test
     public void testInvalidThreeCrossingItemsAtlas()
     {
@@ -28,7 +28,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
-    
+
     @Test
     public void testInvalidTwoCrossingBoundariesWithOnlyWayTags()
     {
@@ -41,7 +41,7 @@ public class BoundaryIntersectionCheckTest
             Assert.assertEquals(1, flag.getInstructions().split("\n").length);
         });
     }
-    
+
     @Test
     public void testInvalidTwoCrossingItemsAtlas()
     {
@@ -54,7 +54,7 @@ public class BoundaryIntersectionCheckTest
             Assert.assertEquals(1, flag.getInstructions().split("\n").length);
         });
     }
-    
+
     @Test
     public void testInvalidTwoCrossingItemsWithEdgesAtlas()
     {
@@ -67,7 +67,7 @@ public class BoundaryIntersectionCheckTest
             Assert.assertEquals(1, flag.getInstructions().split("\n").length);
         });
     }
-    
+
     @Test
     public void testTouchingObjects()
     {
@@ -75,7 +75,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void testValidCrossingObjectsOneMissingBoundarySpecificTag()
     {
@@ -83,7 +83,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void testValidCrossingObjectsOneMissingType()
     {
@@ -91,7 +91,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void testValidCrossingObjectsWithDifferentTypes()
     {
@@ -99,7 +99,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void testValidNonCrossingObjects()
     {
@@ -107,7 +107,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void testValidNonCrossingObjectsOneContainOther()
     {
@@ -115,7 +115,7 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
     @Test
     public void testValidNonCrossingObjectsWithEdges()
     {
@@ -123,5 +123,5 @@ public class BoundaryIntersectionCheckTest
                 new BoundaryIntersectionCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-    
+
 }

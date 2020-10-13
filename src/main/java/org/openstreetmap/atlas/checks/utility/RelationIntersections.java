@@ -13,9 +13,9 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
  */
 public class RelationIntersections
 {
-    
+
     private final Map<Relation, Map<Long, Set<LineItem>>> intersections = new HashMap<>();
-    
+
     public void addIntersection(final Relation relation, final LineItem lineItem)
     {
         this.intersections.computeIfAbsent(relation, k -> new HashMap<>());
@@ -23,15 +23,15 @@ public class RelationIntersections
         this.intersections.get(relation).computeIfAbsent(osmIdentifier, k -> new HashSet<>());
         this.intersections.get(relation).get(osmIdentifier).add(lineItem);
     }
-    
+
     public Map<Long, Set<LineItem>> getLineItemMap(final Relation relation)
     {
         return this.intersections.get(relation);
     }
-    
+
     public Set<Relation> getRelations()
     {
         return this.intersections.keySet();
     }
-    
+
 }
