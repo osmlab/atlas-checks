@@ -56,10 +56,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                     LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem));
     
     
-    private static boolean isRelationTypeBoundaryWithBoundaryTag(final AtlasObject object)
+    private static LineItem castToLineItem(final RelationMember relationMember)
     {
-        return Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY) &&
-                Validators.hasValuesFor(object, BoundaryTag.class);
+        return (LineItem) relationMember.getEntity();
     }
     
     private static Set<LineItem> getLineItems(final RelationMemberList relationMembers)
@@ -68,6 +67,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                 .stream()
                 .map(BoundaryIntersectionCheck::castToLineItem)
                 .collect(Collectors.toSet());
+    }
+    
+    private static boolean isRelationTypeBoundaryWithBoundaryTag(final AtlasObject object)
+    {
+        return Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY) &&
+                Validators.hasValuesFor(object, BoundaryTag.class);
     }
     
     private static boolean isRelationWithAnyLineItemWithBoundaryTags(final AtlasObject object)
@@ -109,6 +114,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         return Optional.of(checkFlag);
     }
     
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+    
     private void addInformationToFlag(final CheckFlag checkFlag, final Relation relation, final LineItem lineItem, final Relation intersectingBoundary, final Map<Long, Set<LineItem>> lineItems)
     {
         lineItems.keySet().forEach(osmId ->
@@ -137,11 +148,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         }
     }
     
-    private void addLineItems(final CheckFlag checkFlag, final Set<LineItem> lineItems)
-    {
-        lineItems.forEach(lineItem -> this.addLineItem(checkFlag, lineItem));
-    }
-    
     private void addLineItem(final CheckFlag checkFlag, final LineItem lineItem)
     {
         if(lineItem instanceof Edge)
@@ -152,6 +158,11 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         {
             checkFlag.addObject(lineItem);
         }
+    }
+    
+    private void addLineItems(final CheckFlag checkFlag, final Set<LineItem> lineItems)
+    {
+        lineItems.forEach(lineItem -> this.addLineItem(checkFlag, lineItem));
     }
     
     private void analyzeIntersections(final Atlas atlas, final Relation relation, final CheckFlag checkFlag, final Set<LineItem> lineItems, final LineItem lineItem)
@@ -175,11 +186,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         });
     }
     
-    private static LineItem castToLineItem(final RelationMember relationMember)
-    {
-        return (LineItem) relationMember.getEntity();
-    }
-    
     private Set<Relation> getBoundary(final LineItem currentLineItem)
     {
         return currentLineItem.relations()
@@ -187,12 +193,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                 .filter(relation -> BoundaryIntersectionCheck.isRelationTypeBoundaryWithBoundaryTag(relation) ||
                         LINE_ITEM_WITH_BOUNDARY_TAGS.test(currentLineItem))
                 .collect(Collectors.toSet());
-    }
-    
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
     
     private Set<Location> getIntersectingPoints(final LineItem lineItem, final Set<LineItem> currentLineItems)

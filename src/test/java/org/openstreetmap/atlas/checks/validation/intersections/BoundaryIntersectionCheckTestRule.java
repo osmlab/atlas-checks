@@ -14,7 +14,8 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
  *
  * @author srachanski
  */
-public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
+public class BoundaryIntersectionCheckTestRule extends CoreTestRule
+{
     private static final String COORD_1 = "0, 0";
     private static final String COORD_2 = "0, 2";
     private static final String COORD_3 = "2, 2";
@@ -515,47 +516,58 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule {
                             "type=nonBoundary"})})
     private Atlas crossingOneMissingBoundarySpecificTag;
     
-    public Atlas crossingBoundariesTwoAreasIntersectEachOther() {
-        return this.crossingBoundariesTwoAreasIntersectEachOther;
-    }
-    
-    public Atlas crossingBoundariesTwoAreasIntersectEachOtherWithEdges() {
-        return this.crossingBoundariesTwoAreasIntersectEachOtherWithEdges;
-    }
-    
-    public Atlas nonCrossingBoundariesTwoSeparate() {
-        return this.nonCrossingBoundariesTwoSeparate;
-    }
-    
-    public Atlas nonCrossingOneContainOther() {
-        return this.nonCrossingOneContainOther;
-    }
-    
-    public Atlas crossingOneWithWrongType() {
-        return this.crossingOneWithWrongType;
-    }
-    
-    public Atlas crossingOneMissingBoundarySpecificTag() {
-        return this.crossingOneMissingBoundarySpecificTag;
-    }
-    
-    public Atlas nonCrossingBoundariesTwoSeparateWithEdges() {
-        return this.nonCrossingBoundariesTwoSeparateWithEdges;
-    }
-    
-    public Atlas crossingBoundariesTwoAreasIntersectOneOther() {
-        return this.crossingBoundariesTwoAreasIntersectOneOther;
-    }
-    
-    public Atlas boundariesTouchEachOther() {
+    public Atlas boundariesTouchEachOther()
+    {
         return this.crossingBoundariesTwoAreasTouchEachOther;
     }
     
-    public Atlas crossingBoundariesWithDifferentTypes() {
+    public Atlas crossingBoundariesTwoAreasIntersectEachOther()
+    {
+        return this.crossingBoundariesTwoAreasIntersectEachOther;
+    }
+    
+    public Atlas crossingBoundariesTwoAreasIntersectEachOtherWithEdges()
+    {
+        return this.crossingBoundariesTwoAreasIntersectEachOtherWithEdges;
+    }
+    
+    public Atlas crossingBoundariesTwoAreasIntersectOneOther()
+    {
+        return this.crossingBoundariesTwoAreasIntersectOneOther;
+    }
+    
+    public Atlas crossingBoundariesWithDifferentTypes()
+    {
         return this.crossingBoundariesWithDifferentTypes;
     }
     
-    public Atlas crossingBoundariesWithOnlyTagsOnWays() {
+    public Atlas crossingBoundariesWithOnlyTagsOnWays()
+    {
         return this.crossingBoundariesWithOnlyTagsOnWays;
+    }
+    
+    public Atlas crossingOneMissingBoundarySpecificTag()
+    {
+        return this.crossingOneMissingBoundarySpecificTag;
+    }
+    
+    public Atlas crossingOneWithWrongType()
+    {
+        return this.crossingOneWithWrongType;
+    }
+    
+    public Atlas nonCrossingBoundariesTwoSeparate()
+    {
+        return this.nonCrossingBoundariesTwoSeparate;
+    }
+    
+    public Atlas nonCrossingBoundariesTwoSeparateWithEdges()
+    {
+        return this.nonCrossingBoundariesTwoSeparateWithEdges;
+    }
+    
+    public Atlas nonCrossingOneContainOther()
+    {
+        return this.nonCrossingOneContainOther;
     }
 }
