@@ -16,6 +16,7 @@ import org.apache.spark.TaskContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
+import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
@@ -93,9 +94,8 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
      * @param configuration
      *            {@link MapRouletteConfiguration} to create a new {@link MapRouletteClient}s
      */
-    @SuppressWarnings("rawtypes")
     private static void executeChecks(final String country, final Atlas atlas,
-            final Set<BaseCheck> checksToRun, final MapRouletteConfiguration configuration)
+            final Set<BaseCheck<?>> checksToRun, final MapRouletteConfiguration configuration)
     {
         final Pool checkExecutionPool = new Pool(checksToRun.size(), "Check execution pool",
                 POOL_DURATION_BEFORE_KILL);
@@ -133,21 +133,19 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         return "Integrity Check Spark Job";
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     @Override
     public void start(final CommandMap commandMap)
     {
-        final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
+        final String atlasDirectory = (String) commandMap.get(SparkJob.INPUT);
         final String input = Optional.ofNullable(this.input(commandMap)).orElse(atlasDirectory);
         final String output = this.output(commandMap);
-        @SuppressWarnings("unchecked")
         final Set<OutputFormats> outputFormats = (Set<OutputFormats>) commandMap
                 .get(OUTPUT_FORMATS);
         final StringList countries = StringList.split((String) commandMap.get(COUNTRIES),
                 CommonConstants.COMMA);
         final MapRouletteConfiguration mapRouletteConfiguration = (MapRouletteConfiguration) commandMap
                 .get(MAP_ROULETTE);
-        @SuppressWarnings("unchecked")
         final Optional<List<String>> checkFilter = (Optional<List<String>>) commandMap
                 .getOption(CHECK_FILTER);
 
@@ -164,14 +162,17 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 .collect(Collectors.toList()));
 
         final boolean saveIntermediateAtlas = (Boolean) commandMap.get(PBF_SAVE_INTERMEDIATE_ATLAS);
-        @SuppressWarnings("unchecked")
         final Rectangle pbfBoundary = ((Optional<Rectangle>) commandMap.getOption(PBF_BOUNDING_BOX))
                 .orElse(Rectangle.MAXIMUM);
         final boolean compressOutput = Boolean
                 .parseBoolean((String) commandMap.get(SparkJob.COMPRESS_OUTPUT));
 
         final Map<String, String> sparkContext = this.configurationMap();
-        final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
+
+        final ExternalDataFetcher fileFetcher = new ExternalDataFetcher(input,
+                this.configurationMap());
+        final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration,
+                fileFetcher);
         // check configuration and country list
         final Set<BaseCheck<?>> preOverriddenChecks = checkLoader.loadChecks();
         if (!this.isValidInput(countries, preOverriddenChecks))
@@ -186,7 +187,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 
         // Create a list of Country to Check tuples
         // Add priority countries first if they are supplied by parameter
-        final List<Tuple2<String, Set<BaseCheck>>> countryCheckTuples = new ArrayList<>();
+        final List<Tuple2<String, Set<BaseCheck<?>>>> countryCheckTuples = new ArrayList<>();
         countries.stream().filter(priorityCountries::contains).forEach(country -> countryCheckTuples
                 .add(new Tuple2<>(country, checkLoader.loadChecksForCountry(country))));
 
@@ -204,7 +205,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
         logger.info("Initialized checks: {}", infoMessage2);
 
         // Parallelize on the countries
-        final JavaPairRDD<String, Set<BaseCheck>> countryCheckRDD = this.getContext()
+        final JavaPairRDD<String, Set<BaseCheck<?>>> countryCheckRDD = this.getContext()
                 .parallelizePairs(countryCheckTuples, countryCheckTuples.size());
 
         // Set target and temporary folders
@@ -231,7 +232,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
             final Time timer = Time.now();
 
             final String country = tuple._1();
-            final Set<BaseCheck> checks = tuple._2();
+            final Set<BaseCheck<?>> checks = tuple._2();
 
             logger.info("Initialized checks for {}: {}", country,
                     checks.stream().map(BaseCheck::getCheckName).collect(Collectors.joining(",")));

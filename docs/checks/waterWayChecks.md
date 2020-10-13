@@ -21,6 +21,8 @@ This check identifies waterways that are closed (i.e., would have a circular wat
     }
 }
 ```
+If you are using the NASA SRTM elevation files, their resolution is either 30m or 90m. _This means that the elevation checks will ignore uphill waterways by default when using the NASA SRTM files_.
+
 You may also want to look at [ElevationUtilities](../utilities/elevationUtilities.md).
 
 #### Code Review
