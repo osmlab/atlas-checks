@@ -31,81 +31,78 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-
 /**
  * @author srachanski
  */
 public class BoundaryIntersectionCheck extends BaseCheck<Long>
 {
-    
+
     private static final String INVALID_BOUNDARY_FORMAT = "Boundary {0} with way {1} is crossing invalidly with boundary {3} with way {2} at coordinates {4}.";
-    private static final String INSTRUCTION_FORMAT = INVALID_BOUNDARY_FORMAT + " Two boundaries should not intersect each other.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT, INVALID_BOUNDARY_FORMAT);
+    private static final String INSTRUCTION_FORMAT = INVALID_BOUNDARY_FORMAT
+            + " Two boundaries should not intersect each other.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
+            INVALID_BOUNDARY_FORMAT);
     public static final String DELIMITER = ", ";
     public static final int INDEX = 0;
     public static final String TYPE = "type";
     public static final String BOUNDARY = "boundary";
     public static final String EMPTY = "";
-    
-    private static final Predicate<LineItem> LINE_ITEM_WITH_BOUNDARY_TAGS = lineItem -> BOUNDARY.equals(lineItem.getTag(TYPE).orElse(EMPTY)) &&
-            lineItem.getTag(BOUNDARY).isPresent();
-    
-    private static final Predicate<LineItem> LINE_ITEM_AS_BOUNDARY = lineItem -> lineItem.relations()
-            .stream()
-            .anyMatch(relationToCheck -> BoundaryIntersectionCheck.isRelationTypeBoundaryWithBoundaryTag(relationToCheck) ||
-                    LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem));
-    
-    
+
+    private static final Predicate<LineItem> LINE_ITEM_WITH_BOUNDARY_TAGS = lineItem -> BOUNDARY
+            .equals(lineItem.getTag(TYPE).orElse(EMPTY)) && lineItem.getTag(BOUNDARY).isPresent();
+
+    private static final Predicate<LineItem> LINE_ITEM_AS_BOUNDARY = lineItem -> lineItem
+            .relations().stream()
+            .anyMatch(relationToCheck -> BoundaryIntersectionCheck
+                    .isRelationTypeBoundaryWithBoundaryTag(relationToCheck)
+                    || LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem));
+
     private static LineItem castToLineItem(final RelationMember relationMember)
     {
         return (LineItem) relationMember.getEntity();
     }
-    
+
     private static Set<LineItem> getLineItems(final RelationMemberList relationMembers)
     {
-        return relationMembers
-                .stream()
-                .map(BoundaryIntersectionCheck::castToLineItem)
+        return relationMembers.stream().map(BoundaryIntersectionCheck::castToLineItem)
                 .collect(Collectors.toSet());
     }
-    
+
     private static boolean isRelationTypeBoundaryWithBoundaryTag(final AtlasObject object)
     {
-        return Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY) &&
-                Validators.hasValuesFor(object, BoundaryTag.class);
+        return Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY)
+                && Validators.hasValuesFor(object, BoundaryTag.class);
     }
-    
+
     private static boolean isRelationWithAnyLineItemWithBoundaryTags(final AtlasObject object)
     {
         final Relation relation = (Relation) object;
         return BoundaryIntersectionCheck.getLineItems(relation.membersOfType(ItemType.EDGE))
-                .stream()
-                .anyMatch(LINE_ITEM_WITH_BOUNDARY_TAGS) ||
-                BoundaryIntersectionCheck.getLineItems(relation.membersOfType(ItemType.LINE))
-                        .stream()
-                        .anyMatch(LINE_ITEM_WITH_BOUNDARY_TAGS);
+                .stream().anyMatch(LINE_ITEM_WITH_BOUNDARY_TAGS)
+                || BoundaryIntersectionCheck.getLineItems(relation.membersOfType(ItemType.LINE))
+                        .stream().anyMatch(LINE_ITEM_WITH_BOUNDARY_TAGS);
     }
-    
+
     public BoundaryIntersectionCheck(final Configuration configuration)
     {
         super(configuration);
     }
-    
+
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Relation &&
-                (isRelationTypeBoundaryWithBoundaryTag(object) ||
-                isRelationWithAnyLineItemWithBoundaryTags(object));
+        return object instanceof Relation && (isRelationTypeBoundaryWithBoundaryTag(object)
+                || isRelationWithAnyLineItemWithBoundaryTags(object));
     }
-    
+
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Relation relation = (Relation) object;
         final RelationMemberList relationMemberLineItems = relation.membersOfType(ItemType.EDGE);
         relationMemberLineItems.addAll(relation.membersOfType(ItemType.LINE));
-        final Set<LineItem> lineItems = BoundaryIntersectionCheck.getLineItems(relationMemberLineItems);
+        final Set<LineItem> lineItems = BoundaryIntersectionCheck
+                .getLineItems(relationMemberLineItems);
         final CheckFlag checkFlag = this.prepareCheckFlag(object, relation, lineItems);
         if (checkFlag.getFlaggedObjects().isEmpty())
         {
@@ -113,44 +110,46 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         }
         return Optional.of(checkFlag);
     }
-    
+
     @Override
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
     }
-    
-    private void addInformationToFlag(final CheckFlag checkFlag, final Relation relation, final LineItem lineItem, final Relation intersectingBoundary, final Map<Long, Set<LineItem>> lineItems)
+
+    private void addInformationToFlag(final CheckFlag checkFlag, final Relation relation,
+            final LineItem lineItem, final Relation intersectingBoundary,
+            final Map<Long, Set<LineItem>> lineItems)
     {
         lineItems.keySet().forEach(osmId ->
         {
             final Set<LineItem> currentLineItems = lineItems.get(osmId);
-            if(this.isSameBoundaryType(relation, intersectingBoundary) ||
-                    this.isSameBoundaryType(lineItem, currentLineItems))
+            if (this.isSameBoundaryType(relation, intersectingBoundary)
+                    || this.isSameBoundaryType(lineItem, currentLineItems))
             {
-                final Set<Location> intersectingPoints = this.getIntersectingPoints(lineItem, currentLineItems);
+                final Set<Location> intersectingPoints = this.getIntersectingPoints(lineItem,
+                        currentLineItems);
                 checkFlag.addPoints(intersectingPoints);
                 this.addLineItems(checkFlag, currentLineItems);
                 checkFlag.addObject(intersectingBoundary);
                 final String instruction = this.getLocalizedInstruction(INDEX,
                         Long.toString(relation.getOsmIdentifier()),
-                        Long.toString(lineItem.getOsmIdentifier()),
-                        Long.toString(osmId),
+                        Long.toString(lineItem.getOsmIdentifier()), Long.toString(osmId),
                         Long.toString(intersectingBoundary.getOsmIdentifier()),
                         this.locationsToList(intersectingPoints));
                 checkFlag.addInstruction(instruction);
             }
         });
-        if(!checkFlag.getInstructions().isEmpty())
+        if (!checkFlag.getInstructions().isEmpty())
         {
             this.addLineItem(checkFlag, lineItem);
             checkFlag.addObject(relation);
         }
     }
-    
+
     private void addLineItem(final CheckFlag checkFlag, final LineItem lineItem)
     {
-        if(lineItem instanceof Edge)
+        if (lineItem instanceof Edge)
         {
             checkFlag.addObjects(new OsmWayWalker((Edge) lineItem).collectEdges());
         }
@@ -159,107 +158,108 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             checkFlag.addObject(lineItem);
         }
     }
-    
+
     private void addLineItems(final CheckFlag checkFlag, final Set<LineItem> lineItems)
     {
         lineItems.forEach(lineItem -> this.addLineItem(checkFlag, lineItem));
     }
-    
-    private void analyzeIntersections(final Atlas atlas, final Relation relation, final CheckFlag checkFlag, final Set<LineItem> lineItems, final LineItem lineItem)
+
+    private void analyzeIntersections(final Atlas atlas, final Relation relation,
+            final CheckFlag checkFlag, final Set<LineItem> lineItems, final LineItem lineItem)
     {
         final RelationIntersections relationIntersections = new RelationIntersections();
-        lineItems
-                .stream()
-                .map(currentLineItem -> atlas.lineItemsIntersecting(currentLineItem.bounds(), this.getPredicateForLineItemsSelection(lineItems, lineItem)))
+        lineItems.stream()
+                .map(currentLineItem -> atlas.lineItemsIntersecting(currentLineItem.bounds(),
+                        this.getPredicateForLineItemsSelection(lineItems, lineItem)))
                 .flatMap(iterable -> StreamSupport.stream(iterable.spliterator(), false))
                 .forEach(currentLineItem ->
                 {
                     final Set<Relation> boundaries = this.getBoundary(currentLineItem);
-                    boundaries.forEach(boundary -> relationIntersections.addIntersection(boundary, currentLineItem));
+                    boundaries.forEach(boundary -> relationIntersections.addIntersection(boundary,
+                            currentLineItem));
                 });
         relationIntersections.getRelations().forEach(currentRelation ->
         {
-            if(currentRelation.getOsmIdentifier() > relation.getOsmIdentifier())
+            if (currentRelation.getOsmIdentifier() > relation.getOsmIdentifier())
             {
-                this.addInformationToFlag(checkFlag, relation, lineItem, currentRelation, relationIntersections.getLineItemMap(currentRelation));
+                this.addInformationToFlag(checkFlag, relation, lineItem, currentRelation,
+                        relationIntersections.getLineItemMap(currentRelation));
             }
         });
     }
-    
+
     private Set<Relation> getBoundary(final LineItem currentLineItem)
     {
-        return currentLineItem.relations()
-                .stream()
-                .filter(relation -> BoundaryIntersectionCheck.isRelationTypeBoundaryWithBoundaryTag(relation) ||
-                        LINE_ITEM_WITH_BOUNDARY_TAGS.test(currentLineItem))
+        return currentLineItem.relations().stream()
+                .filter(relation -> BoundaryIntersectionCheck.isRelationTypeBoundaryWithBoundaryTag(
+                        relation) || LINE_ITEM_WITH_BOUNDARY_TAGS.test(currentLineItem))
                 .collect(Collectors.toSet());
     }
-    
-    private Set<Location> getIntersectingPoints(final LineItem lineItem, final Set<LineItem> currentLineItems)
+
+    private Set<Location> getIntersectingPoints(final LineItem lineItem,
+            final Set<LineItem> currentLineItems)
     {
-        return currentLineItems
-                .stream()
-                .map(currentLineItem -> currentLineItem.asPolyLine().intersections(lineItem.asPolyLine()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
+        return currentLineItems.stream()
+                .map(currentLineItem -> currentLineItem.asPolyLine()
+                        .intersections(lineItem.asPolyLine()))
+                .flatMap(Collection::stream).collect(Collectors.toSet());
     }
-    
-    private Predicate<LineItem> getPredicateForLineItemsSelection(final Set<LineItem> lineItems, final LineItem currentLineItem)
+
+    private Predicate<LineItem> getPredicateForLineItemsSelection(final Set<LineItem> lineItems,
+            final LineItem currentLineItem)
     {
         return lineItemToCheck ->
         {
-            if (LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) &&
-                    !lineItems.contains(lineItemToCheck))
+            if (LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) && !lineItems.contains(lineItemToCheck))
             {
                 return this.isCrossingNotTouching(currentLineItem, lineItemToCheck);
             }
             return false;
         };
     }
-    
-    private boolean isCrossingNotTouching(final LineItem currentLineItem, final LineItem lineItemToCheck)
+
+    private boolean isCrossingNotTouching(final LineItem currentLineItem,
+            final LineItem lineItemToCheck)
     {
         final WKTReader wktReader = new WKTReader();
         try
         {
             final Geometry line1 = wktReader.read(lineItemToCheck.asPolyLine().toWkt());
             final Geometry line2 = wktReader.read(currentLineItem.asPolyLine().toWkt());
-            return line1.crosses(line2) &&
-                    !line1.touches(line2);
+            return line1.crosses(line2) && !line1.touches(line2);
         }
         catch (final ParseException e)
         {
             return false;
         }
     }
-    
+
     private boolean isSameBoundaryType(final Relation relation, final Relation intersectingBoundary)
     {
         return intersectingBoundary.getTag(BOUNDARY).equals(relation.getTag(BOUNDARY));
     }
-    
-    private boolean isSameBoundaryType(final LineItem lineItem, final Set<LineItem> currentLineItems)
+
+    private boolean isSameBoundaryType(final LineItem lineItem,
+            final Set<LineItem> currentLineItems)
     {
         final LineItem intersectingLineItem = currentLineItems.iterator().next();
-        return !currentLineItems.isEmpty() &&
-                LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem) &&
-                LINE_ITEM_WITH_BOUNDARY_TAGS.test(intersectingLineItem) &&
-                lineItem.getTag(BOUNDARY).equals(intersectingLineItem.getTag(BOUNDARY));
+        return !currentLineItems.isEmpty() && LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem)
+                && LINE_ITEM_WITH_BOUNDARY_TAGS.test(intersectingLineItem)
+                && lineItem.getTag(BOUNDARY).equals(intersectingLineItem.getTag(BOUNDARY));
     }
-    
+
     private String locationsToList(final Set<Location> locations)
     {
-        return locations
-                .stream()
-                .map(location -> String.format("(%s, %s)", location.getLatitude(), location.getLongitude()))
-                .collect(Collectors.joining(DELIMITER));
+        return locations.stream().map(location -> String.format("(%s, %s)", location.getLatitude(),
+                location.getLongitude())).collect(Collectors.joining(DELIMITER));
     }
-    
-    
-    private CheckFlag prepareCheckFlag(final AtlasObject object, final Relation relation, final Set<LineItem> lineItems)
+
+    private CheckFlag prepareCheckFlag(final AtlasObject object, final Relation relation,
+            final Set<LineItem> lineItems)
     {
         final CheckFlag checkFlag = new CheckFlag(this.getTaskIdentifier(object));
-        lineItems.forEach(lineItem -> this.analyzeIntersections(object.getAtlas(), relation, checkFlag, lineItems, lineItem));
+        lineItems.forEach(lineItem -> this.analyzeIntersections(object.getAtlas(), relation,
+                checkFlag, lineItems, lineItem));
         return checkFlag;
     }
 }
