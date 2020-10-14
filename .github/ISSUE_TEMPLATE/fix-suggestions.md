@@ -9,7 +9,7 @@ assignees: ''
 
 **Which Atlas check is the fix suggestion related to?** 
 
-Name of Atlas check that need to be added the suggested fix component. Link to associate check script
+Name and link of the existing Atlas Check that needs to be updated to include the below fix suggestion(s)
 
 
 **Describe more details of suggested fix(es)**
@@ -24,7 +24,7 @@ Name of Atlas check that need to be added the suggested fix component. Link to a
 
 *Suggested Fix 2 (if any)*:
 
-If there are multiple suggested fixes related to the same Atlas check required, please add another section with the details above
+If there are multiple suggested fixes related to the same Atlas check, please add another section with the *above* details
 
 
 **Is there any code enhancement needed if adding the fix suggestion component?**
