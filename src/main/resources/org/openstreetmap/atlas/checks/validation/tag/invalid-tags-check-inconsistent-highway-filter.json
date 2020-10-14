@@ -8,11 +8,11 @@
     "highway->motorway&ref->!||nat_ref->!||int_ref->!||noref->!"
   ],
   "instructions": [
-    "The element {0} has a junction tag but no highway tag.",
-    "The element {0} has a oneway tag but no highway tag.",
-    "The element {0} is missing a highway tag.",
-    "The element {0} is an emergency access point but has no ref tag.",
-    "The element {0} is a footway=sidewalk but has no appropriate highway tag.",
-    "The element {0} is a motorway but has no ref tag."
+    "The element has a junction tag but no highway tag.",
+    "The element has a oneway tag but no highway tag.",
+    "The element is missing a highway tag.",
+    "The element is an emergency access point but has no ref tag.",
+    "The element is a footway=sidewalk but has no appropriate highway tag.",
+    "The element is a motorway but has no ref tag."
   ]
 }

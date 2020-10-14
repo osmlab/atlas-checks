@@ -56,13 +56,15 @@ public class InvalidTagsCheck extends BaseCheck<String>
 {
 
     private static final long serialVersionUID = 5150282147895785829L;
-    private static final List<String> FALLBACK_INSTRUCTIONS = new ArrayList<>();
     private static final String KEY_VALUE_SEPARATOR = "->";
     private static final String DEFAULT_FILTER_RESOURCE = "invalidTags.txt";
+    private static final List<String> FALLBACK_INSTRUCTIONS = new ArrayList<>();
+    private static final String DEFAULT_NR_TAGS_INSTRUCTION = "OSM feature {0,number,#} has invalid tags.";
     private static final String DEFAULT_INSTRUCTION = "Check the following tags for missing, conflicting, or incorrect values: {0}";
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
     public static final int INLINE_REGEX_FILTER_SIZE = 3;
     private static final String REGEX = "regex";
+    private static final int REGEX_INSTRUCTION_INDEX = 3;
 
     private final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> classTagFilters;
 
@@ -73,7 +75,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
             FALLBACK_INSTRUCTIONS.add(instruction);
             return FALLBACK_INSTRUCTIONS.size() - 1;
         }
-        return 0;
+        return 1;
     }
 
     /**
@@ -197,8 +199,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
                                 });
                         final RegexTaggableFilter filter = new RegexTaggableFilter(tagNames, regex,
                                 exceptions);
-                        final String instruction = jsonObject.get("instruction")
-                                .getAsString();
+                        final String instruction = jsonObject.get("instruction").getAsString();
                         final int instructionIndex = addInstruction(instruction);
                         return Tuple.createTuple(filter, instructionIndex);
                     }).collect(Collectors.toList());
@@ -227,6 +228,8 @@ public class InvalidTagsCheck extends BaseCheck<String>
      *            A {@link String} of comma delimited {@link AtlasEntity} class names
      * @param tagFilterString
      *            A {@link String} {@link TaggableFilter} definition
+     * @param instruction
+     *            A {@link String} representing a specific instruction for the filter
      * @return A {@link Tuple} of a {@link Set} of {@link AtlasEntity} {@link Class}es and a
      *         {@link TaggableFilter}
      */
@@ -252,6 +255,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
     public InvalidTagsCheck(final Configuration configuration)
     {
         super(configuration);
+        FALLBACK_INSTRUCTIONS.add(DEFAULT_NR_TAGS_INSTRUCTION);
         FALLBACK_INSTRUCTIONS.add(DEFAULT_INSTRUCTION);
         final boolean overrideResourceFilters = this.configurationValue(configuration,
                 "filters.resource.override", false);
@@ -381,7 +385,10 @@ public class InvalidTagsCheck extends BaseCheck<String>
                             final List<String> tagNames = (List<String>) classTagList.get(1);
                             final List<String> regex = (List<String>) classTagList.get(2);
                             final List<Tuple<? extends Predicate<Taggable>, Integer>> filters = new ArrayList<>();
-                            final String instruction = classTagList.size() > INLINE_REGEX_FILTER_SIZE ? (String) classTagList.get(3) : "";
+                            final String instruction = classTagList
+                                    .size() > INLINE_REGEX_FILTER_SIZE
+                                            ? (String) classTagList.get(REGEX_INSTRUCTION_INDEX)
+                                            : "";
                             final RegexTaggableFilter filter = new RegexTaggableFilter(
                                     new HashSet<>(tagNames), new HashSet<>(regex), null);
                             final int instructionIndex = addInstruction(instruction);
