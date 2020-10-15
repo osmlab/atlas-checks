@@ -91,8 +91,18 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Relation && (isRelationTypeBoundaryWithBoundaryTag(object)
+        boolean qualifying =  object instanceof Relation && (isRelationTypeBoundaryWithBoundaryTag(object)
                 || isRelationWithAnyLineItemWithBoundaryTags(object));
+        if(qualifying){
+            System.out.println("OSM Identifier passed to Boundary Check: " + object.getOsmIdentifier());
+        }
+        if(object.getOsmIdentifier() == 2332402){
+            System.out.println("ID 2332402 found it is of type " + object.getClass());
+        }
+        if(object.getOsmIdentifier() == 2212273){
+            System.out.println("ID 2212273 found it is of type " + object.getClass());
+        }
+        return qualifying;
     }
 
     @Override
