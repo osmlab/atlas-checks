@@ -24,7 +24,7 @@ Name and link of the existing Atlas Check that needs to be updated to include th
 
 *Suggested Fix 2 (if any)*:
 
-If there are multiple suggested fixes related to the same Atlas check, please add another section with the *above* details
+If there are multiple suggested fixes related to the same Atlas check, please add another section with the above details
 
 
 **Is there any code enhancement needed if adding the fix suggestion component?**
