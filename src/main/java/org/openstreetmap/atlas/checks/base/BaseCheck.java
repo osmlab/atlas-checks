@@ -39,7 +39,6 @@ import com.google.gson.GsonBuilder;
  * @author matthieun
  * @author cuthbertm
  * @author mgostintsev
- * @author bbreithaupt
  * @param <T>
  *            the type for the flagged identifiers
  */
@@ -69,30 +68,6 @@ public abstract class BaseCheck<T> implements Check, Serializable
     // geo filter for all checks
     private final AtlasEntityPolygonsFilter globalPolygonFilter;
     private TaggableFilter tagFilter = null;
-
-    /**
-     * Generates a unique identifier given an {@link AtlasObject}. OSM/Atlas objects with different
-     * types can share the identifier (way 12345 - node 12345). This method makes sure we generate a
-     * truly unique identifier, based on the OSM identifier, among different types for an
-     * {@link AtlasObject}. If the AtlasObject is an instanceof AtlasEntity then it will simply use
-     * the type for the first part of the identifier, otherwise it will use the simple class name.
-     *
-     * @param object
-     *            {@link AtlasObject} to generate unique identifier for
-     * @return unique object identifier among different types
-     */
-    public static String getUniqueOSMIdentifier(final AtlasObject object)
-    {
-        if (object instanceof AtlasEntity)
-        {
-            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
-                    object.getOsmIdentifier());
-        }
-        else
-        {
-            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
-        }
-    }
 
     /**
      * Default constructor
@@ -434,6 +409,30 @@ public abstract class BaseCheck<T> implements Check, Serializable
     protected String getTaskIdentifier(final Set<? extends AtlasObject> objects)
     {
         return new TaskIdentifier(objects).toString();
+    }
+
+    /**
+     * Generates a unique identifier given an {@link AtlasObject}. OSM/Atlas objects with different
+     * types can share the identifier (way 12345 - node 12345). This method makes sure we generate a
+     * truly unique identifier, based on the OSM identifier, among different types for an
+     * {@link AtlasObject}. If the AtlasObject is an instanceof AtlasEntity then it will simply use
+     * the type for the first part of the identifier, otherwise it will use the simple class name.
+     *
+     * @param object
+     *            {@link AtlasObject} to generate unique identifier for
+     * @return unique object identifier among different types
+     */
+    protected String getUniqueOSMIdentifier(final AtlasObject object)
+    {
+        if (object instanceof AtlasEntity)
+        {
+            return String.format("%s%s", ((AtlasEntity) object).getType().toShortString(),
+                    object.getOsmIdentifier());
+        }
+        else
+        {
+            return String.format("%s%s", object.getClass().getSimpleName(), object.getIdentifier());
+        }
     }
 
     /**
