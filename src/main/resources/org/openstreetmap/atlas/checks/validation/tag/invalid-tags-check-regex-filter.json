@@ -1,0 +1,14 @@
+{
+  "filters": [
+    {
+      "tagNames": ["source"],
+      "regex": [
+        ".*(?i)\\bgoogle\\b.*",
+        ".*(?i)\\bhere\\b(?=.*map|.com)",
+        ".*(?i)\\bvworld\\b.*",
+        ".*(?i)\\bxdworld\\b.*"
+      ],
+      "exceptions":[]
+    }
+  ]
+}
