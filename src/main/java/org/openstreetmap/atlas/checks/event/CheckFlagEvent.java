@@ -45,9 +45,9 @@ public final class CheckFlagEvent extends Event
     private static final String GEOMETRIES = "geometries";
     private static final String FEATURES = "features";
     private static final String FEATURE_COLLECTION = "FeatureCollection";
-    private static final String INSTRUCTIONS = "instructions";
-    private static final String IDENTIFIERS = "identifiers";
-    private static final String FIX_SUGGESTIONS = "fix_suggestions";
+    public static final String INSTRUCTIONS = "instructions";
+    public static final String IDENTIFIERS = "identifiers";
+    public static final String FIX_SUGGESTIONS = "fix_suggestions";
 
     private static final Gson GSON = new Gson();
 

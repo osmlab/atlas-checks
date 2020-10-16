@@ -56,8 +56,8 @@ import com.google.gson.JsonObject;
  */
 public class CheckFlag implements Iterable<Location>, Located, Serializable
 {
+    public static final String NULL_IDENTIFIERS = "nullnull";
     private static final Distance TEN_METERS = Distance.meters(10);
-    private static final String NULL_IDENTIFIERS = "nullnull";
     private static final Logger logger = LoggerFactory.getLogger(CheckFlag.class);
     private static final long serialVersionUID = -1287808902452203852L;
     private String challengeName = null;
@@ -225,6 +225,17 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
+     * Adds a {@link FlaggedObject} to the flag.
+     *
+     * @param object
+     *            {@link FlaggedObject}
+     */
+    public void addObject(final FlaggedObject object)
+    {
+        this.flaggedObjects.add(object);
+    }
+
+    /**
      * Flags an {@link AtlasObject}, highlighting a specific {@code point} {@link Location} and
      * instructions with more detail. This helps build flags iteratively when more complex
      * {@link Check}s span a large number of {@link AtlasObject}s.
@@ -333,7 +344,8 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         return Objects.equals(this.identifier, otherFlag.identifier)
                 && Objects.equals(this.challengeName, otherFlag.challengeName)
                 && Objects.equals(this.instructions, otherFlag.instructions)
-                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects);
+                && Objects.equals(this.flaggedObjects, otherFlag.flaggedObjects)
+                && Objects.equals(this.fixSuggestions, otherFlag.fixSuggestions);
     }
 
     /**
@@ -497,6 +509,11 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
                 .map(geometry -> (PolyLine) geometry).collect(Collectors.toSet());
     }
 
+    public List<String> getRawInstructions()
+    {
+        return this.instructions;
+    }
+
     /**
      * @return a {@code shape} representation of all {@code polyline} geometries flagged
      */
@@ -516,8 +533,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     public Set<String> getUniqueIdentifiers()
     {
         final Set<String> flaggedObjectIdentifiers = this.flaggedObjects.stream()
-                .map(object -> object.getProperties().get(FlaggedObject.ITEM_TYPE_TAG)
-                        + object.getProperties().get(FlaggedObject.ITEM_IDENTIFIER_TAG))
+                .map(FlaggedObject::getUniqueIdentifier)
                 .filter(string -> !string.equals(NULL_IDENTIFIERS)).collect(Collectors.toSet());
         return flaggedObjectIdentifiers.isEmpty() ? Collections.singleton(this.identifier)
                 : flaggedObjectIdentifiers;

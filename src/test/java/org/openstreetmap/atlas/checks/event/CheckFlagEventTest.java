@@ -56,6 +56,23 @@ public class CheckFlagEventTest
     }
 
     @Test
+    public void flagToFeatureRemoveFeatureFixSuggestionTest()
+    {
+        final Atlas atlas = this.rule.getAtlas();
+        final JsonObject flagJson = CheckFlagEvent.flagToFeature(
+                new CheckFlag("1").addFixSuggestion(
+                        FeatureChange.remove(CompleteNode.from(atlas.node(1)), atlas)),
+                Collections.emptyMap());
+
+        Assert.assertTrue(flagJson.get("properties").getAsJsonObject().has("fix_suggestions"));
+        final JsonObject fixSuggestions = flagJson.get("properties").getAsJsonObject()
+                .get("fix_suggestions").getAsJsonObject();
+        Assert.assertTrue(fixSuggestions.has("Node1"));
+        final JsonObject node1 = fixSuggestions.get("Node1").getAsJsonObject();
+        Assert.assertEquals(0, node1.get("descriptors").getAsJsonArray().size());
+    }
+
+    @Test
     public void flagToFeatureRemoveTagFixSuggestionTest()
     {
         final Atlas atlas = this.rule.getAtlas();
