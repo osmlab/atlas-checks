@@ -359,55 +359,60 @@ public class InvalidTagsCheck extends BaseCheck<String>
             final Configuration configuration)
     {
         final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> filters = this
-                .readConfigurationFilter(configuration, "filters.classes.tags");
+                .readConfigurationFilter(configuration);
         final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> allFilters = new ArrayList<>(
                 filters);
         final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> regexFilters = this
-                .readConfigurationFilter(configuration, "filters.classes.regex");
+                .readRegexConfigurationFilter(configuration);
         allFilters.addAll(regexFilters);
         return allFilters;
     }
 
     @SuppressWarnings("unchecked")
     private List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> readConfigurationFilter(
-            final Configuration configuration, final String key)
+            final Configuration configuration)
     {
-        return this.configurationValue(configuration, key, Collections.emptyList(),
-                configList -> configList.stream().map(classTagValue ->
+        return this.configurationValue(configuration, "filters.classes.tags",
+                Collections.emptyList(), configList -> configList.stream().map(classTagValue ->
                 {
-
-                    if (key.contains(REGEX))
+                    final List<String> classTagList = (List<String>) classTagValue;
+                    if (classTagList.size() > 1)
                     {
-                        final List<Object> classTagList = (List<Object>) classTagValue;
-                        if (classTagList.size() >= INLINE_REGEX_FILTER_SIZE)
-                        {
-                            final String element = (String) classTagList.get(0);
-                            final List<String> tagNames = (List<String>) classTagList.get(1);
-                            final List<String> regex = (List<String>) classTagList.get(2);
-                            final List<Tuple<? extends Predicate<Taggable>, Integer>> filters = new ArrayList<>();
-                            final String instruction = classTagList
-                                    .size() > INLINE_REGEX_FILTER_SIZE
-                                            ? (String) classTagList.get(REGEX_INSTRUCTION_INDEX)
-                                            : "";
-                            final RegexTaggableFilter filter = new RegexTaggableFilter(
-                                    new HashSet<>(tagNames), new HashSet<>(regex), null);
-                            final int instructionIndex = addInstruction(instruction);
-                            filters.add(Tuple.createTuple(filter, instructionIndex));
-                            return Optional.of(Tuple.createTuple(
-                                    ItemType.valueOf(element.toUpperCase()).getMemberClass(),
-                                    filters));
-                        }
+                        final String instruction = classTagList.size() > 2 ? classTagList.get(2)
+                                : "";
+                        return Optional.of(stringsToClassTagFilter(classTagList.get(0),
+                                classTagList.get(1), instruction));
                     }
-                    else
+                    return Optional.empty();
+                }).filter(Optional::isPresent).map(
+                        tuple -> (Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>) tuple
+                                .get())
+                        .collect(Collectors.toList()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> readRegexConfigurationFilter(
+            final Configuration configuration)
+    {
+        return this.configurationValue(configuration, "filters.classes.regex",
+                Collections.emptyList(), configList -> configList.stream().map(classTagValue ->
+                {
+                    final List<Object> classTagList = (List<Object>) classTagValue;
+                    if (classTagList.size() >= INLINE_REGEX_FILTER_SIZE)
                     {
-                        final List<String> classTagList = (List<String>) classTagValue;
-                        if (classTagList.size() > 1)
-                        {
-                            final String instruction = classTagList.size() > 2 ? classTagList.get(2)
-                                    : "";
-                            return Optional.of(stringsToClassTagFilter(classTagList.get(0),
-                                    classTagList.get(1), instruction));
-                        }
+                        final String element = (String) classTagList.get(0);
+                        final List<String> tagNames = (List<String>) classTagList.get(1);
+                        final List<String> regex = (List<String>) classTagList.get(2);
+                        final List<Tuple<? extends Predicate<Taggable>, Integer>> filters = new ArrayList<>();
+                        final String instruction = classTagList.size() > INLINE_REGEX_FILTER_SIZE
+                                ? (String) classTagList.get(REGEX_INSTRUCTION_INDEX)
+                                : "";
+                        final RegexTaggableFilter filter = new RegexTaggableFilter(
+                                new HashSet<>(tagNames), new HashSet<>(regex), null);
+                        final int instructionIndex = addInstruction(instruction);
+                        filters.add(Tuple.createTuple(filter, instructionIndex));
+                        return Optional.of(Tuple.createTuple(
+                                ItemType.valueOf(element.toUpperCase()).getMemberClass(), filters));
                     }
                     return Optional.empty();
                 }).filter(Optional::isPresent).map(
