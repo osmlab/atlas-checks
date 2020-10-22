@@ -106,7 +106,7 @@ class CloudAtlasChecksControl:
           - self.instanceId - indicates a running instance or "" to create one
           - self.S3Atlas - indicates the S3 bucket and path that contains atlas files
         """
-        logger.info("Start Sharding Process...")
+        logger.info("Start Atlas Check Spark Job...")
         if self.instanceId == "":
             self.create_instance()
             self.get_instance_info()
@@ -161,7 +161,7 @@ class CloudAtlasChecksControl:
             if self.ssh_cmd(cmd):
                 finish("Unable to execute spark job", -1)
         else:
-            logger.info("Detected a running sharding process.")
+            logger.info("Detected a running atlas check spark job.")
 
         # wait for script to complete
         if self.wait_for_process_to_complete():
@@ -333,12 +333,12 @@ class CloudAtlasChecksControl:
         """Wait for process to complete
 
         Will block execution while waiting for the completion of the spark
-        submit on the EC2 instance. Upon completion of the scrip it will look
+        submit on the EC2 instance. Upon completion of the script it will look
         at the log file produced to see if it completed successfully. If the
-        sharding script failed then this function will exit.
+        Atlas Checks spark job failed then this function will exit.
 
-        :returns: 0 - if sharding process completed successfully
-        :returns: 1 - if sharding process timed out
+        :returns: 0 - if Atlas check spark job completed successfully
+        :returns: 1 - if Atlas check spark job timed out
         """
         logger.info("Waiting for Spark Submit process to complete...")
         # wait for up to TIMEOUT seconds for the VM to be up and ready
@@ -382,7 +382,7 @@ class CloudAtlasChecksControl:
 
     def start_ec2(self):
         """Start EC2 Instance."""
-        logger.info("Starting the PBFShardGenerator EC2 instance.")
+        logger.info("Starting the EC2 instance.")
 
         try:
             logger.info("Start instance")
@@ -393,7 +393,7 @@ class CloudAtlasChecksControl:
 
     def stop_ec2(self):
         """Stop EC2 Instance."""
-        logger.info("Stopping the PBFShardGenerator EC2 instance.")
+        logger.info("Stopping the EC2 instance.")
 
         try:
             response = ec2.stop_instances(InstanceIds=[self.instanceId])
@@ -490,7 +490,7 @@ def parse_args(cloudctl):
 
     parser_check = subparsers.add_parser(
         "check",
-        help="Shard a pbf and, if '--output' is set, then push atlas checks output to S3 folder",
+        help="Execute Atlas Checks and, if '--output' is set, then push atlas check results to S3 folder",
     )
     parser_check.add_argument(
         "--id", help="ID - Indicates the ID of an existing EC2 instance to use"
@@ -510,7 +510,7 @@ def parse_args(cloudctl):
     parser_check.add_argument(
         "-o",
         "--output",
-        help="Out - The S3 Output directory. (e.g. '--out=atlas-bucket/PBF_Sharding')",
+        help="Out - The S3 Output directory. (e.g. '--out=atlas-bucket/atlas-checks/output')",
     )
     parser_check.add_argument(
         "-i",
