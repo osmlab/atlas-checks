@@ -35,6 +35,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
      * checks with this constructor, supplying a configuration that can be used to adjust any
      * parameters that the check uses during operation.
+     * 
      * @param configuration
      *            the JSON configuration for this check
      */
@@ -48,7 +49,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * This function will validate if the supplied atlas object is valid for the check.
-     * @param object the atlas object supplied by the Atlas-Checks framework for evaluation
+     * 
+     * @param object
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return {@code true} if this object should be checked
      */
     @Override
@@ -67,7 +70,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * This is the actual function that will check to see whether the object needs to be flagged.
-     * @param object the atlas object supplied by the Atlas-Checks framework for evaluation
+     * 
+     * @param object
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return an optional {@link CheckFlag} object that
      */
     @Override
@@ -88,22 +93,24 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         lastEdgeEndNodeEdges
                 .removeIf(edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
 
-        final HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.highwayTag(edgeBeingVerified).orElse(HighwayTag.NO);
+        final HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.highwayTag(edgeBeingVerified)
+                .orElse(HighwayTag.NO);
 
         final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags = this
                 .getHighwayTags(firstEdgeStartNodeEdges);
         final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this
                 .getHighwayTags(lastEdgeEndNodeEdges);
 
-        // Check ways' first and last edge's connected edges for suspiciously large highway tag jumps.
-        if (firstEdgeStartNodeEdgesHighwayTags(edgeBeingVerifiedHighwayTag,
-            firstEdgeStartNodeEdges, firstEdgeStartNodeEdgesHighwayTags)
-                || lastEdgeEndNodeEdgesHighwayTage(edgeBeingVerifiedHighwayTag,
-                lastEdgeEndNodeEdges, lastEdgeEndNodeEdgesHighwayTags))
+        // Check ways' first and last edge's connected edges for suspiciously large highway tag
+        // jumps.
+        if (this.firstEdgeStartNodeEdgesHighwayTags(edgeBeingVerifiedHighwayTag,
+                firstEdgeStartNodeEdges, firstEdgeStartNodeEdgesHighwayTags)
+                || this.lastEdgeEndNodeEdgesHighwayTage(edgeBeingVerifiedHighwayTag,
+                        lastEdgeEndNodeEdges, lastEdgeEndNodeEdgesHighwayTags))
         {
             markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(object,
-                            this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            return Optional.of(
+                    createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
 
         markAsFlagged(edgeBeingVerified.getOsmIdentifier());
@@ -118,7 +125,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * Case one: edge being verified is motorway, primary, trunk
-     * @param edgeHighwayTag tag for edge being verified
+     * 
+     * @param edgeHighwayTag
+     *            tag for edge being verified
      * @return boolean
      */
     private boolean edgeBeingVerifiedCaseOne(final HighwayTag edgeHighwayTag)
@@ -130,7 +139,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * Case three: edge being verified is tertiary or tertiary_link
-     * @param edgeHighwayTag tag for edge being verified
+     * 
+     * @param edgeHighwayTag
+     *            tag for edge being verified
      * @return boolean
      */
     private boolean edgeBeingVerifiedCaseThree(final HighwayTag edgeHighwayTag)
@@ -141,7 +152,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * case two: edge being verified is any link but tertiary.
-     * @param edgeHighwayTag tag for edge being verified
+     * 
+     * @param edgeHighwayTag
+     *            tag for edge being verified
      * @return boolean
      */
     private boolean edgeBeingVerifiedCaseTwo(final HighwayTag edgeHighwayTag)
@@ -155,7 +168,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * case one: edge checked against is tertiary, residential, service, or unclassified
-     * @param edgeHighwayTag connected edge highway tag
+     * 
+     * @param edgeHighwayTag
+     *            connected edge highway tag
      * @return boolean
      */
     private boolean edgeCheckedAgainstCaseOne(final HighwayTag edgeHighwayTag)
@@ -168,7 +183,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * case three: edge checked against is living_Street, service, or track
-     * @param edgeHighwayTag connected edge highway tag
+     * 
+     * @param edgeHighwayTag
+     *            connected edge highway tag
      * @return boolean
      */
     private boolean edgeCheckedAgainstCaseThree(final HighwayTag edgeHighwayTag)
@@ -180,7 +197,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * case two: edge checked against is residential, service, or unclassified
-     * @param edgeHighwayTag connected edge highway tag
+     * 
+     * @param edgeHighwayTag
+     *            connected edge highway tag
      * @return boolean
      */
     private boolean edgeCheckedAgainstCaseTwo(final HighwayTag edgeHighwayTag)
@@ -192,7 +211,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * checks if edge is roundabout or circular
-     * @param edge edge to check if roundabout or circular
+     * 
+     * @param edge
+     *            edge to check if roundabout or circular
      * @return boolean
      */
     private boolean edgeIsRoundaboutOrCircular(final Edge edge)
@@ -202,18 +223,24 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * checks if edge being verified's first edge start node connected edges make suspicious jumps
-     * @param edgeBeingVerifiedHighwayTag edge being verified highway tag
-     * @param firstEdgeStartNodeEdges first edge start node edges
-     * @param firstEdgeStartNodeEdgesHighwayTags first edge start node edge highway tags
+     * 
+     * @param edgeBeingVerifiedHighwayTag
+     *            edge being verified highway tag
+     * @param firstEdgeStartNodeEdges
+     *            first edge start node edges
+     * @param firstEdgeStartNodeEdgesHighwayTags
+     *            first edge start node edge highway tags
      * @return boolean
      */
-    private boolean firstEdgeStartNodeEdgesHighwayTags(HighwayTag edgeBeingVerifiedHighwayTag,
-                                                       Set<Edge> firstEdgeStartNodeEdges, Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags)
+    private boolean firstEdgeStartNodeEdgesHighwayTags(final HighwayTag edgeBeingVerifiedHighwayTag,
+            final Set<Edge> firstEdgeStartNodeEdges,
+            final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags)
     {
         boolean suspiciousJump = false;
         for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
         {
-            final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge).orElse(HighwayTag.NO);
+            final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge)
+                    .orElse(HighwayTag.NO);
             if (!edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
@@ -234,7 +261,9 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * gets set of highway tags
-     * @param edges set of edges
+     * 
+     * @param edges
+     *            set of edges
      * @return set of highway tags
      */
     private Set<HighwayTag> getHighwayTags(final Set<Edge> edges)
@@ -254,8 +283,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * checks if case one for edge being verified and edge checked against is true
-     * @param edgeHighwayTag1 some edge tag
-     * @param edgeHighwayTag2 some edge tag
+     * 
+     * @param edgeHighwayTag1
+     *            some edge tag
+     * @param edgeHighwayTag2
+     *            some edge tag
      * @return boolean
      */
     private boolean isCaseOne(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
@@ -266,8 +298,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * checks if case three for edge being verified and edge checked against is true
-     * @param edgeHighwayTag1 some edge tag
-     * @param edgeHighwayTag2 some edge tag
+     * 
+     * @param edgeHighwayTag1
+     *            some edge tag
+     * @param edgeHighwayTag2
+     *            some edge tag
      * @return boolean
      */
     private boolean isCaseThree(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
@@ -278,8 +313,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * checks if case two for edge being verified and edge checked against is true
-     * @param edgeHighwayTag1 some edge tag
-     * @param edgeHighwayTag2 some edge tag
+     * 
+     * @param edgeHighwayTag1
+     *            some edge tag
+     * @param edgeHighwayTag2
+     *            some edge tag
      * @return boolean
      */
     private boolean isCaseTwo(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
@@ -290,18 +328,24 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * checks if edge being verified last edge's end node connected edges make suspicious jumps
-     * @param edgeBeingVerifiedHighwayTag edge being verified highway tags
-     * @param lastEdgeEndNodeEdges last edge end node edges
-     * @param lastEdgeEndNodeEdgesHighwayTags last edge end node edge highway tags
+     * 
+     * @param edgeBeingVerifiedHighwayTag
+     *            edge being verified highway tags
+     * @param lastEdgeEndNodeEdges
+     *            last edge end node edges
+     * @param lastEdgeEndNodeEdgesHighwayTags
+     *            last edge end node edge highway tags
      * @return boolean
      */
-    private boolean lastEdgeEndNodeEdgesHighwayTage(HighwayTag edgeBeingVerifiedHighwayTag,
-                                                                Set<Edge> lastEdgeEndNodeEdges, Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags)
+    private boolean lastEdgeEndNodeEdgesHighwayTage(final HighwayTag edgeBeingVerifiedHighwayTag,
+            final Set<Edge> lastEdgeEndNodeEdges,
+            final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags)
     {
         boolean suspiciousJump = false;
         for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
         {
-            final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge).orElse(HighwayTag.NO);
+            final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge)
+                    .orElse(HighwayTag.NO);
             if (!lastEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)

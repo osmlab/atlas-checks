@@ -4,7 +4,6 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -940,7 +939,6 @@
     }
   },
   "SuddenHighwayTypeChangeCheck":{
-    "enabled": true,
     "challenge": {
       "description": "Identifies ways that have suspicious highway tag jumps.",
       "blurb": "Sudden Highway Type Change",
