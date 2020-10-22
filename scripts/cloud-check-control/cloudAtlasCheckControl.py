@@ -142,12 +142,6 @@ class CloudAtlasChecksControl:
             if self.atlasConfig.find("http") < 0:
                 atlasConfig = "file://" + os.path.join(self.homeDir, self.atlasConfig)
 
-            # sync local input folder with S3 input bucket and directory
-            # cmd = "aws s3 sync s3://{} {}".format(self.s3InFolder, self.atlasInDir)
-            # if self.ssh_cmd(cmd):
-            #     finish("Unable to pull atlas input files from S3", -1)
-
-            # TODO Call command to submit job
             cmd = (
                 "/opt/spark/bin/spark-submit"
                 + " --class=org.openstreetmap.atlas.checks.distributed.ShardedIntegrityChecksSparkJob"
@@ -535,7 +529,7 @@ def parse_args(cloudctl):
         "-m",
         "--memory",
         type=int,
-        help="MEMORY - Gigs of memory for spark job. (Default: {})".format(
+        help="MEMORY - Gigs of memory for spark job. (Default: {} GB)".format(
             cloudctl.memory
         ),
     )
@@ -615,40 +609,39 @@ def evaluate(args, cloudctl):
     :param args: The user's input.
     :param cloudctl: An instance of CloudAtlasChecksControl to use.
     """
-    if args.terminate:
-        cloudctl.terminate = args.terminate
-    if args.name:
-        cloudctl.instanceName = args.name
-    if args.template:
-        cloudctl.templateName = args.templateName
-    if args.minutes:
-        cloudctl.timeoutMinutes = args.minutes
-    if hasattr(args, "input") and args.input:
-        cloudctl.s3InFolder = args.input
-    if hasattr(args, "processes") and args.processes:
-        cloudctl.processes = args.processes
-    if hasattr(args, "key") and args.key:
-        cloudctl.key = args.key
-    if hasattr(args, "output") and args.output:
-        cloudctl.s3OutFolder = args.output
-    if hasattr(args, "pbf") and args.pbf:
-        cloudctl.pbfURL = args.pbf
-    if hasattr(args, "countries") and args.countries:
-        cloudctl.countries = args.countries
-    if hasattr(args, "formats") and args.formats:
-        cloudctl.formats = args.formats
-    if hasattr(args, "memory") and args.memory:
-        cloudctl.memory = args.memory
-    if hasattr(args, "config") and args.config:
-        cloudctl.atlasConfig = args.config
-    if hasattr(args, "id") and args.id:
-        cloudctl.instanceId = args.id
-        cloudctl.get_instance_info()
-    if args.version:
+    cloudctl.terminate = args.terminate
+    if args.version is True:
         logger.critical("This is version {0}.".format(VERSION))
         finish()
+    if args.name is not None:
+        cloudctl.instanceName = args.name
+    if args.template is not None:
+        cloudctl.templateName = args.templateName
+    if args.minutes is not None:
+        cloudctl.timeoutMinutes = args.minutes
+    if hasattr(args, "input") and args.input is not None:
+        cloudctl.s3InFolder = args.input
+    if hasattr(args, "processes") and args.processes is not None:
+        cloudctl.processes = args.processes
+    if hasattr(args, "key") and args.key is not None:
+        cloudctl.key = args.key
+    if hasattr(args, "output") and args.output is not None:
+        cloudctl.s3OutFolder = args.output
+    if hasattr(args, "pbf") and args.pbf is not None:
+        cloudctl.pbfURL = args.pbf
+    if hasattr(args, "countries") and args.countries is not None:
+        cloudctl.countries = args.countries
+    if hasattr(args, "formats") and args.formats is not None:
+        cloudctl.formats = args.formats
+    if hasattr(args, "memory") and args.memory is not None:
+        cloudctl.memory = args.memory
+    if hasattr(args, "config") and args.config is not None:
+        cloudctl.atlasConfig = args.config
+    if hasattr(args, "id") and args.id is not None:
+        cloudctl.instanceId = args.id
+        cloudctl.get_instance_info()
 
-    if hasattr(args, "func") and args.func:
+    if hasattr(args, "func") and args.func is not None:
         args.func(cloudctl)
     else:
         finish("A command must be specified. Try '-h' for help.")

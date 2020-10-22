@@ -66,7 +66,7 @@ The following parameters are used by one or more of the commands. These paramete
 - `-p PROCESSES, --processes PROCESSES` - The number of parallel osmium processes to start. Note that when processing a large PBF file each osmium process will use a great deal of memory so small numbers of parallel processes is suggested. (Default: 32)
 - `-j CONFIG, --config CONFIG` - The json file to use as an [Atlas configuration file](https://github.com/osmlab/atlas-checks/blob/dev/docs/configuration.md) to control the Atlas Checks process. This can either be a fully qualified URL or a full path to a json file in the S3 Input bucket. (e.g my-s3-bucket/Atlas_Checks/configurations/special_config.json) (Default: https://raw.githubusercontent.com/osmlab/atlas-checks/dev/config/configuration.json)
 - `-f FORMATS --formats FORMATS` - A comma separated list of formats to use to determine the output format for Atlas Checks. (Default: 'flags')
-- `-m MEMORY,--memory MEMORY` - The Maximum amount of memory for the Spark job to use. (Default: 256)
+- `-m MEMORY,--memory MEMORY` - The Maximum amount of memory in GB for the Spark job to use. (Default: 256GB)
 - `-c COUNTRIES, --countries COUNTRIES` - A comma separated list of ISO3 country codes to perform the checks on.
 
 ### check
