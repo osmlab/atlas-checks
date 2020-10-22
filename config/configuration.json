@@ -919,21 +919,32 @@
       "difficulty": "MEDIUM",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
-      }},
-      "tags":"highway"
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
+      },
+      "tags": "highway"
+    }
   },
   "SuddenHighwayTypeChangeCheck":{
     "enabled": true,
     "challenge": {
-      "description": "Tasks will include ways that are drawn as a single way, when in reality they should be two or more distinct ways",
-      "blurb": "Snake Roads",
-      "instruction": "Open your favorite editor and split the snake road into two or more distinct ways. You can do this by splitting or separating the existing way at an intersection or where you think a road should end. This check also flags roundabouts that aren’t properly tagged. If you see that’s the case - add a junction=roundabout tag when needed.",
+      "description": "Identifies ways that have suspicious highway tag jumps.",
+      "blurb": "Sudden Highway Type Change",
+      "instruction": "Check if way has suspicious highway jump and make necessary adjust to tag.",
       "difficulty": "MEDIUM",
       "defaultPriority": "LOW"
     },

@@ -19,7 +19,7 @@ import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
+ * This check identifies ways that make suspiciously large jumps in highway classification
  *
  * @author v-garei
  */
@@ -35,7 +35,6 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
      * checks with this constructor, supplying a configuration that can be used to adjust any
      * parameters that the check uses during operation.
-     *
      * @param configuration
      *            the JSON configuration for this check
      */
@@ -49,9 +48,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * This function will validate if the supplied atlas object is valid for the check.
-     *
-     * @param object
-     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     * @param object the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return {@code true} if this object should be checked
      */
     @Override
@@ -61,7 +58,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 && !isFlagged(object.getOsmIdentifier()))
         {
             final Edge edge = (Edge) object;
-            return HighwayTag.isCarNavigableHighway(edge) && HighwayTag.highwayTag(edge).isPresent()
+            return HighwayTag.isCarNavigableHighway(edge)
                     && edge.highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayType)
                     && !JunctionTag.isRoundabout(edge) && !JunctionTag.isCircular(edge);
         }
@@ -70,9 +67,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
 
     /**
      * This is the actual function that will check to see whether the object needs to be flagged.
-     *
-     * @param object
-     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     * @param object the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return an optional {@link CheckFlag} object that
      */
     @Override
@@ -93,66 +88,24 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         lastEdgeEndNodeEdges
                 .removeIf(edge -> edge.getOsmIdentifier() == edgeBeingVerified.getOsmIdentifier());
 
-        HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.NO;
-        final Optional<HighwayTag> edgeBeingVerifiedHighwayTagOptional = HighwayTag
-                .highwayTag(edgeBeingVerified);
-        if (edgeBeingVerifiedHighwayTagOptional.isPresent())
-        {
-            edgeBeingVerifiedHighwayTag = edgeBeingVerifiedHighwayTagOptional.get();
-        }
+        final HighwayTag edgeBeingVerifiedHighwayTag = HighwayTag.highwayTag(edgeBeingVerified).orElse(HighwayTag.NO);
 
         final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags = this
                 .getHighwayTags(firstEdgeStartNodeEdges);
         final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags = this
                 .getHighwayTags(lastEdgeEndNodeEdges);
 
-        // Check ways' first edge's connected edges for suspiciously large highway tag jumps.
-        for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
+        // Check ways' first and last edge's connected edges for suspiciously large highway tag jumps.
+        if (firstEdgeStartNodeEdgesHighwayTags(edgeBeingVerifiedHighwayTag,
+            firstEdgeStartNodeEdges, firstEdgeStartNodeEdgesHighwayTags)
+                || lastEdgeEndNodeEdgesHighwayTage(edgeBeingVerifiedHighwayTag,
+                lastEdgeEndNodeEdges, lastEdgeEndNodeEdgesHighwayTags))
         {
-            final Optional<HighwayTag> firstEdgeEdgeHighwayTagOptional = HighwayTag
-                    .highwayTag(firstEdgeEdge);
-            if (firstEdgeEdgeHighwayTagOptional.isPresent()
-                    && edgeBeingVerifiedHighwayTagOptional.isPresent()
-                    && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
-            {
-                final HighwayTag firstEdgeEdgeHighwayTag = firstEdgeEdgeHighwayTagOptional.get();
-
-                // All cases
-                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag))
-                {
-                    markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                    return Optional.of(this.createFlag(object,
+            markAsFlagged(object.getOsmIdentifier());
+            return Optional.of(createFlag(object,
                             this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-                }
-            }
         }
 
-        // Check ways' last edge's connected edges for suspiciously large highway tag jumps
-        for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
-        {
-            final Optional<HighwayTag> lastEdgeEdgeHighwayTagOptional = HighwayTag
-                    .highwayTag(lastEdgeEdge);
-            if (lastEdgeEdgeHighwayTagOptional.isPresent()
-                    && edgeBeingVerifiedHighwayTagOptional.isPresent()
-                    && !lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                    && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
-            {
-                final HighwayTag lastEdgeEdgeHighwayTag = lastEdgeEdgeHighwayTagOptional.get();
-
-                // All cases
-                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag))
-                {
-                    markAsFlagged(edgeBeingVerified.getOsmIdentifier());
-                    return Optional.of(this.createFlag(object,
-                            this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-                }
-            }
-        }
         markAsFlagged(edgeBeingVerified.getOsmIdentifier());
         return Optional.empty();
     }
@@ -163,6 +116,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Case one: edge being verified is motorway, primary, trunk
+     * @param edgeHighwayTag tag for edge being verified
+     * @return boolean
+     */
     private boolean edgeBeingVerifiedCaseOne(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.MOTORWAY.equals(edgeHighwayTag)
@@ -170,12 +128,22 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 || HighwayTag.TRUNK.equals(edgeHighwayTag);
     }
 
+    /**
+     * Case three: edge being verified is tertiary or tertiary_link
+     * @param edgeHighwayTag tag for edge being verified
+     * @return boolean
+     */
     private boolean edgeBeingVerifiedCaseThree(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.TERTIARY.equals(edgeHighwayTag)
                 || HighwayTag.TERTIARY_LINK.equals(edgeHighwayTag);
     }
 
+    /**
+     * case two: edge being verified is any link but tertiary.
+     * @param edgeHighwayTag tag for edge being verified
+     * @return boolean
+     */
     private boolean edgeBeingVerifiedCaseTwo(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.MOTORWAY_LINK.equals(edgeHighwayTag)
@@ -185,6 +153,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 || HighwayTag.SECONDARY_LINK.equals(edgeHighwayTag);
     }
 
+    /**
+     * case one: edge checked against is tertiary, residential, service, or unclassified
+     * @param edgeHighwayTag connected edge highway tag
+     * @return boolean
+     */
     private boolean edgeCheckedAgainstCaseOne(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.TERTIARY.equals(edgeHighwayTag)
@@ -193,6 +166,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 || HighwayTag.SERVICE.equals(edgeHighwayTag);
     }
 
+    /**
+     * case three: edge checked against is living_Street, service, or track
+     * @param edgeHighwayTag connected edge highway tag
+     * @return boolean
+     */
     private boolean edgeCheckedAgainstCaseThree(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.LIVING_STREET.equals(edgeHighwayTag)
@@ -200,6 +178,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 || HighwayTag.SERVICE.equals(edgeHighwayTag);
     }
 
+    /**
+     * case two: edge checked against is residential, service, or unclassified
+     * @param edgeHighwayTag connected edge highway tag
+     * @return boolean
+     */
     private boolean edgeCheckedAgainstCaseTwo(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.UNCLASSIFIED.equals(edgeHighwayTag)
@@ -207,11 +190,53 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                 || HighwayTag.SERVICE.equals(edgeHighwayTag);
     }
 
+    /**
+     * checks if edge is roundabout or circular
+     * @param edge edge to check if roundabout or circular
+     * @return boolean
+     */
     private boolean edgeIsRoundaboutOrCircular(final Edge edge)
     {
         return JunctionTag.isCircular(edge) || JunctionTag.isRoundabout(edge);
     }
 
+    /**
+     * checks if edge being verified's first edge start node connected edges make suspicious jumps
+     * @param edgeBeingVerifiedHighwayTag edge being verified highway tag
+     * @param firstEdgeStartNodeEdges first edge start node edges
+     * @param firstEdgeStartNodeEdgesHighwayTags first edge start node edge highway tags
+     * @return boolean
+     */
+    private boolean firstEdgeStartNodeEdgesHighwayTags(HighwayTag edgeBeingVerifiedHighwayTag,
+                                                       Set<Edge> firstEdgeStartNodeEdges, Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags)
+    {
+        boolean suspiciousJump = false;
+        for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
+        {
+            final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge).orElse(HighwayTag.NO);
+            if (!edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
+                    && !firstEdgeEdgeHighwayTag.equals(HighwayTag.NO)
+                    && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
+                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
+            {
+
+                // All cases
+                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag))
+                {
+                    suspiciousJump = true;
+                }
+            }
+        }
+        return suspiciousJump;
+    }
+
+    /**
+     * gets set of highway tags
+     * @param edges set of edges
+     * @return set of highway tags
+     */
     private Set<HighwayTag> getHighwayTags(final Set<Edge> edges)
     {
         final Set<HighwayTag> highwayTags = new HashSet<>();
@@ -227,22 +252,71 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         return highwayTags;
     }
 
+    /**
+     * checks if case one for edge being verified and edge checked against is true
+     * @param edgeHighwayTag1 some edge tag
+     * @param edgeHighwayTag2 some edge tag
+     * @return boolean
+     */
     private boolean isCaseOne(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
         return this.edgeBeingVerifiedCaseOne(edgeHighwayTag1)
                 && this.edgeCheckedAgainstCaseOne(edgeHighwayTag2);
     }
 
+    /**
+     * checks if case three for edge being verified and edge checked against is true
+     * @param edgeHighwayTag1 some edge tag
+     * @param edgeHighwayTag2 some edge tag
+     * @return boolean
+     */
     private boolean isCaseThree(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
         return this.edgeBeingVerifiedCaseThree(edgeHighwayTag1)
                 && this.edgeCheckedAgainstCaseThree(edgeHighwayTag2);
     }
 
+    /**
+     * checks if case two for edge being verified and edge checked against is true
+     * @param edgeHighwayTag1 some edge tag
+     * @param edgeHighwayTag2 some edge tag
+     * @return boolean
+     */
     private boolean isCaseTwo(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
     {
         return this.edgeBeingVerifiedCaseTwo(edgeHighwayTag1)
                 && this.edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
+    }
+
+    /**
+     * checks if edge being verified last edge's end node connected edges make suspicious jumps
+     * @param edgeBeingVerifiedHighwayTag edge being verified highway tags
+     * @param lastEdgeEndNodeEdges last edge end node edges
+     * @param lastEdgeEndNodeEdgesHighwayTags last edge end node edge highway tags
+     * @return boolean
+     */
+    private boolean lastEdgeEndNodeEdgesHighwayTage(HighwayTag edgeBeingVerifiedHighwayTag,
+                                                                Set<Edge> lastEdgeEndNodeEdges, Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags)
+    {
+        boolean suspiciousJump = false;
+        for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
+        {
+            final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge).orElse(HighwayTag.NO);
+            if (!lastEdgeEdgeHighwayTag.equals(HighwayTag.NO)
+                    && !edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
+                    && !lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
+                    && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
+            {
+                // All cases
+                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag))
+                {
+                    suspiciousJump = true;
+                }
+            }
+        }
+        return suspiciousJump;
     }
 
 }
