@@ -28,9 +28,33 @@ public class LevelCrossingOnRailwayCheckTest
     }
 
     @Test
+    public void ignoreConstructionTest()
+    {
+        this.verifier.actual(this.setup.getIgnoreConstruction(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void invalidIntersectionNoHighwayTest()
+    {
+        this.verifier.actual(this.setup.getInvalidIntersectionNoHighway(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void invalidIntersectionNoRailwayTest()
+    {
+        this.verifier.actual(this.setup.getInvalidIntersectionNoRailway(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void invalidObjectWithTagTest()
     {
-        this.verifier.actual(this.setup.invalidObjectsWithTag(),
+        this.verifier.actual(this.setup.getInvalidObjectsWithTag(),
                 new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(5, flags.size()));
     }
@@ -38,15 +62,23 @@ public class LevelCrossingOnRailwayCheckTest
     @Test
     public void nodeAtIntersectionTest()
     {
-        this.verifier.actual(this.setup.noIntersectionNode(),
+        this.verifier.actual(this.setup.getNoIntersectionNode(),
                 new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
     }
 
     @Test
-    public void validIntersectionLayersTest()
+    public void validIntersectionLayerTest()
     {
-        this.verifier.actual(this.setup.getValidIntersectionsLayers(),
+        this.verifier.actual(this.setup.getValidIntersectionLayers(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validIntersectionLayerZeroTest()
+    {
+        this.verifier.actual(this.setup.getValidIntersectionLayerZero(),
                 new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
@@ -54,8 +86,9 @@ public class LevelCrossingOnRailwayCheckTest
     @Test
     public void validIntersectionNoLayerTest()
     {
-        this.verifier.actual(this.setup.getValidIntersectionsNoLayer(),
+        this.verifier.actual(this.setup.getValidIntersectionNoLayer(),
                 new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
+
 }

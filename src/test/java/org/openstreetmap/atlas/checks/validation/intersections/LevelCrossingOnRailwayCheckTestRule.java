@@ -95,6 +95,7 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
              *  1.2) highway(edge)/railway=tram(line) intersection
              *  1.3) highway(edge)/railway=disused(line) intersection
              *  1.4) highway(edge)/railway=preserved(line) intersection
+             *  1.5) highway(edge)/railway=miniature(line) intersection
              */
             // nodes
             nodes = {
@@ -115,23 +116,121 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
             // lines
             lines = {
                     // 1.1: intersecting rail no layer
-                    @Line(id = "113456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2),
                             @Loc(value = INT1) }, tags = { "railway=rail" }),
                     // 1.2: intersecting tram no layer
-                    @Line(id = "123456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "233456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2),
                             @Loc(value = INT1) }, tags = { "railway=tram" }),
                     // 1.3: intersecting disused no layer
-                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "333456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2),
                             @Loc(value = INT1) }, tags = { "railway=disused" }),
                     // 1.4: intersecting preserved no layer
-                    @Line(id = "143456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "433456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2),
-                            @Loc(value = INT1) }, tags = { "railway=preserved" }) })
+                            @Loc(value = INT1) }, tags = { "railway=preserved" }),
+                    // 1.5: intersecting miniature no layer
+                    @Line(id = "533456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "railway=miniature" }) })
 
-    private Atlas validIntersectionsNoLayer;
+    private Atlas validIntersectionNoLayer;
+
+    @TestAtlas(
+            /*
+             * Ignore intersections with construction. Generally this would fail because the node
+             * should be tagged but is not. This test should pass because we want to ignore
+             * construction.
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {}) },
+            // edges
+            edges = {
+                    // 1.1-1.4: intersecting edge with no layer
+                    @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                            @Loc(value = H1_NODE_2), @Loc(value = INT1) }, tags = {
+                                    "highway=secondary", "construction:lanes=2" }) },
+            // lines
+            lines = {
+                    // 1.1: intersecting rail no layer
+                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas ignoreConstruction;
+
+    @TestAtlas(
+            /*
+             * Test invalid level crossing with no railway
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // edges
+            edges = { @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                    @Loc(value = H1_NODE_2),
+                    @Loc(value = INT1) }, tags = { "highway=secondary" }) })
+
+    private Atlas invalidIntersectionNoRailway;
+
+    @TestAtlas(
+            /*
+             * Test invalid level crossing with no highway
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // lines
+            lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas invalidIntersectionNoHighway;
+
+    @TestAtlas(
+            /*
+             * Ignore intersections with construction. Generally this would fail because the node
+             * should be tagged but is not. This test should pass because we want to ignore
+             * construction.
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // edges
+            edges = {
+                    // 1.1-1.4: intersecting edge with no layer
+                    @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                            @Loc(value = H1_NODE_2),
+                            @Loc(value = INT1) }, tags = { "highway=residential" }) },
+            // lines
+            lines = {
+                    // 1.1: intersecting rail no layer
+                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "railway=disused", "layer=0" }) })
+
+    private Atlas validIntersectionLayerZero;
 
     @TestAtlas(
             /*-
@@ -150,25 +249,25 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     // 3.3 3.4: no intersection edge with no layer
-                    @Edge(id = "333456789000000", coordinates = { @Loc(value = H2_NODE_1),
+                    @Edge(id = "113456789000000", coordinates = { @Loc(value = H2_NODE_1),
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary" }),
                     // 3.1: no intersection edge with layer tag = 2
-                    @Edge(id = "313456789000000", coordinates = { @Loc(value = H2_NODE_1),
+                    @Edge(id = "213456789000000", coordinates = { @Loc(value = H2_NODE_1),
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary", "layer=2" }),
                     // 3.2: no intersection edge with layer tag = -2
-                    @Edge(id = "323456789000000", coordinates = { @Loc(value = H2_NODE_1),
+                    @Edge(id = "313456789000000", coordinates = { @Loc(value = H2_NODE_1),
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary",
                                     "layer=-2" }) },
             // lines
             lines = {
                     // 3.3: non intersecting rail layer = 1
-                    @Line(id = "333456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2) }, tags = { "railway=rail", "layer=1" }),
                     // 3.4: non intersecting rail layer = -1
-                    @Line(id = "343456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "233456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2) }, tags = { "railway=rail", "layer=-1" }) })
 
-    private Atlas validIntersectionsLayers;
+    private Atlas validIntersectionLayers;
 
     @TestAtlas(
             /*
@@ -184,26 +283,26 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     // no intersection edge with bridge tag
-                    @Edge(id = "333456789000000", coordinates = { @Loc(value = H2_NODE_1),
+                    @Edge(id = "113456789000000", coordinates = { @Loc(value = H2_NODE_1),
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary",
                                     "bridge=yes" }),
                     // no intersection edge with tunnel tag
-                    @Edge(id = "313456789000000", coordinates = { @Loc(value = H2_NODE_1),
+                    @Edge(id = "213456789000000", coordinates = { @Loc(value = H2_NODE_1),
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary",
                                     "tunnel=yes" }),
                     // no intersection edge with no tag
-                    @Edge(id = "323456789000000", coordinates = { @Loc(value = H2_NODE_1),
+                    @Edge(id = "313456789000000", coordinates = { @Loc(value = H2_NODE_1),
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary" }) },
             // lines
             lines = {
                     // no intersection line with bridge tag
-                    @Line(id = "333456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2) }, tags = { "railway=rail", "bridge=yes" }),
                     // no intersection line with tunnel tag
-                    @Line(id = "343456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "233456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2) }, tags = { "railway=rail", "tunnel=yes" }),
                     // no intersection line with no tag
-                    @Line(id = "353456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Line(id = "333456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2) }, tags = { "railway=rail" }) })
 
     private Atlas bridgeLayers;
@@ -213,23 +312,43 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
         return this.bridgeLayers;
     }
 
-    public Atlas getValidIntersectionsLayers()
+    public Atlas getIgnoreConstruction()
     {
-        return this.validIntersectionsLayers;
+        return this.ignoreConstruction;
     }
 
-    public Atlas getValidIntersectionsNoLayer()
+    public Atlas getInvalidIntersectionNoHighway()
     {
-        return this.validIntersectionsNoLayer;
+        return this.invalidIntersectionNoHighway;
     }
 
-    public Atlas invalidObjectsWithTag()
+    public Atlas getInvalidIntersectionNoRailway()
+    {
+        return this.invalidIntersectionNoRailway;
+    }
+
+    public Atlas getInvalidObjectsWithTag()
     {
         return this.invalidObjectsWithTag;
     }
 
-    public Atlas noIntersectionNode()
+    public Atlas getNoIntersectionNode()
     {
         return this.noIntersectionNode;
+    }
+
+    public Atlas getValidIntersectionLayerZero()
+    {
+        return this.validIntersectionLayerZero;
+    }
+
+    public Atlas getValidIntersectionLayers()
+    {
+        return this.validIntersectionLayers;
+    }
+
+    public Atlas getValidIntersectionNoLayer()
+    {
+        return this.validIntersectionNoLayer;
     }
 }
