@@ -244,9 +244,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             if ((!edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge)) && (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                    || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                    || this.isCaseThree(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)))
+                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
+                    && (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                            || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                            || this.isCaseThree(edgeBeingVerifiedHighwayTag,
+                                    firstEdgeEdgeHighwayTag)))
             {
                 suspiciousJump = true;
             }
@@ -344,9 +346,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             if ((!lastEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                    && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge)) && (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                    || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                    || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)))
+                    && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
+                    && (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                            || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                            || this.isCaseThree(edgeBeingVerifiedHighwayTag,
+                                    lastEdgeEdgeHighwayTag)))
             {
                 suspiciousJump = true;
             }
