@@ -87,7 +87,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
     {
 
         super(configuration);
-        this.layerDefault = (Long) this.configurationValue(configuration, "layer.default",
+        this.layerDefault = this.configurationValue(configuration, "layer.default",
                 OSM_LAYER_DEFAULT);
 
     }
