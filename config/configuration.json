@@ -461,7 +461,6 @@
     }
   },
   "LevelCrossingOnRailwayCheck": {
-    "enabled": true,
     "challenge": {
       "description": "Tasks contain features which are missing or incorrectly tagged as railway:level_crossing.",
       "blurb": "Fix level crossing railway/highway intersections",
