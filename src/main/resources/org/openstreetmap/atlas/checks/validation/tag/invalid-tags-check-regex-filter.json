@@ -8,7 +8,8 @@
         ".*(?i)\\bvworld\\b.*",
         ".*(?i)\\bxdworld\\b.*"
       ],
-      "exceptions":[]
+      "exceptions":[],
+      "instruction": "The following element has an illegal source."
     }
   ]
 }
