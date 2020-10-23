@@ -236,7 +236,6 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             final Set<Edge> firstEdgeStartNodeEdges,
             final Set<HighwayTag> firstEdgeStartNodeEdgesHighwayTags)
     {
-        boolean suspiciousJump = false;
         for (final Edge firstEdgeEdge : firstEdgeStartNodeEdges)
         {
             final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge)
@@ -250,10 +249,10 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                             || this.isCaseThree(edgeBeingVerifiedHighwayTag,
                                     firstEdgeEdgeHighwayTag)))
             {
-                suspiciousJump = true;
+                return true;
             }
         }
-        return suspiciousJump;
+        return false;
     }
 
     /**
@@ -338,7 +337,6 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
             final Set<Edge> lastEdgeEndNodeEdges,
             final Set<HighwayTag> lastEdgeEndNodeEdgesHighwayTags)
     {
-        boolean suspiciousJump = false;
         for (final Edge lastEdgeEdge : lastEdgeEndNodeEdges)
         {
             final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge)
@@ -352,10 +350,10 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                             || this.isCaseThree(edgeBeingVerifiedHighwayTag,
                                     lastEdgeEdgeHighwayTag)))
             {
-                suspiciousJump = true;
+                return true;
             }
         }
-        return suspiciousJump;
+        return false;
     }
 
 }
