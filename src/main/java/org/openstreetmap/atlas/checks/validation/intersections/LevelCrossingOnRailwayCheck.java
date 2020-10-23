@@ -260,19 +260,22 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
     }
 
     /**
-     * Checks if the tags of an object signify it as being under construction.
+     * Checks if the tags of an object indicate a way that is invalid. Invalid ways for this check
+     * are under construction or have both rail and highway tags.
      *
      * @param object
      *            Object to check
      * @return true if the object is under construction, otherwise false
      */
-    private boolean isUnderConstruction(final AtlasObject object)
+    private boolean ignoreWay(final AtlasObject object)
     {
-        return object.getTags().keySet().stream()
+        return (object.getTags().keySet().stream()
                 .anyMatch(tag -> tag.equals(ConstructionTag.KEY)
                         || tag.startsWith("construction:") && !tag.equals(ConstructionDateTag.KEY))
                 || CONSTRUCTION_TAGS.stream()
-                        .anyMatch(tag -> ConstructionTag.KEY.equals(object.getTags().get(tag)));
+                        .anyMatch(tag -> ConstructionTag.KEY.equals(object.getTags().get(tag)))
+                || (HighwayTag.highwayTag(object).isPresent() && RailwayTag.isRailway(object))
+                || Validators.isOfType(object, RailwayTag.class, RailwayTag.PROPOSED));
     }
 
     /**
@@ -289,10 +292,9 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
     {
         final Atlas atlas = node.getAtlas();
 
-        // check for any ways under construction
-        if (!Iterables.asList(atlas.itemsContaining(node.getLocation())).stream()
-                .filter(item -> this.isUnderConstruction(item)).collect(Collectors.toList())
-                .isEmpty())
+        // check for any ways at this node to ignore.
+        if (Iterables.asList(atlas.itemsContaining(node.getLocation())).stream()
+                .anyMatch(item -> this.ignoreWay(item)))
         {
             return -1;
         }
@@ -354,8 +356,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
         final Long highwayLayer = LayerTag.getTaggedOrImpliedValue(highway, this.layerDefault);
 
         if (Edge.isMainEdgeIdentifier(highway.getIdentifier())
-                && HighwayTag.isCarNavigableHighway(highway) && !this.isUnderConstruction(railway)
-                && !this.isUnderConstruction(highway) && railwayLayer.equals(highwayLayer))
+                && HighwayTag.isCarNavigableHighway(highway) && !this.ignoreWay(railway)
+                && !this.ignoreWay(highway) && railwayLayer.equals(highwayLayer))
         {
             return railway.asPolyLine().intersections(highway.asPolyLine()).stream()
                     .filter(location -> !(railway.asPolyLine().contains(location))
