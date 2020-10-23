@@ -441,7 +441,8 @@
     "filters.classes.tags": [
       ["area","boundary->protected_area&protect_class->!"],
       ["relation","boundary->protected_area&protect_class->!"],
-      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"]
+      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"],
+      ["node","highway->emergency_access_point&ref->!", "The element is an emergency_access_point with no ref tag."]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, incorrect or illegal values",
@@ -919,15 +920,35 @@
       "difficulty": "MEDIUM",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
+  },
+  "SuddenHighwayTypeChangeCheck":{
+    "challenge": {
+      "description": "Identifies ways that have suspicious highway tag jumps.",
+      "blurb": "Sudden Highway Type Change",
+      "instruction": "Check if way has suspicious highway jump and make necessary adjust to tag.",
+      "difficulty": "MEDIUM",
+      "defaultPriority": "LOW"
+    },
+    "minHighwayType": "tertiary"
   },
   "TollEscapeCheck": {
     "enabled": true,
@@ -935,8 +956,7 @@
       "description": "Toll tags might be incorrect since tolls could possibly be avoided",
       "blurb": "Toll Escape",
       "instruction": "Please remove toll tag from indicated way."
-    }
-  },
+    },
   "UnusualLayerTagsCheck": {
     "challenge": {
       "description": "Tunnels (negative), junctions (zero) and bridges (zero or positive) should have meaningful layer tags attached to them. A missing layer tag implies layer value 0. If there is an explicit layer tag, then it must be between -5 and 5.",
