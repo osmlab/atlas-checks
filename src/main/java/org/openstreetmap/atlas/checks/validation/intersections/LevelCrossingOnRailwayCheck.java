@@ -38,7 +38,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author aiannicelli
  */
-public class LevelCrossingOnRailwayCheck extends BaseCheck
+public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
 {
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private final Long layerDefault;
@@ -269,13 +269,13 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
      */
     private boolean ignoreWay(final AtlasObject object)
     {
-        return (object.getTags().keySet().stream()
+        return object.getTags().keySet().stream()
                 .anyMatch(tag -> tag.equals(ConstructionTag.KEY)
                         || tag.startsWith("construction:") && !tag.equals(ConstructionDateTag.KEY))
                 || CONSTRUCTION_TAGS.stream()
                         .anyMatch(tag -> ConstructionTag.KEY.equals(object.getTags().get(tag)))
                 || (HighwayTag.highwayTag(object).isPresent() && RailwayTag.isRailway(object))
-                || Validators.isOfType(object, RailwayTag.class, RailwayTag.PROPOSED));
+                || Validators.isOfType(object, RailwayTag.class, RailwayTag.PROPOSED);
     }
 
     /**
@@ -294,7 +294,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck
 
         // check for any ways at this node to ignore.
         if (Iterables.asList(atlas.itemsContaining(node.getLocation())).stream()
-                .anyMatch(item -> this.ignoreWay(item)))
+                .anyMatch(this::ignoreWay))
         {
             return -1;
         }
