@@ -3,7 +3,8 @@
     "scanUrls": [
       "org.openstreetmap.atlas.checks.validation"
     ],
-    "type": "org.openstreetmap.atlas.checks.base.BaseCheck"
+    "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
