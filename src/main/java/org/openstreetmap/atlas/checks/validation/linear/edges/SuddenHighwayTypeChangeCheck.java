@@ -241,19 +241,14 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         {
             final HighwayTag firstEdgeEdgeHighwayTag = HighwayTag.highwayTag(firstEdgeEdge)
                     .orElse(HighwayTag.NO);
-            if (!edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
+            if ((!edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
+                    && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge)) && (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                    || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
+                    || this.isCaseThree(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)))
             {
-
-                // All cases
-                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag))
-                {
-                    suspiciousJump = true;
-                }
+                suspiciousJump = true;
             }
         }
         return suspiciousJump;
@@ -346,18 +341,14 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
         {
             final HighwayTag lastEdgeEdgeHighwayTag = HighwayTag.highwayTag(lastEdgeEdge)
                     .orElse(HighwayTag.NO);
-            if (!lastEdgeEdgeHighwayTag.equals(HighwayTag.NO)
+            if ((!lastEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
-                    && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
+                    && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge)) && (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                    || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
+                    || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)))
             {
-                // All cases
-                if (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                        || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                        || this.isCaseThree(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag))
-                {
-                    suspiciousJump = true;
-                }
+                suspiciousJump = true;
             }
         }
         return suspiciousJump;
