@@ -1,11 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -18,8 +13,10 @@ import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
@@ -27,7 +24,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * two intersections with navigable roads {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
  * connections. See https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout for more
  * information about roundabouts
- * 
+ *
  * @author vladlemberg
  */
 
@@ -37,15 +34,20 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public static final String MISSING_JUNCTION_TAG_INSTRUCTION = "This edge might be a roundabout";
     // Minimum intersection with Navigable Roads
     private static final int MINIMUM_INTERSECTION = 2;
+    private static final int TURNING_CIRCLE_SECTIONS = 2;
+    private static final int TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD = 4;
     private static final int MODULUS = 10;
     private static final int FIRST_EDGE_SECTION = 1;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
     private static final double MIN_THRESHOLD_DEGREES_DEFAULT = 10.0;
+    private static final String TAG_FILTER_IGNORE_DEFAULT = "motor_vehicle->!no|foot->!yes|footway->!|access->!private|construction->!";
     private static final long serialVersionUID = 5171171744111206429L;
     private final Angle maxAngleThreshold;
     private final Angle minAngleThreshold;
+    private final int turningCircleSegmentLengthThreshold;
+    private final TaggableFilter tagFilterIgnore;
 
     /**
      * Default constructor
@@ -60,6 +62,12 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                 MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
         this.minAngleThreshold = configurationValue(configuration, "angle.threshold.minimum_degree",
                 MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
+        this.turningCircleSegmentLengthThreshold = configurationValue(configuration, "turning.circle.segment.length.threshold",
+                TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD);
+        this.tagFilterIgnore = (TaggableFilter) configurationValue(configuration,
+                "tags.filter.ignore", TAG_FILTER_IGNORE_DEFAULT,
+                value -> TaggableFilter.forDefinition(value.toString()));
+
     }
 
     /**
@@ -72,10 +80,14 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
                 && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
-                && ((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
-                && object.getTag(JunctionTag.KEY).isEmpty() && object.getTag(AreaTag.KEY).isEmpty()
+                && ((Edge) object).isMainEdge()
+                && HighwayTag.isCarNavigableHighway(object)
+                && !this.tagFilterIgnore.test(object)
+                && object.getTag(JunctionTag.KEY).isEmpty()
+                && object.getTag(AreaTag.KEY).isEmpty()
                 && this.isPartOfClosedWay((Edge) object)
-                && this.intersectingWithMoreThan((Edge) object);
+                && this.intersectingWithMoreThan((Edge) object)
+                && !this.isTurningCircle((Edge) object);
     }
 
     /**
@@ -151,8 +163,14 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                         .filter(HighwayTag::isCarNavigableHighway)
                         .filter(obj -> obj.getTag(ServiceTag.KEY).isEmpty())
                         // de-duplication sectioned edges
-                        .forEach(wayId -> connectedEdges.add(wayId.getOsmIdentifier())));
-        return connectedEdges.size() > MINIMUM_INTERSECTION;
+                        .forEach(wayId ->
+                        {
+                            if (wayId.getOsmIdentifier() == edge.getOsmIdentifier())
+                                return;
+                            connectedEdges.add(wayId.getOsmIdentifier());
+                        }));
+
+        return connectedEdges.size() >= MINIMUM_INTERSECTION;
     }
 
     /**
@@ -167,5 +185,34 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         return edge.inEdges().stream().filter(Edge::isMainEdge)
                 .filter(inEdge -> inEdge.getOsmIdentifier() == edge.getOsmIdentifier())
                 .count() == 1;
+    }
+
+    /**
+     * Check if original OSM Way is a Turning Circle. See
+     * https://wiki.openstreetmap.org/wiki/Tag:highway%3Dturning_circle
+     *
+     * @param edge
+     *            entity with valence equal to
+     *            {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
+     * @return true if way is a turning circle. OSM Examples:
+     *         https://www.openstreetmap.org/way/220432725
+     *         https://www.openstreetmap.org/way/693834061
+     *         https://www.openstreetmap.org/way/685695323
+     *         https://www.openstreetmap.org/way/685704336
+     */
+    private boolean isTurningCircle(final Edge edge)
+    {
+        final List<Edge> edgesFormingOSMWay = new ArrayList<>(
+                new OsmWayWalker(edge).collectEdges());
+        if (edgesFormingOSMWay.size() != TURNING_CIRCLE_SECTIONS)
+        {
+            return false;
+        }
+        final Distance edge1 = edgesFormingOSMWay.get(0).asPolyLine().length();
+        final Distance edge2 = edgesFormingOSMWay.get(1).asPolyLine().length();
+
+        return (edge1.isGreaterThan(edge2))
+                ? edge1.asMeters() / edge2.asMeters() > TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD
+                : edge2.asMeters() / edge1.asMeters() > TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD;
     }
 }

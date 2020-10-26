@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -744,11 +744,12 @@
   },
   "RoundaboutMissingTagCheck": {
     "enabled": true,
-    "tags.filter":"motor_vehicle->!no|foot->!yes|access->!private|!construction->*",
+    "tags.filter.ignore":"motor_vehicle->!no|foot->!yes|footway->!|access->!private|construction->!",
     "angle.threshold": {
       "maximum_degree": 40.0,
       "minimum_degree": 10.0
     },
+    "turning.circle.segment.length.threshold": 4,
     "challenge": {
       "description": "This check is to look for suspicious circular junctions that may be roundabout without the “junction=roundabout” tag.",
       "blurb": "Modify roundabouts such that they have proper tagging.",
