@@ -1,6 +1,11 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -35,14 +40,14 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     // Minimum intersection with Navigable Roads
     private static final int MINIMUM_INTERSECTION = 2;
     private static final int TURNING_CIRCLE_SECTIONS = 2;
-    private static final int TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD = 4;
+    private static final int TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD_DEFAULT = 4;
     private static final int MODULUS = 10;
     private static final int FIRST_EDGE_SECTION = 1;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
     private static final double MIN_THRESHOLD_DEGREES_DEFAULT = 10.0;
-    private static final String TAG_FILTER_IGNORE_DEFAULT = "motor_vehicle->!no|foot->!yes|footway->!|access->!private|construction->!";
+    private static final String TAG_FILTER_IGNORE_DEFAULT = "motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!";
     private static final long serialVersionUID = 5171171744111206429L;
     private final Angle maxAngleThreshold;
     private final Angle minAngleThreshold;
@@ -62,11 +67,11 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                 MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
         this.minAngleThreshold = configurationValue(configuration, "angle.threshold.minimum_degree",
                 MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
-        this.turningCircleSegmentLengthThreshold = configurationValue(configuration, "turning.circle.segment.length.threshold",
-                TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD);
-        this.tagFilterIgnore = (TaggableFilter) configurationValue(configuration,
-                "tags.filter.ignore", TAG_FILTER_IGNORE_DEFAULT,
-                value -> TaggableFilter.forDefinition(value.toString()));
+        this.turningCircleSegmentLengthThreshold = configurationValue(configuration,
+                "turning.circle.segment.length.threshold",
+                TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD_DEFAULT);
+        this.tagFilterIgnore = (TaggableFilter) configurationValue(configuration, "tags.filter",
+                TAG_FILTER_IGNORE_DEFAULT, value -> TaggableFilter.forDefinition(value.toString()));
 
     }
 
@@ -80,12 +85,9 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
                 && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
-                && ((Edge) object).isMainEdge()
-                && HighwayTag.isCarNavigableHighway(object)
-                && !this.tagFilterIgnore.test(object)
-                && object.getTag(JunctionTag.KEY).isEmpty()
-                && object.getTag(AreaTag.KEY).isEmpty()
-                && this.isPartOfClosedWay((Edge) object)
+                && ((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
+                && this.tagFilterIgnore.test(object) && object.getTag(JunctionTag.KEY).isEmpty()
+                && object.getTag(AreaTag.KEY).isEmpty() && this.isPartOfClosedWay((Edge) object)
                 && this.intersectingWithMoreThan((Edge) object)
                 && !this.isTurningCircle((Edge) object);
     }
@@ -212,7 +214,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         final Distance edge2 = edgesFormingOSMWay.get(1).asPolyLine().length();
 
         return (edge1.isGreaterThan(edge2))
-                ? edge1.asMeters() / edge2.asMeters() > TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD
-                : edge2.asMeters() / edge1.asMeters() > TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD;
+                ? edge1.asMeters() / edge2.asMeters() > turningCircleSegmentLengthThreshold
+                : edge2.asMeters() / edge1.asMeters() > turningCircleSegmentLengthThreshold;
     }
 }

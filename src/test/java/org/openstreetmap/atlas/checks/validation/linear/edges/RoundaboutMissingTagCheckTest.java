@@ -21,7 +21,7 @@ public class RoundaboutMissingTagCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
-            "{\"RoundaboutMissingTagCheck\":{\"tags.filter\":\"motor_vehicle->!no|foot->!yes|footway->!|access->!private|construction->!\"}}");
+            "{\"RoundaboutMissingTagCheck\":{\"tags.filter\":\"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!\"}}");
 
     @Test
     public void closedWayMalformedShape()
@@ -80,6 +80,14 @@ public class RoundaboutMissingTagCheckTest
     }
 
     @Test
+    public void turnLoop()
+    {
+        this.verifier.actual(this.setup.turnLoop(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void tagFilterTestFootYes()
     {
         this.verifier.actual(this.setup.tagFilterTestFootYes(),
@@ -107,6 +115,14 @@ public class RoundaboutMissingTagCheckTest
     public void tagFilterTestAccessPrivate()
     {
         this.verifier.actual(this.setup.tagFilterTestAccessPrivate(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void tagFilterTestConstruction()
+    {
+        this.verifier.actual(this.setup.tagFilterTestConstruction(),
                 new RoundaboutMissingTagCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
