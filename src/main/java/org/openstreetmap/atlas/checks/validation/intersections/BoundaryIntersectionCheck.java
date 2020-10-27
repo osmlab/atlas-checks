@@ -140,7 +140,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             intersections.forEach(lineItem -> {
                 Set<Relation> matchingBoundaries = getBoundaries(lineItem)
                         .stream()
-                        .filter(boundary -> relationBoundary.getTagToRelation().keySet().contains(boundary.getTag(BOUNDARY)))
+                        .filter(boundary -> relationBoundary.getTagToRelation().keySet().contains(boundary.getTag(BOUNDARY).get()))
                         .collect(Collectors.toSet());
                 //update globally
                 if(!matchingBoundaries.isEmpty()) {
@@ -156,15 +156,20 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                     //TODO check for multiline?
                     List<LineItem> lineItems = getLineItems(lineItem);
                     lineItems.forEach(line -> {
+                        objectsToFlag.add(line);
                         final Set<Location> intersectingPoints = this.getIntersectingPoints(lineItem,
                                 line);
-                        final String instruction = this.getLocalizedInstruction(INDEX,
-                                objectsToString(relationBoundary.getRelationsByBoundaryTags(currentMatchedTags)),
-                                Long.toString(lineItem.getOsmIdentifier()),
-                                objectsToString(matchingBoundaries),
-                                Long.toString(line.getOsmIdentifier()),
-                                this.locationsToList(intersectingPoints));
-                        instructions.add(instruction);
+                        String firstBoundaries = objectsToString(relationBoundary.getRelationsByBoundaryTags(currentMatchedTags));
+                        String secondBoundaries = objectsToString(matchingBoundaries);
+                        if(firstBoundaries.hashCode() < secondBoundaries.hashCode()) {
+                            final String instruction = this.getLocalizedInstruction(INDEX,
+                                    firstBoundaries,
+                                    Long.toString(lineItem.getOsmIdentifier()),
+                                    secondBoundaries,
+                                    Long.toString(line.getOsmIdentifier()),
+                                    this.locationsToList(intersectingPoints));
+                            instructions.add(instruction);
+                        }
                     });
                 }
                 matchedTags.addAll(currentMatchedTags);
@@ -174,7 +179,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             //createFlagRecord
         }
         //update flag with stored results
-        if(objectsToFlag.isEmpty())
+        if(instructions.isEmpty())
         {
             return Optional.empty();
         } else
