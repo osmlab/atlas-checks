@@ -167,11 +167,10 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                         // de-duplication sectioned edges
                         .forEach(wayId ->
                         {
-                            if (wayId.getOsmIdentifier() == edge.getOsmIdentifier())
+                            if (wayId.getOsmIdentifier() != edge.getOsmIdentifier())
                             {
-                                return;
+                                connectedEdges.add(wayId.getOsmIdentifier());
                             }
-                            connectedEdges.add(wayId.getOsmIdentifier());
                         }));
 
         return connectedEdges.size() >= MINIMUM_INTERSECTION;
