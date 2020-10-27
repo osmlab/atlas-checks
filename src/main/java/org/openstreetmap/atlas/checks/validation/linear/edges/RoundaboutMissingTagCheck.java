@@ -168,7 +168,9 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                         .forEach(wayId ->
                         {
                             if (wayId.getOsmIdentifier() == edge.getOsmIdentifier())
+                            {
                                 return;
+                            }
                             connectedEdges.add(wayId.getOsmIdentifier());
                         }));
 
