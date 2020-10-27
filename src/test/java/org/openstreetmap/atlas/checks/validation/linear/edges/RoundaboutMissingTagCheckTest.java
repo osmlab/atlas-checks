@@ -72,19 +72,19 @@ public class RoundaboutMissingTagCheckTest
     }
 
     @Test
-    public void unClosedWay()
+    public void tagFilterTestAccessPrivate()
     {
-        this.verifier.actual(this.setup.unClosedWay(),
-                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.tagFilterTestAccessPrivate(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
-    public void turnLoop()
+    public void tagFilterTestConstruction()
     {
-        this.verifier.actual(this.setup.turnLoop(),
+        this.verifier.actual(this.setup.tagFilterTestConstruction(),
                 new RoundaboutMissingTagCheck(this.inlineConfiguration));
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
@@ -112,18 +112,18 @@ public class RoundaboutMissingTagCheckTest
     }
 
     @Test
-    public void tagFilterTestAccessPrivate()
+    public void turnLoop()
     {
-        this.verifier.actual(this.setup.tagFilterTestAccessPrivate(),
+        this.verifier.actual(this.setup.turnLoop(),
                 new RoundaboutMissingTagCheck(this.inlineConfiguration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
-    public void tagFilterTestConstruction()
+    public void unClosedWay()
     {
-        this.verifier.actual(this.setup.tagFilterTestConstruction(),
-                new RoundaboutMissingTagCheck(this.inlineConfiguration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.actual(this.setup.unClosedWay(),
+                new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
     }
 }
