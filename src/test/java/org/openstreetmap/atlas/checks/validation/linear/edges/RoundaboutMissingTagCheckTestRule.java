@@ -524,6 +524,16 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
         return this.reversedEdge;
     }
 
+    public Atlas tagFilterTestAccessPrivate()
+    {
+        return this.tagFilterTestAccessPrivate;
+    }
+
+    public Atlas tagFilterTestConstruction()
+    {
+        return this.tagFilterTestConstruction;
+    }
+
     public Atlas tagFilterTestFootYes()
     {
         return this.tagFilterTestFootYes;
@@ -537,16 +547,6 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
     public Atlas tagFilterTestMotorVehicleNo()
     {
         return this.tagFilterTestMotorVehicleNo;
-    }
-
-    public Atlas tagFilterTestAccessPrivate()
-    {
-        return this.tagFilterTestAccessPrivate;
-    }
-
-    public Atlas tagFilterTestConstruction()
-    {
-        return this.tagFilterTestConstruction;
     }
 
     public Atlas turnLoop()
