@@ -40,7 +40,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     // Minimum intersection with Navigable Roads
     private static final int MINIMUM_INTERSECTION = 2;
     private static final int TURNING_CIRCLE_SECTIONS = 2;
-    private static final int TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD_DEFAULT = 4;
+    private static final long TURNING_CIRCLE_LENGTH_THRESHOLD_DEFAULT = 4;
     private static final int MODULUS = 10;
     private static final int FIRST_EDGE_SECTION = 1;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
@@ -51,7 +51,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 5171171744111206429L;
     private final Angle maxAngleThreshold;
     private final Angle minAngleThreshold;
-    private final int turningCircleSegmentLengthThreshold;
+    private final long turningCircleLengthThreshold;
     private final TaggableFilter tagFilterIgnore;
 
     /**
@@ -67,12 +67,10 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                 MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
         this.minAngleThreshold = configurationValue(configuration, "angle.threshold.minimum_degree",
                 MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
-        this.turningCircleSegmentLengthThreshold = configurationValue(configuration,
-                "turning.circle.segment.length.threshold",
-                TURNING_CIRCLE_SEGMENT_LENGTH_THRESHOLD_DEFAULT);
         this.tagFilterIgnore = (TaggableFilter) configurationValue(configuration, "tags.filter",
                 TAG_FILTER_IGNORE_DEFAULT, value -> TaggableFilter.forDefinition(value.toString()));
-
+        this.turningCircleLengthThreshold = configurationValue(configuration, "turning.circle.length.threshold",
+                TURNING_CIRCLE_LENGTH_THRESHOLD_DEFAULT);
     }
 
     /**
@@ -215,7 +213,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         final Distance edge2 = edgesFormingOSMWay.get(1).asPolyLine().length();
 
         return (edge1.isGreaterThan(edge2))
-                ? edge1.asMeters() / edge2.asMeters() > turningCircleSegmentLengthThreshold
-                : edge2.asMeters() / edge1.asMeters() > turningCircleSegmentLengthThreshold;
+                ? edge1.asMeters() / edge2.asMeters() > turningCircleLengthThreshold
+                : edge2.asMeters() / edge1.asMeters() > turningCircleLengthThreshold;
     }
 }
