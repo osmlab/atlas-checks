@@ -168,12 +168,12 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         // Copy the geometry to apply the changes to
         final List<Location> newGeometry = Lists.newArrayList(afterView.getGeometry());
 
-        // Sort the geometry changes by position and type, as order of application matters
-        descriptors.stream()
-                .sorted(Comparator.comparingInt(descriptor -> Integer
-                        .valueOf(descriptor.get(POSITION).getAsString().split("/")[0])))
-                .sorted(Comparator.comparing(descriptor -> ChangeDescriptorType.valueOf(
-                        descriptor.get(GeoJsonConstants.TYPE).getAsString().toUpperCase())))
+        // Sort the geometry changes by type and position, as order of application matters
+        descriptors.stream().sorted(Comparator
+                .comparing(descriptor -> ChangeDescriptorType.valueOf(((JsonObject) descriptor)
+                        .get(GeoJsonConstants.TYPE).getAsString().toUpperCase()))
+                .thenComparingInt(descriptor -> Integer.valueOf(
+                        ((JsonObject) descriptor).get(POSITION).getAsString().split("/")[0])))
                 // Apply each change
                 .forEach(descriptor ->
                 {
@@ -311,7 +311,8 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         }
         catch (final ParseException parseException)
         {
-            throw new CoreException("Cannot parse wkt : {}", wkt);
+            throw new CoreException("Cannot parse wkt : {}\nCaused by: ParseException {}", wkt,
+                    parseException.getMessage());
         }
     }
 
