@@ -26,6 +26,7 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.RailwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -40,6 +41,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
 {
+    private static final String RAILWAY_FILTER_DEFAULT = "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge";
+    private final TaggableFilter railwayFilter;
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private final Long layerDefault;
     private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) has `railway=level_crossing` "
@@ -89,7 +92,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         super(configuration);
         this.layerDefault = this.configurationValue(configuration, "layer.default",
                 OSM_LAYER_DEFAULT);
-
+        this.railwayFilter = this.configurationValue(configuration, "railway.filter",
+                RAILWAY_FILTER_DEFAULT, TaggableFilter::forDefinition);
     }
 
     /**
@@ -106,12 +110,11 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
          * The following objects should be checked:
          *  1) Any node.
          *  2) Any object that is tagged with railway=level_crossing.
-         *  3) Any object that is tagged as a railway (rail, tram, disused, preserved, miniature).
+         *  3) Any object that is tagged as a railway as indicted in railway.filter.
          */
         return object instanceof Node
                 || Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
-                || Validators.isOfType(object, RailwayTag.class, RailwayTag.RAIL, RailwayTag.TRAM,
-                        RailwayTag.DISUSED, RailwayTag.PRESERVED, RailwayTag.MINIATURE);
+                || this.railwayFilter.test(object);
     }
 
     /**
@@ -213,8 +216,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
      */
     private Optional<CheckFlag> flagInvalidIntersections(final AtlasObject object)
     {
-        if (object instanceof Line && Validators.isOfType(object, RailwayTag.class, RailwayTag.RAIL,
-                RailwayTag.TRAM, RailwayTag.DISUSED, RailwayTag.PRESERVED, RailwayTag.MINIATURE))
+        if (object instanceof Line && this.railwayFilter.test(object))
         {
             final Line railway = (Line) object;
             final Atlas atlas = railway.getAtlas();
@@ -301,10 +303,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         // Get railway connections to this node
         final List<AtlasItem> connectedRailways = Iterables
                 .asList(atlas.itemsContaining(node.getLocation())).stream()
-                .filter(item -> Validators.isOfType(item, RailwayTag.class, RailwayTag.RAIL,
-                        RailwayTag.TRAM, RailwayTag.DISUSED, RailwayTag.PRESERVED,
-                        RailwayTag.MINIATURE))
-                .collect(Collectors.toList());
+                .filter(this.railwayFilter::test).collect(Collectors.toList());
         if (connectedRailways.isEmpty())
         {
             // Node has no railways through it
