@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
-import static org.openstreetmap.atlas.checks.utility.FileUtility.LogOutputFileType;
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
 
 import java.io.BufferedReader;
@@ -23,6 +22,7 @@ import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.serializer.TaskDeserializer;
 import org.openstreetmap.atlas.checks.utility.FileUtility;
+import org.openstreetmap.atlas.checks.utility.FileUtility.LogOutputFileType;
 import org.openstreetmap.atlas.locale.IsoCountry;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
@@ -65,7 +65,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             "MapRoulette checkinComment prefix. This will be prepended to the check name (e.g. #prefix: [ISO - CheckName] ).",
             String::toString, Optionality.OPTIONAL, Challenge.DEFAULT_CHECKIN_COMMENT);
     private static final Switch<String> CHECKIN_COMMENT = new Switch<>("checkinComment",
-            "MapRoulette checkinComment prefix. If supplied, this would overwrite the checkinCommentPrefix",
+            "MapRoulette checkinComment. If supplied, this would overwrite the checkinCommentPrefix",
             String::toString, Optionality.OPTIONAL, StringUtils.EMPTY);
 
     private static final String PARAMETER_CHALLENGE = "challenge";
@@ -199,7 +199,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final String checkinCommentPrefix, final String checkinComment)
     {
         final Map<String, String> challengeMap = fallbackConfiguration
-                .get(getChallengeParameter(checkName), Collections.emptyMap()).value();
+                .get(this.getChallengeParameter(checkName), Collections.emptyMap()).value();
         final Gson gson = new GsonBuilder().disableHtmlEscaping()
                 .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
         final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);

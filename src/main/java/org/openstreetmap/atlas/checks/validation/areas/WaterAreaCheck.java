@@ -66,7 +66,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Check if an object matches a filter
-     * 
+     *
      * @param filters
      *            The filters to check against
      * @param object
@@ -81,7 +81,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Check if two objects match the same filter
-     * 
+     *
      * @param filters
      *            The filters to check
      * @param object1
@@ -99,7 +99,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Create a new WaterAreaCheck
-     * 
+     *
      * @param configuration
      *            The configuration for the new Check
      */
@@ -108,18 +108,18 @@ public class WaterAreaCheck extends BaseCheck<Long>
         super(configuration);
         this.minimumIntersect = this.configurationValue(configuration, "intersect.minimum.limit",
                 MINIMUM_PROPORTION_DEFAULT);
-        List<String> filtersString = configurationValue(configuration, "water.tags.filters",
+        List<String> filtersString = this.configurationValue(configuration, "water.tags.filters",
                 WATER_FILTERS);
         filtersString.forEach(string -> this.areaFilters.add(TaggableFilter.forDefinition(string)));
-        filtersString = configurationValue(configuration, "waterway.tags.filters",
+        filtersString = this.configurationValue(configuration, "waterway.tags.filters",
                 WATERWAY_FILTERS);
         filtersString
                 .forEach(string -> this.waterwayFilters.add(TaggableFilter.forDefinition(string)));
-        filtersString = configurationValue(configuration, "water.tags.filtersrequireswaterway",
+        filtersString = this.configurationValue(configuration, "water.tags.filtersrequireswaterway",
                 WATER_FILTERS_WATERWAY);
         filtersString.forEach(string -> this.waterRequiringWaterwayFilters
                 .add(TaggableFilter.forDefinition(string)));
-        filtersString = configurationValue(configuration, "water.tags.crossing.ignore",
+        filtersString = this.configurationValue(configuration, "water.tags.crossing.ignore",
                 WATERWAY_CROSSING_IGNORE);
         filtersString.forEach(
                 string -> this.waterwayCrossingIgnore.add(TaggableFilter.forDefinition(string)));
@@ -128,7 +128,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Area && (!isFlagged(object.getOsmIdentifier()))
+        return object instanceof Area && (!this.isFlagged(object.getOsmIdentifier()))
                 && matchesFilter(this.areaFilters, object);
     }
 
@@ -141,9 +141,9 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 .stream(area.getAtlas().linesIntersecting(areaPolygon,
                         atlasObject -> matchesFilter(this.waterwayFilters, atlasObject)))
                 .collectToList();
-        CheckFlag flag = checkForMissingWaterway(null, area, waterways);
-        flag = checkForNoExitingWays(flag, areaPolygon, area, waterways);
-        flag = checkForOverlappingWaterways(flag, area);
+        CheckFlag flag = this.checkForMissingWaterway(null, area, waterways);
+        flag = this.checkForNoExitingWays(flag, areaPolygon, area, waterways);
+        flag = this.checkForOverlappingWaterways(flag, area);
 
         if (flag != null)
         {
@@ -160,7 +160,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Check if an object is already flagged
-     * 
+     *
      * @param objects
      *            The objects to check
      * @return {@code true} if *all* objects are flagged
@@ -173,7 +173,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Check a waterway area for a missing waterway way
-     * 
+     *
      * @param flag
      *            The flag to add data to. May be null.
      * @param area
@@ -201,7 +201,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Check a waterway area for exiting and entering waterways (only checks for one or the other)
-     * 
+     *
      * @param flag
      *            The flag to add data to. May be null.
      * @param areaPolygon
@@ -238,7 +238,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
     /**
      * Check for overlapping waterways
-     * 
+     *
      * @param flag
      *            The flag to add data to. May be null.
      * @param area
@@ -263,21 +263,22 @@ public class WaterAreaCheck extends BaseCheck<Long>
 
         final List<Area> areaIntersections = possibleAreaIntersections.stream()
                 .flatMap(pair -> pair.getRight().stream()).distinct()
-                .filter(tArea -> !intersections(area.getClosedGeometry(), tArea.getClosedGeometry())
+                .filter(tArea -> !this
+                        .intersections(area.getClosedGeometry(), tArea.getClosedGeometry())
                         .isEmpty())
                 .filter(tArea -> matchesFilter(this.waterwayCrossingIgnore, tArea)
                         && matchesFilter(this.waterwayCrossingIgnore, area)
                         || !matchesFilter(this.waterwayCrossingIgnore, tArea)
                                 && !matchesFilter(this.waterwayCrossingIgnore, area))
                 .collect(Collectors.toList());
-        if (!areaIntersections.isEmpty() && !alreadyFlagged(areaIntersections))
+        if (!areaIntersections.isEmpty() && !this.alreadyFlagged(areaIntersections))
         {
             if (returnFlag == null)
             {
                 returnFlag = new CheckFlag(this.getTaskIdentifier(area));
             }
             returnFlag.addPoints(possibleAreaIntersections.stream()
-                    .filter(pair -> !alreadyFlagged(pair.getRight())).map(Pair::getLeft)
+                    .filter(pair -> !this.alreadyFlagged(pair.getRight())).map(Pair::getLeft)
                     .map(Segment::middle).collect(Collectors.toList()));
             returnFlag.addInstruction(this.getLocalizedInstruction(
                     FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_WATERWAY_INTERSECTION),

@@ -30,6 +30,55 @@ public class InvalidTagsCheckTest
     }
 
     @Test
+    public void configRegexInstruction()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkNode(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.regex\": ["
+                                + "      [\"node\", [\"source\"],[\".*(?i)\\\\bgoogle\\\\b.*\", \".*(?i)\\\\bhere\\\\b(?=.*map|.com)\",\n"
+                                + "        \".*(?i)\\\\bvworld\\\\b.*\", \".*(?i)\\\\bxdworld\\\\b.*\"], \"Illegal tag: {0}.\"]"
+                                + "    ]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. OSM feature 1 has invalid tags.\n" + "2. Illegal tag: source.",
+                flags.get(0).getInstructions()));
+    }
+
+    @Test
+    public void configTaggableInstruction()
+    {
+        this.verifier.actual(this.setup.testAtlas(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[[\"edge\",\"route->ferry&highway->*\",\"The feature has tag issues.\"]]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. OSM feature 5 has invalid tags.\n" + "2. The feature has tag issues.",
+                flags.get(0).getInstructions()));
+    }
+
+    @Test
+    public void illegalSourceEdge()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkEdge(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.regex\": ["
+                                + "      [\"edge\", [\"source\"],[\".*(?i)\\\\bgoogle\\\\b.*\", \".*(?i)\\\\bhere\\\\b(?=.*map|.com)\",\n"
+                                + "        \".*(?i)\\\\bvworld\\\\b.*\", \".*(?i)\\\\bxdworld\\\\b.*\"]]"
+                                + "    ]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void illegalSourceNode()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkNode(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": true,\"filters.classes.regex\": ["
+                                + "      [\"node\", [\"source\"],[\".*(?i)\\\\bgoogle\\\\b.*\", \".*(?i)\\\\bhere\\\\b(?=.*map|.com)\",\n"
+                                + "        \".*(?i)\\\\bvworld\\\\b.*\", \".*(?i)\\\\bxdworld\\\\b.*\"]]"
+                                + "    ]}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+    }
+
+    @Test
     public void invalidAreaRelationTest()
     {
         this.verifier.actual(this.setup.testAtlas(),
@@ -90,6 +139,34 @@ public class InvalidTagsCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. OSM feature 5 has invalid tags.\n"
                         + "2. Check the following tags for missing, conflicting, or incorrect values: [junction, area, highway]",
+                flags.get(0).getInstructions()));
+    }
+
+    @Test
+    public void resourceRegexInstruction()
+    {
+        this.verifier.actual(this.setup.getIllegalSourceLinkNode(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": false}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. OSM feature 1 has invalid tags.\n"
+                        + "2. The following element has an illegal source.",
+                flags.get(0).getInstructions()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. OSM feature 2 has invalid tags.\n"
+                        + "2. The following element has an illegal source.",
+                flags.get(1).getInstructions()));
+    }
+
+    @Test
+    public void resourceTaggableInstruction()
+    {
+        this.verifier.actual(this.setup.getInconsistentHighwayAtlas(),
+                new InvalidTagsCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"InvalidTagsCheck\":{\"filters.resource.override\": false}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. OSM feature 1001 has invalid tags.\n"
+                        + "2. The element has a junction tag but no highway tag.",
                 flags.get(0).getInstructions()));
     }
 

@@ -91,14 +91,14 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     public EdgeCrossingEdgeCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minimumHighwayType = configurationValue(configuration, "minimum.highway.type",
+        this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
                 MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object) && isValidCrossingEdge(object);
+        return TypePredicates.IS_EDGE.test(object) && this.isValidCrossingEdge(object);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
                     if (!this.isFlagged(minPair._1().getIdentifier()))
                     {
-                        return createEdgeCrossCheckFlag(minPair._1(), minPair._2());
+                        return this.createEdgeCrossCheckFlag(minPair._1(), minPair._2());
                     }
                 }
             }
@@ -164,11 +164,11 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private Optional<CheckFlag> createEdgeCrossCheckFlag(final Edge edge,
             final Set<Edge> collectedEdges)
     {
-        final CheckFlag newFlag = new CheckFlag(getTaskIdentifier(edge));
+        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(edge));
         this.markAsFlagged(edge.getIdentifier());
         final Set<Location> points = collectedEdges.stream()
                 .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
-                .flatMap(crossEdge -> getIntersection(edge, crossEdge).stream())
+                .flatMap(crossEdge -> this.getIntersection(edge, crossEdge).stream())
                 .collect(Collectors.toSet());
         newFlag.addInstruction(
                 this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges.stream()

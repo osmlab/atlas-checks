@@ -43,16 +43,16 @@ public class FlaggedRelation extends FlaggedObject
     public FlaggedRelation(final Relation relation)
     {
         this.relation = relation;
-        this.properties = initProperties(relation);
-        this.country = initCountry(relation);
+        this.properties = this.initProperties(relation);
+        this.country = this.initCountry(relation);
         this.multipolygonGeometry = this.relationGeometry(relation);
     }
 
     public FlaggedRelation(final Relation relation, final MultiPolygon geoJsonGeometry)
     {
         this.relation = relation;
-        this.properties = initProperties(relation);
-        this.country = initCountry(relation);
+        this.properties = this.initProperties(relation);
+        this.country = this.initCountry(relation);
         this.multipolygonGeometry = geoJsonGeometry;
     }
 

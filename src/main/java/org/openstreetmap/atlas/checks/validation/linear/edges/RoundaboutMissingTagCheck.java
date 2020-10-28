@@ -101,7 +101,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
 
-        final PolyLine originalGeom = buildOriginalOsmWayGeometry(edge);
+        final PolyLine originalGeom = this.buildOriginalOsmWayGeometry(edge);
         // check maximum angle
         final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
                 .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
@@ -112,7 +112,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
         if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
         {
             this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(createFlag(new OsmWayWalker(edge).collectEdges(),
+            return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
                     this.getLocalizedInstruction(0)));
         }
 
