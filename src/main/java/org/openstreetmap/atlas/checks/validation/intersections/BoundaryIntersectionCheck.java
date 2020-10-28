@@ -21,6 +21,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,14 +49,14 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     public static final String BOUNDARY = "boundary";
     public static final String EMPTY = "";
 
-    private static final Predicate<LineItem> LINE_ITEM_WITH_BOUNDARY_TAGS = lineItem -> BOUNDARY
-            .equals(lineItem.getTag(TYPE).orElse(EMPTY)) && lineItem.getTag(BOUNDARY).isPresent();
+//    private static final Predicate<LineItem> LINE_ITEM_WITH_BOUNDARY_TAGS = lineItem -> BOUNDARY
+//            .equals(lineItem.getTag(TYPE).orElse(EMPTY)) && lineItem.getTag(BOUNDARY).isPresent();
 
     private static final Predicate<LineItem> LINE_ITEM_AS_BOUNDARY = lineItem -> lineItem
             .relations().stream()
             .anyMatch(relationToCheck -> BoundaryIntersectionCheck
-                    .isRelationTypeBoundaryWithBoundaryTag(relationToCheck)
-                    || LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem));
+                    .isRelationTypeBoundaryWithBoundaryTag(relationToCheck));
+//                    || LINE_ITEM_WITH_BOUNDARY_TAGS.test(lineItem));
 
     private static LineItem castToLineItem(final RelationMember relationMember)
     {
@@ -228,9 +229,13 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private Set<Relation> getBoundaries(final LineItem currentLineItem)
     {
-        return currentLineItem.relations().stream()
-                .filter(relation -> BoundaryIntersectionCheck.isRelationTypeBoundaryWithBoundaryTag(
-                        relation) || LINE_ITEM_WITH_BOUNDARY_TAGS.test(currentLineItem))
+        Set<Relation> relations = currentLineItem.relations().stream()
+                .filter(relation -> relation instanceof MultiRelation)
+                .map(relation -> ((MultiRelation) relation).relations())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        relations.addAll(currentLineItem.relations());
+        return relations.stream().filter(BoundaryIntersectionCheck::isRelationTypeBoundaryWithBoundaryTag)
                 .collect(Collectors.toSet());
     }
     
@@ -242,16 +247,24 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     }
 
     private Predicate<LineItem> getPredicateForLineItemsSelection(final Set<LineItem> lineItems,
-                                                                  final LineItem currentLineItem, Set<String> strings)
+                                                                  final LineItem currentLineItem, Set<String> boundaryTags)
     {
         return lineItemToCheck ->
         {
-            if (LINE_ITEM_AS_BOUNDARY.test(lineItemToCheck) && !lineItems.contains(lineItemToCheck))
+            if (checkLineItemAsBoundary(lineItemToCheck, boundaryTags) && !lineItems.contains(lineItemToCheck))
             {
                 return this.isCrossingNotTouching(currentLineItem, lineItemToCheck);
             }
             return false;
         };
+    }
+    
+    private boolean checkLineItemAsBoundary(LineItem lineItem, Set<String> boundaryTags){
+        return lineItem
+                .relations().stream()
+                .anyMatch(relationToCheck -> BoundaryIntersectionCheck
+                        .isRelationTypeBoundaryWithBoundaryTag(relationToCheck)
+                        && boundaryTags.contains(relationToCheck.getTag(BOUNDARY).get()));
     }
 
     private boolean isCrossingNotTouching(final LineItem currentLineItem,
