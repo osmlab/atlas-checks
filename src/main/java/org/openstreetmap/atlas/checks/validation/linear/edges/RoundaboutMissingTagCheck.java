@@ -67,9 +67,8 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                 "angle.threshold.maximum_degree", MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
         this.minAngleThreshold = this.configurationValue(configuration,
                 "angle.threshold.minimum_degree", MIN_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
-        this.tagFilterIgnore = (TaggableFilter) configurationValue(configuration,
-                "tags.filter", TAG_FILTER_IGNORE_DEFAULT,
-                value -> TaggableFilter.forDefinition(value.toString()));
+        this.tagFilterIgnore = (TaggableFilter) configurationValue(configuration, "tags.filter",
+                TAG_FILTER_IGNORE_DEFAULT, value -> TaggableFilter.forDefinition(value.toString()));
         this.turningCircleLengthThreshold = configurationValue(configuration,
                 "turning.circle.length.threshold", TURNING_CIRCLE_LENGTH_THRESHOLD_DEFAULT);
     }
