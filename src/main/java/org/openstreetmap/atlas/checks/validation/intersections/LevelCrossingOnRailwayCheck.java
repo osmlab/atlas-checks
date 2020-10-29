@@ -18,8 +18,8 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
+import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
-import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.ConstructionDateTag;
 import org.openstreetmap.atlas.tags.ConstructionTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
@@ -246,7 +246,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
      */
     private Optional<CheckFlag> flagNonNodeTagged(final AtlasObject object)
     {
-        if (!(object instanceof Node || object instanceof Point)
+        if (!(object instanceof LocationItem)
                 && Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING))
         {
             return Optional.of(this

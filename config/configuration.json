@@ -461,6 +461,7 @@
     }
   },
   "LevelCrossingOnRailwayCheck": {
+    "layer.default": 0,
     "railway.filter": "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge",
     "challenge": {
       "description": "Tasks contain features which are missing or incorrectly tagged as railway:level_crossing.",
