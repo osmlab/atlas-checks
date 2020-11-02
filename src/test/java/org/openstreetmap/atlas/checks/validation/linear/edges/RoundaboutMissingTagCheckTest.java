@@ -21,7 +21,7 @@ public class RoundaboutMissingTagCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
-            "{\"RoundaboutMissingTagCheck\":{\"tags.filter\":\"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!\"}}");
+            "{\"RoundaboutMissingTagCheck\":{\"ignore.tags.filter\":\"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!\"}}");
 
     @Test
     public void closedWayMalformedShape()
