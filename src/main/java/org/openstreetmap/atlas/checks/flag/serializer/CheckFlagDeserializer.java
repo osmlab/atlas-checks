@@ -162,7 +162,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
      * @param descriptors
      *            {@link Lists}
      */
-    private void applyGeometryChanges(final CompleteEntity afterView,
+    private void applyGeometryChanges(final CompleteEntity<? extends AtlasEntity> afterView,
             final List<JsonObject> descriptors)
     {
         // Copy the geometry to apply the changes to
@@ -228,7 +228,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
      * @param descriptor
      *            {@link JsonObject} relation member change descriptor
      */
-    private void applyRelationMemberChange(final CompleteEntity afterView,
+    private void applyRelationMemberChange(final CompleteEntity<? extends AtlasEntity> afterView,
             final JsonObject descriptor)
     {
         // Only apply to relations
@@ -273,7 +273,8 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
      * @param descriptor
      *            {@link JsonObject} tag change descriptor
      */
-    private void applyTagChange(final CompleteEntity afterView, final JsonObject descriptor)
+    private void applyTagChange(final CompleteEntity<? extends AtlasEntity> afterView,
+            final JsonObject descriptor)
     {
         final String key = descriptor.get("key").getAsString();
         final String value = descriptor.get("value").getAsString();
@@ -355,7 +356,8 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         }
 
         // Create a full copy for the after view
-        final CompleteEntity afterView = (CompleteEntity) CompleteEntity.from(beforeView);
+        final CompleteEntity<? extends AtlasEntity> afterView = (CompleteEntity) CompleteEntity
+                .from(beforeView);
         // Remove start and end node identifier, else they show up as changed (and this sort of
         // change should never exist for a suggestion)
         if (afterView.getType().equals(ItemType.EDGE))
