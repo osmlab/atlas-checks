@@ -10,6 +10,87 @@
       ],
       "exceptions":[],
       "instruction": "The following element has an illegal source."
+    },
+    {
+      "instruction": "The tag: {0} has a value which does not match the typical format used for tags with distinct values (lowercase alphanumeric characters with no spaces).",
+      "regex": ["^(?:(?!^[a-z0-9_]+( *; *[a-z0-9_]+)*$).)+$"],
+      "tagNames": [
+        "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
+        "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
+        "covered", "craft", "crossing", "cutting",
+        "disused", "drive_in", "drive_through",
+        "electrified", "embankment", "emergency",
+        "fenced", "foot", "ford",
+        "geological", "goods",
+        "hgv", "highway", "historic",
+        "internet_access",
+        "landuse", "lanes", "leisure",
+        "man_made", "military", "mooring", "motorboat", "mountain_pass", "natural", "noexit",
+        "office",
+        "power", "public_transport",
+        "railway", "route",
+        "sac_scale", "service", "shop", "smoothness", "sport", "surface",
+        "tactile_paving", "toll", "tourism", "tracktype", "traffic_calming", "trail_visibility",
+        "tunnel",
+        "usage",
+        "vehicle",
+        "wall", "waterway", "wheelchair", "wood"
+      ],
+      "exceptions": [
+        {
+          "tagName": "aerialway",
+          "values": [
+            "j-bar",
+            "t-bar"
+          ]
+        },
+        {
+          "tagName": "barrier",
+          "values": [
+            "full-height_turnstile"
+          ]
+        },
+        {
+          "tagName": "man_made",
+          "values": [
+            "MDF"
+          ]
+        },
+        {
+          "tagName": "service",
+          "values": [
+            "drive-through"
+          ]
+        },
+        {
+          "tagName": "shop",
+          "values": [
+            "e-cigarette"
+          ]
+        },
+        {
+          "tagName": "surface",
+          "values": [
+            "concrete:plates",
+            "concrete:lanes",
+            "cobblestone:10",
+            "cobblestone:20",
+            "cobblestone:flattened",
+            "paving_stones:20",
+            "paving_stones:30",
+            "paving_stones:50"
+          ]
+        },
+        {
+          "tagName": "type",
+          "values": [
+            "associatedStreet",
+            "turnlanes:lengths", "turnlanes:turns",
+            "restriction:hgv", "restriction:caravan", "restriction:motorcar", "restriction:bus", "restriction:agricultural", "restriction:bicycle", "restriction:hazmat",
+            "TMC"
+          ]
+        }
+      ]
     }
   ]
 }
