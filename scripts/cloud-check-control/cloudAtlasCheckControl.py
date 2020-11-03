@@ -58,7 +58,7 @@ class CloudAtlasChecksControl:
         processes=32,
         memory=256,
         formats="flags",
-        countries="BRA",
+        countries="",
         s3InFolder=None,
         s3OutFolder=None,
         terminate=False,
@@ -521,9 +521,8 @@ def parse_args(cloudctl):
     parser_check.add_argument(
         "-c",
         "--countries",
-        help="COUNTRIES - A comma separated list of ISO3 codes. (Default: {})".format(
-            cloudctl.countries
-        ),
+        required=True,
+        help="COUNTRIES - A comma separated list of ISO3 codes. (e.g. --countries=GBR)",
     )
     parser_check.add_argument(
         "-m",
