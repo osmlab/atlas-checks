@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.flag;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -124,7 +125,7 @@ public class FlaggedPoint extends FlaggedObject
     @SuppressWarnings("unchecked")
     private Map<String, String> initProperties(final LocationItem locationItem)
     {
-        final Map<String, String> tags = locationItem.getTags();
+        final Map<String, String> tags = new HashMap<>(locationItem.getTags());
         tags.put(ITEM_IDENTIFIER_TAG, locationItem.getIdentifier() + "");
         tags.put(OSM_IDENTIFIER_TAG, locationItem.getOsmIdentifier() + "");
         if (locationItem instanceof Node)
