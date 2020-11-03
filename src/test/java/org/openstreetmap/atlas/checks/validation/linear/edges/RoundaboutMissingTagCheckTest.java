@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * Unit tests for {@link RoundaboutMissingTagCheck}.
@@ -18,6 +19,9 @@ public class RoundaboutMissingTagCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
+            "{\"RoundaboutMissingTagCheck\":{\"ignore.tags.filter\":\"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!\"}}");
 
     @Test
     public void closedWayMalformedShape()
@@ -64,6 +68,54 @@ public class RoundaboutMissingTagCheckTest
     {
         this.verifier.actual(this.setup.reversedEdge(),
                 new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void tagFilterTestAccessPrivate()
+    {
+        this.verifier.actual(this.setup.tagFilterTestAccessPrivate(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void tagFilterTestConstruction()
+    {
+        this.verifier.actual(this.setup.tagFilterTestConstruction(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void tagFilterTestFootYes()
+    {
+        this.verifier.actual(this.setup.tagFilterTestFootYes(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void tagFilterTestFootwayTag()
+    {
+        this.verifier.actual(this.setup.tagFilterTestFootwayTag(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void tagFilterTestMotorVehicleNo()
+    {
+        this.verifier.actual(this.setup.tagFilterTestMotorVehicleNo(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void turnLoop()
+    {
+        this.verifier.actual(this.setup.turnLoop(),
+                new RoundaboutMissingTagCheck(this.inlineConfiguration));
         this.verifier.verifyEmpty();
     }
 

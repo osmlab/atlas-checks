@@ -754,6 +754,8 @@
     }
   },
   "RoundaboutMissingTagCheck": {
+    "ignore.tags.filter":"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!",
+    "turning.circle.length.threshold": 4,
     "angle.threshold": {
       "maximum_degree": 40.0,
       "minimum_degree": 10.0
