@@ -176,7 +176,7 @@ class CloudAtlasChecksControl:
                 + " --master=local[{}]".format(self.processes)
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
-                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-6.1.3-SNAPSHOT-shadow.jar"
+                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-6.1.6-SNAPSHOT-shadow.jar"
                 + " -inputFolder='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
