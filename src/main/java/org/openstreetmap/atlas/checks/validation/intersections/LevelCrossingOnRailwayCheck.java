@@ -41,6 +41,23 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
 {
+    /**
+     * NodeCheck is used to indicate the output of the isValidLevelCrossingNode function.
+     * NODE_IGNORE indicates that something about the node or ways connected should just skip this
+     * node NODE_VALID indicates a valid level crossing at this node. NODE_NO_RAILWAY indicates an
+     * invalid level crossing because no valid railway exists NODE_NO_HIGHWAY indicates an invalid
+     * level crossing because no valid highway exists NODE_NO_LAYERS indicates that no highway and
+     * railway intersect at the same layer
+     */
+    private enum NodeCheck
+    {
+        NODE_IGNORE,
+        NODE_VALID,
+        NODE_NO_RAILWAY,
+        NODE_NO_HIGHWAY,
+        NODE_NO_LAYERS;
+    }
+
     private static final String RAILWAY_FILTER_DEFAULT = "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge";
     private final TaggableFilter railwayFilter;
     private static final Long OSM_LAYER_DEFAULT = 0L;
@@ -173,22 +190,36 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         {
             final Node node = (Node) object;
 
-            final int issueType = this.isValidLevelCrossingNode(node);
+            final NodeCheck nodeCheck = this.isValidLevelCrossingNode(node);
             if (Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
-                    && issueType > 0)
+                    && nodeCheck != NodeCheck.NODE_VALID && nodeCheck != NodeCheck.NODE_IGNORE)
             {
                 // This is a node that is tagged with railway=level_crossing and is not a
                 // railway/highway intersection
+                final int instructIndex;
+                switch (nodeCheck)
+                {
+                    case NODE_NO_RAILWAY:
+                        instructIndex = NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX;
+                        break;
+                    case NODE_NO_HIGHWAY:
+                        instructIndex = NODE_INVALID_LC_TAG_NO_HIGHWAY_INDEX;
+                        break;
+                    default:
+                        instructIndex = NODE_INVALID_LC_TAG_LAYERS_INDEX;
+                        break;
+                }
                 return Optional.of(this
                         .createFlag(object,
-                                this.getLocalizedInstruction(issueType, object.getOsmIdentifier()))
+                                this.getLocalizedInstruction(instructIndex,
+                                        object.getOsmIdentifier()))
                         .addFixSuggestion(FeatureChange.add(
                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
                                         .from((AtlasEntity) object)).withRemovedTag(RailwayTag.KEY),
                                 object.getAtlas())));
             }
             if (!Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
-                    && issueType == 0)
+                    && nodeCheck == NodeCheck.NODE_VALID)
             {
                 // This is a valid railway/highway intersect node that is not tagged with
                 // railway=level_crossing
@@ -290,7 +321,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
      *         indicates the node is a valid level crossing. Positive values indicate invalid level
      *         crossing. Negative values indicates that an intersecting way is under construction
      */
-    private int isValidLevelCrossingNode(final Node node)
+    private NodeCheck isValidLevelCrossingNode(final Node node)
     {
         final Atlas atlas = node.getAtlas();
 
@@ -298,7 +329,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         if (Iterables.asList(atlas.itemsContaining(node.getLocation())).stream()
                 .anyMatch(this::ignoreWay))
         {
-            return -1;
+            return NodeCheck.NODE_IGNORE;
         }
         // Get railway connections to this node
         final List<AtlasItem> connectedRailways = Iterables
@@ -307,7 +338,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         if (connectedRailways.isEmpty())
         {
             // Node has no railways through it
-            return NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX;
+            return NodeCheck.NODE_NO_RAILWAY;
         }
         // Get car navigable connections to this node
         final List<AtlasItem> connectedHighways = Iterables
@@ -316,7 +347,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         if (connectedHighways.isEmpty())
         {
             // Node has no highways through it
-            return NODE_INVALID_LC_TAG_NO_HIGHWAY_INDEX;
+            return NodeCheck.NODE_NO_HIGHWAY;
         }
 
         // For each railway, check that there is a highway on the same layer that
@@ -331,12 +362,12 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                 if (railwayLayer.equals(highwayLayer)
                         && railway.getOsmIdentifier() != highway.getOsmIdentifier())
                 {
-                    return 0;
+                    return NodeCheck.NODE_VALID;
                 }
             }
 
         }
-        return NODE_INVALID_LC_TAG_LAYERS_INDEX;
+        return NodeCheck.NODE_NO_LAYERS;
     }
 
     /**
