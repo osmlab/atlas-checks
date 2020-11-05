@@ -1,15 +1,17 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.*;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -27,14 +29,6 @@ public class TollEscapeCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(EDGE_DEVIATION_INSTRUCTION);
 
-    /**
-     * The default constructor that must be supplied. The Atlas Checks framework will generate the
-     * checks with this constructor, supplying a configuration that can be used to adjust any
-     * parameters that the check uses during operation.
-     *
-     * @param configuration
-     *            the JSON configuration for this check
-     */
     public TollEscapeCheck(final Configuration configuration)
     {
         super(configuration);
@@ -44,56 +38,180 @@ public class TollEscapeCheck extends BaseCheck<Long>
         // Distance::meters);
     }
 
-    /**
-     * This function will validate if the supplied atlas object is valid for the check.
-     *
-     * @param object
-     *            the atlas object supplied by the Atlas-Checks framework for evaluation
-     * @return {@code true} if this object should be checked
-     */
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
         if (TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && HighwayTag.isCarNavigableHighway(object)
                 && !isFlagged(object.getOsmIdentifier()))
+//                && object.getOsmIdentifier() == 55467435)
         {
             //
             Edge edgeInQuestion = ((Edge) object).getMainEdge();
             final Map<String, String> keySet = edgeInQuestion.getOsmTags();
-            return hasTollTag(keySet) && !isPrivateAccess(keySet);
+            return hasTollTag(keySet) && !isPrivateAccess(keySet) && !edgeIntersectsTollFeature(edgeInQuestion);
         }
         return false;
     }
 
-    /**
-     * This is the actual function that will check to see whether the object needs to be flagged.
-     *
-     * @param object
-     *            the atlas object supplied by the Atlas-Checks framework for evaluation
-     * @return an optional {@link CheckFlag} object that
-     */
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         markAsFlagged(object.getOsmIdentifier());
-        Edge egdeInQuestion = ((Edge) object).getMainEdge();
 
-        System.out.println("osm ID: " + egdeInQuestion.getOsmIdentifier());
-        System.out.println("object osm identifier: " + object.getOsmIdentifier());
-        System.out.println("Tags: " + egdeInQuestion.getOsmTags());
-//        return Optional.of(this.createFlag(object,
-//                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+        Edge edgeInQuestion = ((Edge) object).getMainEdge();
+        Set<Long> abtForwardObjectIds = new HashSet<>();
+        Set<Long> abtbackwardObjectIds = new HashSet<>();
+
+        System.out.println("edge in question: " + edgeInQuestion.getOsmIdentifier());
+
+        if (forwardIsEscapable(edgeInQuestion, abtForwardObjectIds))
+        {
+            if (backwardsIsEscapable(edgeInQuestion, abtbackwardObjectIds))
+            {
+                System.out.println("remove toll tag for: " + edgeInQuestion.getOsmIdentifier());
+            } else
+            {
+                System.out.println("correct tag, backwards not escapable: " + edgeInQuestion.getOsmIdentifier());
+            }
+        } else
+        {
+            System.out.println("correct toll, forward is not escapable: " + edgeInQuestion.getOsmIdentifier());
+        }
 
 
         return Optional.empty();
     }
 
-    private boolean isPrivateAccess(final Map<String, String> tags)
+    private boolean edgeIntersectsTollFeature(Edge edge)
     {
-        return tags.get("access").equals("private");
+        Iterable<Area> intersectingAreas = edge.getAtlas().areasIntersecting(edge.bounds());
+        Iterable<Node> edgeNodes = edge.connectedNodes();
+        for (Area area : intersectingAreas)
+        {
+            Map<String, String> areaTags = area.getOsmTags();
+            if(areaTags.containsKey("barrier") && (areaTags.get("barrier").contains("toll")))
+            {
+                return true;
+            }
+        }
+
+        for (Node node : edgeNodes)
+        {
+            Map<String, String> nodeTags = node.getOsmTags();
+            if (nodeTags.containsKey("highway") && (nodeTags.get("highway").contains("toll"))
+                    || nodeTags.containsKey("barrier") && nodeTags.get("barrier").contains("toll"))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
+    private boolean backwardsIsEscapable(Edge edge, Set<Long> abtObjectIds)
+    {
+        Set<Edge> inEdges = getInEdges(edge);
+        if (hasAtLeastOneInEdge(edge))
+        {
+            for (Edge inEdge : inEdges)
+            {
+                if (!abtObjectIds.contains(inEdge.getIdentifier())
+                        && inEdge.highwayTag().isMoreImportantThan(HighwayTag.SERVICE))
+                {
+                    abtObjectIds.add(inEdge.getIdentifier());
+                    final Map<String, String> keySet = inEdge.getOsmTags();
+                    if (inEdges.size() == 1 && edgeIntersectsTollFeature(inEdge))
+                    {
+                        System.out.println("single inEdge and intersects toll feature: " + inEdge.getOsmIdentifier());
+                        return false;
+                    }
+                    if ((!keySet.containsKey("toll")) || (keySet.containsKey("toll") && keySet.get("toll").equals("no")))
+                    {
+                        System.out.println("inEdge has toll=no or no toll tag on this way: " + inEdge.getOsmIdentifier());
+                        return true;
+                    }
+                    if (!edgeIntersectsTollFeature(inEdge)
+                            && keySet.containsKey("toll") && keySet.get("toll").equals("yes"))
+                    {
+                        System.out.println("inEdge recursing: " + inEdge.getOsmIdentifier());
+                        System.out.println("inEdge end node: " + inEdge.end().getOsmIdentifier());
+                        return backwardsIsEscapable(inEdge, abtObjectIds);
+                    }
+                }
+            }
+        }
+        System.out.println("no inEdges.");
+        return false;
+    }
+
+    private boolean forwardIsEscapable(Edge edge, Set<Long> abtObjectIds)
+    {
+        Set<Edge> outEdges = getOutEdges(edge);
+        if (hasAtLeastOneOutEdge(edge))
+        {
+            for (Edge outEdge : outEdges)
+            {
+                if (!abtObjectIds.contains(outEdge.getIdentifier())
+                        && outEdge.highwayTag().isMoreImportantThan(HighwayTag.SERVICE))
+                {
+                    abtObjectIds.add(outEdge.getIdentifier());
+    //                System.out.println("outEdge checked: " + outEdge);
+                    final Map<String, String> keySet = outEdge.getOsmTags();
+                    if (outEdges.size() == 1 && edgeIntersectsTollFeature(outEdge))
+                    {
+                        System.out.println("single outEdge and intersects toll feature: " + outEdge.getOsmIdentifier());
+                        return false;
+                    }
+                    if (!keySet.containsKey("toll") || (keySet.containsKey("toll") && keySet.get("toll").equals("no")))
+                    {
+                        System.out.println("outEdge has toll=no or no toll tag on this way: " + outEdge.getOsmIdentifier());
+                        return true;
+                    }
+                    if (!edgeIntersectsTollFeature(outEdge)
+                            && keySet.containsKey("toll") && keySet.get("toll").equals("yes"))
+                    {
+                        System.out.println("outEdge recursing.");
+                        System.out.println("outEdge end node: " + outEdge.end().getOsmIdentifier());
+                        return forwardIsEscapable(outEdge, abtObjectIds);
+                    }
+                }
+            }
+        }
+        System.out.println("no outEdges.");
+        return false;
+    }
+
+    private Set<Edge> getInEdges(Edge edge)
+    {
+        return edge.inEdges().stream().filter(someEdge ->
+                someEdge.getIdentifier() > 0
+                        && HighwayTag.isCarNavigableHighway(someEdge)).collect(Collectors.toSet());
+    }
+
+    private Set<Edge> getOutEdges(Edge edge)
+    {
+        return edge.outEdges().stream().filter(someEdge ->
+                someEdge.getIdentifier() > 0
+                        && HighwayTag.isCarNavigableHighway(someEdge)).collect(Collectors.toSet());
+    }
+
+    private boolean isPrivateAccess(final Map<String, String> tags)
+    {
+        if(tags.containsKey("access"))
+        {
+            return tags.get("access").equals("private");
+        }
+        return false;
+    }
+    private boolean hasAtLeastOneInEdge(Edge edge)
+    {
+        return getInEdges(edge).size() >= 1;
+    }
+
+    private boolean hasAtLeastOneOutEdge(Edge edge)
+    {
+        return getOutEdges(edge).size() >= 1;
+    }
     private boolean hasTollTag(final Map<String, String> tags)
     {
         return tags.keySet().stream()
