@@ -133,12 +133,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                     List<LineItem> lineItems = getLineItems(lineItem);
                     lineItems.forEach(line -> {
                         objectsToFlag.add(line);
-                        final Set<Location> intersectingPoints = this.getIntersectingPoints(lineItem,
+                        final Set<Location> intersectingPoints = this.getIntersectingPoints(currentLineItem,
                                 line);
                         String firstBoundaries = objectsToString(relationBoundary.getRelationsByBoundaryTags(currentMatchedTags));
                         String secondBoundaries = objectsToString(matchingBoundaries);
                         if(firstBoundaries.hashCode() < secondBoundaries.hashCode()) {
-                            addInstruction(instructions, lineItem, line, intersectingPoints, firstBoundaries, secondBoundaries);
+                            addInstruction(instructions, currentLineItem, line, intersectingPoints, firstBoundaries, secondBoundaries);
                         }
                     });
                 }
