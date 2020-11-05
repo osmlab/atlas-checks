@@ -461,6 +461,17 @@
       "tags":"highway"
     }
   },
+  "LevelCrossingOnRailwayCheck": {
+    "layer.default": 0,
+    "railway.filter": "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge",
+    "challenge": {
+      "description": "Tasks contain features which are missing or incorrectly tagged as railway:level_crossing.",
+      "blurb": "Fix level crossing railway/highway intersections",
+      "instruction": "Open your favorite editor and fix the railway/highway intersection nodes.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW"
+    }
+  },
   "LineCrossingBuildingCheck": {
     "challenge": {
       "description": "The water body has invalid crossings by line item(s).",
@@ -754,6 +765,8 @@
     }
   },
   "RoundaboutMissingTagCheck": {
+    "ignore.tags.filter":"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!",
+    "turning.circle.length.threshold": 4,
     "angle.threshold": {
       "maximum_degree": 40.0,
       "minimum_degree": 10.0
