@@ -53,7 +53,7 @@ public abstract class CooperativeChallengeOperation
         return "way";
     }
 
-    public CooperativeChallengeOperation(final ChangeDescription changeDescription)
+    protected CooperativeChallengeOperation(final ChangeDescription changeDescription)
     {
         this.operationType = changeDescription.getChangeDescriptorType();
         final String rawId = Long.toString(changeDescription.getIdentifier());

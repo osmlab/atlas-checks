@@ -190,9 +190,8 @@ public class Task
 
     public void setCooperativeWork(final Set<FeatureChange> fixSuggestions)
     {
-        final List<JsonObject> cooperativeWork = new FixSuggestionToCooperativeWorkConvertor(
-                fixSuggestions).convert();
-        this.cooperativeWork = cooperativeWork;
+        this.cooperativeWork = new FixSuggestionToCooperativeWorkConvertor(fixSuggestions)
+                .convert();
     }
 
     public void setGeoJson(final Optional<JsonArray> geoJson)

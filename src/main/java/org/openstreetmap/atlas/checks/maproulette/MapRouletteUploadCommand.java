@@ -1,7 +1,5 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
-import static org.openstreetmap.atlas.geography.geojson.GeoJsonConstants.PROPERTIES;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,13 +19,13 @@ import org.openstreetmap.atlas.checks.flag.FlaggedObject;
 import org.openstreetmap.atlas.checks.flag.serializer.CheckFlagDeserializer;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeStatus;
+import org.openstreetmap.atlas.checks.maproulette.data.Task;
 import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializer;
 import org.openstreetmap.atlas.checks.utility.FileUtility;
 import org.openstreetmap.atlas.checks.utility.FileUtility.LogOutputFileType;
 import org.openstreetmap.atlas.checks.utility.OpenStreetMapCheckFlagConverter;
 import org.openstreetmap.atlas.locale.IsoCountry;
 import org.openstreetmap.atlas.streaming.resource.File;
-import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.StandardConfiguration;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
@@ -36,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /**
@@ -135,29 +131,33 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                     {
                         final CheckFlag flagRecoveredFromLine = new CheckFlagDeserializer()
                                 .deserialize(new JsonParser().parse(line), null, null);
-                        final String countryCode = flagRecoveredFromLine.getCountryISO();
-                        final String challenge = flagRecoveredFromLine.getChallengeName()
-                                .orElse("");
+                        final CheckFlag uploadFlag = OpenStreetMapCheckFlagConverter
+                                .openStreetMapify(flagRecoveredFromLine)
+                                .orElse(flagRecoveredFromLine);
+                        final String countryCode = uploadFlag.getCountryISO();
+                        final String checkName = uploadFlag.getChallengeName().orElse("");
                         if ((countries.isEmpty()
                                 || (!FlaggedObject.COUNTRY_MISSING.equals(countryCode)
                                         && countries.get().contains(countryCode)))
                                 // If the checks filter exists, check that the challenge name is in
                                 // the checks filter.
-                                && (checks.isEmpty() || checks.get().contains(challenge)))
+                                && (checks.isEmpty() || checks.get().contains(checkName)))
                         {
                             try
                             {
                                 final Map<String, Challenge> countryToChallengeMap = this.checkNameChallengeMap
-                                        .computeIfAbsent(challenge, ignore -> new HashMap<>());
+                                        .computeIfAbsent(checkName, ignore -> new HashMap<>());
                                 final Challenge challengeObject = countryToChallengeMap
                                         .computeIfAbsent(countryCode,
-                                                ignore -> this.getChallenge(challenge, instructions,
+                                                ignore -> this.getChallenge(checkName, instructions,
                                                         countryCode, checkinCommentPrefix,
                                                         checkinComment));
-                                final Optional<CheckFlag> osmFlag = OpenStreetMapCheckFlagConverter
-                                        .openStreetMapify(flagRecoveredFromLine);
-                                this.addTask(challengeObject,
-                                        flagRecoveredFromLine.getMapRouletteTask());
+                                final Task task = uploadFlag.getMapRouletteTask();
+                                // task is by default named after its originating check. Overwrite
+                                // this name with the Challenge name if the Challenge deserialized a
+                                // custom name from the configuration
+                                task.setChallengeName(challengeObject.getName());
+                                this.addTask(challengeObject, uploadFlag.getMapRouletteTask());
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
                             {
@@ -230,30 +230,6 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private String getChallengeParameter(final String checkName)
     {
         return MessageFormat.format("{0}.{1}", checkName, PARAMETER_CHALLENGE);
-    }
-
-    /**
-     * Gathers the ISO3 country code from a {@link JsonElement}, if it has one.
-     *
-     * @param element
-     *            a {@link JsonElement}
-     * @return an {@link Optional} {@link String} containing the ISO3 country code
-     */
-    private Optional<String> getElementCountryCode(final JsonElement element)
-    {
-        final JsonObject elementJson = element.getAsJsonObject();
-        // If the element has properties
-        if (elementJson.has(PROPERTIES))
-        {
-            final JsonObject properties = elementJson.get(PROPERTIES).getAsJsonObject();
-            // And the properties have a country code
-            if (properties.has(ISOCountryTag.KEY))
-            {
-                // Get the country code
-                return Optional.of(properties.get(ISOCountryTag.KEY).getAsString());
-            }
-        }
-        return Optional.empty();
     }
 
     /**
