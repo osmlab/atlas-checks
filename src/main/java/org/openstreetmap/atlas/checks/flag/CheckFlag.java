@@ -485,6 +485,10 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
                     .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(this.identifier))
                     .forEach(features::add);
         }
+        if (!this.fixSuggestions.isEmpty())
+        {
+            task.setCooperativeWork(this.fixSuggestions);
+        }
         task.setGeoJson(Optional.of(features));
         return task;
     }
