@@ -1,7 +1,11 @@
 package org.openstreetmap.atlas.checks.maproulette.data.cooperative_challenge;
 
+import java.util.function.Predicate;
+
 import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescription;
 import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescriptorType;
+import org.openstreetmap.atlas.geography.atlas.change.description.descriptors.ChangeDescriptor;
+import org.openstreetmap.atlas.geography.atlas.change.description.descriptors.ChangeDescriptorName;
 import org.openstreetmap.atlas.geography.atlas.change.description.descriptors.TagChangeDescriptor;
 
 import com.google.gson.JsonArray;
@@ -9,7 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 /***
- * This is the cooperative challenge model for Tag changes Reference:
+ * This is the cooperative challenge model for Tag changes. Reference:
  * https://github.com/osmlab/maproulette3/wiki/Cooperative-Challenges#creating-tag-fix-challenges
  *
  * @author seancoulter
@@ -71,6 +75,12 @@ public class TagChangeOperation extends CooperativeChallengeOperation
         return this;
     }
 
+    @Override
+    protected Predicate<ChangeDescriptor> operationFilter()
+    {
+        return changeDescriptor -> changeDescriptor.getName().equals(ChangeDescriptorName.TAG);
+    }
+
     /**
      * Converts {@link ChangeDescription} terminology to cooperative challenge terminology
      *
@@ -102,7 +112,8 @@ public class TagChangeOperation extends CooperativeChallengeOperation
      */
     private String convertChangeDescriptorType(final ChangeDescriptorType descriptorType)
     {
-        if (descriptorType.equals(ChangeDescriptorType.UPDATE))
+        if (descriptorType.equals(ChangeDescriptorType.UPDATE)
+                || descriptorType.equals(ChangeDescriptorType.ADD))
         {
             return SET_TAGS;
         }

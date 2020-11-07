@@ -52,20 +52,22 @@ public class Task
     }
 
     /**
-     * Given some feature changes, convert them one by one to JSON cooperative challenge operations
+     * Given some feature changes, convert them one by one to JSON cooperative challenge operations.
+     * This is in {@link Task} since cooperativeWork objects are part of the Task geojson, and so
+     * this convertor is not expected to be used outside of the Task context at this time
      *
      * @author seancoulter
      */
-    public static class FixSuggestionToCooperativeWorkConvertor
+    private static final class FixSuggestionToCooperativeWorkConvertor
     {
         private final Set<FeatureChange> featureChanges;
 
-        public FixSuggestionToCooperativeWorkConvertor(final Set<FeatureChange> featureChanges)
+        private FixSuggestionToCooperativeWorkConvertor(final Set<FeatureChange> featureChanges)
         {
             this.featureChanges = featureChanges;
         }
 
-        final List<JsonObject> convert()
+        private List<JsonObject> convert()
         {
             final List<JsonObject> operationsList = new ArrayList<>();
             for (final FeatureChange featureChange : this.featureChanges)

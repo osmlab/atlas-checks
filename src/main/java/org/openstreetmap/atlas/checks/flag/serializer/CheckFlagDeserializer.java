@@ -106,8 +106,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         final String flagIdentifier = properties.get(ID).getAsString();
         final CheckFlag flag = new CheckFlag(flagIdentifier);
         flag.addInstructions(instructions);
-        flag.setChallengeName(
-                flag.getChallengeName().isPresent() ? flag.getChallengeName().get() : checkName);
+        flag.setChallengeName(checkName);
 
         final GeoJsonItem geojsonItem = GEOJSON_PARSER_GSON.deserialize(GSON.toJson(json));
 

@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.maproulette.data.cooperative_challenge;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescription;
 import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescriptorType;
@@ -10,12 +12,28 @@ import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import com.google.gson.JsonObject;
 
 /***
- * This represents an operation that is embedded in a cooperative challenge Example: Given a
- * FeatureCollection geojson uploaded to MapRoulette: ``` { "type": "FeatureCollection", "features":
- * [ ... ], // omitted for readability "cooperativeWork": { // special `cooperativeWork` property
- * "meta": { "version": 2, // must be format version `2` "type": 1 // `1` for tag fix type },
- * "operations": [ // Operations section (see below) ... ] } } ``` This class is an abstract
- * representation of the json material to be found under "operations"
+ * This represents an operation that is embedded in a cooperative challenge. Example: Given a
+ * FeatureCollection geojson uploaded to MapRoulette:
+ * 
+ * <pre>
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [ ... ],            // omitted for readability
+ *   "cooperativeWork": {            // special `cooperativeWork` property
+ *     "meta": {
+ *       "version": 2,               // must be format version `2`
+ *       "type": 1                   // `1` for tag fix type
+ *     },
+ *     "operations": [               // Operations section (see below)
+ *       ...
+ *     ]
+ *   }
+ * }
+ * </pre>
+ * 
+ * This class is an abstract representation of the json material to be found under "operations". Its
+ * subclasses should handle the various ChangeDescriptor types, including GeometryChangeDescriptor,
+ * LongElementChangeDescriptor, RelationMemberChangeDescriptor, TagChangeDescriptor
  *
  * @author seancoulter
  */
@@ -59,8 +77,13 @@ public abstract class CooperativeChallengeOperation
         final String rawId = Long.toString(changeDescription.getIdentifier());
         this.identifier = String.join(DELIMITER,
                 extractOSMObjectFromItemType(changeDescription.getItemType()),
-                rawId.substring(0, rawId.length() - ATLAS_SECTIONING_IDENTIFIER_LENGTH));
-        this.changeDescriptorList = changeDescription.getChangeDescriptors();
+                rawId.length() > ATLAS_SECTIONING_IDENTIFIER_LENGTH
+                        ? rawId.substring(0, rawId.length() - ATLAS_SECTIONING_IDENTIFIER_LENGTH)
+                        : rawId);
+        // Filter only for the change descriptors relevant to the instance calling this constructor
+        this.changeDescriptorList = changeDescription.getChangeDescriptors().stream()
+                .filter(operation -> this.operationFilter().test(operation))
+                .collect(Collectors.toList());
     }
 
     public abstract CooperativeChallengeOperation create();
@@ -84,6 +107,8 @@ public abstract class CooperativeChallengeOperation
     {
         return this.operationType;
     }
+
+    protected abstract Predicate<ChangeDescriptor> operationFilter();
 
     protected void setJson(final JsonObject json)
     {
