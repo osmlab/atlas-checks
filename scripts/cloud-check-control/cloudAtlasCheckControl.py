@@ -188,6 +188,8 @@ class CloudAtlasChecksControl:
             logger.info("Submitting spark job: {}".format(cmd))
             if self.ssh_cmd(cmd):
                 finish("Unable to execute spark job", -1)
+            # make sure spark job has started before checking for completion
+            time.sleep(5)
         else:
             logger.info("Detected a running atlas check spark job.")
 
@@ -197,8 +199,6 @@ class CloudAtlasChecksControl:
                 "Timeout waiting for script to complete. TODO - instructions to reconnect.",
                 -1,
             )
-        # download log
-        self.get_files(self.atlasCheckLog, "./")
 
         self.sync()
 
@@ -222,7 +222,7 @@ class CloudAtlasChecksControl:
         )
 
         # push output to s3
-        cmd = "aws s3 sync --exclude *.crc {} s3://{} ".format(
+        cmd = "aws s3 sync --only-show-errors --exclude *.crc {} s3://{} ".format(
             self.atlasOutDir, self.s3OutFolder
         )
         if self.ssh_cmd(cmd):
