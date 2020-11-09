@@ -40,6 +40,12 @@ public class InvalidTagsCheckTestRule extends CoreTestRule
                                     @Loc(value = TEST_2) }) })
     private Atlas illegalSourceLinkNode;
 
+    @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = TEST_1)),
+            @Node(id = "2000000", coordinates = @Loc(value = TEST_2)) }, edges = {
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout" }) })
+    private Atlas inconsistentHighwayAtlas;
+
     @TestAtlas(
             // nodes
             nodes = {
@@ -84,6 +90,11 @@ public class InvalidTagsCheckTestRule extends CoreTestRule
     public Atlas getIllegalSourceLinkNode()
     {
         return this.illegalSourceLinkNode;
+    }
+
+    public Atlas getInconsistentHighwayAtlas()
+    {
+        return this.inconsistentHighwayAtlas;
     }
 
     public Atlas testAtlas()

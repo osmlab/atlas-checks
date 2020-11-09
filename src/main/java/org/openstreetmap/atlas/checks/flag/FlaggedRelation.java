@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.flag;
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.IDENTIFIER;
 import static org.openstreetmap.atlas.geography.geojson.GeoJsonUtils.feature;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -180,7 +181,7 @@ public class FlaggedRelation extends FlaggedObject
      */
     private Map<String, String> initProperties(final Relation relation)
     {
-        final Map<String, String> tags = relation.getTags();
+        final Map<String, String> tags = new HashMap<>(relation.getTags());
         tags.put(ITEM_IDENTIFIER_TAG, relation.getIdentifier() + "");
         tags.put(OSM_IDENTIFIER_TAG, relation.getOsmIdentifier() + "");
         tags.put(ITEM_TYPE_TAG, "Relation");

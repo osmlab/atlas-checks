@@ -441,7 +441,8 @@
     "filters.classes.tags": [
       ["area","boundary->protected_area&protect_class->!"],
       ["relation","boundary->protected_area&protect_class->!"],
-      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"]
+      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"],
+      ["node","highway->emergency_access_point&ref->!", "The element is an emergency_access_point with no ref tag."]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, incorrect or illegal values",
@@ -458,6 +459,17 @@
       "instruction": "Correct the displayed invalid turn restriction",
       "difficulty": "HARD",
       "tags":"highway"
+    }
+  },
+  "LevelCrossingOnRailwayCheck": {
+    "layer.default": 0,
+    "railway.filter": "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge",
+    "challenge": {
+      "description": "Tasks contain features which are missing or incorrectly tagged as railway:level_crossing.",
+      "blurb": "Fix level crossing railway/highway intersections",
+      "instruction": "Open your favorite editor and fix the railway/highway intersection nodes.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "LOW"
     }
   },
   "LineCrossingBuildingCheck": {
@@ -753,6 +765,8 @@
     }
   },
   "RoundaboutMissingTagCheck": {
+    "ignore.tags.filter":"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!",
+    "turning.circle.length.threshold": 4,
     "angle.threshold": {
       "maximum_degree": 40.0,
       "minimum_degree": 10.0
@@ -919,15 +933,35 @@
       "difficulty": "MEDIUM",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
+  },
+  "SuddenHighwayTypeChangeCheck":{
+    "challenge": {
+      "description": "Identifies ways that have suspicious highway tag jumps.",
+      "blurb": "Sudden Highway Type Change",
+      "instruction": "Check if way has suspicious highway jump and make necessary adjust to tag.",
+      "difficulty": "MEDIUM",
+      "defaultPriority": "LOW"
+    },
+    "minHighwayType": "tertiary"
   },
   "UnusualLayerTagsCheck": {
     "challenge": {

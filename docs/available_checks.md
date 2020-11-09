@@ -36,6 +36,7 @@ This document is a list of tables with a description and link to documentation f
 | [SingleSegmentMotorwayCheck](checks/singleSegmentMotorwayCheck.md) | The purpose of this check is to identify ways tagged with highway=motorway that are not connected to any ways tagged the same. |
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
+| [SuddenHighwayTypeChangeCheck](checks/suddenHighwayTypeChangeCheck.md) | The purpose of this check is to identify roads that jump to much different highway classifications. |
 | UnwalkableWaysCheck | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
 | ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
 
@@ -44,8 +45,9 @@ This document is a list of tables with a description and link to documentation f
 | :--------- | :---------------- |
 | BigNodeBadDataCheck | The purpose of this check is to flag any BigNodes that have may have some bad data. |
 | ConnectivityCheck | This check identifies nodes that should be connected to nearby nodes or edges. |
-| [DuplicateNodeCheck](docs/checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
+| [DuplicateNodeCheck](checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
 | [InvalidMiniRoundaboutCheck](checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
+| [LevelCrossingOnRailwayCheck](checks/LevelCrossingOnRailwayCheck.md) | This check identifies incorrectly tagged or missing nodes at railway/highway intersections. |
 | NodeValenceCheck | This check identifies nodes with too many connections. |
 | [OrphanNodeCheck](tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
 
