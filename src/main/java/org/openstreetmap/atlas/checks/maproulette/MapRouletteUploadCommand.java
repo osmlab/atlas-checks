@@ -65,6 +65,10 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private static final Switch<String> CHECKIN_COMMENT = new Switch<>("checkinComment",
             "MapRoulette checkinComment. If supplied, this would overwrite the checkinCommentPrefix",
             String::toString, Optionality.OPTIONAL, StringUtils.EMPTY);
+    private static final Switch<Boolean> INCLUDE_FIX_SUGGESTIONS = new Switch<>(
+            "includeFixSuggestions",
+            "true/false whether all fix suggestions in the geojson should be uploaded to MR.",
+            Boolean::parseBoolean, Optionality.OPTIONAL, "true");
 
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
@@ -152,12 +156,17 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                                 ignore -> this.getChallenge(checkName, instructions,
                                                         countryCode, checkinCommentPrefix,
                                                         checkinComment));
-                                final Task task = uploadFlag.getMapRouletteTask();
+                                final boolean includeFixSuggestions = commandMap
+                                        .get(INCLUDE_FIX_SUGGESTIONS) == null ? Boolean.TRUE
+                                                : Boolean.parseBoolean((String) commandMap
+                                                        .get(INCLUDE_FIX_SUGGESTIONS));
+                                final Task task = uploadFlag
+                                        .getMapRouletteTask(includeFixSuggestions);
                                 // task is by default named after its originating check. Overwrite
                                 // this name with the Challenge name if the Challenge deserialized a
                                 // custom name from the configuration
                                 task.setChallengeName(challengeObject.getName());
-                                this.addTask(challengeObject, uploadFlag.getMapRouletteTask());
+                                this.addTask(challengeObject, task);
                             }
                             catch (URISyntaxException | UnsupportedEncodingException error)
                             {
