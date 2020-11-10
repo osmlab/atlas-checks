@@ -85,8 +85,7 @@ public class ConsumerBasedExpectedCheckVerifier extends Verifier
      */
     public ConsumerBasedExpectedCheckVerifier verifyEmpty()
     {
-        this.globalVerifiers
-                .add((final List<CheckFlag> flags) -> Assert.assertTrue(flags.size() == 0));
+        this.globalVerifiers.add(flags -> Assert.assertTrue(flags.isEmpty()));
         return this;
     }
 
@@ -100,21 +99,19 @@ public class ConsumerBasedExpectedCheckVerifier extends Verifier
      */
     public ConsumerBasedExpectedCheckVerifier verifyExpectedSize(final int size)
     {
-        this.globalVerifiers
-                .add((final List<CheckFlag> flags) -> Assert.assertEquals(size, flags.size()));
+        this.globalVerifiers.add(flags -> Assert.assertEquals(size, flags.size()));
         return this;
     }
 
     /**
      * Verifies that at least one {@link CheckFlag} was returned when the {@link Check} is run over
      * the test {@link Atlas}
-     * 
+     *
      * @return the {@link ConsumerBasedExpectedCheckVerifier}
      */
     public ConsumerBasedExpectedCheckVerifier verifyNotEmpty()
     {
-        this.globalVerifiers
-                .add((final List<CheckFlag> flags) -> Assert.assertTrue(flags.size() > 0));
+        this.globalVerifiers.add(flags -> Assert.assertFalse(flags.isEmpty()));
         return this;
     }
 
@@ -125,7 +122,11 @@ public class ConsumerBasedExpectedCheckVerifier extends Verifier
      */
     public ConsumerBasedExpectedCheckVerifier verifyNotNull()
     {
-        this.globalVerifiers.add((final List<CheckFlag> flags) -> Assert.assertNotNull(flags));
+        this.globalVerifiers.add((final List<CheckFlag> flags) ->
+        {
+            Assert.assertNotNull(flags);
+            flags.forEach(Assert::assertNotNull);
+        });
         return this;
     }
 
@@ -134,7 +135,7 @@ public class ConsumerBasedExpectedCheckVerifier extends Verifier
     {
         if (this.globalVerifiers.isEmpty() && this.flagVerifiers.isEmpty())
         {
-            throw new Exception("Please create at least one function to verify test results.");
+            Assert.fail("Please create at least one function to verify test results.");
         }
 
         // Apply global verifiers
