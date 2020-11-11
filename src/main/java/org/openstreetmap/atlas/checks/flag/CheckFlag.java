@@ -490,7 +490,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
-     * Overloaded to support optional fix suggestions
+     * Wraps getMapRouletteTask() to embed optional fix suggestions
      * 
      * @param includeFixSuggestions
      *            true if we want to upload fix suggestions, false if not
@@ -498,49 +498,12 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      */
     public Task getMapRouletteTask(final boolean includeFixSuggestions)
     {
-        final Task task = new Task();
-        task.setInstruction(this.getInstructions());
-        task.setProjectName(this.getCountryISO());
-        task.setChallengeName(this.getChallengeName().orElse(this.getClass().getSimpleName()));
-        task.setTaskIdentifier(this.identifier);
-
-        // Add custom pin point(s), if supplied.
-        final Set<Location> points = this.getPoints();
-        if (!points.isEmpty())
-        {
-            task.setPoints(points);
-        }
-        else
-        {
-            final Set<PolyLine> polyLines = this.getPolyLines();
-            if (!polyLines.isEmpty())
-            {
-                // Retrieve the first item in the list and retrieve the first point in the
-                // geometry for the object
-                task.setPoint(polyLines.iterator().next().iterator().next());
-            }
-        }
-
-        final JsonArray features = new JsonArray();
-        // Features
-        if (!this.getGeometryWithProperties().isEmpty())
-        {
-            this.getGeometryWithProperties()
-                    .forEach(shape -> features.add(new GeoJsonBuilder().create(shape)));
-        }
-        final Set<FlaggedObject> flaggedRelations = this.getFlaggedRelations();
-        if (!flaggedRelations.isEmpty())
-        {
-            this.getFlaggedRelations().stream()
-                    .map(flaggedRelation -> flaggedRelation.asGeoJsonFeature(this.identifier))
-                    .forEach(features::add);
-        }
+        final Task returnTask = this.getMapRouletteTask();
         if (includeFixSuggestions && !this.fixSuggestions.isEmpty())
         {
-            task.setCooperativeWork(this.fixSuggestions);
+            returnTask.setCooperativeWork(this.fixSuggestions);
         }
-        task.setGeoJson(Optional.of(features));
-        return task;
+        return returnTask;
     }
 
     /**

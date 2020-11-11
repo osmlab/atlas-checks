@@ -140,12 +140,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                 .orElse(flagRecoveredFromLine);
                         final String countryCode = uploadFlag.getCountryISO();
                         final String checkName = uploadFlag.getChallengeName().orElse("");
-                        if ((countries.isEmpty()
-                                || (!FlaggedObject.COUNTRY_MISSING.equals(countryCode)
-                                        && countries.get().contains(countryCode)))
-                                // If the checks filter exists, check that the challenge name is in
-                                // the checks filter.
-                                && (checks.isEmpty() || checks.get().contains(checkName)))
+                        final boolean countryIsSupported = countries.isEmpty()
+                                || !FlaggedObject.COUNTRY_MISSING.equals(countryCode)
+                                        && countries.get().contains(countryCode);
+                        final boolean checkIsSupported = checks.isEmpty()
+                                || checks.get().contains(checkName);
+                        if (countryIsSupported && checkIsSupported)
                         {
                             try
                             {
@@ -156,10 +156,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                                 ignore -> this.getChallenge(checkName, instructions,
                                                         countryCode, checkinCommentPrefix,
                                                         checkinComment));
+                                // by default, upload fix suggestions
                                 final boolean includeFixSuggestions = commandMap
-                                        .get(INCLUDE_FIX_SUGGESTIONS) == null ? Boolean.TRUE
-                                                : Boolean.parseBoolean((String) commandMap
-                                                        .get(INCLUDE_FIX_SUGGESTIONS));
+                                        .get(INCLUDE_FIX_SUGGESTIONS) == null
+                                        || Boolean.parseBoolean(
+                                                (String) commandMap.get(INCLUDE_FIX_SUGGESTIONS));
                                 final Task task = uploadFlag
                                         .getMapRouletteTask(includeFixSuggestions);
                                 // task is by default named after its originating check. Overwrite
