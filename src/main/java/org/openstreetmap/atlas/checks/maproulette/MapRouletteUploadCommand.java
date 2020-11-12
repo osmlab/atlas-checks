@@ -110,6 +110,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     }
 
     @Override
+    @SuppressWarnings("squid:S3776")
     protected void execute(final CommandMap commandMap,
             final MapRouletteConfiguration configuration)
     {
