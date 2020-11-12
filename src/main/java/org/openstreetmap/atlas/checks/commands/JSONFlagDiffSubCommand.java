@@ -89,11 +89,11 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
                 .getOption(OUTPUT_FOLDER_PARAMETER);
         if (output.isPresent())
         {
-            writeSetToGeoJSON(additions,
+            this.writeSetToGeoJSON(additions,
                     new File(String.format("%s/additions-%d-%d.%s", output.get(),
                             new Date().getTime(), this.countMapValues(additions),
                             this.fileExtension)));
-            writeSetToGeoJSON(subtractions,
+            this.writeSetToGeoJSON(subtractions,
                     new File(String.format("%s/subtractions-%d-%d.%s", output.get(),
                             new Date().getTime(), this.countMapValues(subtractions),
                             this.fileExtension)));
@@ -197,9 +197,9 @@ public abstract class JSONFlagDiffSubCommand implements FlexibleSubCommand
     protected int getReferenceSize()
     {
         int sourceSize = 0;
-        for (final String check : getReference().keySet())
+        for (final String check : this.getReference().keySet())
         {
-            sourceSize += getReference().get(check).size();
+            sourceSize += this.getReference().get(check).size();
         }
         return sourceSize;
     }

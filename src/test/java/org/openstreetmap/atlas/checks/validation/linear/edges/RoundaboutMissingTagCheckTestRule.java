@@ -32,9 +32,11 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
     private static final String TEST_NODE_SHP_10 = "37.3293534,-121.9155234";
     private static final String TEST_NODE_SHP_11 = "37.3293683,-121.9155658";
     private static final String TEST_NODE_SHP_12 = "37.3293686,-121.9156274";
+    private static final String TEST_NODE_VERTEX_5 = "37.329273,-121.915736";
     // connected way nodes
-    private static final String TEST_NODE_5 = "37.3303971,-121.9139893";
-    private static final String TEST_NODE_6 = "37.3281316,-121.9170493";
+    private static final String TEST_NODE_1 = "37.3303971,-121.9139893";
+    private static final String TEST_NODE_2 = "37.3281316,-121.9170493";
+    private static final String TEST_NODE_3 = "37.3299230,-121.9163520";
 
     @TestAtlas(
             // nodes
@@ -54,8 +56,8 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
                     @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
                     @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
-                    @Node(coordinates = @Loc(value = TEST_NODE_5)),
-                    @Node(coordinates = @Loc(value = TEST_NODE_6)), },
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
             // edges
             edges = {
                     // parts of roundabout
@@ -77,8 +79,8 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
                     // connected navigable edges
                     @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
-                            @Loc(value = TEST_NODE_6) }, tags = { "highway=tertiary" }),
-                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_5),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
                             @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
 
             })
@@ -90,8 +92,8 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
                     @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
                     @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
-                    @Node(coordinates = @Loc(value = TEST_NODE_5)),
-                    @Node(coordinates = @Loc(value = TEST_NODE_6)), },
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
             // edges
             edges = {
                     // parts of roundabout
@@ -105,8 +107,8 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
                     // connected navigable edges
                     @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
-                            @Loc(value = TEST_NODE_6) }, tags = { "highway=tertiary" }),
-                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_5),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
                             @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
 
             })
@@ -166,8 +168,8 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
                     @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
                     @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
-                    @Node(coordinates = @Loc(value = TEST_NODE_5)),
-                    @Node(coordinates = @Loc(value = TEST_NODE_6)), },
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
             // edges
             edges = {
                     // parts of roundabout
@@ -181,12 +183,316 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
                     // connected not navigable edges
                     @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
-                            @Loc(value = TEST_NODE_6) }, tags = { "highway=footway" }),
-                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_5),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=footway" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
                             @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=path" }),
 
             })
     private Atlas closedWayNoIntersectionsWithNavigableEdges;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_6)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_7)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_8)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_9)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_3)), },
+            // edges
+            edges = {
+                    // parts of roundabout
+                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                            @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
+                            @Loc(value = TEST_NODE_VERTEX_5) }, tags = { "highway=primary" }),
+                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_5),
+                            @Loc(value = TEST_NODE_SHP_3), @Loc(value = TEST_NODE_SHP_4),
+                            @Loc(value = TEST_NODE_SHP_5), @Loc(value = TEST_NODE_SHP_6),
+                            @Loc(value = TEST_NODE_VERTEX_3), @Loc(value = TEST_NODE_SHP_7),
+                            @Loc(value = TEST_NODE_SHP_8), @Loc(value = TEST_NODE_SHP_9),
+                            @Loc(value = TEST_NODE_VERTEX_4), @Loc(value = TEST_NODE_SHP_10),
+                            @Loc(value = TEST_NODE_SHP_11), @Loc(value = TEST_NODE_SHP_12),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
+                    // connected navigable edges
+                    @Edge(id = "52340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_5),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "62340001", coordinates = { @Loc(value = TEST_NODE_3),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=secondary" }),
+
+            })
+    private Atlas turnLoop;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_6)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_7)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_8)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_9)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
+            // edges
+            edges = {
+                    // parts of roundabout
+                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                            @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
+                            @Loc(value = TEST_NODE_SHP_3),
+                            @Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=primary",
+                                    "foot=yes" }),
+                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_SHP_4), @Loc(value = TEST_NODE_SHP_5),
+                            @Loc(value = TEST_NODE_SHP_6),
+                            @Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=primary",
+                                    "foot=yes" }),
+                    @Edge(id = "12340003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
+                            @Loc(value = TEST_NODE_SHP_7), @Loc(value = TEST_NODE_SHP_8),
+                            @Loc(value = TEST_NODE_SHP_9),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=primary",
+                                    "foot=yes" }),
+                    @Edge(id = "12340004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
+                            @Loc(value = TEST_NODE_SHP_10), @Loc(value = TEST_NODE_SHP_11),
+                            @Loc(value = TEST_NODE_SHP_12),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary",
+                                    "foot=yes" }),
+                    // connected navigable edges
+                    @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+
+            })
+    private Atlas tagFilterTestFootYes;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_6)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_7)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_8)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_9)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
+            // edges
+            edges = {
+                    // parts of roundabout
+                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                            @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
+                            @Loc(value = TEST_NODE_SHP_3),
+                            @Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=primary",
+                                    "footway=sidewalk" }),
+                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_SHP_4), @Loc(value = TEST_NODE_SHP_5),
+                            @Loc(value = TEST_NODE_SHP_6),
+                            @Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=primary",
+                                    "footway=sidewalk" }),
+                    @Edge(id = "12340003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
+                            @Loc(value = TEST_NODE_SHP_7), @Loc(value = TEST_NODE_SHP_8),
+                            @Loc(value = TEST_NODE_SHP_9),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=primary",
+                                    "footway=sidewalk" }),
+                    @Edge(id = "12340004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
+                            @Loc(value = TEST_NODE_SHP_10), @Loc(value = TEST_NODE_SHP_11),
+                            @Loc(value = TEST_NODE_SHP_12),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary",
+                                    "footway=sidewalk" }),
+                    // connected navigable edges
+                    @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+
+            })
+    private Atlas tagFilterTestFootwayTag;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_6)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_7)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_8)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_9)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
+            // edges
+            edges = {
+                    // parts of roundabout
+                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                            @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
+                            @Loc(value = TEST_NODE_SHP_3),
+                            @Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=residential",
+                                    "motor_vehicle=no" }),
+                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_SHP_4), @Loc(value = TEST_NODE_SHP_5),
+                            @Loc(value = TEST_NODE_SHP_6),
+                            @Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=residential",
+                                    "motor_vehicle=no" }),
+                    @Edge(id = "12340003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
+                            @Loc(value = TEST_NODE_SHP_7), @Loc(value = TEST_NODE_SHP_8),
+                            @Loc(value = TEST_NODE_SHP_9),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=residential",
+                                    "motor_vehicle=no" }),
+                    @Edge(id = "12340004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
+                            @Loc(value = TEST_NODE_SHP_10), @Loc(value = TEST_NODE_SHP_11),
+                            @Loc(value = TEST_NODE_SHP_12),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=residential",
+                                    "motor_vehicle=no" }),
+                    // connected navigable edges
+                    @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+
+            })
+    private Atlas tagFilterTestMotorVehicleNo;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_6)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_7)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_8)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_9)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
+            // edges
+            edges = {
+                    // parts of roundabout
+                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                            @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
+                            @Loc(value = TEST_NODE_SHP_3),
+                            @Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=residential",
+                                    "access=private" }),
+                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_SHP_4), @Loc(value = TEST_NODE_SHP_5),
+                            @Loc(value = TEST_NODE_SHP_6),
+                            @Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=residential",
+                                    "access=private" }),
+                    @Edge(id = "12340003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
+                            @Loc(value = TEST_NODE_SHP_7), @Loc(value = TEST_NODE_SHP_8),
+                            @Loc(value = TEST_NODE_SHP_9),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=residential",
+                                    "access=private" }),
+                    @Edge(id = "12340004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
+                            @Loc(value = TEST_NODE_SHP_10), @Loc(value = TEST_NODE_SHP_11),
+                            @Loc(value = TEST_NODE_SHP_12),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=residential",
+                                    "access=private" }),
+                    // connected navigable edges
+                    @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+
+            })
+    private Atlas tagFilterTestAccessPrivate;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_VERTEX_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_2)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_3)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_4)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_5)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_6)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_7)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_8)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_9)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_10)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_11)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_SHP_12)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(coordinates = @Loc(value = TEST_NODE_2)), },
+            // edges
+            edges = {
+                    // parts of roundabout
+                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                            @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
+                            @Loc(value = TEST_NODE_SHP_3),
+                            @Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=residential",
+                                    "construction=any" }),
+                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_SHP_4), @Loc(value = TEST_NODE_SHP_5),
+                            @Loc(value = TEST_NODE_SHP_6),
+                            @Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=residential",
+                                    "construction=any" }),
+                    @Edge(id = "12340003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
+                            @Loc(value = TEST_NODE_SHP_7), @Loc(value = TEST_NODE_SHP_8),
+                            @Loc(value = TEST_NODE_SHP_9),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=residential",
+                                    "construction=any" }),
+                    @Edge(id = "12340004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
+                            @Loc(value = TEST_NODE_SHP_10), @Loc(value = TEST_NODE_SHP_11),
+                            @Loc(value = TEST_NODE_SHP_12),
+                            @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=residential",
+                                    "construction=any" }),
+                    // connected navigable edges
+                    @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
+                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
+                            @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
+
+            })
+    private Atlas tagFilterTestConstruction;
 
     public Atlas closedWayMalformedShape()
     {
@@ -216,6 +522,36 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
     public Atlas reversedEdge()
     {
         return this.reversedEdge;
+    }
+
+    public Atlas tagFilterTestAccessPrivate()
+    {
+        return this.tagFilterTestAccessPrivate;
+    }
+
+    public Atlas tagFilterTestConstruction()
+    {
+        return this.tagFilterTestConstruction;
+    }
+
+    public Atlas tagFilterTestFootYes()
+    {
+        return this.tagFilterTestFootYes;
+    }
+
+    public Atlas tagFilterTestFootwayTag()
+    {
+        return this.tagFilterTestFootwayTag;
+    }
+
+    public Atlas tagFilterTestMotorVehicleNo()
+    {
+        return this.tagFilterTestMotorVehicleNo;
+    }
+
+    public Atlas turnLoop()
+    {
+        return this.turnLoop;
     }
 
     public Atlas unClosedWay()

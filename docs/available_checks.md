@@ -36,6 +36,7 @@ This document is a list of tables with a description and link to documentation f
 | [SingleSegmentMotorwayCheck](checks/singleSegmentMotorwayCheck.md) | The purpose of this check is to identify ways tagged with highway=motorway that are not connected to any ways tagged the same. |
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
+| [SuddenHighwayTypeChangeCheck](checks/suddenHighwayTypeChangeCheck.md) | The purpose of this check is to identify roads that jump to much different highway classifications. |
 | UnwalkableWaysCheck | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
 | ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
 
@@ -44,8 +45,9 @@ This document is a list of tables with a description and link to documentation f
 | :--------- | :---------------- |
 | BigNodeBadDataCheck | The purpose of this check is to flag any BigNodes that have may have some bad data. |
 | ConnectivityCheck | This check identifies nodes that should be connected to nearby nodes or edges. |
-| [DuplicateNodeCheck](docs/checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
+| [DuplicateNodeCheck](checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
 | [InvalidMiniRoundaboutCheck](checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
+| [LevelCrossingOnRailwayCheck](checks/LevelCrossingOnRailwayCheck.md) | This check identifies incorrectly tagged or missing nodes at railway/highway intersections. |
 | NodeValenceCheck | This check identifies nodes with too many connections. |
 | [OrphanNodeCheck](tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
 
@@ -72,6 +74,7 @@ This document is a list of tables with a description and link to documentation f
 | [BridgeDetailedInfoCheck](checks/bridgeDetailedInfoCheck.md) | The purpose of this check is to identify prominent bridges with unspecified type or structure. |
 | [ConflictingAreaTagCombination](checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
+| [ConstructionCheck](checks/constructionCheck.md) | The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or the expected finish date has been passed. |
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
 | [InvalidAccessTagCheck](checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |
@@ -82,6 +85,7 @@ This document is a list of tables with a description and link to documentation f
 | [RoadNameSpellingConsistencyCheck](checks/RoadNameSpellingConsistencyCheck.md) | The purpose of this check is to identify road segments that have a name Tag with a different spelling from that of other segments of the same road. This check is primarily meant to catch small errors in spelling, such as a missing letter, letter accent mixups, or capitalization errors. |
 | ShortNameCheck | The short name check will validate that any and all names contain at least 2 letters in the name. |
 | [StreetNameIntegersOnlyCheck](checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
+| [TunnelBridgeHeightLimitCheck](checks/tunnelBridgeHeightLimitCheck.md) | The purpose of this check is to identify roads with limited vertical clearance which do not have a maxheight tag. |
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
 | [ConditionalRestrictionCheck](checks/conditionalRestrictionCheck.md) | The purpose of this check is to identify elements that have a :conditional tag that does not respect the established format. |
 

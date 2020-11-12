@@ -1,0 +1,18 @@
+{
+  "filters": [
+    "junction->*&junction->!yes&highway->!",
+    "oneway->*&highway->!&railway->!&aerialway->!&waterway->!&aeroway->!&piste:type->!",
+    "highway->!&disused:highway->!&abandoned:highway->!&construction:highway->!&proposed:highway->!&planned:highway->!&leisure->!track&tracktype->*||lanes->*",
+    "highway->emergency_access_point&ref->!",
+    "footway->sidewalk&highway->!footway&highway->!path&highway->!construction",
+    "highway->motorway&ref->!&nat_ref->!&int_ref->!&noref->!"
+  ],
+  "instructions": [
+    "The element has a junction tag but no highway tag.",
+    "The element has a oneway tag but no highway tag.",
+    "The element is missing a highway tag.",
+    "The element is an emergency access point but has no ref tag.",
+    "The element is a footway=sidewalk but has no appropriate highway tag.",
+    "The element is a motorway but has no ref tag."
+  ]
+}

@@ -100,7 +100,7 @@ public class InvalidSignBoardRelationCheck extends BaseCheck<Long>
 
         // If the from route doesn't meet the to way, this is invalid
         if (!fromRouteAndReasons.getSecond().flatMap(fromRoute -> toRouteAndReasons.getSecond()
-                .map(toRoute -> fromAndToMeet(fromRoute, toRoute))).orElse(false))
+                .map(toRoute -> this.fromAndToMeet(fromRoute, toRoute))).orElse(false))
         {
             instructions.add(this.getLocalizedInstruction(FROM_TO_NO_MEETING_INDEX));
         }

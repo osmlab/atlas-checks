@@ -23,7 +23,10 @@ Our first goal is to validate the incoming Atlas Object.
 * Must be car navigable
 * Must have not `junction` and `area` tag
 * Must be a closed way [OSM-wiki:Closed Way](https://wiki.openstreetmap.org/wiki/Item:Q4669)
-* Must intersect at minimum with two navigable ways 
+* Must intersect at minimum with two navigable ways
+* Must not be Turning Circle [OSM-wiki:turning_circle](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dturning_circle) nor Turning Loop [OSM-wiki:turning_loop](https://wiki.openstreetmap.org/wiki/Tag:highway%3Dturning_loop)   
+
+Our second goal is to exclude pedestrian, private and under construction edges with "tags.filter" 
 
 After the preliminary filtering of features we need to rebuild original OSM way geometry.
 Ones we have rebuilt the geometry, we will measure angles between each [Nodes](https://wiki.openstreetmap.org/wiki/Node)

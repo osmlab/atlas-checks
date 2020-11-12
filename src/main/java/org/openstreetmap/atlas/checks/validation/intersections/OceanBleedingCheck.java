@@ -142,7 +142,7 @@ public class OceanBleedingCheck extends BaseCheck<Long>
             // feature
             final Iterable<LineItem> intersectingLinearFeatures = object.getAtlas()
                     .lineItemsIntersecting(oceanBoundary,
-                            isInvalidlyInteractingWithOcean(oceanBoundary));
+                            this.isInvalidlyInteractingWithOcean(oceanBoundary));
             final Iterable<Area> intersectingBuildingFeatures = object.getAtlas()
                     .areasIntersecting(oceanBoundary, BuildingTag::isBuilding);
             intersectingLinearFeatures.forEach(offendingLineItems::add);
@@ -157,9 +157,9 @@ public class OceanBleedingCheck extends BaseCheck<Long>
                             && !oceanBoundary.fullyGeometricallyEncloses(lineItem.asPolyLine())
                             || object instanceof LineItem && ((LineItem) object).asPolyLine()
                                     .intersects(lineItem.asPolyLine()))
-                            && isInvalidlyInteractingWithOcean(
+                            && this.isInvalidlyInteractingWithOcean(
                                     oceanIsArea ? oceanBoundary : ((LineItem) object).asPolyLine())
-                                            .test(lineItem));
+                                    .test(lineItem));
             final Iterable<Area> intersectingBuildingFeatures = object.getAtlas().areasIntersecting(
                     oceanBoundary,
                     area -> (oceanIsArea

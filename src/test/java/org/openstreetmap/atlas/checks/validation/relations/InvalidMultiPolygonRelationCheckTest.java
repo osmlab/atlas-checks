@@ -168,8 +168,10 @@ public class InvalidMultiPolygonRelationCheckTest
         this.verifier.verify(flag ->
         {
             final List<Location> openLocations = new ArrayList<>();
-            openLocations.add(Location.forString(InvalidMultiPolygonRelationCheckTestRule.ONE));
+            openLocations.add(Location.forString(InvalidMultiPolygonRelationCheckTestRule.TWO));
             openLocations.add(Location.forString(InvalidMultiPolygonRelationCheckTestRule.THREE));
+            openLocations.add(Location.forString(InvalidMultiPolygonRelationCheckTestRule.ONE));
+            openLocations.add(Location.forString(InvalidMultiPolygonRelationCheckTestRule.TWO));
             final Relation relation = this.setup.getAtlas().relation(Long.valueOf(
                     InvalidMultiPolygonRelationCheckTestRule.RELATION_ID_OPEN_MULTIPOLYGON));
             final Set<Long> memberIds = relation.members().stream()
@@ -192,6 +194,8 @@ public class InvalidMultiPolygonRelationCheckTest
                         InvalidMultiPolygonRelationCheck.CLOSED_LOOP_INSTRUCTION_FORMAT_INDEX,
                         39569L, Stream.of(39766L, 39565L).collect(Collectors.toSet()),
                         Arrays.asList(Location.forWkt("POINT (103.9145902 1.4119302)"),
+                                Location.forWkt("POINT (103.9462109 1.4263886)"),
+                                Location.forWkt("POINT (103.9462109 1.4263886)"),
                                 Location.forWkt("POINT (103.9256395 1.4483904)")))));
     }
 

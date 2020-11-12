@@ -1,5 +1,7 @@
-area:invalid-tags-check-filter.json
-relation:invalid-tags-check-filter.json
-line:invalid-tags-check-filter.json
-point:invalid-tags-check-filter.json
-node:invalid-tags-check-filter.json
+edge:invalid-tags-check-inconsistent-highway-filter.json
+area:invalid-tags-check-regex-filter.json
+relation:invalid-tags-check-regex-filter.json
+line:invalid-tags-check-regex-filter.json
+point:invalid-tags-check-regex-filter.json
+node:invalid-tags-check-regex-filter.json
+edge:invalid-tags-check-regex-filter.json

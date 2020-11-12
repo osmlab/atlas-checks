@@ -18,14 +18,14 @@ import com.google.gson.JsonObject;
  */
 public abstract class FlaggedObject implements Serializable, Located
 {
+    public static final String ITEM_IDENTIFIER_TAG = "identifier";
+    public static final String ITEM_TYPE_TAG = "itemType";
+    public static final String OSM_IDENTIFIER_TAG = "osmIdentifier";
     protected static final String AREA_TAG = "Area";
     protected static final String COUNTRY_MISSING = "NA";
     protected static final String EDGE_TAG = "Edge";
-    protected static final String ITEM_IDENTIFIER_TAG = "identifier";
-    protected static final String ITEM_TYPE_TAG = "itemType";
     protected static final String LINE_TAG = "Line";
     protected static final String NODE_TAG = "Node";
-    protected static final String OSM_IDENTIFIER_TAG = "osmIdentifier";
     protected static final String POINT_TAG = "Point";
     private static final long serialVersionUID = -2898518269816777421L;
 
@@ -82,12 +82,18 @@ public abstract class FlaggedObject implements Serializable, Located
      */
     public abstract Map<String, String> getProperties();
 
+    public String getUniqueIdentifier()
+    {
+        return this.getProperties().get(FlaggedObject.ITEM_TYPE_TAG)
+                + this.getProperties().get(FlaggedObject.ITEM_IDENTIFIER_TAG);
+    }
+
     /**
      * @return {@code true} if the flagged object has a country code property
      */
     public boolean hasCountry()
     {
-        return !getCountry().equals(COUNTRY_MISSING);
+        return !this.getCountry().equals(COUNTRY_MISSING);
     }
 
     @Override

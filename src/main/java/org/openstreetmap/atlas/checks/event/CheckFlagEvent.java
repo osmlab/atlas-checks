@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.flag.FlaggedObject;
@@ -34,7 +35,8 @@ import com.google.gson.JsonPrimitive;
  * Wraps a {@link CheckFlag} for submission to the
  * {@link org.openstreetmap.atlas.event.EventService} for handling {@link Check} results
  *
- * @author mkalender, bbreithaupt
+ * @author mkalender
+ * @author bbreithaupt
  */
 public final class CheckFlagEvent extends Event
 {
@@ -43,8 +45,9 @@ public final class CheckFlagEvent extends Event
     private static final String GEOMETRIES = "geometries";
     private static final String FEATURES = "features";
     private static final String FEATURE_COLLECTION = "FeatureCollection";
-    private static final String INSTRUCTIONS = "instructions";
-    private static final String IDENTIFIERS = "identifiers";
+    public static final String INSTRUCTIONS = "instructions";
+    public static final String IDENTIFIERS = "identifiers";
+    public static final String FIX_SUGGESTIONS = "fix_suggestions";
 
     private static final Gson GSON = new Gson();
 
@@ -149,6 +152,7 @@ public final class CheckFlagEvent extends Event
         flagProperties.add("feature_osmids", uniqueFeatureOsmIds);
         flagProperties.addProperty("feature_count", featureProperties.size());
         flagProperties.add(IDENTIFIERS, GSON.toJsonTree(flag.getUniqueIdentifiers()));
+        flagProperties.add(FIX_SUGGESTIONS, getFixSuggestionDescriptions(flag));
 
         feature.addProperty("id", flag.getIdentifier());
         feature.add("properties", flagProperties);
@@ -202,6 +206,10 @@ public final class CheckFlagEvent extends Event
 
         // Add properties to the previously generate geojson
         flagJson.add("properties", flagPropertiesJson);
+
+        // Add fix suggestions as their own foreign object in the geojson
+        flagJson.add(FIX_SUGGESTIONS, getFixSuggestionDescriptions(flag));
+
         return flagJson;
     }
 
@@ -233,6 +241,17 @@ public final class CheckFlagEvent extends Event
         }
         return Optional.ofNullable(highestHighwayTag)
                 .map(tag -> String.format("%s=%s", HighwayTag.KEY, tag.getTagValue()));
+    }
+
+    private static JsonObject getFixSuggestionDescriptions(final CheckFlag flag)
+    {
+        final JsonObject fixSuggestionObject = new JsonObject();
+        flag.getFixSuggestions()
+                .forEach(suggestion -> fixSuggestionObject.add(
+                        StringUtils.capitalize(suggestion.getItemType().toString().toLowerCase())
+                                + suggestion.getIdentifier(),
+                        suggestion.explain().toJsonElement()));
+        return fixSuggestionObject;
     }
 
     /**
@@ -342,7 +361,7 @@ public final class CheckFlagEvent extends Event
 
     public String asLineDelimitedGeoJsonFeatures()
     {
-        return asLineDelimitedGeoJsonFeatures(jsonObject ->
+        return this.asLineDelimitedGeoJsonFeatures(jsonObject ->
         {
         });
     }
@@ -352,8 +371,8 @@ public final class CheckFlagEvent extends Event
         final JsonObject flagGeoJsonFeature = this.flag.asGeoJsonFeature();
         final JsonObject flagGeoJsonProperties = flagGeoJsonFeature.get("properties")
                 .getAsJsonObject();
-        flagGeoJsonProperties.addProperty("flag:check", getCheckName());
-        flagGeoJsonProperties.addProperty("flag:timestamp", getTimestamp().toString());
+        flagGeoJsonProperties.addProperty("flag:check", this.getCheckName());
+        flagGeoJsonProperties.addProperty("flag:timestamp", this.getTimestamp().toString());
 
         jsonMutator.accept(flagGeoJsonFeature);
 

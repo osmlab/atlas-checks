@@ -23,6 +23,29 @@ public class InvalidTagsCheckTestRule extends CoreTestRule
     private static final String TEST_2 = "20.535768,10.543755";
     private static final String TEST_3 = "20.535773, 10.548353";
 
+    @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = TEST_1)),
+            @Node(id = "2000000", coordinates = @Loc(value = TEST_2)) }, edges = {
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=pedestrian",
+                                    "source=https://www.google.com/maps/d/viewer?mid1Ct1kHCSzB-VvPdK7vw3pPnXeifs",
+                                    "bicycle=yes" }) })
+    private Atlas illegalSourceLinkEdge;
+
+    @TestAtlas(nodes = {
+            @Node(id = "1000000", coordinates = @Loc(value = TEST_1), tags = {
+                    "source=Here maps" }),
+            @Node(id = "2000000", coordinates = @Loc(value = TEST_2), tags = {
+                    "source=Vworld" }) }, edges = {
+                            @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_1),
+                                    @Loc(value = TEST_2) }) })
+    private Atlas illegalSourceLinkNode;
+
+    @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = TEST_1)),
+            @Node(id = "2000000", coordinates = @Loc(value = TEST_2)) }, edges = {
+                    @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout" }) })
+    private Atlas inconsistentHighwayAtlas;
+
     @TestAtlas(
             // nodes
             nodes = {
@@ -58,6 +81,21 @@ public class InvalidTagsCheckTestRule extends CoreTestRule
                     @Relation(id = "8000000", members = @Member(id = "1000000", role = "member", type = "node"), tags = {
                             "boundary=protected_area" }) })
     private Atlas testAtlas;
+
+    public Atlas getIllegalSourceLinkEdge()
+    {
+        return this.illegalSourceLinkEdge;
+    }
+
+    public Atlas getIllegalSourceLinkNode()
+    {
+        return this.illegalSourceLinkNode;
+    }
+
+    public Atlas getInconsistentHighwayAtlas()
+    {
+        return this.inconsistentHighwayAtlas;
+    }
 
     public Atlas testAtlas()
     {

@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.flag;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,8 +56,8 @@ public class FlaggedPolyline extends FlaggedObject
         {
             this.polyLine = new PolyLine(atlasItem.getRawGeometry());
         }
-        this.properties = initProperties(atlasItem);
-        this.country = initCountry(atlasItem);
+        this.properties = this.initProperties(atlasItem);
+        this.country = this.initCountry(atlasItem);
     }
 
     @Override
@@ -129,7 +130,7 @@ public class FlaggedPolyline extends FlaggedObject
 
     private Map<String, String> initProperties(final AtlasObject object)
     {
-        final Map<String, String> tags = object.getTags();
+        final Map<String, String> tags = new HashMap<>(object.getTags());
         tags.put(ITEM_IDENTIFIER_TAG, object.getIdentifier() + "");
         tags.put(OSM_IDENTIFIER_TAG, object.getOsmIdentifier() + "");
         if (object instanceof Area)
