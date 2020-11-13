@@ -16,6 +16,6 @@ setup(name='pyatlas_checks',
       install_requires=["Click"],
       entry_points='''
             [console_scripts]
-            pyatlas=pyatlas_checks.cli.cli:cli
+            pyatlas=pyatlas_checks.cli:cli
       '''
       )
