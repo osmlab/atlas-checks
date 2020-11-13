@@ -11,6 +11,9 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
@@ -28,7 +31,7 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  * Flags edges that are closed and round shaped without junction=roundabout tag and have minimum of
  * two intersections with navigable roads {@link RoundaboutMissingTagCheck#MINIMUM_INTERSECTION}
  * connections. See https://wiki.openstreetmap.org/wiki/Tag:junction%3Droundabout for more
- * information about roundabouts
+ * information about roundabouts. This check is AutoFix Candidate.
  *
  * @author vladlemberg
  */
@@ -110,9 +113,15 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
 
         if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
         {
-            this.markAsFlagged(object.getOsmIdentifier());
-            return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
-                    this.getLocalizedInstruction(0)));
+            // AutoFix candidate: proposing add junction=roundabout tag
+            return Optional.of(this
+                    .createFlag(new OsmWayWalker(edge).collectEdges(),
+                            this.getLocalizedInstruction(0, object.getOsmIdentifier()))
+                    .addFixSuggestion(FeatureChange.add(
+                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                    .from((AtlasEntity) object)).withAddedTag(JunctionTag.KEY,
+                                            JunctionTag.ROUNDABOUT.name().toLowerCase()),
+                            object.getAtlas())));
         }
 
         return Optional.empty();
