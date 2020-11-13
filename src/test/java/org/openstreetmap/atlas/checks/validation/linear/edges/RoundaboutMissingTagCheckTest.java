@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -22,6 +23,11 @@ public class RoundaboutMissingTagCheckTest
 
     private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
             "{\"RoundaboutMissingTagCheck\":{\"ignore.tags.filter\":\"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!\"}}");
+
+    private static void verifyFixSuggestions(final CheckFlag flag, final int count)
+    {
+        Assert.assertEquals(count, flag.getFixSuggestions().size());
+    }
 
     @Test
     public void closedWayMalformedShape()
@@ -45,6 +51,7 @@ public class RoundaboutMissingTagCheckTest
         this.verifier.actual(this.setup.closedWayRoundShape(),
                 new RoundaboutMissingTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
     }
 
     @Test
