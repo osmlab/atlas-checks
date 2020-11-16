@@ -154,7 +154,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         // get timeout
         @SuppressWarnings("unchecked")
         final Optional<Long> alternateMaxPoolMinutes = (Optional<Long>) commandMap
-                .getOption(MAXPOOLMINUTES);
+                .getOption(MAX_POOL_MINUTES);
         final Duration maxPoolDuration = Duration
                 .minutes(alternateMaxPoolMinutes.orElse(POOL_MINUTES_BEFORE_KILL));
 
