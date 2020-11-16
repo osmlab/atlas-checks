@@ -18,3 +18,7 @@ def test_command(ctx, test_string):
     verbose = ctx.obj['verbose']
     command = TestCommand(test_string)
     command.run()
+
+
+if __name__ == '__main__':
+    cli()
