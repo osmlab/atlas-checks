@@ -16,7 +16,7 @@ from botocore.exceptions import ClientError
 from paramiko.auth_handler import AuthenticationException
 
 
-VERSION = "0.2.0"
+VERSION = "0.1.0"
 ec2 = boto3.client("ec2")
 
 
@@ -60,7 +60,6 @@ class CloudAtlasChecksControl:
         formats="flags",
         countries="",
         s3InFolder=None,
-        s3fsMount=False,
         s3OutFolder=None,
         terminate=False,
         templateName="atlas_checks-ec2-template",
@@ -70,7 +69,6 @@ class CloudAtlasChecksControl:
         self.key = key
         self.instanceId = instanceId
         self.s3InFolder = s3InFolder
-        self.s3fsMount = s3fsMount
         self.processes = processes
         self.memory = memory
         self.formats = formats
@@ -122,7 +120,7 @@ class CloudAtlasChecksControl:
             if self.ssh_cmd("rm -f {}/_*".format(self.atlasOutDir)):
                 finish("Unable to clean up old status files", -1)
 
-            # prepare the local s3 folder
+            # mount the s3 bucket
             cmd = "mount |grep ~/{}".format(self.s3InBucket)
             if not self.ssh_cmd(cmd, quiet=True):
                 cmd = "sudo umount ~/{}".format(self.s3InBucket)
@@ -133,37 +131,11 @@ class CloudAtlasChecksControl:
                 if self.ssh_cmd(cmd):
                     finish("Unable to create directory {}".format(cmd), -1)
 
-            if self.s3fsMount:
-                # mount the s3 bucket to the local directory
-                cmd = "s3fs {0} ~/{0} -o ro,umask=222,gid=1000,uid=1000 -o use_cache=/tmp/atlas/ -o iam_role=auto".format(
-                    self.s3InBucket
-                )
-                if self.ssh_cmd(cmd):
-                    finish("Unable to mount S3 bucket", -1)
-            else:
-                # sync the country folders to the local directory
-                for c in list(self.countries.split(",")):
-                    logger.info("syncing {}".format(c))
-                    if self.ssh_cmd(
-                        "aws s3 sync --only-show-errors s3://{0}{1} {2}{1}".format(
-                            self.s3InFolder, c, self.atlasInDir
-                        )
-                    ):
-                        finish(
-                            "Failed to sync S3://{}/{}".format(self.s3InFolder, c), -1
-                        )
-                if self.ssh_cmd(
-                    "aws s3 cp s3://{}sharding.txt {}sharding.txt".format(
-                        self.s3InFolder, self.atlasInDir
-                    )
-                ):
-                    finish("Failed to copy sharding.txt", -1)
-                if self.ssh_cmd(
-                    "aws s3 cp s3://{} {}".format(
-                        self.atlasConfig, os.path.join(self.homeDir, self.atlasConfig)
-                    )
-                ):
-                    finish("Failed to copy config S3://{}".format(self.atlasConfig), -1)
+            cmd = "s3fs {0} ~/{0} -o ro,umask=222,gid=1000,uid=1000 -o use_cache=/tmp/atlas/ -o iam_role=auto".format(
+                self.s3InBucket
+            )
+            if self.ssh_cmd(cmd):
+                finish("Unable to mount S3 bucket", -1)
 
             atlasConfig = self.atlasConfig
             # if configuration.json is a file then copy it to the EC2 instance
@@ -176,21 +148,18 @@ class CloudAtlasChecksControl:
                 + " --master=local[{}]".format(self.processes)
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
-                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar"
+                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-6.1.3-SNAPSHOT-shadow.jar"
                 + " -inputFolder='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
                 + " -countries='{}'".format(self.countries)
                 + " -configFiles='{}'".format(atlasConfig)
-                + " -maxPoolMinutes=2880"
                 + " > {} 2>&1 &".format(self.atlasCheckLog)
             )
 
             logger.info("Submitting spark job: {}".format(cmd))
             if self.ssh_cmd(cmd):
                 finish("Unable to execute spark job", -1)
-            # make sure spark job has started before checking for completion
-            time.sleep(5)
         else:
             logger.info("Detected a running atlas check spark job.")
 
@@ -200,6 +169,8 @@ class CloudAtlasChecksControl:
                 "Timeout waiting for script to complete. TODO - instructions to reconnect.",
                 -1,
             )
+        # download log
+        self.get_files(self.atlasCheckLog, "./")
 
         self.sync()
 
@@ -223,7 +194,7 @@ class CloudAtlasChecksControl:
         )
 
         # push output to s3
-        cmd = "aws s3 sync --only-show-errors --exclude *.crc {} s3://{} ".format(
+        cmd = "aws s3 sync --exclude *.crc {} s3://{} ".format(
             self.atlasOutDir, self.s3OutFolder
         )
         if self.ssh_cmd(cmd):
@@ -542,11 +513,6 @@ def parse_args(cloudctl):
         help="Out - The S3 Output directory. (e.g. '--out=atlas-bucket/atlas-checks/output')",
     )
     parser_check.add_argument(
-        "--mount",
-        default=False,
-        help="Flag to indicate if s3fs should be used to mount input directory. (Default: False)",
-    )
-    parser_check.add_argument(
         "-i",
         "--input",
         required=True,
@@ -654,8 +620,6 @@ def evaluate(args, cloudctl):
         cloudctl.timeoutMinutes = args.minutes
     if hasattr(args, "input") and args.input is not None:
         cloudctl.s3InFolder = args.input
-    if hasattr(args, "mount") and args.mount is not None:
-        cloudctl.s3fsMount = args.mount
     if hasattr(args, "processes") and args.processes is not None:
         cloudctl.processes = args.processes
     if hasattr(args, "key") and args.key is not None:
