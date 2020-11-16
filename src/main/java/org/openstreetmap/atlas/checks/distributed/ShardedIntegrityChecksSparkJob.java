@@ -48,6 +48,7 @@ import org.openstreetmap.atlas.utilities.filters.AtlasEntityPolygonsFilter;
 import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.openstreetmap.atlas.utilities.threads.Pool;
 import org.openstreetmap.atlas.utilities.time.Time;
 import org.slf4j.Logger;
@@ -84,6 +85,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             "If true then use a multi atlas, else use a dynamic atlas. This works better for running on a single machine",
             Boolean::getBoolean, Optionality.OPTIONAL, "false");
 
+    private static final Long POOL_MINUTES_BEFORE_KILL = 1440L;
     private static final Logger logger = LoggerFactory
             .getLogger(ShardedIntegrityChecksSparkJob.class);
     private static final long serialVersionUID = -8038802870994470017L;
@@ -149,6 +151,13 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Broadcast<Sharding> shardingBroadcast = this.getContext().broadcast(sharding);
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
 
+        // get timeout
+        @SuppressWarnings("unchecked")
+        final Optional<Long> alternateMaxPoolMinutes = (Optional<Long>) commandMap
+                .getOption(MAXPOOLMINUTES);
+        final Duration maxPoolDuration = Duration
+                .minutes(alternateMaxPoolMinutes.orElse(POOL_MINUTES_BEFORE_KILL));
+
         // Check inputs
         if (countries.isEmpty())
         {
@@ -190,7 +199,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         }
 
         // Countrify spark parallelization for better debugging
-        try (Pool checkPool = new Pool(countryShards.size(), "Countries Execution Pool"))
+        logger.info("Allocating Pool with max execution time set to: {}", maxPoolDuration);
+        try (Pool checkPool = new Pool(countryShards.size(), "Countries Execution Pool",
+                maxPoolDuration))
         {
             for (final Map.Entry<String, List<Shard>> countryShard : countryShards.entrySet())
             {

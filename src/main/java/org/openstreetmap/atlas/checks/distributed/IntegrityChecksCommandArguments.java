@@ -74,6 +74,8 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
             value -> StringList.split(value, CommonConstants.COMMA), Optionality.OPTIONAL);
     static final Switch<String> CONFIGURATION_JSON = new Switch<>("configJson",
             "Json formatted configuration.", StringConverter.IDENTITY, Optionality.OPTIONAL);
+    static final Switch<Long> MAXPOOLMINUTES = new Switch<>("maxPoolMinutes",
+            "Maximum number of minutes for pool duration.", Long::valueOf, Optionality.OPTIONAL);
     static final Switch<String> COUNTRIES = new Switch<>("countries",
             "Comma-separated list of country ISO3 codes to be processed", StringConverter.IDENTITY,
             Optionality.REQUIRED);
@@ -193,6 +195,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     {
         return super.switches().with(ATLAS_FOLDER, MAP_ROULETTE, COUNTRIES, CONFIGURATION_FILES,
                 CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS,
-                CHECK_FILTER);
+                CHECK_FILTER, MAXPOOLMINUTES);
     }
 }

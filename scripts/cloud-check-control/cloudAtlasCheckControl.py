@@ -154,6 +154,7 @@ class CloudAtlasChecksControl:
                 + " -outputFormats='{}'".format(self.formats)
                 + " -countries='{}'".format(self.countries)
                 + " -configFiles='{}'".format(atlasConfig)
+                + " -maxPoolMinutes=2880"
                 + " > {} 2>&1 &".format(self.atlasCheckLog)
             )
 
