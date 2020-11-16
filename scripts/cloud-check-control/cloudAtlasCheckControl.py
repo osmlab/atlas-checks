@@ -285,6 +285,7 @@ class CloudAtlasChecksControl:
             + " -checkinComment='#AtlasChecks'"
             + " -countries='{}'".format(self.countries)
             + " -checks='{}'".format(self.checks)
+            + " -includeFixSuggestions=true"
         )
 
         logger.info("Starting mr upload: {}".format(cmd))
