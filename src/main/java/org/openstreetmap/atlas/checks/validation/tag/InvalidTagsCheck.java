@@ -55,63 +55,17 @@ import com.google.gson.JsonParser;
 public class InvalidTagsCheck extends BaseCheck<String>
 {
 
+    public static final int INLINE_REGEX_FILTER_SIZE = 3;
     private static final long serialVersionUID = 5150282147895785829L;
     private static final String KEY_VALUE_SEPARATOR = "->";
     private static final String DEFAULT_FILTER_RESOURCE = "invalidTags.txt";
-    private static final List<String> FALLBACK_INSTRUCTIONS = new ArrayList<>();
     private static final String DEFAULT_NR_TAGS_INSTRUCTION = "OSM feature {0,number,#} has invalid tags.";
     private static final String DEFAULT_INSTRUCTION = "Check the following tags for missing, conflicting, or incorrect values: {0}";
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
-    public static final int INLINE_REGEX_FILTER_SIZE = 3;
     private static final String REGEX = "regex";
     private static final int REGEX_INSTRUCTION_INDEX = 3;
-
+    private final List<String> fallbackInstructions = new ArrayList<>();
     private final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> classTagFilters;
-
-    private static int addInstruction(final String instruction)
-    {
-        if (Objects.nonNull(instruction) && !instruction.isEmpty())
-        {
-            FALLBACK_INSTRUCTIONS.add(instruction);
-            return FALLBACK_INSTRUCTIONS.size() - 1;
-        }
-        return 1;
-    }
-
-    /**
-     * @return a List of Tuple containing AtlasEntity and a list of Tuple containing either a
-     *         TaggableFilters or a RegexTaggableFilters with the index of the associated
-     *         instruction read from the json files of each AtlasEntity. DEFAULT_FILTER_RESOURCE
-     *         file maps each AtlasEntity to its corresponding filter files. The RegexTaggableFilter
-     *         file must contain the word regex in it's naming. ex. bad-source-regex-filter.json
-     */
-    private static List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> getDefaultFilters()
-    {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                InvalidTagsCheck.class.getResourceAsStream(DEFAULT_FILTER_RESOURCE))))
-        {
-            final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> listOfClassToFilters = new ArrayList<>();
-            String line;
-            while ((line = reader.readLine()) != null)
-            {
-                final String[] split = line.split(COLON);
-                if (split.length >= 2)
-                {
-                    final List<Tuple<? extends Predicate<Taggable>, Integer>> filters = split[1]
-                            .contains(REGEX) ? getRegexFiltersFromResource(split[1])
-                                    : getFiltersFromResource(split[1]);
-                    listOfClassToFilters.add(new Tuple<>(
-                            ItemType.valueOf(split[0].toUpperCase()).getMemberClass(), filters));
-                }
-            }
-            return listOfClassToFilters;
-        }
-        catch (final IOException exception)
-        {
-            logger.error(String.format("Could not read %s", DEFAULT_FILTER_RESOURCE), exception);
-            return Collections.emptyList();
-        }
-    }
 
     /**
      * Gathers the keys from a {@link TaggableFilter} using regex.
@@ -127,121 +81,10 @@ public class InvalidTagsCheck extends BaseCheck<String>
                 .map(tag -> tag.split(KEY_VALUE_SEPARATOR)[0]).collect(Collectors.toSet());
     }
 
-    /**
-     * Read the json file and return a list of TaggableFilter associated with instructions for each
-     * line.
-     *
-     * @param filterResourcePath
-     *            file path
-     * @return list of Tuple containing TaggableFilter and instruction
-     */
-    private static List<Tuple<? extends Predicate<Taggable>, Integer>> getFiltersFromResource(
-            final String filterResourcePath)
-    {
-        try (InputStreamReader reader = new InputStreamReader(
-                InvalidTagsCheck.class.getResourceAsStream(filterResourcePath)))
-        {
-            final List<Tuple<? extends Predicate<Taggable>, Integer>> result = new ArrayList<>();
-            final JsonElement element = new JsonParser().parse(reader);
-            final JsonArray filters = element.getAsJsonObject().get("filters").getAsJsonArray();
-            final List<TaggableFilter> taggableFilters = StreamSupport
-                    .stream(filters.spliterator(), false)
-                    .map(jsonElement -> TaggableFilter.forDefinition(jsonElement.getAsString()))
-                    .collect(Collectors.toList());
-            final JsonArray instructionsArray = element.getAsJsonObject().get("instructions")
-                    .getAsJsonArray();
-            final List<String> instructions = StreamSupport
-                    .stream(instructionsArray.spliterator(), false).map(JsonElement::getAsString)
-                    .collect(Collectors.toList());
-            for (int i = 0; i < taggableFilters.size(); i++)
-            {
-                final String instruction = i < instructions.size() ? instructions.get(i) : "";
-                final int instructionIndex = addInstruction(instruction);
-                result.add(Tuple.createTuple(taggableFilters.get(i), instructionIndex));
-            }
-            return result;
-
-        }
-        catch (final Exception exception)
-        {
-            logger.error(
-                    "There was a problem parsing invalid-tags-check-inconsistent-highway-filter.json. "
-                            + "Check if the JSON file has valid structure.",
-                    exception);
-            return Collections.emptyList();
-        }
-    }
-
-    private static List<Tuple<? extends Predicate<Taggable>, Integer>> getRegexFiltersFromResource(
-            final String filterResourcePath)
-    {
-        try (InputStreamReader reader = new InputStreamReader(
-                InvalidTagsCheck.class.getResourceAsStream(filterResourcePath)))
-        {
-            final JsonElement element = new JsonParser().parse(reader);
-            final JsonArray filters = element.getAsJsonObject().get("filters").getAsJsonArray();
-            return StreamSupport.stream(filters.spliterator(), false)
-                    .map(JsonElement::getAsJsonObject).map(jsonObject ->
-                    {
-                        final Set<String> tagNames = getSetFromJsonArray(
-                                jsonObject.getAsJsonArray("tagNames"));
-                        final Set<String> regex = getSetFromJsonArray(
-                                jsonObject.getAsJsonArray(REGEX));
-                        final JsonArray exceptionArray = jsonObject.getAsJsonArray("exceptions");
-                        final HashMap<String, Set<String>> exceptions = new HashMap<>();
-                        StreamSupport.stream(exceptionArray.spliterator(), false)
-                                .map(JsonElement::getAsJsonObject).forEach(exception ->
-                                {
-                                    final String tagName = exception.get("tagName").getAsString();
-                                    final Set<String> values = getSetFromJsonArray(
-                                            exception.getAsJsonArray("values"));
-                                    exceptions.putIfAbsent(tagName, values);
-                                });
-                        final RegexTaggableFilter filter = new RegexTaggableFilter(tagNames, regex,
-                                exceptions);
-                        final String instruction = jsonObject.get("instruction").getAsString();
-                        final int instructionIndex = addInstruction(instruction);
-                        return Tuple.createTuple(filter, instructionIndex);
-                    }).collect(Collectors.toList());
-        }
-        catch (final Exception exception)
-        {
-            logger.error(
-                    "There was a problem parsing {}. Check if the JSON file has valid structure.",
-                    filterResourcePath, exception);
-            return Collections.emptyList();
-        }
-    }
-
     private static Set<String> getSetFromJsonArray(final JsonArray array)
     {
         return StreamSupport.stream(array.spliterator(), false).map(JsonElement::getAsString)
                 .collect(Collectors.toSet());
-    }
-
-    /**
-     * Convert a {@link String} of comma delimited {@link AtlasEntity} class names and a
-     * {@link String} {@link TaggableFilter} to a {@link Set} of {@link AtlasEntity} {@link Class}ed
-     * and {@link TaggableFilter}.
-     *
-     * @param classString
-     *            A {@link String} of comma delimited {@link AtlasEntity} class names
-     * @param tagFilterString
-     *            A {@link String} {@link TaggableFilter} definition
-     * @param instruction
-     *            A {@link String} representing a specific instruction for the filter
-     * @return A {@link Tuple} of a {@link Set} of {@link AtlasEntity} {@link Class}es and a
-     *         {@link TaggableFilter}
-     */
-    private static Tuple<? extends Class<AtlasEntity>, List<Tuple<TaggableFilter, Integer>>> stringsToClassTagFilter(
-            final String classString, final String tagFilterString, final String instruction)
-    {
-        final int instructionIndex = addInstruction(instruction);
-        final List<Tuple<TaggableFilter, Integer>> filters = new ArrayList<>();
-        filters.add(
-                Tuple.createTuple(TaggableFilter.forDefinition(tagFilterString), instructionIndex));
-        return Tuple.createTuple(ItemType.valueOf(classString.toUpperCase()).getMemberClass(),
-                filters);
     }
 
     /**
@@ -255,8 +98,8 @@ public class InvalidTagsCheck extends BaseCheck<String>
     public InvalidTagsCheck(final Configuration configuration)
     {
         super(configuration);
-        FALLBACK_INSTRUCTIONS.add(DEFAULT_NR_TAGS_INSTRUCTION);
-        FALLBACK_INSTRUCTIONS.add(DEFAULT_INSTRUCTION);
+        this.fallbackInstructions.add(DEFAULT_NR_TAGS_INSTRUCTION);
+        this.fallbackInstructions.add(DEFAULT_INSTRUCTION);
         final boolean overrideResourceFilters = this.configurationValue(configuration,
                 "filters.resource.override", false);
         // If the "filters.resource.override" key in the config is set to true, use only the filters
@@ -269,7 +112,8 @@ public class InvalidTagsCheck extends BaseCheck<String>
         // is set to true
         else
         {
-            final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> defaultFilters = getDefaultFilters();
+            final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> defaultFilters = this
+                    .getDefaultFilters();
             // Add all filters from the config file to the default list of filters
             defaultFilters.addAll(this.getFiltersFromConfiguration(configuration));
             this.classTagFilters = defaultFilters;
@@ -343,7 +187,52 @@ public class InvalidTagsCheck extends BaseCheck<String>
     @Override
     protected List<String> getFallbackInstructions()
     {
-        return FALLBACK_INSTRUCTIONS;
+        return this.fallbackInstructions;
+    }
+
+    private int addInstruction(final String instruction)
+    {
+        if (Objects.nonNull(instruction) && !instruction.isEmpty())
+        {
+            this.fallbackInstructions.add(instruction);
+            return this.fallbackInstructions.size() - 1;
+        }
+        return 1;
+    }
+
+    /**
+     * @return a List of Tuple containing AtlasEntity and a list of Tuple containing either a
+     *         TaggableFilters or a RegexTaggableFilters with the index of the associated
+     *         instruction read from the json files of each AtlasEntity. DEFAULT_FILTER_RESOURCE
+     *         file maps each AtlasEntity to its corresponding filter files. The RegexTaggableFilter
+     *         file must contain the word regex in it's naming. ex. bad-source-regex-filter.json
+     */
+    private List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> getDefaultFilters()
+    {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                InvalidTagsCheck.class.getResourceAsStream(DEFAULT_FILTER_RESOURCE))))
+        {
+            final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> listOfClassToFilters = new ArrayList<>();
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                final String[] split = line.split(COLON);
+                if (split.length >= 2)
+                {
+                    final List<Tuple<? extends Predicate<Taggable>, Integer>> filters = split[1]
+                            .contains(REGEX) ? this.getRegexFiltersFromResource(split[1])
+                                    : this.getFiltersFromResource(split[1]);
+                    listOfClassToFilters.add(new Tuple<>(
+                            ItemType.valueOf(split[0].toUpperCase()).getMemberClass(), filters));
+                }
+            }
+            return listOfClassToFilters;
+        }
+        catch (final IOException exception)
+        {
+            logger.error(String.format("Could not read %s", DEFAULT_FILTER_RESOURCE), exception);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -368,6 +257,92 @@ public class InvalidTagsCheck extends BaseCheck<String>
         return allFilters;
     }
 
+    /**
+     * Read the json file and return a list of TaggableFilter associated with instructions for each
+     * line.
+     *
+     * @param filterResourcePath
+     *            file path
+     * @return list of Tuple containing TaggableFilter and instruction
+     */
+    private List<Tuple<? extends Predicate<Taggable>, Integer>> getFiltersFromResource(
+            final String filterResourcePath)
+    {
+        try (InputStreamReader reader = new InputStreamReader(
+                InvalidTagsCheck.class.getResourceAsStream(filterResourcePath)))
+        {
+            final List<Tuple<? extends Predicate<Taggable>, Integer>> result = new ArrayList<>();
+            final JsonElement element = new JsonParser().parse(reader);
+            final JsonArray filters = element.getAsJsonObject().get("filters").getAsJsonArray();
+            final List<TaggableFilter> taggableFilters = StreamSupport
+                    .stream(filters.spliterator(), false)
+                    .map(jsonElement -> TaggableFilter.forDefinition(jsonElement.getAsString()))
+                    .collect(Collectors.toList());
+            final JsonArray instructionsArray = element.getAsJsonObject().get("instructions")
+                    .getAsJsonArray();
+            final List<String> instructions = StreamSupport
+                    .stream(instructionsArray.spliterator(), false).map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
+            for (int i = 0; i < taggableFilters.size(); i++)
+            {
+                final String instruction = i < instructions.size() ? instructions.get(i) : "";
+                final int instructionIndex = this.addInstruction(instruction);
+                result.add(Tuple.createTuple(taggableFilters.get(i), instructionIndex));
+            }
+            return result;
+
+        }
+        catch (final Exception exception)
+        {
+            logger.error(
+                    "There was a problem parsing invalid-tags-check-inconsistent-highway-filter.json. "
+                            + "Check if the JSON file has valid structure.",
+                    exception);
+            return Collections.emptyList();
+        }
+    }
+
+    private List<Tuple<? extends Predicate<Taggable>, Integer>> getRegexFiltersFromResource(
+            final String filterResourcePath)
+    {
+        try (InputStreamReader reader = new InputStreamReader(
+                InvalidTagsCheck.class.getResourceAsStream(filterResourcePath)))
+        {
+            final JsonElement element = new JsonParser().parse(reader);
+            final JsonArray filters = element.getAsJsonObject().get("filters").getAsJsonArray();
+            return StreamSupport.stream(filters.spliterator(), false)
+                    .map(JsonElement::getAsJsonObject).map(jsonObject ->
+                    {
+                        final Set<String> tagNames = getSetFromJsonArray(
+                                jsonObject.getAsJsonArray("tagNames"));
+                        final Set<String> regex = getSetFromJsonArray(
+                                jsonObject.getAsJsonArray(REGEX));
+                        final JsonArray exceptionArray = jsonObject.getAsJsonArray("exceptions");
+                        final HashMap<String, Set<String>> exceptions = new HashMap<>();
+                        StreamSupport.stream(exceptionArray.spliterator(), false)
+                                .map(JsonElement::getAsJsonObject).forEach(exception ->
+                                {
+                                    final String tagName = exception.get("tagName").getAsString();
+                                    final Set<String> values = getSetFromJsonArray(
+                                            exception.getAsJsonArray("values"));
+                                    exceptions.putIfAbsent(tagName, values);
+                                });
+                        final RegexTaggableFilter filter = new RegexTaggableFilter(tagNames, regex,
+                                exceptions);
+                        final String instruction = jsonObject.get("instruction").getAsString();
+                        final int instructionIndex = this.addInstruction(instruction);
+                        return Tuple.createTuple(filter, instructionIndex);
+                    }).collect(Collectors.toList());
+        }
+        catch (final Exception exception)
+        {
+            logger.error(
+                    "There was a problem parsing {}. Check if the JSON file has valid structure.",
+                    filterResourcePath, exception);
+            return Collections.emptyList();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> readConfigurationFilter(
             final Configuration configuration)
@@ -380,7 +355,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
                     {
                         final String instruction = classTagList.size() > 2 ? classTagList.get(2)
                                 : "";
-                        return Optional.of(stringsToClassTagFilter(classTagList.get(0),
+                        return Optional.of(this.stringsToClassTagFilter(classTagList.get(0),
                                 classTagList.get(1), instruction));
                     }
                     return Optional.empty();
@@ -409,7 +384,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
                                 : "";
                         final RegexTaggableFilter filter = new RegexTaggableFilter(
                                 new HashSet<>(tagNames), new HashSet<>(regex), null);
-                        final int instructionIndex = addInstruction(instruction);
+                        final int instructionIndex = this.addInstruction(instruction);
                         filters.add(Tuple.createTuple(filter, instructionIndex));
                         return Optional.of(Tuple.createTuple(
                                 ItemType.valueOf(element.toUpperCase()).getMemberClass(), filters));
@@ -419,5 +394,30 @@ public class InvalidTagsCheck extends BaseCheck<String>
                         tuple -> (Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>) tuple
                                 .get())
                         .collect(Collectors.toList()));
+    }
+
+    /**
+     * Convert a {@link String} of comma delimited {@link AtlasEntity} class names and a
+     * {@link String} {@link TaggableFilter} to a {@link Set} of {@link AtlasEntity} {@link Class}ed
+     * and {@link TaggableFilter}.
+     *
+     * @param classString
+     *            A {@link String} of comma delimited {@link AtlasEntity} class names
+     * @param tagFilterString
+     *            A {@link String} {@link TaggableFilter} definition
+     * @param instruction
+     *            A {@link String} representing a specific instruction for the filter
+     * @return A {@link Tuple} of a {@link Set} of {@link AtlasEntity} {@link Class}es and a
+     *         {@link TaggableFilter}
+     */
+    private Tuple<? extends Class<AtlasEntity>, List<Tuple<TaggableFilter, Integer>>> stringsToClassTagFilter(
+            final String classString, final String tagFilterString, final String instruction)
+    {
+        final int instructionIndex = this.addInstruction(instruction);
+        final List<Tuple<TaggableFilter, Integer>> filters = new ArrayList<>();
+        filters.add(
+                Tuple.createTuple(TaggableFilter.forDefinition(tagFilterString), instructionIndex));
+        return Tuple.createTuple(ItemType.valueOf(classString.toUpperCase()).getMemberClass(),
+                filters);
     }
 }

@@ -490,6 +490,23 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
     }
 
     /**
+     * Wraps getMapRouletteTask() to embed optional fix suggestions
+     * 
+     * @param includeFixSuggestions
+     *            true if we want to upload fix suggestions, false if not
+     * @return @return a {@link Task}
+     */
+    public Task getMapRouletteTask(final boolean includeFixSuggestions)
+    {
+        final Task returnTask = this.getMapRouletteTask();
+        if (includeFixSuggestions && !this.fixSuggestions.isEmpty())
+        {
+            returnTask.setCooperativeWork(this.fixSuggestions);
+        }
+        return returnTask;
+    }
+
+    /**
      * @return a set of all {@code point} {@link Location} geometries flagged
      */
     public Set<Location> getPoints()
