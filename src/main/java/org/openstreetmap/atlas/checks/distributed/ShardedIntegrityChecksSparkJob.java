@@ -199,7 +199,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         }
 
         // Countrify spark parallelization for better debugging
-        logger.info("Allocating Pool with max execution time set to: {}", maxPoolDuration);
         try (Pool checkPool = new Pool(countryShards.size(), "Countries Execution Pool",
                 maxPoolDuration))
         {
