@@ -189,6 +189,7 @@ class CloudAtlasChecksControl:
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
                 + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar"
+                + " -maxPoolMinutes=2880"
                 + " -inputFolder='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
