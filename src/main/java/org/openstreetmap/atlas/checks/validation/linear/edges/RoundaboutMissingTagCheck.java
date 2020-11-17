@@ -113,7 +113,9 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
 
         if (maxOffendingAngles.isEmpty() && minOffendingAngles.isEmpty())
         {
-            this.markAsFlagged(object.getOsmIdentifier());
+            // Mark all Roundabout edges as flagged.
+            new OsmWayWalker(edge).collectEdges()
+                    .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
             // AutoFix candidate: proposing add junction=roundabout tag
             return Optional.of(this
                     .createFlag(new OsmWayWalker(edge).collectEdges(),
