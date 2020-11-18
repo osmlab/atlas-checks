@@ -33,11 +33,12 @@ public class TollValidationCheck extends BaseCheck<Long>
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 1L;
-    //    private static final String INTERSECTS_TOLL_FEATURE = "Way {0,number,#} is crude. Please add more nodes/rearrange current nodes to more closely match the road from imagery";
-    //    private static final String ESCAPABLE_TOLL = "";
-    //    private static final String INCONSISTENT_TOLL_TAGS = "";
-    //    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
-    //            .singletonList(EDGE_DEVIATION_INSTRUCTION);
+    // private static final String INTERSECTS_TOLL_FEATURE = "Way {0,number,#} is crude. Please add
+    // more nodes/rearrange current nodes to more closely match the road from imagery";
+    // private static final String ESCAPABLE_TOLL = "";
+    // private static final String INCONSISTENT_TOLL_TAGS = "";
+    // private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+    // .singletonList(EDGE_DEVIATION_INSTRUCTION);
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
     private static final double MIN_ANGLE_DEFAULT = 140.0;
     private final Set<Long> markedInconsistentToll = new HashSet<>();
@@ -97,13 +98,25 @@ public class TollValidationCheck extends BaseCheck<Long>
         if (!this.hasTollYesTag(edgeInQuestionTags)
                 && this.edgeIntersectsTollFeature(edgeInQuestion))
         {
-            final String intersectionInstructions = "Intersects without toll: " + edgeInQuestion.getOsmIdentifier();
-            //            System.out.println();
-            //            System.out.println("--------------------------------------------------------");
-            //            System.out.println("intersects without toll tag: " + edgeInQuestion.getOsmIdentifier());
-            //            System.out.println("--------------------------------------------------------");
-            return Optional.of(
-                    this.createFlag(object, intersectionInstructions));
+            final String intersectionInstructions = "Intersects without toll: "
+                    + edgeInQuestion.getOsmIdentifier();
+            // System.out.println();
+            // System.out.println("--------------------------------------------------------");
+            // System.out.println("intersects without toll tag: " +
+            // edgeInQuestion.getOsmIdentifier());
+            // System.out.println("--------------------------------------------------------");
+            return Optional.of(this.createFlag(object, intersectionInstructions));
+        }
+
+        if (!this.hasTollYesTag(edgeInQuestionTags)
+                && !markedInconsistentToll.contains(edgeInQuestion.getOsmIdentifier())
+                && this.hasInconsistentTollTag(edgeInQuestion))
+        {
+            markedInconsistentToll.add(edgeInQuestion.getOsmIdentifier());
+            final String inconsistentTollTagInstructions = "way: "
+                    + edgeInQuestion.getOsmIdentifier()
+                    + " has inconsistent toll tag with its surrounding ways. Please check for proper modeling.";
+            return Optional.of(this.createFlag(object, inconsistentTollTagInstructions));
         }
 
         if (this.hasTollYesTag(edgeInQuestionTags)
@@ -123,53 +136,60 @@ public class TollValidationCheck extends BaseCheck<Long>
                             .getNearbyTollFeatureInEdgeSide(edgeInQuestion, abtNearbyTollEdges);
                     final Long nearbyTollFeatureOutSide = this
                             .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, abtNearbyTollEdges);
-                    final String escapableTollInstructions = "Toll tag needs to be investigated for removal on way: " + edgeInQuestion.getOsmIdentifier() +
-                            ". Check ways " + escapableInEdge.getOsmIdentifier() + " and " + escapableOutEdge +
-                            " for modeling issues. Nearby toll features may help the investigation process. Nearby toll feature on upstream side: " +
-                            nearbyTollFeatureInSide + ", nearby toll feature on the downstream side: " + nearbyTollFeatureOutSide + ".";
-                    //                    System.out.println();
-                    //                    System.out.println("--------------------------------------------------------");
-                    //                    System.out.println("edge in question: " + edgeInQuestion.getOsmIdentifier());
-                    //                    System.out.println("toll tag needs to be investigated for removal from: "
-                    //                            + edgeInQuestion.getOsmIdentifier()
-                    //                            + ". Check ways below for proper toll modeling based on nearby toll features. Adjust if needed.");
-                    //                    System.out.println(
-                    //                            "nearest toll feature on inEdge side: " + nearbyTollFeatureInSide);
-                    //                    System.out.println(
-                    //                            "Nearest toll feature on outEdge side: " + nearbyTollFeatureOutSide);
-                    //                    System.out.println("escapable inEdge: " + escapableInEdge.getOsmIdentifier());
-                    //                    System.out.println("escapable outEdge: " + escapableOutEdge.getOsmIdentifier());
-                    //                    System.out.println("--------------------------------------------------------");
-                    return Optional.of(
-                            this.createFlag(object, escapableTollInstructions));
+                    final String escapableTollInstructions = "Toll tag needs to be investigated for removal on way: "
+                            + edgeInQuestion.getOsmIdentifier() + ". Check ways "
+                            + escapableInEdge.getOsmIdentifier() + " and " + escapableOutEdge
+                            + " for modeling issues. Nearby toll features may help the investigation process. Nearby toll feature on upstream side: "
+                            + nearbyTollFeatureInSide
+                            + ", nearby toll feature on the downstream side: "
+                            + nearbyTollFeatureOutSide + ".";
+                    // System.out.println();
+                    // System.out.println("--------------------------------------------------------");
+                    // System.out.println("edge in question: " + edgeInQuestion.getOsmIdentifier());
+                    // System.out.println("toll tag needs to be investigated for removal from: "
+                    // + edgeInQuestion.getOsmIdentifier()
+                    // + ". Check ways below for proper toll modeling based on nearby toll features.
+                    // Adjust if needed.");
+                    // System.out.println(
+                    // "nearest toll feature on inEdge side: " + nearbyTollFeatureInSide);
+                    // System.out.println(
+                    // "Nearest toll feature on outEdge side: " + nearbyTollFeatureOutSide);
+                    // System.out.println("escapable inEdge: " +
+                    // escapableInEdge.getOsmIdentifier());
+                    // System.out.println("escapable outEdge: " +
+                    // escapableOutEdge.getOsmIdentifier());
+                    // System.out.println("--------------------------------------------------------");
+                    return Optional.of(this.createFlag(object, escapableTollInstructions));
                 }
 
                 if (!this.markedInconsistentToll.contains(escapableOutEdge.getOsmIdentifier())
                         && this.hasInconsistentTollTag(escapableOutEdge))
                 {
                     this.markedInconsistentToll.add(escapableOutEdge.getOsmIdentifier());
-                    final String inconsistentTollTagInstructions = "inconsistent toll tag on way: " + escapableOutEdge.getOsmIdentifier();
-                    //                    System.out.println();
-                    //                    System.out.println("--------------------------------------------------------");
-                    //                    System.out.println("inconsistent toll tag on proven outEdge: "
-                    //                            + escapableOutEdge.getOsmIdentifier());
-                    //                    System.out.println("--------------------------------------------------------");
-                    return Optional.of(
-                            this.createFlag(object, inconsistentTollTagInstructions));
+                    final String inconsistentTollTagInstructions = "inconsistent toll tag on way: "
+                            + escapableOutEdge.getOsmIdentifier()
+                            + ". Please check for modeling issues with toll tag.";
+                    // System.out.println();
+                    // System.out.println("--------------------------------------------------------");
+                    // System.out.println("inconsistent toll tag on proven outEdge: "
+                    // + escapableOutEdge.getOsmIdentifier());
+                    // System.out.println("--------------------------------------------------------");
+                    return Optional.of(this.createFlag(object, inconsistentTollTagInstructions));
                 }
 
                 if (!this.markedInconsistentToll.contains(escapableInEdge.getOsmIdentifier())
                         && this.hasInconsistentTollTag(escapableInEdge))
                 {
-                    final String inconsistentTollTagInstructions = "inconsistent toll tag on way: " + escapableInEdge.getOsmIdentifier();
+                    final String inconsistentTollTagInstructions = "inconsistent toll tag on way: "
+                            + escapableInEdge.getOsmIdentifier()
+                            + ". Please check for modeling issues with toll tag.";
                     markAsFlagged(escapableInEdge.getOsmIdentifier());
-                    //                    System.out.println();
-                    //                    System.out.println("--------------------------------------------------------");
-                    //                    System.out.println("inconsistent toll tag on proven inEdge: "
-                    //                            + escapableInEdge.getOsmIdentifier());
-                    //                    System.out.println("--------------------------------------------------------");
-                    return Optional.of(
-                            this.createFlag(object, inconsistentTollTagInstructions));
+                    // System.out.println();
+                    // System.out.println("--------------------------------------------------------");
+                    // System.out.println("inconsistent toll tag on proven inEdge: "
+                    // + escapableInEdge.getOsmIdentifier());
+                    // System.out.println("--------------------------------------------------------");
+                    return Optional.of(this.createFlag(object, inconsistentTollTagInstructions));
                 }
             }
         }

@@ -19,9 +19,10 @@ public class TollValidationCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private final TollValidationCheck check = new TollValidationCheck(ConfigurationResolver
-            .inlineConfiguration("{\"TollValidationCheck\": " + "{\"minimumHighwayType\": \"tertiary\""
-                    + "," + "\"minAngleForContiguousWays\": 140.0}}"));
+    private final TollValidationCheck check = new TollValidationCheck(
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"TollValidationCheck\": " + "{\"minimumHighwayType\": \"tertiary\"" + ","
+                            + "\"minAngleForContiguousWays\": 140.0}}"));
 
     @Test
     public void escapableWayNeedsTollTagRemoved()
