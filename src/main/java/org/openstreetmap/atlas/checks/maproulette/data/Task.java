@@ -1,13 +1,18 @@
 package org.openstreetmap.atlas.checks.maproulette.data;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.openstreetmap.atlas.checks.maproulette.data.cooperative_challenge.TagChangeOperation;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescription;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -46,6 +51,35 @@ public class Task
         }
     }
 
+    /**
+     * Given some feature changes, convert them one by one to JSON cooperative challenge operations.
+     * This is in {@link Task} since cooperativeWork objects are part of the Task geojson, and so
+     * this convertor is not expected to be used outside of the Task context at this time
+     *
+     * @author seancoulter
+     */
+    private static final class FixSuggestionToCooperativeWorkConvertor
+    {
+        private final Set<FeatureChange> featureChanges;
+
+        private FixSuggestionToCooperativeWorkConvertor(final Set<FeatureChange> featureChanges)
+        {
+            this.featureChanges = featureChanges;
+        }
+
+        private List<JsonObject> convert()
+        {
+            final List<JsonObject> operationsList = new ArrayList<>();
+            for (final FeatureChange featureChange : this.featureChanges)
+            {
+                final ChangeDescription whatChanged = featureChange.explain();
+                operationsList.add(new TagChangeOperation(whatChanged).create().getJson());
+            }
+            // convert each featureChange to a cooperative work object
+            return operationsList;
+        }
+    }
+
     protected static final String FEATURE = "Feature";
     protected static final String POINT = "Point";
     protected static final String TASK_FEATURES = "features";
@@ -61,12 +95,14 @@ public class Task
     private static final String CHECK_GENERATOR = "flag:check";
     private static final String FRAMEWORK_GENERATOR = "flag:generator";
     private static final String FRAMEWORK = "Atlas Checks";
+    private static final String COOPERATIVE_WORK = "cooperativeWork";
     private String challengeName;
     private Optional<JsonArray> geoJson = Optional.empty();
     private String instruction;
     private final Set<PointInformation> points = new HashSet<>();
     private String projectName = "";
     private String taskIdentifier;
+    private List<JsonObject> cooperativeWork;
 
     public Task()
     {
@@ -101,6 +137,10 @@ public class Task
         final JsonObject result = new JsonObject();
         result.addProperty(TASK_TYPE, "FeatureCollection");
         result.add(TASK_FEATURES, this.generateTaskFeatures(this.points, this.geoJson));
+        if (this.cooperativeWork != null && !this.cooperativeWork.isEmpty())
+        {
+            result.add(COOPERATIVE_WORK, this.generateTaskCooperativeWork(this.cooperativeWork));
+        }
         task.add(TASK_INSTRUCTION, new JsonPrimitive(this.instruction));
         task.add(TASK_NAME, new JsonPrimitive(this.getTaskIdentifier()));
         task.add(TASK_PARENT_ID, new JsonPrimitive(parentIdentifier));
@@ -150,6 +190,12 @@ public class Task
         this.challengeName = challengeName;
     }
 
+    public void setCooperativeWork(final Set<FeatureChange> fixSuggestions)
+    {
+        this.cooperativeWork = new FixSuggestionToCooperativeWorkConvertor(fixSuggestions)
+                .convert();
+    }
+
     public void setGeoJson(final Optional<JsonArray> geoJson)
     {
         this.geoJson = geoJson;
@@ -182,7 +228,20 @@ public class Task
         this.taskIdentifier = taskIdentifier;
     }
 
-    protected JsonArray generateTaskFeatures(final Set<PointInformation> source,
+    private JsonObject generateTaskCooperativeWork(final List<JsonObject> cooperativeWork)
+    {
+        final JsonObject cooperativeWorkObject = new JsonObject();
+        final JsonObject meta = new JsonObject();
+        meta.add("version", new JsonPrimitive(2));
+        meta.add("type", new JsonPrimitive(1));
+        cooperativeWorkObject.add("meta", meta);
+        final JsonArray cooperativeWorkArray = new JsonArray();
+        cooperativeWork.forEach(cooperativeWorkArray::add);
+        cooperativeWorkObject.add("operations", cooperativeWorkArray);
+        return cooperativeWorkObject;
+    }
+
+    private JsonArray generateTaskFeatures(final Set<PointInformation> source,
             final Optional<JsonArray> geoJson)
     {
         final JsonArray features = new JsonArray();

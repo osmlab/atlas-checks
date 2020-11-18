@@ -2,7 +2,6 @@ package org.openstreetmap.atlas.checks.maproulette;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,8 +65,8 @@ public class MapRouletteUploadCommandTest
     @Test
     public void testGetCountryDisplayName()
     {
-        final Optional<String> countries1 = Optional.of("CAN,MEX");
-        final Optional<String> countries2 = Optional.of("USA");
+        final String countries1 = "CAN,MEX";
+        final String countries2 = "USA";
         final MapRouletteUploadCommand command = new MapRouletteUploadCommand();
         final String displayCountryNames1 = command.getCountryDisplayName(countries1);
         final String displayCountryNames2 = command.getCountryDisplayName(countries2);
