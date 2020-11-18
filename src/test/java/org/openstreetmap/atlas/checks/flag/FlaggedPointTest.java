@@ -21,6 +21,7 @@ public class FlaggedPointTest
         final Map<String, String> flaggedPointProperties = flaggedPoint.getProperties();
 
         Assert.assertFalse(flaggedPointProperties.isEmpty());
+        Assert.assertEquals(FlaggedObject.COUNTRY_MISSING, flaggedPoint.getCountry());
         Assert.assertTrue(flaggedPointProperties.containsKey(SyntheticHighlightPointTag.KEY));
         Assert.assertEquals("yes", flaggedPointProperties.get(SyntheticHighlightPointTag.KEY));
     }

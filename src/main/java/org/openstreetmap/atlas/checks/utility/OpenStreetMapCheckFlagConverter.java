@@ -22,6 +22,8 @@ import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility to convert a {@link CheckFlag} into an OpenStreetMap like {@link CheckFlag}. This
@@ -35,6 +37,9 @@ import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 public final class OpenStreetMapCheckFlagConverter
 {
 
+    private static final Logger logger = LoggerFactory
+            .getLogger(OpenStreetMapCheckFlagConverter.class);
+
     /**
      * Attempt to create an OpenStreetMap CheckFlag by removing
      * {@link org.openstreetmap.atlas.geography.atlas.items.Point}s duplicatly flagged as
@@ -47,9 +52,10 @@ public final class OpenStreetMapCheckFlagConverter
      */
     public static Optional<CheckFlag> openStreetMapify(final CheckFlag flag)
     {
-        // Copy the identifier and instructions
+        // Copy the identifier, instructions, and challenge name
         final CheckFlag newFlag = new CheckFlag(flag.getIdentifier());
         newFlag.addInstructions(flag.getRawInstructions());
+        newFlag.setChallengeName(flag.getChallengeName().orElse(null));
 
         // Map objects by their unique osm id
         final Map<String, Set<FlaggedObject>> objectsMap = new HashMap<>();
@@ -85,6 +91,7 @@ public final class OpenStreetMapCheckFlagConverter
         }
         catch (final CoreException exception)
         {
+            logger.info("Error converting flag: {}", exception.getLocalizedMessage());
             return Optional.empty();
         }
 
