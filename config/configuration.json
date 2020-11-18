@@ -963,7 +963,7 @@
     },
     "minHighwayType": "tertiary"
   },
-  "TollEscapeCheck": {
+  "TollValidationCheck": {
     "enabled": true,
     "minimumHighwayType": "tertiary",
     "minAngleForContiguousWays": 140.0,
