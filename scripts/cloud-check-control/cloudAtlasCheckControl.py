@@ -69,6 +69,7 @@ class CloudAtlasChecksControl:
         mrkey="",
         mrProject="",
         mrURL="https://maproulette.org:443",
+        jar="/home/ubuntu/atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar",
     ):
         self.timeoutMinutes = timeoutMinutes
         self.key = key
@@ -97,6 +98,7 @@ class CloudAtlasChecksControl:
         self.mrkey = mrkey
         self.mrProject = mrProject
         self.mrURL = mrURL
+        self.jar = jar
 
         self.client = None
         self.instanceName = "AtlasChecks"
@@ -188,7 +190,7 @@ class CloudAtlasChecksControl:
                 + " --master=local[{}]".format(self.processes)
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
-                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar"
+                + " {}".format(self.jar)
                 + " -maxPoolMinutes=2880"
                 + " -inputFolder='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
@@ -275,11 +277,9 @@ class CloudAtlasChecksControl:
             finish("Unable to sync with S3", -1)
 
         cmd = (
-            "java -cp atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shaded.jar"
+            "java -cp {}".format(self.jar)
             + " org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
-            + " -maproulette='{}:{}:{}'".format(
-                self.mrURL, self.mrProject, self.mrkey
-            )
+            + " -maproulette='{}:{}:{}'".format(self.mrURL, self.mrProject, self.mrkey)
             + " -logfiles='{}/flag'".format(self.atlasOutDir)
             + " -outputPath='{}'".format(self.atlasOutDir)
             + " -config='{}'".format(os.path.join(self.homeDir, self.atlasConfig))
@@ -649,6 +649,12 @@ def parse_args(cloudctl):
             cloudctl.processes
         ),
     )
+    parser_check.add_argument(
+        "--jar",
+        help="JAR - The full path to the jar file to execute (Default: {})".format(
+            cloudctl.jar
+        ),
+    )
     parser_check.set_defaults(func=CloudAtlasChecksControl.atlasCheck)
 
     parser_sync = subparsers.add_parser(
@@ -729,7 +735,12 @@ def parse_args(cloudctl):
         required=True,
         help="Out - The S3 Output directory to read output files from",
     )
-
+    parser_mr.add_argument(
+        "--jar",
+        help="JAR - The full path to the jar file to execute (Default: {})".format(
+            cloudctl.jar
+        ),
+    )
     parser_mr.set_defaults(func=CloudAtlasChecksControl.challenge)
 
     parser_clean = subparsers.add_parser("clean", help="Clean up instance")
@@ -798,6 +809,8 @@ def evaluate(args, cloudctl):
         cloudctl.mrkey = args.mrkey
     if hasattr(args, "project") and args.project is not None:
         cloudctl.mrProject = args.project
+    if hasattr(args, "jar") and args.jar is not None:
+        cloudctl.jar = args.jar
     if hasattr(args, "id") and args.id is not None:
         cloudctl.instanceId = args.id
         cloudctl.get_instance_info()
