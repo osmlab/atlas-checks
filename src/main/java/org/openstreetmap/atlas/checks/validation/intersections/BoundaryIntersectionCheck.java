@@ -83,6 +83,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
+        System.out.println("Checking id " + object.getOsmIdentifier() + " " + object.getClass());
         return (object instanceof Relation || object instanceof LineItem) &&
                 isObjectOfBoundaryTypeWithBoundaryTag(object);
     }
@@ -90,7 +91,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        System.out.println("Checking for flag id " + object.getOsmIdentifier() + " " + object.getClass());
         if(object instanceof Relation){
+            System.out.println("Processing id " + object.getOsmIdentifier() + " " + object.getClass());
             return processRelation(object);
         }
         return processWay(object);
