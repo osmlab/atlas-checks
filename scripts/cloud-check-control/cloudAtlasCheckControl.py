@@ -65,6 +65,11 @@ class CloudAtlasChecksControl:
         terminate=False,
         templateName="atlas_checks-ec2-template",
         atlasConfig="https://raw.githubusercontent.com/osmlab/atlas-checks/dev/config/configuration.json",
+        checks="",
+        mrkey="",
+        mrProject="",
+        mrURL="https://maproulette.org:443",
+        jar="/home/ubuntu/atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar",
     ):
         self.timeoutMinutes = timeoutMinutes
         self.key = key
@@ -84,7 +89,16 @@ class CloudAtlasChecksControl:
         self.atlasLogDir = os.path.join(self.homeDir, "log/")
         self.atlasCheckLogName = "atlasCheck.log"
         self.atlasCheckLog = os.path.join(self.atlasLogDir, self.atlasCheckLogName)
+        self.atlasCheckMRPushLogName = "mrPush.log"
+        self.atlasCheckMRPushLog = os.path.join(
+            self.atlasLogDir, self.atlasCheckMRPushLogName
+        )
         self.atlasConfig = atlasConfig
+        self.checks = checks
+        self.mrkey = mrkey
+        self.mrProject = mrProject
+        self.mrURL = mrURL
+        self.jar = jar
 
         self.client = None
         self.instanceName = "AtlasChecks"
@@ -176,7 +190,8 @@ class CloudAtlasChecksControl:
                 + " --master=local[{}]".format(self.processes)
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
-                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar"
+                + " {}".format(self.jar)
+                + " -maxPoolMinutes=2880"
                 + " -inputFolder='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
@@ -230,6 +245,53 @@ class CloudAtlasChecksControl:
         # terminate instance
         if self.terminate:
             self.terminate_instance()
+
+    def challenge(self):
+        logger.info("Creating map roulette challenge.")
+
+        # sync the country folders to the local directory
+        for c in list(self.countries.split(",")):
+            logger.info(
+                "syncing {}/flag/{} to {}/flag/{}".format(
+                    self.s3OutFolder, c, self.atlasOutDir, c
+                )
+            )
+            if self.ssh_cmd(
+                "aws s3 sync --only-show-errors s3://{0}/flag/{1} {2}/flag/{1}".format(
+                    self.s3OutFolder, c, self.atlasOutDir
+                )
+            ):
+                finish("Failed to sync S3://{}/{}".format(self.s3OutFolder, c), -1)
+        if self.ssh_cmd(
+            "aws s3 cp s3://{} {}".format(
+                self.atlasConfig, os.path.join(self.homeDir, self.atlasConfig)
+            )
+        ):
+            finish("Failed to copy config S3://{}".format(self.atlasConfig), -1)
+
+        # push output to s3
+        cmd = "aws s3 sync --only-show-errors --exclude *.crc {} s3://{} ".format(
+            self.atlasOutDir, self.s3OutFolder
+        )
+        if self.ssh_cmd(cmd):
+            finish("Unable to sync with S3", -1)
+
+        cmd = (
+            "java -cp {}".format(self.jar)
+            + " org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
+            + " -maproulette='{}:{}:{}'".format(self.mrURL, self.mrProject, self.mrkey)
+            + " -logfiles='{}/flag'".format(self.atlasOutDir)
+            + " -outputPath='{}'".format(self.atlasOutDir)
+            + " -config='{}'".format(os.path.join(self.homeDir, self.atlasConfig))
+            + " -checkinComment='#AtlasChecks'"
+            + " -countries='{}'".format(self.countries)
+            + " -checks='{}'".format(self.checks)
+            + " -includeFixSuggestions=true"
+        )
+
+        logger.info("Starting mr upload: {}".format(cmd))
+        if self.ssh_cmd(cmd, verbose=True):
+            finish("Unable to execute spark job", -1)
 
     def clean(self):
         """Clean a running Instance of all produced folders and files
@@ -341,7 +403,7 @@ class CloudAtlasChecksControl:
             raise error
         logger.debug("Files: " + remoteFiles + " downloaded to: " + localDirectory)
 
-    def ssh_cmd(self, cmd, quiet=False):
+    def ssh_cmd(self, cmd, quiet=False, verbose=False):
         """Issue an ssh command on the remote EC2 instance
 
         :param cmd: the command string to execute on the remote system
@@ -353,8 +415,11 @@ class CloudAtlasChecksControl:
         logger.debug("Issuing remote command: {} ... ".format(cmd))
         ssh_stdin, ssh_stdout, ssh_stderr = self.client.exec_command(cmd)
         if ssh_stdout.channel.recv_exit_status() and not quiet:
-            logger.error(" Remote command output:")
+            logger.error(" Remote command stderr:")
             logger.error("\t".join(map(str, ssh_stderr.readlines())))
+        if verbose:
+            logger.info(" Remote command stdout:")
+            logger.info("\t".join(map(str, ssh_stdout.readlines())))
         return ssh_stdout.channel.recv_exit_status()
 
     def wait_for_process_to_complete(self):
@@ -584,6 +649,12 @@ def parse_args(cloudctl):
             cloudctl.processes
         ),
     )
+    parser_check.add_argument(
+        "--jar",
+        help="JAR - The full path to the jar file to execute (Default: {})".format(
+            cloudctl.jar
+        ),
+    )
     parser_check.set_defaults(func=CloudAtlasChecksControl.atlasCheck)
 
     parser_sync = subparsers.add_parser(
@@ -610,6 +681,67 @@ def parse_args(cloudctl):
         "-o", "--output", required=True, help="Out - The S3 Output directory"
     )
     parser_sync.set_defaults(func=CloudAtlasChecksControl.sync)
+
+    parser_mr = subparsers.add_parser(
+        "challenge", help="Create a Map Roulette Challenge"
+    )
+    parser_mr.add_argument(
+        "--id",
+        required=True,
+        help="ID - Indicates the ID of an existing EC2 instance to use",
+    )
+    parser_mr.add_argument(
+        "--project",
+        required=True,
+        help="PROJECT - Indicates the name to use to create the map roulette project",
+    )
+    parser_mr.add_argument(
+        "--mrkey",
+        required=True,
+        help="MRKEY - The api|key to use to connect to Map Roulette",
+    )
+    parser_mr.add_argument(
+        "-c",
+        "--countries",
+        required=True,
+        help="COUNTRIES - A comma separated list of ISO3 codes. (e.g. --countries=GBR)",
+    )
+    parser_mr.add_argument(
+        "--checks",
+        required=True,
+        help="CHECKS - A comma separated list of checks names to include in project. "
+        "(e.g. --checks='EdgeCrossingEdgeCheck,SinkIslandCheck')",
+    )
+    parser_mr.add_argument(
+        "-k",
+        "--key",
+        required=True,
+        help="KEY - Instance key name to use to login to instance. This key "
+        "is expected to be the same name as the key as defined by AWS and the "
+        "corresponding pem file must be located in your local '~/.ssh/' "
+        "directory and should be a pem file. See the following URL for "
+        "instructions on creating a key: "
+        "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html. "
+        "(e.g. `--key=aws-key`)",
+    )
+    parser_mr.add_argument(
+        "--config",
+        required=True,
+        help="CONFIG - Path within the S2 Input bucket or a URL to a json file to "
+        "use as configuration.json for atlas-checks (Default: Latest from atlas-config repo)",
+    )
+    parser_mr.add_argument(
+        "--output",
+        required=True,
+        help="Out - The S3 Output directory to read output files from",
+    )
+    parser_mr.add_argument(
+        "--jar",
+        help="JAR - The full path to the jar file to execute (Default: {})".format(
+            cloudctl.jar
+        ),
+    )
+    parser_mr.set_defaults(func=CloudAtlasChecksControl.challenge)
 
     parser_clean = subparsers.add_parser("clean", help="Clean up instance")
     parser_clean.add_argument(
@@ -671,6 +803,14 @@ def evaluate(args, cloudctl):
         cloudctl.memory = args.memory
     if hasattr(args, "config") and args.config is not None:
         cloudctl.atlasConfig = args.config
+    if hasattr(args, "checks") and args.checks is not None:
+        cloudctl.checks = args.checks
+    if hasattr(args, "mrkey") and args.mrkey is not None:
+        cloudctl.mrkey = args.mrkey
+    if hasattr(args, "project") and args.project is not None:
+        cloudctl.mrProject = args.project
+    if hasattr(args, "jar") and args.jar is not None:
+        cloudctl.jar = args.jar
     if hasattr(args, "id") and args.id is not None:
         cloudctl.instanceId = args.id
         cloudctl.get_instance_info()
