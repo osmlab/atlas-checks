@@ -97,11 +97,6 @@ public class TollValidationCheck extends BaseCheck<Long>
                 && this.edgeIntersectsTollFeature(edgeInQuestion))
         {
             markAsFlagged(object.getOsmIdentifier());
-            // System.out.println();
-            // System.out.println("--------------------------------------------------------");
-            // System.out.println("intersects without toll tag: " +
-            // edgeInQuestion.getOsmIdentifier());
-            // System.out.println("--------------------------------------------------------");
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, edgeInQuestion.getOsmIdentifier())));
         }
