@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import static java.lang.Math.pow;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,12 +78,6 @@ public class TollValidationCheck extends BaseCheck<Long>
                     && edgeInQuestion.highwayTag().isMoreImportantThan(this.minHighwayType);
         }
         return false;
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -177,7 +170,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                 if (!this.markedInconsistentToll.contains(escapableInEdge.getOsmIdentifier())
                         && this.hasInconsistentTollTag(escapableInEdge))
                 {
-                    markedInconsistentToll.add(escapableInEdge.getOsmIdentifier());
+                    this.markedInconsistentToll.add(escapableInEdge.getOsmIdentifier());
                     // System.out.println();
                     // System.out.println("--------------------------------------------------------");
                     // System.out.println("inconsistent toll tag on proven inEdge: "
@@ -189,6 +182,12 @@ public class TollValidationCheck extends BaseCheck<Long>
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
