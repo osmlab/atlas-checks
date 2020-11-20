@@ -107,10 +107,10 @@ public class TollValidationCheck extends BaseCheck<Long>
         }
 
         if (!this.hasTollYesTag(edgeInQuestionTags)
-                && !markedInconsistentToll.contains(edgeInQuestion.getOsmIdentifier())
+                && !this.markedInconsistentToll.contains(edgeInQuestion.getOsmIdentifier())
                 && this.hasInconsistentTollTag(edgeInQuestion))
         {
-            markedInconsistentToll.add(edgeInQuestion.getOsmIdentifier());
+            this.markedInconsistentToll.add(edgeInQuestion.getOsmIdentifier());
             return Optional.of(
                     this.createFlag(object, this.getLocalizedInstruction(2, edgeInQuestion.getOsmIdentifier())));
         }
