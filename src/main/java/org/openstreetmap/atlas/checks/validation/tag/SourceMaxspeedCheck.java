@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -36,7 +38,7 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
             WRONG_VALUE_INSTRUCTION, WRONG_COUNTRY_CODE_INSTRUCTION, WRONG_CONTEXT_INSTRUCTION);
     private static final String SOURCE_MAXSPEED = "source:maxspeed";
     private static final List<String> POSSIBLE_VALUES = Arrays.asList("sign", "markings");
-    private static final String COUNTRY_CONTEXT = "[a-zA-Z]{2}:.+";
+    private static final Pattern COUNTRY_CONTEXT_PATTERN = Pattern.compile("[a-zA-Z]{2}:.+");
     private static final Set<String> EXPECTED_CONTEXT_VALUES = new HashSet<>(
             Arrays.asList("urban", "rural", "bicycle_road", "trunk", "motorway", "living_street",
                     "school", "pedestrian_zone", "urban_motorway", "urban_trunk", "nsl", "express",
@@ -99,7 +101,8 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
         {
             final Set<String> instructions = new HashSet<>();
             final String sourceValue = object.getTag(SOURCE_MAXSPEED).get();
-            if (sourceValue.matches(COUNTRY_CONTEXT))
+            final Matcher matcher = COUNTRY_CONTEXT_PATTERN.matcher(sourceValue);
+            if (matcher.find())
             {
                 final String[] parts = sourceValue.split(COLON);
                 if (!this.isCountryValid(parts[0]))
