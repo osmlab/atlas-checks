@@ -290,12 +290,12 @@ public class TollValidationCheck extends BaseCheck<Long>
                     final Map<String, String> keySet = inEdge.getOsmTags();
 
                     if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equals(TollTag.NO.toString().toLowerCase())))
+                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
                     {
                         return inEdge;
                     }
                     if (!this.edgeIntersectsTollFeature(inEdge) && this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equals(TollTag.YES.toString().toLowerCase()))
+                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
                     {
                         return this.edgeProvingBackwardsIsEscapable(inEdge, abtObjectIds);
                     }
@@ -328,12 +328,12 @@ public class TollValidationCheck extends BaseCheck<Long>
                     final Map<String, String> keySet = outEdge.getOsmTags();
 
                     if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equals(TollTag.NO.toString().toLowerCase())))
+                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
                     {
                         return outEdge;
                     }
                     if (!this.edgeIntersectsTollFeature(outEdge) && this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equals(TollTag.YES.toString().toLowerCase()))
+                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
                     {
                         return this.edgeProvingForwardIsEscapable(outEdge, abtObjectIds);
                     }
@@ -560,7 +560,7 @@ public class TollValidationCheck extends BaseCheck<Long>
     private boolean hasTollYesTag(final Map<String, String> tags)
     {
         return tags.keySet().stream().anyMatch(tag -> tag.equals(TollTag.KEY))
-                && tags.get(TollTag.KEY).equals(TollTag.YES.toString().toLowerCase());
+                && tags.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString());
     }
 
     /**
@@ -582,7 +582,7 @@ public class TollValidationCheck extends BaseCheck<Long>
     {
         if (tags.containsKey(AccessTag.KEY))
         {
-            return tags.get(AccessTag.KEY).equals(AccessTag.PRIVATE.toString());
+            return tags.get(AccessTag.KEY).equalsIgnoreCase(AccessTag.PRIVATE.toString());
         }
         return false;
     }
