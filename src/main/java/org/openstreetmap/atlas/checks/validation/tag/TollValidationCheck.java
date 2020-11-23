@@ -59,7 +59,8 @@ public class TollValidationCheck extends BaseCheck<Long>
         this.minHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
         this.minAngleForContiguousWays = this.configurationValue(configuration,
                 "minAngleForContiguousWays", MIN_ANGLE_DEFAULT);
-        this.minInAndOutEdges = this.configurationValue(configuration, "minInAndOutEdges", MIN_IN_OUT_EDGES);
+        this.minInAndOutEdges = this.configurationValue(configuration, "minInAndOutEdges",
+                MIN_IN_OUT_EDGES);
     }
 
     /**
@@ -402,14 +403,12 @@ public class TollValidationCheck extends BaseCheck<Long>
         final Set<Edge> inEdges = this.getInEdges(edge);
         for (final Edge inEdge : inEdges)
         {
-            if (inEdges.size() >= this.minInAndOutEdges
-                    && this.edgeIntersectsTollFeature(inEdge)
+            if (inEdges.size() >= this.minInAndOutEdges && this.edgeIntersectsTollFeature(inEdge)
                     && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
                 return this.getAreaOrNodeIntersectionId(inEdge, abtNearbyTollEdges);
             }
-            if (inEdges.size() >= this.minInAndOutEdges
-                    && !this.edgeIntersectsTollFeature(inEdge)
+            if (inEdges.size() >= this.minInAndOutEdges && !this.edgeIntersectsTollFeature(inEdge)
                     && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
                 abtNearbyTollEdges.add(inEdge.getIdentifier());
@@ -431,14 +430,12 @@ public class TollValidationCheck extends BaseCheck<Long>
 
         for (final Edge outEdge : outEdges)
         {
-            if (outEdges.size() >= this.minInAndOutEdges
-                    && this.edgeIntersectsTollFeature(outEdge)
+            if (outEdges.size() >= this.minInAndOutEdges && this.edgeIntersectsTollFeature(outEdge)
                     && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
                 return this.getAreaOrNodeIntersectionId(outEdge, abtNearbyTollEdges);
             }
-            if (outEdges.size() >= this.minInAndOutEdges
-                    && !this.edgeIntersectsTollFeature(outEdge)
+            if (outEdges.size() >= this.minInAndOutEdges && !this.edgeIntersectsTollFeature(outEdge)
                     && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
                 abtNearbyTollEdges.add(outEdge.getIdentifier());
