@@ -967,6 +967,7 @@
     "enabled": true,
     "minimumHighwayType": "tertiary",
     "minAngleForContiguousWays": 140.0,
+    "minInAndOutEdges": 1.0,
     "challenge": {
       "description": "Toll tags might be incorrect since tolls could possibly be avoided",
       "blurb": "Toll Escape",

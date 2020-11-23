@@ -41,8 +41,10 @@ public class TollValidationCheck extends BaseCheck<Long>
             ESCAPABLE_TOLL, INCONSISTENT_TOLL_TAGS);
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
     private static final double MIN_ANGLE_DEFAULT = 140.0;
+    private static final double MIN_IN_OUT_EDGES = 1.0;
     private final Set<Long> markedInconsistentToll = new HashSet<>();
     private final HighwayTag minHighwayType;
+    private final double minInAndOutEdges;
     private final double minAngleForContiguousWays;
 
     /**
@@ -57,6 +59,7 @@ public class TollValidationCheck extends BaseCheck<Long>
         this.minHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
         this.minAngleForContiguousWays = this.configurationValue(configuration,
                 "minAngleForContiguousWays", MIN_ANGLE_DEFAULT);
+        this.minInAndOutEdges = this.configurationValue(configuration, "minInAndOutEdges", MIN_IN_OUT_EDGES);
     }
 
     /**
@@ -267,28 +270,27 @@ public class TollValidationCheck extends BaseCheck<Long>
     {
         final Set<Edge> inEdges = this.getInEdges(edge);
 
-        if (this.hasAtLeastOneInEdge(edge))
+        for (final Edge inEdge : inEdges)
         {
-            for (final Edge inEdge : inEdges)
+            if (inEdges.size() >= this.minInAndOutEdges
+                    && !abtObjectIds.contains(inEdge.getIdentifier())
+                    && inEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
+                    && this.hasSameHighwayTag(edge, inEdge)
+                    && this.angleBetweenEdges(inEdge, edge) >= this.minAngleForContiguousWays)
             {
-                if (!abtObjectIds.contains(inEdge.getIdentifier())
-                        && inEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
-                        && this.hasSameHighwayTag(edge, inEdge)
-                        && this.angleBetweenEdges(inEdge, edge) >= this.minAngleForContiguousWays)
-                {
-                    abtObjectIds.add(inEdge.getIdentifier());
-                    final Map<String, String> keySet = inEdge.getOsmTags();
+                abtObjectIds.add(inEdge.getIdentifier());
+                final Map<String, String> keySet = inEdge.getOsmTags();
 
-                    if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
-                    {
-                        return inEdge;
-                    }
-                    if (!this.edgeIntersectsTollFeature(inEdge) && this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
-                    {
-                        return this.edgeProvingBackwardsIsEscapable(inEdge, abtObjectIds);
-                    }
+                if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
+                        && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
+                {
+                    return inEdge;
+                }
+
+                if (!this.edgeIntersectsTollFeature(inEdge) && this.containsTollTag(keySet)
+                        && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
+                {
+                    return this.edgeProvingBackwardsIsEscapable(inEdge, abtObjectIds);
                 }
             }
         }
@@ -305,28 +307,26 @@ public class TollValidationCheck extends BaseCheck<Long>
     private Edge edgeProvingForwardIsEscapable(final Edge edge, final Set<Long> abtObjectIds)
     {
         final Set<Edge> outEdges = this.getOutEdges(edge);
-        if (this.hasAtLeastOneOutEdge(edge))
+        for (final Edge outEdge : outEdges)
         {
-            for (final Edge outEdge : outEdges)
+            if (outEdges.size() >= this.minInAndOutEdges
+                    && !abtObjectIds.contains(outEdge.getIdentifier())
+                    && outEdge.highwayTag().isMoreImportantThan(HighwayTag.RESIDENTIAL)
+                    && this.hasSameHighwayTag(edge, outEdge)
+                    && this.angleBetweenEdges(edge, outEdge) >= this.minAngleForContiguousWays)
             {
-                if (!abtObjectIds.contains(outEdge.getIdentifier())
-                        && outEdge.highwayTag().isMoreImportantThan(HighwayTag.RESIDENTIAL)
-                        && this.hasSameHighwayTag(edge, outEdge)
-                        && this.angleBetweenEdges(edge, outEdge) >= this.minAngleForContiguousWays)
-                {
-                    abtObjectIds.add(outEdge.getIdentifier());
-                    final Map<String, String> keySet = outEdge.getOsmTags();
+                abtObjectIds.add(outEdge.getIdentifier());
+                final Map<String, String> keySet = outEdge.getOsmTags();
 
-                    if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
-                    {
-                        return outEdge;
-                    }
-                    if (!this.edgeIntersectsTollFeature(outEdge) && this.containsTollTag(keySet)
-                            && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
-                    {
-                        return this.edgeProvingForwardIsEscapable(outEdge, abtObjectIds);
-                    }
+                if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
+                        && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
+                {
+                    return outEdge;
+                }
+                if (!this.edgeIntersectsTollFeature(outEdge) && this.containsTollTag(keySet)
+                        && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
+                {
+                    return this.edgeProvingForwardIsEscapable(outEdge, abtObjectIds);
                 }
             }
         }
@@ -399,22 +399,21 @@ public class TollValidationCheck extends BaseCheck<Long>
      */
     private Long getNearbyTollFeatureInEdgeSide(final Edge edge, final Set<Long> abtNearbyTollEdges)
     {
-        if (this.hasAtLeastOneInEdge(edge))
+        final Set<Edge> inEdges = this.getInEdges(edge);
+        for (final Edge inEdge : inEdges)
         {
-            final Set<Edge> inEdges = this.getInEdges(edge);
-            for (final Edge inEdge : inEdges)
+            if (inEdges.size() >= this.minInAndOutEdges
+                    && this.edgeIntersectsTollFeature(inEdge)
+                    && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
-                if (this.edgeIntersectsTollFeature(inEdge)
-                        && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
-                {
-                    return this.getAreaOrNodeIntersectionId(inEdge, abtNearbyTollEdges);
-                }
-                if (!this.edgeIntersectsTollFeature(inEdge)
-                        && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
-                {
-                    abtNearbyTollEdges.add(inEdge.getIdentifier());
-                    return this.getNearbyTollFeatureInEdgeSide(inEdge, abtNearbyTollEdges);
-                }
+                return this.getAreaOrNodeIntersectionId(inEdge, abtNearbyTollEdges);
+            }
+            if (inEdges.size() >= this.minInAndOutEdges
+                    && !this.edgeIntersectsTollFeature(inEdge)
+                    && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
+            {
+                abtNearbyTollEdges.add(inEdge.getIdentifier());
+                return this.getNearbyTollFeatureInEdgeSide(inEdge, abtNearbyTollEdges);
             }
         }
         return null;
@@ -428,23 +427,22 @@ public class TollValidationCheck extends BaseCheck<Long>
     private Long getNearbyTollFeatureOutEdgeSide(final Edge edge,
             final Set<Long> abtNearbyTollEdges)
     {
-        if (this.hasAtLeastOneOutEdge(edge))
-        {
-            final Set<Edge> outEdges = this.getOutEdges(edge);
+        final Set<Edge> outEdges = this.getOutEdges(edge);
 
-            for (final Edge outEdge : outEdges)
+        for (final Edge outEdge : outEdges)
+        {
+            if (outEdges.size() >= this.minInAndOutEdges
+                    && this.edgeIntersectsTollFeature(outEdge)
+                    && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
-                if (this.edgeIntersectsTollFeature(outEdge)
-                        && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
-                {
-                    return this.getAreaOrNodeIntersectionId(outEdge, abtNearbyTollEdges);
-                }
-                if (!this.edgeIntersectsTollFeature(outEdge)
-                        && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
-                {
-                    abtNearbyTollEdges.add(outEdge.getIdentifier());
-                    return this.getNearbyTollFeatureOutEdgeSide(outEdge, abtNearbyTollEdges);
-                }
+                return this.getAreaOrNodeIntersectionId(outEdge, abtNearbyTollEdges);
+            }
+            if (outEdges.size() >= this.minInAndOutEdges
+                    && !this.edgeIntersectsTollFeature(outEdge)
+                    && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
+            {
+                abtNearbyTollEdges.add(outEdge.getIdentifier());
+                return this.getNearbyTollFeatureOutEdgeSide(outEdge, abtNearbyTollEdges);
             }
         }
         return null;
@@ -464,26 +462,6 @@ public class TollValidationCheck extends BaseCheck<Long>
     /**
      * @param edge
      *            some edge
-     * @return boolean about in edge count
-     */
-    private boolean hasAtLeastOneInEdge(final Edge edge)
-    {
-        return !this.getInEdges(edge).isEmpty();
-    }
-
-    /**
-     * @param edge
-     *            some edge
-     * @return boolean about out edge count
-     */
-    private boolean hasAtLeastOneOutEdge(final Edge edge)
-    {
-        return !this.getOutEdges(edge).isEmpty();
-    }
-
-    /**
-     * @param edge
-     *            some edge
      * @return tag inconsistencies between 3 consecutive edges.
      */
     private boolean hasInconsistentTollTag(final Edge edge)
@@ -496,7 +474,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                 .filter(outEdge -> outEdge.getOsmIdentifier() != edge.getOsmIdentifier()
                         && outEdge.getIdentifier() > 0 && HighwayTag.isCarNavigableHighway(outEdge))
                 .collect(Collectors.toSet());
-        if (inEdges.size() == 1 && outEdges.size() == 1)
+        if (inEdges.size() == this.minInAndOutEdges && outEdges.size() == this.minInAndOutEdges)
         {
             return this.inconsistentTollTagLogic(inEdges, outEdges, edge);
         }
