@@ -439,7 +439,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                 if (this.edgeIntersectsTollFeature(outEdge)
                         && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
                 {
-                    return getAreaOrNodeIntersectionId(outEdge, abtNearbyTollEdges);
+                    return this.getAreaOrNodeIntersectionId(outEdge, abtNearbyTollEdges);
                 }
                 if (!this.edgeIntersectsTollFeature(outEdge)
                         && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
