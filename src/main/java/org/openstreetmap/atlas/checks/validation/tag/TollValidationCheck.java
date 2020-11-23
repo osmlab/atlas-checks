@@ -121,13 +121,12 @@ public class TollValidationCheck extends BaseCheck<Long>
                     .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, abtNearbyTollEdges);
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(1, edgeInQuestion.getOsmIdentifier(),
-                            escapableInEdge.getOsmIdentifier(),
-                            escapableOutEdge.getOsmIdentifier(), nearbyTollFeatureUpstream,
-                            nearbyTollFeatureDownstream)));
+                            escapableInEdge.getOsmIdentifier(), escapableOutEdge.getOsmIdentifier(),
+                            nearbyTollFeatureUpstream, nearbyTollFeatureDownstream)));
         }
 
-        if (this.escapableEdgesNullChecker(escapableInEdge, escapableOutEdge) &&
-            !this.markedInconsistentToll.contains(escapableOutEdge.getOsmIdentifier())
+        if (this.escapableEdgesNullChecker(escapableInEdge, escapableOutEdge)
+                && !this.markedInconsistentToll.contains(escapableOutEdge.getOsmIdentifier())
                 && this.hasInconsistentTollTag(escapableOutEdge))
         {
             this.markedInconsistentToll.add(escapableOutEdge.getOsmIdentifier());
@@ -335,32 +334,33 @@ public class TollValidationCheck extends BaseCheck<Long>
     }
 
     /**
-     *
-     * @param escapableInEdge escapable in edge
-     * @param escapableOutEdge escapable out edge
+     * @param escapableInEdge
+     *            escapable in edge
+     * @param escapableOutEdge
+     *            escapable out edge
      * @return boolean for if they are both null
      */
-    private boolean escapableEdgesNullChecker(final Edge escapableInEdge, final Edge escapableOutEdge)
+    private boolean escapableEdgesNullChecker(final Edge escapableInEdge,
+            final Edge escapableOutEdge)
     {
         return escapableInEdge != null && escapableOutEdge != null;
     }
 
     /**
-     *
-     * @param edge an edge
-     * @param abtNearbyTollEdges edge that have already been touched when recursing.
+     * @param edge
+     *            an edge
+     * @param abtNearbyTollEdges
+     *            edge that have already been touched when recursing.
      * @return Id for intersecting toll feature.
      */
     private Long getAreaOrNodeIntersectionId(final Edge edge, final Set<Long> abtNearbyTollEdges)
     {
         abtNearbyTollEdges.add(edge.getIdentifier());
-        final Iterable<Area> intersectingAreas = edge.getAtlas()
-                .areasIntersecting(edge.bounds());
+        final Iterable<Area> intersectingAreas = edge.getAtlas().areasIntersecting(edge.bounds());
         final Iterable<Node> edgeNodes = edge.connectedNodes();
         for (final Area area : intersectingAreas)
         {
-            final boolean areaContainsPolyline = area.asPolygon()
-                    .overlaps(edge.asPolyLine());
+            final boolean areaContainsPolyline = area.asPolygon().overlaps(edge.asPolyLine());
             final Map<String, String> areaTags = area.getOsmTags();
             if (areaContainsPolyline && this.containsBarrierTag(areaTags)
                     && (this.barrierTagContainsToll(areaTags)))
@@ -372,10 +372,8 @@ public class TollValidationCheck extends BaseCheck<Long>
         for (final Node node : edgeNodes)
         {
             final Map<String, String> nodeTags = node.getOsmTags();
-            if ((this.containsHighwayTag(nodeTags)
-                    && this.highwayTagContainsToll(nodeTags))
-                    || (this.containsBarrierTag(nodeTags)
-                    && this.barrierTagContainsToll(nodeTags)))
+            if ((this.containsHighwayTag(nodeTags) && this.highwayTagContainsToll(nodeTags))
+                    || (this.containsBarrierTag(nodeTags) && this.barrierTagContainsToll(nodeTags)))
             {
                 return node.getOsmIdentifier();
             }
@@ -543,24 +541,24 @@ public class TollValidationCheck extends BaseCheck<Long>
     }
 
     /**
-     *
-     * @param inEdges some inedges
-     * @param outEdges some outedges
-     * @param edge some edge
+     * @param inEdges
+     *            some inedges
+     * @param outEdges
+     *            some outedges
+     * @param edge
+     *            some edge
      * @return boolean for inconsistent tagging
      */
-    private boolean inconsistentTollTagLogic(final Set<Edge> inEdges, final Set<Edge> outEdges, final Edge edge)
+    private boolean inconsistentTollTagLogic(final Set<Edge> inEdges, final Set<Edge> outEdges,
+            final Edge edge)
     {
         for (final Edge inEdge : inEdges)
         {
             for (final Edge outEdge : outEdges)
             {
-                if (this.hasSameHighwayTag(edge, inEdge)
-                        && this.hasSameHighwayTag(edge, outEdge)
-                        && this.angleBetweenEdges(edge,
-                        outEdge) >= this.minAngleForContiguousWays
-                        && this.angleBetweenEdges(inEdge,
-                        edge) >= this.minAngleForContiguousWays)
+                if (this.hasSameHighwayTag(edge, inEdge) && this.hasSameHighwayTag(edge, outEdge)
+                        && this.angleBetweenEdges(edge, outEdge) >= this.minAngleForContiguousWays
+                        && this.angleBetweenEdges(inEdge, edge) >= this.minAngleForContiguousWays)
                 {
                     final Map<String, String> inEdgeOsmTags = inEdge.getOsmTags();
                     final Map<String, String> outEdgeOsmTags = outEdge.getOsmTags();
@@ -575,42 +573,49 @@ public class TollValidationCheck extends BaseCheck<Long>
     }
 
     /**
-     *
-     * @param edgeInQuestion the edge in question
-     * @param edgeInQuestionTags tags of edge in question
+     * @param edgeInQuestion
+     *            the edge in question
+     * @param edgeInQuestionTags
+     *            tags of edge in question
      * @return boolean if is case one
      */
-    private boolean isCaseOne(final Edge edgeInQuestion, final Map<String, String> edgeInQuestionTags)
+    private boolean isCaseOne(final Edge edgeInQuestion,
+            final Map<String, String> edgeInQuestionTags)
     {
         return !this.hasTollYesTag(edgeInQuestionTags)
                 && this.edgeIntersectsTollFeature(edgeInQuestion);
     }
 
     /**
-     *
-     * @param edgeInQuestion edge in question
-     * @param edgeInQuestionTags edge in question osm tags
-     * @param escapableInEdge edge that proves edge in question is toll escapable
-     * @param escapableOutEdge edge that proves edge in question is toll escapable
+     * @param edgeInQuestion
+     *            edge in question
+     * @param edgeInQuestionTags
+     *            edge in question osm tags
+     * @param escapableInEdge
+     *            edge that proves edge in question is toll escapable
+     * @param escapableOutEdge
+     *            edge that proves edge in question is toll escapable
      * @return boolean if is case three
      */
-    private boolean isCaseThree(final Edge edgeInQuestion, final Map<String, String> edgeInQuestionTags, final Edge escapableInEdge, final Edge escapableOutEdge)
+    private boolean isCaseThree(final Edge edgeInQuestion,
+            final Map<String, String> edgeInQuestionTags, final Edge escapableInEdge,
+            final Edge escapableOutEdge)
     {
         return this.hasTollYesTag(edgeInQuestionTags)
-                && !this.edgeIntersectsTollFeature(edgeInQuestion)
-                && escapableInEdge != null
-                && escapableOutEdge != null
-                && !this.hasInconsistentTollTag(escapableOutEdge)
+                && !this.edgeIntersectsTollFeature(edgeInQuestion) && escapableInEdge != null
+                && escapableOutEdge != null && !this.hasInconsistentTollTag(escapableOutEdge)
                 && !this.hasInconsistentTollTag(escapableInEdge);
     }
 
     /**
-     *
-     * @param edgeInQuestion edge in question
-     * @param edgeInQuestionTags edge in question tags
+     * @param edgeInQuestion
+     *            edge in question
+     * @param edgeInQuestionTags
+     *            edge in question tags
      * @return boolean if is case two
      */
-    private boolean isCaseTwo(final Edge edgeInQuestion, final Map<String, String> edgeInQuestionTags)
+    private boolean isCaseTwo(final Edge edgeInQuestion,
+            final Map<String, String> edgeInQuestionTags)
     {
         return !this.hasTollYesTag(edgeInQuestionTags)
                 && !this.markedInconsistentToll.contains(edgeInQuestion.getOsmIdentifier())
