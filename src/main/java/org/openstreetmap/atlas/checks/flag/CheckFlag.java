@@ -494,7 +494,7 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
      * 
      * @param includeFixSuggestions
      *            true if we want to upload fix suggestions, false if not
-     * @return @return a {@link Task}
+     * @return a {@link Task}
      */
     public Task getMapRouletteTask(final boolean includeFixSuggestions)
     {
