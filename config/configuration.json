@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -964,7 +964,6 @@
     "minHighwayType": "tertiary"
   },
   "TollValidationCheck": {
-    "enabled": true,
     "minimumHighwayType": "tertiary",
     "minAngleForContiguousWays": 140.0,
     "minInAndOutEdges": 1.0,
