@@ -238,8 +238,11 @@ public class TollValidationCheck extends BaseCheck<Long>
         for (final Node node : edgeNodes)
         {
             final Map<String, String> nodeTags = node.getOsmTags();
-            return (this.containsHighwayTag(nodeTags) && this.highwayTagContainsToll(nodeTags))
-                    || this.containsBarrierTag(nodeTags) && this.barrierTagContainsToll(nodeTags);
+            if ((this.containsHighwayTag(nodeTags) && this.highwayTagContainsToll(nodeTags))
+                    || this.containsBarrierTag(nodeTags) && this.barrierTagContainsToll(nodeTags))
+            {
+                return true;
+            }
         }
         return false;
     }
@@ -296,7 +299,7 @@ public class TollValidationCheck extends BaseCheck<Long>
         {
             if (outEdges.size() >= this.minInAndOutEdges
                     && !abtObjectIds.contains(outEdge.getIdentifier())
-                    && outEdge.highwayTag().isMoreImportantThan(HighwayTag.RESIDENTIAL)
+                    && outEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
                     && this.hasSameHighwayTag(edge, outEdge)
                     && this.angleBetweenEdges(edge, outEdge) >= this.minAngleForContiguousWays)
             {
