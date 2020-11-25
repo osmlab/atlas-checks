@@ -45,7 +45,7 @@ public class WaterbodyAndIslandSizeCheck extends BaseCheck<Long>
             + "of {1,number,#.##} meters squared, which is outside of the expected surface area range"
             + " of {2} square meters to {3} square kilometers. Islets greater than {3} square "
             + "kilometers should likely be tagged as place=ISLAND.";
-    private static final double WATERBODY_MIN_AREA_DEFAULT = 0.5;
+    private static final double WATERBODY_MIN_AREA_DEFAULT = 10;
     // Waterbody maximum is based on the Caspian Sea surface area, the largest island waterbody in
     // OSM that is tagged with natural=water.
     private static final double WATERBODY_MAX_AREA_DEFAULT = 337000;
