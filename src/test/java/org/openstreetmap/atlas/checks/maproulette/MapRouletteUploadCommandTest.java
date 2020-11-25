@@ -106,6 +106,7 @@ public class MapRouletteUploadCommandTest
             unzippedProcessor.process(this.setup.getTwoCountryFlag());
             unzippedProcessor.process(this.setup.getAnotherBasicFlag());
             unzippedProcessor.process(this.setup.getFlagSameCheck());
+            unzippedProcessor.process(this.setup.getFlagNoObjects());
             unzippedProcessor.process(new ShutdownEvent());
 
             // Create a zipped file
