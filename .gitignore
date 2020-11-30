@@ -20,3 +20,6 @@
 /bin/
 **/ignored/
 /data/*.pbf
+.eggs
+*.egg-info
+__pycache__
