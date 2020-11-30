@@ -8,7 +8,8 @@ project.ext.versions = [
     postgis: '2.1.7.2',
     postgres: '42.2.6',
     spring: '4.2.2.RELEASE',
-    mockito: '2.23.0'
+    mockito: '2.23.0',
+    log4j: '1.2.17'
 ]
 
 project.ext.packages = [
@@ -20,5 +21,6 @@ project.ext.packages = [
     postgis: "net.postgis:postgis-jdbc:${versions.postgis}",
     postgres: "org.postgresql:postgresql:${versions.postgres}",
     spring: "org.springframework:spring-jdbc:${versions.spring}",
-    mockito: "org.mockito:mockito-core:${versions.mockito}"
+    mockito: "org.mockito:mockito-core:${versions.mockito}",
+    log4j: "log4j:log4j:${versions.log4j}"
 ]
