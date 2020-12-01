@@ -1,7 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import static java.lang.Math.pow;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +11,7 @@ import java.util.stream.Collectors;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.Segment;
+import org.openstreetmap.atlas.geography.Heading;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -23,16 +21,19 @@ import org.openstreetmap.atlas.tags.BarrierTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.TollTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Angle;
 
 /**
- * Auto generated Check template
+ * This check attempts to validate toll tags based on 3 scenarios.
+ * 1. Edge intersects toll feature but is missing toll tag
+ * 2. Edge has inconsistent toll tag compared to surrounding edges
+ * 3. Edge has route that can escape toll feature so the toll tag is modeled incorrectly.
  *
  * @author greichenberger
  */
 public class TollValidationCheck extends BaseCheck<Long>
 {
-    // You can use serialver to regenerate the serial UID.
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -4286937145318778446L;
     private static final String INTERSECTS_TOLL_FEATURE = "Way {0, number, #} intersects toll feature but is missing toll tag, please investigate toll tag addition.";
     private static final String ESCAPABLE_TOLL = "Toll tags need to be investigated for removal on way {0, number, #}. Please check ways {1, number, #} and {2, number, #} and affected nearby ways for modeling issues. Nearby toll features "
             + "that might be helpful are: upstream {3, number, #} and downstream {4, number, #}.";
@@ -40,13 +41,13 @@ public class TollValidationCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INTERSECTS_TOLL_FEATURE,
             ESCAPABLE_TOLL, INCONSISTENT_TOLL_TAGS);
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
-    private static final double MIN_ANGLE_DEFAULT = 140.0;
+    private static final Angle MIN_ANGLE_DEFAULT = Angle.degrees(140);
     private static final double MIN_IN_OUT_EDGES = 1.0;
     private final Set<Long> markedInconsistentToll = new HashSet<>();
     private final Set<Long> markedIntersectingTollFeature = new HashSet<>();
     private final HighwayTag minHighwayType;
     private final double minInAndOutEdges;
-    private final double minAngleForContiguousWays;
+    private final Angle minAngleForContiguousWays;
 
     /**
      * @param configuration
@@ -72,16 +73,10 @@ public class TollValidationCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if (TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
-                && HighwayTag.isCarNavigableHighway(object)
-                && !isFlagged(object.getOsmIdentifier()))
-        {
-            final Edge edgeInQuestion = ((Edge) object).getMainEdge();
-            final Map<String, String> keySet = edgeInQuestion.getOsmTags();
-            return !this.isPrivateAccess(keySet)
-                    && edgeInQuestion.highwayTag().isMoreImportantThan(this.minHighwayType);
-        }
-        return false;
+        return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
+                && ((Edge) object).highwayTag().isMoreImportantThan(this.minHighwayType)
+                && !isFlagged(object.getOsmIdentifier())
+                && !this.isPrivateAccess(object.getOsmTags());
     }
 
     /**
@@ -94,8 +89,8 @@ public class TollValidationCheck extends BaseCheck<Long>
     {
         final Edge edgeInQuestion = ((Edge) object).getMainEdge();
         final Map<String, String> edgeInQuestionTags = edgeInQuestion.getOsmTags();
-        final Set<Long> abtNearbyTollEdges = new HashSet<>();
-        final Set<Long> abtObjectIds = new HashSet<>();
+        final Set<Long> alreadyCheckedNearbyTollEdges = new HashSet<>();
+        final Set<Long> alreadyCheckedObjectIds = new HashSet<>();
 
         // Case One: Edge intersects toll feature but is missing toll tag.
         if (this.isCaseOne(edgeInQuestion, edgeInQuestionTags))
@@ -114,9 +109,9 @@ public class TollValidationCheck extends BaseCheck<Long>
         }
 
         final Edge escapableInEdge = this.edgeProvingBackwardsIsEscapable(edgeInQuestion,
-                abtObjectIds);
+                alreadyCheckedObjectIds).orElse(null);
         final Edge escapableOutEdge = this.edgeProvingForwardIsEscapable(edgeInQuestion,
-                abtObjectIds);
+                alreadyCheckedObjectIds).orElse(null);
 
         // Case three: tag modeling needs to be investigate on and around edge in question/proved
         // escapable routes
@@ -125,9 +120,9 @@ public class TollValidationCheck extends BaseCheck<Long>
         {
             markAsFlagged(object.getOsmIdentifier());
             final Long nearbyTollFeatureUpstream = this
-                    .getNearbyTollFeatureInEdgeSide(edgeInQuestion, abtNearbyTollEdges);
+                    .getNearbyTollFeatureInEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges).orElse(null);
             final Long nearbyTollFeatureDownstream = this
-                    .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, abtNearbyTollEdges);
+                    .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges).orElse(null);
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(1, edgeInQuestion.getOsmIdentifier(),
                             escapableInEdge.getOsmIdentifier(), escapableOutEdge.getOsmIdentifier(),
@@ -149,18 +144,14 @@ public class TollValidationCheck extends BaseCheck<Long>
      *            just another edge
      * @return angle in degrees between edges (segments)
      */
-    private double angleBetweenEdges(final Edge edge1, final Edge edge2)
+    private Angle angleBetweenEdges(final Edge edge1, final Edge edge2)
     {
-        final List<Segment> edge1Segments = edge1.asPolyLine().segments();
-        final List<Segment> edge2Segments = edge2.asPolyLine().segments();
-        final Segment edge1EndSeg = edge1Segments.get(edge1Segments.size() - 1);
-        final Segment edge2StartSeg = edge2Segments.get(0);
-        final double aLength = edge1EndSeg.length().asMeters();
-        final double bLength = edge2StartSeg.length().asMeters();
-        final double cLength = new Segment(edge1EndSeg.start(), edge2StartSeg.end()).length()
-                .asMeters();
-        return Math.toDegrees(Math.acos(
-                (pow(aLength, 2) + pow(bLength, 2) - pow(cLength, 2)) / (2 * aLength * bLength)));
+        final Optional<Heading> edge1heading = edge1.asPolyLine().finalHeading();
+        final Optional<Heading> edge2heading = edge2.asPolyLine().initialHeading();
+        if (edge1heading.isPresent() && edge2heading.isPresent()){
+            return edge1heading.get().difference(edge2heading.get());
+        }
+        return Angle.NONE;
     }
 
     /**
@@ -250,75 +241,75 @@ public class TollValidationCheck extends BaseCheck<Long>
     /**
      * @param edge
      *            edge in question
-     * @param abtObjectIds
+     * @param alreadyCheckedObjectIds
      *            already been touched IDs
      * @return edge that proves backwards is escapable
      */
-    private Edge edgeProvingBackwardsIsEscapable(final Edge edge, final Set<Long> abtObjectIds)
+    private Optional<Edge> edgeProvingBackwardsIsEscapable(final Edge edge, final Set<Long> alreadyCheckedObjectIds)
     {
         final Set<Edge> inEdges = this.getInEdges(edge);
 
         for (final Edge inEdge : inEdges)
         {
             if (inEdges.size() >= this.minInAndOutEdges
-                    && !abtObjectIds.contains(inEdge.getIdentifier())
+                    && !alreadyCheckedObjectIds.contains(inEdge.getIdentifier())
                     && inEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
                     && this.hasSameHighwayTag(edge, inEdge)
-                    && this.angleBetweenEdges(inEdge, edge) >= this.minAngleForContiguousWays)
+                    && this.angleBetweenEdges(inEdge, edge).asDegrees() >= this.minAngleForContiguousWays.asDegrees())
             {
-                abtObjectIds.add(inEdge.getIdentifier());
+                alreadyCheckedObjectIds.add(inEdge.getIdentifier());
                 final Map<String, String> keySet = inEdge.getOsmTags();
 
                 if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
                         && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
                 {
-                    return inEdge;
+                    return Optional.of(inEdge);
                 }
 
                 if (!this.edgeIntersectsTollFeature(inEdge) && this.containsTollTag(keySet)
                         && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
                 {
-                    return this.edgeProvingBackwardsIsEscapable(inEdge, abtObjectIds);
+                    return this.edgeProvingBackwardsIsEscapable(inEdge, alreadyCheckedObjectIds);
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
      * @param edge
      *            edge in question
-     * @param abtObjectIds
+     * @param alreadyCheckedObjectIds
      *            already been touched Ids
      * @return edge proving forward is escapable.
      */
-    private Edge edgeProvingForwardIsEscapable(final Edge edge, final Set<Long> abtObjectIds)
+    private Optional<Edge> edgeProvingForwardIsEscapable(final Edge edge, final Set<Long> alreadyCheckedObjectIds)
     {
         final Set<Edge> outEdges = this.getOutEdges(edge);
         for (final Edge outEdge : outEdges)
         {
             if (outEdges.size() >= this.minInAndOutEdges
-                    && !abtObjectIds.contains(outEdge.getIdentifier())
+                    && !alreadyCheckedObjectIds.contains(outEdge.getIdentifier())
                     && outEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
                     && this.hasSameHighwayTag(edge, outEdge)
-                    && this.angleBetweenEdges(edge, outEdge) >= this.minAngleForContiguousWays)
+                    && this.angleBetweenEdges(edge, outEdge).asDegrees() >= this.minAngleForContiguousWays.asDegrees())
             {
-                abtObjectIds.add(outEdge.getIdentifier());
+                alreadyCheckedObjectIds.add(outEdge.getIdentifier());
                 final Map<String, String> keySet = outEdge.getOsmTags();
 
                 if ((!this.containsTollTag(keySet)) || (this.containsTollTag(keySet)
                         && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.NO.toString())))
                 {
-                    return outEdge;
+                    return Optional.of(outEdge);
                 }
                 if (!this.edgeIntersectsTollFeature(outEdge) && this.containsTollTag(keySet)
                         && keySet.get(TollTag.KEY).equalsIgnoreCase(TollTag.YES.toString()))
                 {
-                    return this.edgeProvingForwardIsEscapable(outEdge, abtObjectIds);
+                    return this.edgeProvingForwardIsEscapable(outEdge, alreadyCheckedObjectIds);
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -337,13 +328,13 @@ public class TollValidationCheck extends BaseCheck<Long>
     /**
      * @param edge
      *            an edge
-     * @param abtNearbyTollEdges
+     * @param alreadyCheckedNearbyTollEdges
      *            edge that have already been touched when recursing.
      * @return Id for intersecting toll feature.
      */
-    private Long getAreaOrNodeIntersectionId(final Edge edge, final Set<Long> abtNearbyTollEdges)
+    private Optional<Long> getAreaOrNodeIntersectionId(final Edge edge, final Set<Long> alreadyCheckedNearbyTollEdges)
     {
-        abtNearbyTollEdges.add(edge.getIdentifier());
+        alreadyCheckedNearbyTollEdges.add(edge.getIdentifier());
         final Iterable<Area> intersectingAreas = edge.getAtlas().areasIntersecting(edge.bounds());
         final Iterable<Node> edgeNodes = edge.connectedNodes();
         for (final Area area : intersectingAreas)
@@ -353,7 +344,7 @@ public class TollValidationCheck extends BaseCheck<Long>
             if (areaContainsPolyline && this.containsBarrierTag(areaTags)
                     && (this.barrierTagContainsToll(areaTags)))
             {
-                return area.getOsmIdentifier();
+                return Optional.of(area.getOsmIdentifier());
             }
         }
 
@@ -363,10 +354,10 @@ public class TollValidationCheck extends BaseCheck<Long>
             if ((this.containsHighwayTag(nodeTags) && this.highwayTagContainsToll(nodeTags))
                     || (this.containsBarrierTag(nodeTags) && this.barrierTagContainsToll(nodeTags)))
             {
-                return node.getOsmIdentifier();
+                return Optional.of(node.getOsmIdentifier());
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -376,7 +367,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      */
     private Set<Edge> getInEdges(final Edge edge)
     {
-        return edge.inEdges().stream().filter(someEdge -> someEdge.getIdentifier() > 0
+        return edge.inEdges().stream().filter(someEdge -> someEdge.isMainEdge()
                 && HighwayTag.isCarNavigableHighway(someEdge)).collect(Collectors.toSet());
     }
 
@@ -385,24 +376,24 @@ public class TollValidationCheck extends BaseCheck<Long>
      *            edge in question
      * @return nearby toll feature id on the in edge side of the edge in question (upstream)
      */
-    private Long getNearbyTollFeatureInEdgeSide(final Edge edge, final Set<Long> abtNearbyTollEdges)
+    private Optional<Long> getNearbyTollFeatureInEdgeSide(final Edge edge, final Set<Long> alreadyCheckedNearbyTollEdges)
     {
         final Set<Edge> inEdges = this.getInEdges(edge);
         for (final Edge inEdge : inEdges)
         {
             if (inEdges.size() >= this.minInAndOutEdges && this.edgeIntersectsTollFeature(inEdge)
-                    && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
+                    && !alreadyCheckedNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
-                return this.getAreaOrNodeIntersectionId(inEdge, abtNearbyTollEdges);
+                return this.getAreaOrNodeIntersectionId(inEdge, alreadyCheckedNearbyTollEdges);
             }
             if (inEdges.size() >= this.minInAndOutEdges && !this.edgeIntersectsTollFeature(inEdge)
-                    && !abtNearbyTollEdges.contains(inEdge.getIdentifier()))
+                    && !alreadyCheckedNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
-                abtNearbyTollEdges.add(inEdge.getIdentifier());
-                return this.getNearbyTollFeatureInEdgeSide(inEdge, abtNearbyTollEdges);
+                alreadyCheckedNearbyTollEdges.add(inEdge.getIdentifier());
+                return this.getNearbyTollFeatureInEdgeSide(inEdge, alreadyCheckedNearbyTollEdges);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -410,26 +401,26 @@ public class TollValidationCheck extends BaseCheck<Long>
      *            edge in question
      * @return nearby toll feature id on the out edge side of the edge in question (downstream)
      */
-    private Long getNearbyTollFeatureOutEdgeSide(final Edge edge,
-            final Set<Long> abtNearbyTollEdges)
+    private Optional<Long> getNearbyTollFeatureOutEdgeSide(final Edge edge,
+            final Set<Long> alreadyCheckedNearbyTollEdges)
     {
         final Set<Edge> outEdges = this.getOutEdges(edge);
 
         for (final Edge outEdge : outEdges)
         {
             if (outEdges.size() >= this.minInAndOutEdges && this.edgeIntersectsTollFeature(outEdge)
-                    && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
+                    && !alreadyCheckedNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
-                return this.getAreaOrNodeIntersectionId(outEdge, abtNearbyTollEdges);
+                return this.getAreaOrNodeIntersectionId(outEdge, alreadyCheckedNearbyTollEdges);
             }
             if (outEdges.size() >= this.minInAndOutEdges && !this.edgeIntersectsTollFeature(outEdge)
-                    && !abtNearbyTollEdges.contains(outEdge.getIdentifier()))
+                    && !alreadyCheckedNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
-                abtNearbyTollEdges.add(outEdge.getIdentifier());
-                return this.getNearbyTollFeatureOutEdgeSide(outEdge, abtNearbyTollEdges);
+                alreadyCheckedNearbyTollEdges.add(outEdge.getIdentifier());
+                return this.getNearbyTollFeatureOutEdgeSide(outEdge, alreadyCheckedNearbyTollEdges);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -439,7 +430,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      */
     private Set<Edge> getOutEdges(final Edge edge)
     {
-        return edge.outEdges().stream().filter(someEdge -> someEdge.getIdentifier() > 0
+        return edge.outEdges().stream().filter(someEdge -> someEdge.isMainEdge()
                 && HighwayTag.isCarNavigableHighway(someEdge)).collect(Collectors.toSet());
     }
 
@@ -452,11 +443,11 @@ public class TollValidationCheck extends BaseCheck<Long>
     {
         final Set<Edge> inEdges = edge.inEdges().stream()
                 .filter(inEdge -> inEdge.getOsmIdentifier() != edge.getOsmIdentifier()
-                        && inEdge.getIdentifier() > 0 && HighwayTag.isCarNavigableHighway(inEdge))
+                        && inEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(inEdge))
                 .collect(Collectors.toSet());
         final Set<Edge> outEdges = edge.outEdges().stream()
                 .filter(outEdge -> outEdge.getOsmIdentifier() != edge.getOsmIdentifier()
-                        && outEdge.getIdentifier() > 0 && HighwayTag.isCarNavigableHighway(outEdge))
+                        && outEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(outEdge))
                 .collect(Collectors.toSet());
         if (inEdges.size() == this.minInAndOutEdges && outEdges.size() == this.minInAndOutEdges)
         {
@@ -519,8 +510,8 @@ public class TollValidationCheck extends BaseCheck<Long>
             for (final Edge outEdge : outEdges)
             {
                 if (this.hasSameHighwayTag(edge, inEdge) && this.hasSameHighwayTag(edge, outEdge)
-                        && this.angleBetweenEdges(edge, outEdge) >= this.minAngleForContiguousWays
-                        && this.angleBetweenEdges(inEdge, edge) >= this.minAngleForContiguousWays)
+                        && this.angleBetweenEdges(edge, outEdge).asDegrees() >= this.minAngleForContiguousWays.asDegrees()
+                        && this.angleBetweenEdges(inEdge, edge).asDegrees() >= this.minAngleForContiguousWays.asDegrees())
                 {
                     final Map<String, String> inEdgeOsmTags = inEdge.getOsmTags();
                     final Map<String, String> outEdgeOsmTags = outEdge.getOsmTags();
@@ -540,6 +531,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @param edgeInQuestionTags
      *            tags of edge in question
      * @return boolean if is case one
+     * This case checks if an edge is intersecting a toll feature and is missing a toll tag.
      */
     private boolean isCaseOne(final Edge edgeInQuestion,
             final Map<String, String> edgeInQuestionTags)
@@ -559,6 +551,8 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @param escapableOutEdge
      *            edge that proves edge in question is toll escapable
      * @return boolean if is case three
+     * This case checks edges with a toll tag to see if it has has a route that can escape the toll, if so there is a modeling issue either on the edge in question
+     *             or nearby on the escapable route.
      */
     private boolean isCaseThree(final Edge edgeInQuestion,
             final Map<String, String> edgeInQuestionTags, final Edge escapableInEdge,
@@ -576,6 +570,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @param edgeInQuestionTags
      *            edge in question tags
      * @return boolean if is case two
+     * This case checks for a way without a toll tag between 2 ways that do have a toll=yes tag
      */
     private boolean isCaseTwo(final Edge edgeInQuestion,
             final Map<String, String> edgeInQuestionTags)

@@ -29,6 +29,7 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(SUDDEN_HIGHWAY_TYPE_CHANGE_INSTRUCTION);
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
+    private static final long serialVersionUID = -4091313755808560402L;
     private final HighwayTag minHighwayType;
 
     /**
