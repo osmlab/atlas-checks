@@ -180,7 +180,6 @@ class CloudAtlasChecksControl:
             else:
                 cmd = ("echo '{{\n\"cmd\":\"{}\"\n}}' > {}INFO "
                 .format(" ".join(sys.argv), self.atlasOutDir))
-            logger.info(cmd)
             if self.ssh_cmd(cmd):
                 finish("Unable to write info file", -1)
 
@@ -607,7 +606,7 @@ def parse_args(cloudctl):
     parser_check.add_argument(
         "--input",
         required=True,
-        help="IN - The S3 Input directory that contains atlas file directories and sharing.txt. "
+        help="IN - The S3 Input directory that contains atlas file directories and sharding.txt. "
         "(e.g. s3://bucket/path/to/atlas/file/dir/)",
     )
     parser_check.add_argument(
