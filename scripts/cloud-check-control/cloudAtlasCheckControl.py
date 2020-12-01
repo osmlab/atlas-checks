@@ -175,10 +175,12 @@ class CloudAtlasChecksControl:
                 finish("Failed to copy sharding.txt", -1)
 
             if self.info is not None:
-                cmd = ("echo '{}\n\"cmd\":\"{}\"' > {}INFO "
+                cmd = ("echo '{{\n{},\n\"cmd\":\"{}\"\n}}' > {}INFO "
                 .format(self.info, " ".join(sys.argv), self.atlasOutDir))
             else:
-                cmd = "rm -f {}INFO".format(self.info, self.atlasOutDir)
+                cmd = ("echo '{{\n\"cmd\":\"{}\"\n}}' > {}INFO "
+                .format(" ".join(sys.argv), self.atlasOutDir))
+            logger.info(cmd)
             if self.ssh_cmd(cmd):
                 finish("Unable to write info file", -1)
 
