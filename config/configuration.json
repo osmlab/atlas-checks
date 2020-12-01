@@ -967,6 +967,7 @@
     "minimumHighwayType": "tertiary",
     "maxAngleDiffForContiguousWays": 40.0,
     "minInAndOutEdges": 1.0,
+    "maxIterationForNearbySearch": 15.0,
     "challenge": {
       "description": "Toll tags might be incorrect since tolls could possibly be avoided",
       "blurb": "Toll Escape",

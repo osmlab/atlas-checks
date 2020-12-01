@@ -1,8 +1,13 @@
 # TollValidationCheck
 
 #### Description
-
 The purpose of this check is to identify ways that need to have their toll tags investigated/added/removed.
+
+#### Configurables
+- ***minimumHighwayType***: minimum highway type to include in this check. Tolls mainly reside on highways.
+- ***maxAngleDiffForContiguousWays***: maximum angle difference between edges to be considered contiguous ways. This is important since most of the toll related investigation is on highways with small angle turns.
+- ***minInAndOutEdges***: minimum count of Main in AND out edges from given way. This is important because there is logic that relies on an edge that does have at least one edge on the downstream and upstream side.
+- ***maxIterationForNearbySearch***: maximum amount of iterations to complete while searching for nearby toll features.
 
 #### Live Examples
 Way Intersects Toll Feature - Missing toll tag

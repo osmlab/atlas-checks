@@ -41,12 +41,14 @@ public class TollValidationCheck extends BaseCheck<Long>
             ESCAPABLE_TOLL, INCONSISTENT_TOLL_TAGS);
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
     private static final Double MAX_ANGLE_DIFF_DEFAULT = 40.0;
-    private static final double MIN_IN_OUT_EDGES = 1.0;
+    private static final double MIN_IN_OUT_EDGES_DEFAULT = 1.0;
+    private static final double MAX_ITERATION_FOR_SEARCH_DEFAULT = 15.0;
     private final Set<Long> markedInconsistentToll = new HashSet<>();
     private final Set<Long> markedIntersectingTollFeature = new HashSet<>();
     private final HighwayTag minHighwayType;
     private final double minInAndOutEdges;
     private final double maxAngleDiffForContiguousWays;
+    private final double maxIterationForNearbySearch;
 
     /**
      * @param configuration
@@ -61,7 +63,9 @@ public class TollValidationCheck extends BaseCheck<Long>
         this.maxAngleDiffForContiguousWays = this.configurationValue(configuration,
                 "maxAngleDiffForContiguousWays", MAX_ANGLE_DIFF_DEFAULT);
         this.minInAndOutEdges = this.configurationValue(configuration, "minInAndOutEdges",
-                MIN_IN_OUT_EDGES);
+                MIN_IN_OUT_EDGES_DEFAULT);
+        this.maxIterationForNearbySearch = this.configurationValue(configuration,
+                "maxIterationForNearbySearch", MAX_ITERATION_FOR_SEARCH_DEFAULT);
     }
 
     /**
@@ -120,11 +124,14 @@ public class TollValidationCheck extends BaseCheck<Long>
                 .isCaseThree(edgeInQuestion, edgeInQuestionTags, escapableInEdge, escapableOutEdge))
         {
             markAsFlagged(object.getOsmIdentifier());
+            double recursionCount = 0;
             final Long nearbyTollFeatureUpstream = this
-                    .getNearbyTollFeatureInEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges)
+                    .getNearbyTollFeatureInEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges,
+                            recursionCount)
                     .orElse(null);
             final Long nearbyTollFeatureDownstream = this
-                    .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges)
+                    .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges,
+                            recursionCount)
                     .orElse(null);
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(1, edgeInQuestion.getOsmIdentifier(),
@@ -386,7 +393,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @return nearby toll feature id on the in edge side of the edge in question (upstream)
      */
     private Optional<Long> getNearbyTollFeatureInEdgeSide(final Edge edge,
-            final Set<Long> alreadyCheckedNearbyTollEdges)
+            final Set<Long> alreadyCheckedNearbyTollEdges, double recursionCount)
     {
         final Set<Edge> inEdges = this.getInEdges(edge);
         for (final Edge inEdge : inEdges)
@@ -396,11 +403,15 @@ public class TollValidationCheck extends BaseCheck<Long>
             {
                 return this.getAreaOrNodeIntersectionId(inEdge, alreadyCheckedNearbyTollEdges);
             }
-            if (inEdges.size() >= this.minInAndOutEdges && !this.edgeIntersectsTollFeature(inEdge)
+            if (recursionCount <= this.maxIterationForNearbySearch
+                    && inEdges.size() >= this.minInAndOutEdges
+                    && !this.edgeIntersectsTollFeature(inEdge)
                     && !alreadyCheckedNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
                 alreadyCheckedNearbyTollEdges.add(inEdge.getIdentifier());
-                return this.getNearbyTollFeatureInEdgeSide(inEdge, alreadyCheckedNearbyTollEdges);
+                recursionCount++;
+                return this.getNearbyTollFeatureInEdgeSide(inEdge, alreadyCheckedNearbyTollEdges,
+                        recursionCount);
             }
         }
         return Optional.empty();
@@ -412,7 +423,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @return nearby toll feature id on the out edge side of the edge in question (downstream)
      */
     private Optional<Long> getNearbyTollFeatureOutEdgeSide(final Edge edge,
-            final Set<Long> alreadyCheckedNearbyTollEdges)
+            final Set<Long> alreadyCheckedNearbyTollEdges, double recursionCount)
     {
         final Set<Edge> outEdges = this.getOutEdges(edge);
 
@@ -423,11 +434,15 @@ public class TollValidationCheck extends BaseCheck<Long>
             {
                 return this.getAreaOrNodeIntersectionId(outEdge, alreadyCheckedNearbyTollEdges);
             }
-            if (outEdges.size() >= this.minInAndOutEdges && !this.edgeIntersectsTollFeature(outEdge)
+            if (recursionCount <= this.maxIterationForNearbySearch
+                    && outEdges.size() >= this.minInAndOutEdges
+                    && !this.edgeIntersectsTollFeature(outEdge)
                     && !alreadyCheckedNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
                 alreadyCheckedNearbyTollEdges.add(outEdge.getIdentifier());
-                return this.getNearbyTollFeatureOutEdgeSide(outEdge, alreadyCheckedNearbyTollEdges);
+                recursionCount++;
+                return this.getNearbyTollFeatureOutEdgeSide(outEdge, alreadyCheckedNearbyTollEdges,
+                        recursionCount);
             }
         }
         return Optional.empty();
