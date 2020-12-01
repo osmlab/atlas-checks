@@ -40,13 +40,13 @@ public class TollValidationCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INTERSECTS_TOLL_FEATURE,
             ESCAPABLE_TOLL, INCONSISTENT_TOLL_TAGS);
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.RESIDENTIAL.toString();
-    private static final Double MIN_ANGLE_DEFAULT = 40.0;
+    private static final Double MAX_ANGLE_DIFF_DEFAULT = 40.0;
     private static final double MIN_IN_OUT_EDGES = 1.0;
     private final Set<Long> markedInconsistentToll = new HashSet<>();
     private final Set<Long> markedIntersectingTollFeature = new HashSet<>();
     private final HighwayTag minHighwayType;
     private final double minInAndOutEdges;
-    private final double minAngleForContiguousWays;
+    private final double maxAngleDiffForContiguousWays;
 
     /**
      * @param configuration
@@ -58,8 +58,8 @@ public class TollValidationCheck extends BaseCheck<Long>
         final String highwayType = this.configurationValue(configuration, "minHighwayType",
                 HIGHWAY_MINIMUM_DEFAULT);
         this.minHighwayType = Enum.valueOf(HighwayTag.class, highwayType.toUpperCase());
-        this.minAngleForContiguousWays = this.configurationValue(configuration,
-                "minAngleForContiguousWays", MIN_ANGLE_DEFAULT);
+        this.maxAngleDiffForContiguousWays = this.configurationValue(configuration,
+                "maxAngleDiffForContiguousWays", MAX_ANGLE_DIFF_DEFAULT);
         this.minInAndOutEdges = this.configurationValue(configuration, "minInAndOutEdges",
                 MIN_IN_OUT_EDGES);
     }
@@ -260,7 +260,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                     && !alreadyCheckedObjectIds.contains(inEdge.getIdentifier())
                     && inEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
                     && this.hasSameHighwayTag(edge, inEdge) && this.angleBetweenEdges(inEdge, edge)
-                            .asDegrees() <= this.minAngleForContiguousWays)
+                            .asDegrees() <= this.maxAngleDiffForContiguousWays)
             {
                 alreadyCheckedObjectIds.add(inEdge.getIdentifier());
                 final Map<String, String> keySet = inEdge.getOsmTags();
@@ -299,7 +299,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                     && outEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
                     && this.hasSameHighwayTag(edge, outEdge)
                     && this.angleBetweenEdges(edge, outEdge)
-                            .asDegrees() <= this.minAngleForContiguousWays)
+                            .asDegrees() <= this.maxAngleDiffForContiguousWays)
             {
                 alreadyCheckedObjectIds.add(outEdge.getIdentifier());
                 final Map<String, String> keySet = outEdge.getOsmTags();
@@ -522,9 +522,9 @@ public class TollValidationCheck extends BaseCheck<Long>
             {
                 if (this.hasSameHighwayTag(edge, inEdge) && this.hasSameHighwayTag(edge, outEdge)
                         && this.angleBetweenEdges(edge, outEdge)
-                                .asDegrees() <= this.minAngleForContiguousWays
+                                .asDegrees() <= this.maxAngleDiffForContiguousWays
                         && this.angleBetweenEdges(inEdge, edge)
-                                .asDegrees() <= this.minAngleForContiguousWays)
+                                .asDegrees() <= this.maxAngleDiffForContiguousWays)
                 {
                     final Map<String, String> inEdgeOsmTags = inEdge.getOsmTags();
                     final Map<String, String> outEdgeOsmTags = outEdge.getOsmTags();
