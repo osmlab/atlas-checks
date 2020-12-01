@@ -965,7 +965,7 @@
   },
   "TollValidationCheck": {
     "minimumHighwayType": "tertiary",
-    "minAngleForContiguousWays": 40.0,
+    "maxAngleDiffForContiguousWays": 40.0,
     "minInAndOutEdges": 1.0,
     "challenge": {
       "description": "Toll tags might be incorrect since tolls could possibly be avoided",

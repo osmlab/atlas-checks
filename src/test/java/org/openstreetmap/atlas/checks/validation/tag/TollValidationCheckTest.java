@@ -22,7 +22,7 @@ public class TollValidationCheckTest
     private final TollValidationCheck check = new TollValidationCheck(
             ConfigurationResolver.inlineConfiguration(
                     "{\"TollValidationCheck\": " + "{\"minimumHighwayType\": \"tertiary\"" + ","
-                            + "\"minAngleForContiguousWays\": 140.0}}"));
+                            + "\"maxAngleDiffForContiguousWays\": 40.0}}"));
 
     @Test
     public void escapableWayNeedsTollTagRemoved()
