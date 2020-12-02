@@ -262,7 +262,8 @@ public class TollValidationCheck extends BaseCheck<Long>
             if (inEdges.size() >= this.minInAndOutEdges
                     && !alreadyCheckedObjectIds.contains(inEdge.getIdentifier())
                     && inEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
-                    && this.hasSameHighwayTag(edge, inEdge) && this.angleDiffBetweenEdges(inEdge, edge)
+                    && this.hasSameHighwayTag(edge, inEdge)
+                    && this.angleDiffBetweenEdges(inEdge, edge)
                             .asDegrees() <= this.maxAngleDiffForContiguousWays)
             {
                 alreadyCheckedObjectIds.add(inEdge.getIdentifier());
