@@ -1,6 +1,15 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -360,12 +369,36 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         {
             final Geometry geometry1 = wktReader.read(wktFirst);
             final Geometry geometry2 = wktReader.read(wktSecond);
-            return geometry1.intersects(geometry2) && !(geometry1.within(geometry2) || geometry1.contains(geometry2));
+            if(geometry1.intersects(geometry2))
+            {
+                if(this.isAnyGeometryLineString(geometry1, geometry2))
+                {
+                    return this.isLineIntersectionNotTouch(geometry1, geometry2);
+                }
+                return this.isAreaIntersectionNotTouch(geometry1, geometry2);
+            }
         }
         catch (final ParseException e)
         {
             return false;
         }
+        return false;
+    }
+
+    private boolean isAnyGeometryLineString(final Geometry lineString, final Geometry lineString2)
+    {
+        return lineString.getGeometryType().equals("LineString") && lineString2.getGeometryType().equals("LineString");
+    }
+
+    private boolean isLineIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
+    {
+        return !geometry1.overlaps(geometry2);
+    }
+
+    private boolean isAreaIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
+    {
+        return (!geometry1.covers(geometry2) || !geometry2.coveredBy(geometry1)) &&
+                (!geometry2.covers(geometry1) || !geometry1.coveredBy(geometry2));
     }
 
     private String coordinatesToList(final Coordinate[] locations)
