@@ -12,7 +12,10 @@ import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Heading;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
@@ -98,16 +101,28 @@ public class TollValidationCheck extends BaseCheck<Long>
         if (this.isCaseOne(edgeInQuestion, edgeInQuestionTags))
         {
             markAsFlagged(edgeInQuestion.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, edgeInQuestion.getOsmIdentifier())));
+            return Optional.of(this
+                    .createFlag(object,
+                            this.getLocalizedInstruction(0, edgeInQuestion.getOsmIdentifier()))
+                    .addFixSuggestion(FeatureChange.add(
+                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                    .from((AtlasEntity) object)).withAddedTag(TollTag.KEY,
+                                            TollTag.YES.toString().toLowerCase()),
+                            object.getAtlas())));
         }
 
         // Case Two: Inconsistent toll tags on edge.
         if (this.isCaseTwo(edgeInQuestion, edgeInQuestionTags))
         {
             markAsFlagged(edgeInQuestion.getOsmIdentifier());
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(2, edgeInQuestion.getOsmIdentifier())));
+            return Optional.of(this
+                    .createFlag(object,
+                            this.getLocalizedInstruction(2, edgeInQuestion.getOsmIdentifier()))
+                    .addFixSuggestion(FeatureChange.add(
+                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                    .from((AtlasEntity) object)).withAddedTag(TollTag.KEY,
+                                            TollTag.YES.toString().toLowerCase()),
+                            object.getAtlas())));
         }
 
         final Edge escapableInEdge = this
