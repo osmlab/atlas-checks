@@ -94,6 +94,12 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
             final JsonDeserializationContext context)
     {
         final JsonObject full = json.getAsJsonObject();
+        if (full.get("type") == null)
+        {
+            // Consumers of this deserializer will have to handle this null result. Indicates the
+            // serialized flag is not a FeatureCollection, so it might not have flagged objects
+            return null;
+        }
         final JsonObject properties = full.get(PROPERTIES).getAsJsonObject();
         final String checkName = properties.get(GENERATOR).getAsString();
         // Split the instructions using the new line character and remove the prepended instruction

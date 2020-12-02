@@ -136,6 +136,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                     {
                         final CheckFlag flagRecoveredFromLine = new CheckFlagDeserializer()
                                 .deserialize(new JsonParser().parse(line), null, null);
+                        if (flagRecoveredFromLine == null)
+                        {
+                            // an issue deserializing the flag
+                            return;
+                        }
                         final CheckFlag uploadFlag = OpenStreetMapCheckFlagConverter
                                 .openStreetMapify(flagRecoveredFromLine)
                                 .orElse(flagRecoveredFromLine);
