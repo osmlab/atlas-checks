@@ -22,6 +22,7 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.TollTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
+import org.openstreetmap.atlas.utilities.scalars.Counter;
 
 /**
  * This check attempts to validate toll tags based on 3 scenarios. 1. Edge intersects toll feature
@@ -43,8 +44,6 @@ public class TollValidationCheck extends BaseCheck<Long>
     private static final Double MAX_ANGLE_DIFF_DEFAULT = 40.0;
     private static final double MIN_IN_OUT_EDGES_DEFAULT = 1.0;
     private static final double MAX_ITERATION_FOR_SEARCH_DEFAULT = 15.0;
-    private final Set<Long> markedInconsistentToll = new HashSet<>();
-    private final Set<Long> markedIntersectingTollFeature = new HashSet<>();
     private final HighwayTag minHighwayType;
     private final double minInAndOutEdges;
     private final double maxAngleDiffForContiguousWays;
@@ -98,7 +97,7 @@ public class TollValidationCheck extends BaseCheck<Long>
         // Case One: Edge intersects toll feature but is missing toll tag.
         if (this.isCaseOne(edgeInQuestion, edgeInQuestionTags))
         {
-            this.markedIntersectingTollFeature.add(edgeInQuestion.getOsmIdentifier());
+            markAsFlagged(edgeInQuestion.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, edgeInQuestion.getOsmIdentifier())));
         }
@@ -106,7 +105,7 @@ public class TollValidationCheck extends BaseCheck<Long>
         // Case Two: Inconsistent toll tags on edge.
         if (this.isCaseTwo(edgeInQuestion, edgeInQuestionTags))
         {
-            this.markedInconsistentToll.add(edgeInQuestion.getOsmIdentifier());
+            markAsFlagged(edgeInQuestion.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(2, edgeInQuestion.getOsmIdentifier())));
         }
@@ -124,15 +123,12 @@ public class TollValidationCheck extends BaseCheck<Long>
                 .isCaseThree(edgeInQuestion, edgeInQuestionTags, escapableInEdge, escapableOutEdge))
         {
             markAsFlagged(object.getOsmIdentifier());
-            double recursionCount = 0;
-            final Long nearbyTollFeatureUpstream = this
-                    .getNearbyTollFeatureInEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges,
-                            recursionCount)
-                    .orElse(null);
-            final Long nearbyTollFeatureDownstream = this
-                    .getNearbyTollFeatureOutEdgeSide(edgeInQuestion, alreadyCheckedNearbyTollEdges,
-                            recursionCount)
-                    .orElse(null);
+            final Counter counter = new Counter();
+            final Long nearbyTollFeatureUpstream = this.getNearbyTollFeatureInEdgeSide(
+                    edgeInQuestion, alreadyCheckedNearbyTollEdges, counter).orElse(null);
+            counter.reset();
+            final Long nearbyTollFeatureDownstream = this.getNearbyTollFeatureOutEdgeSide(
+                    edgeInQuestion, alreadyCheckedNearbyTollEdges, counter).orElse(null);
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(1, edgeInQuestion.getOsmIdentifier(),
                             escapableInEdge.getOsmIdentifier(), escapableOutEdge.getOsmIdentifier(),
@@ -154,7 +150,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      *            just another edge
      * @return angle in degrees between edges (segments)
      */
-    private Angle angleBetweenEdges(final Edge edge1, final Edge edge2)
+    private Angle angleDiffBetweenEdges(final Edge edge1, final Edge edge2)
     {
         final Optional<Heading> edge1heading = edge1.asPolyLine().finalHeading();
         final Optional<Heading> edge2heading = edge2.asPolyLine().initialHeading();
@@ -230,11 +226,11 @@ public class TollValidationCheck extends BaseCheck<Long>
         {
             final boolean areaContainsPolyline = area.asPolygon().overlaps(edge.asPolyLine());
             final Map<String, String> areaTags = area.getOsmTags();
-            if (!areaContainsPolyline)
+            if (areaContainsPolyline && this.containsBarrierTag(areaTags)
+                    && this.barrierTagContainsToll(areaTags))
             {
-                continue;
+                return true;
             }
-            return this.containsBarrierTag(areaTags) && this.barrierTagContainsToll(areaTags);
         }
 
         for (final Node node : edgeNodes)
@@ -266,7 +262,7 @@ public class TollValidationCheck extends BaseCheck<Long>
             if (inEdges.size() >= this.minInAndOutEdges
                     && !alreadyCheckedObjectIds.contains(inEdge.getIdentifier())
                     && inEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
-                    && this.hasSameHighwayTag(edge, inEdge) && this.angleBetweenEdges(inEdge, edge)
+                    && this.hasSameHighwayTag(edge, inEdge) && this.angleDiffBetweenEdges(inEdge, edge)
                             .asDegrees() <= this.maxAngleDiffForContiguousWays)
             {
                 alreadyCheckedObjectIds.add(inEdge.getIdentifier());
@@ -305,7 +301,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                     && !alreadyCheckedObjectIds.contains(outEdge.getIdentifier())
                     && outEdge.highwayTag().isMoreImportantThan(this.minHighwayType)
                     && this.hasSameHighwayTag(edge, outEdge)
-                    && this.angleBetweenEdges(edge, outEdge)
+                    && this.angleDiffBetweenEdges(edge, outEdge)
                             .asDegrees() <= this.maxAngleDiffForContiguousWays)
             {
                 alreadyCheckedObjectIds.add(outEdge.getIdentifier());
@@ -393,7 +389,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @return nearby toll feature id on the in edge side of the edge in question (upstream)
      */
     private Optional<Long> getNearbyTollFeatureInEdgeSide(final Edge edge,
-            final Set<Long> alreadyCheckedNearbyTollEdges, double recursionCount)
+            final Set<Long> alreadyCheckedNearbyTollEdges, final Counter counter)
     {
         final Set<Edge> inEdges = this.getInEdges(edge);
         for (final Edge inEdge : inEdges)
@@ -403,15 +399,15 @@ public class TollValidationCheck extends BaseCheck<Long>
             {
                 return this.getAreaOrNodeIntersectionId(inEdge, alreadyCheckedNearbyTollEdges);
             }
-            if (recursionCount <= this.maxIterationForNearbySearch
+            if (counter.getValue() <= this.maxIterationForNearbySearch
                     && inEdges.size() >= this.minInAndOutEdges
                     && !this.edgeIntersectsTollFeature(inEdge)
                     && !alreadyCheckedNearbyTollEdges.contains(inEdge.getIdentifier()))
             {
                 alreadyCheckedNearbyTollEdges.add(inEdge.getIdentifier());
-                recursionCount++;
+                counter.add(1);
                 return this.getNearbyTollFeatureInEdgeSide(inEdge, alreadyCheckedNearbyTollEdges,
-                        recursionCount);
+                        counter);
             }
         }
         return Optional.empty();
@@ -423,7 +419,7 @@ public class TollValidationCheck extends BaseCheck<Long>
      * @return nearby toll feature id on the out edge side of the edge in question (downstream)
      */
     private Optional<Long> getNearbyTollFeatureOutEdgeSide(final Edge edge,
-            final Set<Long> alreadyCheckedNearbyTollEdges, double recursionCount)
+            final Set<Long> alreadyCheckedNearbyTollEdges, final Counter counter)
     {
         final Set<Edge> outEdges = this.getOutEdges(edge);
 
@@ -434,15 +430,15 @@ public class TollValidationCheck extends BaseCheck<Long>
             {
                 return this.getAreaOrNodeIntersectionId(outEdge, alreadyCheckedNearbyTollEdges);
             }
-            if (recursionCount <= this.maxIterationForNearbySearch
+            if (counter.getValue() <= this.maxIterationForNearbySearch
                     && outEdges.size() >= this.minInAndOutEdges
                     && !this.edgeIntersectsTollFeature(outEdge)
                     && !alreadyCheckedNearbyTollEdges.contains(outEdge.getIdentifier()))
             {
                 alreadyCheckedNearbyTollEdges.add(outEdge.getIdentifier());
-                recursionCount++;
+                counter.add(1);
                 return this.getNearbyTollFeatureOutEdgeSide(outEdge, alreadyCheckedNearbyTollEdges,
-                        recursionCount);
+                        counter);
             }
         }
         return Optional.empty();
@@ -475,7 +471,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                 .filter(outEdge -> outEdge.getOsmIdentifier() != edge.getOsmIdentifier()
                         && outEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(outEdge))
                 .collect(Collectors.toSet());
-        if (inEdges.size() == this.minInAndOutEdges && outEdges.size() == this.minInAndOutEdges)
+        if (inEdges.size() == 1 && outEdges.size() == 1)
         {
             return this.inconsistentTollTagLogic(inEdges, outEdges, edge);
         }
@@ -536,9 +532,9 @@ public class TollValidationCheck extends BaseCheck<Long>
             for (final Edge outEdge : outEdges)
             {
                 if (this.hasSameHighwayTag(edge, inEdge) && this.hasSameHighwayTag(edge, outEdge)
-                        && this.angleBetweenEdges(edge, outEdge)
+                        && this.angleDiffBetweenEdges(edge, outEdge)
                                 .asDegrees() <= this.maxAngleDiffForContiguousWays
-                        && this.angleBetweenEdges(inEdge, edge)
+                        && this.angleDiffBetweenEdges(inEdge, edge)
                                 .asDegrees() <= this.maxAngleDiffForContiguousWays)
                 {
                     final Map<String, String> inEdgeOsmTags = inEdge.getOsmTags();
@@ -565,7 +561,6 @@ public class TollValidationCheck extends BaseCheck<Long>
             final Map<String, String> edgeInQuestionTags)
     {
         return !this.hasTollYesTag(edgeInQuestionTags)
-                && !this.markedIntersectingTollFeature.contains(edgeInQuestion.getOsmIdentifier())
                 && this.edgeIntersectsTollFeature(edgeInQuestion);
     }
 
@@ -604,7 +599,6 @@ public class TollValidationCheck extends BaseCheck<Long>
             final Map<String, String> edgeInQuestionTags)
     {
         return !this.hasTollYesTag(edgeInQuestionTags)
-                && !this.markedInconsistentToll.contains(edgeInQuestion.getOsmIdentifier())
                 && this.hasInconsistentTollTag(edgeInQuestion);
     }
 
