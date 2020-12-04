@@ -1,4 +1,4 @@
-package org.openstreetmap.atlas.checks.validation.areas;
+package org.openstreetmap.atlas.checks.validation.relations;
 
 import org.apache.zookeeper.Op;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
