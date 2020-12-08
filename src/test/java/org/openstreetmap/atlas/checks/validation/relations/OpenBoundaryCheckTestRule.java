@@ -74,7 +74,6 @@ public class OpenBoundaryCheckTestRule extends CoreTestRule
 
     private Atlas polygonNotClosedTruePositive;
 
-
     public Atlas polygonClosedFalsePositive()
     {
         return this.polygonClosedFalsePositive;
