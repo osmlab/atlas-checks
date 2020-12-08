@@ -87,7 +87,7 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
 
                 for (final Location openLocation : openLocations)
                 {
-                    latlonSet.add(getLatLon(openLocation));
+                    latlonSet.add(this.getLatLon(openLocation));
                 }
 
                 final Set<Long> memberIds = relation.members().stream()
