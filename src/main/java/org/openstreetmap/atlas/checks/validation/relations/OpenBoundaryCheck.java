@@ -121,7 +121,7 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
      * @param openLocation whole in boundary location
      * @return 'lat,lon' string
      */
-    private String getLatLon(Location openLocation)
+    private String getLatLon(final Location openLocation)
     {
         final String lat = openLocation.getLatitude().toString();
         final String lon = openLocation.getLongitude().toString();
