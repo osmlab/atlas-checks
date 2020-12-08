@@ -87,12 +87,7 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
 
                 for (final Location openLocation : openLocations)
                 {
-                    // create function to get lat lon - pretty it up
-                    final String lat = openLocation.getLatitude().toString();
-                    final String lon = openLocation.getLongitude().toString();
-                    final String latlon = lat + "," + lon;
-                    latlonSet.add(latlon);
-
+                    latlonSet.add(getLatLon(openLocation));
                 }
 
                 final Set<Long> memberIds = relation.members().stream()
@@ -119,6 +114,18 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * get lat lon coordinates from open location geometry.
+     * @param openLocation whole in boundary location
+     * @return 'lat,lon' string
+     */
+    private String getLatLon(Location openLocation)
+    {
+        final String lat = openLocation.getLatitude().toString();
+        final String lon = openLocation.getLongitude().toString();
+        return lat + "," + lon;
     }
 
     /**
