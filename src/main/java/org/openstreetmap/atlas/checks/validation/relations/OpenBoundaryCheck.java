@@ -118,7 +118,9 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
 
     /**
      * get lat lon coordinates from open location geometry.
-     * @param openLocation whole in boundary location
+     * 
+     * @param openLocation
+     *            whole in boundary location
      * @return 'lat,lon' string
      */
     private String getLatLon(final Location openLocation)
