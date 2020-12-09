@@ -84,12 +84,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private Optional<CheckFlag> processRelation(final AtlasObject object)
     {
-        if(object.getOsmIdentifier() == 2327223){
-            System.out.println("2327223 FOUND");
-        }
-        if(object.getOsmIdentifier() == 3890254){
-            System.out.println("3890254 FOUND");
-        }
+//        if(object.getOsmIdentifier() == 2327223){
+//            System.out.println("2327223 FOUND");
+//        }
+//        if(object.getOsmIdentifier() == 3890254){
+//            System.out.println("3890254 FOUND");
+//        }
         final Map<String, Relation> tagToRelation = this.getRelationMap(object);
         final RelationBoundary relationBoundary = new RelationBoundary(tagToRelation, this.getBoundaryParts((Relation) object));
         final Set<String> instructions = new HashSet<>();
@@ -406,6 +406,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         {
             final Geometry geometry1 = wktReader.read(wktFirst);
             final Geometry geometry2 = wktReader.read(wktSecond);
+            if(!geometry1.isValid() || !geometry1.isSimple() || !geometry2.isValid() || !geometry2.isSimple()){
+                return false;
+            }
             if(geometry1.intersects(geometry2))
             {
                 if(!this.isGeometryPairOfLineType(geometry1, geometry2))
