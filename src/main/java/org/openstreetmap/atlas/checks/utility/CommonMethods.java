@@ -8,14 +8,8 @@ import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
  *
  * @author Vladimir Lemnberg
  */
-public class CommonMethods
+public final class CommonMethods
 {
-
-    private CommonMethods()
-    {
-        // constructor
-    }
-
     /**
      * Return OSM Relation Members size excluding Atlas reversed and sectioned Edges
      *
@@ -29,5 +23,10 @@ public class CommonMethods
                 .members().stream().map(RelationMember::getEntity).map(entity -> entity.getType()
                         .toString().concat(String.valueOf(entity.getOsmIdentifier())))
                 .distinct().count();
+    }
+
+    private CommonMethods()
+    {
+        // constructor
     }
 }
