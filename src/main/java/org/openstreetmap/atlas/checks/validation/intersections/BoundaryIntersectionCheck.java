@@ -84,6 +84,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private Optional<CheckFlag> processRelation(final AtlasObject object)
     {
+        if(object.getOsmIdentifier() == 2327223){
+            System.out.println("2327223 FOUND");
+        }
+        if(object.getOsmIdentifier() == 3890254){
+            System.out.println("3890254 FOUND");
+        }
         final Map<String, Relation> tagToRelation = this.getRelationMap(object);
         final RelationBoundary relationBoundary = new RelationBoundary(tagToRelation, this.getBoundaryParts((Relation) object));
         final Set<String> instructions = new HashSet<>();
@@ -91,6 +97,12 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         final Set<String> matchedTags = new HashSet<>();
         for(final BoundaryPart currentBoundaryPart : relationBoundary.getBoundaryParts())
         {
+//            if(currentBoundaryPart.getOsmIdentifier() == 2327223){
+//                System.out.println("2327223 FOUND");
+//            }
+//            if(currentBoundaryPart.getOsmIdentifier() == 3890254){
+//                System.out.println("3890254 FOUND");
+//            }
             final Iterable<LineItem> lineItemsIntersecting = object.getAtlas().lineItemsIntersecting(currentBoundaryPart.getBounds(),
                     this.getPredicateForLineItemsSelection(currentBoundaryPart, relationBoundary.getTagToRelation().keySet()));
             final Iterable<Area> areasIntersecting = object.getAtlas().areasIntersecting(currentBoundaryPart.getBounds(),
@@ -109,6 +121,8 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             {
             final CheckFlag checkFlag = new CheckFlag(this.getTaskIdentifier(object));
             instructions.forEach(checkFlag::addInstruction);
+            //TODO remove
+//            instructions.forEach(System.out::println);
             checkFlag.addObjects(objectsToFlag);
             return Optional.of(checkFlag);
         }
@@ -304,17 +318,27 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     private Coordinate[] getIntersectionPoints(final String wktFirst,
                                                final String wktSecond)
     {
-        final WKTReader wktReader = new WKTReader();
         try
         {
-            final Geometry line1 = wktReader.read(wktFirst);
-            final Geometry line2 = wktReader.read(wktSecond);
-            return line1.intersection(line2).getCoordinates();
+            Geometry geometry1 = getGeometryForIntersection(wktFirst);
+            Geometry geometry2 = getGeometryForIntersection(wktSecond);
+            return geometry1.intersection(geometry2).getCoordinates();
         }
         catch (final ParseException e)
         {
             throw new IllegalStateException(e);
         }
+    }
+
+    private Geometry getGeometryForIntersection(String wktFirst) throws ParseException
+    {
+
+        final WKTReader wktReader = new WKTReader();
+        Geometry geometry1 = wktReader.read(wktFirst);
+        if (geometry1.getGeometryType().equals("Polygon")) {
+            geometry1 = geometry1.getBoundary();
+        }
+        return geometry1;
     }
 
     private Predicate<LineItem> getPredicateForLineItemsSelection(final BoundaryPart boundaryPart, final Set<String> boundaryTags)
@@ -331,8 +355,20 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private Predicate<Area> getPredicateForAreaSelection(final BoundaryPart boundaryPart, final Set<String> boundaryTags)
     {
+//        if(boundaryPart.getOsmIdentifier() == 2327223){
+//            System.out.println("2327223 FOUND");
+//        }
+//        if(boundaryPart.getOsmIdentifier() == 3890254){
+//            System.out.println("3890254 FOUND");
+//        }
         return areaToCheck ->
         {
+//            if(areaToCheck.getOsmIdentifier() == 2327223){
+//                System.out.println("2327223 FOUND");
+//            }
+//            if(areaToCheck.getOsmIdentifier() == 3890254){
+//                System.out.println("3890254 FOUND");
+//            }
             if (this.checkAreaAsBoundary(areaToCheck, boundaryTags))
             {
                 return this.isCrossingNotTouching(boundaryPart.getWktGeometry(), areaToCheck.toWkt());
@@ -361,7 +397,8 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                 || boundaryTags.contains(area.getTag(BOUNDARY).orElse(""));
     }
 
-    private boolean isCrossingNotTouching(final String wktFirst,
+    //TODO change
+    public boolean isCrossingNotTouching(final String wktFirst,
             final String wktSecond)
     {
         final WKTReader wktReader = new WKTReader();
@@ -371,7 +408,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             final Geometry geometry2 = wktReader.read(wktSecond);
             if(geometry1.intersects(geometry2))
             {
-                if(this.isAnyGeometryLineString(geometry1, geometry2))
+                if(!this.isGeometryPairOfLineType(geometry1, geometry2))
                 {
                     return this.isLineIntersectionNotTouch(geometry1, geometry2);
                 }
@@ -385,7 +422,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         return false;
     }
 
-    private boolean isAnyGeometryLineString(final Geometry lineString, final Geometry lineString2)
+    private boolean isGeometryPairOfLineType(final Geometry lineString, final Geometry lineString2)
     {
         return lineString.getGeometryType().equals("LineString") && lineString2.getGeometryType().equals("LineString");
     }
@@ -397,8 +434,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private boolean isAreaIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
     {
-        return (!geometry1.covers(geometry2) || !geometry2.coveredBy(geometry1)) &&
-                (!geometry2.covers(geometry1) || !geometry1.coveredBy(geometry2));
+        return !(geometry1.covers(geometry2) ||
+                geometry1.coveredBy(geometry2) ||
+                geometry1.touches(geometry2));
     }
 
     private String coordinatesToList(final Coordinate[] locations)
