@@ -11,8 +11,17 @@ import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 public class CommonMethods
 {
 
+    private CommonMethods()
+    {
+        // constructor
+    }
+
     /**
      * Return OSM Relation Members size excluding Atlas reversed and sectioned Edges
+     *
+     * @param relation
+     *            {@link Relation} to get the members of
+     * @return A size of relations members as {@link Long}
      */
     public static long getOSMRelationMemberSize(final Relation relation)
     {
