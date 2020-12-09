@@ -75,11 +75,6 @@ public class CommonMethodsTestRule extends CoreTestRule
                     @Member(id = "12000003", type = "edge", role = "") }) })
     private Atlas oneMemberRelationSectioned;
 
-    public Atlas getValidRelation()
-    {
-        return this.validRelation;
-    }
-
     public Atlas getOneMemberRelationReversed()
     {
         return this.oneMemberRelationReversed;
@@ -88,5 +83,10 @@ public class CommonMethodsTestRule extends CoreTestRule
     public Atlas getOneMemberRelationSectioned()
     {
         return this.oneMemberRelationSectioned;
+    }
+
+    public Atlas getValidRelation()
+    {
+        return this.validRelation;
     }
 }
