@@ -30,7 +30,7 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = -7004341564141771203L;
-    private static final String GENERAL_INSTRUCTION = "The element with id {0,number,#} does not follow the source:speed tagging rules";
+    private static final String GENERAL_INSTRUCTION = "The element with id {0,number,#} does not follow the source:maxspeed tagging rules";
     private static final String WRONG_VALUE_INSTRUCTION = "The value must be 'sign', 'markings' or follow the country_code:context format.";
     private static final String WRONG_COUNTRY_CODE_INSTRUCTION = "{0} is not a valid country code.";
     private static final String WRONG_CONTEXT_INSTRUCTION = "{0} is not a valid context for the maxspeed source. (valid examples: urban, 30 etc.)";
