@@ -104,6 +104,7 @@ public class OpenStreetMapCheckFlagConverterTest
         flag.addFixSuggestion(FeatureChange.add(
                 CompleteRelation.from(relation).withReplacedTag(NameTag.KEY, NameTag.KEY, "name3"),
                 relation.getAtlas()));
+        flag.setChallengeName("challenge");
 
         final Optional<CheckFlag> osmFlag = OpenStreetMapCheckFlagConverter.openStreetMapify(flag);
 

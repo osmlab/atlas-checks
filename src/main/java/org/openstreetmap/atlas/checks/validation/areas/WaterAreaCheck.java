@@ -195,6 +195,7 @@ public class WaterAreaCheck extends BaseCheck<Long>
             returnFlag.addInstruction(this.getLocalizedInstruction(
                     FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_MISSING_WATERWAY),
                     area.getOsmIdentifier()));
+            returnFlag.addObject(area);
         }
         return returnFlag;
     }
@@ -227,6 +228,10 @@ public class WaterAreaCheck extends BaseCheck<Long>
                 if (returnFlag == null)
                 {
                     returnFlag = new CheckFlag(this.getTaskIdentifier(area));
+                }
+                if (returnFlag.getFlaggedObjects().isEmpty())
+                {
+                    returnFlag.addObject(area);
                 }
                 returnFlag.addInstruction(this.getLocalizedInstruction(
                         FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_NO_EXITING_WATERWAY),
@@ -277,6 +282,11 @@ public class WaterAreaCheck extends BaseCheck<Long>
             {
                 returnFlag = new CheckFlag(this.getTaskIdentifier(area));
             }
+            // At this point, the flag should hold the area or nothing
+            if (returnFlag.getFlaggedObjects().isEmpty())
+            {
+                returnFlag.addObject(area);
+            }
             returnFlag.addPoints(possibleAreaIntersections.stream()
                     .filter(pair -> !this.alreadyFlagged(pair.getRight())).map(Pair::getLeft)
                     .map(Segment::middle).collect(Collectors.toList()));
@@ -303,6 +313,12 @@ public class WaterAreaCheck extends BaseCheck<Long>
             if (returnFlag == null)
             {
                 returnFlag = new CheckFlag(this.getTaskIdentifier(area));
+            }
+            // At this point, the flag should hold any one of: the area, the area and some other
+            // area(s), or nothing. So we just check for the last case
+            if (returnFlag.getFlaggedObjects().isEmpty())
+            {
+                returnFlag.addObject(area);
             }
             returnFlag.addInstruction(this.getLocalizedInstruction(
                     FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_WATERWAY_INTERSECTION),

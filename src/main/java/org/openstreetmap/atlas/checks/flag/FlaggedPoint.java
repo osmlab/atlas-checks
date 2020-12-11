@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.geography.geojson.GeoJsonUtils;
+import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import com.google.gson.JsonObject;
  * A flag for a {@code point} {@link Location} P*
  *
  * @author brian_l_davis
+ * @author seancoulter
  */
 public class FlaggedPoint extends FlaggedObject
 {
@@ -31,6 +33,7 @@ public class FlaggedPoint extends FlaggedObject
     private LocationItem locationItem;
     private final Location point;
     private final Map<String, String> properties;
+    private final String country;
 
     @SuppressWarnings("unchecked")
     public FlaggedPoint(final Location point)
@@ -40,6 +43,8 @@ public class FlaggedPoint extends FlaggedObject
         // Add a synthetic tag to Point features used to highlight FlaggedObjects
         this.properties = Map.of(SyntheticHighlightPointTag.KEY,
                 SyntheticHighlightPointTag.YES.name().toLowerCase());
+        // This point is not necessarily from an atlas, thus we set its country to the default
+        this.country = FlaggedObject.COUNTRY_MISSING;
     }
 
     /**
@@ -53,6 +58,7 @@ public class FlaggedPoint extends FlaggedObject
         this.locationItem = locationItem;
         this.point = locationItem.getLocation();
         this.properties = this.initProperties(locationItem);
+        this.country = this.initCountry(locationItem);
     }
 
     @Override
@@ -104,6 +110,12 @@ public class FlaggedPoint extends FlaggedObject
     }
 
     @Override
+    public String getCountry()
+    {
+        return this.country;
+    }
+
+    @Override
     public Iterable<Location> getGeometry()
     {
         return this.point;
@@ -120,6 +132,16 @@ public class FlaggedPoint extends FlaggedObject
     protected Optional<AtlasObject> getObject()
     {
         return Optional.ofNullable(this.locationItem);
+    }
+
+    private String initCountry(final AtlasObject object)
+    {
+        final Map<String, String> tags = object.getTags();
+        if (tags.containsKey(ISOCountryTag.KEY))
+        {
+            return tags.get(ISOCountryTag.KEY);
+        }
+        return ISOCountryTag.COUNTRY_MISSING;
     }
 
     @SuppressWarnings("unchecked")
