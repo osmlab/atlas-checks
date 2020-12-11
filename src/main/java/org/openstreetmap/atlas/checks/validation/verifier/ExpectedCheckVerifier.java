@@ -15,10 +15,11 @@ import com.google.common.collect.Iterables;
 
 /**
  * JUnit verifier for comparing an expected list of CheckFlags with those actually created by the
- * checks under test
+ * checks under test This is in production code due to some downstream projects needing to use it.
  *
  * @author cstaylor
  */
+@SuppressWarnings("squid:S5960")
 public class ExpectedCheckVerifier extends Verifier
 {
     private final List<CheckFlag> expected;

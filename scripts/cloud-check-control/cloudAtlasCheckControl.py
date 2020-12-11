@@ -16,7 +16,7 @@ from botocore.exceptions import ClientError
 from paramiko.auth_handler import AuthenticationException
 
 
-VERSION = "0.1.0"
+VERSION = "0.3.0"
 ec2 = boto3.client("ec2")
 
 
@@ -43,7 +43,7 @@ def finish(error_message=None, status=0):
     if error_message:
         logger.error(error_message)
     else:
-        logger.critical("Done")
+        logger.info("Done")
     exit(status)
 
 
@@ -60,15 +60,22 @@ class CloudAtlasChecksControl:
         formats="flags",
         countries="",
         s3InFolder=None,
+        s3fsMount=False,
         s3OutFolder=None,
         terminate=False,
         templateName="atlas_checks-ec2-template",
         atlasConfig="https://raw.githubusercontent.com/osmlab/atlas-checks/dev/config/configuration.json",
+        checks="",
+        mrkey="",
+        mrProject="",
+        mrURL="https://maproulette.org:443",
+        jar="atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar",
     ):
         self.timeoutMinutes = timeoutMinutes
         self.key = key
         self.instanceId = instanceId
         self.s3InFolder = s3InFolder
+        self.s3fsMount = s3fsMount
         self.processes = processes
         self.memory = memory
         self.formats = formats
@@ -79,21 +86,51 @@ class CloudAtlasChecksControl:
         self.homeDir = "/home/ubuntu/"
         self.atlasCheckDir = os.path.join(self.homeDir, "atlas-checks/")
         self.atlasOutDir = os.path.join(self.homeDir, "output/")
+        self.atlasInDir = os.path.join(self.homeDir, "input/")
         self.atlasLogDir = os.path.join(self.homeDir, "log/")
         self.atlasCheckLogName = "atlasCheck.log"
         self.atlasCheckLog = os.path.join(self.atlasLogDir, self.atlasCheckLogName)
+        self.atlasCheckMRPushLogName = "mrPush.log"
+        self.atlasCheckMRPushLog = os.path.join(
+            self.atlasLogDir, self.atlasCheckMRPushLogName
+        )
         self.atlasConfig = atlasConfig
+        self.checks = checks
+        self.mrkey = mrkey
+        self.mrProject = mrProject
+        self.mrURL = mrURL
+        self.jar = jar
 
         self.client = None
         self.instanceName = "AtlasChecks"
+        self.localJar = '/tmp/atlas-checks.jar'
+        self.localConfig = '/tmp/configuration.json'
 
-    @property
-    def s3InBucket(self):
-        return self.s3InFolder.strip("/").split("/")[0]
+    def setup_config(self, file_preface="file://"):
+        if self.atlasConfig.find("s3:") >= 0:
+            if self.ssh_cmd(
+                "aws s3 cp {} {}".format(self.atlasConfig, self.localConfig)
+            ):
+                finish("Failed to copy config S3://{}".format(self.atlasConfig), -1)
+            return file_preface + self.localConfig
+        elif self.atlasConfig.find("http:") >= 0:
+            return self.atlasConfig
+        else:
+            # if configuration.json is a file then copy it to the EC2 instance
+            self.put_files(self.atlasConfig, self.localConfig)
+            return file_preface + self.localConfig
 
-    @property
-    def atlasInDir(self):
-        return os.path.join(self.homeDir, self.s3InFolder)
+    def setup_jar(self):
+        if self.jar.find("s3:") >= 0:
+            if self.ssh_cmd(
+                "aws s3 cp {} {}".format(self.jar, self.localJar)
+            ):
+                finish("Failed to copy jar S3://{}".format(self.jar), -1)
+            return self.localJar
+        else:
+            # if configuration.json is a file then copy it to the EC2 instance
+            self.put_files(self.jar, self.localJar)
+            return self.localJar
 
     def atlasCheck(self):
         """Submit an spark job to perform atlas checks on an EC2 instance.
@@ -106,7 +143,6 @@ class CloudAtlasChecksControl:
           - self.instanceId - indicates a running instance or "" to create one
           - self.S3Atlas - indicates the S3 bucket and path that contains atlas files
         """
-        logger.info("Start Atlas Check Spark Job...")
         if self.instanceId == "":
             self.create_instance()
             self.get_instance_info()
@@ -120,27 +156,35 @@ class CloudAtlasChecksControl:
             if self.ssh_cmd("rm -f {}/_*".format(self.atlasOutDir)):
                 finish("Unable to clean up old status files", -1)
 
-            # mount the s3 bucket
-            cmd = "mount |grep ~/{}".format(self.s3InBucket)
-            if not self.ssh_cmd(cmd, quiet=True):
-                cmd = "sudo umount ~/{}".format(self.s3InBucket)
-                if self.ssh_cmd(cmd, quiet=True):
-                    finish("Unable to unmount S3 bucket", -1)
+            # sync the country folders to the local directory
+            for c in list(self.countries.split(",")):
+                logger.info("syncing {}".format(c))
+                if self.ssh_cmd(
+                    "aws s3 sync --only-show-errors {0}{1} {2}{1}".format(
+                        self.s3InFolder, c, self.atlasInDir
+                    )
+                ):
+                    finish(
+                        "Failed to sync {}/{}".format(self.s3InFolder, c), -1
+                    )
+            if self.ssh_cmd(
+                "aws s3 cp {}sharding.txt {}sharding.txt".format(
+                    self.s3InFolder, self.atlasInDir
+                )
+            ):
+                finish("Failed to copy sharding.txt", -1)
+
+            if self.info is not None:
+                cmd = ("echo '{{\n{},\n\"cmd\":\"{}\"\n}}' > {}INFO "
+                .format(self.info, " ".join(sys.argv), self.atlasOutDir))
             else:
-                cmd = "mkdir -p ~/{}".format(self.s3InBucket)
-                if self.ssh_cmd(cmd):
-                    finish("Unable to create directory {}".format(cmd), -1)
-
-            cmd = "s3fs {0} ~/{0} -o ro,umask=222,gid=1000,uid=1000 -o use_cache=/tmp/atlas/ -o iam_role=auto".format(
-                self.s3InBucket
-            )
+                cmd = ("echo '{{\n\"cmd\":\"{}\"\n}}' > {}INFO "
+                .format(" ".join(sys.argv), self.atlasOutDir))
             if self.ssh_cmd(cmd):
-                finish("Unable to mount S3 bucket", -1)
+                finish("Unable to write info file", -1)
 
-            atlasConfig = self.atlasConfig
-            # if configuration.json is a file then copy it to the EC2 instance
-            if self.atlasConfig.find("http") < 0:
-                atlasConfig = "file://" + os.path.join(self.homeDir, self.atlasConfig)
+            atlasConfig = self.setup_config()
+            jarFile = self.setup_jar()
 
             cmd = (
                 "/opt/spark/bin/spark-submit"
@@ -148,7 +192,8 @@ class CloudAtlasChecksControl:
                 + " --master=local[{}]".format(self.processes)
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
-                + " /home/ubuntu/atlas-checks/build/libs/atlas-checks-6.1.3-SNAPSHOT-shadow.jar"
+                + " {}".format(jarFile)
+                + " -maxPoolMinutes=2880"
                 + " -inputFolder='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
@@ -160,17 +205,21 @@ class CloudAtlasChecksControl:
             logger.info("Submitting spark job: {}".format(cmd))
             if self.ssh_cmd(cmd):
                 finish("Unable to execute spark job", -1)
+            # make sure spark job has started before checking for completion
+            time.sleep(5)
         else:
             logger.info("Detected a running atlas check spark job.")
 
+        logger.info("About to wait for remote script to complete. If "
+                    "disconnected before the script completes then execute the "
+                    "following command to continue waiting:\n {} --id={}"
+                    .format(" ".join(sys.argv), self.instanceId))
         # wait for script to complete
         if self.wait_for_process_to_complete():
             finish(
                 "Timeout waiting for script to complete. TODO - instructions to reconnect.",
                 -1,
             )
-        # download log
-        self.get_files(self.atlasCheckLog, "./")
 
         self.sync()
 
@@ -194,7 +243,7 @@ class CloudAtlasChecksControl:
         )
 
         # push output to s3
-        cmd = "aws s3 sync --exclude *.crc {} s3://{} ".format(
+        cmd = "aws s3 sync --only-show-errors --exclude *.crc {} {} ".format(
             self.atlasOutDir, self.s3OutFolder
         )
         if self.ssh_cmd(cmd):
@@ -202,6 +251,46 @@ class CloudAtlasChecksControl:
         # terminate instance
         if self.terminate:
             self.terminate_instance()
+
+    def challenge(self):
+        if self.instanceId == "":
+            self.create_instance()
+            self.get_instance_info()
+        logger.info("Creating map roulette challenge.")
+
+        # sync the country folders to the local directory
+        for c in list(self.countries.split(",")):
+            logger.info(
+                "syncing {}/flag/{} to {}/flag/{}".format(
+                    self.s3InFolder, c, self.atlasOutDir, c
+                )
+            )
+            if self.ssh_cmd(
+                "aws s3 sync --only-show-errors {0}/flag/{1} {2}/flag/{1}".format(
+                    self.s3InFolder, c, self.atlasOutDir
+                )
+            ):
+                finish("Failed to sync {}/{}".format(self.s3InFolder, c), -1)
+
+        atlasConfig = self.setup_config(file_preface="")
+        jarFile = self.setup_jar()
+
+        cmd = (
+            "java -cp {}".format(jarFile)
+            + " org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
+            + " -maproulette='{}:{}:{}'".format(self.mrURL, self.mrProject, self.mrkey)
+            + " -logfiles='{}/flag'".format(self.atlasOutDir)
+            + " -outputPath='{}'".format(self.atlasOutDir)
+            + " -config='{}'".format(atlasConfig)
+            + " -checkinComment='#AtlasChecks'"
+            + " -countries='{}'".format(self.countries)
+            + " -checks='{}'".format(self.checks)
+            + " -includeFixSuggestions=true"
+        )
+
+        logger.info("Starting mr upload: {}".format(cmd))
+        if self.ssh_cmd(cmd, verbose=True):
+            finish("Unable to execute spark job", -1)
 
     def clean(self):
         """Clean a running Instance of all produced folders and files
@@ -313,7 +402,7 @@ class CloudAtlasChecksControl:
             raise error
         logger.debug("Files: " + remoteFiles + " downloaded to: " + localDirectory)
 
-    def ssh_cmd(self, cmd, quiet=False):
+    def ssh_cmd(self, cmd, quiet=False, verbose=False):
         """Issue an ssh command on the remote EC2 instance
 
         :param cmd: the command string to execute on the remote system
@@ -325,8 +414,11 @@ class CloudAtlasChecksControl:
         logger.debug("Issuing remote command: {} ... ".format(cmd))
         ssh_stdin, ssh_stdout, ssh_stderr = self.client.exec_command(cmd)
         if ssh_stdout.channel.recv_exit_status() and not quiet:
-            logger.error(" Remote command output:")
+            logger.error(" Remote command stderr:")
             logger.error("\t".join(map(str, ssh_stderr.readlines())))
+        if verbose:
+            logger.info(" Remote command stdout:")
+            logger.info("\t".join(map(str, ssh_stdout.readlines())))
         return ssh_stdout.channel.recv_exit_status()
 
     def wait_for_process_to_complete(self):
@@ -451,19 +543,16 @@ def parse_args(cloudctl):
         "access to the EC2 instance"
     )
     parser.add_argument(
-        "-n",
         "--name",
         help="Set EC2 instance name. (Default: {})".format(cloudctl.instanceName),
     )
     parser.add_argument(
-        "-t",
         "--template",
         help="Set EC2 template name to create instance from. (Default: {})".format(
             cloudctl.templateName
         ),
     )
     parser.add_argument(
-        "-m",
         "--minutes",
         type=int,
         help="Set process timeout to number of minutes. (Default: {})".format(
@@ -471,10 +560,9 @@ def parse_args(cloudctl):
         ),
     )
     parser.add_argument(
-        "-v", "--version", help="Display the current version", action="store_true"
+        "--version", help="Display the current version", action="store_true"
     )
     parser.add_argument(
-        "-T",
         "--terminate",
         default=False,
         help="Terminate EC2 instance after successful execution",
@@ -496,7 +584,6 @@ def parse_args(cloudctl):
         "--id", help="ID - Indicates the ID of an existing EC2 instance to use"
     )
     parser_check.add_argument(
-        "-k",
         "--key",
         required=True,
         help="KEY - Instance key name to use to login to instance. This key "
@@ -508,24 +595,26 @@ def parse_args(cloudctl):
         "(e.g. `--key=aws-key`)",
     )
     parser_check.add_argument(
-        "-o",
         "--output",
-        help="Out - The S3 Output directory. (e.g. '--out=atlas-bucket/atlas-checks/output')",
+        help="Out - The S3 Output directory. (e.g. '--out=s3://atlas-bucket/atlas-checks/output')",
     )
     parser_check.add_argument(
-        "-i",
+        "--mount",
+        default=False,
+        help="Flag to indicate if s3fs should be used to mount input directory. (Default: False)",
+    )
+    parser_check.add_argument(
         "--input",
         required=True,
-        help="IN - The S3 Input directory that contains atlas file directories and sharing.txt. ",
+        help="IN - The S3 Input directory that contains atlas file directories and sharding.txt. "
+        "(e.g. s3://bucket/path/to/atlas/file/dir/)",
     )
     parser_check.add_argument(
-        "-c",
         "--countries",
         required=True,
         help="COUNTRIES - A comma separated list of ISO3 codes. (e.g. --countries=GBR)",
     )
     parser_check.add_argument(
-        "-m",
         "--memory",
         type=int,
         help="MEMORY - Gigs of memory for spark job. (Default: {} GB)".format(
@@ -533,23 +622,31 @@ def parse_args(cloudctl):
         ),
     )
     parser_check.add_argument(
-        "-f",
         "--formats",
         help="FORMATS - Output format (Default: {})".format(cloudctl.formats),
     )
     parser_check.add_argument(
-        "-j",
         "--config",
-        help="CONFIG - Path within the S2 Input bucket or a URL to a json file to "
-        "use as configuration.json for atlas-checks (Default: Latest from atlas-config repo)",
+        required=True,
+        help="CONFIG - s3://path/to/configuration.json, http://path/to/configuration.json, "
+        " or /local/path/to/configuration.json to use as configuration.json for atlas-checks ",
     )
     parser_check.add_argument(
-        "-p",
         "--processes",
         type=int,
         help="PROCESSES - Number of parallel jobs to start. (Default: {})".format(
             cloudctl.processes
         ),
+    )
+    parser_check.add_argument(
+        "--jar",
+        required=True,
+        help="JAR - s3://path/to/atlas_checks.jar or /local/path/to/atlas_checks.jar to execute",
+    )
+    parser_check.add_argument(
+        "--info",
+        help="INFO - Json string to add to the 'INFO' file in the output folder "
+        "(e.g. --tag='{\"version\":\"1.6.3\"}')",
     )
     parser_check.set_defaults(func=CloudAtlasChecksControl.atlasCheck)
 
@@ -577,6 +674,67 @@ def parse_args(cloudctl):
         "-o", "--output", required=True, help="Out - The S3 Output directory"
     )
     parser_sync.set_defaults(func=CloudAtlasChecksControl.sync)
+
+    parser_mr = subparsers.add_parser(
+        "challenge", help="Create a Map Roulette Challenge"
+    )
+    parser_mr.add_argument(
+        "--id",
+        help="ID - Indicates the ID of an existing EC2 instance to use",
+    )
+    parser_mr.add_argument(
+        "--project",
+        required=True,
+        help="PROJECT - Indicates the name to use to create the map roulette project",
+    )
+    parser_mr.add_argument(
+        "--mrkey",
+        required=True,
+        help="MRKEY - The api|key to use to connect to Map Roulette",
+    )
+    parser_mr.add_argument(
+        "-c",
+        "--countries",
+        required=True,
+        help="COUNTRIES - A comma separated list of ISO3 codes. (e.g. --countries=GBR)",
+    )
+    parser_mr.add_argument(
+        "--checks",
+        required=True,
+        help="CHECKS - A comma separated list of checks names to include in project. "
+        "(e.g. --checks='EdgeCrossingEdgeCheck,SinkIslandCheck')",
+    )
+    parser_mr.add_argument(
+        "-k",
+        "--key",
+        required=True,
+        help="KEY - Instance key name to use to login to instance. This key "
+        "is expected to be the same name as the key as defined by AWS and the "
+        "corresponding pem file must be located in your local '~/.ssh/' "
+        "directory and should be a pem file. See the following URL for "
+        "instructions on creating a key: "
+        "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html. "
+        "(e.g. `--key=aws-key`)",
+    )
+    parser_mr.add_argument(
+        "--config",
+        required=True,
+        help="CONFIG - Path within the S2 Input bucket or a URL to a json file to "
+        "use as configuration.json for atlas-checks (Default: Latest from atlas-config repo)",
+    )
+    parser_mr.add_argument(
+        "--input",
+        required=True,
+        help="INPUT - The s3 Atlas Files Output directory to use as input for challenge. "
+        "(e.g. '--input=s3://atlas-bucket/atlas-checks/output')",
+    )
+    parser_mr.add_argument(
+        "--jar",
+        help="JAR - The full path to the jar file to execute (Default: {})".format(
+            cloudctl.jar
+        ),
+    )
+    parser_mr.set_defaults(func=CloudAtlasChecksControl.challenge)
 
     parser_clean = subparsers.add_parser("clean", help="Clean up instance")
     parser_clean.add_argument(
@@ -620,6 +778,8 @@ def evaluate(args, cloudctl):
         cloudctl.timeoutMinutes = args.minutes
     if hasattr(args, "input") and args.input is not None:
         cloudctl.s3InFolder = args.input
+    if hasattr(args, "mount") and args.mount is not None:
+        cloudctl.s3fsMount = args.mount
     if hasattr(args, "processes") and args.processes is not None:
         cloudctl.processes = args.processes
     if hasattr(args, "key") and args.key is not None:
@@ -636,6 +796,16 @@ def evaluate(args, cloudctl):
         cloudctl.memory = args.memory
     if hasattr(args, "config") and args.config is not None:
         cloudctl.atlasConfig = args.config
+    if hasattr(args, "checks") and args.checks is not None:
+        cloudctl.checks = args.checks
+    if hasattr(args, "mrkey") and args.mrkey is not None:
+        cloudctl.mrkey = args.mrkey
+    if hasattr(args, "project") and args.project is not None:
+        cloudctl.mrProject = args.project
+    if hasattr(args, "jar") and args.jar is not None:
+        cloudctl.jar = args.jar
+    if hasattr(args, "info") and args.jar is not None:
+        cloudctl.info = args.info
     if hasattr(args, "id") and args.id is not None:
         cloudctl.instanceId = args.id
         cloudctl.get_instance_info()

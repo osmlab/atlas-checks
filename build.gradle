@@ -91,6 +91,7 @@ dependencies
     compile packages.postgres
     compile packages.spring
     compile packages.mockito
+    compile packages.log4j
 
     checkstyle packages.checkstyle
     checkstyle packages.atlas_checkstyle

@@ -22,6 +22,7 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
     private static final String IDENTIFIER_2 = "2";
     private static final String IDENTIFIER_3 = "3";
     private static final String IDENTIFIER_4 = "4";
+    private static final String IDENTIFIER_5 = "5";
     private static final String CHALLENGE_1 = "SomeCheck";
     private static final String CHALLENGE_2 = "SomeOtherCheck";
     private static final String CHALLENGE_3 = "AnotherCheck";
@@ -39,6 +40,11 @@ public class MapRouletteUploadCommandTestRule extends CoreTestRule
     public CheckFlagEvent getAnotherBasicFlag()
     {
         return this.getBasicFlag(IDENTIFIER_2, this.basicAtlas.point(2L), CHALLENGE_2);
+    }
+
+    public CheckFlagEvent getFlagNoObjects()
+    {
+        return this.getBasicFlag(IDENTIFIER_5, null, CHALLENGE_1);
     }
 
     public CheckFlagEvent getFlagSameCheck()
