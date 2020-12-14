@@ -97,10 +97,11 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (object.getTag(SOURCE_MAXSPEED).isPresent())
+        final Optional<String> sourceMaxspeed = object.getTag(SOURCE_MAXSPEED);
+        if (sourceMaxspeed.isPresent())
         {
             final Set<String> instructions = new HashSet<>();
-            final String sourceValue = object.getTag(SOURCE_MAXSPEED).get();
+            final String sourceValue = sourceMaxspeed.get();
             final Matcher matcher = COUNTRY_CONTEXT_PATTERN.matcher(sourceValue);
             if (matcher.find())
             {
