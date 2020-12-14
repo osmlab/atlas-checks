@@ -86,7 +86,7 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
 
     private static final JtsPolygonConverter JTS_POLYGON_CONVERTER = new JtsPolygonConverter();
     private static final long OVERLAP_MINIMUM_POINTS_DEFAULT = 0;
-    private static final long OVERLAP_MAMIMUM_POINTS_DEFAULT = 2000000;
+    private static final long OVERLAP_MAMIMUM_POINTS_DEFAULT = 300000;
 
     static
     {
