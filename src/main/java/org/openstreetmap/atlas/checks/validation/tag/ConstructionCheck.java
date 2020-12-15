@@ -71,6 +71,8 @@ public class ConstructionCheck extends BaseCheck<Long>
             DateTimeFormatter.ofPattern("d-MMM-yyyy"),
             // 1 January 2020
             DateTimeFormatter.ofPattern("d MMMM yyyy"));
+    private static final DateTimeFormatter ATLAS_DATE_FORMATTER = DateTimeFormatter
+            .ofPattern("yyyyMMdd");
     private static final LocalDate TODAYS_DATE = LocalDate.now();
     private static final List<String> DATE_TAGS = Arrays.asList(OpeningDateTag.KEY, OpenDateTag.KEY,
             ConstructionDateTag.KEY, TemporaryDateOnTag.KEY, "date_on");
@@ -131,6 +133,13 @@ public class ConstructionCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        // Get the date the atlas was generated, or use today's date as a fallback
+        final Optional<String> atlasDateString = object.getAtlas().metaData().getDataVersion();
+        final LocalDate comparisonDate = atlasDateString.isPresent()
+                && !atlasDateString.get().equals("unknown")
+                        ? LocalDate.parse(atlasDateString.get().split("-")[0], ATLAS_DATE_FORMATTER)
+                        : TODAYS_DATE;
+
         this.markAsFlagged(object.getOsmIdentifier());
 
         final Map<String, String> tags = object.getTags();
@@ -141,7 +150,7 @@ public class ConstructionCheck extends BaseCheck<Long>
             final String tagDate = tags.get(dateTag.get());
 
             final Optional<LocalDate> parsedDate = this.parseDate(tagDate);
-            if (parsedDate.isPresent() && parsedDate.get().isBefore(TODAYS_DATE))
+            if (parsedDate.isPresent() && parsedDate.get().isBefore(comparisonDate))
             {
                 return Optional.of(
                         this.createFlag(object, this.getLocalizedInstruction(0, dateTag.get())));
@@ -154,7 +163,7 @@ public class ConstructionCheck extends BaseCheck<Long>
             if (parseDateChecked.isPresent())
             {
                 final long monthsBetween = ChronoUnit.MONTHS.between(parseDateChecked.get(),
-                        TODAYS_DATE);
+                        comparisonDate);
                 if (monthsBetween > this.oldCheckDateMonths)
                 {
                     return Optional.of(this.createFlag(object,
@@ -169,7 +178,7 @@ public class ConstructionCheck extends BaseCheck<Long>
             final LocalDate lastEditDate = Instant.ofEpochMilli(timestamp)
                     .atZone(ZoneId.systemDefault()).toLocalDate();
 
-            final long numberOfDays = ChronoUnit.DAYS.between(lastEditDate, TODAYS_DATE);
+            final long numberOfDays = ChronoUnit.DAYS.between(lastEditDate, comparisonDate);
             if (numberOfDays > this.oldConstructionDays)
             {
                 return Optional.of(this.createFlag(object,
