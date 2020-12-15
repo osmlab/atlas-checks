@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,6 +10,9 @@ import org.locationtech.jts.io.WKTReader;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * @author srachanski
@@ -73,7 +77,6 @@ public class BoundaryIntersectionCheckTest
 
         System.out.println("x");
     }
-
     public boolean isCrossingNotTouching(final String wktFirst,
                                          final String wktSecond)
     {
@@ -82,9 +85,12 @@ public class BoundaryIntersectionCheckTest
         {
             final Geometry geometry1 = wktReader.read(wktFirst);
             final Geometry geometry2 = wktReader.read(wktSecond);
+            if(!geometry1.isValid() || !geometry1.isSimple() || !geometry2.isValid() || !geometry2.isSimple()){
+                return false;
+            }
             if(geometry1.intersects(geometry2))
             {
-                if(this.isAnyGeometryLineString(geometry1, geometry2))
+                if(!this.isGeometryPairOfLineType(geometry1, geometry2))
                 {
                     return this.isLineIntersectionNotTouch(geometry1, geometry2);
                 }
@@ -98,7 +104,7 @@ public class BoundaryIntersectionCheckTest
         return false;
     }
 
-    private boolean isAnyGeometryLineString(final Geometry lineString, final Geometry lineString2)
+    private boolean isGeometryPairOfLineType(final Geometry lineString, final Geometry lineString2)
     {
         return lineString.getGeometryType().equals("LineString") && lineString2.getGeometryType().equals("LineString");
     }
@@ -110,24 +116,29 @@ public class BoundaryIntersectionCheckTest
 
     private boolean isAreaIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
     {
-        return !(geometry1.covers(geometry2) || geometry1.coveredBy(geometry2));
+        return !(geometry1.covers(geometry2) ||
+                geometry1.coveredBy(geometry2) ||
+                geometry1.touches(geometry2));
     }
-
 
     //TODO remove
     @Test
-    public void intersectionTest() throws ParseException {
-        String area1 = "POLYGON((20.280407724000565 53.637694953623836,23.378552255250565 53.637694953623836,23.378552255250565 51.81495886522041,20.280407724000565 51.81495886522041,20.280407724000565 53.637694953623836))";
-        String area2 = "POLYGON((19.049938974000565 53.04738220299281,21.620739755250565 53.04738220299281,21.620739755250565 51.29582283674896,19.049938974000565 51.29582283674896,19.049938974000565 53.04738220299281))";
-        String line1 = "LINESTRING(19.325022325433846 53.530197223167754,22.818674669183846 51.97440230490904,22.357248887933846 51.66200440966252)";
-        String line2 = "LINESTRING(18.885569200433846 52.19044648242124,23.389963731683842 53.51713468341888)";
+    public void intersectionTest() throws ParseException, IOException {
+        FileInputStream fis = new FileInputStream("src/test/resources/area1");
+        String area1 = IOUtils.toString(fis, "UTF-8");
+//        String area1 =
+        FileInputStream fis2 = new FileInputStream("src/test/resources/area2");
+        String area2 = IOUtils.toString(fis2, "UTF-8");
+//        String area2 =
+//        String line1 = "LINESTRING(19.325022325433846 53.530197223167754,22.818674669183846 51.97440230490904,22.357248887933846 51.66200440966252)";
+//        String line2 = "LINESTRING(18.885569200433846 52.19044648242124,23.389963731683842 53.51713468341888)";
 
         Geometry a1 = new WKTReader().read(area1);
         Geometry a2 = new WKTReader().read(area2);
-        Geometry l1 = new WKTReader().read(line1);
-        Geometry l2 = new WKTReader().read(line2);
-
-        System.out.println("test");
+//        Geometry l1 = new WKTReader().read(line1);
+//        Geometry l2 = new WKTReader().read(line2);
+        System.out.println(isCrossingNotTouching(area1, area2));
+        Assert.assertEquals(isCrossingNotTouching(area1, area2), false);
     }
 
     @Test

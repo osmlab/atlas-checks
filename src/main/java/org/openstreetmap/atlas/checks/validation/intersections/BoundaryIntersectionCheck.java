@@ -411,7 +411,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             }
             if(geometry1.intersects(geometry2))
             {
-                if(!this.isGeometryPairOfLineType(geometry1, geometry2))
+                if(this.isGeometryPairOfLineType(geometry1, geometry2))
                 {
                     return this.isLineIntersectionNotTouch(geometry1, geometry2);
                 }
@@ -432,7 +432,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private boolean isLineIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
     {
-        return !geometry1.overlaps(geometry2);
+        return !(geometry1.overlaps(geometry2) || geometry1.touches(geometry2));
     }
 
     private boolean isAreaIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
