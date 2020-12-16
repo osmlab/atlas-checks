@@ -22,7 +22,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Route;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
-import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
@@ -122,7 +121,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                         roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
                 return Optional.of(this
-                        .createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                        .createFlag(roundaboutEdgeSet,
                                 this.getLocalizedInstruction(1, object.getOsmIdentifier()))
                         .addFixSuggestion(FeatureChange.add(
                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
