@@ -1,24 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
-import org.openstreetmap.atlas.checks.base.BaseCheck;
-import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Edge;
-import org.openstreetmap.atlas.geography.atlas.items.Line;
-import org.openstreetmap.atlas.geography.atlas.items.Relation;
-import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
-import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
-import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
-import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
-import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
-import org.openstreetmap.atlas.tags.RelationTypeTag;
-import org.openstreetmap.atlas.tags.SyntheticGeometrySlicedTag;
-import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
-import org.openstreetmap.atlas.tags.annotations.extraction.IsoCountryExtractor;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.utilities.configuration.Configuration;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +7,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.openstreetmap.atlas.checks.base.BaseCheck;
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
+import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
+import org.openstreetmap.atlas.tags.AdministrativeLevelTag;
+import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.SyntheticGeometrySlicedTag;
+import org.openstreetmap.atlas.tags.SyntheticRelationMemberAdded;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * OpenBoundaryCheck This check flags boundaries that should be closed polygons but are not.
@@ -64,9 +59,7 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
                 && Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY)
                 && !SyntheticRelationMemberAdded.hasAddedRelationMember(object)
                 && !SyntheticGeometrySlicedTag.isGeometrySliced(object)
-                && this.hasAdminLevelTag(tags)
-                && !hasIsInCountry(tags);
-//                && object.getOsmIdentifier() == 52825;
+                && this.hasAdminLevelTag(tags) && !hasIsInCountry(tags);
     }
 
     /**
@@ -102,10 +95,8 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
 
                 if (!openLocations.isEmpty())
                 {
-//                    System.out.println("relation: " + relation);
-                    nodesHaveSyntheticTag(relation);
-//                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
-//                            relation.getOsmIdentifier(), memberIds, latlonSet)));
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                            relation.getOsmIdentifier(), memberIds, latlonSet)));
 
                 }
             }
@@ -164,28 +155,12 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
     }
 
     /**
-     *
-     * @param tags relation tags
+     * @param tags
+     *            relation tags
      * @return boolean for if the relation tags contains is_in:country_code
      */
-    private boolean hasIsInCountry(Map<String,String> tags)
+    private boolean hasIsInCountry(final Map<String, String> tags)
     {
         return tags.containsKey("is_in:country_code");
-    }
-
-    /**
-     *
-     * @param relation
-     * @return
-     */
-    private boolean nodesHaveSyntheticTag(Relation relation)
-    {
-         RelationMemberList members = relation.members();
-         for (RelationMember member : members)
-        {
-            System.out.println("member entity: " + member.getEntity());
-            System.out.println("member goejson:  " + member.getGeoJsonProperties());
-        }
-         return false;
     }
 }
