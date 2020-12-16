@@ -126,8 +126,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                                 this.getLocalizedInstruction(1, object.getOsmIdentifier()))
                         .addFixSuggestion(FeatureChange.add(
                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object))
-                                                .withGeometry(((Edge) object).asPolyLine().reversed()),
+                                        .from((AtlasEntity) object)).withGeometry(
+                                                ((Edge) object).asPolyLine().reversed()),
                                 object.getAtlas())));
             }
             else
