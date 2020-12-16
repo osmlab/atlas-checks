@@ -48,7 +48,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     private static final long serialVersionUID = -3018101860747289836L;
     private static final String BASIC_INSTRUCTION = "This roundabout is malformed.";
     private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout has car navigable ways inside it.";
-    private static final String WRONG_WAY_INVALIDATION = "This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.";
+    private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -58,7 +58,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INVALIDATION, BASIC_INSTRUCTION);
+            .asList(ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION);
     private final List<String> leftDrivingCountries;
 
     public MalformedRoundaboutCheck(final Configuration configuration)
@@ -114,7 +114,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
         {
             // AutoFix candidate only for wrong direction case.
             if (complexRoundabout.getAllInvalidations().size() == 1 && complexRoundabout
-                    .getAllInvalidations().get(0).getReason().equals(WRONG_WAY_INVALIDATION))
+                    .getAllInvalidations().get(0).getReason().equals(WRONG_WAY_INSTRUCTIONS))
             {
                 // Mark that the Edges have been processed
                 roundaboutEdgeSet.forEach(
