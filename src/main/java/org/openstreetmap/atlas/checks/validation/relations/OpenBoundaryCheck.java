@@ -59,7 +59,7 @@ public class OpenBoundaryCheck extends BaseCheck<Long>
                 && Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY)
                 && !SyntheticRelationMemberAdded.hasAddedRelationMember(object)
                 && !SyntheticGeometrySlicedTag.isGeometrySliced(object)
-                && this.hasAdminLevelTag(tags) && !hasIsInCountry(tags);
+                && this.hasAdminLevelTag(tags) && !this.hasIsInCountry(tags);
     }
 
     /**
