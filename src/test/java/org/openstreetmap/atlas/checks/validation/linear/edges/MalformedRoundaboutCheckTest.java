@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
 /**
@@ -11,6 +12,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  *
  * @author savannahostrowski
  * @author bbreithaupt
+ * @author vlemberg
  */
 public class MalformedRoundaboutCheckTest
 {
@@ -20,12 +22,20 @@ public class MalformedRoundaboutCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    private static void verifyFixSuggestions(final CheckFlag flag, final int count)
+    {
+        Assert.assertEquals(count, flag.getFixSuggestions().size());
+    }
+
     @Test
     public void clockwiseRoundaboutLeftDrivingMissingTagTest()
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingMissingTagAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
+                flags.get(0).getInstructions()));
     }
 
     @Test
@@ -34,7 +44,10 @@ public class MalformedRoundaboutCheckTest
         this.verifier.actual(
                 this.setup.counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
+                flags.get(0).getInstructions()));
     }
 
     @Test
@@ -75,7 +88,10 @@ public class MalformedRoundaboutCheckTest
         this.verifier.actual(
                 this.setup.counterClockwiseRoundaboutRightDrivingNonCarNavigableAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
+                flags.get(0).getInstructions()));
     }
 
     @Test
@@ -83,7 +99,10 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingOneWayNoAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
+                flags.get(0).getInstructions()));
     }
 
     @Test
@@ -100,7 +119,10 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout has car navigable ways inside it.",
+                flags.get(0).getInstructions()));
     }
 
     @Test
@@ -122,17 +144,25 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testClockwiseRoundaboutRightDrivingAtlas()
     {
+        //AutoFix Case
         this.verifier.actual(this.setup.clockwiseRoundaboutRightDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.",
+                flags.get(0).getInstructions()));
+        this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
     }
 
     @Test
     public void testCounterClockwiseRoundaboutLeftDrivingAtlas()
     {
+        //AutoFix Case
         this.verifier.actual(this.setup.counterClockwiseRoundaboutLeftDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.",
+                flags.get(0).getInstructions()));
+        this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
     }
 
     @Test
@@ -146,10 +176,15 @@ public class MalformedRoundaboutCheckTest
     @Test
     public void testCounterClockwiseRoundaboutRightDrivingMadeLeftAtlas()
     {
+        //AutoFix Case
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"MalformedRoundaboutCheck\":{\"traffic.countries.left\":[\"USA\"]}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.",
+                flags.get(0).getInstructions()));
+        this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
+
     }
 
     @Test
@@ -157,7 +192,11 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n"
+                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
+                flags.get(0).getInstructions()));
+
     }
 
     @Test
