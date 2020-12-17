@@ -630,6 +630,14 @@
       "difficulty": "HARD"
     }
   },
+  "OpenBoundaryCheck": {
+    "challenge": {
+      "description": "Admin boundaries should be closed polygons. This check catches admin boundaries that are not closed..",
+      "blurb": "Open Boundary Check",
+      "instruction": "Please close the boundary",
+      "difficulty": "MEDIUM"
+    }
+  },
   "OverlappingAOIPolygonCheck":{
     "aoi.tags.filters": ["amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
       "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
