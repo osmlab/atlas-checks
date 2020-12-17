@@ -67,6 +67,7 @@ This document is a list of tables with a description and link to documentation f
 | [InvalidTurnRestrictionCheck](checks/invalidTurnRestrictionCheck.md) | The purpose of this check is to identify invalid turn restrictions in OSM. Invalid turn restrictions occur in a variety of ways from invalid members, Edge geometry issues, not being routable, or wrong topology. |
 | InvalidSignBoardRelationCheck | Identifies signboard relations that do not meet all the requirements for a signboard relation. |
 | [OneMemberRelationCheck](checks/oneMemberRelationCheck.md) | The purpose of this check is to identify Relations in OSM which only have one Member. |
+| [OpenBoundaryCheck](checks/openBoundaryCheck.md) | This check attempts to check for Admin Boundary Relations that should be closed polygons but are not closed. |
 
 ## Tags
 | Check Name | Check Description |
