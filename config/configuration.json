@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -131,6 +131,25 @@
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
       },
       "tags":"building,highway"
+    }
+  },
+  "ConcerningAngleBuildingCheck": {
+    "enabled": true,
+    "angles": {
+      "minLowAngleDiff": 80.0,
+      "maxLowAngleDiff": 89.9,
+      "minHighAngleDiff": 90.1,
+      "maxHighAngleDiff": 100.0
+    },
+    "angleCounts": {
+      "min": 4,
+      "max": 16
+    },
+    "challenge": {
+      "description": "Tasks contain buildings with acute angles.",
+      "blurb": "Acute angles in buildings",
+      "instructions": "Adjust the acute angle to be a right angle.",
+      "difficulty": "EASY"
     }
   },
   "ConflictingAreaTagCombination": {
