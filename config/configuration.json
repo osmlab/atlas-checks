@@ -452,6 +452,15 @@
       "tags":"tags"
     }
   },
+  "SourceMaxspeedCheck": {
+    "challenge": {
+      "description": "Tasks containing features with tag source:maxspeed with incorrect value format.",
+      "blurb": "Features with invalid source:maxspeed tags",
+      "instruction": "Open your favorite editor and check that the listed tags are correct.",
+      "difficulty": "NORMAL",
+      "tags":"tags"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
