@@ -4,7 +4,7 @@ This document is a list of tables with a description and link to documentation f
 ## Areas
 | Check Name | Check Description |
 | :--------- | :---------------- |
-| [ConcerningAngleBuildingCheck](checks/concerningAngleBuildingCheck.md) | This check attempts to flag building who have angles between 80 and 89.9 degrees or between 90.1 and 100 degrees. |
+| [ConcerningAngleBuildingCheck](checks/concerningAngleBuildingCheck.md) | This check attempts to flag building that have angles between 80 and 89.9 degrees or between 90.1 and 100 degrees and need to be squared. |
 | [AreasWithHighwayTagCheck](checks/areasWithHighwayTagCheck.md) | The purpose of this check is to identify Areas attributed with highway tags. |
 | [OceanBleedingCheck](checks/oceanBleedingCheck.md) | The purpose of this check is to identify streets, buildings, and railways that bleed into (intersect) an ocean feature. |
 | [OverlappingAOIPolygonCheck](checks/overlappingAOIPolygonCheck.md) | The purpose of this check is to identify areas of interest (AOIs) that are overlapping one another. |

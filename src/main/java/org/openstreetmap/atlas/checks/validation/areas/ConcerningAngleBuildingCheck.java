@@ -33,6 +33,7 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
     private static final String CONCERNING_ANGLE_INSTRUCTIONS = "Area {0, number, #} has concerning angles, please make all angles right angles.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(CONCERNING_ANGLE_INSTRUCTIONS);
+    private static final double ANGLE_DEFAULT = 90.0;
     private static final double MIN_LOW_ANGLE_DIFF_DEFAULT = 80.0;
     private static final double MAX_LOW_ANGLE_DIFF_DEFAULT = 89.9;
     private static final double MIN_HIGH_ANGLE_DIFF_DEFAULT = 90.1;
@@ -119,11 +120,38 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * checks to make sure building node count fits within desired range
+     * 
+     * @param polygon
+     *            building being checked
+     * @return boolean ensuring that the node count fits within desired range
+     */
     private boolean buildingAngleCountWithinValidRange(final Polygon polygon)
     {
         final List<Segment> polygonSegments = polygon.segments();
         return polygonSegments.size() >= this.minAngleCount
                 && polygonSegments.size() <= this.maxAngleCount;
+    }
+
+    /**
+     * Get angle diff between 2 segments
+     * 
+     * @param segment1
+     *            a segment
+     * @param segment2
+     *            a connecting segment
+     * @return angle difference between headings of segments
+     */
+    private double getAngleDiff(final Segment segment1, final Segment segment2)
+    {
+        final Optional<Heading> segmentOneHeading = segment1.heading();
+        final Optional<Heading> segmentTwoHeading = segment2.heading();
+        if (segmentOneHeading.isPresent() && segmentTwoHeading.isPresent())
+        {
+            return segmentOneHeading.get().difference(segmentTwoHeading.get()).asDegrees();
+        }
+        return ANGLE_DEFAULT;
     }
 
     /**
@@ -148,26 +176,22 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
         return Stream.empty();
     }
 
-    private double getAngleDiff(final Segment segment1, final Segment segment2)
-    {
-        final Optional<Heading> segmentOneHeading = segment1.heading();
-        final Optional<Heading> segmentTwoHeading = segment2.heading();
-        if (segmentOneHeading.isPresent() && segmentTwoHeading.isPresent())
-        {
-            return segmentOneHeading.get().difference(segmentTwoHeading.get()).asDegrees();
-        }
-        return 90.0;
-    }
-
+    /**
+     * Checks if angle fits within concerning range set in config.
+     * 
+     * @param polygon
+     *            building
+     * @return boolean if the angle fits within concerning ranges
+     */
     private boolean hasConcerningAngles(final Polygon polygon)
     {
         final List<Segment> segments = polygon.segments();
-        int segmentSize = segments.size();
-        for (Segment segment : segments)
+        final int segmentSize = segments.size();
+        for (final Segment segment : segments)
         {
             if (segments.indexOf(segment) < segmentSize - 2)
             {
-                Segment nextSegment = segments.get(segments.indexOf(segment) + 1);
+                final Segment nextSegment = segments.get(segments.indexOf(segment) + 1);
                 return (this.getAngleDiff(segment, nextSegment) < this.maxLowAngleDiff
                         && this.getAngleDiff(segment, nextSegment) > this.minLowAngleDiff)
                         || (this.getAngleDiff(segment, nextSegment) < this.maxHighAngleDiff
