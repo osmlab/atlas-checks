@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -134,7 +134,6 @@
     }
   },
   "ConcerningAngleBuildingCheck": {
-    "enabled": true,
     "angles": {
       "minLowAngleDiff": 80.0,
       "maxLowAngleDiff": 89.9,
@@ -142,8 +141,8 @@
       "maxHighAngleDiff": 100.0
     },
     "angleCounts": {
-      "min": 4,
-      "max": 16
+      "min": 4.0,
+      "max": 16.0
     },
     "challenge": {
       "description": "Tasks contain buildings with acute angles.",

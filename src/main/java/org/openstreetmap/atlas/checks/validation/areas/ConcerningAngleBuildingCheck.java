@@ -1,5 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Heading;
@@ -15,13 +22,6 @@ import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * Auto generated Check template
  *
@@ -31,13 +31,14 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = 8586559001979110697L;
     private static final String CONCERNING_ANGLE_INSTRUCTIONS = "Area {0, number, #} has concerning angles, please make all angles right angles.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(CONCERNING_ANGLE_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList(CONCERNING_ANGLE_INSTRUCTIONS);
     private static final double MIN_LOW_ANGLE_DIFF_DEFAULT = 80.0;
     private static final double MAX_LOW_ANGLE_DIFF_DEFAULT = 89.9;
     private static final double MIN_HIGH_ANGLE_DIFF_DEFAULT = 90.1;
     private static final double MAX_HIGH_ANGLE_DIFF_DEFAULT = 100.0;
-    private static final double MIN_ANGLE_COUNT_DEFAULT = 4;
-    private static final double MAX_ANGLE_COUNT_DEFAULT = 16;
+    private static final double MIN_ANGLE_COUNT_DEFAULT = 4.0;
+    private static final double MAX_ANGLE_COUNT_DEFAULT = 16.0;
     private final double minLowAngleDiff;
     private final double maxLowAngleDiff;
     private final double minHighAngleDiff;
@@ -56,18 +57,18 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
     public ConcerningAngleBuildingCheck(final Configuration configuration)
     {
         super(configuration);
-        this.minLowAngleDiff = this.configurationValue(configuration,
-                "angles.minLowAngleDiff", MIN_LOW_ANGLE_DIFF_DEFAULT);
-        this.maxLowAngleDiff = this.configurationValue(configuration,
-                "angles.maxLowAngleDiff", MAX_LOW_ANGLE_DIFF_DEFAULT);
-        this.minHighAngleDiff = this.configurationValue(configuration,
-                "angles.minHighAngleDiff", MIN_HIGH_ANGLE_DIFF_DEFAULT);
-        this.maxHighAngleDiff = this.configurationValue(configuration,
-                "angles.maxHighAngleDiff", MAX_HIGH_ANGLE_DIFF_DEFAULT);
-        this.minAngleCount = this.configurationValue(configuration,
-                "angleCounts.min", MIN_ANGLE_COUNT_DEFAULT);
-        this.maxAngleCount = this.configurationValue(configuration,
-                "angleCounts.max", MAX_ANGLE_COUNT_DEFAULT);
+        this.minLowAngleDiff = this.configurationValue(configuration, "angles.minLowAngleDiff",
+                MIN_LOW_ANGLE_DIFF_DEFAULT);
+        this.maxLowAngleDiff = this.configurationValue(configuration, "angles.maxLowAngleDiff",
+                MAX_LOW_ANGLE_DIFF_DEFAULT);
+        this.minHighAngleDiff = this.configurationValue(configuration, "angles.minHighAngleDiff",
+                MIN_HIGH_ANGLE_DIFF_DEFAULT);
+        this.maxHighAngleDiff = this.configurationValue(configuration, "angles.maxHighAngleDiff",
+                MAX_HIGH_ANGLE_DIFF_DEFAULT);
+        this.minAngleCount = this.configurationValue(configuration, "angleCounts.min",
+                MIN_ANGLE_COUNT_DEFAULT);
+        this.maxAngleCount = this.configurationValue(configuration, "angleCounts.max",
+                MAX_ANGLE_COUNT_DEFAULT);
     }
 
     /**
@@ -80,10 +81,9 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !isFlagged(object.getOsmIdentifier())
-                && this.isBuildingOrPart(object)
+        return !isFlagged(object.getOsmIdentifier()) && this.isBuildingOrPart(object)
                 && (object instanceof Area
-                || (object instanceof Relation && ((Relation) object).isMultiPolygon()));
+                        || (object instanceof Relation && ((Relation) object).isMultiPolygon()));
     }
 
     /**
@@ -97,14 +97,13 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         markAsFlagged(object.getOsmIdentifier());
-        Set<Polygon> buildingPolygons= getPolygons(object).collect(Collectors.toSet());
+        Set<Polygon> buildingPolygons = getPolygons(object).collect(Collectors.toSet());
         if (!buildingPolygons.isEmpty())
         {
             for (Polygon polygon : buildingPolygons)
             {
-                if ( buildingAngleCountWithinValidRange(polygon) && hasConcerningAngles(polygon))
+                if (buildingAngleCountWithinValidRange(polygon) && hasConcerningAngles(polygon))
                 {
-//                    System.out.println("osmId: " + object.getOsmIdentifier());
                     return Optional.of(this.createFlag(object,
                             this.getLocalizedInstruction(0, object.getOsmIdentifier())));
                 }
@@ -166,11 +165,11 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
         {
             if (segments.indexOf(segment) < segmentSize - 2)
             {
-                Segment nextSegment = segments.get(segments.indexOf(segment) +1);
+                Segment nextSegment = segments.get(segments.indexOf(segment) + 1);
                 return (getAngleDiff(segment, nextSegment) < this.maxLowAngleDiff
                         && getAngleDiff(segment, nextSegment) > this.minLowAngleDiff)
                         || (getAngleDiff(segment, nextSegment) < this.maxHighAngleDiff
-                        && getAngleDiff(segment, nextSegment) > this.minHighAngleDiff);
+                                && getAngleDiff(segment, nextSegment) > this.minHighAngleDiff);
             }
         }
         return false;
