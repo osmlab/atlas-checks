@@ -97,12 +97,13 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         markAsFlagged(object.getOsmIdentifier());
-        Set<Polygon> buildingPolygons = getPolygons(object).collect(Collectors.toSet());
+        final Set<Polygon> buildingPolygons = this.getPolygons(object).collect(Collectors.toSet());
         if (!buildingPolygons.isEmpty())
         {
-            for (Polygon polygon : buildingPolygons)
+            for (final Polygon polygon : buildingPolygons)
             {
-                if (buildingAngleCountWithinValidRange(polygon) && hasConcerningAngles(polygon))
+                if (this.buildingAngleCountWithinValidRange(polygon)
+                        && this.hasConcerningAngles(polygon))
                 {
                     return Optional.of(this.createFlag(object,
                             this.getLocalizedInstruction(0, object.getOsmIdentifier())));
@@ -118,10 +119,11 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    private boolean buildingAngleCountWithinValidRange(Polygon polygon)
+    private boolean buildingAngleCountWithinValidRange(final Polygon polygon)
     {
-        List<Segment> polygonSegments = polygon.segments();
-        return polygonSegments.size() >= minAngleCount && polygonSegments.size() <= maxAngleCount;
+        final List<Segment> polygonSegments = polygon.segments();
+        return polygonSegments.size() >= this.minAngleCount
+                && polygonSegments.size() <= this.maxAngleCount;
     }
 
     /**
@@ -146,7 +148,7 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
         return Stream.empty();
     }
 
-    private double getAngleDiff(Segment segment1, Segment segment2)
+    private double getAngleDiff(final Segment segment1, final Segment segment2)
     {
         final Optional<Heading> segmentOneHeading = segment1.heading();
         final Optional<Heading> segmentTwoHeading = segment2.heading();
@@ -157,19 +159,19 @@ public class ConcerningAngleBuildingCheck extends BaseCheck<Long>
         return 90.0;
     }
 
-    private boolean hasConcerningAngles(Polygon polygon)
+    private boolean hasConcerningAngles(final Polygon polygon)
     {
-        List<Segment> segments = polygon.segments();
+        final List<Segment> segments = polygon.segments();
         int segmentSize = segments.size();
         for (Segment segment : segments)
         {
             if (segments.indexOf(segment) < segmentSize - 2)
             {
                 Segment nextSegment = segments.get(segments.indexOf(segment) + 1);
-                return (getAngleDiff(segment, nextSegment) < this.maxLowAngleDiff
-                        && getAngleDiff(segment, nextSegment) > this.minLowAngleDiff)
-                        || (getAngleDiff(segment, nextSegment) < this.maxHighAngleDiff
-                                && getAngleDiff(segment, nextSegment) > this.minHighAngleDiff);
+                return (this.getAngleDiff(segment, nextSegment) < this.maxLowAngleDiff
+                        && this.getAngleDiff(segment, nextSegment) > this.minLowAngleDiff)
+                        || (this.getAngleDiff(segment, nextSegment) < this.maxHighAngleDiff
+                                && this.getAngleDiff(segment, nextSegment) > this.minHighAngleDiff);
             }
         }
         return false;
