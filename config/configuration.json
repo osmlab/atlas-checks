@@ -136,8 +136,8 @@
   "ConcerningAngleBuildingCheck": {
     "angles": {
       "minLowAngleDiff": 80.0,
-      "maxLowAngleDiff": 89.9,
-      "minHighAngleDiff": 90.1,
+      "maxLowAngleDiff": 89.7,
+      "minHighAngleDiff": 90.3,
       "maxHighAngleDiff": 100.0
     },
     "angleCounts": {
