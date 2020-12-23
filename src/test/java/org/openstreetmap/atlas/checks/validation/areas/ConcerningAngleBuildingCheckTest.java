@@ -32,9 +32,23 @@ public class ConcerningAngleBuildingCheckTest
     }
 
     @Test
+    public void overSixteenAnglesFalsePositive()
+    {
+        this.verifier.actual(this.setup.overSixteenAnglesFalsePositive(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void squaredAngleFalsePositive()
     {
         this.verifier.actual(this.setup.squaredAngleFalsePositive(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void underFourAnglesFalsePositive()
+    {
+        this.verifier.actual(this.setup.underFourAnglesFalsePositive(), this.check);
         this.verifier.verifyEmpty();
     }
 
