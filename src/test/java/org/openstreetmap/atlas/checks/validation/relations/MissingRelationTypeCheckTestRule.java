@@ -77,7 +77,10 @@ public class MissingRelationTypeCheckTestRule extends CoreTestRule
                                                     "disabled:type=any" }) })
     private Atlas missingRelationTypeDisabled;
 
-    public Atlas getMissingRelationType() { return this.missingRelationType; }
+    public Atlas getMissingRelationType()
+    {
+        return this.missingRelationType;
+    }
 
     public Atlas getMissingRelationTypeDisabled()
     {
