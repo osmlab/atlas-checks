@@ -24,6 +24,7 @@ import org.openstreetmap.atlas.checks.maproulette.serializer.ChallengeDeserializ
 import org.openstreetmap.atlas.checks.utility.FileUtility;
 import org.openstreetmap.atlas.checks.utility.FileUtility.LogOutputFileType;
 import org.openstreetmap.atlas.checks.utility.OpenStreetMapCheckFlagConverter;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.locale.IsoCountry;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -69,6 +70,17 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             "includeFixSuggestions",
             "true/false whether all fix suggestions in the geojson should be uploaded to MR.",
             Boolean::parseBoolean, Optionality.OPTIONAL, "true");
+    private static final Switch<Boolean> DISCOVERABLE_PROJECT = new Switch<>("discoverableProject",
+            "true/false is project is discoverable", Boolean::parseBoolean, Optionality.OPTIONAL,
+            "true");
+    private static final Switch<List<String>> DISCOVERABLE_CHALLENGES = new Switch<>(
+            "discoverableChallenges",
+            "List of discoverable challenges. Leave empty for all, minus any in the undiscoverable list.",
+            string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL, null);
+    private static final Switch<List<String>> UNDISCOVERABLE_CHALLENGES = new Switch<>(
+            "undiscoverableChallenges",
+            "List of undiscoverable challenges. All challenges except for those in this list are made discoverable",
+            string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL, null);
 
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
@@ -106,7 +118,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     public SwitchList switches()
     {
         return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
-                CHECKS, CHECKIN_COMMENT_PREFIX, CHECKIN_COMMENT);
+                CHECKS, CHECKIN_COMMENT_PREFIX, CHECKIN_COMMENT, DISCOVERABLE_CHALLENGES,
+                UNDISCOVERABLE_CHALLENGES, DISCOVERABLE_PROJECT);
     }
 
     @Override
@@ -122,6 +135,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final Optional<List<String>> checks = (Optional<List<String>>) commandMap.getOption(CHECKS);
         final String checkinCommentPrefix = (String) commandMap.get(CHECKIN_COMMENT_PREFIX);
         final String checkinComment = (String) commandMap.get(CHECKIN_COMMENT);
+        final boolean discoverableProject = (boolean) commandMap.get(DISCOVERABLE_PROJECT);
+        final Optional<List<String>> discoverableChallenges = (Optional<List<String>>) commandMap
+                .getOption(DISCOVERABLE_CHALLENGES);
+        final Optional<List<String>> undiscoverableChallenges = (Optional<List<String>>) commandMap
+                .getOption(UNDISCOVERABLE_CHALLENGES);
+        this.validateChallengeDiscoverability(discoverableChallenges, undiscoverableChallenges);
 
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
@@ -161,7 +180,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                         .computeIfAbsent(countryCode,
                                                 ignore -> this.getChallenge(checkName, instructions,
                                                         countryCode, checkinCommentPrefix,
-                                                        checkinComment));
+                                                        checkinComment, discoverableChallenges,
+                                                        undiscoverableChallenges));
                                 // by default, upload fix suggestions
                                 final boolean includeFixSuggestions = commandMap
                                         .get(INCLUDE_FIX_SUGGESTIONS) == null
@@ -210,7 +230,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      */
     private Challenge getChallenge(final String checkName,
             final Configuration fallbackConfiguration, final String countryCode,
-            final String checkinCommentPrefix, final String checkinComment)
+            final String checkinCommentPrefix, final String checkinComment,
+            final Optional<List<String>> discoverableChallenges,
+            final Optional<List<String>> undiscoverableChallenges)
     {
         final Map<String, String> challengeMap = fallbackConfiguration
                 .get(this.getChallengeParameter(checkName), Collections.emptyMap()).value();
@@ -228,10 +250,22 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 : checkinComment);
         // Set challenge status to ready
         result.setStatus(ChallengeStatus.READY.intValue());
-        // Set challenged disabled
-        result.setEnabled(false);
         // Set update tasks to false
         result.setUpdateTasks(false);
+        // Set challenge discoverability
+        if (discoverableChallenges.isPresent()
+                && (discoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
+                        || discoverableChallenges.get().contains(checkName)))
+        {
+            result.setEnabled(true);
+        }
+        else if (discoverableChallenges.isEmpty() && undiscoverableChallenges.isEmpty()
+                || undiscoverableChallenges.isPresent()
+                        && (undiscoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
+                                || undiscoverableChallenges.get().contains(checkName)))
+        {
+            result.setEnabled(false);
+        }
         return result;
     }
 
@@ -259,5 +293,20 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private Configuration loadConfiguration(final CommandMap map)
     {
         return new StandardConfiguration((File) map.get(CONFIG_LOCATION));
+    }
+
+    /**
+     * @param discoverables
+     * @param undiscoverables
+     */
+    private void validateChallengeDiscoverability(final Optional<List<String>> discoverables,
+            final Optional<List<String>> undiscoverables)
+    {
+        if (discoverables.isPresent() && undiscoverables.isPresent())
+        {
+            throw new CoreException(
+                    "Discoverable and undiscoverable challenge lists cannot both be concurrently defined. Both must be undefined or only one defined");
+        }
+
     }
 }

@@ -33,7 +33,7 @@ public class MapRouletteClientTest
 
     private static final String CONFIGURATION = "server:123:project:api_key";
     private static final Challenge TEST_CHALLENGE = new Challenge("a name", "a description",
-            "a blurb", "an instruction", ChallengeDifficulty.EASY, "");
+            "a blurb", "an instruction", ChallengeDifficulty.EASY, "", false);
     private static final Optional<JsonArray> GEOJSON = getSampleGeojson();
 
     @Rule
