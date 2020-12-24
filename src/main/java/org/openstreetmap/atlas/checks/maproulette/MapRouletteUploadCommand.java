@@ -75,11 +75,11 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             "true");
     private static final Switch<List<String>> DISCOVERABLE_CHALLENGES = new Switch<>(
             "discoverableChallenges",
-            "List of discoverable challenges. Leave empty for all, minus any in the undiscoverable list.",
+            "List of discoverable challenges. Supply \"\" for all. See the MR upload command docs for more info",
             string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL, null);
     private static final Switch<List<String>> UNDISCOVERABLE_CHALLENGES = new Switch<>(
             "undiscoverableChallenges",
-            "List of undiscoverable challenges. All challenges except for those in this list are made discoverable",
+            "List of undiscoverable challenges. Supply \"\" for all. See the MR upload command docs for more info",
             string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL, null);
 
     private static final String PARAMETER_CHALLENGE = "challenge";
