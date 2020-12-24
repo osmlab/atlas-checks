@@ -135,7 +135,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final Optional<List<String>> checks = (Optional<List<String>>) commandMap.getOption(CHECKS);
         final String checkinCommentPrefix = (String) commandMap.get(CHECKIN_COMMENT_PREFIX);
         final String checkinComment = (String) commandMap.get(CHECKIN_COMMENT);
-        final boolean discoverableProject = (boolean) commandMap.get(DISCOVERABLE_PROJECT);
+        configuration.getProjectConfiguration()
+                .setEnabled((boolean) commandMap.get(DISCOVERABLE_PROJECT));
         final Optional<List<String>> discoverableChallenges = (Optional<List<String>>) commandMap
                 .getOption(DISCOVERABLE_CHALLENGES);
         final Optional<List<String>> undiscoverableChallenges = (Optional<List<String>>) commandMap
