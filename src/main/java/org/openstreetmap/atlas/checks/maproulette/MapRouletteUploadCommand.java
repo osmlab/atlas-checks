@@ -255,15 +255,20 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         // Set challenge discoverability
         if (discoverableChallenges.isPresent()
                 && (discoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
-                        || discoverableChallenges.get().contains(checkName)))
+                        || discoverableChallenges.get().contains(checkName))
+                || undiscoverableChallenges.isPresent()
+                        && !undiscoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
+                        && !undiscoverableChallenges.get().contains(checkName))
         {
+            // Explicitly enabled by check name in discoverableChallenges, or implicitly enabled by
+            // absence in undiscoverableChallenges or "" in discoverableChallenges
             result.setEnabled(true);
         }
-        else if (discoverableChallenges.isEmpty() && undiscoverableChallenges.isEmpty()
-                || undiscoverableChallenges.isPresent()
-                        && (undiscoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
-                                || undiscoverableChallenges.get().contains(checkName)))
+        else
         {
+            // Explicitly disabled by check name in undiscoverableChallenges, or implicitly disabled
+            // by absence in discoverableChallenges or "" in undiscoverableChallenges or both
+            // discoverableChallenges and undiscoverableChallenges are null
             result.setEnabled(false);
         }
         return result;
