@@ -612,6 +612,15 @@
       "difficulty": "MEDIUM"
     }
   },
+  "MissingRelationTypeCheck": {
+    "ignore.tags.filter":"disused:type->!&disabled:type->!",
+    "challenge": {
+      "description": "Tasks contain Relations with missing type tag.",
+      "blurb": "Relations with missing type tag.",
+      "instruction": "Open your favorite editor and add Relation type tag.",
+      "difficulty": "NORMAL"
+    }
+  },
   "NodeValenceCheck": {
     "connections.maximum": 10,
     "challenge": {

@@ -18,17 +18,31 @@ public class CommonMethodsTest
     public CommonMethodsTestRule setup = new CommonMethodsTestRule();
 
     @Test
-    public void testOneMemberRelationReversed()
+    public void testOneMemberRelationEdge()
     {
         assertEquals(1, CommonMethods
-                .getOSMRelationMemberSize(this.setup.getOneMemberRelationReversed().relation(123)));
+                .getOSMRelationMemberSize(this.setup.getOneMemberRelationEdge().relation(123)));
+    }
+
+    @Test
+    public void testOneMemberRelationNode()
+    {
+        assertEquals(1, CommonMethods
+                .getOSMRelationMemberSize(this.setup.getOneMemberRelationNode().relation(123)));
+    }
+
+    @Test
+    public void testOneMemberRelationReversed()
+    {
+        assertEquals(1, CommonMethods.getOSMRelationMemberSize(
+                this.setup.getOneMemberRelationReversedEdge().relation(123)));
     }
 
     @Test
     public void testOneMemberRelationSectioned()
     {
         assertEquals(1, CommonMethods.getOSMRelationMemberSize(
-                this.setup.getOneMemberRelationSectioned().relation(123)));
+                this.setup.getOneMemberRelationSectionedEdge().relation(123)));
     }
 
     @Test
