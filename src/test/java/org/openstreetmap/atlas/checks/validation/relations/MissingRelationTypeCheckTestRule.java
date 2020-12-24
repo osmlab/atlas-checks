@@ -9,6 +9,11 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
+/**
+ * {@link MissingRelationTypeCheckTest} data generator
+ *
+ * @author vlemberg
+ */
 public class MissingRelationTypeCheckTestRule extends CoreTestRule
 {
     private static final String ONE = "18.4360044, -71.7194204";
@@ -72,10 +77,7 @@ public class MissingRelationTypeCheckTestRule extends CoreTestRule
                                                     "disabled:type=any" }) })
     private Atlas missingRelationTypeDisabled;
 
-    public Atlas missingRelationType()
-    {
-        return this.missingRelationType;
-    }
+    public Atlas getMissingRelationType() { return this.missingRelationType; }
 
     public Atlas getMissingRelationTypeDisabled()
     {

@@ -6,6 +6,11 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
+/**
+ * Tests for {@link MissingRelationTypeCheck}
+ *
+ * @author vlemberg
+ */
 public class MissingRelationTypeCheckTest
 {
     @Rule
@@ -20,7 +25,7 @@ public class MissingRelationTypeCheckTest
     @Test
     public void missingRelationType()
     {
-        this.verifier.actual(this.setup.missingRelationType(),
+        this.verifier.actual(this.setup.getMissingRelationType(),
                 new MissingRelationTypeCheck(this.inlineConfiguration));
         this.verifier.verifyExpectedSize(1);
     }
