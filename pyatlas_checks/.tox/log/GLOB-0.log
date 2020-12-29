@@ -1,0 +1,55 @@
+action: GLOB, msg: packaging
+cwd: /Users/matthewmanley/Documents/github/atlas-checks/pyatlas_checks
+cmd: /Users/matthewmanley/.local/share/virtualenvs/atlas-checks/bin/python setup.py sdist --formats=zip --dist-dir .tox/dist
+running sdist
+running egg_info
+writing pyatlas_checks.egg-info/PKG-INFO
+writing dependency_links to pyatlas_checks.egg-info/dependency_links.txt
+writing entry points to pyatlas_checks.egg-info/entry_points.txt
+writing requirements to pyatlas_checks.egg-info/requires.txt
+writing top-level names to pyatlas_checks.egg-info/top_level.txt
+reading manifest file 'pyatlas_checks.egg-info/SOURCES.txt'
+writing manifest file 'pyatlas_checks.egg-info/SOURCES.txt'
+running check
+warning: check: missing meta-data: either (author and author_email) or (maintainer and maintainer_email) must be supplied
+
+creating pyatlas_checks-1.0
+creating pyatlas_checks-1.0/pyatlas_checks
+creating pyatlas_checks-1.0/pyatlas_checks.egg-info
+creating pyatlas_checks-1.0/pyatlas_checks/commands
+copying files to pyatlas_checks-1.0...
+copying README.md -> pyatlas_checks-1.0
+copying setup.py -> pyatlas_checks-1.0
+copying pyatlas_checks/__init__.py -> pyatlas_checks-1.0/pyatlas_checks
+copying pyatlas_checks/cli.py -> pyatlas_checks-1.0/pyatlas_checks
+copying pyatlas_checks.egg-info/PKG-INFO -> pyatlas_checks-1.0/pyatlas_checks.egg-info
+copying pyatlas_checks.egg-info/SOURCES.txt -> pyatlas_checks-1.0/pyatlas_checks.egg-info
+copying pyatlas_checks.egg-info/dependency_links.txt -> pyatlas_checks-1.0/pyatlas_checks.egg-info
+copying pyatlas_checks.egg-info/entry_points.txt -> pyatlas_checks-1.0/pyatlas_checks.egg-info
+copying pyatlas_checks.egg-info/requires.txt -> pyatlas_checks-1.0/pyatlas_checks.egg-info
+copying pyatlas_checks.egg-info/top_level.txt -> pyatlas_checks-1.0/pyatlas_checks.egg-info
+copying pyatlas_checks/commands/__init__.py -> pyatlas_checks-1.0/pyatlas_checks/commands
+copying pyatlas_checks/commands/base_command.py -> pyatlas_checks-1.0/pyatlas_checks/commands
+copying pyatlas_checks/commands/log_count.py -> pyatlas_checks-1.0/pyatlas_checks/commands
+Writing pyatlas_checks-1.0/setup.cfg
+creating '.tox/dist/pyatlas_checks-1.0.zip' and adding 'pyatlas_checks-1.0' to it
+adding 'pyatlas_checks-1.0'
+adding 'pyatlas_checks-1.0/pyatlas_checks'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info'
+adding 'pyatlas_checks-1.0/PKG-INFO'
+adding 'pyatlas_checks-1.0/README.md'
+adding 'pyatlas_checks-1.0/setup.py'
+adding 'pyatlas_checks-1.0/setup.cfg'
+adding 'pyatlas_checks-1.0/pyatlas_checks/commands'
+adding 'pyatlas_checks-1.0/pyatlas_checks/__init__.py'
+adding 'pyatlas_checks-1.0/pyatlas_checks/cli.py'
+adding 'pyatlas_checks-1.0/pyatlas_checks/commands/log_count.py'
+adding 'pyatlas_checks-1.0/pyatlas_checks/commands/__init__.py'
+adding 'pyatlas_checks-1.0/pyatlas_checks/commands/base_command.py'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info/PKG-INFO'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info/SOURCES.txt'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info/entry_points.txt'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info/requires.txt'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info/top_level.txt'
+adding 'pyatlas_checks-1.0/pyatlas_checks.egg-info/dependency_links.txt'
+removing 'pyatlas_checks-1.0' (and everything under it)
