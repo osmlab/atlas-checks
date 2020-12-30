@@ -273,12 +273,12 @@ class CloudAtlasChecksControl:
         # sync the country folders to the local directory
         for c in list(self.countries.split(",")):
             logger.info(
-                "syncing {}/flag/{} to {}/flag/{}".format(
+                "syncing {}/flag/{} to {}flag/{}".format(
                     self.s3InFolder, c, self.atlasOutDir, c
                 )
             )
             if self.ssh_cmd(
-                "aws s3 sync --only-show-errors {0}/flag/{1} {2}/flag/{1}".format(
+                "aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
                     self.s3InFolder, c, self.atlasOutDir
                 )
             ):
@@ -291,13 +291,14 @@ class CloudAtlasChecksControl:
             "java -cp {}".format(jarFile)
             + " org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
             + " -maproulette='{}:{}:{}'".format(self.mrURL, self.mrProject, self.mrkey)
-            + " -logfiles='{}/flag'".format(self.atlasOutDir)
+            + " -logfiles='{}flag'".format(self.atlasOutDir)
             + " -outputPath='{}'".format(self.atlasOutDir)
             + " -config='{}'".format(atlasConfig)
             + " -checkinComment='#AtlasChecks'"
             + " -countries='{}'".format(self.countries)
             + " -checks='{}'".format(self.checks)
             + " -includeFixSuggestions=true"
+            + " > {} 2>&1".format(self.atlasCheckLog)
         )
 
         logger.info("Starting mr upload: {}".format(cmd))
