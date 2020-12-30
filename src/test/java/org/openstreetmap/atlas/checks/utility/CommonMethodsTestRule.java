@@ -44,6 +44,26 @@ public class CommonMethodsTestRule extends CoreTestRule
     @TestAtlas(
             // nodes
             nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            // edges
+            edges = { @Edge(id = "12000001", coordinates = { @Loc(value = ONE),
+                    @Loc(value = TWO) }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12000001", type = "edge", role = ""), }) })
+    private Atlas oneMemberRelationEdge;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "1", type = "node", role = ""), }) })
+    private Atlas oneMemberRelationNode;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
                     @Node(id = "2", coordinates = @Loc(value = TWO)), },
             // edges
             edges = {
@@ -54,7 +74,7 @@ public class CommonMethodsTestRule extends CoreTestRule
             relations = { @Relation(id = "123", members = {
                     @Member(id = "12000001", type = "edge", role = ""),
                     @Member(id = "-12000001", type = "edge", role = "") }) })
-    private Atlas oneMemberRelationReversed;
+    private Atlas oneMemberRelationReversedEdge;
 
     @TestAtlas(
             // nodes
@@ -73,16 +93,26 @@ public class CommonMethodsTestRule extends CoreTestRule
                     @Member(id = "12000001", type = "edge", role = ""),
                     @Member(id = "12000002", type = "edge", role = ""),
                     @Member(id = "12000003", type = "edge", role = "") }) })
-    private Atlas oneMemberRelationSectioned;
+    private Atlas oneMemberRelationSectionedEdge;
 
-    public Atlas getOneMemberRelationReversed()
+    public Atlas getOneMemberRelationEdge()
     {
-        return this.oneMemberRelationReversed;
+        return this.oneMemberRelationEdge;
     }
 
-    public Atlas getOneMemberRelationSectioned()
+    public Atlas getOneMemberRelationNode()
     {
-        return this.oneMemberRelationSectioned;
+        return this.oneMemberRelationNode;
+    }
+
+    public Atlas getOneMemberRelationReversedEdge()
+    {
+        return this.oneMemberRelationReversedEdge;
+    }
+
+    public Atlas getOneMemberRelationSectionedEdge()
+    {
+        return this.oneMemberRelationSectionedEdge;
     }
 
     public Atlas getValidRelation()
