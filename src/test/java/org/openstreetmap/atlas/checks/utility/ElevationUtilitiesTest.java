@@ -2,9 +2,12 @@ package org.openstreetmap.atlas.checks.utility;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -14,16 +17,22 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.geography.Latitude;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.springframework.util.SerializationUtils;
 
 /**
  * Test class for {@link ElevationUtilities}.
@@ -35,13 +44,22 @@ public class ElevationUtilitiesTest
 
     private static ElevationUtilities elevationUtilities;
 
+    @Rule
+    public ElevationUtilitiesTestRule atlases = new ElevationUtilitiesTestRule();
+
+    @ClassRule
+    public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     /**
      * Perform initial setup of the test
      */
     @BeforeClass
     public static void setUp()
     {
-        elevationUtilities = new ElevationUtilities(ConfigurationResolver.emptyConfiguration());
+        final ExternalDataFetcher fetcher = new ExternalDataFetcher(
+                temporaryFolder.getRoot().getAbsolutePath(), Collections.emptyMap());
+        elevationUtilities = new ElevationUtilities(ConfigurationResolver.emptyConfiguration(),
+                fetcher);
         prefillData();
     }
 
@@ -88,7 +106,7 @@ public class ElevationUtilitiesTest
 
     /**
      * Test method for {@link ElevationUtilities#ElevationUtilities}
-     * 
+     *
      * @throws ReflectiveOperationException
      *             when something goes wrong with reflection
      */
@@ -102,9 +120,9 @@ public class ElevationUtilitiesTest
                 "'{'\"ElevationUtilities\":'{'\"elevation.srtm_extent\": {0}, \"elevation.srtm_ext\": \"{1}\", \"elevation.path\": \"{2}\"'}}'",
                 Double.toString(expectedSrtmExtent), expectedSrtmExtension, expectedSrtmPath);
         final ElevationUtilities config = new ElevationUtilities(
-                ConfigurationResolver.inlineConfiguration(configuration));
+                ConfigurationResolver.inlineConfiguration(configuration), null);
         final ElevationUtilities custom = new ElevationUtilities(expectedSrtmExtent,
-                expectedSrtmExtension, expectedSrtmPath);
+                expectedSrtmExtension, expectedSrtmPath, null);
         final Field srtmExtentField = ElevationUtilities.class.getDeclaredField("srtmExtent");
         final Field srtmExtensionField = ElevationUtilities.class.getDeclaredField("srtmExtension");
         final Field srtmPathField = ElevationUtilities.class.getDeclaredField("srtmPath");
@@ -117,7 +135,8 @@ public class ElevationUtilitiesTest
             assertEquals(expectedSrtmExtent, srtmExtentField.getDouble(elevationUtility), 0.001);
             assertEquals(expectedSrtmExtension,
                     srtmExtensionField.get(elevationUtility).toString());
-            assertEquals(expectedSrtmPath, srtmPathField.get(elevationUtility).toString());
+            assertEquals(expectedSrtmPath + File.separator,
+                    srtmPathField.get(elevationUtility).toString());
 
         }
     }
@@ -201,4 +220,46 @@ public class ElevationUtilitiesTest
         assertFalse(elevationUtilities.inSameDataPoint(one, Location.CROSSING_85_280));
     }
 
+    /**
+     * This checks to ensure that serialization works properly (i.e., that fetching occurs properly
+     * for multi-node use)
+     *
+     * @throws IOException
+     *             If there is an error writing to a test file in a temporary directory
+     */
+    @Test
+    public void testSerialization() throws IOException
+    {
+        // Ensure that we aren't erroring out if someone passes a null fetcher/null
+        // atlas
+        final byte[] serializedElevation = SerializationUtils.serialize(elevationUtilities);
+        elevationUtilities = (ElevationUtilities) SerializationUtils
+                .deserialize(serializedElevation);
+
+        // Create a temporary file that will be loaded by the fetcher
+        final File extra = this.temporaryFolder.newFolder("extra", "elevation");
+        final File toWrite = new File(extra, elevationUtilities.getSrtmFileName(28, -90));
+        try (FileOutputStream writer = new FileOutputStream(toWrite.getAbsolutePath()))
+        {
+            final ByteBuffer byteBuffer = ByteBuffer.allocate(32);
+            byteBuffer.order(ByteOrder.BIG_ENDIAN);
+            for (short i = 16; i < 32; i++)
+            {
+                byteBuffer.putShort(i);
+            }
+            writer.write(byteBuffer.array());
+        }
+        catch (final IOException e)
+        {
+            throw e;
+        }
+        // Attempt to read the stored file
+        // We mostly care that the elevation is not the default value for this test.
+        // There is another test for correct responses.
+        // Please note that ElevationUtilities caches maps, which means that this should
+        // not be called earlier in the test.
+        final Location one = new Location(Latitude.degrees(28.92414725033),
+                Longitude.degrees(-89.42596868149));
+        assertNotEquals(Short.MIN_VALUE, elevationUtilities.getElevation(one));
+    }
 }

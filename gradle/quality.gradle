@@ -24,6 +24,7 @@ sourceSets
 
 test
 {
+    useJUnitPlatform()
     testLogging
     {
         events "failed"

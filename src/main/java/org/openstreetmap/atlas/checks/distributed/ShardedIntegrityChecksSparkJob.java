@@ -17,6 +17,7 @@ import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
+import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
@@ -31,6 +32,7 @@ import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.generator.sharding.AtlasSharding;
 import org.openstreetmap.atlas.generator.tools.caching.HadoopAtlasFileCache;
+import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
@@ -107,7 +109,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     public void start(final CommandMap commandMap)
     {
         final Time start = Time.now();
-        final String atlasDirectory = (String) commandMap.get(ATLAS_FOLDER);
+        final String atlasDirectory = (String) commandMap.get(SparkJob.INPUT);
         final String input = Optional.ofNullable(this.input(commandMap)).orElse(atlasDirectory);
 
         // Gather arguments
@@ -137,7 +139,11 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         // File loading helpers
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
-        final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration);
+        // Get the file fetcher
+        final ExternalDataFetcher fileFetcher = new ExternalDataFetcher(input,
+                this.configurationMap());
+        final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration,
+                fileFetcher);
 
         // Get sharding
         @SuppressWarnings("unchecked")
