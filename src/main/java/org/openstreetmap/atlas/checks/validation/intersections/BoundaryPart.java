@@ -1,38 +1,35 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
 import org.openstreetmap.atlas.geography.Rectangle;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 
-import java.util.List;
 import java.util.Set;
 
 
 public class BoundaryPart {
-    
-    private final Rectangle bounds;
-    private final long osmIdentifier;
-    private final String wktGeometry;
+
     private final Set<String> boundaryTags;
-    //TODO?
-//    private final Set<AtlasObject> atlasObjects;
-    
-    public BoundaryPart(long osmIdentifier, Rectangle bounds, String wktGeometry, Set<String> boundaryTags) {
-        this.osmIdentifier = osmIdentifier;
-        this.bounds = bounds;
-        this.wktGeometry = wktGeometry;
+    private final AtlasEntity atlasEntity;
+
+    public BoundaryPart(AtlasEntity entity, Set<String> boundaryTags) {
+        this.atlasEntity = entity;
         this.boundaryTags = boundaryTags;
     }
-    
+
+    public AtlasEntity getAtlasEntity() {
+        return atlasEntity;
+    }
+
     public Rectangle getBounds() {
-        return bounds;
+        return atlasEntity.bounds();
     }
     
     public long getOsmIdentifier() {
-        return osmIdentifier;
+        return atlasEntity.getOsmIdentifier();
     }
     
     public String getWktGeometry() {
-        return wktGeometry;
+        return atlasEntity.toWkt();
     }
     
     public Set<String> getBoundaryTags() {

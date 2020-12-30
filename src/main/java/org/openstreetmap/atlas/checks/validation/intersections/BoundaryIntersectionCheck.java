@@ -46,7 +46,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     public static final int INDEX = 0;
     public static final String TYPE = "type";
     public static final String BOUNDARY = "boundary";
-    private static final String INVALID_BOUNDARY_FORMAT = "Boundaries {0} with way {1} is crossing invalidly with boundaries {2} with way {3} at coordinates {4}.";
+    private static final String INVALID_BOUNDARY_FORMAT = "Boundary {0} with way {1} is crossing invalidly with boundary {2} with way {3} at coordinates {4}.";
     private static final String INSTRUCTION_FORMAT = INVALID_BOUNDARY_FORMAT
             + " Two boundaries should not intersect each other.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
@@ -84,12 +84,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private Optional<CheckFlag> processRelation(final AtlasObject object)
     {
-//        if(object.getOsmIdentifier() == 2327223){
-//            System.out.println("2327223 FOUND");
-//        }
-//        if(object.getOsmIdentifier() == 3890254){
-//            System.out.println("3890254 FOUND");
-//        }
         final Map<String, Relation> tagToRelation = this.getRelationMap(object);
         final RelationBoundary relationBoundary = new RelationBoundary(tagToRelation, this.getBoundaryParts((Relation) object));
         final Set<String> instructions = new HashSet<>();
@@ -97,12 +91,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         final Set<String> matchedTags = new HashSet<>();
         for(final BoundaryPart currentBoundaryPart : relationBoundary.getBoundaryParts())
         {
-//            if(currentBoundaryPart.getOsmIdentifier() == 2327223){
-//                System.out.println("2327223 FOUND");
-//            }
-//            if(currentBoundaryPart.getOsmIdentifier() == 3890254){
-//                System.out.println("3890254 FOUND");
-//            }
             final Iterable<LineItem> lineItemsIntersecting = object.getAtlas().lineItemsIntersecting(currentBoundaryPart.getBounds(),
                     this.getPredicateForLineItemsSelection(currentBoundaryPart, relationBoundary.getTagToRelation().keySet()));
             final Iterable<Area> areasIntersecting = object.getAtlas().areasIntersecting(currentBoundaryPart.getBounds(),
@@ -112,6 +100,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             this.processAreas(relationBoundary, instructions, objectsToFlag, matchedTags, currentBoundaryPart, areasIntersecting, currentMatchedTags);
 
             objectsToFlag.addAll(relationBoundary.getRelationsByBoundaryTags(matchedTags));
+            objectsToFlag.add(currentBoundaryPart.getAtlasEntity());
         }
         if(instructions.isEmpty())
         {
@@ -122,7 +111,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             final CheckFlag checkFlag = new CheckFlag(this.getTaskIdentifier(object));
             instructions.forEach(checkFlag::addInstruction);
             //TODO remove
-//            instructions.forEach(System.out::println);
+            instructions.forEach(System.out::println);
             checkFlag.addObjects(objectsToFlag);
             return Optional.of(checkFlag);
         }
@@ -141,6 +130,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             final Set<Relation> matchingBoundaries = this.getBoundaries(area)
                     .stream()
                     .filter(boundary -> relationBoundary.getTagToRelation().containsKey(boundary.getTag(BOUNDARY).orElse(StringUtils.EMPTY)))
+                    .filter(boundary -> !relationBoundary.containsRelationId(boundary.getOsmIdentifier()))
                     .collect(Collectors.toSet());
             if(!matchingBoundaries.isEmpty())
             {
@@ -155,9 +145,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                             area.toWkt());
                     final String firstBoundaries = this.objectsToString(relationBoundary.getRelationsByBoundaryTags(currentMatchedTags));
                     final String secondBoundaries = this.objectsToString(matchingBoundaries);
-                    if(firstBoundaries.hashCode() < secondBoundaries.hashCode())
+                    if(intersectingPoints.length != 0 && firstBoundaries.hashCode() < secondBoundaries.hashCode())
                     {
-                        this.addInstruction(instructions, currentBoundaryPart, area, intersectingPoints, firstBoundaries, secondBoundaries);
+                        this.addInstruction(instructions, currentBoundaryPart, area.getOsmIdentifier(), intersectingPoints, firstBoundaries, secondBoundaries);
                     }
             }
             matchedTags.addAll(currentMatchedTags);
@@ -177,6 +167,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             final Set<Relation> matchingBoundaries = this.getBoundaries(lineItem)
                     .stream()
                     .filter(boundary -> relationBoundary.getTagToRelation().containsKey(boundary.getTag(BOUNDARY).get()))
+                    .filter(boundary -> !relationBoundary.containsRelationId(boundary.getOsmIdentifier()))
                     .collect(Collectors.toSet());
             if(!matchingBoundaries.isEmpty())
             {
@@ -196,9 +187,9 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                             line.toWkt());
                     final String firstBoundaries = this.objectsToString(relationBoundary.getRelationsByBoundaryTags(currentMatchedTags));
                     final String secondBoundaries = this.objectsToString(matchingBoundaries);
-                    if(firstBoundaries.hashCode() < secondBoundaries.hashCode())
+                    if(intersectingPoints.length != 0 && firstBoundaries.hashCode() < secondBoundaries.hashCode())
                     {
-                        this.addInstruction(instructions, currentBoundaryPart, line, intersectingPoints, firstBoundaries, secondBoundaries);
+                        this.addInstruction(instructions, currentBoundaryPart, line.getOsmIdentifier(), intersectingPoints, firstBoundaries, secondBoundaries);
                     }
                 });
             }
@@ -208,7 +199,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private void addInstruction(final Set<String> instructions,
                                 final BoundaryPart lineItem,
-                                final LineItem line,
+                                final long osmIdentifier,
                                 final Coordinate[] intersectingPoints,
                                 final String firstBoundaries,
                                 final String secondBoundaries)
@@ -217,23 +208,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                 firstBoundaries,
                 Long.toString(lineItem.getOsmIdentifier()),
                 secondBoundaries,
-                Long.toString(line.getOsmIdentifier()),
-                this.coordinatesToList(intersectingPoints));
-        instructions.add(instruction);
-    }
-
-    private void addInstruction(final Set<String> instructions,
-                                final BoundaryPart lineItem,
-                                final Area area,
-                                final Coordinate[] intersectingPoints,
-                                final String firstBoundaries,
-                                final String secondBoundaries)
-    {
-        final String instruction = this.getLocalizedInstruction(INDEX,
-                firstBoundaries,
-                Long.toString(lineItem.getOsmIdentifier()),
-                secondBoundaries,
-                Long.toString(area.getOsmIdentifier()),
+                Long.toString(osmIdentifier),
                 this.coordinatesToList(intersectingPoints));
         instructions.add(instruction);
     }
@@ -279,8 +254,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                             .collect(Collectors.toSet());
                     boundaryTags.add(tag);
                     boundaryTags.remove(StringUtils.EMPTY);
-                    return new BoundaryPart(entity.getOsmIdentifier(),
-                            entity.bounds(), entity.toWkt(), boundaryTags);
+                    return new BoundaryPart(entity, boundaryTags);
                 })
                 .collect(Collectors.toSet());
     }
@@ -335,7 +309,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
         final WKTReader wktReader = new WKTReader();
         Geometry geometry1 = wktReader.read(wktFirst);
-        if (geometry1.getGeometryType().equals("Polygon")) {
+        if (geometry1.getGeometryType().equals(Geometry.TYPENAME_POLYGON)) {
             geometry1 = geometry1.getBoundary();
         }
         return geometry1;
@@ -355,20 +329,8 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
 
     private Predicate<Area> getPredicateForAreaSelection(final BoundaryPart boundaryPart, final Set<String> boundaryTags)
     {
-//        if(boundaryPart.getOsmIdentifier() == 2327223){
-//            System.out.println("2327223 FOUND");
-//        }
-//        if(boundaryPart.getOsmIdentifier() == 3890254){
-//            System.out.println("3890254 FOUND");
-//        }
         return areaToCheck ->
         {
-//            if(areaToCheck.getOsmIdentifier() == 2327223){
-//                System.out.println("2327223 FOUND");
-//            }
-//            if(areaToCheck.getOsmIdentifier() == 3890254){
-//                System.out.println("3890254 FOUND");
-//            }
             if (this.checkAreaAsBoundary(areaToCheck, boundaryTags))
             {
                 return this.isCrossingNotTouching(boundaryPart.getWktGeometry(), areaToCheck.toWkt());
@@ -397,7 +359,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
                 || boundaryTags.contains(area.getTag(BOUNDARY).orElse(""));
     }
 
-    //TODO change
     public boolean isCrossingNotTouching(final String wktFirst,
             final String wktSecond)
     {
@@ -406,40 +367,32 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         {
             final Geometry geometry1 = wktReader.read(wktFirst);
             final Geometry geometry2 = wktReader.read(wktSecond);
-            if(!geometry1.isValid() || !geometry1.isSimple() || !geometry2.isValid() || !geometry2.isSimple()){
+            if(geometry1.equals(geometry2)){
                 return false;
             }
-            if(geometry1.intersects(geometry2))
-            {
-                if(this.isGeometryPairOfLineType(geometry1, geometry2))
-                {
-                    return this.isLineIntersectionNotTouch(geometry1, geometry2);
-                }
-                return this.isAreaIntersectionNotTouch(geometry1, geometry2);
+            if(anyGeometryInvalid(geometry1, geometry2)){
+                return false;
             }
+            return isIntersectingNotTouching(geometry1, geometry2);
         }
         catch (final ParseException e)
         {
             return false;
         }
-        return false;
+    }
+
+    private boolean anyGeometryInvalid(Geometry geometry1, Geometry geometry2) {
+        return !geometry1.isValid() || !geometry1.isSimple() || !geometry2.isValid() || !geometry2.isSimple();
+    }
+
+    private boolean isIntersectingNotTouching(final Geometry geometry1, final Geometry geometry2){
+        return geometry1.intersects(geometry2) &&
+                (geometry1.crosses(geometry2) || (geometry1.overlaps(geometry2) && !this.isGeometryPairOfLineType(geometry1, geometry2)));
     }
 
     private boolean isGeometryPairOfLineType(final Geometry lineString, final Geometry lineString2)
     {
-        return lineString.getGeometryType().equals("LineString") && lineString2.getGeometryType().equals("LineString");
-    }
-
-    private boolean isLineIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
-    {
-        return !(geometry1.overlaps(geometry2) || geometry1.touches(geometry2));
-    }
-
-    private boolean isAreaIntersectionNotTouch(final Geometry geometry1, final Geometry geometry2)
-    {
-        return !(geometry1.covers(geometry2) ||
-                geometry1.coveredBy(geometry2) ||
-                geometry1.touches(geometry2));
+        return lineString.getGeometryType().equals(Geometry.TYPENAME_LINESTRING) && lineString2.getGeometryType().equals(Geometry.TYPENAME_LINESTRING);
     }
 
     private String coordinatesToList(final Coordinate[] locations)

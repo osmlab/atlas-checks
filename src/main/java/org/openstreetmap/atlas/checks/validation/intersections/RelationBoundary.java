@@ -37,4 +37,11 @@ public class RelationBoundary {
                 .map(tagToRelation::get)
                 .collect(Collectors.toSet());
     }
+
+    public boolean containsRelationId(long osmIdentifier) {
+        return tagToRelation.values()
+                .stream()
+                .map(Relation::getOsmIdentifier)
+                .anyMatch(id -> id == osmIdentifier);
+    }
 }

@@ -97,12 +97,12 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = COORD_2)), @Node(coordinates = @Loc(value = COORD_3)),
             @Node(coordinates = @Loc(value = COORD_4)), @Node(coordinates = @Loc(value = COORD_5)),
             @Node(coordinates = @Loc(value = COORD_6)) }, lines = {
-                    @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_15),
+                    @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_2),
                             @Loc(value = COORD_3), @Loc(value = COORD_4),
                             @Loc(value = COORD_1) }, id = LINE_ONE),
-                    @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_5),
+                    @Line(coordinates = { @Loc(value = COORD_20), @Loc(value = COORD_5),
                             @Loc(value = COORD_6),
-                            @Loc(value = COORD_1) }, id = LINE_TWO) }, relations = {
+                            @Loc(value = COORD_20) }, id = LINE_TWO) }, relations = {
                                     @Relation(id = RELATION_ONE, members = {
                                             @Relation.Member(id = LINE_ONE, role = "outer", type = "line") }, tags = {
                                                     "type=boundary", "boundary=administrative" }),
@@ -114,12 +114,12 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COORD_1)),
             @Node(coordinates = @Loc(value = COORD_2)), @Node(coordinates = @Loc(value = COORD_3)),
             @Node(coordinates = @Loc(value = COORD_4)), @Node(coordinates = @Loc(value = COORD_5)),
-            @Node(coordinates = @Loc(value = COORD_6)) }, lines = {
-                    @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_15),
+            @Node(coordinates = @Loc(value = COORD_6)), @Node(coordinates = @Loc(value = COORD_20)) }, lines = {
+                    @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_2),
                             @Loc(value = COORD_3), @Loc(value = COORD_4),
                             @Loc(value = COORD_1) }, id = LINE_ONE, tags = { "type=boundary",
                                     "boundary=administrative" }),
-                    @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_5),
+                    @Line(coordinates = { @Loc(value = COORD_20), @Loc(value = COORD_5),
                             @Loc(value = COORD_6), @Loc(value = COORD_1) }, id = LINE_TWO, tags = {
                                     "type=boundary", "boundary=administrative" }) }, relations = {
                                             @Relation(id = RELATION_ONE, members = {
@@ -131,13 +131,13 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COORD_1)),
             @Node(coordinates = @Loc(value = COORD_2)), @Node(coordinates = @Loc(value = COORD_3)),
             @Node(coordinates = @Loc(value = COORD_4)), @Node(coordinates = @Loc(value = COORD_5)),
-            @Node(coordinates = @Loc(value = COORD_6)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_15),
+            @Node(coordinates = @Loc(value = COORD_6)), @Node(coordinates = @Loc(value = COORD_20)) }, edges = {
+                    @Edge(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_2),
                             @Loc(value = COORD_3), @Loc(value = COORD_4),
                             @Loc(value = COORD_1) }, id = EDGE_ONE),
-                    @Edge(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_5),
+                    @Edge(coordinates = { @Loc(value = COORD_20), @Loc(value = COORD_5),
                             @Loc(value = COORD_6),
-                            @Loc(value = COORD_1) }, id = EDGE_TWO) }, relations = {
+                            @Loc(value = COORD_20) }, id = EDGE_TWO) }, relations = {
                                     @Relation(id = RELATION_ONE, members = {
                                             @Relation.Member(id = EDGE_ONE, role = "outer", type = "edge") }, tags = {
                                                     "type=boundary", "boundary=administrative" }),
