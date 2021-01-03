@@ -20,12 +20,15 @@ public class RelationBoundary
         this.tagToRelation = tagToRelation;
         this.boundaryParts = boundaryParts;
     }
-    
-    public Map<String, Relation> getTagToRelation()
+
+    public boolean containsRelationId(final long osmIdentifier)
     {
-        return this.tagToRelation;
+        return this.tagToRelation.values()
+                .stream()
+                .map(Relation::getOsmIdentifier)
+                .anyMatch(id -> id == osmIdentifier);
     }
-    
+
     public Set<BoundaryPart> getBoundaryParts()
     {
         return this.boundaryParts;
@@ -40,11 +43,8 @@ public class RelationBoundary
                 .collect(Collectors.toSet());
     }
 
-    public boolean containsRelationId(final long osmIdentifier)
+    public Map<String, Relation> getTagToRelation()
     {
-        return this.tagToRelation.values()
-                .stream()
-                .map(Relation::getOsmIdentifier)
-                .anyMatch(id -> id == osmIdentifier);
+        return this.tagToRelation;
     }
 }

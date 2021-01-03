@@ -26,23 +26,23 @@ public class BoundaryPart
         return this.atlasEntity;
     }
 
+    public Set<String> getBoundaryTags()
+    {
+        return this.boundaryTags;
+    }
+
     public Rectangle getBounds()
     {
         return this.atlasEntity.bounds();
     }
-    
+
     public long getOsmIdentifier()
     {
         return this.atlasEntity.getOsmIdentifier();
     }
-    
+
     public String getWktGeometry()
     {
         return this.atlasEntity.toWkt();
-    }
-    
-    public Set<String> getBoundaryTags()
-    {
-        return this.boundaryTags;
     }
 }
