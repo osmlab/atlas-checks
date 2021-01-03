@@ -5,7 +5,6 @@ import java.util.Set;
 import org.openstreetmap.atlas.geography.Rectangle;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 
-
 /**
  * @author srachanski
  */

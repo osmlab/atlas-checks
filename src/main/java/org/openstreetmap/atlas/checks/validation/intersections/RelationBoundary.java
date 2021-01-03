@@ -11,11 +11,12 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
  */
 public class RelationBoundary
 {
-    
+
     private final Map<String, Relation> tagToRelation;
     private final Set<BoundaryPart> boundaryParts;
-    
-    public RelationBoundary(final Map<String, Relation> tagToRelation, final Set<BoundaryPart> boundaryParts)
+
+    public RelationBoundary(final Map<String, Relation> tagToRelation,
+            final Set<BoundaryPart> boundaryParts)
     {
         this.tagToRelation = tagToRelation;
         this.boundaryParts = boundaryParts;
@@ -23,9 +24,7 @@ public class RelationBoundary
 
     public boolean containsRelationId(final long osmIdentifier)
     {
-        return this.tagToRelation.values()
-                .stream()
-                .map(Relation::getOsmIdentifier)
+        return this.tagToRelation.values().stream().map(Relation::getOsmIdentifier)
                 .anyMatch(id -> id == osmIdentifier);
     }
 
@@ -33,14 +32,11 @@ public class RelationBoundary
     {
         return this.boundaryParts;
     }
-    
+
     public Set<Relation> getRelationsByBoundaryTags(final Set<String> tags)
     {
-        return this.tagToRelation.keySet()
-                .stream()
-                .filter(tags::contains)
-                .map(this.tagToRelation::get)
-                .collect(Collectors.toSet());
+        return this.tagToRelation.keySet().stream().filter(tags::contains)
+                .map(this.tagToRelation::get).collect(Collectors.toSet());
     }
 
     public Map<String, Relation> getTagToRelation()

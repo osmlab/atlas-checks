@@ -114,7 +114,8 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COORD_1)),
             @Node(coordinates = @Loc(value = COORD_2)), @Node(coordinates = @Loc(value = COORD_3)),
             @Node(coordinates = @Loc(value = COORD_4)), @Node(coordinates = @Loc(value = COORD_5)),
-            @Node(coordinates = @Loc(value = COORD_6)), @Node(coordinates = @Loc(value = COORD_20)) }, lines = {
+            @Node(coordinates = @Loc(value = COORD_6)),
+            @Node(coordinates = @Loc(value = COORD_20)) }, lines = {
                     @Line(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_2),
                             @Loc(value = COORD_3), @Loc(value = COORD_4),
                             @Loc(value = COORD_1) }, id = LINE_ONE, tags = { "type=boundary",
@@ -131,7 +132,8 @@ public class BoundaryIntersectionCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COORD_1)),
             @Node(coordinates = @Loc(value = COORD_2)), @Node(coordinates = @Loc(value = COORD_3)),
             @Node(coordinates = @Loc(value = COORD_4)), @Node(coordinates = @Loc(value = COORD_5)),
-            @Node(coordinates = @Loc(value = COORD_6)), @Node(coordinates = @Loc(value = COORD_20)) }, edges = {
+            @Node(coordinates = @Loc(value = COORD_6)),
+            @Node(coordinates = @Loc(value = COORD_20)) }, edges = {
                     @Edge(coordinates = { @Loc(value = COORD_1), @Loc(value = COORD_2),
                             @Loc(value = COORD_3), @Loc(value = COORD_4),
                             @Loc(value = COORD_1) }, id = EDGE_ONE),
