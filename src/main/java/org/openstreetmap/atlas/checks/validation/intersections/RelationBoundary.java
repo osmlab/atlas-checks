@@ -1,45 +1,48 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
-import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.LineItem;
-import org.openstreetmap.atlas.geography.atlas.items.Relation;
-
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RelationBoundary {
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
+
+/**
+ * @author srachanski
+ */
+public class RelationBoundary
+{
     
     private final Map<String, Relation> tagToRelation;
     private final Set<BoundaryPart> boundaryParts;
-//    private final Set<AtlasObject> boundaryObjects;
     
-    public RelationBoundary(Map<String, Relation> tagToRelation, Set<BoundaryPart> boundaryParts) {
+    public RelationBoundary(final Map<String, Relation> tagToRelation, final Set<BoundaryPart> boundaryParts)
+    {
         this.tagToRelation = tagToRelation;
         this.boundaryParts = boundaryParts;
-//        this.boundaryObjects = boundaryParts.stream()
-//                .map(boundaryPart -> boundaryPart.get)
     }
     
-    public Map<String, Relation> getTagToRelation() {
-        return tagToRelation;
+    public Map<String, Relation> getTagToRelation()
+    {
+        return this.tagToRelation;
     }
     
-    public Set<BoundaryPart> getBoundaryParts() {
-        return boundaryParts;
+    public Set<BoundaryPart> getBoundaryParts()
+    {
+        return this.boundaryParts;
     }
     
-    public Set<Relation> getRelationsByBoundaryTags(Set<String> tags){
-        return tagToRelation.keySet()
+    public Set<Relation> getRelationsByBoundaryTags(final Set<String> tags)
+    {
+        return this.tagToRelation.keySet()
                 .stream()
                 .filter(tags::contains)
-                .map(tagToRelation::get)
+                .map(this.tagToRelation::get)
                 .collect(Collectors.toSet());
     }
 
-    public boolean containsRelationId(long osmIdentifier) {
-        return tagToRelation.values()
+    public boolean containsRelationId(final long osmIdentifier)
+    {
+        return this.tagToRelation.values()
                 .stream()
                 .map(Relation::getOsmIdentifier)
                 .anyMatch(id -> id == osmIdentifier);

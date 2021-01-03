@@ -37,7 +37,9 @@ public class UnwalkableWaysCheck extends BaseCheck<Long>
     private static final Logger logger = LoggerFactory.getLogger(UnwalkableWaysCheck.class);
     // Instructions
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
-            .singletonList("");
+            .singletonList("Way {0,number,#} may be unwalkable and needs verification if safe "
+                    + "pedestrian crossing exists. If it does, it should be marked ‘foot=yes’. If "
+                    + "safe pedestrian crossing does not exist, the Way should be marked ‘foot=no'.");
     // The minimum highway type considered for potential dual carriageways
     private static final HighwayTag MINIMUM_HIGHWAY_TYPE_DEFAULT = HighwayTag.PRIMARY;
     private static final List<String> DEFAULT_WALKWAY_TAGS = Arrays.asList(

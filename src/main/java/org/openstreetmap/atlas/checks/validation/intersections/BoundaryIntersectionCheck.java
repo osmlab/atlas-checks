@@ -58,12 +58,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         super(configuration);
     }
 
-    private static boolean isObjectOfBoundaryTypeWithBoundaryTag(final AtlasObject object)
-    {
-        return Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY)
-                && Validators.hasValuesFor(object, BoundaryTag.class);
-    }
-
     private static boolean isRelationTypeBoundaryWithBoundaryTag(final AtlasObject object)
     {
         return Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.BOUNDARY)
@@ -73,7 +67,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Relation && isObjectOfBoundaryTypeWithBoundaryTag(object);
+        return object instanceof Relation && isRelationTypeBoundaryWithBoundaryTag(object);
     }
 
     @Override
@@ -110,8 +104,6 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
             {
             final CheckFlag checkFlag = new CheckFlag(this.getTaskIdentifier(object));
             instructions.forEach(checkFlag::addInstruction);
-            //TODO remove
-            instructions.forEach(System.out::println);
             checkFlag.addObjects(objectsToFlag);
             return Optional.of(checkFlag);
         }
@@ -220,7 +212,7 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         {
             ((MultiRelation) object).relations()
                     .stream()
-                    .filter(BoundaryIntersectionCheck::isObjectOfBoundaryTypeWithBoundaryTag)
+                    .filter(BoundaryIntersectionCheck::isRelationTypeBoundaryWithBoundaryTag)
                     .forEach(relation -> tagToRelation.put(relation.getTag(BOUNDARY).get(), relation));
         }
         tagToRelation.put(object.getTag(BOUNDARY).get(), (Relation) object);
@@ -294,8 +286,8 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
     {
         try
         {
-            Geometry geometry1 = getGeometryForIntersection(wktFirst);
-            Geometry geometry2 = getGeometryForIntersection(wktSecond);
+            final Geometry geometry1 = this.getGeometryForIntersection(wktFirst);
+            final Geometry geometry2 = this.getGeometryForIntersection(wktSecond);
             return geometry1.intersection(geometry2).getCoordinates();
         }
         catch (final ParseException e)
@@ -304,12 +296,13 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         }
     }
 
-    private Geometry getGeometryForIntersection(String wktFirst) throws ParseException
+    private Geometry getGeometryForIntersection(final String wktFirst) throws ParseException
     {
 
         final WKTReader wktReader = new WKTReader();
         Geometry geometry1 = wktReader.read(wktFirst);
-        if (geometry1.getGeometryType().equals(Geometry.TYPENAME_POLYGON)) {
+        if (geometry1.getGeometryType().equals(Geometry.TYPENAME_POLYGON))
+        {
             geometry1 = geometry1.getBoundary();
         }
         return geometry1;
@@ -367,13 +360,15 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         {
             final Geometry geometry1 = wktReader.read(wktFirst);
             final Geometry geometry2 = wktReader.read(wktSecond);
-            if(geometry1.equals(geometry2)){
+            if(geometry1.equals(geometry2))
+            {
                 return false;
             }
-            if(anyGeometryInvalid(geometry1, geometry2)){
+            if(this.anyGeometryInvalid(geometry1, geometry2))
+            {
                 return false;
             }
-            return isIntersectingNotTouching(geometry1, geometry2);
+            return this.isIntersectingNotTouching(geometry1, geometry2);
         }
         catch (final ParseException e)
         {
@@ -381,11 +376,13 @@ public class BoundaryIntersectionCheck extends BaseCheck<Long>
         }
     }
 
-    private boolean anyGeometryInvalid(Geometry geometry1, Geometry geometry2) {
+    private boolean anyGeometryInvalid(final Geometry geometry1, final Geometry geometry2)
+    {
         return !geometry1.isValid() || !geometry1.isSimple() || !geometry2.isValid() || !geometry2.isSimple();
     }
 
-    private boolean isIntersectingNotTouching(final Geometry geometry1, final Geometry geometry2){
+    private boolean isIntersectingNotTouching(final Geometry geometry1, final Geometry geometry2)
+    {
         return geometry1.intersects(geometry2) &&
                 (geometry1.crosses(geometry2) || (geometry1.overlaps(geometry2) && !this.isGeometryPairOfLineType(geometry1, geometry2)));
     }
