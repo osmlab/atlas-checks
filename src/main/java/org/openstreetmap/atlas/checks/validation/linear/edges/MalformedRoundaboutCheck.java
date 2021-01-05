@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
@@ -22,6 +23,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Route;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
@@ -112,28 +114,32 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
         // will be flagged
         if (!complexRoundabout.isValid())
         {
-            // AutoFix candidate only for wrong direction case.
-            if (complexRoundabout.getAllInvalidations().size() == 1 && complexRoundabout
-                    .getAllInvalidations().get(0).getReason().equals(WRONG_WAY_INSTRUCTIONS))
+            // AutoFix candidate only for Single Way Roundabout with wrong direction.
+            if (complexRoundabout.getAllInvalidations().size() == 1
+                    && complexRoundabout.getAllInvalidations().get(0).getReason()
+                            .equals(WRONG_WAY_INSTRUCTIONS)
+                    && !this.isMultiWayRoundabout(roundaboutEdgeSet))
             {
                 // Mark that the Edges have been processed
                 roundaboutEdgeSet.forEach(
                         roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
                 return Optional.of(this
-                        .createFlag(roundaboutEdgeSet,
+                        .createFlag(new OsmWayWalker((Edge) object).collectEdges(),
                                 this.getLocalizedInstruction(1, object.getOsmIdentifier()))
-                        .addFixSuggestion(FeatureChange.add(
-                                (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object)).withGeometry(
-                                                ((Edge) object).asPolyLine().reversed()),
-                                object.getAtlas())));
+                        .addFixSuggestion(
+                                FeatureChange.add(
+                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                .from((AtlasEntity) object)).withGeometry(
+                                                        CommonMethods.buildOriginalOsmWayGeometry(
+                                                                (Edge) object).reversed()),
+                                        object.getAtlas())));
             }
             else
             {
                 // All other cases.
-                // Note: some cases might also include "wrong direction" when multiple issues
-                // detected.
+                // Note: some cases might also include "wrong direction" when Roundabout is Multi
+                // Way or combination of issues are detected.
                 instructions.addAll(complexRoundabout.getAllInvalidations().stream()
                         .map(ComplexEntity.ComplexEntityError::getReason)
                         .collect(Collectors.toSet()));
@@ -200,6 +206,19 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 .anyMatch(intersection -> !(edge.start().getLocation().equals(intersection)
                         || edge.end().getLocation().equals(intersection))
                         || polygon.fullyGeometricallyEncloses(polyline));
+    }
+
+    /**
+     * Checks if {@link ComplexRoundabout} is MultiWay Roundabout. MultiWay Roundabout formed of
+     * several unique OSM Ids. Example: https://www.openstreetmap.org/way/349400768
+     * 
+     * @param roundaboutEdges
+     *            the {@link Set} to check
+     * @return true if roundabout is MultiWay
+     */
+    private boolean isMultiWayRoundabout(final Set<Edge> roundaboutEdges)
+    {
+        return roundaboutEdges.stream().map(Edge::getOsmIdentifier).distinct().count() > 1;
     }
 
     /**
