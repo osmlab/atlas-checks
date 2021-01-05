@@ -223,19 +223,6 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if {@link ComplexRoundabout} is MultiWay Roundabout. MultiWay Roundabout formed of
-     * several unique OSM Ids. Example: https://www.openstreetmap.org/way/349400768
-     *
-     * @param roundaboutEdges
-     *            the {@link Set} to check
-     * @return true if roundabout is MultiWay
-     */
-    private boolean isMultiWayRoundabout(final Set<Edge> roundaboutEdges)
-    {
-        return roundaboutEdges.stream().map(Edge::getOsmIdentifier).distinct().count() > 1;
-    }
-
-    /**
      * Checks if an {@link AtlasObject} has a highway value that excludes it from this check. These
      * have been excluded because they commonly act differently from car navigable roundabouts.
      *
@@ -247,6 +234,19 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     {
         return Validators.isOfType(object, HighwayTag.class, HighwayTag.CYCLEWAY,
                 HighwayTag.PEDESTRIAN, HighwayTag.FOOTWAY);
+    }
+
+    /**
+     * Checks if {@link ComplexRoundabout} is MultiWay Roundabout. MultiWay Roundabout formed of
+     * several unique OSM Ids. Example: https://www.openstreetmap.org/way/349400768
+     *
+     * @param roundaboutEdges
+     *            the {@link Set} to check
+     * @return true if roundabout is MultiWay
+     */
+    private boolean isMultiWayRoundabout(final Set<Edge> roundaboutEdges)
+    {
+        return roundaboutEdges.stream().map(Edge::getOsmIdentifier).distinct().count() > 1;
     }
 
     /**
