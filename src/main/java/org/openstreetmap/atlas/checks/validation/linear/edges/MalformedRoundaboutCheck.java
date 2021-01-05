@@ -51,6 +51,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     private static final String BASIC_INSTRUCTION = "This roundabout is malformed.";
     private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout has car navigable ways inside it.";
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.";
+    private static final String MINIMUM_NODES_INSTRUCTION = "This roundabout has less than or equal to {0,number,#} nodes.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -59,15 +60,18 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
             "PAK", "PCN", "PNG", "SGP", "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA",
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
+    private static final double MIN_NODES_DEFAULT = 8.0;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION);
+            .asList(ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION, MINIMUM_NODES_INSTRUCTION);
     private final List<String> leftDrivingCountries;
+    private final double minNodes;
 
     public MalformedRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
         this.leftDrivingCountries = configurationValue(configuration, "traffic.countries.left",
                 LEFT_DRIVING_COUNTRIES_DEFAULT);
+        this.minNodes = configurationValue(configuration, "min.nodes", MIN_NODES_DEFAULT);
     }
 
     @Override
@@ -157,6 +161,10 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 && this.roundaboutEnclosesRoads(roundaboutEdges))
         {
             instructions.add(this.getLocalizedInstruction(0));
+        }
+
+        if (roundaboutEdges != null && roundaboutEdges.asPolyLine().size() <= minNodes) {
+            instructions.add(this.getLocalizedInstruction(2, minNodes));
         }
 
         if (!instructions.isEmpty())
