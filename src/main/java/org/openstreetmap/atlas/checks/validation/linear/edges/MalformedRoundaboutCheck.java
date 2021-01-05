@@ -209,21 +209,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     }
 
     /**
-     * Checks if {@link ComplexRoundabout} is MultiWay Roundabout. MultiWay Roundabout formed of
-     * several unique OSM Ids. Example: https://www.openstreetmap.org/way/349400768
-     * 
-     * @param roundaboutEdges
-     *            the {@link Set} to check
-     * @return true if roundabout is MultiWay
-     */
-    private boolean isMultiWayRoundabout(final Set<Edge> roundaboutEdges)
-    {
-        return roundaboutEdges.stream().map(Edge::getOsmIdentifier).distinct().count() > 1;
-    }
-
-    /**
      * Checks if {@link AtlasObject} contains synthetic boundary Node
-     * 
+     *
      * @param object
      *            the {@link AtlasObject} to check
      * @return true if roundabout contains synthetic boundary Node.
@@ -233,6 +220,19 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
         return new SimpleEdgeWalker((Edge) object, this.isRoundaboutEdge()).collectEdges().stream()
                 .anyMatch(roundaboutEdge -> roundaboutEdge.connectedNodes().stream()
                         .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode));
+    }
+
+    /**
+     * Checks if {@link ComplexRoundabout} is MultiWay Roundabout. MultiWay Roundabout formed of
+     * several unique OSM Ids. Example: https://www.openstreetmap.org/way/349400768
+     *
+     * @param roundaboutEdges
+     *            the {@link Set} to check
+     * @return true if roundabout is MultiWay
+     */
+    private boolean isMultiWayRoundabout(final Set<Edge> roundaboutEdges)
+    {
+        return roundaboutEdges.stream().map(Edge::getOsmIdentifier).distinct().count() > 1;
     }
 
     /**
