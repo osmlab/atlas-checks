@@ -17,20 +17,13 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @TestAtlas.Node(id = "1", coordinates = @TestAtlas.Loc(value = TEST_1)),
-                    @TestAtlas.Node(id = "2", coordinates = @TestAtlas.Loc(value = TEST_2)),
-                    @TestAtlas.Node(id = "3", coordinates = @TestAtlas.Loc(value = TEST_3)) },
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
             // points
             points = {
-                    @TestAtlas.Point(id = "24", coordinates = @TestAtlas.Loc(value = TEST_4), tags = {
-                            "source:maxspeed=zome", "iso_country_code=UK" }) },
-            // edges
-            edges = { @TestAtlas.Edge(id = "12", coordinates = { @TestAtlas.Loc(value = TEST_1),
-                    @TestAtlas.Loc(value = TEST_2) }, tags = { "highway=road", "name=John" }),
-                    @TestAtlas.Edge(id = "23", coordinates = { @TestAtlas.Loc(value = TEST_2),
-                            @TestAtlas.Loc(value = TEST_3) }, tags = { "highway=road",
-                                    "name=Smith" }) })
-    private Atlas exceptionCountry;
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                            "source:maxspeed=RO-TST:urban" }) })
+    private Atlas countryExceptionConfigAtlas;
 
     @TestAtlas(
             // nodes
@@ -39,14 +32,54 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
                     @TestAtlas.Node(id = "3", coordinates = @TestAtlas.Loc(value = TEST_3)) },
             // points
             points = {
-                    @TestAtlas.Point(id = "24", coordinates = @TestAtlas.Loc(value = TEST_4), tags = {
+                    @TestAtlas.Point(id = "1000000001", coordinates = @TestAtlas.Loc(value = TEST_4), tags = {
+                            "source:maxspeed=sign", "iso_country_code=SGP" }) },
+            // edges
+            edges = {
+                    @TestAtlas.Edge(id = "1001000001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_1),
+                            @TestAtlas.Loc(value = TEST_2) }, tags = { "highway=road", "name=John",
+                                    "source:maxspeed=US:some value", "iso_country_code=SGP" }),
+                    @TestAtlas.Edge(id = "1001000002", coordinates = {
+                            @TestAtlas.Loc(value = TEST_2),
+                            @TestAtlas.Loc(value = TEST_3) }, tags = { "highway=road",
+                                    "source:maxspeed=US:some value", "name=Smith" }) })
+    private Atlas edgeWalkerAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(id = "1", coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(id = "2", coordinates = @TestAtlas.Loc(value = TEST_2)),
+                    @TestAtlas.Node(id = "3", coordinates = @TestAtlas.Loc(value = TEST_3)) },
+            // points
+            points = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_4), tags = {
+                            "source:maxspeed=zome", "iso_country_code=UK" }) },
+            // edges
+            edges = { @TestAtlas.Edge(id = "12", coordinates = { @TestAtlas.Loc(value = TEST_1),
+                    @TestAtlas.Loc(value = TEST_2) }, tags = { "highway=road", "name=John" }),
+                    @TestAtlas.Edge(id = "23", coordinates = { @TestAtlas.Loc(value = TEST_2),
+                            @TestAtlas.Loc(value = TEST_3) }, tags = { "highway=road",
+                                    "name=Smith" }) })
+    private Atlas exceptionCountryAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(id = "1", coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(id = "2", coordinates = @TestAtlas.Loc(value = TEST_2)),
+                    @TestAtlas.Node(id = "3", coordinates = @TestAtlas.Loc(value = TEST_3)) },
+            // points
+            points = {
+                    @TestAtlas.Point(id = "1000000001", coordinates = @TestAtlas.Loc(value = TEST_4), tags = {
                             "source:maxspeed=zome", "iso_country_code=SGP" }) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "12", coordinates = { @TestAtlas.Loc(value = TEST_1),
+                    @TestAtlas.Edge(id = "1001000001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_1),
                             @TestAtlas.Loc(value = TEST_2) }, tags = { "highway=road", "name=John",
                                     "source:maxspeed=US:some value", "iso_country_code=SGP" }),
-                    @TestAtlas.Edge(id = "23", coordinates = { @TestAtlas.Loc(value = TEST_2),
+                    @TestAtlas.Edge(id = "1002000001", coordinates = {
+                            @TestAtlas.Loc(value = TEST_2),
                             @TestAtlas.Loc(value = TEST_3) }, tags = { "highway=road",
                                     "name=Smith" }) })
     private Atlas invalidContextAtlas;
@@ -68,7 +101,7 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
             // points
             points = {
-                    @TestAtlas.Point(id = "24", coordinates = @TestAtlas.Loc(value = TEST_3), tags = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_3), tags = {
                             "source:maxspeed=sign at entrance to subdivision",
                             "iso_country_code=SGP" }) },
             // edges
@@ -82,7 +115,7 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
             // points
             points = {
-                    @TestAtlas.Point(id = "24", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
                             "source:maxspeed=sign", "iso_country_code=SGP" }) },
             // edges
             edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
@@ -97,7 +130,27 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
             // points
             points = {
-                    @TestAtlas.Point(id = "24", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                            "source:maxspeed=RO:urban" }) })
+    private Atlas validContextAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
+            // points
+            points = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                            "source:maxspeed=implied" }) })
+    private Atlas validValueImpliedAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
+            // points
+            points = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
                             "source:maxspeed=zone", "iso_country_code=SGP" }) },
             // edges
             edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
@@ -106,9 +159,19 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
                             "iso_country_code=SGP" }) })
     private Atlas zoneAtlas;
 
-    public Atlas exceptionCountry()
+    public Atlas countryExceptionConfigAtlas()
     {
-        return this.exceptionCountry;
+        return this.countryExceptionConfigAtlas;
+    }
+
+    public Atlas edgeWalkerAtlas()
+    {
+        return this.edgeWalkerAtlas;
+    }
+
+    public Atlas exceptionCountryAtlas()
+    {
+        return this.exceptionCountryAtlas;
     }
 
     public Atlas invalidContextAtlas()
@@ -129,6 +192,16 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
     public Atlas validAtlas()
     {
         return this.validAtlas;
+    }
+
+    public Atlas validContextAtlas()
+    {
+        return this.validContextAtlas;
+    }
+
+    public Atlas validValueImpliedAtlas()
+    {
+        return this.validValueImpliedAtlas;
     }
 
     public Atlas zoneAtlas()

@@ -453,6 +453,7 @@
     }
   },
   "SourceMaxspeedCheck": {
+    "countries.denylist": ["UK"],
     "challenge": {
       "description": "Tasks containing features with tag source:maxspeed with incorrect value format.",
       "blurb": "Features with invalid source:maxspeed tags",

@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * @author mm-ciub
@@ -18,12 +19,31 @@ public class SourceMaxspeedCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    private final Configuration inlineConfiguration = ConfigurationResolver.inlineConfiguration(
+            "{\"SourceMaxspeedCheck\":{\"countries.denylist\":[\"UK\"], \"context.values\":[\"urban\"], \"values\":[\"implied\"], \"country.exceptions\":[\"RO-TST\"]}}");
+
     @Test
-    public void exceptionCountry()
+    public void countryExceptionConfigTest()
     {
-        this.verifier.actual(this.setup.exceptionCountry(),
+        this.verifier.actual(this.setup.countryExceptionConfigAtlas(),
+                new SourceMaxspeedCheck(this.inlineConfiguration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void edgeWalkerTest()
+    {
+        this.verifier.actual(this.setup.edgeWalkerAtlas(),
                 new SourceMaxspeedCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void exceptionCountryTest()
+    {
+        this.verifier.actual(this.setup.exceptionCountryAtlas(),
+                new SourceMaxspeedCheck(this.inlineConfiguration));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -51,11 +71,27 @@ public class SourceMaxspeedCheckTest
     }
 
     @Test
+    public void validContextConfigTest()
+    {
+        this.verifier.actual(this.setup.validContextAtlas(),
+                new SourceMaxspeedCheck(this.inlineConfiguration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void validElementTest()
     {
         this.verifier.actual(this.setup.validAtlas(),
                 new SourceMaxspeedCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validValueConfigTest()
+    {
+        this.verifier.actual(this.setup.validValueImpliedAtlas(),
+                new SourceMaxspeedCheck(this.inlineConfiguration));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -63,6 +99,6 @@ public class SourceMaxspeedCheckTest
     {
         this.verifier.actual(this.setup.zoneAtlas(),
                 new SourceMaxspeedCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.verifyEmpty();
     }
 }

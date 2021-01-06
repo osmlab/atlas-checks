@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import static org.openstreetmap.atlas.checks.constants.CommonConstants.COLON;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +15,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
 import org.openstreetmap.atlas.tags.annotations.validation.ISO2CountryValidator;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -39,12 +39,10 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
     private static final String SOURCE_MAXSPEED = "source:maxspeed";
     private static final List<String> POSSIBLE_VALUES = Arrays.asList("sign", "markings");
     private static final Pattern COUNTRY_CONTEXT_PATTERN = Pattern.compile("[a-zA-Z]{2}:.+");
-    private static final Set<String> EXPECTED_CONTEXT_VALUES = new HashSet<>(
+    private static final Set<String> CONTEXT_VALUES = new HashSet<>(
             Arrays.asList("urban", "rural", "bicycle_road", "trunk", "motorway", "living_street",
                     "school", "pedestrian_zone", "urban_motorway", "urban_trunk", "nsl", "express",
                     "nsl_restricted", "nsl_dual", "nsl_single", "zone"));
-    // UK uses a different tag for this use case
-    private static final List<String> DEFAULT_EXCEPTIONS = Collections.singletonList("UK");
     // Belgium has these 3 regions that are accepted because they have a different default rural or
     // urban maxspeed
     private static final List<String> COUNTRY_EXCEPTIONS = Arrays.asList("BE-VLG", "BE-WAL",
@@ -57,6 +55,9 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
     private static final int CONTEXT_INSTRUCTION_INDEX = 3;
 
     private final List<String> exceptedCountries;
+    private final List<String> possibleValues;
+    private final Set<String> contextValues;
+    private final List<String> countryExceptions;
 
     /**
      * @param configuration
@@ -65,8 +66,12 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
     public SourceMaxspeedCheck(final Configuration configuration)
     {
         super(configuration);
-        this.exceptedCountries = this.configurationValue(configuration, "excepted_countries",
-                DEFAULT_EXCEPTIONS);
+        this.exceptedCountries = this.getDenylistCountries();
+        this.possibleValues = this.configurationValue(configuration, "values", POSSIBLE_VALUES);
+        this.contextValues = Set
+                .copyOf(this.configurationValue(configuration, "context.values", CONTEXT_VALUES));
+        this.countryExceptions = this.configurationValue(configuration, "country.exceptions",
+                COUNTRY_EXCEPTIONS);
     }
 
     /**
@@ -100,33 +105,17 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
         final Optional<String> sourceMaxspeed = object.getTag(SOURCE_MAXSPEED);
         if (sourceMaxspeed.isPresent())
         {
-            final Set<String> instructions = new HashSet<>();
             final String sourceValue = sourceMaxspeed.get();
-            final Matcher matcher = COUNTRY_CONTEXT_PATTERN.matcher(sourceValue);
-            if (matcher.find())
-            {
-                final String[] parts = sourceValue.split(COLON);
-                if (!this.isCountryValid(parts[0]))
-                {
-                    instructions
-                            .add(this.getLocalizedInstruction(COUNTRY_INSTRUCTION_INDEX, parts[0]));
-                }
-                if (!this.isContextValid(parts[1]))
-                {
-                    instructions
-                            .add(this.getLocalizedInstruction(CONTEXT_INSTRUCTION_INDEX, parts[1]));
-                }
-
-            }
-
-            else if (!POSSIBLE_VALUES.contains(sourceValue) && !sourceValue.contains(ZONE))
-            {
-                instructions.add(this.getLocalizedInstruction(VALUE_INSTRUCTION_INDEX));
-            }
+            final Set<String> instructions = this.testSourceValue(sourceValue);
             if (!instructions.isEmpty())
             {
-                final CheckFlag flag = this.createFlag(object, this.getLocalizedInstruction(
-                        GENERAL_INSTRUCTION_INDEX, object.getOsmIdentifier()));
+                this.markAsFlagged(object.getOsmIdentifier());
+                final String instruction = this.getLocalizedInstruction(GENERAL_INSTRUCTION_INDEX,
+                        object.getOsmIdentifier());
+                final CheckFlag flag = object instanceof Edge
+                        ? this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                                instruction)
+                        : this.createFlag(object, instruction);
                 instructions.forEach(flag::addInstruction);
                 return Optional.of(flag);
             }
@@ -147,15 +136,39 @@ public class SourceMaxspeedCheck extends BaseCheck<Long>
 
     private boolean isContextValid(final String context)
     {
-        final boolean isNumber = context.matches("[0-9]].+");
+        final boolean isNumber = context.matches("[0-9].+");
         final boolean isZone = context.contains(ZONE);
-        final boolean isHighwayType = EXPECTED_CONTEXT_VALUES.contains(context);
+        final boolean isHighwayType = this.contextValues.contains(context);
         return isNumber || isZone || isHighwayType;
     }
 
     private boolean isCountryValid(final String countryCode)
     {
         final ISO2CountryValidator validator = new ISO2CountryValidator();
-        return validator.isValid(countryCode) || COUNTRY_EXCEPTIONS.contains(countryCode);
+        return validator.isValid(countryCode) || this.countryExceptions.contains(countryCode);
+    }
+
+    private Set<String> testSourceValue(final String sourceValue)
+    {
+        final Set<String> instructions = new HashSet<>();
+        final Matcher matcher = COUNTRY_CONTEXT_PATTERN.matcher(sourceValue);
+        if (matcher.find())
+        {
+            final String[] parts = sourceValue.split(COLON);
+            if (!this.isCountryValid(parts[0]))
+            {
+                instructions.add(this.getLocalizedInstruction(COUNTRY_INSTRUCTION_INDEX, parts[0]));
+            }
+            if (!this.isContextValid(parts[1]))
+            {
+                instructions.add(this.getLocalizedInstruction(CONTEXT_INSTRUCTION_INDEX, parts[1]));
+            }
+
+        }
+        else if (!this.possibleValues.contains(sourceValue) && !sourceValue.contains(ZONE))
+        {
+            instructions.add(this.getLocalizedInstruction(VALUE_INSTRUCTION_INDEX));
+        }
+        return instructions;
     }
 }
