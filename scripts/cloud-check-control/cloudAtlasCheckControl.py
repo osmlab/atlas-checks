@@ -480,7 +480,7 @@ class CloudAtlasChecksControl:
         :returns: 1 - if Atlas check spark job timed out
         """
         logger.info("Waiting for Spark Submit process to complete...")
-        # wait for up to TIMEOUT seconds for the VM to be up and ready
+        # wait for up to TIMEOUT minutes for the VM to be up and ready
         for _timeout in range(self.timeoutMinutes):
             if not self.is_process_running("SparkSubmit"):
                 logger.info("Atlas Check spark job has completed.")
@@ -501,7 +501,7 @@ class CloudAtlasChecksControl:
                     )
                     finish(status=-1)
                 return 0
-            time.sleep(5)
+            time.sleep(60)
         return 1
 
     def is_process_running(self, process):
