@@ -35,6 +35,7 @@ public class Survey extends Challenge
         return challenge.getJSONResourceObject(Survey.class);
     }
 
+    @SuppressWarnings("squid:S107")
     public Survey(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty,
             final List<String> answers, final String tags, final boolean enabled)

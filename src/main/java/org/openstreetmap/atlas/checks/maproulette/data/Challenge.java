@@ -61,6 +61,7 @@ public class Challenge implements Serializable
     private long status;
     private boolean enabled;
     private boolean updateTasks;
+    private String checkName;
 
     public Challenge(final Challenge challenge)
     {
@@ -78,6 +79,7 @@ public class Challenge implements Serializable
                 null, tags, enabled);
     }
 
+    @SuppressWarnings("squid:S107")
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final String checkinComment,
             final ChallengeDifficulty difficulty, final String tags, final boolean enabled)
@@ -87,6 +89,7 @@ public class Challenge implements Serializable
         this.checkinComment = checkinComment;
     }
 
+    @SuppressWarnings("squid:S107")
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty,
             final ChallengePriority defaultPriority, final String highPriorityRule,
@@ -111,6 +114,11 @@ public class Challenge implements Serializable
     public String getBlurb()
     {
         return this.blurb;
+    }
+
+    public String getCheckName()
+    {
+        return this.checkName;
     }
 
     public String getCheckinComment()
@@ -191,6 +199,11 @@ public class Challenge implements Serializable
     public boolean isUpdateTasks()
     {
         return this.updateTasks;
+    }
+
+    public void setCheckName(final String checkName)
+    {
+        this.checkName = checkName;
     }
 
     public void setCheckinComment(final String checkinComment)

@@ -253,25 +253,25 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         result.setStatus(ChallengeStatus.READY.intValue());
         // Set update tasks to false
         result.setUpdateTasks(false);
+        if (result.getCheckName() == null)
+        {
+            // Store the name of the atlas check that generated this challenge
+            result.setCheckName(checkName);
+        }
         // Set challenge discoverability
-        if (discoverableChallenges.isPresent()
+        // Enabled if: Explicitly enabled by check name in discoverableChallenges, or implicitly
+        // enabled by
+        // absence in undiscoverableChallenges or "" in discoverableChallenges
+        // Disabled if: Explicitly disabled by check name in undiscoverableChallenges, or implicitly
+        // disabled
+        // by absence in discoverableChallenges or "" in undiscoverableChallenges or both
+        // discoverableChallenges and undiscoverableChallenges are null
+        result.setEnabled(discoverableChallenges.isPresent()
                 && (discoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
                         || discoverableChallenges.get().contains(checkName))
                 || undiscoverableChallenges.isPresent()
                         && !undiscoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
-                        && !undiscoverableChallenges.get().contains(checkName))
-        {
-            // Explicitly enabled by check name in discoverableChallenges, or implicitly enabled by
-            // absence in undiscoverableChallenges or "" in discoverableChallenges
-            result.setEnabled(true);
-        }
-        else
-        {
-            // Explicitly disabled by check name in undiscoverableChallenges, or implicitly disabled
-            // by absence in discoverableChallenges or "" in undiscoverableChallenges or both
-            // discoverableChallenges and undiscoverableChallenges are null
-            result.setEnabled(false);
-        }
+                        && !undiscoverableChallenges.get().contains(checkName));
         return result;
     }
 
