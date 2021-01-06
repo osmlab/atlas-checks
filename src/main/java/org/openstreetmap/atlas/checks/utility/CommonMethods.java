@@ -19,10 +19,8 @@ public final class CommonMethods
      */
     public static long getOSMRelationMemberSize(final Relation relation)
     {
-        return relation
-                .members().stream().map(RelationMember::getEntity).map(entity -> entity.getType()
-                        .toString().concat(String.valueOf(entity.getOsmIdentifier())))
-                .distinct().count();
+        return relation.members().stream().map(RelationMember::getEntity)
+                .map(entity -> entity.getOsmIdentifier()).distinct().count();
     }
 
     private CommonMethods()

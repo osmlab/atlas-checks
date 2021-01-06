@@ -6,6 +6,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Point;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
@@ -40,6 +41,16 @@ public class CommonMethodsTestRule extends CoreTestRule
                     @Member(id = "2", type = "node", role = ""),
                     @Member(id = "23000001", type = "edge", role = "") }) })
     private Atlas validRelation;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)) }, points = {
+                    @Point(id = "1", coordinates = @Loc(value = ONE)) },
+            // relations
+            relations = {
+                    @Relation(id = "123", members = { @Member(id = "1", type = "node", role = ""),
+                            @Member(id = "1", type = "point", role = "") }) })
+    private Atlas oneMemberRelationArtificialMember;
 
     @TestAtlas(
             // nodes
@@ -94,6 +105,11 @@ public class CommonMethodsTestRule extends CoreTestRule
                     @Member(id = "12000002", type = "edge", role = ""),
                     @Member(id = "12000003", type = "edge", role = "") }) })
     private Atlas oneMemberRelationSectionedEdge;
+
+    public Atlas getOneMemberRelationArtificialMember()
+    {
+        return this.oneMemberRelationArtificialMember;
+    }
 
     public Atlas getOneMemberRelationEdge()
     {
