@@ -1,21 +1,27 @@
 package org.openstreetmap.atlas.checks.utility;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
+import org.openstreetmap.atlas.streaming.resource.Resource;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
@@ -33,6 +39,8 @@ public final class ElevationUtilities implements Serializable
      * The assumed file extension
      */
     private static final String SRTM_EXTENSION = "hgt";
+    /** The logger */
+    private static final Logger logger = Logger.getLogger(ElevationUtilities.class);
     /**
      * The assumed extent of a HGT SRTM file (lat/lon) in degrees
      */
@@ -48,6 +56,10 @@ public final class ElevationUtilities implements Serializable
     /** Just an int for converting a decimal to a percentage */
     private static final int DECIMAL_TO_PERCENTAGE = 100;
 
+    /** Various compression extensions (including none) */
+    private static final String[] POSSIBLE_COMPRESSED_EXTS = new String[] { "", ".zip", ".gz",
+            ".xz", ".bz", ".bz2", ".tar" };
+
     /** A map of {lat, lon} pairs with a loaded srtm in a byte array */
     private final Map<Pair<Integer, Integer>, short[][]> loadedSrtm = new HashMap<>();
 
@@ -56,6 +68,7 @@ public final class ElevationUtilities implements Serializable
     private final String srtmExtension;
 
     private final String srtmPath;
+    private ExternalDataFetcher fileFetcher;
 
     /**
      * Configuration Keys in the Integrity Framework are based on the check simple classname.
@@ -85,15 +98,19 @@ public final class ElevationUtilities implements Serializable
      *
      * @param configuration
      *            A configuration which should (at a minimum) have a file path for elevation files.
+     * @param fileFetcher
+     *            The file fetcher to use to get data files
      */
-    public ElevationUtilities(final Configuration configuration)
+    public ElevationUtilities(final Configuration configuration,
+            final ExternalDataFetcher fileFetcher)
     {
         this(configurationValue(configuration, "elevation.srtm_extent", SRTM_EXTENT,
                 Function.identity()),
                 configurationValue(configuration, "elevation.srtm_ext", SRTM_EXTENSION,
                         Function.identity()),
-                configurationValue(configuration, "elevation.path", "elevation",
-                        Function.identity()));
+                configurationValue(configuration, "elevation.path", "extra/elevation",
+                        Function.identity()),
+                fileFetcher);
 
     }
 
@@ -107,13 +124,17 @@ public final class ElevationUtilities implements Serializable
      *            (they will be automatically detected).
      * @param srtmPath
      *            The path for the files.
+     * @param fileFetcher
+     *            The file fetcher to use to get data files
      */
     public ElevationUtilities(final double srtmExtent, final String srtmExtension,
-            final String srtmPath)
+            final String srtmPath, final ExternalDataFetcher fileFetcher)
     {
         this.srtmExtension = srtmExtension;
         this.srtmExtent = srtmExtent;
-        this.srtmPath = srtmPath;
+        this.srtmPath = srtmPath.endsWith(File.separator) ? srtmPath
+                : srtmPath.concat(File.separator);
+        this.fileFetcher = fileFetcher;
     }
 
     /**
@@ -312,29 +333,29 @@ public final class ElevationUtilities implements Serializable
      *            The longitude to use
      * @return A short[latitude][longitude] = height in meters array
      */
+    @Nonnull
     private synchronized short[][] loadMap(final int lat, final int lon)
     {
-        final String filename = this.getSrtmFileName(lat, lon);
-        Path path = Paths.get(this.srtmPath, filename);
-        if (!path.toFile().isFile())
+        if (this.fileFetcher == null)
         {
-            for (final String ext : new String[] { "zip", "gz", "xz", "bz", "bz2", "tar" })
-            {
-                path = Paths.get(this.srtmPath, filename + "." + ext);
-                if (path.toFile().isFile())
-                {
-                    break;
-                }
-            }
+            logger.error("Cannot load maps -- fileFetcher is not initialized or is null");
+            return EMPTY_MAP;
         }
-        if (!path.toFile().isFile())
+        final String filename = this.getSrtmFileName(lat, lon);
+        final Optional<Resource> path = Stream.of(POSSIBLE_COMPRESSED_EXTS)
+                .map(ext -> Paths.get(this.srtmPath, filename.concat(ext))).map(Object::toString)
+                .map(this.fileFetcher::apply).filter(Optional::isPresent).map(Optional::get)
+                .findFirst();
+
+        if (path.isEmpty())
         {
             return EMPTY_MAP;
         }
-        try (InputStream is = CompressionUtilities
-                .getUncompressedInputStream(Files.newInputStream(path)))
+        try (InputStream temporaryInputStream = path.get().read();
+                InputStream inputStream = CompressionUtilities
+                        .getUncompressedInputStream(temporaryInputStream))
         {
-            return this.readStream(is);
+            return this.readStream(inputStream);
         }
         catch (final IOException e)
         {

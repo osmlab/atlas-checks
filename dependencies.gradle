@@ -9,6 +9,8 @@ project.ext.versions = [
     postgres: '42.2.6',
     spring: '4.2.2.RELEASE',
     mockito: '2.23.0',
+    junit4: '4.13.1',
+    junit: '5.7.0',
     log4j: '1.2.17'
 ]
 
@@ -22,5 +24,11 @@ project.ext.packages = [
     postgres: "org.postgresql:postgresql:${versions.postgres}",
     spring: "org.springframework:spring-jdbc:${versions.spring}",
     mockito: "org.mockito:mockito-core:${versions.mockito}",
+    junit: [
+        junit4: "junit:junit:${versions.junit4}",
+        vintage: "org.junit.vintage:junit-vintage-engine:${versions.junit}",
+        api: "org.junit.jupiter:junit-jupiter-api:${versions.junit}",
+        engine: "org.junit.jupiter:junit-jupiter-engine:${versions.junit}",
+    ],
     log4j: "log4j:log4j:${versions.log4j}"
 ]

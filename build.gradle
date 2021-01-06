@@ -97,6 +97,13 @@ dependencies
     checkstyle packages.atlas_checkstyle
 
     shaded project.configurations.getByName('compile')
+
+    // Support Junit 5 tests
+    testImplementation packages.junit.api
+    testRuntimeOnly packages.junit.engine
+    // Support JUnit 3/4 tests
+    testCompileOnly packages.junit.junit4
+    testRuntimeOnly packages.junit.vintage
 }
 
 /**

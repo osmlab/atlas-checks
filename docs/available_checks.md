@@ -4,6 +4,7 @@ This document is a list of tables with a description and link to documentation f
 ## Areas
 | Check Name | Check Description |
 | :--------- | :---------------- |
+| [ConcerningAngleBuildingCheck](checks/concerningAngleBuildingCheck.md) | This check attempts to flag building that have angles between 80 and 89.9 degrees or between 90.1 and 100 degrees and need to be squared. |
 | [AreasWithHighwayTagCheck](checks/areasWithHighwayTagCheck.md) | The purpose of this check is to identify Areas attributed with highway tags. |
 | [OceanBleedingCheck](checks/oceanBleedingCheck.md) | The purpose of this check is to identify streets, buildings, and railways that bleed into (intersect) an ocean feature. |
 | [OverlappingAOIPolygonCheck](checks/overlappingAOIPolygonCheck.md) | The purpose of this check is to identify areas of interest (AOIs) that are overlapping one another. |
@@ -64,6 +65,7 @@ This document is a list of tables with a description and link to documentation f
 | :--------- | :---------------- |
 | InvalidMultiPolygonRelationCheck |  This check is designed to scan through MultiPolygon relations and flag them for invalid geometry. |
 | [InvalidTurnRestrictionCheck](checks/invalidTurnRestrictionCheck.md) | The purpose of this check is to identify invalid turn restrictions in OSM. Invalid turn restrictions occur in a variety of ways from invalid members, Edge geometry issues, not being routable, or wrong topology. |
+| [MissingRelationType](checks/missingRelationType.md) | The purpose of this check is to identify Relations without relation type. |
 | InvalidSignBoardRelationCheck | Identifies signboard relations that do not meet all the requirements for a signboard relation. |
 | [OneMemberRelationCheck](checks/oneMemberRelationCheck.md) | The purpose of this check is to identify Relations in OSM which only have one Member. |
 | [OpenBoundaryCheck](checks/openBoundaryCheck.md) | This check attempts to check for Admin Boundary Relations that should be closed polygons but are not closed. |

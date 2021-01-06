@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
+import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.CommonTagFilters;
 import org.openstreetmap.atlas.checks.utility.ElevationUtilities;
@@ -158,11 +159,13 @@ public class WaterWayCheck extends BaseCheck<Long>
      *
      * @param configuration
      *            the JSON configuration for this check
+     * @param fileFetcher
+     *            The file fetcher to use to get data files
      */
-    public WaterWayCheck(final Configuration configuration)
+    public WaterWayCheck(final Configuration configuration, final ExternalDataFetcher fileFetcher)
     {
         super(configuration);
-        this.elevationUtils = new ElevationUtilities(configuration);
+        this.elevationUtils = new ElevationUtilities(configuration, fileFetcher);
         this.waterwaySinkTagFilter = this.configurationValue(configuration,
                 "waterway.sink.tags.filters", WATERWAY_SINK_TAG_FILTER_DEFAULT,
                 TaggableFilter::forDefinition);
@@ -584,5 +587,4 @@ public class WaterWayCheck extends BaseCheck<Long>
         }
         return !locations.isEmpty();
     }
-
 }

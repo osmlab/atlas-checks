@@ -133,6 +133,24 @@
       "tags":"building,highway"
     }
   },
+  "ConcerningAngleBuildingCheck": {
+    "angles": {
+      "minLowAngleDiff": 80.0,
+      "maxLowAngleDiff": 89.7,
+      "minHighAngleDiff": 90.3,
+      "maxHighAngleDiff": 100.0
+    },
+    "angleCounts": {
+      "min": 4.0,
+      "max": 16.0
+    },
+    "challenge": {
+      "description": "Tasks contain buildings with angles that need to be squared.",
+      "blurb": "Concerning angles in buildings",
+      "instructions": "Adjust the building's angles to be right angles.",
+      "difficulty": "EASY"
+    }
+  },
   "ConflictingAreaTagCombination": {
     "challenge": {
       "description": "Task contains Area's with mutually exclusive tag combinations.",
@@ -610,6 +628,15 @@
       "blurb": "Mixed Case Name",
       "instruction": "Correct the listed names tags so they conform to capitalization standards",
       "difficulty": "MEDIUM"
+    }
+  },
+  "MissingRelationTypeCheck": {
+    "ignore.tags.filter":"disused:type->!&disabled:type->!",
+    "challenge": {
+      "description": "Tasks contain Relations with missing type tag.",
+      "blurb": "Relations with missing type tag.",
+      "instruction": "Open your favorite editor and add Relation type tag.",
+      "difficulty": "NORMAL"
     }
   },
   "NodeValenceCheck": {

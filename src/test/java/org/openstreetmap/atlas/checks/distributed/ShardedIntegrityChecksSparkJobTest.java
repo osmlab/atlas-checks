@@ -122,8 +122,7 @@ public class ShardedIntegrityChecksSparkJobTest
      */
     private void runShardedIntegrityChecksSparkJob()
     {
-        final String[] arguments = {
-                String.format("-inputFolder=%s", INPUT.getAbsolutePathString()),
+        final String[] arguments = { String.format("-input=%s", INPUT.getAbsolutePathString()),
                 String.format("-startedFolder=%s", INPUT.getAbsolutePathString()),
                 String.format("-output=%s", OUTPUT.getAbsolutePathString()),
                 String.format("-sharding=slippy@%s", ZOOM_LEVEL), "-maxShardLoad=1",
