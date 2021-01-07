@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.utility;
 
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 
@@ -20,7 +21,7 @@ public final class CommonMethods
     public static long getOSMRelationMemberSize(final Relation relation)
     {
         return relation.members().stream().map(RelationMember::getEntity)
-                .map(entity -> entity.getOsmIdentifier()).distinct().count();
+                .map(AtlasEntity::getOsmIdentifier).distinct().count();
     }
 
     private CommonMethods()
