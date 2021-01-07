@@ -23,6 +23,15 @@ in our case, we’re are looking at
  * = `<country_code>:<context>` where the speed limit is defined by a particular context, for example urban/rural/motorway/etc., 
  and no maxspeed is signposted
  
+ #### Configurables
+ The following values can be configured based on country legislation:
+ * `country_denylist` - this expects a list of countries for which the check should not be run; for example UK does not follow 
+ the rules of this check;
+ * `values` - a list of defined values besides the zone rule. Current possible options are `sign` and `markings`;
+ * `context.values` - a set of possible values that the context can take in the `<country_code>:<context>` rule
+ * `country.exceptions` - list of exceptions that do not follow the ISO code format; for example, `BE-VLG`
+ is an accepted value because the region has it's own speed standard;
+ 
  To learn more about the code, please look at the comments in the source code for the check:  
  [SourceMaxspeedCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/SourceMaxspeedCheck.java)
  
