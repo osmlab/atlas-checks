@@ -206,7 +206,7 @@ class CloudAtlasChecksControl:
                 + " --conf='spark.rdd.compress=true'"
                 + " {}".format(jarFile)
                 + " -maxPoolMinutes=2880"
-                + " -inputFolder='{}'".format(self.atlasInDir)
+                + " -input='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
                 + " -countries='{}'".format(self.countries)
