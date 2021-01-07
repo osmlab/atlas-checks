@@ -23,103 +23,103 @@ public class OneMemberRelationCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)),
-                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3000000", coordinates = @Loc(value = THREE)) },
             // edges
             edges = {
-                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                    @Edge(id = "12000000", coordinates = { @Loc(value = ONE),
                             @Loc(value = TWO) }, tags = { "highway=road" }),
-                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                    @Edge(id = "23000000", coordinates = { @Loc(value = TWO),
                             @Loc(value = THREE) }, tags = { "highway=road" }),
-                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                    @Edge(id = "31000000", coordinates = { @Loc(value = THREE),
                             @Loc(value = ONE) }, tags = { "highway=road" }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
-                    @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
-                    @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                    @Member(id = "12000000", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                    @Member(id = "2000000", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                    @Member(id = "23000000", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
                             "restriction=no_u_turn" }) })
     private Atlas validRelation;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)) },
             // edges
-            edges = { @Edge(id = "12", coordinates = { @Loc(value = ONE),
+            edges = { @Edge(id = "12000000", coordinates = { @Loc(value = ONE),
                     @Loc(value = TWO) }, tags = { "highway=road" }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM) }, tags = {
+                    @Member(id = "12000000", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM) }, tags = {
                             "restriction=no_u_turn" }) })
     private Atlas oneMemberRelation;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)) },
             // edges
-            edges = { @Edge(id = "12", coordinates = { @Loc(value = ONE),
+            edges = { @Edge(id = "12000000", coordinates = { @Loc(value = ONE),
                     @Loc(value = TWO) }, tags = { "highway=road" }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "12", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER) }, tags = {
+                    @Member(id = "12000000", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER) }, tags = {
                             "restriction=no_u_turn", "type=multipolygon" }) })
     private Atlas oneMemberRelationMultipolygonInner;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)) },
             // edges
-            edges = { @Edge(id = "12", coordinates = { @Loc(value = ONE),
+            edges = { @Edge(id = "12000000", coordinates = { @Loc(value = ONE),
                     @Loc(value = TWO) }, tags = { "highway=road" }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "12", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) }, tags = {
+                    @Member(id = "12000000", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) }, tags = {
                             "restriction=no_u_turn", "type=multipolygon" }) })
     private Atlas oneMemberRelationMultipolygonOuter;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)),
-                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3000000", coordinates = @Loc(value = THREE)) },
             // edges
             edges = {
-                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                    @Edge(id = "12000000", coordinates = { @Loc(value = ONE),
                             @Loc(value = TWO) }, tags = { "highway=road" }),
-                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                    @Edge(id = "23000000", coordinates = { @Loc(value = TWO),
                             @Loc(value = THREE) }, tags = { "highway=road" }),
-                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                    @Edge(id = "31000000", coordinates = { @Loc(value = THREE),
                             @Loc(value = ONE) }, tags = { "highway=road" }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "12", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER),
-                    @Member(id = "2", type = "node", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER),
-                    @Member(id = "23", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) }, tags = {
+                    @Member(id = "12000000", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_INNER),
+                    @Member(id = "2000000", type = "node", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER),
+                    @Member(id = "23000000", type = "edge", role = RelationTypeTag.MULTIPOLYGON_ROLE_OUTER) }, tags = {
                             "restriction=no_u_turn", "type=multipolygon" }) })
     private Atlas validRelationMultipolygon;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)),
-                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3000000", coordinates = @Loc(value = THREE)) },
             // edges
             edges = {
-                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                    @Edge(id = "12000000", coordinates = { @Loc(value = ONE),
                             @Loc(value = TWO) }, tags = { "highway=road" }),
-                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                    @Edge(id = "23000000", coordinates = { @Loc(value = TWO),
                             @Loc(value = THREE) }, tags = { "highway=road" }),
-                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                    @Edge(id = "31000000", coordinates = { @Loc(value = THREE),
                             @Loc(value = ONE) }, tags = { "highway=road" }) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
-                    @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
-                    @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                    @Member(id = "12000000", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                    @Member(id = "2000000", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                    @Member(id = "23000000", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
                             "restriction=no_u_turn" }),
                     @Relation(id = "1231", members = {
                             @Member(id = "123", type = "relation", role = RelationTypeTag.RESTRICTION_ROLE_FROM) }, tags = {

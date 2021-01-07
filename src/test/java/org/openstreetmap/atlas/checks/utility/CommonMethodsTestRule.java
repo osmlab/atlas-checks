@@ -25,9 +25,9 @@ public class CommonMethodsTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)),
-                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3000000", coordinates = @Loc(value = THREE)) },
             // edges
             edges = {
                     @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
@@ -38,24 +38,24 @@ public class CommonMethodsTestRule extends CoreTestRule
             // relations
             relations = { @Relation(id = "123", members = {
                     @Member(id = "12000001", type = "edge", role = ""),
-                    @Member(id = "2", type = "node", role = ""),
+                    @Member(id = "2000000", type = "node", role = ""),
                     @Member(id = "23000001", type = "edge", role = "") }) })
     private Atlas validRelation;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)) }, points = {
-                    @Point(id = "1", coordinates = @Loc(value = ONE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)) }, points = {
+                    @Point(id = "1000000", coordinates = @Loc(value = ONE)) },
             // relations
-            relations = {
-                    @Relation(id = "123", members = { @Member(id = "1", type = "node", role = ""),
-                            @Member(id = "1", type = "point", role = "") }) })
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "1000000", type = "node", role = ""),
+                    @Member(id = "1000000", type = "point", role = "") }) })
     private Atlas oneMemberRelationArtificialMember;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)) },
             // edges
             edges = { @Edge(id = "12000001", coordinates = { @Loc(value = ONE),
                     @Loc(value = TWO) }) },
@@ -66,16 +66,16 @@ public class CommonMethodsTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)) },
             // relations
             relations = { @Relation(id = "123", members = {
-                    @Member(id = "1", type = "node", role = ""), }) })
+                    @Member(id = "1000000", type = "node", role = ""), }) })
     private Atlas oneMemberRelationNode;
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)), },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)), },
             // edges
             edges = {
                     @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
@@ -89,9 +89,9 @@ public class CommonMethodsTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
-            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
-                    @Node(id = "2", coordinates = @Loc(value = TWO)),
-                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2000000", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3000000", coordinates = @Loc(value = THREE)) },
             // edges
             edges = {
                     @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
