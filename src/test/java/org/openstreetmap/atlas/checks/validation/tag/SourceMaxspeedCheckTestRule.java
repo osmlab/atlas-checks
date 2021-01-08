@@ -116,6 +116,26 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
             // points
             points = {
                     @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                            "source=imagery" }) })
+    private Atlas noSourceMaxspeedAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
+            // points
+            points = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
+                            "source:maxspeed=RO:70" }) })
+    private Atlas numberContextAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_1)),
+                    @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = TEST_2)) },
+            // points
+            points = {
+                    @TestAtlas.Point(id = "2400000001", coordinates = @TestAtlas.Loc(value = TEST_1), tags = {
                             "source:maxspeed=sign", "iso_country_code=SGP" }) },
             // edges
             edges = { @TestAtlas.Edge(id = "1000000001", coordinates = {
@@ -187,6 +207,16 @@ public class SourceMaxspeedCheckTestRule extends CoreTestRule
     public Atlas invalidValueAtlas()
     {
         return this.invalidValueAtlas;
+    }
+
+    public Atlas noSourceMaxspeedAtlas()
+    {
+        return this.noSourceMaxspeedAtlas;
+    }
+
+    public Atlas numberContextAtlas()
+    {
+        return this.numberContextAtlas;
     }
 
     public Atlas validAtlas()

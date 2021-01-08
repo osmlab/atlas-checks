@@ -71,6 +71,14 @@ public class SourceMaxspeedCheckTest
     }
 
     @Test
+    public void noSourceMaxspeedTagTest()
+    {
+        this.verifier.actual(this.setup.noSourceMaxspeedAtlas(),
+                new SourceMaxspeedCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void validContextConfigTest()
     {
         this.verifier.actual(this.setup.validContextAtlas(),
@@ -82,6 +90,14 @@ public class SourceMaxspeedCheckTest
     public void validElementTest()
     {
         this.verifier.actual(this.setup.validAtlas(),
+                new SourceMaxspeedCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validNumberContextTest()
+    {
+        this.verifier.actual(this.setup.numberContextAtlas(),
                 new SourceMaxspeedCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyEmpty();
     }
