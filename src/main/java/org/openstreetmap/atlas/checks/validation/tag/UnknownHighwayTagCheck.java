@@ -17,8 +17,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * This check flags Edges and Nodes that have highway tag values that are not contained within the
- * set of known highway tags on the OSM Wiki page -->
- * https://wiki.openstreetmap.org/wiki/Key:highway
+ * set of known highway tags on the OSM Wiki page - https://wiki.openstreetmap.org/wiki/Key:highway
  *
  * @author v-garei
  */
