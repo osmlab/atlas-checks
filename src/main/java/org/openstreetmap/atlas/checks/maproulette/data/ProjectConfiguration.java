@@ -14,7 +14,7 @@ public class ProjectConfiguration implements Serializable
     private final String name;
     private final String description;
     private final String displayName;
-    private final boolean enabled;
+    private boolean enabled;
 
     /**
      * Defines a basic project, where all optional fields default to name.
@@ -79,5 +79,10 @@ public class ProjectConfiguration implements Serializable
     public boolean isEnabled()
     {
         return this.enabled;
+    }
+
+    public void setEnabled(final boolean enabled)
+    {
+        this.enabled = enabled;
     }
 }

@@ -1,5 +1,6 @@
 package org.openstreetmap.atlas.checks.maproulette;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -45,21 +46,34 @@ public class MapRouletteUploadCommandTest
     public void testCheckFilter()
     {
         final String[] additionalArguments = { "-checks=SomeCheck" };
-        this.runAndTest(additionalArguments, 1, 2, 2);
+        this.runAndTest(additionalArguments, 1, 2, 2, true, Collections.emptyList(),
+                Arrays.asList("SomeCheck"));
     }
 
     @Test
     public void testCountryFilter()
     {
         final String[] additionalArguments = { "-countries=CAN" };
-        this.runAndTest(additionalArguments, 1, 1, 1);
+        this.runAndTest(additionalArguments, 1, 1, 1, true, Collections.emptyList(),
+                Arrays.asList("SomeCheck", "SomeOtherCheck", "AnotherCheck"));
+    }
+
+    @Test
+    public void testDiscoverableSubsetChallenges()
+    {
+        final String[] additionalArguments = {
+                "-discoverableChallenges=SomeOtherCheck,AnotherCheck" };
+        this.runAndTest(additionalArguments, 1, 4, 4, true,
+                Arrays.asList("SomeOtherCheck", "AnotherCheck"),
+                Collections.singletonList("SomeCheck"));
     }
 
     @Test
     public void testExecute()
     {
         final String[] additionalArguments = {};
-        this.runAndTest(additionalArguments, 1, 4, 4);
+        this.runAndTest(additionalArguments, 1, 4, 4, true, Collections.emptyList(),
+                Arrays.asList("SomeCheck", "SomeOtherCheck", "AnotherCheck"));
     }
 
     @Test
@@ -91,6 +105,23 @@ public class MapRouletteUploadCommandTest
         Assert.assertEquals("Mexico, Belize - Intersecting Lines", challengeNames.get(1));
         Assert.assertEquals("United States - Address Point Match", challengeNames.get(2));
         Assert.assertEquals("Uruguay - Address Point Match", challengeNames.get(3));
+    }
+
+    @Test
+    public void testUndiscoverableProject()
+    {
+        final String[] additionalArguments = { "-discoverableProject=false" };
+        this.runAndTest(additionalArguments, 1, 4, 4, false, Collections.emptyList(),
+                Arrays.asList("SomeCheck", "SomeOtherCheck", "AnotherCheck"));
+    }
+
+    @Test
+    public void testUndiscoverableSubsetChallenges()
+    {
+        final String[] additionalArguments = {
+                "-undiscoverableChallenges=SomeOtherCheck,AnotherCheck" };
+        this.runAndTest(additionalArguments, 1, 4, 4, true, Collections.singletonList("SomeCheck"),
+                Arrays.asList("SomeOtherCheck", "AnotherCheck"));
     }
 
     @Before
@@ -159,7 +190,8 @@ public class MapRouletteUploadCommandTest
      *            int, number of expected tasks per challenge per project
      */
     private void runAndTest(final String[] additionalArguments, final int expectedProjects,
-            final int expectedChallenges, final int expectedTasks)
+            final int expectedChallenges, final int expectedTasks, final boolean projectEnabled,
+            final List<String> discoverableChallenges, final List<String> undiscoverableChallenges)
     {
         // Set up some arguments
         final TestMapRouletteConnection connection = this.run(additionalArguments);
@@ -170,10 +202,16 @@ public class MapRouletteUploadCommandTest
         projects.forEach(project ->
         {
             Assert.assertEquals("project", project.getName());
+            Assert.assertEquals(projectEnabled, project.isEnabled());
             final Set<Challenge> challenges = connection.challengesForProject(project);
             Assert.assertEquals(expectedChallenges, challenges.size());
-            challenges.forEach(challenge -> Assert.assertEquals(expectedTasks,
-                    connection.tasksForChallenge(challenge).size()));
+            challenges.forEach(challenge ->
+            {
+                Assert.assertEquals(expectedTasks, connection.tasksForChallenge(challenge).size());
+                Assert.assertTrue(challenge.isEnabled()
+                        ? discoverableChallenges.contains(challenge.getCheckName())
+                        : undiscoverableChallenges.contains(challenge.getCheckName()));
+            });
         });
     }
 }
