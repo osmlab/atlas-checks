@@ -11,14 +11,19 @@ import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Route;
 import org.openstreetmap.atlas.geography.atlas.items.complex.ComplexEntity;
 import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.BridgeTag;
@@ -45,6 +50,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     private static final long serialVersionUID = -3018101860747289836L;
     private static final String BASIC_INSTRUCTION = "This roundabout is malformed.";
     private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout has car navigable ways inside it.";
+    private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -54,7 +60,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(ENCLOSED_ROADS_INSTRUCTIONS, BASIC_INSTRUCTION);
+            .asList(ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION);
     private final List<String> leftDrivingCountries;
 
     public MalformedRoundaboutCheck(final Configuration configuration)
@@ -99,17 +105,47 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
         // Create a ComplexRoundabout based on object
         final ComplexRoundabout complexRoundabout = new ComplexRoundabout((Edge) object,
                 this.leftDrivingCountries);
-        // If the ComplexRoundbaout is invalid add the reasons why to the instructions, so that it
-        // will be flagged
-        if (!complexRoundabout.isValid())
-        {
-            instructions.addAll(complexRoundabout.getAllInvalidations().stream()
-                    .map(ComplexEntity.ComplexEntityError::getReason).collect(Collectors.toSet()));
-        }
         // Get the roundabout Edges
         final Set<Edge> roundaboutEdgeSet = complexRoundabout.getRoundaboutEdgeSet();
         // Get the roundabout Route
         final Route roundaboutEdges = complexRoundabout.getRoundaboutRoute();
+
+        // If the ComplexRoundabout is invalid add the reasons why to the instructions, so that it
+        // will be flagged
+        if (!complexRoundabout.isValid())
+        {
+            // AutoFix candidate only for Single Way Roundabout with wrong direction.
+            if (complexRoundabout.getAllInvalidations().size() == 1
+                    && complexRoundabout.getAllInvalidations().get(0).getReason()
+                            .equals(WRONG_WAY_INSTRUCTIONS)
+                    && !this.isMultiWayRoundabout(roundaboutEdgeSet))
+            {
+                // Mark that the Edges have been processed
+                roundaboutEdgeSet.forEach(
+                        roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
+
+                return Optional.of(this
+                        .createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                                this.getLocalizedInstruction(1, object.getOsmIdentifier()))
+                        .addFixSuggestion(
+                                FeatureChange.add(
+                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                .from((AtlasEntity) object)).withGeometry(
+                                                        CommonMethods.buildOriginalOsmWayGeometry(
+                                                                (Edge) object).reversed()),
+                                        object.getAtlas())));
+            }
+            else
+            {
+                // All other cases.
+                // Note: some cases might also include "wrong direction" when Roundabout is Multi
+                // Way or combination of issues are detected.
+                instructions.addAll(complexRoundabout.getAllInvalidations().stream()
+                        .map(ComplexEntity.ComplexEntityError::getReason)
+                        .collect(Collectors.toSet()));
+            }
+        }
+
         // Mark that the Edges have been processed
         roundaboutEdgeSet
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
@@ -126,7 +162,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
         if (!instructions.isEmpty())
         {
             final CheckFlag flag = this.createFlag(roundaboutEdgeSet,
-                    this.getLocalizedInstruction(1));
+                    this.getLocalizedInstruction(2));
             instructions.forEach(flag::addInstruction);
             return Optional.of(flag);
         }
@@ -174,7 +210,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
 
     /**
      * Checks if {@link AtlasObject} contains synthetic boundary Node
-     * 
+     *
      * @param object
      *            the {@link AtlasObject} to check
      * @return true if roundabout contains synthetic boundary Node.
@@ -191,12 +227,26 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
      * have been excluded because they commonly act differently from car navigable roundabouts.
      *
      * @param object
-     * @return
+     *            the {@link AtlasObject} to check
+     * @return true if {@link AtlasObject} is not vehicle navigable
      */
     private boolean isExcludedHighway(final AtlasObject object)
     {
         return Validators.isOfType(object, HighwayTag.class, HighwayTag.CYCLEWAY,
                 HighwayTag.PEDESTRIAN, HighwayTag.FOOTWAY);
+    }
+
+    /**
+     * Checks if {@link ComplexRoundabout} is MultiWay Roundabout. MultiWay Roundabout formed of
+     * several unique OSM Ids. Example: https://www.openstreetmap.org/way/349400768
+     *
+     * @param roundaboutEdges
+     *            the {@link Set} to check
+     * @return true if roundabout is MultiWay
+     */
+    private boolean isMultiWayRoundabout(final Set<Edge> roundaboutEdges)
+    {
+        return roundaboutEdges.stream().map(Edge::getOsmIdentifier).distinct().count() > 1;
     }
 
     /**
