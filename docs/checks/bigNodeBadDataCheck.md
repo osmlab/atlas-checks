@@ -6,7 +6,7 @@ This check will simply look for complex intersections and flag them when they ha
 
 #### Configuration
 
-This check has three configurables that can be changed in the configuration file [config.json](https://github.com/osmlab/atlas-checks/blob/9e18f41454c6a4de6ac6ee082149d95f4604c7ce/config/configuration.json#L84)
+This check has three configurables that can be changed in the configuration file [config.json](/config/configuration.json#L84)
 
 Defaults:
 - ```"max.number.threshold": 25``` - Max number of paths in an intersection
@@ -21,4 +21,4 @@ Complex intersection:
 - Line [id:668226161](https://www.openstreetmap.org/way/668226161), [id:4370531](https://www.openstreetmap.org/way/4370531), and [id:619577663](https://www.openstreetmap.org/way/619577663)
 - Line [id:517350954](https://www.openstreetmap.org/way/517350954), [id:517407228](https://www.openstreetmap.org/way/517407228), and [id:110014409](https://www.openstreetmap.org/way/110014409)
 
-Please see the source code for BigNodeBadDataCheck here: [BigNodeBadDataCheck](https://github.com/osmlab/atlas-checks/blob/dev/src/main/java/org/openstreetmap/atlas/checks/validation/intersections/BigNodeBadDataCheck.java)
+Please see the source code for BigNodeBadDataCheck here: [BigNodeBadDataCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/BigNodeBadDataCheck.java)
