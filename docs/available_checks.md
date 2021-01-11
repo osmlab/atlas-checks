@@ -38,7 +38,7 @@ This document is a list of tables with a description and link to documentation f
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
 | [SuddenHighwayTypeChangeCheck](checks/suddenHighwayTypeChangeCheck.md) | The purpose of this check is to identify roads that jump to much different highway classifications. |
-| UnwalkableWaysCheck | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
+| [UnwalkableWaysCheck](checks/unwalkableWaysCheck.md) | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
 | ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
 
 ## Nodes

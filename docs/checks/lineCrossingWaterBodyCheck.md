@@ -1,4 +1,4 @@
-# LineCrossingWaterBody Check
+# Line Crossing Water Body Check
 
 This check flags Lines, Edges, and optionally buildings that invalidly intersect inland water features. Validity of intersection is determined by the qualities of the intersecting feature. Flags are grouped by waterbody. A flag contains features for a single waterbody and all of its invalidly intersecting features.
 
