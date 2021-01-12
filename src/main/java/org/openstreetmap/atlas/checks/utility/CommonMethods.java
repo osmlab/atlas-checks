@@ -6,7 +6,7 @@ import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 /**
  * Hold common Methods (should be used in more than one check)
  *
- * @author Vladimir Lemnberg
+ * @author Vladimir Lemberg
  */
 public final class CommonMethods
 {
@@ -24,7 +24,7 @@ public final class CommonMethods
             // De-duplicating either Point or Node with same OSM Id
             if (entity.getType().toString().matches("POINT|NODE"))
             {
-                return String.valueOf("PointNone")
+                return String.valueOf("PointNode")
                         .concat(String.valueOf(entity.getOsmIdentifier()));
             }
             return entity.getType().toString().concat(String.valueOf(entity.getOsmIdentifier()));
