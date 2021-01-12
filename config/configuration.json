@@ -470,6 +470,43 @@
       "tags":"tags"
     }
   },
+  "SourceMaxspeedCheck": {
+    "countries.denylist": ["UK"],
+    "values": [
+      "sign",
+      "markings"
+    ],
+    "context.values": [
+      "urban",
+      "rural",
+      "bicycle_road",
+      "trunk",
+      "motorway",
+      "living_street",
+      "school",
+      "pedestrian_zone",
+      "urban_motorway",
+      "urban_trunk",
+      "nsl",
+      "express",
+      "nsl_restricted",
+      "nsl_dual",
+      "nsl_single",
+      "zone"
+    ],
+    "country.exceptions": [
+      "BE-VLG",
+      "BE-WAL",
+      "BE-BRU"
+    ],
+    "challenge": {
+      "description": "Tasks containing features with tag source:maxspeed with incorrect value format.",
+      "blurb": "Features with invalid source:maxspeed tags",
+      "instruction": "Open your favorite editor and check that the listed tags are correct.",
+      "difficulty": "NORMAL",
+      "tags":"tags"
+    }
+  },
   "InvalidTurnRestrictionCheck": {
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
