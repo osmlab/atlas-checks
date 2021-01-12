@@ -20,27 +20,40 @@ public class UnknownHighwayTagCheckTestRule extends CoreTestRule
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_NODE1)),
             @Node(coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
-                    @Edge(id = "6000001", coordinates = { @Loc(value = WAY1_NODE1),
+                    @Edge(id = "1000001", coordinates = { @Loc(value = WAY1_NODE1),
                             @Loc(value = WAY1_NODE2) }, tags = { "highway=trunk" }) })
     private Atlas falsePositiveKnownHighwayTagOnEdge;
 
     @TestAtlas(nodes = {
             @Node(coordinates = @Loc(value = WAY1_NODE1), tags = { "highway=bus_stop" }),
             @Node(coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
-                    @Edge(id = "7000001", coordinates = { @Loc(value = WAY1_NODE1),
+                    @Edge(id = "2000001", coordinates = { @Loc(value = WAY1_NODE1),
                             @Loc(value = WAY1_NODE2) }) })
     private Atlas falsePositiveKnownHighwayTagOnNode;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_NODE1)),
+            @Node(coordinates = @Loc(value = WAY1_NODE2), tags = { "highway=trunk" }) }, edges = {
+            @Edge(id = "4000001", coordinates = { @Loc(value = WAY1_NODE1),
+                    @Loc(value = WAY1_NODE2) }) })
+    private Atlas truePositiveEdgeTagOnNode;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_NODE1)),
             @Node(coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
-                    @Edge(id = "8000001", coordinates = { @Loc(value = WAY1_NODE1),
+            @Edge(id = "5000001", coordinates = { @Loc(value = WAY1_NODE1),
+                    @Loc(value = WAY1_NODE2) }, tags = { "highway=bus_stop" }) })
+    private Atlas truePositiveNodeTagOnEdge;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_NODE1)),
+            @Node(coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "3000001", coordinates = { @Loc(value = WAY1_NODE1),
                             @Loc(value = WAY1_NODE2) }, tags = { "highway=unknown" }) })
     private Atlas truePositiveUnknownHighwayTagOnEdge;
+
 
     @TestAtlas(nodes = {
             @Node(coordinates = @Loc(value = WAY1_NODE1), tags = { "highway=unknown" }),
             @Node(coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
-                    @Edge(id = "9000001", coordinates = { @Loc(value = WAY1_NODE1),
+                    @Edge(id = "6000001", coordinates = { @Loc(value = WAY1_NODE1),
                             @Loc(value = WAY1_NODE2) }) })
     private Atlas truePositiveUnknownHighwayTagOnNode;
 
@@ -52,6 +65,16 @@ public class UnknownHighwayTagCheckTestRule extends CoreTestRule
     public Atlas falsePositiveKnownHighwayTagOnNode()
     {
         return this.falsePositiveKnownHighwayTagOnNode;
+    }
+
+    public Atlas truePositiveEdgeTagOnNode()
+    {
+        return this.truePositiveEdgeTagOnNode;
+    }
+
+    public Atlas truePositiveNodeTagOnEdge()
+    {
+        return this.truePositiveUnknownHighwayTagOnEdge;
     }
 
     public Atlas truePositiveUnknownHighwayTagOnEdge()

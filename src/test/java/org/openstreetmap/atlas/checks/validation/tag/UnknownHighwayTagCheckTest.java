@@ -36,6 +36,20 @@ public class UnknownHighwayTagCheckTest
     }
 
     @Test
+    public void truePositiveEdgeTagOnNode()
+    {
+        this.verifier.actual(this.setup.truePositiveEdgeTagOnNode(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveNodeTagOnEdge()
+    {
+        this.verifier.actual(this.setup.truePositiveNodeTagOnEdge(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
     public void truePositiveUnknownHighwayTagOnEdge()
     {
         this.verifier.actual(this.setup.truePositiveUnknownHighwayTagOnEdge(), this.check);
