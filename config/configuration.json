@@ -631,7 +631,8 @@
     }
   },
   "MalformedRoundaboutCheck" : {
-    "min.nodes": 8.0,
+    "angle.threshold.maximum_degree": 60.0,
+    "min.nodes": 9.0,
     "traffic.countries.left":["AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
       "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
       "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM", "JEY", "JPN", "KEN", "KIR",
