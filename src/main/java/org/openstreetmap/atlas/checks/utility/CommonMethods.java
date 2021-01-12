@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.utility;
 
-import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 
@@ -20,8 +19,16 @@ public final class CommonMethods
      */
     public static long getOSMRelationMemberSize(final Relation relation)
     {
-        return relation.members().stream().map(RelationMember::getEntity)
-                .map(AtlasEntity::getOsmIdentifier).distinct().count();
+        return relation.members().stream().map(RelationMember::getEntity).map(entity ->
+        {
+            // De-duplicating either Point or Node with same OSM Id
+            if (entity.getType().toString().matches("POINT|NODE"))
+            {
+                return String.valueOf("PointNone")
+                        .concat(String.valueOf(entity.getOsmIdentifier()));
+            }
+            return entity.getType().toString().concat(String.valueOf(entity.getOsmIdentifier()));
+        }).distinct().count();
     }
 
     private CommonMethods()
