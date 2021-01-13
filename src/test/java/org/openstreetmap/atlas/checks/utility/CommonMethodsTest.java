@@ -18,6 +18,13 @@ public class CommonMethodsTest
     public CommonMethodsTestRule setup = new CommonMethodsTestRule();
 
     @Test
+    public void testOneMemberRelationArtificialMember()
+    {
+        assertEquals(1, CommonMethods.getOSMRelationMemberSize(
+                this.setup.getOneMemberRelationArtificialMember().relation(123)));
+    }
+
+    @Test
     public void testOneMemberRelationEdge()
     {
         assertEquals(1, CommonMethods
