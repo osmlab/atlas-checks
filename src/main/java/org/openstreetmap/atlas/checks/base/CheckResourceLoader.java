@@ -360,7 +360,7 @@ public class CheckResourceLoader
                         Collections.emptyList())
                 .value();
         return this.isEnabledByConfiguration(configuration, checkClass)
-                && countryPermitlist.isEmpty() ? !countryDenylist.contains(country)
-                        : countryPermitlist.contains(country);
+                && (countryPermitlist.isEmpty() ? !countryDenylist.contains(country)
+                        : countryPermitlist.contains(country));
     }
 }

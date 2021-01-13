@@ -14,7 +14,7 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
 /**
  * Hold common Methods (should be used in more than one check)
  *
- * @author Vladimir Lemnberg
+ * @author Vladimir Lemberg
  */
 public final class CommonMethods
 {
@@ -48,10 +48,16 @@ public final class CommonMethods
      */
     public static long getOSMRelationMemberSize(final Relation relation)
     {
-        return relation
-                .members().stream().map(RelationMember::getEntity).map(entity -> entity.getType()
-                        .toString().concat(String.valueOf(entity.getOsmIdentifier())))
-                .distinct().count();
+        return relation.members().stream().map(RelationMember::getEntity).map(entity ->
+        {
+            // De-duplicating either Point or Node with same OSM Id
+            if (entity.getType().toString().matches("POINT|NODE"))
+            {
+                return String.valueOf("PointNode")
+                        .concat(String.valueOf(entity.getOsmIdentifier()));
+            }
+            return entity.getType().toString().concat(String.valueOf(entity.getOsmIdentifier()));
+        }).distinct().count();
     }
 
     /**

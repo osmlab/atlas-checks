@@ -24,6 +24,13 @@ public class CommonMethodsTest
     {
         assertTrue(CommonMethods.isClosedWay(this.setup.getClosedWay().edge(12000001)));
     }
+    
+    @Test
+    public void testOneMemberRelationArtificialMember()
+    {
+        assertEquals(1, CommonMethods.getOSMRelationMemberSize(
+                this.setup.getOneMemberRelationArtificialMember().relation(123)));
+    }
 
     @Test
     public void testOneMemberRelationEdge()

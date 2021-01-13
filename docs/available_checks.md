@@ -21,7 +21,7 @@ This document is a list of tables with a description and link to documentation f
 | [AtGradeSignPostCheck](checks/atGradeSignPostCheck.md) | The purpose of this check is to identify at-grade intersections that are not part of destination sign relations. |
 | [EdgeCrossingEdgeCheck](checks/edgeCrossingCheck.md) | The purpose of this check is to identify Edges intersecting another Edge(s) that do not share the same Node (meaning they are not well-connected) nor have proper layer tagging on one of these Edge(s) (meaning there should be a layer tag for one of the Edges). |
 | [FloatingEdgeCheck](checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
-| InconsistentRoadClassificationCheck | The purpose of this check is to identify roads, that transition from one classification to another and then back to the original classification. |
+| [InconsistentRoadClassificationCheck](checks/inconsistentRoadClassificationCheck.md) | The purpose of this check is to identify roads, that transition from one classification to another and then back to the original classification. |
 | [InvalidPiersCheck](checks/invalidPiersCheck.md) | The purpose of this check is to identify piers(OSM Ways with man_made=pier tag) that are ingested in Atlas as edges with linear or polygonal geometry without an area=yes tag |
 | LongSegmentCheck | This check identifies long segments/edges (length is more than minimumLength). |
 | [MalformedRoundaboutCheck](checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are three types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, and 3. Roundabouts with poor geometry. |
@@ -38,13 +38,13 @@ This document is a list of tables with a description and link to documentation f
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
 | [SuddenHighwayTypeChangeCheck](checks/suddenHighwayTypeChangeCheck.md) | The purpose of this check is to identify roads that jump to much different highway classifications. |
-| UnwalkableWaysCheck | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
+| [UnwalkableWaysCheck](checks/unwalkableWaysCheck.md) | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
 | ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
 
 ## Nodes
 | Check Name | Check Description |
 | :--------- | :---------------- |
-| BigNodeBadDataCheck | The purpose of this check is to flag any BigNodes that have may have some bad data. |
+| [BigNodeBadDataCheck](checks/bigNodeBadDataCheck.md) | The purpose of this check is to flag any BigNodes that have may have some bad data. |
 | ConnectivityCheck | This check identifies nodes that should be connected to nearby nodes or edges. |
 | [DuplicateNodeCheck](checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
 | [InvalidMiniRoundaboutCheck](checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
@@ -92,6 +92,7 @@ This document is a list of tables with a description and link to documentation f
 | [TunnelBridgeHeightLimitCheck](checks/tunnelBridgeHeightLimitCheck.md) | The purpose of this check is to identify roads with limited vertical clearance which do not have a maxheight tag. |
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
 | [ConditionalRestrictionCheck](checks/conditionalRestrictionCheck.md) | The purpose of this check is to identify elements that have a :conditional tag that does not respect the established format. |
+| [SourceMaxspeedCheck](checks/sourceMaxspeedCheck.md) | The purpose of this check is to identify elements that have a source:maxspeed tag that does not follow the tagging rules. |
 
 ## Ways
 | Check Name | Check Description |
@@ -103,8 +104,8 @@ This document is a list of tables with a description and link to documentation f
 | [GeneralizedCoastlineCheck](checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart, have angles that are too sharp, and/or have _source=PGS_ Tag values. |
 | [IntersectingBuildingsCheck](checks/intersectingBuildingsCheck.md) | The purpose of this check is to identify buildings that intersect other buildings. |
 | [InvalidGeometryCheck](checks/invalidGeometryCheck.md) | This check flags invalid polyline and polygon geometries. |
-| LineCrossingBuildingCheck | The purpose of this check is to identify line items (edges or lines) that are crossing buildings invalidly. |
-| LineCrossingWaterBodyCheck | The purpose of this check is to identify line items (edges or lines) and optionally buildings, that cross water bodies invalidly. |
+| [LineCrossingBuildingCheck](checks/lineCrossingBuildingCheck.md) | The purpose of this check is to identify line items (edges or lines) that are crossing buildings invalidly. |
+| [LineCrossingWaterBodyCheck](checks/lineCrossingWaterBodyCheck.md) | The purpose of this check is to identify line items (edges or lines) and optionally buildings, that cross water bodies invalidly. |
 | MalformedPolyLineCheck | This check identifies lines that have only one point, or none, and the ones that are too long. |
 | [SelfIntersectingPolylineCheck](checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
 | [WaterWayCheck](checks/waterWayCheck.md) | This check finds closed waterways (circular water motion), waterways without a place for water to go (a "sink"), crossing waterways, and waterways that go uphill (requires elevation data). |
