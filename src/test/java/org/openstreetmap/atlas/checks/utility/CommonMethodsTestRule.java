@@ -150,7 +150,7 @@ public class CommonMethodsTestRule extends CoreTestRule
     {
         return this.closedWay;
     }
-    
+
     public Atlas getOneMemberRelationArtificialMember()
     {
         return this.oneMemberRelationArtificialMember;

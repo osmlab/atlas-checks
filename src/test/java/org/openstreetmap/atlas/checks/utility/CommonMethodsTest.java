@@ -24,7 +24,7 @@ public class CommonMethodsTest
     {
         assertTrue(CommonMethods.isClosedWay(this.setup.getClosedWay().edge(12000001)));
     }
-    
+
     @Test
     public void testOneMemberRelationArtificialMember()
     {
