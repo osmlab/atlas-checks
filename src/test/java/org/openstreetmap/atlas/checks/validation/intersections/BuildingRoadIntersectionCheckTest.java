@@ -37,6 +37,7 @@ public class BuildingRoadIntersectionCheckTest
     {
         this.verifier.actual(this.setup.getAtlas(), check);
         this.verifier.verifyExpectedSize(2);
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFixSuggestions().size()));
     }
 
     /**
@@ -77,6 +78,7 @@ public class BuildingRoadIntersectionCheckTest
     {
         this.verifier.actual(this.setup.getCorewayIntersectionAtlas(), highwayFilterCheck);
         this.verifier.verifyExpectedSize(2);
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFixSuggestions().size()));
     }
 
     @Test
@@ -118,7 +120,7 @@ public class BuildingRoadIntersectionCheckTest
                     flag.getInstructions().contains("Edificio(id-323232) cruza calle(id-292929)"));
         });
         this.verifier.verifyExpectedSize(2);
-
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getFixSuggestions().size()));
     }
 
     /**

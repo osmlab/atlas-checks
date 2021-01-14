@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
@@ -39,6 +41,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author mgostintsev
  * @author sayas01
+ * @author ladwlo (autofix)
  */
 public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
 {
@@ -128,6 +131,7 @@ public class BuildingRoadIntersectionCheck extends BaseCheck<Long>
                 ignoreTags());
         final CheckFlag flag = new CheckFlag(getTaskIdentifier(building));
         flag.addObject(building);
+        flag.addFixSuggestion(FeatureChange.remove(CompleteEntity.shallowFrom(building)));
         this.handleIntersections(intersectingEdges, flag, building);
         return flag.getPolyLines().size() > 1 ? Optional.of(flag) : Optional.empty();
     }
