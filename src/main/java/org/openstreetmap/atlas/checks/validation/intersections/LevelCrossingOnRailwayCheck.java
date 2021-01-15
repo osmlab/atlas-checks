@@ -55,6 +55,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         NODE_VALID,
         NODE_NO_RAILWAY,
         NODE_NO_HIGHWAY,
+        NODE_PED_ONLY_HIGHWAY,
         NODE_NO_LAYERS;
     }
 
@@ -90,10 +91,15 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
             + "`railway=level_crossing` tag. If highway and railway are on different layers then update the "
             + "appropriate layer tag for the way that goes under or over the other way.";
     private static final int INTERSECTION_MISSING_NODE_INDEX = 5;
+    private static final String NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY = "The node (OSM ID: {0,number,#}) has "
+            + "`railway=level_crossing` tag, but there is no car navigable highway at this intersection, only "
+            + "pedestrian highway(s). To fix: Change `railway=level_crossing` to `railway=crossing`.";
+    private static final int NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY_INDEX = 6;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INVALID_TAGGED_OBJECT,
             NODE_MISSING_LC_TAG, NODE_INVALID_LC_TAG_NO_HIGHWAY, NODE_INVALID_LC_TAG_NO_RAILWAY,
-            NODE_INVALID_LC_TAG_LAYERS, INTERSECTION_MISSING_NODE);
+            NODE_INVALID_LC_TAG_LAYERS, INTERSECTION_MISSING_NODE,
+            NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY);
     private static final List<String> CONSTRUCTION_TAGS = List.of(HighwayTag.KEY, RailwayTag.KEY);
     private static final long serialVersionUID = -2063033332877849846L;
 
@@ -199,6 +205,20 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                 final int instructIndex;
                 switch (nodeCheck)
                 {
+                    case NODE_PED_ONLY_HIGHWAY:
+                        return Optional.of(this
+                                .createFlag(object,
+                                        this.getLocalizedInstruction(
+                                                NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY_INDEX,
+                                                object.getOsmIdentifier()))
+                                .addFixSuggestion(FeatureChange.add(
+                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                .from((AtlasEntity) object))
+                                                        .withTags(object.getTags()).withReplacedTag(
+                                                                RailwayTag.KEY, RailwayTag.KEY,
+                                                                RailwayTag.CROSSING.name()
+                                                                        .toLowerCase().intern()),
+                                        object.getAtlas())));
                     case NODE_NO_RAILWAY:
                         instructIndex = NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX;
                         break;
@@ -217,6 +237,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
                                         .from((AtlasEntity) object)).withRemovedTag(RailwayTag.KEY),
                                 object.getAtlas())));
+
             }
             if (!Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
                     && nodeCheck == NodeCheck.NODE_VALID)
@@ -340,14 +361,23 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
             // Node has no railways through it
             return NodeCheck.NODE_NO_RAILWAY;
         }
+        // Get pedestrian navigable connections to this node
+        final List<AtlasItem> connectedPedHighways = Iterables
+                .asList(atlas.itemsContaining(node.getLocation())).stream()
+                .filter(HighwayTag::isPedestrianNavigableHighway).collect(Collectors.toList());
         // Get car navigable connections to this node
         final List<AtlasItem> connectedHighways = Iterables
                 .asList(atlas.itemsContaining(node.getLocation())).stream()
                 .filter(HighwayTag::isCarNavigableHighway).collect(Collectors.toList());
-        if (connectedHighways.isEmpty())
+        if (connectedPedHighways.isEmpty() && connectedHighways.isEmpty())
         {
             // Node has no highways through it
             return NodeCheck.NODE_NO_HIGHWAY;
+        }
+        else if (connectedHighways.isEmpty())
+        {
+            // Node has no car highways through it, only pedestrian
+            return NodeCheck.NODE_PED_ONLY_HIGHWAY;
         }
 
         // For each railway, check that there is a highway on the same layer that
