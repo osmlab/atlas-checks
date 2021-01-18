@@ -9,15 +9,15 @@ import os
 import sys
 import time
 
-import boto3.ec2
+import boto3
 import paramiko
 import scp
 from botocore.exceptions import ClientError
 from paramiko.auth_handler import AuthenticationException
 
 
-VERSION = "0.3.0"
-ec2 = boto3.client("ec2")
+VERSION = "1.0.0"
+AWS_REGION = 'us-west-1'
 
 
 def setup_logging(default_level=logging.INFO):
@@ -53,7 +53,7 @@ class CloudAtlasChecksControl:
     def __init__(
         self,
         timeoutMinutes=6000,
-        key="",
+        key=None,
         instanceId="",
         processes=32,
         memory=256,
@@ -70,6 +70,7 @@ class CloudAtlasChecksControl:
         mrProject="",
         mrURL="https://maproulette.org:443",
         jar="atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar",
+        awsRegion=AWS_REGION,
     ):
         self.timeoutMinutes = timeoutMinutes
         self.key = key
@@ -101,10 +102,21 @@ class CloudAtlasChecksControl:
         self.mrURL = mrURL
         self.jar = jar
 
-        self.client = None
         self.instanceName = "AtlasChecks"
         self.localJar = '/tmp/atlas-checks.jar'
         self.localConfig = '/tmp/configuration.json'
+
+        self.sshClient = None
+        self.scpClient = None
+        self.ec2 = boto3.client(
+            'ec2',
+            region_name = awsRegion,
+        )
+        self.ssmClient = boto3.client(
+            'ssm',
+            region_name = awsRegion,
+        )
+
 
     def setup_config(self, file_preface="file://"):
         if self.atlasConfig.find("s3:") >= 0:
@@ -194,7 +206,7 @@ class CloudAtlasChecksControl:
                 + " --conf='spark.rdd.compress=true'"
                 + " {}".format(jarFile)
                 + " -maxPoolMinutes=2880"
-                + " -inputFolder='{}'".format(self.atlasInDir)
+                + " -input='{}'".format(self.atlasInDir)
                 + " -output='{}'".format(self.atlasOutDir)
                 + " -outputFormats='{}'".format(self.formats)
                 + " -countries='{}'".format(self.countries)
@@ -261,12 +273,12 @@ class CloudAtlasChecksControl:
         # sync the country folders to the local directory
         for c in list(self.countries.split(",")):
             logger.info(
-                "syncing {}/flag/{} to {}/flag/{}".format(
+                "syncing {}/flag/{} to {}flag/{}".format(
                     self.s3InFolder, c, self.atlasOutDir, c
                 )
             )
             if self.ssh_cmd(
-                "aws s3 sync --only-show-errors {0}/flag/{1} {2}/flag/{1}".format(
+                "aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
                     self.s3InFolder, c, self.atlasOutDir
                 )
             ):
@@ -279,13 +291,14 @@ class CloudAtlasChecksControl:
             "java -cp {}".format(jarFile)
             + " org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
             + " -maproulette='{}:{}:{}'".format(self.mrURL, self.mrProject, self.mrkey)
-            + " -logfiles='{}/flag'".format(self.atlasOutDir)
+            + " -logfiles='{}flag'".format(self.atlasOutDir)
             + " -outputPath='{}'".format(self.atlasOutDir)
             + " -config='{}'".format(atlasConfig)
             + " -checkinComment='#AtlasChecks'"
             + " -countries='{}'".format(self.countries)
             + " -checks='{}'".format(self.checks)
             + " -includeFixSuggestions=true"
+            + " > {} 2>&1".format(self.atlasCheckLog)
         )
 
         logger.info("Starting mr upload: {}".format(cmd))
@@ -307,7 +320,7 @@ class CloudAtlasChecksControl:
             self.terminate_instance()
         else:
             logger.info("Cleaning up EC2 instance.")
-            cmd = "rm -rf {}/* {}/* ".format(self.atlasOutDir, selfatlasLogDir)
+            cmd = "rm -rf {}/* {}/* ".format(self.atlasOutDir, self.atlasLogDir)
             if self.ssh_cmd(cmd):
                 finish("Unable to clean", -1)
 
@@ -322,7 +335,7 @@ class CloudAtlasChecksControl:
         logger.info("Creating EC2 instance from {} template.".format(self.templateName))
         try:
             logger.info("Create instance...")
-            response = ec2.run_instances(
+            response = self.ec2.run_instances(
                 LaunchTemplate={"LaunchTemplateName": self.templateName},
                 TagSpecifications=[
                     {
@@ -347,29 +360,29 @@ class CloudAtlasChecksControl:
         """
         logger.info("Terminating EC2 instance {}".format(self.instanceId))
         try:
-            response = ec2.terminate_instances(InstanceIds=[self.instanceId])
+            response = self.ec2.terminate_instances(InstanceIds=[self.instanceId])
             logger.info("Instance {} was terminated".format(self.instanceId))
         except ClientError as e:
             finish(e, -1)
 
     def ssh_connect(self):
         """Connect to an EC2 instance"""
-        for timeout in range(5):
+        for _timeout in range(16):
             try:
                 keyFile = "{}/.ssh/{}.pem".format(os.environ.get("HOME"), self.key)
                 key = paramiko.RSAKey.from_private_key_file(keyFile)
-                self.client = paramiko.SSHClient()
-                self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self.sshClient = paramiko.SSHClient()
+                self.sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 logger.debug(
                     "Connecting to {} ... ".format(self.instance["PublicDnsName"])
                 )
-                self.client.connect(
+                self.sshClient.connect(
                     self.instance["PublicDnsName"], username="ubuntu", pkey=key
                 )
                 logger.info(
                     "Connected to {} ... ".format(self.instance["PublicDnsName"])
                 )
-                self.scpClient = scp.SCPClient(self.client.get_transport())
+                self.scpClient = scp.SCPClient(self.sshClient.get_transport())
                 break
             except AuthenticationException as error:
                 logger.error(
@@ -409,17 +422,51 @@ class CloudAtlasChecksControl:
         :param quiet: If true, don't display errors on failures
         :returns: Returns the status of the completed ssh command.
         """
-        if self.client is None:
-            self.ssh_connect()
+        if self.key is not None:
+            if self.sshClient is None:
+                self.ssh_connect()
+            logger.debug("Issuing remote command: {} ... ".format(cmd))
+            ssh_stdin, ssh_stdout, ssh_stderr = self.sshClient.exec_command(cmd)
+            if ssh_stdout.channel.recv_exit_status() and not quiet:
+                logger.error(" Remote command stderr:")
+                logger.error("\t".join(map(str, ssh_stderr.readlines())))
+            if verbose:
+                logger.info(" Remote command stdout:")
+                logger.info("\t".join(map(str, ssh_stdout.readlines())))
+            return ssh_stdout.channel.recv_exit_status()
+
+        # if key was not specified then try to use ssm
         logger.debug("Issuing remote command: {} ... ".format(cmd))
-        ssh_stdin, ssh_stdout, ssh_stderr = self.client.exec_command(cmd)
-        if ssh_stdout.channel.recv_exit_status() and not quiet:
-            logger.error(" Remote command stderr:")
-            logger.error("\t".join(map(str, ssh_stderr.readlines())))
+        while True:
+            try:
+                response = self.ssmClient.send_command(
+                    InstanceIds=[self.instanceId],
+                    DocumentName='AWS-RunShellScript',
+                    Parameters={'commands': [cmd]}
+                )
+                break
+            except ClientError as e:
+                logger.debug(f'{e}')
+                time.sleep(5)
+
+        time.sleep(1)
+        command_id = response['Command']['CommandId']
+        for _timeout in range(self.timeoutMinutes * 60):
+            feedback = self.ssmClient.get_command_invocation(CommandId=command_id, InstanceId=self.instanceId)
+            if feedback['StatusDetails'] != 'InProgress':
+                break
+            time.sleep(1)
+        if feedback['StatusDetails'] != 'Success':
+            if not quiet:
+                logger.error("feedback: " + feedback['StatusDetails'])
+                logger.error(" Remote command stderr:")
+                logger.error(feedback['StandardErrorContent'])
+            return -1
         if verbose:
             logger.info(" Remote command stdout:")
-            logger.info("\t".join(map(str, ssh_stdout.readlines())))
-        return ssh_stdout.channel.recv_exit_status()
+            logger.info(feedback['StandardOutputContent'])
+        return 0
+
 
     def wait_for_process_to_complete(self):
         """Wait for process to complete
@@ -433,15 +480,14 @@ class CloudAtlasChecksControl:
         :returns: 1 - if Atlas check spark job timed out
         """
         logger.info("Waiting for Spark Submit process to complete...")
-        # wait for up to TIMEOUT seconds for the VM to be up and ready
-        for timeout in range(self.timeoutMinutes):
+        # wait for up to TIMEOUT minutes for the VM to be up and ready
+        for _timeout in range(self.timeoutMinutes):
             if not self.is_process_running("SparkSubmit"):
                 logger.info("Atlas Check spark job has completed.")
                 if self.ssh_cmd(
                     "grep 'Success!' {}/_*".format(self.atlasOutDir), quiet=True
                 ):
                     logger.error("Atlas Check spark job Failed.")
-                    self.get_files(self.atlasCheckLog, "./")
                     logger.error(
                         "---tail of Atlas Checks Spark job log output ({})--- \n".format(
                             self.atlasCheckLogName
@@ -455,7 +501,7 @@ class CloudAtlasChecksControl:
                     )
                     finish(status=-1)
                 return 0
-            time.sleep(5)
+            time.sleep(60)
         return 1
 
     def is_process_running(self, process):
@@ -478,18 +524,18 @@ class CloudAtlasChecksControl:
 
         try:
             logger.info("Start instance")
-            ec2.start_instances(InstanceIds=[self.instanceId])
-            logger.info(response)
+            response = self.ec2.start_instances(InstanceIds=[self.instanceId])
+            logger.debug(response)
         except ClientError as e:
-            logger.info(e)
+            logger.error(e)
 
     def stop_ec2(self):
         """Stop EC2 Instance."""
         logger.info("Stopping the EC2 instance.")
 
         try:
-            response = ec2.stop_instances(InstanceIds=[self.instanceId])
-            logger.info(response)
+            response = self.ec2.stop_instances(InstanceIds=[self.instanceId])
+            logger.debug(response)
         except ClientError as e:
             logger.error(e)
 
@@ -501,8 +547,8 @@ class CloudAtlasChecksControl:
         """
         logger.info("Getting EC2 Instance {} Info...".format(self.instanceId))
         # wait for up to TIMEOUT seconds for the VM to be up and ready
-        for timeout in range(10):
-            response = ec2.describe_instances(InstanceIds=[self.instanceId])
+        for _timeout in range(10):
+            response = self.ec2.describe_instances(InstanceIds=[self.instanceId])
             if not response["Reservations"]:
                 finish("Instance {} not found".format(self.instanceId), -1)
             if (
@@ -521,7 +567,7 @@ class CloudAtlasChecksControl:
                 )
             )
             break
-        for timeout in range(100):
+        for _timeout in range(100):
             if self.ssh_cmd("systemctl is-system-running", quiet=True):
                 logger.debug(
                     "Waiting for systemd on EC2 instance to complete initialization..."
@@ -532,7 +578,7 @@ class CloudAtlasChecksControl:
         finish("Timeout while waiting for EC2 instance to be ready", -1)
 
 
-def parse_args(cloudctl):
+def parse_args():
     """Parse user parameters
 
     :returns: args
@@ -543,21 +589,23 @@ def parse_args(cloudctl):
         "access to the EC2 instance"
     )
     parser.add_argument(
+        '--zone',
+        default=AWS_REGION,
+        type=str,
+        help=f"The AWS region to use. e.g. {AWS_REGION}",
+    )
+    parser.add_argument(
         "--name",
-        help="Set EC2 instance name. (Default: {})".format(cloudctl.instanceName),
+        help="Set EC2 instance name.",
     )
     parser.add_argument(
         "--template",
-        help="Set EC2 template name to create instance from. (Default: {})".format(
-            cloudctl.templateName
-        ),
+        help="Set EC2 template name to create instance from.",
     )
     parser.add_argument(
         "--minutes",
         type=int,
-        help="Set process timeout to number of minutes. (Default: {})".format(
-            cloudctl.timeoutMinutes
-        ),
+        help="Set process timeout to number of minutes.",
     )
     parser.add_argument(
         "--version", help="Display the current version", action="store_true"
@@ -617,13 +665,11 @@ def parse_args(cloudctl):
     parser_check.add_argument(
         "--memory",
         type=int,
-        help="MEMORY - Gigs of memory for spark job. (Default: {} GB)".format(
-            cloudctl.memory
-        ),
+        help="MEMORY - Gigs of memory for spark job.",
     )
     parser_check.add_argument(
         "--formats",
-        help="FORMATS - Output format (Default: {})".format(cloudctl.formats),
+        help="FORMATS - Output format",
     )
     parser_check.add_argument(
         "--config",
@@ -634,9 +680,7 @@ def parse_args(cloudctl):
     parser_check.add_argument(
         "--processes",
         type=int,
-        help="PROCESSES - Number of parallel jobs to start. (Default: {})".format(
-            cloudctl.processes
-        ),
+        help="PROCESSES - Number of parallel jobs to start.",
     )
     parser_check.add_argument(
         "--jar",
@@ -659,7 +703,6 @@ def parse_args(cloudctl):
         help="ID - Indicates the ID of an existing EC2 instance to use",
     )
     parser_sync.add_argument(
-        "-k",
         "--key",
         required=True,
         help="KEY - Instance key name to use to login to instance. This key "
@@ -671,7 +714,7 @@ def parse_args(cloudctl):
         "(e.g. `--key=aws-key`)",
     )
     parser_sync.add_argument(
-        "-o", "--output", required=True, help="Out - The S3 Output directory"
+        "--output", required=True, help="Out - The S3 Output directory"
     )
     parser_sync.set_defaults(func=CloudAtlasChecksControl.sync)
 
@@ -693,7 +736,6 @@ def parse_args(cloudctl):
         help="MRKEY - The api|key to use to connect to Map Roulette",
     )
     parser_mr.add_argument(
-        "-c",
         "--countries",
         required=True,
         help="COUNTRIES - A comma separated list of ISO3 codes. (e.g. --countries=GBR)",
@@ -705,7 +747,6 @@ def parse_args(cloudctl):
         "(e.g. --checks='EdgeCrossingEdgeCheck,SinkIslandCheck')",
     )
     parser_mr.add_argument(
-        "-k",
         "--key",
         required=True,
         help="KEY - Instance key name to use to login to instance. This key "
@@ -730,9 +771,7 @@ def parse_args(cloudctl):
     )
     parser_mr.add_argument(
         "--jar",
-        help="JAR - The full path to the jar file to execute (Default: {})".format(
-            cloudctl.jar
-        ),
+        help="JAR - The full path to the jar file to execute.",
     )
     parser_mr.set_defaults(func=CloudAtlasChecksControl.challenge)
 
@@ -743,7 +782,6 @@ def parse_args(cloudctl):
         help="ID - Indicates the ID of an existing EC2 instance to use",
     )
     parser_clean.add_argument(
-        "-k",
         "--key",
         required=True,
         help="KEY - Instance key name to use to login to instance. This key "
@@ -766,7 +804,6 @@ def evaluate(args, cloudctl):
     :param args: The user's input.
     :param cloudctl: An instance of CloudAtlasChecksControl to use.
     """
-    cloudctl.terminate = args.terminate
     if args.version is True:
         logger.critical("This is version {0}.".format(VERSION))
         finish()
@@ -786,8 +823,6 @@ def evaluate(args, cloudctl):
         cloudctl.key = args.key
     if hasattr(args, "output") and args.output is not None:
         cloudctl.s3OutFolder = args.output
-    if hasattr(args, "pbf") and args.pbf is not None:
-        cloudctl.pbfURL = args.pbf
     if hasattr(args, "countries") and args.countries is not None:
         cloudctl.countries = args.countries
     if hasattr(args, "formats") and args.formats is not None:
@@ -819,7 +854,10 @@ def evaluate(args, cloudctl):
 logger = setup_logging()
 
 if __name__ == "__main__":
-    cloudctl = CloudAtlasChecksControl()
-    args = parse_args(cloudctl)
+    args = parse_args()
+    cloudctl = CloudAtlasChecksControl(
+        terminate=args.terminate,
+        awsRegion=args.zone,
+    )
     evaluate(args, cloudctl)
     finish()

@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.validation.linear.lines;
 
 import java.lang.reflect.Field;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -24,14 +25,22 @@ public class WaterWayCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    private WaterWayCheck defaultWaterWayCheck;
+
+    @Before
+    public void setUp()
+    {
+        this.defaultWaterWayCheck = new WaterWayCheck(ConfigurationResolver.emptyConfiguration(),
+                null);
+    }
+
     /**
      * Look for waterways that connect with themselves
      */
     @Test
     public void testCircularWaterway()
     {
-        this.verifier.actual(this.atlases.getCircularWaterway(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getCircularWaterway(), this.defaultWaterWayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -41,8 +50,7 @@ public class WaterWayCheckTest
     @Test
     public void testCoastWaterway()
     {
-        this.verifier.actual(this.atlases.getCoastlineWaterway(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getCoastlineWaterway(), this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -53,7 +61,7 @@ public class WaterWayCheckTest
     public void testCoastWaterwayConnected()
     {
         this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -62,8 +70,10 @@ public class WaterWayCheckTest
     {
         final short[][] map = new short[][] { { 15, 14, 13, 12 }, { 11, 10, 9, 8 }, { 7, 6, 5, 4 },
                 { 3, 2, 1, 0 } };
-        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.inlineConfiguration(
-                "{\"WaterWayCheck.waterway.elevation.resolution.min.uphill\": 30000.0}"));
+        final WaterWayCheck check = new WaterWayCheck(
+                ConfigurationResolver.inlineConfiguration(
+                        "{\"WaterWayCheck.waterway.elevation.resolution.min.uphill\": 30000.0}"),
+                null);
         final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
         elevationUtilsField.setAccessible(true);
         final ElevationUtilities elevationUtils = (ElevationUtilities) elevationUtilsField
@@ -78,8 +88,10 @@ public class WaterWayCheckTest
     {
         final short[][] map = new short[][] { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 },
                 { 12, 13, 14, 15 } };
-        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.inlineConfiguration(
-                "{\"WaterWayCheck.waterway.elevation.resolution.min.uphill\": 30000.0}"));
+        final WaterWayCheck check = new WaterWayCheck(
+                ConfigurationResolver.inlineConfiguration(
+                        "{\"WaterWayCheck.waterway.elevation.resolution.min.uphill\": 30000.0}"),
+                null);
 
         final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
         elevationUtilsField.setAccessible(true);
@@ -97,7 +109,8 @@ public class WaterWayCheckTest
         final short[][] map = new short[][] { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 },
                 { 12, 13, 14, 15 } };
         final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.inlineConfiguration(
-                "{\"WaterWayCheck\": {\"waterway.elevation.resolution.min.uphill\": 30000.0, \"waterway.elevation.distance.min.start.end\": 1.0}}"));
+                "{\"WaterWayCheck\": {\"waterway.elevation.resolution.min.uphill\": 30000.0, \"waterway.elevation.distance.min.start.end\": 1.0}}"),
+                null);
 
         final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
         elevationUtilsField.setAccessible(true);
@@ -114,14 +127,14 @@ public class WaterWayCheckTest
     {
         final short[][] map = new short[][] { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 8, 9, 10, 11 },
                 { 12, 13, 14, 15 } };
-        final WaterWayCheck check = new WaterWayCheck(ConfigurationResolver.emptyConfiguration());
 
         final Field elevationUtilsField = WaterWayCheck.class.getDeclaredField("elevationUtils");
         elevationUtilsField.setAccessible(true);
         final ElevationUtilities elevationUtils = (ElevationUtilities) elevationUtilsField
-                .get(check);
+                .get(this.defaultWaterWayCheck);
         elevationUtils.putMap(Location.forString("16.9906416,-88.3188021"), map);
-        this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(), check);
+        this.verifier.actual(this.atlases.getCoastlineWaterwayConnected(),
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -132,7 +145,7 @@ public class WaterWayCheckTest
     public void testCoastWaterwayReversed()
     {
         this.verifier.actual(this.atlases.getCoastlineWaterwayReversed(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -142,8 +155,7 @@ public class WaterWayCheckTest
     @Test
     public void testCrossingWaterway()
     {
-        this.verifier.actual(this.atlases.getCrossingWaterways(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getCrossingWaterways(), this.defaultWaterWayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -154,7 +166,7 @@ public class WaterWayCheckTest
     public void testCrossingWaterwayConnected()
     {
         this.verifier.actual(this.atlases.getCrossingWaterwaysConnected(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -165,7 +177,7 @@ public class WaterWayCheckTest
     public void testCrossingWaterwayDifferentLayers()
     {
         this.verifier.actual(this.atlases.getCrossingWaterwaysDifferentLayers(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -175,8 +187,7 @@ public class WaterWayCheckTest
     @Test
     public void testDeadendWaterway()
     {
-        this.verifier.actual(this.atlases.getDeadendWaterway(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getDeadendWaterway(), this.defaultWaterWayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -186,8 +197,7 @@ public class WaterWayCheckTest
     @Test
     public void testDeadendWaterways()
     {
-        this.verifier.actual(this.atlases.getDeadendWaterways(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getDeadendWaterways(), this.defaultWaterWayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -199,7 +209,7 @@ public class WaterWayCheckTest
     public void testDifferingLayersConnectedWaterway()
     {
         this.verifier.actual(this.atlases.getDifferingLayersConnectedWaterway(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -209,8 +219,7 @@ public class WaterWayCheckTest
     @Test
     public void testSinkholeAreaWaterway()
     {
-        this.verifier.actual(this.atlases.getSinkholeArea(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getSinkholeArea(), this.defaultWaterWayCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
@@ -220,8 +229,7 @@ public class WaterWayCheckTest
     @Test
     public void testSinkholePointWaterway()
     {
-        this.verifier.actual(this.atlases.getSinkholePoint(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.actual(this.atlases.getSinkholePoint(), this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -232,7 +240,7 @@ public class WaterWayCheckTest
     public void testWaterwayEndingInOceanArea()
     {
         this.verifier.actual(this.atlases.getWaterwayEndingInOceanArea(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -243,7 +251,7 @@ public class WaterWayCheckTest
     public void testWaterwayEndingInStraitArea()
     {
         this.verifier.actual(this.atlases.getWaterwayEndingInStraitArea(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -254,7 +262,7 @@ public class WaterWayCheckTest
     public void testWaterwayEndingOnOtherWaterway()
     {
         this.verifier.actual(this.atlases.getWaterwayEndingOnOtherWaterway(),
-                new WaterWayCheck(ConfigurationResolver.emptyConfiguration()));
+                this.defaultWaterWayCheck);
         this.verifier.verifyEmpty();
     }
 }

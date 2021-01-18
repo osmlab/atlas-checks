@@ -37,6 +37,7 @@ public class Challenge implements Serializable
     public static final String KEY_RULE_VALUE = "value";
     public static final String KEY_TAGS = "tags";
     public static final String DEFAULT_CHECKIN_COMMENT = "#maproulette";
+    public static final String DISCOVERABLE = "enabled";
 
     private static final long serialVersionUID = -8034692909431083341L;
     private static final Gson CHALLENGE_GSON = new GsonBuilder().disableHtmlEscaping()
@@ -60,34 +61,40 @@ public class Challenge implements Serializable
     private long status;
     private boolean enabled;
     private boolean updateTasks;
+    private String checkName;
 
     public Challenge(final Challenge challenge)
     {
         this(challenge.name, challenge.description, challenge.blurb, challenge.instruction,
                 challenge.difficulty, challenge.defaultPriority, challenge.highPriorityRule,
-                challenge.mediumPriorityRule, challenge.lowPriorityRule, challenge.tags);
+                challenge.mediumPriorityRule, challenge.lowPriorityRule, challenge.tags,
+                challenge.enabled);
     }
 
     public Challenge(final String name, final String description, final String blurb,
-            final String instruction, final ChallengeDifficulty difficulty, final String tags)
+            final String instruction, final ChallengeDifficulty difficulty, final String tags,
+            final boolean enabled)
     {
         this(name, description, blurb, instruction, difficulty, ChallengePriority.LOW, null, null,
-                null, tags);
+                null, tags, enabled);
     }
 
+    @SuppressWarnings("squid:S107")
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final String checkinComment,
-            final ChallengeDifficulty difficulty, final String tags)
+            final ChallengeDifficulty difficulty, final String tags, final boolean enabled)
     {
         this(name, description, blurb, instruction, difficulty, ChallengePriority.LOW, null, null,
-                null, tags);
+                null, tags, enabled);
         this.checkinComment = checkinComment;
     }
 
+    @SuppressWarnings("squid:S107")
     public Challenge(final String name, final String description, final String blurb,
             final String instruction, final ChallengeDifficulty difficulty,
             final ChallengePriority defaultPriority, final String highPriorityRule,
-            final String mediumPriorityRule, final String lowPriorityRule, final String tags)
+            final String mediumPriorityRule, final String lowPriorityRule, final String tags,
+            final boolean enabled)
     {
         this.name = name;
         this.description = description;
@@ -101,11 +108,17 @@ public class Challenge implements Serializable
         this.tags = tags;
         this.checkinComment = DEFAULT_CHECKIN_COMMENT;
         this.updateTasks = true;
+        this.enabled = enabled;
     }
 
     public String getBlurb()
     {
         return this.blurb;
+    }
+
+    public String getCheckName()
+    {
+        return this.checkName;
     }
 
     public String getCheckinComment()
@@ -126,6 +139,11 @@ public class Challenge implements Serializable
     public ChallengeDifficulty getDifficulty()
     {
         return this.difficulty;
+    }
+
+    public boolean getEnabled()
+    {
+        return this.enabled;
     }
 
     public String getHighPriorityRule()
@@ -183,6 +201,11 @@ public class Challenge implements Serializable
         return this.updateTasks;
     }
 
+    public void setCheckName(final String checkName)
+    {
+        this.checkName = checkName;
+    }
+
     public void setCheckinComment(final String checkinComment)
     {
         this.checkinComment = checkinComment;
@@ -224,6 +247,7 @@ public class Challenge implements Serializable
         final JsonObject challengeJson = CHALLENGE_GSON.toJsonTree(this).getAsJsonObject();
         challengeJson.add(KEY_ACTIVE, new JsonPrimitive(true));
         challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(this.updateTasks));
+        challengeJson.add(DISCOVERABLE, new JsonPrimitive(this.enabled));
 
         // Do not override the name if it's already set
         if (this.name.isEmpty())

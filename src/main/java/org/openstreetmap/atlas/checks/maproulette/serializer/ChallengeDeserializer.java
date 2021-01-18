@@ -62,7 +62,21 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
                 this.getValue(challengeObject, Challenge.KEY_HIGH_PRIORITY, null),
                 this.getValue(challengeObject, Challenge.KEY_MEDIUM_PRIORITY, null),
                 this.getValue(challengeObject, Challenge.KEY_LOW_PRIORITY, null),
-                this.getStringValue(challengeObject, Challenge.KEY_TAGS, ""));
+                this.getStringValue(challengeObject, Challenge.KEY_TAGS, ""),
+                this.getBooleanValue(challengeObject, Challenge.DISCOVERABLE, false));
+    }
+
+    private boolean getBooleanValue(final JsonObject object, final String key,
+            final boolean defaultValue)
+    {
+        if (object.has(key))
+        {
+            return object.get(key).getAsBoolean();
+        }
+        else
+        {
+            return defaultValue;
+        }
     }
 
     private String getStringValue(final JsonObject object, final String key,

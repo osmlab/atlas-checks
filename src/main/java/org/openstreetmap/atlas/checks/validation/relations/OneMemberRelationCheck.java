@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
@@ -52,7 +53,7 @@ public class OneMemberRelationCheck extends BaseCheck<Object>
         final RelationMemberList members = relation.members();
 
         // If the number of members in the relation is 1
-        if (members.size() == 1)
+        if (CommonMethods.getOSMRelationMemberSize(relation) == 1)
         {
             if (members.get(0).getEntity().getType().equals(ItemType.RELATION))
             {

@@ -133,6 +133,24 @@
       "tags":"building,highway"
     }
   },
+  "ConcerningAngleBuildingCheck": {
+    "angles": {
+      "minLowAngleDiff": 80.0,
+      "maxLowAngleDiff": 89.7,
+      "minHighAngleDiff": 90.3,
+      "maxHighAngleDiff": 100.0
+    },
+    "angleCounts": {
+      "min": 4.0,
+      "max": 16.0
+    },
+    "challenge": {
+      "description": "Tasks contain buildings with angles that need to be squared.",
+      "blurb": "Concerning angles in buildings",
+      "instructions": "Adjust the building's angles to be right angles.",
+      "difficulty": "EASY"
+    }
+  },
   "ConflictingAreaTagCombination": {
     "challenge": {
       "description": "Task contains Area's with mutually exclusive tag combinations.",
@@ -416,7 +434,7 @@
   "InvalidMultiPolygonRelationCheck": {
     "members.one.ignore": true,
     "overlap.points.minimum": 0,
-    "overlap.points.maximum": 2000000,
+    "overlap.points.maximum": 300000,
     "challenge": {
       "description": "Tasks containing improperly formed multipolygon relations.",
       "blurb": "Invalid Multipolygon Relations",
@@ -449,6 +467,43 @@
       "blurb": "Features with invalid tags",
       "instruction": "Open your favorite editor and check that the listed tags are correct.",
       "difficulty": "Medium",
+      "tags":"tags"
+    }
+  },
+  "SourceMaxspeedCheck": {
+    "countries.denylist": ["UK"],
+    "values": [
+      "sign",
+      "markings"
+    ],
+    "context.values": [
+      "urban",
+      "rural",
+      "bicycle_road",
+      "trunk",
+      "motorway",
+      "living_street",
+      "school",
+      "pedestrian_zone",
+      "urban_motorway",
+      "urban_trunk",
+      "nsl",
+      "express",
+      "nsl_restricted",
+      "nsl_dual",
+      "nsl_single",
+      "zone"
+    ],
+    "country.exceptions": [
+      "BE-VLG",
+      "BE-WAL",
+      "BE-BRU"
+    ],
+    "challenge": {
+      "description": "Tasks containing features with tag source:maxspeed with incorrect value format.",
+      "blurb": "Features with invalid source:maxspeed tags",
+      "instruction": "Open your favorite editor and check that the listed tags are correct.",
+      "difficulty": "NORMAL",
       "tags":"tags"
     }
   },
@@ -612,6 +667,15 @@
       "difficulty": "MEDIUM"
     }
   },
+  "MissingRelationTypeCheck": {
+    "ignore.tags.filter":"disused:type->!&disabled:type->!",
+    "challenge": {
+      "description": "Tasks contain Relations with missing type tag.",
+      "blurb": "Relations with missing type tag.",
+      "instruction": "Open your favorite editor and add Relation type tag.",
+      "difficulty": "NORMAL"
+    }
+  },
   "NodeValenceCheck": {
     "connections.maximum": 10,
     "challenge": {
@@ -628,6 +692,14 @@
       "blurb": "One Member Relations",
       "instruction": "Correct the relation to add necessary members",
       "difficulty": "HARD"
+    }
+  },
+  "OpenBoundaryCheck": {
+    "challenge": {
+      "description": "Admin boundaries should be closed polygons. This check catches admin boundaries that are not closed..",
+      "blurb": "Open Boundary Check",
+      "instruction": "Please close the boundary",
+      "difficulty": "MEDIUM"
     }
   },
   "OverlappingAOIPolygonCheck":{

@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.MultiPolygon;
@@ -86,7 +87,7 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
 
     private static final JtsPolygonConverter JTS_POLYGON_CONVERTER = new JtsPolygonConverter();
     private static final long OVERLAP_MINIMUM_POINTS_DEFAULT = 0;
-    private static final long OVERLAP_MAMIMUM_POINTS_DEFAULT = 2000000;
+    private static final long OVERLAP_MAMIMUM_POINTS_DEFAULT = 300000;
 
     static
     {
@@ -133,7 +134,8 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
     {
         return object instanceof Relation
                 && Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.MULTIPOLYGON)
-                && !(this.ignoreOneMember && ((Relation) object).members().size() == 1)
+                && !(this.ignoreOneMember
+                        && CommonMethods.getOSMRelationMemberSize((Relation) object) == 1)
                 && !SyntheticRelationMemberAdded.hasAddedRelationMember(object);
     }
 

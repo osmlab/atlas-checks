@@ -61,6 +61,7 @@ public class CheckResourceLoader
             + BaseCheck.PARAMETER_DENYLIST_COUNTRIES;
     private final Class<?> checkType;
     private final Configuration configuration;
+    private final ExternalDataFetcher fileFetcher;
     private final MultiMap<String, String> countryGroups = new MultiMap<>();
     private final Boolean enabledByDefault;
     private final String enabledKeyTemplate;
@@ -74,18 +75,30 @@ public class CheckResourceLoader
      * @param configuration
      *            the {@link Configuration} for loaded checks
      */
-    @SuppressWarnings("unchecked")
     public CheckResourceLoader(final Configuration configuration)
+    {
+        this(configuration, null);
+    }
+
+    /**
+     * Default constructor
+     *
+     * @param configuration
+     *            the {@link Configuration} for loaded checks
+     * @param fileFetcher
+     *            the {@link ExternalDataFetcher} to load additional data with
+     */
+    @SuppressWarnings("unchecked")
+    public CheckResourceLoader(final Configuration configuration,
+            final ExternalDataFetcher fileFetcher)
     {
         this.packages = Collections.unmodifiableSet(Iterables.asSet((Iterable<String>) configuration
                 .get("CheckResourceLoader.scanUrls", Collections.singletonList(DEFAULT_PACKAGE))
                 .value()));
         final Map<String, List<String>> groups = configuration.get("groups", Collections.emptyMap())
                 .value();
-        groups.keySet().forEach(group ->
-        {
-            groups.get(group).forEach(country -> this.countryGroups.add(country, group));
-        });
+        groups.keySet().forEach(group -> groups.get(group)
+                .forEach(country -> this.countryGroups.add(country, group)));
 
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try
@@ -106,6 +119,7 @@ public class CheckResourceLoader
         this.checkPermitList = configuration.get("CheckResourceLoader.checks.permitlist")
                 .valueOption();
         this.checkDenyList = configuration.get("CheckResourceLoader.checks.denylist").valueOption();
+        this.fileFetcher = fileFetcher;
     }
 
     public Configuration getConfiguration()
@@ -137,14 +151,38 @@ public class CheckResourceLoader
         return specializedConfiguration;
     }
 
-    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled)
+    public <T extends Check> Set<T> loadChecks(final Predicate<Class<?>> isEnabled)
     {
-        return this.loadChecks(isEnabled, this.configuration);
+        return this.loadChecks(isEnabled, this.configuration, this.fileFetcher);
     }
 
     public <T extends Check> Set<T> loadChecks(final Configuration configuration)
     {
-        return this.loadChecks(this::isEnabledByConfiguration, configuration);
+        return this.loadChecks(this::isEnabledByConfiguration, configuration, this.fileFetcher);
+    }
+
+    /**
+     * Loads checks that are enabled by some other means, defined by {@code isEnabled}
+     *
+     * @param isEnabled
+     *            {@link Predicate} used to determine if a check is enabled
+     * @param configuration
+     *            {@link Configuration} used to loadChecks {@link CheckResourceLoader}
+     * @param fileFetcher
+     *            {@link ExternalDataFetcher} used to load additional data
+     * @param <T>
+     *            check type
+     * @return a {@link Set} of checks
+     */
+    public <T extends Check> Set<T> loadChecks(final Predicate<Class<?>> isEnabled,
+            final Configuration configuration, final ExternalDataFetcher fileFetcher)
+    {
+        final Class<?>[][] constructorArgumentTypes = new Class<?>[][] {
+                { Configuration.class, ExternalDataFetcher.class }, { Configuration.class }, {} };
+        final Object[][] constructorArguments = new Object[][] { { configuration, fileFetcher },
+                { configuration }, {} };
+        return this.loadChecksUsingConstructors(isEnabled, constructorArgumentTypes,
+                constructorArguments);
     }
 
     /**
@@ -158,15 +196,10 @@ public class CheckResourceLoader
      *            check type
      * @return a {@link Set} of checks
      */
-    @SuppressWarnings("unchecked")
-    public <T extends Check> Set<T> loadChecks(final Predicate<Class> isEnabled,
+    public <T extends Check> Set<T> loadChecks(final Predicate<Class<?>> isEnabled,
             final Configuration configuration)
     {
-        final Class<?>[][] constructorArgumentTypes = new Class<?>[][] { { Configuration.class },
-                {} };
-        final Object[][] constructorArguments = new Object[][] { { configuration }, {} };
-        return this.loadChecksUsingConstructors(isEnabled, constructorArgumentTypes,
-                constructorArguments);
+        return this.loadChecks(isEnabled, configuration, this.fileFetcher);
     }
 
     /**
@@ -178,14 +211,15 @@ public class CheckResourceLoader
      */
     public <T extends Check> Set<T> loadChecks()
     {
-        return this.loadChecks(this::isEnabledByConfiguration, this.configuration);
+        return this.loadChecks(this::isEnabledByConfiguration, this.configuration,
+                this.fileFetcher);
     }
 
     public <T extends Check> Set<T> loadChecksForCountry(final String country)
     {
         final Configuration countryConfiguration = this.getConfigurationForCountry(country);
         return this.loadChecks(checkClass -> this.isEnabledByConfiguration(countryConfiguration,
-                checkClass, country), countryConfiguration);
+                checkClass, country), countryConfiguration, this.fileFetcher);
     }
 
     public <T extends Check> Set<T> loadChecksUsingConstructors(
@@ -217,7 +251,8 @@ public class CheckResourceLoader
      *            Any class that extends Check.
      * @return A set of enabled, initialized checks.
      */
-    public <T extends Check> Set<T> loadChecksUsingConstructors(final Predicate<Class> isEnabled,
+    @SuppressWarnings("unchecked")
+    public <T extends Check> Set<T> loadChecksUsingConstructors(final Predicate<Class<?>> isEnabled,
             final Class<?>[][] constructorArgumentTypes, final Object[][] constructorArguments)
     {
         final Set<T> checks = new HashSet<>();
@@ -301,20 +336,20 @@ public class CheckResourceLoader
         return Optional.empty();
     }
 
-    private boolean isEnabledByConfiguration(final Class checkClass)
+    private boolean isEnabledByConfiguration(final Class<?> checkClass)
     {
         return this.isEnabledByConfiguration(this.configuration, checkClass);
     }
 
     private boolean isEnabledByConfiguration(final Configuration configuration,
-            final Class checkClass)
+            final Class<?> checkClass)
     {
         final String key = String.format(this.enabledKeyTemplate, checkClass.getSimpleName());
         return configuration.get(key, this.enabledByDefault).value();
     }
 
     private boolean isEnabledByConfiguration(final Configuration configuration,
-            final Class checkClass, final String country)
+            final Class<?> checkClass, final String country)
     {
         final List<String> countryPermitlist = configuration
                 .get(String.format(COUNTRY_PERMITLIST_TEMPLATE, checkClass.getSimpleName()),
@@ -325,7 +360,7 @@ public class CheckResourceLoader
                         Collections.emptyList())
                 .value();
         return this.isEnabledByConfiguration(configuration, checkClass)
-                && countryPermitlist.isEmpty() ? !countryDenylist.contains(country)
-                        : countryPermitlist.contains(country);
+                && (countryPermitlist.isEmpty() ? !countryDenylist.contains(country)
+                        : countryPermitlist.contains(country));
     }
 }

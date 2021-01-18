@@ -29,14 +29,16 @@ We first validate that the incoming object is:
 ##### Flagging the Object
 There are 3 ways we check if the object should be flagged:
 1. We get one of the valid date tags (see DATE_TAGS in ConstructionCheck.java)
-    * If one is present we attempt to parse the date string and compare it to today's date.
-    * If it is before today's date we flag the object.
+    * If one is present we attempt to parse the date string and compare it to the atlas generation date.
+    * If it is before the atlas generation date we flag the object.
 2. We check the "check_date" tag
-    * If present we parse the date string and find how many months it is between the check_date and today's date
+    * If present we parse the date string and find how many months it is between the check_date and the atlas generation date
     * If it is more than the oldCheckDateMonths, as defined in the config, we flag the object
 3. If all else fails we check the tag "last_edit_time"
-    * We convert the timestamp to a date and find the days between that and today's date
+    * We convert the timestamp to a date and find the days between that and the atlas generation date
     * If it is more than the oldConstructionDays, as defined in the config, we flag the object
+    
+In all cases if the atlas generation date in not available, the the current date is used instead. 
     
 ##### Parsing the date string
 While there is one specified way people should be tagging dates, ISO 8601 (yyyy-mm-dd, ie. 2020-01-16), but it is not always

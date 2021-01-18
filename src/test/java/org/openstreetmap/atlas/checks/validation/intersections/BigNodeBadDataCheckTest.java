@@ -41,7 +41,7 @@ public class BigNodeBadDataCheckTest
     public void testBigNodeAtlas()
     {
         Assert.assertTrue(
-                this.runTest(this.setup.getBigNodeAtlas(), this.configNormalThreshold, 1));
+                this.runTest(this.setup.getBigNodeAtlas(), this.configNormalThreshold, 0));
     }
 
     @Test

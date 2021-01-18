@@ -1,5 +1,5 @@
 import click
-from pyatlas_checks.commands.test_command import TestCommand
+from pyatlas_checks.commands.log_count import LogCount
 
 
 @click.group()
@@ -12,12 +12,14 @@ def cli(ctx, verbose):
 
 
 @cli.command()
-@click.argument('test_string')
+@click.argument('input_log')
 @click.pass_context
-def test_command(ctx, test_string):
+def log_counter(ctx, input_log):
     verbose = ctx.obj['verbose']
-    command = TestCommand(test_string)
-    command.run()
+    if verbose:
+        click.echo(f"Verbose mode enabled.")
+    command = LogCount(input_log)
+    click.echo(f"Total log count: {command.run()}")
 
 
 if __name__ == '__main__':
