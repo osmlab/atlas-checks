@@ -1,7 +1,9 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +21,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.BarrierTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
@@ -116,7 +119,7 @@ public class TollValidationCheck extends BaseCheck<Long>
         {
             markAsFlagged(edgeInQuestion.getOsmIdentifier());
             return Optional.of(this
-                    .createFlag(object,
+                    .createFlag(new OsmWayWalker(edgeInQuestion).collectEdges(),
                             this.getLocalizedInstruction(2, edgeInQuestion.getOsmIdentifier()))
                     .addFixSuggestion(FeatureChange.add(
                             (AtlasEntity) ((CompleteEntity) CompleteEntity
@@ -479,19 +482,41 @@ public class TollValidationCheck extends BaseCheck<Long>
      */
     private boolean hasInconsistentTollTag(final Edge edge)
     {
-        final Set<Edge> inEdges = edge.inEdges().stream()
-                .filter(inEdge -> inEdge.getOsmIdentifier() != edge.getOsmIdentifier()
-                        && inEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(inEdge))
-                .collect(Collectors.toSet());
-        final Set<Edge> outEdges = edge.outEdges().stream()
-                .filter(outEdge -> outEdge.getOsmIdentifier() != edge.getOsmIdentifier()
-                        && outEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(outEdge))
-                .collect(Collectors.toSet());
+        Set<Edge> inEdges = new HashSet<>();
+        Set<Edge> outEdges = new HashSet<>();
+        Edge lastWayEdge = null;
+        Set<Edge> completeWay = new OsmWayWalker(edge).collectEdges();
+        final Iterator<Edge> completeWayIterator = completeWay.iterator();
+
+        if (completeWayIterator.hasNext())
+        {
+            inEdges = completeWayIterator.next().inEdges();
+        }
+
+        while (completeWayIterator.hasNext())
+        {
+            lastWayEdge = completeWayIterator.next();
+        }
+
+        if (lastWayEdge != null)
+        {
+            outEdges = lastWayEdge.outEdges();
+        }
+
         if (inEdges.size() == 1 && outEdges.size() == 1)
         {
             return this.inconsistentTollTagLogic(inEdges, outEdges, edge);
         }
         return false;
+//        final Set<Edge> inEdges = edge.inEdges().stream()
+//                .filter(inEdge -> inEdge.getOsmIdentifier() != edge.getOsmIdentifier()
+//                        && inEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(inEdge))
+//                .collect(Collectors.toSet());
+
+//        final Set<Edge> outEdges = edge.outEdges().stream()
+//                .filter(outEdge -> outEdge.getOsmIdentifier() != edge.getOsmIdentifier()
+//                        && outEdge.isMainEdge() && HighwayTag.isCarNavigableHighway(outEdge))
+//                .collect(Collectors.toSet());
     }
 
     /**
