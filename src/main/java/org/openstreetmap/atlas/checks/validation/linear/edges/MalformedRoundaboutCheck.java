@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -178,15 +177,16 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
 
         try
         {
-            final PolyLine originalGeometry = CommonMethods.buildOriginalOsmWayGeometry((Edge) object);
+            final PolyLine originalGeometry = CommonMethods
+                    .buildOriginalOsmWayGeometry((Edge) object);
             // There should be a minimum amount of OSM nodes in a roundabout to have good
             // visuals.
             // Only count nodes when we have the full roundabout, some are split into multiple
             // ways.
             if (originalGeometry.size() < this.minNodes && ((Edge) object).isClosed())
             {
-                instructions.add(this.getLocalizedInstruction(MIN_NODES_INSTRUCTION_INDEX,
-                        this.minNodes));
+                instructions.add(
+                        this.getLocalizedInstruction(MIN_NODES_INSTRUCTION_INDEX, this.minNodes));
             }
 
             // Check for sharp angles, roundabouts should be smooth curves
@@ -202,7 +202,10 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                         angleLocations));
             }
         }
-        catch (CoreException ignored) { }
+        catch (final CoreException ignored)
+        {
+            /* Do Nothing */
+        }
 
         if (!instructions.isEmpty())
         {
