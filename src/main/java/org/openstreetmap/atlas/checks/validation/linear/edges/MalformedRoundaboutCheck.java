@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.CommonMethods;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
@@ -68,7 +69,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     private static final double MIN_NODES_DEFAULT = 9.0;
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 60.0;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            ENCLOSED_ROADS_INSTRUCTIONS, BASIC_INSTRUCTION, WRONG_WAY_INSTRUCTIONS, MINIMUM_NODES_INSTRUCTION,
+            ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION, MINIMUM_NODES_INSTRUCTION,
             SHARP_ANGLE_INSTRUCTION);
     private final List<String> leftDrivingCountries;
     private final double minNodes;
@@ -166,8 +167,6 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
 
         if (!roundaboutEdgeSet.isEmpty() && roundaboutEdges != null)
         {
-            final PolyLine originalGeometry = buildOriginalOsmWayGeometry((Edge) object);
-
             // If there are car navigable edges inside the roundabout flag it, as it is probably
             // malformed or a throughabout
             if (roundaboutEdgeSet.stream().noneMatch(this::ignoreBridgeTunnelCrossings)
@@ -176,23 +175,25 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 instructions.add(this.getLocalizedInstruction(0));
             }
 
-            // There should be a minimum amount of OSM nodes in a roundabout to have good visuals.
-            // Only count nodes when we have the full roundabout, some are split into multiple ways.
-            if (originalGeometry.size() < this.minNodes && ((Edge) object).isClosed())
-            {
-                instructions.add(this.getLocalizedInstruction(3, this.minNodes));
-            }
+            final Optional<PolyLine> originalGeometryOptional = buildOriginalOsmWayGeometry((Edge) object);
+            if (originalGeometryOptional.isPresent()) {
+                final PolyLine originalGeometry = originalGeometryOptional.get();
+                // There should be a minimum amount of OSM nodes in a roundabout to have good visuals.
+                // Only count nodes when we have the full roundabout, some are split into multiple ways.
+                if (originalGeometry.size() < this.minNodes && ((Edge) object).isClosed()) {
+                    instructions.add(this.getLocalizedInstruction(3, this.minNodes));
+                }
 
-            // Check for sharp angles, roundabouts should be smooth curves
-            List<Tuple<Angle, Location>> maxAngles = originalGeometry
-                    .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
-            if (!maxAngles.isEmpty())
-            {
-                final String angleLocations = "(" + maxAngles.stream()
-                        .map(t -> "(" + t.getSecond().getLatitude() + ", "
-                                + t.getSecond().getLongitude() + ")")
-                        .collect(Collectors.joining(", ")) + ")";
-                instructions.add(this.getLocalizedInstruction(4, angleLocations));
+                // Check for sharp angles, roundabouts should be smooth curves
+                List<Tuple<Angle, Location>> maxAngles = originalGeometry
+                        .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
+                if (!maxAngles.isEmpty()) {
+                    final String angleLocations = "(" + maxAngles.stream()
+                            .map(t -> "(" + t.getSecond().getLatitude() + ", "
+                                    + t.getSecond().getLongitude() + ")")
+                            .collect(Collectors.joining(", ")) + ")";
+                    instructions.add(this.getLocalizedInstruction(4, angleLocations));
+                }
             }
         }
 
@@ -219,17 +220,22 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
      *            entity to check
      * @return original Way geometry polyline
      */
-    private PolyLine buildOriginalOsmWayGeometry(final Edge edge)
+    private Optional<PolyLine> buildOriginalOsmWayGeometry(final Edge edge)
     {
-        // Identify and sort by IDs all sections of original OSM way
-        final List<Edge> sortedEdges = new ArrayList<>(new OsmWayWalker(edge).collectEdges());
-        // Build original OSM polyline
-        PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
-        for (int index = 1; index < sortedEdges.size(); index++)
-        {
-            geometry = geometry.append(sortedEdges.get(index).asPolyLine());
+        try {
+            // Identify and sort by IDs all sections of original OSM way
+            final List<Edge> sortedEdges = new ArrayList<>(new OsmWayWalker(edge).collectEdges());
+            // Build original OSM polyline
+            PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
+            for (int index = 1; index < sortedEdges.size(); index++)
+            {
+                geometry = geometry.append(sortedEdges.get(index).asPolyLine());
+            }
+            return Optional.of(geometry);
+        } catch (CoreException coreException) {
+            return Optional.empty();
         }
-        return geometry;
+
     }
 
     /**
