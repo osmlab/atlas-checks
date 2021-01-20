@@ -28,23 +28,12 @@ public class MalformedRoundaboutCheckTest
     }
 
     @Test
-    public void testAngleGreaterThanThreshold()
-    {
-        this.verifier.actual(this.setup.angleGreaterThanThreshold(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"+ 60.0 + ", \"min.nodes\":"+ 1.0 +"}}"))));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(
-                "1. This roundabout is malformed.\n2. This roundabout has too sharp of an angle at ((-27.4512972, 153.0120204), (-27.4512764, 153.0121637), (-27.4513581, 153.0121916), (-27.4512564, 153.0120857)), consider adding more nodes or rearranging the roundabout to fix this.",
-                flags.get(0).getInstructions()));
-    }
-
-    @Test
     public void clockwiseRoundaboutLeftDrivingMissingTagTest()
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingMissingTagAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
@@ -68,8 +57,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutBridgeRightDrivingEnclosedAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -86,8 +75,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingEnclosedBridgeAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -96,8 +85,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingEnclosedPathAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -107,8 +96,8 @@ public class MalformedRoundaboutCheckTest
         this.verifier.actual(
                 this.setup.counterClockwiseRoundaboutRightDrivingNonCarNavigableAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
@@ -140,11 +129,22 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingWrongEdgesTagAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout has car navigable ways inside it.",
+                flags.get(0).getInstructions()));
+    }
+
+    @Test
+    public void testAngleGreaterThanThreshold()
+    {
+        this.verifier.actual(this.setup.angleGreaterThanThreshold(),
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"+ 60.0 + ", \"min.nodes\":"+ 1.0 +"}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(
+                "1. This roundabout is malformed.\n2. This roundabout has too sharp of an angle at ((-27.4512972, 153.0120204), (-27.4512764, 153.0121637), (-27.4513581, 153.0121916), (-27.4512564, 153.0120857)), consider adding more nodes or rearranging the roundabout to fix this.",
                 flags.get(0).getInstructions()));
     }
 
@@ -153,8 +153,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.verifyEmpty();
     }
 
@@ -195,8 +195,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingAtlas(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.verifyEmpty();
     }
 
@@ -250,8 +250,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.enclosedNavigableRoad(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout has car navigable ways inside it.",
@@ -263,8 +263,8 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(this.setup.enclosedNavigableRoadArea(),
                 new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
-                        ("{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
-                                + 179.0 + "}}"))));
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":"
+                                + 179.0 + "}}")));
         this.verifier.verifyEmpty();
     }
 
