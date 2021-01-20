@@ -51,6 +51,7 @@ public class RoadNameGapCheck extends BaseCheck<Long>
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 7104778218412127847L;
+    private static final String OLD_NAME_TAG = "old_name";
     private static final List<String> VALID_HIGHWAY_TAG_DEFAULT = Arrays.asList("primary",
             "secondary", "tertiary", "trunk", "motorway");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
@@ -141,17 +142,21 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
-            return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
-                    ? Optional.empty()
-                    : Optional.of(this
-                            .createFlag(object,
-                                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(),
-                                            edgeName.get()))
-                            .addFixSuggestion(FeatureChange.add(
-                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                            .from((AtlasEntity) object)).withReplacedTag(
-                                                    NameTag.KEY, NameTag.KEY, nameSuggestion),
-                                    object.getAtlas())));
+            return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges,
+                    edgeName.get())
+                            ? Optional.empty()
+                            : Optional.of(this
+                                    .createFlag(object,
+                                            this.getLocalizedInstruction(1, edge.getOsmIdentifier(),
+                                                    edgeName.get()))
+                                    .addFixSuggestion(FeatureChange.add(
+                                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                    .from((AtlasEntity) object))
+                                                            .withAddedTag(OLD_NAME_TAG,
+                                                                    edgeName.get())
+                                                            .withReplacedTag(NameTag.KEY,
+                                                                    NameTag.KEY, nameSuggestion),
+                                            object.getAtlas())));
         }
         return Optional.empty();
     }
