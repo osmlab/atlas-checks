@@ -45,7 +45,9 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(
                 this.setup.counterClockwiseConnectedDoubleRoundaboutRightDrivingAtlas(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":" + 179.0
+                                + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
@@ -108,7 +110,9 @@ public class MalformedRoundaboutCheckTest
     public void counterClockwiseRoundaboutRightDrivingOneWayNoTest()
     {
         this.verifier.actual(this.setup.counterClockwiseRoundaboutRightDrivingOneWayNoAtlas(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":" + 179.0
+                                + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
@@ -212,7 +216,6 @@ public class MalformedRoundaboutCheckTest
                 "1. This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.",
                 flags.get(0).getInstructions()));
         this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
-
     }
 
     @Test
@@ -236,7 +239,6 @@ public class MalformedRoundaboutCheckTest
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
                 flags.get(0).getInstructions()));
-
     }
 
     @Test
