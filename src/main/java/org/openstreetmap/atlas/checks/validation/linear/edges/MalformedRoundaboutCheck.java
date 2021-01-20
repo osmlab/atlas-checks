@@ -71,8 +71,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     private static final int MIN_NODES_INSTRUCTION_INDEX = 3;
     private static final int SHARP_ANGLE_INSTRUCTION_INDEX = 4;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION, MINIMUM_NODES_INSTRUCTION,
-            SHARP_ANGLE_INSTRUCTION);
+            ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION,
+            MINIMUM_NODES_INSTRUCTION, SHARP_ANGLE_INSTRUCTION);
     private final List<String> leftDrivingCountries;
     private final double minNodes;
     private final Angle maxAngleThreshold;
@@ -177,15 +177,19 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 instructions.add(this.getLocalizedInstruction(0));
             }
 
-            final Optional<PolyLine> originalGeometryOptional = this.buildOriginalOsmWayGeometry((Edge) object);
+            final Optional<PolyLine> originalGeometryOptional = this
+                    .buildOriginalOsmWayGeometry((Edge) object);
             if (originalGeometryOptional.isPresent())
             {
                 final PolyLine originalGeometry = originalGeometryOptional.get();
-                // There should be a minimum amount of OSM nodes in a roundabout to have good visuals.
-                // Only count nodes when we have the full roundabout, some are split into multiple ways.
+                // There should be a minimum amount of OSM nodes in a roundabout to have good
+                // visuals.
+                // Only count nodes when we have the full roundabout, some are split into multiple
+                // ways.
                 if (originalGeometry.size() < this.minNodes && ((Edge) object).isClosed())
                 {
-                    instructions.add(this.getLocalizedInstruction(MIN_NODES_INSTRUCTION_INDEX, this.minNodes));
+                    instructions.add(this.getLocalizedInstruction(MIN_NODES_INSTRUCTION_INDEX,
+                            this.minNodes));
                 }
 
                 // Check for sharp angles, roundabouts should be smooth curves
@@ -197,7 +201,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                             .map(t -> "(" + t.getSecond().getLatitude() + ", "
                                     + t.getSecond().getLongitude() + ")")
                             .collect(Collectors.joining(", ")) + ")";
-                    instructions.add(this.getLocalizedInstruction(SHARP_ANGLE_INSTRUCTION_INDEX, angleLocations));
+                    instructions.add(this.getLocalizedInstruction(SHARP_ANGLE_INSTRUCTION_INDEX,
+                            angleLocations));
                 }
             }
         }
@@ -239,7 +244,7 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
             }
             return Optional.of(geometry);
         }
-            catch (final CoreException coreException)
+        catch (final CoreException coreException)
         {
             return Optional.empty();
         }
