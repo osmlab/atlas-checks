@@ -36,6 +36,7 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
     private static final String MIN_NODE_6 = "-27.4513581, 153.0121916";
     private static final String MIN_NODE_7 = "-27.4512564, 153.0120857";
 
+    // Contain angle greater than threshold
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MIN_NODE_1)),
             @Node(coordinates = @Loc(value = MIN_NODE_2)),
             @Node(coordinates = @Loc(value = MIN_NODE_3)),
@@ -43,12 +44,12 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = MIN_NODE_5)),
             @Node(coordinates = @Loc(value = MIN_NODE_6)),
             @Node(coordinates = @Loc(value = MIN_NODE_7)), }, edges = {
-            @Edge(id = "1234", coordinates = { @Loc(value = MIN_NODE_1),
-                    @Loc(value = MIN_NODE_2), @Loc(value = MIN_NODE_3),
-                    @Loc(value = MIN_NODE_4), @Loc(value = MIN_NODE_5),
-                    @Loc(value = MIN_NODE_6), @Loc(value = MIN_NODE_7),
-                    @Loc(value = MIN_NODE_1), }, tags = { "junction=roundabout",
-                    "highway=primary", "iso_country_code=USA" }) })
+                    @Edge(id = "1234", coordinates = { @Loc(value = MIN_NODE_1),
+                            @Loc(value = MIN_NODE_2), @Loc(value = MIN_NODE_3),
+                            @Loc(value = MIN_NODE_4), @Loc(value = MIN_NODE_5),
+                            @Loc(value = MIN_NODE_6), @Loc(value = MIN_NODE_7),
+                            @Loc(value = MIN_NODE_1), }, tags = { "junction=roundabout",
+                                    "highway=primary", "iso_country_code=USA" }) })
     private Atlas angleGreaterThanThresholdAtlas;
 
     // Clockwise roundabout, left driving country
@@ -159,6 +160,7 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
                                     "iso_country_code=USA", "highway=primary" }) })
     private Atlas counterClockwiseRoundaboutRightDrivingAtlas;
 
+    // Fewer than 9 nodes
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MIN_NODE_1)),
             @Node(coordinates = @Loc(value = MIN_NODE_2)),
             @Node(coordinates = @Loc(value = MIN_NODE_3)),
@@ -166,12 +168,12 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = MIN_NODE_5)),
             @Node(coordinates = @Loc(value = MIN_NODE_6)),
             @Node(coordinates = @Loc(value = MIN_NODE_7)), }, edges = {
-            @Edge(id = "1234", coordinates = { @Loc(value = MIN_NODE_1),
-                    @Loc(value = MIN_NODE_2), @Loc(value = MIN_NODE_3),
-                    @Loc(value = MIN_NODE_4), @Loc(value = MIN_NODE_5),
-                    @Loc(value = MIN_NODE_6), @Loc(value = MIN_NODE_7),
-                    @Loc(value = MIN_NODE_1), }, tags = { "junction=roundabout",
-                    "highway=primary", "iso_country_code=USA" }) })
+                    @Edge(id = "1234", coordinates = { @Loc(value = MIN_NODE_1),
+                            @Loc(value = MIN_NODE_2), @Loc(value = MIN_NODE_3),
+                            @Loc(value = MIN_NODE_4), @Loc(value = MIN_NODE_5),
+                            @Loc(value = MIN_NODE_6), @Loc(value = MIN_NODE_7),
+                            @Loc(value = MIN_NODE_1), }, tags = { "junction=roundabout",
+                                    "highway=primary", "iso_country_code=USA" }) })
     private Atlas fewerThanMinOSMNodesRoundaboutAtlas;
 
     // Multi-directional Atlas
