@@ -8,11 +8,15 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
 
@@ -113,16 +117,23 @@ public class RoadNameGapCheck extends BaseCheck<Long>
                 outEdges);
         if (matchingInAndOutEdgeNames.isEmpty())
         {
-            // There is no pair of inedge and out edge with same name.
+            // There is no pair of in edge and out edge with same name.
             return Optional.empty();
         }
-
+        final String nameSuggestion = matchingInAndOutEdgeNames.iterator().next();
         // Create flag when we have in edge and out edge with same name but intermediate edge
         // doesn't have a name.
-        if (!edge.getName().isPresent())
+        if (edge.getName().isEmpty())
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, edge.getOsmIdentifier())));
+            return Optional
+                    .of(this.createFlag(object,
+                            this.getLocalizedInstruction(0, edge.getOsmIdentifier()))
+                            .addFixSuggestion(
+                                    FeatureChange.add(
+                                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                    .from((AtlasEntity) object)).withAddedTag(
+                                                            NameTag.KEY, nameSuggestion),
+                                            object.getAtlas())));
         }
         final Optional<String> edgeName = edge.getName();
 
@@ -132,9 +143,15 @@ public class RoadNameGapCheck extends BaseCheck<Long>
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
             return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
                     ? Optional.empty()
-                    : Optional.of(this.createFlag(object, this.getLocalizedInstruction(1,
-                            edge.getOsmIdentifier(), edgeName.get())));
-
+                    : Optional.of(this
+                            .createFlag(object,
+                                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(),
+                                            edgeName.get()))
+                            .addFixSuggestion(FeatureChange.add(
+                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                            .from((AtlasEntity) object)).withReplacedTag(
+                                                    NameTag.KEY, NameTag.KEY, nameSuggestion),
+                                    object.getAtlas())));
         }
         return Optional.empty();
     }
