@@ -28,6 +28,29 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
     private static final String COUNTER_CLOCKWISE_4 = "38.90588716371307,-77.03230261802673";
     private static final String COUNTER_CLOCKWISE_5 = "38.90551980892527,-77.03236699104309";
 
+    private static final String MIN_NODE_1 = "-27.4514156, 153.0121326";
+    private static final String MIN_NODE_2 = "-27.4514168, 153.0120745";
+    private static final String MIN_NODE_3 = "-27.4513729, 153.0120172";
+    private static final String MIN_NODE_4 = "-27.4512972, 153.0120204";
+    private static final String MIN_NODE_5 = "-27.4512764, 153.0121637";
+    private static final String MIN_NODE_6 = "-27.4513581, 153.0121916";
+    private static final String MIN_NODE_7 = "-27.4512564, 153.0120857";
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MIN_NODE_1)),
+            @Node(coordinates = @Loc(value = MIN_NODE_2)),
+            @Node(coordinates = @Loc(value = MIN_NODE_3)),
+            @Node(coordinates = @Loc(value = MIN_NODE_4)),
+            @Node(coordinates = @Loc(value = MIN_NODE_5)),
+            @Node(coordinates = @Loc(value = MIN_NODE_6)),
+            @Node(coordinates = @Loc(value = MIN_NODE_7)), }, edges = {
+            @Edge(id = "1234", coordinates = { @Loc(value = MIN_NODE_1),
+                    @Loc(value = MIN_NODE_2), @Loc(value = MIN_NODE_3),
+                    @Loc(value = MIN_NODE_4), @Loc(value = MIN_NODE_5),
+                    @Loc(value = MIN_NODE_6), @Loc(value = MIN_NODE_7),
+                    @Loc(value = MIN_NODE_1), }, tags = { "junction=roundabout",
+                    "highway=primary", "iso_country_code=USA" }) })
+    private Atlas angleGreaterThanThresholdAtlas;
+
     // Clockwise roundabout, left driving country
     @TestAtlas(
             // nodes
@@ -135,6 +158,21 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
                             @Loc(value = COUNTER_CLOCKWISE_1) }, tags = { "junction=roundabout",
                                     "iso_country_code=USA", "highway=primary" }) })
     private Atlas counterClockwiseRoundaboutRightDrivingAtlas;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MIN_NODE_1)),
+            @Node(coordinates = @Loc(value = MIN_NODE_2)),
+            @Node(coordinates = @Loc(value = MIN_NODE_3)),
+            @Node(coordinates = @Loc(value = MIN_NODE_4)),
+            @Node(coordinates = @Loc(value = MIN_NODE_5)),
+            @Node(coordinates = @Loc(value = MIN_NODE_6)),
+            @Node(coordinates = @Loc(value = MIN_NODE_7)), }, edges = {
+            @Edge(id = "1234", coordinates = { @Loc(value = MIN_NODE_1),
+                    @Loc(value = MIN_NODE_2), @Loc(value = MIN_NODE_3),
+                    @Loc(value = MIN_NODE_4), @Loc(value = MIN_NODE_5),
+                    @Loc(value = MIN_NODE_6), @Loc(value = MIN_NODE_7),
+                    @Loc(value = MIN_NODE_1), }, tags = { "junction=roundabout",
+                    "highway=primary", "iso_country_code=USA" }) })
+    private Atlas fewerThanMinOSMNodesRoundaboutAtlas;
 
     // Multi-directional Atlas
     @TestAtlas(
@@ -642,6 +680,11 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
                                     "iso_country_code=SGP", "highway=primary" }) })
     private Atlas syntheticNode;
 
+    public Atlas angleGreaterThanThreshold()
+    {
+        return this.angleGreaterThanThresholdAtlas;
+    }
+
     public Atlas clockwiseRoundaboutLeftDrivingAtlas()
     {
         return this.clockwiseRoundaboutLeftDrivingAtlas;
@@ -730,6 +773,11 @@ public class MalformedRoundaboutCheckTestRule extends CoreTestRule
     public Atlas enclosedNavigableRoadArea()
     {
         return this.enclosedNavigableRoadArea;
+    }
+
+    public Atlas fewerThanMinOSMNodesRoundaboutAtlas()
+    {
+        return this.fewerThanMinOSMNodesRoundaboutAtlas;
     }
 
     public Atlas multiDirectionalRoundaboutAtlas()
