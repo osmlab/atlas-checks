@@ -62,6 +62,15 @@ public class LevelCrossingOnRailwayCheckTest
     }
 
     @Test
+    public void invalidIntersectionPedNoHighwayTest()
+    {
+        this.verifier.actual(this.setup.getInvalidIntersectionPedNoHighway(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verifyObjectsAndSuggestions(flag, 1, 1));
+    }
+
+    @Test
     public void invalidIntersectionNoRailwayTest()
     {
         this.verifier.actual(this.setup.getInvalidIntersectionNoRailway(),

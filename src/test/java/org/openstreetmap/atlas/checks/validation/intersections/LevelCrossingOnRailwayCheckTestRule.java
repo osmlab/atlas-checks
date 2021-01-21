@@ -205,6 +205,28 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             /*
+             * Test invalid level crossing with ped highway and no car highway
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // edges
+            edges = { @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                @Loc(value = H1_NODE_2),
+                @Loc(value = INT1) }, tags = { "highway=footway" }) },
+            // lines
+            lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas invalidIntersectionPedNoHighway;
+
+    @TestAtlas(
+            /*
              * Ignore intersections with construction. Generally this would fail because the node
              * should be tagged but is not. This test should pass because we want to ignore
              * construction.
@@ -320,6 +342,11 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
     public Atlas getInvalidIntersectionNoHighway()
     {
         return this.invalidIntersectionNoHighway;
+    }
+
+    public Atlas getInvalidIntersectionPedNoHighway()
+    {
+        return this.invalidIntersectionPedNoHighway;
     }
 
     public Atlas getInvalidIntersectionNoRailway()
