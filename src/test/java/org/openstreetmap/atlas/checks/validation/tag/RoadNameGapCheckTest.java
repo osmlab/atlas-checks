@@ -5,6 +5,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.tags.names.AlternativeNameTag;
+import org.openstreetmap.atlas.tags.names.BridgeNameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -24,6 +26,36 @@ public class RoadNameGapCheckTest
             "{\"RoadNameGapCheck\":{\"valid.highway.tag\":[\"primary\",\"tertiary\",\"trunk\",\"motorway\",\"secondary\"]}}");
 
     @Test
+    public void testForBridgeEdgeWithDifferentNameTag()
+    {
+        this.verifier.actual(this.setup.getBridgeEdge(),
+                new RoadNameGapCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
+            flags.get(0).getFixSuggestions()
+                    .forEach(s -> Assert.assertTrue(s.getTag(BridgeNameTag.KEY).isPresent()));
+        });
+    }
+
+    @Test
+    public void testForEdgeWithAltName()
+    {
+        this.verifier.actual(this.setup.getEdgeWithAltName(),
+                new RoadNameGapCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
+            flags.get(0).getFixSuggestions()
+                    .forEach(s -> Assert.assertTrue(s.getTag(AlternativeNameTag.KEY).isPresent()));
+            flags.get(0).getFixSuggestions().forEach(
+                    s -> Assert.assertTrue(s.getTag(AlternativeNameTag.KEY + "_1").isPresent()));
+        });
+    }
+
+    @Test
     public void testForEdgeWithDifferentNameTag()
     {
         this.verifier.actual(this.setup.getEdgeWithDifferentNameTag(),
@@ -32,6 +64,8 @@ public class RoadNameGapCheckTest
         {
             Assert.assertEquals(1, flags.size());
             Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
+            flags.get(0).getFixSuggestions()
+                    .forEach(s -> Assert.assertTrue(s.getTag(AlternativeNameTag.KEY).isPresent()));
         });
     }
 

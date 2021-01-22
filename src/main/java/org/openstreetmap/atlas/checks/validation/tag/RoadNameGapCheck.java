@@ -7,15 +7,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
+import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.names.AlternativeNameTag;
+import org.openstreetmap.atlas.tags.names.BridgeNameTag;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
@@ -51,7 +55,6 @@ public class RoadNameGapCheck extends BaseCheck<Long>
 
     // You can use serialver to regenerate the serial UID.
     private static final long serialVersionUID = 7104778218412127847L;
-    private static final String OLD_NAME_TAG = "old_name";
     private static final List<String> VALID_HIGHWAY_TAG_DEFAULT = Arrays.asList("primary",
             "secondary", "tertiary", "trunk", "motorway");
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
@@ -142,21 +145,14 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
-            return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges,
-                    edgeName.get())
-                            ? Optional.empty()
-                            : Optional.of(this
-                                    .createFlag(object,
-                                            this.getLocalizedInstruction(1, edge.getOsmIdentifier(),
-                                                    edgeName.get()))
-                                    .addFixSuggestion(FeatureChange.add(
-                                            (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                                    .from((AtlasEntity) object))
-                                                            .withAddedTag(OLD_NAME_TAG,
-                                                                    edgeName.get())
-                                                            .withReplacedTag(NameTag.KEY,
-                                                                    NameTag.KEY, nameSuggestion),
-                                            object.getAtlas())));
+            return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
+                    ? Optional.empty()
+                    : Optional.of(this
+                            .createFlag(object,
+                                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(),
+                                            edgeName.get()))
+                            .addFixSuggestion(this.getComplexFixSuggestion(object, edgeName.get(),
+                                    nameSuggestion)));
         }
         return Optional.empty();
     }
@@ -182,6 +178,29 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     {
         return connectedEdges.stream().anyMatch(connectedEdge -> connectedEdge.getName().isPresent()
                 && connectedEdge.getName().get().equals(edgeName));
+    }
+
+    private FeatureChange getComplexFixSuggestion(final AtlasObject object,
+            final String originalName, final String nameSuggestion)
+    {
+        final CompleteEntity completeEntity = (CompleteEntity) CompleteEntity
+                .from((AtlasEntity) object);
+        completeEntity.withReplacedTag(NameTag.KEY, NameTag.KEY, nameSuggestion);
+        if (BridgeTag.isBridge(object) && object.getTag(BridgeNameTag.KEY).isEmpty())
+        {
+            completeEntity.withAddedTag(BridgeNameTag.KEY, originalName);
+        }
+        else
+        {
+            final long altNameCount = object.getOsmTags().keySet().stream()
+                    .filter(key -> key.startsWith(AlternativeNameTag.KEY)).count();
+            final String altNameTag = altNameCount > 0
+                    ? (AlternativeNameTag.KEY + CommonConstants.UNDERSCORE + altNameCount)
+                    : AlternativeNameTag.KEY;
+            completeEntity.withAddedTag(altNameTag, originalName);
+
+        }
+        return FeatureChange.add((AtlasEntity) completeEntity, object.getAtlas());
     }
 
     /**
