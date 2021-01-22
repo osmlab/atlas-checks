@@ -2,7 +2,9 @@ package org.openstreetmap.atlas.checks.distributed;
 
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,9 +14,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.sql.SparkSession;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
 import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
@@ -204,6 +208,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     input, missingCountries);
         }
 
+        final SparkSession sparkSession = SparkSession.builder()
+                .sparkContext(this.getContext().sc()).getOrCreate();
+
         // Countrify spark parallelization for better debugging
         try (Pool checkPool = new Pool(countryShards.size(), "Countries Execution Pool",
                 maxPoolDuration))
@@ -224,12 +231,12 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
 
                     this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
-                            .mapToPair(this.produceFlags(input, output, this.configurationMap(),
+                            .flatMap(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
-                            .reduceByKey(UniqueCheckFlagContainer::combine)
-                            // Generate outputs
-                            .foreach(this.processFlags(output, fileHelper, outputFormats));
+                            .distinct().map(UniqueCheckFlagContainer::getEvent)
+                            .foreachPartition(this.processFlags(output, fileHelper, outputFormats,
+                                    countryShard.getKey()));
                 });
             }
         }
@@ -279,13 +286,12 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      *         a {@link UniqueCheckFlagContainer}
      */
     @SuppressWarnings("unchecked")
-    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output,
-            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats)
+    private VoidFunction<Iterator<CheckFlagEvent>> processFlags(final String output,
+            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats,
+            final String country)
     {
-        return tuple ->
+        return events ->
         {
-            final String country = tuple._1();
-            final UniqueCheckFlagContainer flagContainer = tuple._2();
             final EventService<CheckFlagEvent> eventService = EventService.get(country);
 
             if (outputFormats.contains(OutputFormats.FLAGS))
@@ -307,7 +313,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                         SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
             }
 
-            flagContainer.reconstructEvents().parallel().forEach(eventService::post);
+            events.forEachRemaining(eventService::post);
             eventService.complete();
         };
     }
@@ -334,7 +340,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      *         {@link Tuple2} of a {@link String} country code and {@link UniqueCheckFlagContainer}
      */
     @SuppressWarnings("unchecked")
-    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
+    private FlatMapFunction<ShardedCheckFlagsTask, UniqueCheckFlagContainer> produceFlags(
             final String input, final String output, final Map<String, String> configurationMap,
             final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
             final Distance shardDistanceExpansion, final boolean multiAtlas)
@@ -374,7 +380,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
             // Prepare the event service
             final EventService eventService = task.getEventService();
-            final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer();
+            final ArrayList<UniqueCheckFlagContainer> container = new ArrayList<>();
             eventService.register(new Processor<CheckFlagEvent>()
             {
                 @Override
@@ -388,7 +394,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 @AllowConcurrentEvents
                 public void process(final CheckFlagEvent event)
                 {
-                    container.add(event.getCheckName(), event.getCheckFlag().makeComplete());
+                    container.add(new UniqueCheckFlagContainer(event));
                 }
             });
             // Metrics are output on a per shard level
@@ -409,7 +415,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             }
 
             eventService.complete();
-            return new Tuple2<>(task.getCountry(), container);
+            return container.iterator();
         };
     }
 }
