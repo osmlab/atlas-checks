@@ -4,6 +4,7 @@ import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.spark.TaskContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
@@ -218,9 +220,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                                     shard, this.countryChecks.get(country)))
                             .collect(Collectors.toList());
 
-                    this.registerEventProcessorsForCountry(output, fileHelper, outputFormats,
-                            country);
-
                     // Set spark UI job title
                     this.getContext().setLocalProperty("callSite.short", String
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
@@ -229,9 +228,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                             .flatMap(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
-                            .distinct().map(UniqueCheckFlagContainer::getEvent)
-                            .foreach(event -> EventService.get(country).post(event));
-                    EventService.get(country).complete();
+                            .distinct().map(UniqueCheckFlagContainer::getEvent).foreachPartition(
+                                    this.processFlags(output, fileHelper, outputFormats, country));
                 });
             }
         }
@@ -264,6 +262,54 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final AtlasResourceLoader loader = new AtlasResourceLoader();
         return (Function<Shard, Optional<Atlas>> & Serializable) shard -> cache.get(country, shard)
                 .map(loader::load);
+    }
+
+    /**
+     * Process {@link org.openstreetmap.atlas.checks.flag.CheckFlag}s through an event service to
+     * produce output files.
+     *
+     * @param output
+     *            {@link String} output folder path
+     * @param fileHelper
+     *            {@link SparkFileHelper}
+     * @param outputFormats
+     *            {@link Set} of
+     *            {@link org.openstreetmap.atlas.checks.distributed.IntegrityChecksCommandArguments.OutputFormats}
+     * @return {@link VoidFunction} that takes a {@link Tuple2} of a {@link String} country code and
+     *         a {@link UniqueCheckFlagContainer}
+     */
+    @SuppressWarnings("unchecked")
+    private VoidFunction<Iterator<CheckFlagEvent>> processFlags(final String output,
+            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats,
+            final String country)
+    {
+        return iterator ->
+        {
+            final EventService<CheckFlagEvent> eventService = EventService
+                    .get(country + TaskContext.getPartitionId());
+
+            if (outputFormats.contains(OutputFormats.FLAGS))
+            {
+                eventService.register(new CheckFlagFileProcessor(fileHelper,
+                        SparkFileHelper.combine(output, OUTPUT_FLAG_FOLDER, country)));
+            }
+
+            if (outputFormats.contains(OutputFormats.GEOJSON))
+            {
+
+                eventService.register(new CheckFlagGeoJsonProcessor(fileHelper,
+                        SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER, country)));
+            }
+
+            if (outputFormats.contains(OutputFormats.TIPPECANOE))
+            {
+                eventService.register(new CheckFlagTippecanoeProcessor(fileHelper,
+                        SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
+            }
+
+            iterator.forEachRemaining(eventService::post);
+            eventService.complete();
+        };
     }
 
     /**
@@ -365,46 +411,5 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             eventService.complete();
             return container.iterator();
         };
-    }
-
-    /**
-     * Process {@link org.openstreetmap.atlas.checks.flag.CheckFlag}s through an event service to
-     * produce output files.
-     *
-     * @param output
-     *            {@link String} output folder path
-     * @param fileHelper
-     *            {@link SparkFileHelper}
-     * @param outputFormats
-     *            {@link Set} of
-     *            {@link org.openstreetmap.atlas.checks.distributed.IntegrityChecksCommandArguments.OutputFormats}
-     * @return {@link VoidFunction} that takes a {@link Tuple2} of a {@link String} country code and
-     *         a {@link UniqueCheckFlagContainer}
-     */
-    @SuppressWarnings("unchecked")
-    private void registerEventProcessorsForCountry(final String output,
-            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats,
-            final String country)
-    {
-        final EventService<CheckFlagEvent> eventService = EventService.get(country);
-
-        if (outputFormats.contains(OutputFormats.FLAGS))
-        {
-            eventService.register(new CheckFlagFileProcessor(fileHelper,
-                    SparkFileHelper.combine(output, OUTPUT_FLAG_FOLDER, country)));
-        }
-
-        if (outputFormats.contains(OutputFormats.GEOJSON))
-        {
-
-            eventService.register(new CheckFlagGeoJsonProcessor(fileHelper,
-                    SparkFileHelper.combine(output, OUTPUT_GEOJSON_FOLDER, country)));
-        }
-
-        if (outputFormats.contains(OutputFormats.TIPPECANOE))
-        {
-            eventService.register(new CheckFlagTippecanoeProcessor(fileHelper,
-                    SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
-        }
     }
 }
