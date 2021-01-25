@@ -190,6 +190,10 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             completeEntity.withAddedTag(BridgeNameTag.KEY, originalName);
         }
+        else if (TunnelTag.isTunnel(object) && object.getTag(TunnelNameTag.KEY).isEmpty())
+        {
+            completeEntity.withAddedTag(TunnelNameTag.KEY, originalName);
+        }
         else
         {
             final long altNameCount = object.getOsmTags().keySet().stream()
