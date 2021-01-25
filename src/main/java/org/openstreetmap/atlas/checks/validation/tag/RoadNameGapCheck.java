@@ -17,10 +17,12 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.names.AlternativeNameTag;
 import org.openstreetmap.atlas.tags.names.BridgeNameTag;
 import org.openstreetmap.atlas.tags.names.NameTag;
+import org.openstreetmap.atlas.tags.names.TunnelNameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
 
