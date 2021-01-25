@@ -183,7 +183,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
             // visuals.
             // Only count nodes when we have the full roundabout, some are split into multiple
             // ways.
-            if (originalGeometry.size() < this.minNodes && !this.isMultiWayRoundabout(roundaboutEdgeSet))
+            if (originalGeometry.size() < this.minNodes
+                    && !this.isMultiWayRoundabout(roundaboutEdgeSet))
             {
                 instructions.add(
                         this.getLocalizedInstruction(MIN_NODES_INSTRUCTION_INDEX, this.minNodes));
