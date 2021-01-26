@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
@@ -21,7 +23,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -55,9 +56,14 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
+    private static final String INVALID_HIGHWAY_TYPE = "Invalid highway.type \"{}\" in configuration.";
+    private static final String EDGE_HIGHWAY_DEFAULT = "vehicle";
+    private static final String EDGE_CROSSING_HIGHWAY_DEFAULT = "vehicle";
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private static final long serialVersionUID = 2146863485833228593L;
+    private final String edgeHighwayType;
+    private final String edgeCrossingHighwayType;
     private final HighwayTag minimumHighwayType;
 
     /**
@@ -75,8 +81,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      *            Intersection {@link Location}
      * @return {@code true} if given {@link PolyLine}s can cross each other
      */
-    private static boolean canCross(final PolyLine edgeAsPolyLine, final Optional<Long> edgeLayer,
-            final PolyLine crossingEdgeAsPolyLine, final Optional<Long> crossingEdgeLayer,
+    private static boolean canCross(final PolyLine edgeAsPolyLine, final Long edgeLayer,
+            final PolyLine crossingEdgeAsPolyLine, final Long crossingEdgeLayer,
             final Location intersection)
     {
         // If crossing edges have nodes at intersections points, then crossing is valid
@@ -84,8 +90,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 && crossingEdgeAsPolyLine.contains(intersection)
                 // Otherwise, if crossing edges has valid, but different tag values
                 // Then that is still a valid crossing
-                || edgeLayer.isPresent() && crossingEdgeLayer.isPresent()
-                        && !edgeLayer.get().equals(crossingEdgeLayer.get());
+                || !edgeLayer.equals(crossingEdgeLayer);
     }
 
     public EdgeCrossingEdgeCheck(final Configuration configuration)
@@ -93,12 +98,17 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         super(configuration);
         this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
                 MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
+        this.edgeHighwayType = this.configurationValue(configuration, "edge.highway.type",
+                EDGE_HIGHWAY_DEFAULT);
+        this.edgeCrossingHighwayType = this.configurationValue(configuration,
+                "edge.crossing.highway.type", EDGE_CROSSING_HIGHWAY_DEFAULT);
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object) && this.isValidCrossingEdge(object);
+        return TypePredicates.IS_EDGE.test(object)
+                && this.isValidCrossingEdge(object, this.edgeHighwayType);
     }
 
     @Override
@@ -118,8 +128,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                                     .collectEdges()))
                     .collect(Collectors.toList());
             edgeCrossPairs.add(new Tuple2<>((Edge) object, collectedEdges));
-            final Optional<Tuple2<Edge, Set<Edge>>> maxPair = edgeCrossPairs.stream().max(
-                    (entry1, entry2) -> Integer.compare(entry1._2().size(), entry2._2().size()));
+            final Optional<Tuple2<Edge, Set<Edge>>> maxPair = edgeCrossPairs.stream()
+                    .max(Comparator.comparingInt(entry -> entry._2().size()));
             if (maxPair.isPresent())
             {
                 final int maxSize = (maxPair.get()._2()).size();
@@ -179,6 +189,31 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
+     * Check if {@link Edge} highway tag is vehicle or pedestrian navigable.
+     *
+     * @param edge
+     *            Atlas object.
+     * @param highwayType
+     *            Highway Type.
+     * @return {@code true} if {@link Edge} is vehicle or pedestrian navigable.
+     */
+    private boolean getCrossingHighwayType(final Edge edge, final String highwayType)
+    {
+        switch (highwayType)
+        {
+            case "vehicle":
+                return HighwayTag.isCarNavigableHighway(edge);
+            case "pedestrian":
+                return HighwayTag.isPedestrianNavigableHighway(edge);
+            case "all":
+                return HighwayTag.isCarNavigableHighway(edge)
+                        || HighwayTag.isPedestrianNavigableHighway(edge);
+            default:
+                throw new CoreException(INVALID_HIGHWAY_TYPE, highwayType);
+        }
+    }
+
+    /**
      * This function returns set of intersections locations for given params.
      *
      * @param edge1
@@ -207,16 +242,14 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             final PolyLine edgeAsPolyLine = edge.asPolyLine();
             final Rectangle edgeBounds = edge.bounds();
             // If layer tag is present use its value, else use the OSM default
-            final Optional<Long> edgeLayer = Validators.hasValuesFor(edge, LayerTag.class)
-                    ? LayerTag.getTaggedValue(edge)
-                    : Optional.of(OSM_LAYER_DEFAULT);
+            final Long edgeLayer = LayerTag.getTaggedOrImpliedValue(edge, OSM_LAYER_DEFAULT);
 
             // Retrieve crossing edges
             final Atlas atlas = edge.getAtlas();
             return Iterables.asList(atlas.edgesIntersecting(edgeBounds,
                     // filter out the same edge and non-valid crossing edges
-                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
-                            && this.isValidCrossingEdge(crossingEdge)))
+                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier() && this
+                            .isValidCrossingEdge(crossingEdge, this.edgeCrossingHighwayType)))
                     .stream()
                     .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge
                             .getOsmIdentifier())
@@ -231,10 +264,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     .filter(crossingEdge ->
                     {
                         final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-                        final Optional<Long> crossingEdgeLayer = Validators
-                                .hasValuesFor(crossingEdge, LayerTag.class)
-                                        ? LayerTag.getTaggedValue(crossingEdge)
-                                        : Optional.of(OSM_LAYER_DEFAULT);
+                        final Long crossingEdgeLayer = LayerTag
+                                .getTaggedOrImpliedValue(crossingEdge, OSM_LAYER_DEFAULT);
                         return edgeAsPolyLine.intersections(crossingEdgeAsPolyLine).stream()
                                 .anyMatch(intersection -> !canCross(edgeAsPolyLine, edgeLayer,
                                         crossingEdgeAsPolyLine, crossingEdgeLayer, intersection));
@@ -250,7 +281,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      *            {@link AtlasObject} to test
      * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
      */
-    private boolean isValidCrossingEdge(final AtlasObject object)
+    private boolean isValidCrossingEdge(final AtlasObject object, final String highwayType)
     {
         if (Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !TagPredicates.IS_AREA.test(object))
@@ -259,7 +290,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             if (highway.isPresent())
             {
                 final HighwayTag highwayTag = highway.get();
-                return HighwayTag.isCarNavigableHighway(highwayTag)
+                return this.getCrossingHighwayType((Edge) object, highwayType)
                         && !HighwayTag.CROSSING.equals(highwayTag)
                         && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType);
             }

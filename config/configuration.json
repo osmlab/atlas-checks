@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -270,6 +270,9 @@
     }
   },
   "EdgeCrossingEdgeCheck": {
+    "enabled": true,
+    "edge.highway.type": "vehicle",
+    "edge.crossing.highway.type": "vehicle",
     "minimum.highway.type": "no",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
