@@ -1247,5 +1247,10 @@
       "difficulty": "NORMAL",
       "defaultPriority": "LOW"
     }
+  },
+  "ElevationUtilities": {
+    "elevation.srtm_extent": 1.0,
+    "elevation.srtm_ext": "hgt.zip",
+    "elevation.path": "elevation"
   }
 }
