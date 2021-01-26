@@ -19,7 +19,7 @@ This document is a list of tables with a description and link to documentation f
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [AtGradeSignPostCheck](checks/atGradeSignPostCheck.md) | The purpose of this check is to identify at-grade intersections that are not part of destination sign relations. |
-| [EdgeCrossingEdgeCheck](checks/edgeCrossingCheck.md) | The purpose of this check is to identify Edges intersecting another Edge(s) that do not share the same Node (meaning they are not well-connected) nor have proper layer tagging on one of these Edge(s) (meaning there should be a layer tag for one of the Edges). |
+| [EdgeCrossingEdgeCheck](checks/edgeCrossingEdgeCheck.md) | The purpose of this check is to identify Edges intersecting another Edge(s) that do not share the same Node (meaning they are not well-connected) nor have proper layer tagging on one of these Edge(s) (meaning there should be a layer tag for one of the Edges). |
 | [FloatingEdgeCheck](checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
 | [InconsistentRoadClassificationCheck](checks/inconsistentRoadClassificationCheck.md) | The purpose of this check is to identify roads, that transition from one classification to another and then back to the original classification. |
 | [InvalidPiersCheck](checks/invalidPiersCheck.md) | The purpose of this check is to identify piers(OSM Ways with man_made=pier tag) that are ingested in Atlas as edges with linear or polygonal geometry without an area=yes tag |
