@@ -165,7 +165,9 @@ public final class GeoJsonFeatureToAtlasEntityConverter
         {
             final Map<String, Object> memberMap = (Map<String, Object>) member;
             members.add(new RelationBean.RelationBeanItem(
-                    ((Double) memberMap.get(GeoJsonUtils.IDENTIFIER)).longValue(),
+                    memberMap.get(GeoJsonUtils.IDENTIFIER) instanceof Integer
+                            ? Long.valueOf((Integer) memberMap.get(GeoJsonUtils.IDENTIFIER))
+                            : (Long) memberMap.get(GeoJsonUtils.IDENTIFIER),
                     (String) memberMap.get("role"),
                     ItemType.valueOf((String) memberMap.get(GeoJsonUtils.ITEM_TYPE))));
         });
