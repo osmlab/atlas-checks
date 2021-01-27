@@ -15,10 +15,12 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.spark.TaskContext;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.storage.StorageLevel;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
 import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
@@ -224,12 +226,17 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     this.getContext().setLocalProperty("callSite.short", String
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
 
-                    this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
+                    final JavaRDD<UniqueCheckFlagContainer> flagContainers = this.getContext()
+                            .parallelize(tasksForCountry, tasksForCountry.size())
                             .flatMap(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
-                            .distinct().map(UniqueCheckFlagContainer::getEvent).foreachPartition(
-                                    this.processFlags(output, fileHelper, outputFormats, country));
+                            .distinct();
+                    flagContainers.persist(StorageLevel.MEMORY_AND_DISK());
+                    logger.info(String.format("Distinct flags in %s: %s", country,
+                            flagContainers.count()));
+                    flagContainers.map(UniqueCheckFlagContainer::getEvent).foreachPartition(
+                            this.processFlags(output, fileHelper, outputFormats, country));
                 });
             }
         }
