@@ -10,6 +10,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -31,6 +32,7 @@ import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
  * Tag, OR the Edge has a name Tag but does not equal the name Tag of the Edges that it is between.
  *
  * @author sugandhimaheshwaram
+ * @author mm-ciub
  */
 public class RoadNameGapCheck extends BaseCheck<Long>
 {
@@ -185,7 +187,7 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     private FeatureChange getComplexFixSuggestion(final AtlasObject object,
             final String originalName, final String nameSuggestion)
     {
-        final CompleteEntity completeEntity = (CompleteEntity) CompleteEntity
+        final CompleteEntity<CompleteEdge> completeEntity = (CompleteEntity) CompleteEntity
                 .from((AtlasEntity) object);
         completeEntity.withReplacedTag(NameTag.KEY, NameTag.KEY, nameSuggestion);
         if (BridgeTag.isBridge(object) && object.getTag(BridgeNameTag.KEY).isEmpty())
