@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -390,6 +390,16 @@
       "instruction": "Correct intersecting buildings by moving them or dissolving one into another.",
       "difficulty": "NORMAL",
       "tags":"building"
+    }
+  },
+  "IntersectionAtDifferentLevelsCheck":
+  {
+    "enabled": true,
+    "challenge": {
+      "description": "Add.",
+      "blurb": "Add",
+      "instruction": "Add.",
+      "difficulty": "EASY"
     }
   },
   "InvalidAccessTagCheck":{
