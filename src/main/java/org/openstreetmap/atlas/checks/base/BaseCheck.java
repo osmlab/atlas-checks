@@ -50,11 +50,13 @@ public abstract class BaseCheck<T> implements Check, Serializable
     public static final String PARAMETER_FLAG = "flags";
     public static final String PARAMETER_PERMITLIST_COUNTRIES = "countries.permitlist";
     public static final String PARAMETER_PERMITLIST_TAGS = "tags.filter";
+    public static final String PARAMETER_USE_EXTERNAL_DATA = "externalData.enabled";
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
     private static final String PARAMETER_LOCALE_KEY = "locale";
     private static final Logger logger = LoggerFactory.getLogger(BaseCheck.class);
     private static final long serialVersionUID = 4427673331949586822L;
     private final boolean acceptPiers;
+    private final boolean useExternalData;
     private final List<String> denylistCountries;
     private final Challenge challenge;
     private final List<String> countries;
@@ -90,6 +92,9 @@ public abstract class BaseCheck<T> implements Check, Serializable
                 Collections.emptyMap());
         this.locale = this.configurationValue(configuration, PARAMETER_LOCALE_KEY,
                 DEFAULT_LOCALE.getLanguage(), Locale::new);
+        this.useExternalData = this.configurationValue(configuration, PARAMETER_USE_EXTERNAL_DATA,
+                true);
+
         if (challengeMap.isEmpty())
         {
             this.challenge = new Challenge(this.getClass().getSimpleName(), "", "", "",
@@ -464,6 +469,11 @@ public abstract class BaseCheck<T> implements Check, Serializable
     protected final void markAsFlagged(final T identifier)
     {
         this.getFlaggedIdentifiers().add(identifier);
+    }
+
+    protected final boolean useExternalData()
+    {
+        return this.useExternalData;
     }
 
     /**
