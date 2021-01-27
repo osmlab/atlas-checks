@@ -23,7 +23,7 @@ This document is a list of tables with a description and link to documentation f
 | [FloatingEdgeCheck](checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
 | [InconsistentRoadClassificationCheck](checks/inconsistentRoadClassificationCheck.md) | The purpose of this check is to identify roads, that transition from one classification to another and then back to the original classification. |
 | [InvalidPiersCheck](checks/invalidPiersCheck.md) | The purpose of this check is to identify piers(OSM Ways with man_made=pier tag) that are ingested in Atlas as edges with linear or polygonal geometry without an area=yes tag |
-| LongSegmentCheck | This check identifies long segments/edges (length is more than minimumLength). |
+| [LongSegmentCheck](checks/longSegmentCheck.md) | This check identifies long segments/edges (length is more than minimumLength). |
 | [MalformedRoundaboutCheck](checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are three types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, and 3. Roundabouts with poor geometry. |
 | OverlappingEdgeCheck | The purpose of this check is to identify edges that share the same two consecutive geometry points. |
 | RoadLinkCheck |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a _link. |
