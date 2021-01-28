@@ -233,8 +233,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
                             .distinct();
                     flagContainers.persist(StorageLevel.MEMORY_AND_DISK());
-                    logger.error(String.format("Distinct flags in %s: %s", country,
-                            flagContainers.count()));
+                    final long count = flagContainers.count();
+                    flagContainers.foreachPartition(i -> logger
+                            .error(String.format("Distinct flags in %s: %s", country, count)));
                     flagContainers.map(UniqueCheckFlagContainer::getEvent).foreachPartition(
                             this.processFlags(output, fileHelper, outputFormats, country));
                 });
