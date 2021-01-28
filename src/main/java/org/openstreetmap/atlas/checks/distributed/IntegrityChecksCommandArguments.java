@@ -94,6 +94,9 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     static final Switch<Boolean> PBF_SAVE_INTERMEDIATE_ATLAS = new Switch<>("savePbfAtlas",
             "Saves intermediate atlas files created when processing OSM protobuf data.",
             Boolean::valueOf, Optionality.OPTIONAL, "false");
+    static final Switch<String> EXTERNAL_DATA_INPUT = new Switch<>("externalDataInput",
+            "Path to the root location that is common to all external data",
+            StringConverter.IDENTITY);
     private static final String ATLAS_FILENAME_PATTERN_FORMAT = "^%s_([0-9]+)-([0-9]+)-([0-9]+)";
     private static final Logger logger = LoggerFactory
             .getLogger(IntegrityChecksCommandArguments.class);
@@ -195,6 +198,6 @@ public abstract class IntegrityChecksCommandArguments extends SparkJob
     {
         return super.switches().with(ATLAS_FOLDER, MAP_ROULETTE, COUNTRIES, CONFIGURATION_FILES,
                 CONFIGURATION_JSON, PBF_BOUNDING_BOX, PBF_SAVE_INTERMEDIATE_ATLAS, OUTPUT_FORMATS,
-                CHECK_FILTER, MAX_POOL_MINUTES);
+                CHECK_FILTER, MAX_POOL_MINUTES, EXTERNAL_DATA_INPUT);
     }
 }

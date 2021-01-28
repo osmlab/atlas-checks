@@ -42,7 +42,10 @@ public class InvalidMultiPolygonRelationCheckTest
     {
         this.verifyCheck(this.setup.innerOuterOverlapAtlas(),
                 ConfigurationResolver.emptyConfiguration(), 1,
-                Collections.singletonList(String.format(PARTIAL_OVERLAP_INSTRUCTION, "1")));
+                Collections.singletonList(
+                        String.format(referenceDefaultLocaleCheck.getLocalizedInstruction(
+                                InvalidMultiPolygonRelationCheck.INNER_MISSING_OUTER_INSTRUCTION_FORMAT_INDEX,
+                                1), "1")));
     }
 
     @Test

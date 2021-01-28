@@ -14,14 +14,18 @@ i) This check should flag the edges who has NO name tag with below conditions:
          1. TERTIARY_LINK, SECONDARY_LINK, PRIMARY_LINK, TRUNK_LINK, or MOTORWAY_LINK
       c. junction=ROUNDABOUT
    
+   For this case a fix suggestion to add the name tag with the same value as the connected edges is issued.
+   
 ii) This check should flag the edges which has different Name Tag:
     1. Is an Edge
     2. Has the Tag,
         1. highway=TERTIARY, SECONDARY, PRIMARY, TRUNK, or MOTORWAY.
     3. name=* but is not the same as the other Edges it is connected to
     4. Does NOT have the Tag,
-            a. highway=*_LINK
-            b. junction=ROUNDABOUT
+        a. highway=*_LINK
+        b. junction=ROUNDABOUT
+
+For this case a fix suggestion to modify the name tag with the value from the connected edges is issued.  
     
 ### Live Examples
 
