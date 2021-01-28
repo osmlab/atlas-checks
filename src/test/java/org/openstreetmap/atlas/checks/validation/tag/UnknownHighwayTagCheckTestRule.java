@@ -32,9 +32,10 @@ public class UnknownHighwayTagCheckTestRule extends CoreTestRule
     private Atlas falsePositiveKnownHighwayTagOnNode;
 
     @TestAtlas(nodes = { @Node(id = "2000001", coordinates = @Loc(value = WAY1_NODE1)),
-            @Node(id = "3000001", coordinates = @Loc(value = WAY1_NODE2), tags = { "highway=trunk" }) }, edges = {
-            @Edge(id = "4000001", coordinates = { @Loc(value = WAY1_NODE1),
-                    @Loc(value = WAY1_NODE2) }) })
+            @Node(id = "3000001", coordinates = @Loc(value = WAY1_NODE2), tags = {
+                    "highway=trunk" }) }, edges = {
+                            @Edge(id = "4000001", coordinates = { @Loc(value = WAY1_NODE1),
+                                    @Loc(value = WAY1_NODE2) }) })
     private Atlas truePositiveEdgeTagOnNode;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = WAY1_NODE1)),
