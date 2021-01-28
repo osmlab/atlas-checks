@@ -146,6 +146,21 @@ public class CommonMethodsTestRule extends CoreTestRule
                             @Loc(value = ONE) }) })
     private Atlas originalWayGeometry;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12000001", coordinates = { @Loc(value = TWO),
+                            @Loc(value = ONE) }, tags = { "oneway=-1" }),
+                    @Edge(id = "12000002", coordinates = { @Loc(value = THREE),
+                            @Loc(value = TWO) }, tags = { "oneway=-1" }),
+                    @Edge(id = "12000003", coordinates = { @Loc(value = ONE),
+                            @Loc(value = THREE) }, tags = { "oneway=-1" }) })
+    private Atlas originalWayGeometryReversed;
+
     public Atlas getClosedWay()
     {
         return this.closedWay;
@@ -179,6 +194,11 @@ public class CommonMethodsTestRule extends CoreTestRule
     public Atlas getOriginalWayGeometry()
     {
         return this.originalWayGeometry;
+    }
+
+    public Atlas getOriginalWayGeometryReversed()
+    {
+        return this.originalWayGeometryReversed;
     }
 
     public Atlas getUnClosedWay()

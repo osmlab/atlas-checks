@@ -70,6 +70,17 @@ public class CommonMethodsTest
     }
 
     @Test
+    public void testOriginalWayGeometryReversed()
+    {
+        final String origGeom = "LINESTRING (-71.7194204 18.4360044, -71.6970306 18.4360737, -71.7052283 18.4273807, -71.7194204 18.4360044)";
+        assertEquals(origGeom,
+                CommonMethods
+                        .buildOriginalOsmWayGeometry(
+                                this.setup.getOriginalWayGeometryReversed().edge(12000003))
+                        .toString());
+    }
+
+    @Test
     public void testUnClosedWay()
     {
         assertFalse(CommonMethods.isClosedWay(this.setup.getUnClosedWay().edge(12000002)));
