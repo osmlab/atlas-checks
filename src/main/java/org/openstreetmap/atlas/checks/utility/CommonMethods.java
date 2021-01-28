@@ -75,8 +75,7 @@ public final class CommonMethods
             // De-duplicating either Point or Node with same OSM Id
             if (entity.getType().toString().matches("POINT|NODE"))
             {
-                return "PointNode"
-                        .concat(String.valueOf(entity.getOsmIdentifier()));
+                return "PointNode".concat(String.valueOf(entity.getOsmIdentifier()));
             }
             return entity.getType().toString().concat(String.valueOf(entity.getOsmIdentifier()));
         }).distinct().count();
