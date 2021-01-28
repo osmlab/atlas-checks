@@ -12,8 +12,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
-import org.openstreetmap.atlas.tags.OneWayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.tags.oneway.OneWayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**

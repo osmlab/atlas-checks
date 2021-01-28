@@ -6,9 +6,9 @@ When developing an Atlas Checks, it is very important to be able to debug your c
 
 ### Setup
 
-The first thing required is to import the project into Intellij. Intellij supports gradle projects which is what Atlas-Checks is, so importing the project is fairly straight forward. These instructions assumed 
+The first thing required is to import the project into Intellij. Intellij supports gradle projects which is what Atlas-Checks is, so importing the project is fairly straight forward. These instructions assumed
 
-1. Clone the Atlas-Checks project into a directory of your choice 
+1. Clone the Atlas-Checks project into a directory of your choice
 2. Click on "File" -> "New" -> "Project from Existing Sources..."
 3. Select the folder that you original cloned your Atlas-Checks project into in Step 1.
 4. Select the "Import project from external model" and then select the "Gradle" option
@@ -19,25 +19,25 @@ This will create a new Atlas-Checks project that you can start developing in Int
 
 ### Creating Configuration
 
-In Intellij, a configuration is used to run a project. With the setup above you will be able to build the project directly from within IDE but we need to setup a configuration to actually run and debug it. We won't be running it as mentioned in other documents using the gradle task `gradle run`, we will be running it directly against the main class. Essentially diving into what `gradle run` hides from the user. 
+In Intellij, a configuration is used to run a project. With the setup above you will be able to build the project directly from within IDE but we need to setup a configuration to actually run and debug it. We won't be running it as mentioned in other documents using the gradle task `gradle run`, we will be running it directly against the main class. Essentially diving into what `gradle run` hides from the user.
 
 1. Click on the drop down bar in the toolbar, it should currently be empty. If you are not sure where this is you can also go to File Menu and click on "run" and then select the "run" option in the drop down.
 
     - If you click on the drop down bar, it will drop down an "edit configurations" option that you must click.
     - If you went through the file menu, then a small dialog will pop up, click on the "edit configurations" option.
-    
+
 2. In the "Run/Debug Configurations" dialog box click on the + sign in the top left hand corner of the dialog.
 3. Select the "Application" option
 4. In the pane on the right that now contains the new Application update the following.
 
-       - Change the name to something like 'Atlas-Checks'       
-       - Change the main class to `org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob`       
+       - Change the name to something like 'Atlas-Checks'
+       - Change the main class to `org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob`
        - Optionally include VM Options: -Xms2048m -Xmx10240m -XX:MaxPermSize=4096m, this will help with larger atlas files.
        - Update the working directory to be the current directory of your Atlas-Checks project.
        - Set "Use of classpath module" to `atlas-checks_main`
        - Include the following parameter template in "Program Arguments". Replace explanation with actual value.
-   
-            - inputFolder=[Folder pointing to location of country folders with atlas files]
+
+            - input=[Folder pointing to location of country folders with atlas files]
             - startedFolder=[Output directory for Spark, can be any directory you create]
             - output=[Output directory for results of job]
             - countries=[ISO3 country code comma separated list]
@@ -46,7 +46,7 @@ In Intellij, a configuration is used to run a project. With the setup above you 
             - cluster=local
             - configFiles=[Points to the configuration file, should be something like file:/atlas_checks_root_dir/config/configuration.json]
             - sparkOptions=spark.executor.memory->4g,spark.driver.memory->4g,spark.rdd.compress->true
-            
+
 A couple of notes about the program arguments.
 
 1. SparkOptions should generally not be changed, but if you require more memory for either driver or workers then you can update it. For more information about Spark options see [here](http://spark.apache.org/docs/1.6.0/configuration.html).
@@ -59,9 +59,9 @@ A couple of notes about the program arguments.
             - ABC_7-41-57.atlas
         - XYZ
             - XYZ_10-806-508.atlas
-            - XYZ_11-1614-1016.atlas 
-            - XYZ_11-1614-1017.atlas 
-            - XYZ_11-1615-1016.atlas 
+            - XYZ_11-1614-1016.atlas
+            - XYZ_11-1614-1017.atlas
+            - XYZ_11-1615-1016.atlas
             - XYZ_7-101-63.atlas
             - XYZ_8-201-126.atlas
 ```
