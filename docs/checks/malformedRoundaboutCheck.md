@@ -8,7 +8,7 @@ This check flags roundabouts where:
 4. Part of it is not car navigable
 5. It intersects with car navigable edges on the same level as itself and inside itself
 
-#### AutoFix 
+#### AutoFix Suggestion
 AutoFix suggestion covered "wrong direction" cases only. 
 
 #### Live Example

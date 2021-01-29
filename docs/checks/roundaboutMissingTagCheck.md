@@ -4,7 +4,7 @@
 This check identifies closed navigable ways https://wiki.openstreetmap.org/wiki/Item:Q4669 
 that have a round shape and intersecting with at least two navigable ways.    
 
-#### AutoFix
+#### AutoFix Suggestion
 All cases covered with AutoFix suggestion.  
 
 #### Live Example
