@@ -168,6 +168,27 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             /*
+             * Test invalid level crossing with ped highway and no car highway
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // edges
+            edges = { @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                    @Loc(value = H1_NODE_2), @Loc(value = INT1) }, tags = { "highway=cycleway" }) },
+            // lines
+            lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas invalidIntersectionCyclewayHighway;
+
+    @TestAtlas(
+            /*
              * Test invalid level crossing with no railway
              */
             // nodes
@@ -217,8 +238,7 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                             "railway=level_crossing" }) },
             // edges
             edges = { @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
-                @Loc(value = H1_NODE_2),
-                @Loc(value = INT1) }, tags = { "highway=footway" }) },
+                    @Loc(value = H1_NODE_2), @Loc(value = INT1) }, tags = { "highway=footway" }) },
             // lines
             lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
                     @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
@@ -339,19 +359,24 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
         return this.ignoreConstruction;
     }
 
+    public Atlas getInvalidIntersectionCyclewayHighway()
+    {
+        return this.invalidIntersectionCyclewayHighway;
+    }
+
     public Atlas getInvalidIntersectionNoHighway()
     {
         return this.invalidIntersectionNoHighway;
     }
 
-    public Atlas getInvalidIntersectionPedNoHighway()
-    {
-        return this.invalidIntersectionPedNoHighway;
-    }
-
     public Atlas getInvalidIntersectionNoRailway()
     {
         return this.invalidIntersectionNoRailway;
+    }
+
+    public Atlas getInvalidIntersectionPedNoHighway()
+    {
+        return this.invalidIntersectionPedNoHighway;
     }
 
     public Atlas getInvalidObjectsWithTag()

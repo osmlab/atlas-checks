@@ -2,12 +2,29 @@
 
 #### Description
 
-The Purpose of this check is to detect and flag nodes under the four scenarios below:
+The Purpose of this check is to detect and flag object the following scenarios below:
 
-1. When a railway crosses a highway on the same layer and intersection node is missing.
-2. When a railway crosses a highway on the same layer and intersection node `railway=level_crossing` tag doesn't exist.
-3. When a node `railway=level_crossing` tag exists, but the node is not the intersection of a highway and railway
-4. When an area or way contain `railway=level_crossing` tag
+1. When an area or way contain `railway=level_crossing` tag.
+2. When a car navigable highway crosses a railway on the same layer and intersection node contains `railway=crossing`.
+3. When a car navigable highway crosses a railway on the same layer and intersection node does not contain `railway` tag.
+4. When a node contains railway=level_crossing` but there is no car navigable highway that contains this node.
+5. When a node contains railway=level_crossing` but there is no railway that contains this node.
+6. When a node contains railway=level_crossing` but there is no railway and car navigable way on the same layer.
+7. When a car navigable highway crosses a railway on the same layer and intersection node is missing.
+8. When a node contains railway=level_crossing` but there are only pedestrian ways at this intersection.
+9. When a node contains railway=level_crossing` but there are only bicycle ways at this intersection.
+
+#### Auto-Fix Suggestions
+
+1. Remove railway tag from object
+2. Replace `railway=crossing` with `railway=level_crossing` on node
+3. Add `railway=level_crossing` tag to node
+4. Remove railway tag from object
+5. Remove railway tag from object
+6. Remove railway tag from object
+7. NA (No suggestion for this case as the cases are too complicated)
+8. Replace `railway=level_crossing` with `railway=crossing` on node
+9. Replace `railway=level_crossing` with `railway=crossing`, add `foot=no`, and add 'bicycle=yes' to node.
 
 #### Live Example
 
