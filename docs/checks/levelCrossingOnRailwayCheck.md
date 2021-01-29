@@ -24,7 +24,7 @@ The Purpose of this check is to detect and flag object the following scenarios b
 6. Remove railway tag from object
 7. NA (No suggestion for this case as the cases are too complicated)
 8. Replace `railway=level_crossing` with `railway=crossing` on node
-9. Replace `railway=level_crossing` with `railway=crossing`, add `foot=no`, and add 'bicycle=yes' to node.
+9. Replace `railway=level_crossing` with `railway=crossing`, add `foot=no`, and add `bicycle=yes` to node.
 
 #### Live Example
 
