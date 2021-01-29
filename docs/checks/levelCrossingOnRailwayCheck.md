@@ -7,12 +7,12 @@ The Purpose of this check is to detect and flag object the following scenarios b
 1. When an area or way contain `railway=level_crossing` tag.
 2. When a car navigable highway crosses a railway on the same layer and intersection node contains `railway=crossing`.
 3. When a car navigable highway crosses a railway on the same layer and intersection node does not contain `railway` tag.
-4. When a node contains railway=level_crossing` but there is no car navigable highway that contains this node.
-5. When a node contains railway=level_crossing` but there is no railway that contains this node.
-6. When a node contains railway=level_crossing` but there is no railway and car navigable way on the same layer.
+4. When a node contains `railway=level_crossing` but there is no car navigable highway that contains this node.
+5. When a node contains `railway=level_crossing` but there is no railway that contains this node.
+6. When a node contains `railway=level_crossing` but there is no railway and car navigable way on the same layer.
 7. When a car navigable highway crosses a railway on the same layer and intersection node is missing.
-8. When a node contains railway=level_crossing` but there are only pedestrian ways at this intersection.
-9. When a node contains railway=level_crossing` but there are only bicycle ways at this intersection.
+8. When a node contains `railway=level_crossing` but there are only pedestrian ways at this intersection.
+9. When a node contains `railway=level_crossing` but there are only bicycle ways at this intersection.
 
 #### Auto-Fix Suggestions
 
