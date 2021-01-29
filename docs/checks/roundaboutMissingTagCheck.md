@@ -4,6 +4,9 @@
 This check identifies closed navigable ways https://wiki.openstreetmap.org/wiki/Item:Q4669 
 that have a round shape and intersecting with at least two navigable ways.    
 
+#### AutoFix
+All cases covered with AutoFix suggestion.  
+
 #### Live Example
 Roundabout without `junction=roundabout` tag.
 1) [id:592687817](https://www.openstreetmap.org/way/592687817) 
