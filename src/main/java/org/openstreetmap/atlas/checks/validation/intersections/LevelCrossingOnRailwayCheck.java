@@ -66,44 +66,35 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
     private final TaggableFilter railwayFilter;
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private final Long layerDefault;
-    private static final String INVALID_TAGGED_OBJECT =
-            "The object (OSM ID: {0,number,#}) has `railway=level_crossing` but is not a node. "
+    private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) has `railway=level_crossing` but is not a node. "
             + "To fix: Remove `railway=level_crossing` tag.";
     private static final int INVALID_TAGGED_OBJECT_INDEX = 0;
-    private static final String NODE_CROSSING_MISSING_LC_TAG =
-            "The node (OSM ID: {0,number,#}) has a `railway=crossing` tag but should be `railway=level_crossing` tag. "
+    private static final String NODE_CROSSING_MISSING_LC_TAG = "The node (OSM ID: {0,number,#}) has a `railway=crossing` tag but should be `railway=level_crossing` tag. "
             + "To fix: replace the `railway=crossing` tag with a `railway=level_crossing` tag";
     private static final int NODE_CROSSING_MISSING_LC_TAG_INDEX = 1;
-    private static final String NODE_MISSING_LC_TAG =
-            "The intersection node (OSM ID: {0,number,#}) is missing a `railway=level_crossing` tag. "
+    private static final String NODE_MISSING_LC_TAG = "The intersection node (OSM ID: {0,number,#}) is missing a `railway=level_crossing` tag. "
             + "This means that there are at least one valid railway and one car navigable highway on the same layer at this node. "
             + "To fix: If the two ways should be on different layers then adjust the layer tags for each way appropriately. "
             + "If the two ways do intersect on the same layer then add the `railway=level_crossing` tag to this node.";
     private static final int NODE_MISSING_LC_TAG_INDEX = 2;
-    private static final String NODE_INVALID_LC_TAG_NO_HIGHWAY =
-            "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection. "
+    private static final String NODE_INVALID_LC_TAG_NO_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection. "
             + "To fix: Remove `railway=level_crossing` tag.";
     private static final int NODE_INVALID_LC_TAG_NO_HIGHWAY_INDEX = 3;
-    private static final String NODE_INVALID_LC_TAG_NO_RAILWAY =
-            "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no existing rails at this intersection. "
+    private static final String NODE_INVALID_LC_TAG_NO_RAILWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no existing rails at this intersection. "
             + "To fix: Remove `railway=level_crossing` tag.";
     private static final int NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX = 4;
-    private static final String NODE_INVALID_LC_TAG_LAYERS =
-            "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no railway and highway intersection on the same layer. "
+    private static final String NODE_INVALID_LC_TAG_LAYERS = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no railway and highway intersection on the same layer. "
             + "To fix: If the railway and highway should be on the same layer then update the layer tags for both ways to be equal. "
             + "If the ways are on different layers then remove `railway=level_crossing` tag.";
     private static final int NODE_INVALID_LC_TAG_LAYERS_INDEX = 5;
-    private static final String INTERSECTION_MISSING_NODE =
-            "The railway (OSM ID: {0,number,#}) has one or more car navigable intersections on the same layer that are missing intersection nodes. "
+    private static final String INTERSECTION_MISSING_NODE = "The railway (OSM ID: {0,number,#}) has one or more car navigable intersections on the same layer that are missing intersection nodes. "
             + "To fix: If highway and railway do cross at the same layer then add appropriate intersection node(s) with `railway=level_crossing` tag. "
             + "If highway and railway are on different layers then update the appropriate layer tag for the way that goes under or over the other way.";
     private static final int INTERSECTION_MISSING_NODE_INDEX = 6;
-    private static final String NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY =
-            "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only pedestrian highway(s). "
+    private static final String NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only pedestrian highway(s). "
             + "To fix: Change `railway=level_crossing` to `railway=crossing`.";
     private static final int NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY_INDEX = 7;
-    private static final String NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY =
-            "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only cycleway highway(s). "
+    private static final String NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only cycleway highway(s). "
             + "To fix: Change `railway=level_crossing` to `railway=crossing` and add `bicycle=yes` and `foot=no`.";
     private static final int NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY_INDEX = 8;
 
