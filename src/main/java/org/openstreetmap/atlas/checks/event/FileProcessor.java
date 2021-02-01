@@ -160,8 +160,8 @@ public abstract class FileProcessor<T extends Event> implements Processor<T>
      */
     protected String getFilename()
     {
-        return String.format("%sP%s-%s%s", new Date().getTime(), TaskContext.getPartitionId(), this.getCount(),
-                new LogFilePathFilter(this.compressOutput).getExtension());
+        return String.format("%sP%s-%s%s", new Date().getTime(), TaskContext.getPartitionId(),
+                this.getCount(), new LogFilePathFilter(this.compressOutput).getExtension());
     }
 
     /**

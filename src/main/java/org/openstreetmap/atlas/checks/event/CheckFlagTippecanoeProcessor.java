@@ -65,7 +65,7 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
     @Override
     protected String getFilename()
     {
-        return String.format("%sP%s-%s%s", new Date().getTime(), TaskContext.getPartitionId(), getCount(),
-                new GeoJsonPathFilter(doesCompressOutput()).getExtension());
+        return String.format("%sP%s-%s%s", new Date().getTime(), TaskContext.getPartitionId(),
+                getCount(), new GeoJsonPathFilter(doesCompressOutput()).getExtension());
     }
 }
