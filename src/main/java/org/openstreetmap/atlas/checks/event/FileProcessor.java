@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.spark.TaskContext;
 import org.openstreetmap.atlas.checks.distributed.LogFilePathFilter;
 import org.openstreetmap.atlas.event.Event;
 import org.openstreetmap.atlas.event.Processor;
@@ -159,7 +160,7 @@ public abstract class FileProcessor<T extends Event> implements Processor<T>
      */
     protected String getFilename()
     {
-        return String.format("%s-%s%s", new Date().getTime(), this.getCount(),
+        return String.format("%sP%s-%s%s", new Date().getTime(), TaskContext.getPartitionId(), this.getCount(),
                 new LogFilePathFilter(this.compressOutput).getExtension());
     }
 

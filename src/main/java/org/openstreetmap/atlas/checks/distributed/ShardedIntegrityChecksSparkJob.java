@@ -2,8 +2,15 @@ package org.openstreetmap.atlas.checks.distributed;
 
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +21,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.spark.TaskContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.FlatMapFunction2;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
@@ -31,13 +45,17 @@ import org.openstreetmap.atlas.checks.event.CheckFlagFileProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagGeoJsonProcessor;
 import org.openstreetmap.atlas.checks.event.CheckFlagTippecanoeProcessor;
 import org.openstreetmap.atlas.checks.event.MetricFileGenerator;
+import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.UniqueCheckFlagContainer;
+import org.openstreetmap.atlas.checks.vectortiles.TippecanoeCheckSettings;
 import org.openstreetmap.atlas.event.EventService;
 import org.openstreetmap.atlas.event.Processor;
 import org.openstreetmap.atlas.event.ShutdownEvent;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.generator.sharding.AtlasSharding;
 import org.openstreetmap.atlas.generator.tools.caching.HadoopAtlasFileCache;
+import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemCreator;
+import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.generator.tools.spark.SparkJob;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
@@ -47,6 +65,9 @@ import org.openstreetmap.atlas.geography.atlas.dynamic.policy.DynamicAtlasPolicy
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.sharding.Shard;
 import org.openstreetmap.atlas.geography.sharding.Sharding;
+import org.openstreetmap.atlas.streaming.compression.Compressor;
+import org.openstreetmap.atlas.streaming.resource.OutputStreamWritableResource;
+import org.openstreetmap.atlas.streaming.resource.WritableResource;
 import org.openstreetmap.atlas.utilities.collections.StringList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.configuration.MergedConfiguration;
@@ -55,6 +76,7 @@ import org.openstreetmap.atlas.utilities.conversion.StringConverter;
 import org.openstreetmap.atlas.utilities.filters.AtlasEntityPolygonsFilter;
 import org.openstreetmap.atlas.utilities.maps.MultiMap;
 import org.openstreetmap.atlas.utilities.runtime.CommandMap;
+import org.openstreetmap.atlas.utilities.runtime.Retry;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.openstreetmap.atlas.utilities.scalars.Duration;
 import org.openstreetmap.atlas.utilities.threads.Pool;
@@ -226,17 +248,12 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     this.getContext().setLocalProperty("callSite.short", String
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
 
-                    final JavaRDD<UniqueCheckFlagContainer> flagContainers = this.getContext()
+                    this.getContext()
                             .parallelize(tasksForCountry, tasksForCountry.size())
                             .flatMap(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
-                            .distinct();
-                    flagContainers.persist(StorageLevel.MEMORY_AND_DISK());
-                    final long count = flagContainers.count();
-                    flagContainers.foreachPartition(i -> logger
-                            .error(String.format("Distinct flags in %s: %s", country, count)));
-                    flagContainers.map(UniqueCheckFlagContainer::getEvent).foreachPartition(
+                            .distinct().map(UniqueCheckFlagContainer::getEvent).foreachPartition(
                             this.processFlags(output, fileHelper, outputFormats, country));
                 });
             }
@@ -319,6 +336,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             eventService.complete();
         };
     }
+
+    private static final String LOG_EXTENSION = new LogFilePathFilter(true).getExtension();
+    private static final String GEOJSON_EXTENSION = new GeoJsonPathFilter(true).getExtension();
 
     /**
      * {@link PairFunction} to run each {@link ShardedCheckFlagsTask} through to produce
