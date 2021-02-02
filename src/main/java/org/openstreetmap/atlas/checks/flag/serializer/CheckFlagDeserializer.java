@@ -39,7 +39,7 @@ import org.openstreetmap.atlas.geography.geojson.parser.domain.base.GeoJsonItem;
 import org.openstreetmap.atlas.geography.geojson.parser.domain.feature.FeatureCollection;
 import org.openstreetmap.atlas.geography.geojson.parser.domain.geometry.MultiPolygon;
 import org.openstreetmap.atlas.geography.geojson.parser.domain.geometry.Point;
-import org.openstreetmap.atlas.geography.geojson.parser.impl.gson.GeoJsonParserGsonImpl;
+import org.openstreetmap.atlas.geography.geojson.parser.impl.jackson.GeoJsonParserJacksonImpl;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -66,7 +66,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
     private static final String POSITION = "position";
     private static final String AFTER_VIEW = "afterView";
 
-    private static final GeoJsonParser GEOJSON_PARSER_GSON = GeoJsonParserGsonImpl.instance;
+    private static final GeoJsonParser GEOJSON_PARSER_JACKSON = GeoJsonParserJacksonImpl.INSTANCE;
     private static final Gson GSON = new Gson();
     private static final WKTReader WKT_READER = new WKTReader();
     private static final JtsCoordinateArrayConverter COORDINATE_ARRAY_CONVERTER = new JtsCoordinateArrayConverter();
@@ -114,7 +114,7 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         flag.addInstructions(instructions);
         flag.setChallengeName(checkName);
 
-        final GeoJsonItem geojsonItem = GEOJSON_PARSER_GSON.deserialize(GSON.toJson(json));
+        final GeoJsonItem geojsonItem = GEOJSON_PARSER_JACKSON.deserialize(GSON.toJson(json));
 
         // This should never be the case
         if (!(geojsonItem instanceof FeatureCollection))

@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.CommonMethods;
+import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
@@ -35,6 +37,8 @@ import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Angle;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
  * This check flags roundabouts where the directionality is opposite to what it should be, the
@@ -51,6 +55,8 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
     private static final String BASIC_INSTRUCTION = "This roundabout is malformed.";
     private static final String ENCLOSED_ROADS_INSTRUCTIONS = "This roundabout has car navigable ways inside it.";
     private static final String WRONG_WAY_INSTRUCTIONS = "This roundabout is going the wrong direction, or has been improperly tagged as a roundabout.";
+    private static final String MINIMUM_NODES_INSTRUCTION = "This roundabout has less than {0,number,#} nodes.";
+    private static final String SHARP_ANGLE_INSTRUCTION = "This roundabout has too sharp of an angle at {0}, consider adding more nodes or rearranging the roundabout to fix this.";
     private static final List<String> LEFT_DRIVING_COUNTRIES_DEFAULT = Arrays.asList("AIA", "ATG",
             "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA", "CCK", "COK", "CXR", "CYM",
             "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD", "GUY", "HKG", "IDN", "IMN", "IND",
@@ -59,15 +65,25 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
             "PAK", "PCN", "PNG", "SGP", "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA",
             "TKL", "TLS", "TON", "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF",
             "ZMB", "ZWE");
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION);
+    private static final double MIN_NODES_DEFAULT = 9.0;
+    private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 60.0;
+    private static final int MIN_NODES_INSTRUCTION_INDEX = 3;
+    private static final int SHARP_ANGLE_INSTRUCTION_INDEX = 4;
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            ENCLOSED_ROADS_INSTRUCTIONS, WRONG_WAY_INSTRUCTIONS, BASIC_INSTRUCTION,
+            MINIMUM_NODES_INSTRUCTION, SHARP_ANGLE_INSTRUCTION);
     private final List<String> leftDrivingCountries;
+    private final double minNodes;
+    private final Angle maxAngleThreshold;
 
     public MalformedRoundaboutCheck(final Configuration configuration)
     {
         super(configuration);
         this.leftDrivingCountries = configurationValue(configuration, "traffic.countries.left",
                 LEFT_DRIVING_COUNTRIES_DEFAULT);
+        this.minNodes = configurationValue(configuration, "min.nodes", MIN_NODES_DEFAULT);
+        this.maxAngleThreshold = this.configurationValue(configuration,
+                "angle.threshold.maximum_degree", MAX_THRESHOLD_DEGREES_DEFAULT, Angle::degrees);
     }
 
     @Override
@@ -157,6 +173,39 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 && this.roundaboutEnclosesRoads(roundaboutEdges))
         {
             instructions.add(this.getLocalizedInstruction(0));
+        }
+
+        try
+        {
+            final PolyLine originalGeometry = CommonMethods
+                    .buildOriginalOsmWayGeometry((Edge) object);
+            // There should be a minimum amount of OSM nodes in a roundabout to have good
+            // visuals.
+            // Only count nodes when we have the full roundabout, some are split into multiple
+            // ways.
+            if (originalGeometry.size() < this.minNodes
+                    && !this.isMultiWayRoundabout(roundaboutEdgeSet))
+            {
+                instructions.add(
+                        this.getLocalizedInstruction(MIN_NODES_INSTRUCTION_INDEX, this.minNodes));
+            }
+
+            // Check for sharp angles, roundabouts should be smooth curves
+            final List<Tuple<Angle, Location>> maxAngles = originalGeometry
+                    .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
+            if (!maxAngles.isEmpty())
+            {
+                final String angleLocations = "(" + maxAngles.stream()
+                        .map(t -> "(" + t.getSecond().getLatitude() + ", "
+                                + t.getSecond().getLongitude() + ")")
+                        .collect(Collectors.joining(", ")) + ")";
+                instructions.add(this.getLocalizedInstruction(SHARP_ANGLE_INSTRUCTION_INDEX,
+                        angleLocations));
+            }
+        }
+        catch (final CoreException ignored)
+        {
+            /* Do Nothing */
         }
 
         if (!instructions.isEmpty())

@@ -111,6 +111,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Time start = Time.now();
         final String atlasDirectory = (String) commandMap.get(SparkJob.INPUT);
         final String input = Optional.ofNullable(this.input(commandMap)).orElse(atlasDirectory);
+        final String externalDataInput = Optional
+                .ofNullable((String) commandMap.get(EXTERNAL_DATA_INPUT)).orElse(atlasDirectory);
 
         // Gather arguments
         final String output = this.output(commandMap);
@@ -140,7 +142,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         // File loading helpers
         final SparkFileHelper fileHelper = new SparkFileHelper(sparkContext);
         // Get the file fetcher
-        final ExternalDataFetcher fileFetcher = new ExternalDataFetcher(input,
+        final ExternalDataFetcher fileFetcher = new ExternalDataFetcher(externalDataInput,
                 this.configurationMap());
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration,
                 fileFetcher);

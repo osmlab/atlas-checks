@@ -347,7 +347,10 @@ public class WaterWayCheck extends BaseCheck<Long>
         final Atlas atlas = line.getAtlas();
         CheckFlag flag = null;
         flag = this.flagCircularWaterway(flag, line);
-        flag = this.flagIncline(flag, line, first, last);
+        if (this.useExternalData())
+        {
+            flag = this.flagIncline(flag, line, first, last);
+        }
         flag = this.flagNoSink(flag, atlas, line, last);
         flag = this.flagCrossingWays(flag, atlas, line);
         if (flag != null)

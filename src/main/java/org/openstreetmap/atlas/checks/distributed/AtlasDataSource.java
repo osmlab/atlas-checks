@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.distributed;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.PathFilter;
+import org.locationtech.jts.geom.Polygon;
 import org.openstreetmap.atlas.checks.atlas.CountrySpecificAtlasFilePathFilter;
 import org.openstreetmap.atlas.checks.atlas.OsmPbfFilePathFilter;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
@@ -19,8 +21,9 @@ import org.openstreetmap.atlas.geography.atlas.AtlasResourceLoader;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiAtlas;
 import org.openstreetmap.atlas.geography.atlas.pbf.AtlasLoadingOption;
 import org.openstreetmap.atlas.geography.atlas.raw.creation.RawAtlasGenerator;
-import org.openstreetmap.atlas.geography.atlas.raw.sectioning.WaySectionProcessor;
+import org.openstreetmap.atlas.geography.atlas.raw.sectioning.AtlasSectionProcessor;
 import org.openstreetmap.atlas.geography.boundary.CountryBoundaryMap;
+import org.openstreetmap.atlas.geography.converters.jts.JtsMultiPolygonConverter;
 import org.openstreetmap.atlas.streaming.resource.FileSuffix;
 import org.openstreetmap.atlas.streaming.resource.Resource;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -205,10 +208,12 @@ public class AtlasDataSource implements Serializable, AutoCloseable
     private Atlas loadPbf(final Resource input, final String country)
     {
         // Setting the CountryBoundaryMap to the polygon boundary
+        final List<Polygon> boundaries = new ArrayList<>(
+                new JtsMultiPolygonConverter().convert(this.polygon));
         final CountryBoundaryMap map = CountryBoundaryMap
-                .fromBoundaryMap(Collections.singletonMap(country, this.polygon));
+                .fromBoundaryMap(Collections.singletonMap(country, boundaries));
         final AtlasLoadingOption option = AtlasLoadingOption.createOptionWithAllEnabled(map);
         final Atlas raw = new RawAtlasGenerator(input, option, this.polygon).build();
-        return new WaySectionProcessor(raw, option).run();
+        return new AtlasSectionProcessor(raw, option).run();
     }
 }
