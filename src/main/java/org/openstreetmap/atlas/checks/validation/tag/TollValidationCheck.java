@@ -133,11 +133,11 @@ public class TollValidationCheck extends BaseCheck<Long>
                 .edgeProvingForwardIsEscapable(edgeInQuestion, alreadyCheckedObjectIds)
                 .orElse(null);
 
-        // Case three: tag modeling needs to be investigate on and around edge in question/proved
+        // Case three: tag modeling needs to be investigated on and around edge in question/proved
         // escapable routes
-        if (!this.hasInconsistentTollTag(escapableInEdge) && !this.hasInconsistentTollTag(escapableOutEdge)
-                && this.escapableEdgesNullChecker(escapableInEdge, escapableOutEdge) && this
-                .isCaseThree(edgeInQuestion, edgeInQuestionTags, escapableInEdge, escapableOutEdge))
+        if (this.escapableEdgesNullChecker(escapableInEdge, escapableOutEdge) && !this.hasInconsistentTollTag(escapableInEdge)
+                && !this.hasInconsistentTollTag(escapableOutEdge)
+                && this.isCaseThree(edgeInQuestion, edgeInQuestionTags, escapableInEdge, escapableOutEdge))
         {
             markAsFlagged(object.getOsmIdentifier());
             final Counter counter = new Counter();
@@ -477,7 +477,7 @@ public class TollValidationCheck extends BaseCheck<Long>
     /**
      * @param edge
      *            some edge
-     * @return tag inconsistencies between 3 consecutive edges.
+     * @return boolean if there are tag inconsistencies between 3 consecutive edges.
      */
     private boolean hasInconsistentTollTag(final Edge edge)
     {
