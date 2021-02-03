@@ -15,10 +15,12 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.spark.TaskContext;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.storage.StorageLevel;
 import org.openstreetmap.atlas.checks.base.Check;
 import org.openstreetmap.atlas.checks.base.CheckResourceLoader;
 import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
@@ -224,12 +226,17 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                     this.getContext().setLocalProperty("callSite.short", String
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
 
-                    this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
+                    final JavaRDD<UniqueCheckFlagContainer> containers = this.getContext()
+                            .parallelize(tasksForCountry, tasksForCountry.size())
                             .flatMap(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
-                                    (Boolean) commandMap.get(MULTI_ATLAS)))
-                            .distinct().map(UniqueCheckFlagContainer::getEvent).foreachPartition(
-                                    this.processFlags(output, fileHelper, outputFormats, country));
+                                    (Boolean) commandMap.get(MULTI_ATLAS)));
+                    containers.persist(StorageLevel.MEMORY_AND_DISK());
+                    containers.map(UniqueCheckFlagContainer::getEvent).foreachPartition(
+                            this.processFlags(SparkFileHelper.combine(output, "raw"), fileHelper,
+                                    outputFormats, country, "1"));
+                    containers.distinct().map(UniqueCheckFlagContainer::getEvent).foreachPartition(
+                            this.processFlags(output, fileHelper, outputFormats, country, "2"));
                 });
             }
         }
@@ -281,12 +288,12 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     @SuppressWarnings("unchecked")
     private VoidFunction<Iterator<CheckFlagEvent>> processFlags(final String output,
             final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats,
-            final String country)
+            final String country, final String suffix)
     {
         return iterator ->
         {
             final EventService<CheckFlagEvent> eventService = EventService
-                    .get(country + TaskContext.getPartitionId());
+                    .get(country + TaskContext.getPartitionId() + suffix);
 
             if (outputFormats.contains(OutputFormats.FLAGS))
             {
@@ -311,9 +318,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             eventService.complete();
         };
     }
-
-    private static final String LOG_EXTENSION = new LogFilePathFilter(true).getExtension();
-    private static final String GEOJSON_EXTENSION = new GeoJsonPathFilter(true).getExtension();
 
     /**
      * {@link PairFunction} to run each {@link ShardedCheckFlagsTask} through to produce
