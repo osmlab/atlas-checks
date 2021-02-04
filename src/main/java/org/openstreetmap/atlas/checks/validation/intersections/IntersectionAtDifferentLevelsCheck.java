@@ -13,9 +13,17 @@ import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.tags.AreaTag;
+import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.RailwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
+/**
+ * Flags Nodes that connect Ways at different level.
+ *
+ * @author Vladimir Lemberg
+ */
 public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
 {
     // Instructions
@@ -30,17 +38,27 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
      * @param configuration
      *            {@link Configuration} required to construct any Check
      */
-    public IntersectionAtDifferentLevelsCheck(Configuration configuration)
+    public IntersectionAtDifferentLevelsCheck(final Configuration configuration)
     {
         super(configuration);
     }
 
     @Override
-    protected Optional<CheckFlag> flag(AtlasObject object)
+    public boolean validCheckForObject(final AtlasObject object)
+    {
+        return !this.isFlagged(object.getOsmIdentifier()) && object instanceof Node
+                && !HighwayTag.isPedestrianCrossing(object)
+                && !RailwayTag.isRailwayCrossing(object);
+    }
+
+    @Override
+    protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Node node = (Node) object;
         final List<Edge> connectedEdges = node.connectedEdges().stream().filter(Edge::isMainEdge)
-                .collect(Collectors.toList());
+                .filter(obj -> HighwayTag.isCarNavigableHighway(obj)
+                        || HighwayTag.isPedestrianNavigableHighway(obj))
+                .filter(obj -> obj.getTag(AreaTag.KEY).isEmpty()).collect(Collectors.toList());
 
         if (connectedEdges.stream()
                 .anyMatch(edge1 -> connectedEdges.stream()
@@ -56,12 +74,6 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
         }
 
         return Optional.empty();
-    }
-
-    @Override
-    public boolean validCheckForObject(AtlasObject object)
-    {
-        return !this.isFlagged(object.getOsmIdentifier()) && object instanceof Node;
     }
 
     @Override
@@ -81,7 +93,7 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
      */
     private boolean isInterLocationNode(final Edge edge, final Node node)
     {
-        List<Location> interLocations = StreamSupport.stream(
+        final List<Location> interLocations = StreamSupport.stream(
                 CommonMethods.buildOriginalOsmWayGeometry(edge).innerLocations().spliterator(),
                 false).collect(Collectors.toList());
 
