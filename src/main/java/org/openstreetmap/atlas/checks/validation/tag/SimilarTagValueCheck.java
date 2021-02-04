@@ -5,7 +5,6 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import scala.Tuple3;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -25,9 +24,9 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     private static final Predicate<String> HAS_NON_LATIN = Pattern.compile("[^\\d\\s\\p{Punct}\\p{IsLatin}]").asPredicate();
     private static final Predicate<String> HAS_NUMBER = Pattern.compile("\\d").asPredicate();
     private static final String SEMICOLON = ";";
-    private static final String DUPLICATE_TAG_VALUE_INSTRUCTION = "The tag {0} contains duplicate values: {0}";
+    private static final String DUPLICATE_TAG_VALUE_INSTRUCTION = "The tag \"%s\" contains duplicate values: %s";
     private static final int DUPLICATE_INSTRUCTION_INDEX = 0;
-    private static final String SIMILAR_TAG_VALUE_INSTRUCTION = "The tag {0} contains similar values: {0}";
+    private static final String SIMILAR_TAG_VALUE_INSTRUCTION = "The tag \"%s\" contains similar values: %s";
     private static final int SIMILAR_INSTRUCTION_INDEX = 1;
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             DUPLICATE_TAG_VALUE_INSTRUCTION, SIMILAR_TAG_VALUE_INSTRUCTION);
@@ -132,31 +131,46 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                 .filter(entry -> entry.getValue().contains(SEMICOLON))
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-        // Map of tags with a list of similar values with their similarity score
-        final Map<String, List<Tuple3<String, String, Integer>>> tagsWithSimilars = tagsWithMultipleValues
+        // Gather all tags with a list of their similars
+        final Map<String, List<Similar>> tagsWithSimilars = tagsWithMultipleValues
                 .entrySet()
                 .stream()
                 .map(this::findSimilars)
                 .filter(entry -> !entry.getValue().isEmpty())
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-        if (!tagsWithSimilars.isEmpty())
+        // Pull out tags + values to only contain similars that are duplicates
+        final Map<String, List<Similar>> duplicates =
+                this.filterSimilars(tagsWithSimilars, similar -> similar.getSimilarity() == 0);
+
+        // Pull out tags + values to only contain similars that are not duplicates
+        final Map<String, List<Similar>> similars =
+                this.filterSimilars(tagsWithSimilars, similar -> similar.getSimilarity() != 0);
+
+        List<String> instructions = new ArrayList<>();
+        if (!duplicates.isEmpty())
         {
-            final String ogTags = object.getOsmTags()
+            //TODO autofix
+            instructions.addAll(duplicates
                     .entrySet()
                     .stream()
-                    .filter(t -> tagsWithSimilars.entrySet().stream().anyMatch(tw -> tw.getKey().equals(t.getKey())))
-                    .map(t -> "Tag: " + t.getKey() + ", Value: " + t.getValue())
-                    .collect(Collectors.joining(", "));
-            System.out.println("Osmid: " + object.getOsmIdentifier());
-            System.out.println("    OG Tags: " + ogTags);
-            String in = tagsWithSimilars
+                    .map(entry -> String.format(getFallbackInstructions().get(DUPLICATE_INSTRUCTION_INDEX), entry.getKey(), entry.getValue())
+                    ).collect(Collectors.toList()));
+        }
+
+        if (!similars.isEmpty())
+        {
+            instructions.addAll(similars
                     .entrySet()
                     .stream()
-                    .map(entry -> "    Tag: " + entry.getKey() + ", Similars: " + entry.getValue())
-                    .collect(Collectors.joining(",\n"));
-            System.out.println(in);
-            return Optional.of(this.createFlag(object, in));
+                    .map(entry -> String.format(getFallbackInstructions().get(SIMILAR_INSTRUCTION_INDEX), entry.getKey(), entry.getValue())
+                    ).collect(Collectors.toList()));
+        }
+
+        if (!instructions.isEmpty())
+        {
+            System.out.println(String.join(". ", instructions));
+            return Optional.of(this.createFlag(object, String.join(". ", instructions)));
         }
         return Optional.empty();
     }
@@ -165,6 +179,31 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Filters out similars from tags according to the filterBy predicate.
+     * @param tagsWithSimilars tags with similars.
+     * @param filterBy predicate to apply to the tags similars.
+     * @return the tag with the similars filtered out.
+     */
+    private Map<String, List<Similar>> filterSimilars(Map<String, List<Similar>> tagsWithSimilars, Predicate<Similar> filterBy)
+    {
+        return tagsWithSimilars
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    final Entry<String, List<Similar>> newEntry = new SimpleEntry<>(entry);
+                    final List<Similar> newValue = newEntry
+                            .getValue()
+                            .stream()
+                            .filter(filterBy)
+                            .collect(Collectors.toList());
+                    newEntry.setValue(newValue);
+                    return newEntry;
+                })
+                .filter(entry -> !entry.getValue().isEmpty())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
@@ -187,9 +226,9 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
      * Map a tag entry to an entry where their value is a list of tuples containing the two
      * similar tags and their edit distance.
      */
-    private Entry<String, List<Tuple3<String, String, Integer>>> findSimilars(final Entry<String, String> entry) {
+    private Entry<String, List<Similar>> findSimilars(final Entry<String, String> entry) {
         final List<String> values = Arrays.asList(entry.getValue().split(SEMICOLON));
-        List<Tuple3<String, String, Integer>> similars = new ArrayList<>();
+        List<Similar> similars = new ArrayList<>();
         for (int i = 0; i < values.size() - 1; i++)
         {
             for (int j = i + 1; j < values.size(); j++)
@@ -204,7 +243,7 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                     final int editDistance = this.findEditDistance(left, right);
                     if (minSimilarityThreshold <= editDistance && editDistance <= maxSimilarityThreshold)
                     {
-                        similars.add(new Tuple3<>(left, right, editDistance));
+                        similars.add(new Similar(left, right, editDistance));
                     }
                 }
             }
@@ -238,7 +277,7 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
      * <ul>
      *     <li>Values whose length < {@value MIN_VALUE_LENGTH}</li>
      *     <li>Numbers</li>
-     *     <li>Common similar values</li>
+     *     <li>Values with characters that match the HAS_NON_LATIN regex</li>
      * </ul>
      */
     private Entry<String, String> removeCommonFalsePositiveValues(final Entry<String, String> tag)
@@ -254,5 +293,39 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                 .collect(Collectors.toList());
         newTag.setValue(String.join(SEMICOLON, splitValues));
         return newTag;
+    }
+
+    /**
+     * Contains the two similar strings and their similarity.
+     * Convenience class for readability.
+     */
+    private static class Similar {
+        private final String similar1;
+        private final String similar2;
+        private final Integer similarity;
+
+        public Similar(final String similar1, final String similar2, final Integer similarity)
+        {
+            this.similar1 = similar1;
+            this.similar2 = similar2;
+            this.similarity = similarity;
+        }
+
+        public String getSimilar1() {
+            return similar1;
+        }
+
+        public String getSimilar2() {
+            return similar2;
+        }
+
+        public Integer getSimilarity() {
+            return similarity;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("(%s,%s,%d)", this.similar1, this.similar2, this.similarity);
+        }
     }
 }
