@@ -25,6 +25,52 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1), id = "0"),
+                    @Node(coordinates = @Loc(value = TEST_2), id = "1"),
+                    @Node(coordinates = @Loc(value = TEST_3), id = "2"),
+                    @Node(coordinates = @Loc(value = TEST_4), id = "3"),
+                    @Node(coordinates = @Loc(value = TEST_5), id = "4"),
+                    @Node(coordinates = @Loc(value = TEST_6), id = "5"),
+                    @Node(coordinates = @Loc(value = TEST_7), id = "6"),
+                    @Node(coordinates = @Loc(value = TEST_8), id = "7") },
+            // edges
+            edges = {
+                    @Edge(id = "1001000000", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
+                                    "name=Tsing Long Highway" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=primary", "name=failingName",
+                                    "bridge=yes" }),
+                    @Edge(id = "1003000002", coordinates = { @Loc(value = TEST_7),
+                            @Loc(value = TEST_8) }, tags = { "highway=primary",
+                                    "name=Tsing Long Highway" }) })
+    private Atlas bridgeEdge;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1), id = "0"),
+                    @Node(coordinates = @Loc(value = TEST_2), id = "1"),
+                    @Node(coordinates = @Loc(value = TEST_3), id = "2"),
+                    @Node(coordinates = @Loc(value = TEST_4), id = "3"),
+                    @Node(coordinates = @Loc(value = TEST_5), id = "4"),
+                    @Node(coordinates = @Loc(value = TEST_6), id = "5"),
+                    @Node(coordinates = @Loc(value = TEST_7), id = "6"),
+                    @Node(coordinates = @Loc(value = TEST_8), id = "7") },
+            // edges
+            edges = {
+                    @Edge(id = "1001000000", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6) }, tags = { "highway=primary",
+                                    "name=Tsing Long Highway" }),
+                    @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "highway=primary", "name=failingName",
+                                    "alt_name=firstFailure" }),
+                    @Edge(id = "1003000002", coordinates = { @Loc(value = TEST_7),
+                            @Loc(value = TEST_8) }, tags = { "highway=primary",
+                                    "name=Tsing Long Highway" }) })
+    private Atlas edgeWithAltName;
+
+    @TestAtlas(
+            // nodes
             nodes = { @Node(coordinates = @TestAtlas.Loc(value = TEST_3), id = "2"),
                     @Node(coordinates = @TestAtlas.Loc(value = TEST_4), id = "3") },
             // edges
@@ -115,6 +161,16 @@ public class RoadNameGapCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_8) }, tags = { "highway=primary",
                                     "name=Tsing Long Highway" }) })
     private Atlas edgeWithNoNameTag;
+
+    public Atlas getBridgeEdge()
+    {
+        return this.bridgeEdge;
+    }
+
+    public Atlas getEdgeWithAltName()
+    {
+        return this.edgeWithAltName;
+    }
 
     public Atlas getEdgeWithDifferentNameTag()
     {
