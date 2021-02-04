@@ -959,6 +959,19 @@
       "tags":"highway"
     }
   },
+  "SimilarTagValueCheck": {
+    "similarity.threshold": {
+      "min": 0.0,
+      "max": 1.0
+    },
+    "value.length.min": 4.0,
+    "challenge": {
+      "description": "Tasks identify duplicate/similar values in tags.",
+      "blurb": "Duplicate/Similar tag values.",
+      "instruction": "Determine if the duplicate/similar value is necessary or can be removed.",
+      "difficulty": "EASY"
+    }
+  },
   "SingleSegmentMotorwayCheck": {
     "challenge": {
       "description": "Tasks that identify ways tagged with highway=motorway that are not connected to any ways tagged the same.",
