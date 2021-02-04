@@ -16,4 +16,4 @@ Defaults:
 - [id:279683900](https://www.openstreetmap.org/way/279683900)
 - [id:555861516](https://www.openstreetmap.org/way/555861516)
 
-Please see the source code for LineCrossingBuildingCheck here: [LongSegmentCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/LongSegmentCheck.java)
+Please see the source code for LongSegmentCheck here: [LongSegmentCheck](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/LongSegmentCheck.java)
