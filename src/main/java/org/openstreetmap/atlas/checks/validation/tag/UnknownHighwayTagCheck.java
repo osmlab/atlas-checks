@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -81,13 +82,20 @@ public class UnknownHighwayTagCheck extends BaseCheck<Long>
 
         if (object instanceof Edge && HighwayTag.isNodeOnlyTag(object))
         {
-            return Optional.of(this.createFlag(object,
+            final Edge edgeInQuestion = ((Edge) object).getMainEdge();
+            return Optional.of(this.createFlag(new OsmWayWalker(edgeInQuestion).collectEdges(),
                     this.getLocalizedInstruction(1, object.getOsmIdentifier())));
         }
 
         if (objectHighwayTag.isPresent()
                 && !this.isKnownHighwayTag(objectHighwayTag.get().toUpperCase(), allHighwayTags))
         {
+            if (object instanceof Edge)
+            {
+                final Edge edgeInQuestion = ((Edge) object).getMainEdge();
+                return Optional.of(this.createFlag(new OsmWayWalker(edgeInQuestion).collectEdges(),
+                        this.getLocalizedInstruction(2, object.getOsmIdentifier())));
+            }
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(2, object.getOsmIdentifier())));
         }
