@@ -15,18 +15,12 @@ public class SimilarTagValueCheckTestRule extends CoreTestRule
 {
     private static final String TEST_1 = "0, 0";
 
-    @TestAtlas(
-            nodes = {
-                    @Node(coordinates = @Loc(value = TEST_1), tags = { "hasDupe=dupe;dupe"})
-            }
-    )
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = TEST_1), tags = { "hasDupe=dupe;dupe" }) })
     private Atlas hasDuplicateTagTest;
 
-    @TestAtlas(
-            nodes = {
-                    @Node(coordinates = @Loc(value = TEST_1), tags = { "hasSimilar=similar;similer"})
-            }
-    )
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = TEST_1), tags = { "hasSimilar=similar;similer" }) })
     private Atlas hasSimilarTagTest;
 
     public Atlas getHasDuplicateTagTest()
@@ -34,7 +28,8 @@ public class SimilarTagValueCheckTestRule extends CoreTestRule
         return this.hasDuplicateTagTest;
     }
 
-    public Atlas getHasSimilarTagTest() {
+    public Atlas getHasSimilarTagTest()
+    {
         return this.hasSimilarTagTest;
     }
 }
