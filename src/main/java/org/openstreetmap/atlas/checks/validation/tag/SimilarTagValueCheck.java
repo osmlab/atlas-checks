@@ -3,6 +3,9 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -148,14 +151,28 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                 this.filterSimilars(tagsWithSimilars, similar -> similar.getSimilarity() != 0);
 
         List<String> instructions = new ArrayList<>();
+        FeatureChange removeDuplicatesFixSuggestion = null;
         if (!duplicates.isEmpty())
         {
-            //TODO autofix
             instructions.addAll(duplicates
                     .entrySet()
                     .stream()
                     .map(entry -> String.format(getFallbackInstructions().get(DUPLICATE_INSTRUCTION_INDEX), entry.getKey(), entry.getValue())
                     ).collect(Collectors.toList()));
+
+            final CompleteEntity completeEntity = ((CompleteEntity) CompleteEntity.from((AtlasEntity) object));
+            object.getOsmTags()
+                    .entrySet()
+                    .stream()
+                    // only want to create a feature change on tags that contain duplicates
+                    .filter(entry -> duplicates.containsKey(entry.getKey()))
+                    .forEach(entry -> {
+                        String valueWithDuplicatesRemoved = Arrays.stream(entry.getValue().split(SEMICOLON))
+                                .distinct()
+                                .collect(Collectors.joining(SEMICOLON));
+                        completeEntity.withReplacedTag(entry.getKey(), entry.getKey(), valueWithDuplicatesRemoved);
+                    });
+            removeDuplicatesFixSuggestion = FeatureChange.add((AtlasEntity) completeEntity, object.getAtlas());
         }
 
         if (!similars.isEmpty())
@@ -169,8 +186,8 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
 
         if (!instructions.isEmpty())
         {
-            System.out.println(String.join(". ", instructions));
-            return Optional.of(this.createFlag(object, String.join(". ", instructions)));
+            final String instruction =  String.join(". ", instructions);
+            return Optional.of(this.createFlag(object, instruction).addFixSuggestion(removeDuplicatesFixSuggestion));
         }
         return Optional.empty();
     }
