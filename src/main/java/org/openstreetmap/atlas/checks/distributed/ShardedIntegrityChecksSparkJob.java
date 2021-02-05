@@ -65,7 +65,6 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import scala.Serializable;
-import scala.Tuple2;
 
 /**
  * A spark job for generating integrity checks in a sharded fashion. This allows for a lower local
@@ -276,8 +275,9 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      * @param outputFormats
      *            {@link Set} of
      *            {@link org.openstreetmap.atlas.checks.distributed.IntegrityChecksCommandArguments.OutputFormats}
-     * @return {@link VoidFunction} that takes a {@link Tuple2} of a {@link String} country code and
-     *         a {@link UniqueCheckFlagContainer}
+     * @param country
+     *            {@link String} ISO code for the country being processed
+     * @return {@link VoidFunction} that takes an {@link Iterator} of {@link CheckFlagEvent}s
      */
     @SuppressWarnings("unchecked")
     private VoidFunction<Iterator<CheckFlagEvent>> processFlags(final String output,
@@ -331,8 +331,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      *            {@link Distance} to expand the shard group
      * @param multiAtlas
      *            boolean whether to use a multi or dynamic Atlas
-     * @return {@link PairFunction} that takes {@link ShardedCheckFlagsTask} and returns a
-     *         {@link Tuple2} of a {@link String} country code and {@link UniqueCheckFlagContainer}
+     * @return {@link FlatMapFunction} that takes {@link ShardedCheckFlagsTask} and returns a
+     *         {@link Iterator} of {@link UniqueCheckFlagContainer}s
      */
     @SuppressWarnings("unchecked")
     private FlatMapFunction<ShardedCheckFlagsTask, UniqueCheckFlagContainer> produceFlags(
