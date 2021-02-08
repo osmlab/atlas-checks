@@ -27,16 +27,14 @@ public class CommonMethodsTest
 
     @Test
     public void testFirstSection()
-
     {
-        assertTrue(CommonMethods.isFirstWaySection(this.setup.getClosedWay().edge(12000001)));
+        assertTrue(CommonMethods.isFirstWaySection(this.setup.getFirstSection().edge(12000001)));
     }
 
     @Test
     public void testFirstSectionNegative()
-
     {
-        assertFalse(CommonMethods.isFirstWaySection(this.setup.getClosedWay().edge(12000002)));
+        assertFalse(CommonMethods.isFirstWaySection(this.setup.getFirstSection().edge(12000002)));
     }
 
     @Test

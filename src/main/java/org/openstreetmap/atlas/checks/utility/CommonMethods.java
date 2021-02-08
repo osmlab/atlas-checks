@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 public final class CommonMethods
 {
     private static final Logger logger = LoggerFactory.getLogger(CommonMethods.class);
-
     private static final int MODULUS = 1000000;
 
     /**
