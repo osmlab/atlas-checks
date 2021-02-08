@@ -172,7 +172,7 @@ public class CommonMethodsTestRule extends CoreTestRule
                     @Edge(id = "12000002", coordinates = { @Loc(value = TWO),
                             @Loc(value = THREE) }) })
     private Atlas firstSection;
-
+    
     public Atlas getClosedWay()
     {
         return this.closedWay;
