@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
@@ -44,8 +45,6 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     private static final int MINIMUM_INTERSECTION = 2;
     private static final int TURNING_CIRCLE_SECTIONS = 2;
     private static final long TURNING_CIRCLE_LENGTH_THRESHOLD_DEFAULT = 4;
-    private static final int MODULUS = 10;
-    private static final int FIRST_EDGE_SECTION = 1;
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(MISSING_JUNCTION_TAG_INSTRUCTION);
     private static final double MAX_THRESHOLD_DEGREES_DEFAULT = 40.0;
@@ -85,10 +84,10 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
-                && object.getIdentifier() % MODULUS == FIRST_EDGE_SECTION
-                && ((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
-                && this.tagFilterIgnore.test(object) && object.getTag(JunctionTag.KEY).isEmpty()
-                && object.getTag(AreaTag.KEY).isEmpty() && this.isPartOfClosedWay((Edge) object)
+                && CommonMethods.isFirstWaySection((Edge) object) && ((Edge) object).isMainEdge()
+                && HighwayTag.isCarNavigableHighway(object) && this.tagFilterIgnore.test(object)
+                && object.getTag(JunctionTag.KEY).isEmpty() && object.getTag(AreaTag.KEY).isEmpty()
+                && CommonMethods.isClosedWay((Edge) object)
                 && this.intersectingWithMoreThan((Edge) object)
                 && !this.isTurningCircle((Edge) object);
     }
@@ -103,7 +102,7 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
 
-        final PolyLine originalGeom = this.buildOriginalOsmWayGeometry(edge);
+        final PolyLine originalGeom = CommonMethods.buildOriginalOsmWayGeometry(edge);
         // check maximum angle
         final List<Tuple<Angle, Location>> maxOffendingAngles = originalGeom
                 .anglesGreaterThanOrEqualTo(this.maxAngleThreshold);
@@ -137,26 +136,6 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * Build original OSW way geometry from all MainEdge sections
-     *
-     * @param edge
-     *            entity to check
-     * @return original Way geometry polyline
-     */
-    private PolyLine buildOriginalOsmWayGeometry(final Edge edge)
-    {
-        // Identify and sort by IDs all sections of original OSM way
-        final List<Edge> sortedEdges = new ArrayList<>(new OsmWayWalker(edge).collectEdges());
-        // Build original OSM polyline
-        PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
-        for (int index = 1; index < sortedEdges.size(); index++)
-        {
-            geometry = geometry.append(sortedEdges.get(index).asPolyLine());
-        }
-        return geometry;
-    }
-
-    /**
      * Check if original OSM Way is intersecting with CAR_NAVIGABLE_HIGHWAYS. See {@link HighwayTag}
      *
      * @param edge
@@ -184,20 +163,6 @@ public class RoundaboutMissingTagCheck extends BaseCheck<Long>
                         }));
 
         return connectedEdges.size() >= MINIMUM_INTERSECTION;
-    }
-
-    /**
-     * Check if Edge is part of Closed Way. See https://wiki.openstreetmap.org/wiki/Item:Q4669
-     *
-     * @param edge
-     *            entity to check
-     * @return true if edge is part of closed way.
-     */
-    private boolean isPartOfClosedWay(final Edge edge)
-    {
-        return edge.inEdges().stream().filter(Edge::isMainEdge)
-                .filter(inEdge -> inEdge.getOsmIdentifier() == edge.getOsmIdentifier())
-                .count() == 1;
     }
 
     /**

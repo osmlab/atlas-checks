@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
@@ -143,7 +144,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     {
         return (Validators.isOfType(edge, HighwayTag.class, HighwayTag.PEDESTRIAN)
                 || Validators.isOfType(edge, ManMadeTag.class, ManMadeTag.PIER))
-                && (AREA_YES_TAG.test(edge) || this.isPartOfClosedWay(edge))
+                && (AREA_YES_TAG.test(edge) || CommonMethods.isClosedWay(edge))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && AREA_YES_TAG.test(edge));
     }
@@ -153,6 +154,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
      * the same level, then it needs to be flagged.
      *
      * @param object
+     *            object to check.
      * @return {@code true} if the {@link AtlasObject} and overlapping items have same level.
      */
     private Predicate<Edge> haveSameLevels(final AtlasObject object)
@@ -166,35 +168,6 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
             // Return true if both edge level and object level are equal
             return objectLevel.equals(edgeLevel);
         };
-    }
-
-    /**
-     * Checks if an edge is part of a closed OSM way.
-     *
-     * @param object
-     *            {@link Edge} to check
-     * @return true if it is part of a closed OSM way
-     */
-    private boolean isPartOfClosedWay(final Edge object)
-    {
-        final HashSet<Long> wayIds = new HashSet<>();
-        Edge nextEdge = object;
-        // Loop through out going edges with the same OSM id
-        while (nextEdge != null)
-        {
-            wayIds.add(nextEdge.getIdentifier());
-            final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(Edge::isMainEdge)
-                    .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
-                    .collectToList();
-            nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
-            // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Predicate<Edge> notIn(final AtlasObject object)
