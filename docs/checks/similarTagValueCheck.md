@@ -6,7 +6,11 @@ The purpose of this check is to identify tags whose values are either duplicates
 enough to warrant someone to look at them.
 
 #### Live Examples
+Similar tag values
+1. The node [5142510561](https://www.openstreetmap.org/way/5142510561) has the similar values: "crayfish" and "Crayfish"
 
+Duplicate tag values
+1. The way [173171120](https://www.openstreetmap.org/way/173171120) has multiple duplicate values in the "source" tag
 
 #### Code Review
 
