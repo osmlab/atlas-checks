@@ -35,11 +35,11 @@ public class SimilarTagValueCheckTestRule extends CoreTestRule
             @Node(coordinates = @Loc(value = TEST_1), tags = { "turn:lanes:forward=dupe;dupe" }) })
     private Atlas ignoreTagSubclassTest;
 
-    @TestAtlas(nodes = {
-            @Node(coordinates = @Loc(value = TEST_1), tags = { "ref=dupe;dupe" }) })
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = TEST_1), tags = { "ref=dupe;dupe" }) })
     private Atlas ignoreTagTest;
 
-    public Atlas getDuplicateCommonSimilarsTest() {
+    public Atlas getDuplicateCommonSimilarsTest()
+    {
         return this.duplicateCommonSimilarsTest;
     }
 
@@ -53,15 +53,18 @@ public class SimilarTagValueCheckTestRule extends CoreTestRule
         return this.hasSimilarTagTest;
     }
 
-    public Atlas getIgnoreCommonSimilarsTest() {
+    public Atlas getIgnoreCommonSimilarsTest()
+    {
         return this.ignoreCommonSimilarsTest;
     }
 
-    public Atlas getIgnoreTagSubclassTest() {
+    public Atlas getIgnoreTagSubclassTest()
+    {
         return this.ignoreTagSubclassTest;
     }
 
-    public Atlas getIgnoreTagTest() {
+    public Atlas getIgnoreTagTest()
+    {
         return this.ignoreTagTest;
     }
 }

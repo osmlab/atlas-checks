@@ -22,15 +22,15 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
  * This check looks for tags with multiple values that are duplicates or values are similar that
- * contain a typo.
- *
- * Configurables:
- * "value.length.min": Minimum length an individual value must be to be considered for inspection, value.length >= min.
- * "similarity.threshold.min": Minimum edit distance between two values to be add to the flag where a value of 0 is used to include duplicates, value >= min.
- * "similarity.threshold.max": Maximum edit distance between two values to be add to the flag, value <= max.
- * "filter.commonSimilars": values that can commonly be found together validly on a tag that are similar but with no action needed to be taken.
- * "filter.tags": tags that commonly have values that are duplicates/similars that are valid.
- * "filter.tagsWithSubCategories": tags that contain one or many sub-categories that commonly have valid duplicate/similar values.
+ * contain a typo. Configurables: "value.length.min": Minimum length an individual value must be to
+ * be considered for inspection, value.length >= min. "similarity.threshold.min": Minimum edit
+ * distance between two values to be add to the flag where a value of 0 is used to include
+ * duplicates, value >= min. "similarity.threshold.max": Maximum edit distance between two values to
+ * be add to the flag, value <= max. "filter.commonSimilars": values that can commonly be found
+ * together validly on a tag that are similar but with no action needed to be taken. "filter.tags":
+ * tags that commonly have values that are duplicates/similars that are valid.
+ * "filter.tagsWithSubCategories": tags that contain one or many sub-categories that commonly have
+ * valid duplicate/similar values.
  *
  * @author brianjor
  */
@@ -50,13 +50,13 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     private static final Double MIN_VALUE_LENGTH = 4.0;
     private static final Double MIN_SIMILARITY_THRESHOLD_DEFAULT = 0.0;
     private static final Double MAX_SIMILARITY_THRESHOLD_DEFAULT = 1.0;
-    private static final List<String> TAGS_TO_IGNORE_DEFAULT = List.of("asset_ref", "collection_times",
-            "except", "is_in", "junction:ref", "maxspeed:conditional", "old_name", "old_ref",
-            "opening_hours", "ref", "restriction_hours", "route_ref", "supervised", "source_ref",
-            "target", "telescope");
+    private static final List<String> TAGS_TO_IGNORE_DEFAULT = List.of("asset_ref",
+            "collection_times", "except", "is_in", "junction:ref", "maxspeed:conditional",
+            "old_name", "old_ref", "opening_hours", "ref", "restriction_hours", "route_ref",
+            "supervised", "source_ref", "target", "telescope");
     // Set of tags with many sub-categories that create a lot of False positives
-    private static final List<String> TAGS_WITH_SUB_CATEGORIES_TO_IGNORE_DEFAULT = List.of("addr", "alt_name",
-            "destination", "name", "seamark", "turn");
+    private static final List<String> TAGS_WITH_SUB_CATEGORIES_TO_IGNORE_DEFAULT = List.of("addr",
+            "alt_name", "destination", "name", "seamark", "turn");
     // Common value sets that are similar but can be on the same tag
     private static final List<List<String>> COMMON_SIMILARS_DEFAULT = List.of(
             // Ethnonyms
@@ -69,7 +69,8 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
             // Medical
             List.of("radiology", "cardiology"),
             // Sports
-            List.of("baseball", "basketball"), List.of("bowls", "boules"), List.of("padel", "paddel"),
+            List.of("baseball", "basketball"), List.of("bowls", "boules"),
+            List.of("padel", "paddel"),
             // Other
             List.of("formal", "informal"), List.of("hotel", "hostel"), List.of("hump", "bump"),
             List.of("seed", "feed"));
@@ -92,8 +93,8 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                 COMMON_SIMILARS_DEFAULT);
         this.tagsToIgnore = this.configurationValue(configuration, "filter.tags",
                 TAGS_TO_IGNORE_DEFAULT);
-        this.tagsWithSubCategoriesToIgnore = this.configurationValue(configuration, "filter.tagsWithSubCategories",
-                TAGS_WITH_SUB_CATEGORIES_TO_IGNORE_DEFAULT);
+        this.tagsWithSubCategoriesToIgnore = this.configurationValue(configuration,
+                "filter.tagsWithSubCategories", TAGS_WITH_SUB_CATEGORIES_TO_IGNORE_DEFAULT);
         this.minValueLength = this.configurationValue(configuration, "value.length.min",
                 MIN_VALUE_LENGTH, Double::doubleValue);
         this.minSimilarityThreshold = this.configurationValue(configuration,
@@ -168,25 +169,22 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
 
         if (!instructions.isEmpty())
         {
-            final Map<String, String> newTags = object.getOsmTags().entrySet().stream()
-                    .map(entry ->
-                    {
-                        final Entry<String, String> newEntry = new SimpleEntry<>(entry);
-                        if (duplicates.containsKey(entry.getKey()))
-                        {
-                            final String valueWithDuplicatesRemoved = Arrays
-                                    .stream(entry.getValue().split(SEMICOLON)).distinct()
-                                    .collect(Collectors.joining(SEMICOLON));
-                            newEntry.setValue(valueWithDuplicatesRemoved);
-                        }
-                        return newEntry;
-                    }).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            final Map<String, String> newTags = object.getOsmTags().entrySet().stream().map(entry ->
+            {
+                final Entry<String, String> newEntry = new SimpleEntry<>(entry);
+                if (duplicates.containsKey(entry.getKey()))
+                {
+                    final String valueWithDuplicatesRemoved = Arrays
+                            .stream(entry.getValue().split(SEMICOLON)).distinct()
+                            .collect(Collectors.joining(SEMICOLON));
+                    newEntry.setValue(valueWithDuplicatesRemoved);
+                }
+                return newEntry;
+            }).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
             final String instruction = String.join(". ", instructions);
-            return Optional.of(this.createFlag(object, instruction)
-                    .addFixSuggestion(
-                            FeatureChange.add(
-                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                            .from((AtlasEntity) object)).withTags(newTags), object.getAtlas())));
+            return Optional.of(this.createFlag(object, instruction).addFixSuggestion(FeatureChange
+                    .add((AtlasEntity) ((CompleteEntity) CompleteEntity.from((AtlasEntity) object))
+                            .withTags(newTags), object.getAtlas())));
         }
         return Optional.empty();
     }
