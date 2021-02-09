@@ -25,6 +25,15 @@ public class SimilarTagValueCheckTest
                             + "\"max\":" + 1.0 + "},\"value.length.min\":" + 4.0 + "}}"));
 
     @Test
+    public void testDuplicateCommonSimilars()
+    {
+        this.verifier.actual(this.setup.getDuplicateCommonSimilarsTest(), this.check);
+        this.verifier.verify(flag -> Assert.assertEquals(
+                "1. The tag \"cuisine\" contains duplicate values: [(cake,cake,0)]",
+                flag.getInstructions()));
+    }
+
+    @Test
     public void testHasDuplicateTagValue()
     {
         this.verifier.actual(this.setup.getHasDuplicateTagTest(), this.check);
@@ -40,5 +49,26 @@ public class SimilarTagValueCheckTest
         this.verifier.verify(flag -> Assert.assertEquals(
                 "1. The tag \"hasSimilar\" contains similar values: [(similar,similer,1)]",
                 flag.getInstructions()));
+    }
+
+    @Test
+    public void testCommonSimilars()
+    {
+        this.verifier.actual(this.setup.getIgnoreCommonSimilarsTest(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testIgnoreTag()
+    {
+        this.verifier.actual(this.setup.getIgnoreTagTest(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testIgnoreTagSubclass()
+    {
+        this.verifier.actual(this.setup.getIgnoreTagSubclassTest(), this.check);
+        this.verifier.verifyEmpty();
     }
 }
