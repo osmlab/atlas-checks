@@ -24,7 +24,12 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 /**
  * This check looks for tags with multiple values that are duplicates or values are similar that
  * contain a typo.
- * 
+ *
+ * Configurables:
+ * "value.length.min": Minimum length an individual value must be to be considered for inspection, value.length >= min.
+ * "similarity.threshold.min": Minimum edit distance between two values to be add to the flag where a value of 0 is used to include duplicates, value >= min.
+ * "similarity.threshold.max": Maximum edit distance between two values to be add to the flag, value <= max.
+ *
  * @author brianjor
  */
 public class SimilarTagValueCheck extends BaseCheck<Long>
