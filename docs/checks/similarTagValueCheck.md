@@ -35,3 +35,7 @@ similarity threshold.
 From there we split the gathered pairs between those that are duplicate values, and those that are similar.
 The duplicates are added to the instructions and used to create a fix suggestion.
 The similars are just added to the instructions.
+
+#### Fix Suggestion
+We create fix suggestions only on duplicate values, as similar values are difficult to determine which one (if not both)
+should be kept. The fix, for duplicates, is to remove all but one occurrence of the duplicate value from the tag.
