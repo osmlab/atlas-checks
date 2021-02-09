@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
@@ -214,24 +215,7 @@ public class InvalidPiersCheck extends BaseCheck<Long>
         {
             return true;
         }
-        final HashSet<Long> wayIds = new HashSet<>();
-        Edge nextEdge = originalEdge;
-        // Loop through out going edges with the same OSM id
-        while (nextEdge != null)
-        {
-            wayIds.add(nextEdge.getIdentifier());
-            final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(outEdge -> outEdge.isMainEdge()
-                            && outEdge.getOsmIdentifier() == originalEdge.getOsmIdentifier())
-                    .collectToList();
-            nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
-            // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
-            {
-                return true;
-            }
-        }
-        return false;
+        return CommonMethods.isClosedWay(originalEdge);
     }
 
     /**

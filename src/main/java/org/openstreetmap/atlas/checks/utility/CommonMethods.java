@@ -18,6 +18,8 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
  */
 public final class CommonMethods
 {
+    private static final int MODULUS = 1000000;
+
     /**
      * Build original (before Atlas sectioning) OSW way geometry from all Main {@link Edge}s
      * sections
@@ -88,6 +90,19 @@ public final class CommonMethods
             }
         }
         return false;
+    }
+
+    /**
+     * Check if given {@link Edge} is a first section of the original OSM way. This condition might
+     * help to improve performance if Check logic applies on entire OSM way.
+     *
+     * @param edge
+     *            entity to check
+     * @return {@code true} if edge is first section
+     */
+    public static boolean isFirstWaySection(final Edge edge)
+    {
+        return edge.getIdentifier() % MODULUS == 1;
     }
 
     private CommonMethods()

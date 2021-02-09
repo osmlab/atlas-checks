@@ -26,6 +26,20 @@ public class CommonMethodsTest
     }
 
     @Test
+    public void testFirstSection()
+
+    {
+        assertTrue(CommonMethods.isFirstWaySection(this.setup.getClosedWay().edge(12000001)));
+    }
+
+    @Test
+    public void testFirstSectionNegative()
+
+    {
+        assertFalse(CommonMethods.isFirstWaySection(this.setup.getClosedWay().edge(12000002)));
+    }
+
+    @Test
     public void testOneMemberRelationArtificialMember()
     {
         assertEquals(1, CommonMethods.getOSMRelationMemberSize(
