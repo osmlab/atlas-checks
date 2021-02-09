@@ -229,12 +229,12 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     {
         final List<String> values = Arrays.asList(entry.getValue().split(SEMICOLON));
         final List<Similar> similars = new ArrayList<>();
-        for (int i = 0; i < values.size() - 1; i++)
+        for (int leftIndex = 0; leftIndex < values.size() - 1; leftIndex++)
         {
-            for (int j = i + 1; j < values.size(); j++)
+            for (int rightIndex = leftIndex + 1; rightIndex < values.size(); rightIndex++)
             {
-                final String left = values.get(i);
-                final String right = values.get(j);
+                final String left = values.get(leftIndex);
+                final String right = values.get(rightIndex);
                 final boolean isCommonSimilars = this.isCommonSimilars(left, right);
                 final boolean duplicates = left.equals(right);
                 // Keep duplicates even if they are common similars
