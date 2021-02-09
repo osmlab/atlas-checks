@@ -124,7 +124,9 @@ public class MalformedRoundaboutCheckTest
     {
         this.verifier.actual(
                 this.setup.counterClockwiseRoundaboutRightDrivingOutsideConnectionAtlas(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":" + 179.0
+                                + ",\"min.nodes\":" + 0.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -167,7 +169,9 @@ public class MalformedRoundaboutCheckTest
     public void testClockwiseRoundaboutLeftDrivingConcave()
     {
         this.verifier.actual(this.setup.clockwiseRoundaboutLeftDrivingConcaveAtlas(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":" + 179.0
+                                + ",\"min.nodes\":" + 0.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
@@ -234,7 +238,9 @@ public class MalformedRoundaboutCheckTest
     public void testMultiDirectionalRoundaboutAtlas()
     {
         this.verifier.actual(this.setup.multiDirectionalRoundaboutAtlas(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":" + 179.0
+                                + ",\"min.nodes\":" + 0.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
                         + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
@@ -245,7 +251,9 @@ public class MalformedRoundaboutCheckTest
     public void testRoundaboutWithEnclosedMultiLayerNavigableRoad()
     {
         this.verifier.actual(this.setup.enclosedMultiLayerNavigableRoad(),
-                new MalformedRoundaboutCheck(ConfigurationResolver.emptyConfiguration()));
+                new MalformedRoundaboutCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"MalformedRoundaboutCheck\":{\"angle.threshold.maximum_degree\":" + 179.0
+                                + ",\"min.nodes\":" + 0.0 + "}}")));
         this.verifier.verifyEmpty();
     }
 
