@@ -960,6 +960,22 @@
     }
   },
   "SimilarTagValueCheck": {
+    "filter": {
+      "commonSimilars": [
+        ["american", "mexican"], ["cafe", "cake"], ["male", "female"], ["woman", "man"],
+        ["women", "men"], ["male_toilet", "female_toilet"], ["radiology", "cardiology"],
+        ["baseball", "basketball"], ["bowls", "boules"], ["padel", "paddel"], ["formal", "informal"],
+        ["hotel", "hostel"], ["hump", "bump"], ["seed", "feed"]
+      ],
+      "tags": [
+        "asset_ref", "collection_times", "except", "is_in", "junction:ref", "maxspeed:conditional",
+        "old_name", "old_ref", "opening_hours", "ref", "restriction_hours", "route_ref", "supervised",
+        "source_ref", "target", "telescope"
+      ],
+      "tagsWithSubCategories": [
+        "addr", "alt_name", "destination", "name", "seamark", "turn"
+      ]
+    },
     "similarity.threshold": {
       "min": 0.0,
       "max": 1.0

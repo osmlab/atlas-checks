@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,6 +28,9 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * "value.length.min": Minimum length an individual value must be to be considered for inspection, value.length >= min.
  * "similarity.threshold.min": Minimum edit distance between two values to be add to the flag where a value of 0 is used to include duplicates, value >= min.
  * "similarity.threshold.max": Maximum edit distance between two values to be add to the flag, value <= max.
+ * "filter.commonSimilars": values that can commonly be found together validly on a tag that are similar but with no action needed to be taken.
+ * "filter.tags": tags that commonly have values that are duplicates/similars that are valid.
+ * "filter.tagsWithSubCategories": tags that contain one or many sub-categories that commonly have valid duplicate/similar values.
  *
  * @author brianjor
  */
@@ -48,30 +50,33 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     private static final Double MIN_VALUE_LENGTH = 4.0;
     private static final Double MIN_SIMILARITY_THRESHOLD_DEFAULT = 0.0;
     private static final Double MAX_SIMILARITY_THRESHOLD_DEFAULT = 1.0;
-    private static final Set<String> TAGS_TO_IGNORE = Set.of("asset_ref", "collection_times",
+    private static final List<String> TAGS_TO_IGNORE_DEFAULT = List.of("asset_ref", "collection_times",
             "except", "is_in", "junction:ref", "maxspeed:conditional", "old_name", "old_ref",
             "opening_hours", "ref", "restriction_hours", "route_ref", "supervised", "source_ref",
             "target", "telescope");
     // Set of tags with many sub-categories that create a lot of False positives
-    private static final Set<String> TAGS_TO_IGNORE_WITH_SUB_CATEGORIES = Set.of("addr", "alt_name",
+    private static final List<String> TAGS_WITH_SUB_CATEGORIES_TO_IGNORE_DEFAULT = List.of("addr", "alt_name",
             "destination", "name", "seamark", "turn");
     // Common value sets that are similar but can be on the same tag
-    private static final List<Set<String>> COMMON_SIMILAR_VALUES = Arrays.asList(
+    private static final List<List<String>> COMMON_SIMILARS_DEFAULT = List.of(
             // Ethnonyms
-            Set.of("american", "mexican"),
+            List.of("american", "mexican"),
             // Food
-            Set.of("cafe", "cake"),
+            List.of("cafe", "cake"),
             // Gender
-            Set.of("male", "female"), Set.of("woman", "man"), Set.of("women", "men"),
-            Set.of("male_toilet", "female_toilet"),
+            List.of("male", "female"), List.of("woman", "man"), List.of("women", "men"),
+            List.of("male_toilet", "female_toilet"),
             // Medical
-            Set.of("radiology", "cardiology"),
+            List.of("radiology", "cardiology"),
             // Sports
-            Set.of("baseball", "basketball"), Set.of("bowls", "boules"), Set.of("padel", "paddel"),
+            List.of("baseball", "basketball"), List.of("bowls", "boules"), List.of("padel", "paddel"),
             // Other
-            Set.of("formal", "informal"), Set.of("hotel", "hostel"), Set.of("hump", "bump"),
-            Set.of("seed", "feed"));
+            List.of("formal", "informal"), List.of("hotel", "hostel"), List.of("hump", "bump"),
+            List.of("seed", "feed"));
 
+    private final List<String> tagsToIgnore;
+    private final List<String> tagsWithSubCategoriesToIgnore;
+    private final List<List<String>> commonSimilars;
     private final Double minValueLength;
     private final Double minSimilarityThreshold;
     private final Double maxSimilarityThreshold;
@@ -83,6 +88,12 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     public SimilarTagValueCheck(final Configuration configuration)
     {
         super(configuration);
+        this.commonSimilars = this.configurationValue(configuration, "filter.commonSimilars",
+                COMMON_SIMILARS_DEFAULT);
+        this.tagsToIgnore = this.configurationValue(configuration, "filter.tags",
+                TAGS_TO_IGNORE_DEFAULT);
+        this.tagsWithSubCategoriesToIgnore = this.configurationValue(configuration, "filter.tagsWithSubCategories",
+                TAGS_WITH_SUB_CATEGORIES_TO_IGNORE_DEFAULT);
         this.minValueLength = this.configurationValue(configuration, "value.length.min",
                 MIN_VALUE_LENGTH, Double::doubleValue);
         this.minSimilarityThreshold = this.configurationValue(configuration,
@@ -116,7 +127,7 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Map<String, String> tagsWithMultipleValues = object.getOsmTags().entrySet().stream()
-                .filter(entry -> !TAGS_TO_IGNORE.contains(entry.getKey()))
+                .filter(entry -> !this.tagsToIgnore.contains(entry.getKey()))
                 .filter(Predicate.not(this::isTagWithSubCategoriesToIgnore))
                 .map(this::removeCommonFalsePositiveValues)
                 // Only keep tags that still have multiple values
@@ -262,7 +273,7 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
      */
     private boolean isCommonSimilars(final String left, final String right)
     {
-        return COMMON_SIMILAR_VALUES.stream().anyMatch(
+        return this.commonSimilars.stream().anyMatch(
                 setOfSimilars -> setOfSimilars.contains(left) && setOfSimilars.contains(right));
     }
 
@@ -271,7 +282,7 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
      */
     private boolean isTagWithSubCategoriesToIgnore(final Map.Entry<String, String> entry)
     {
-        return TAGS_TO_IGNORE_WITH_SUB_CATEGORIES.stream().anyMatch(entry.getKey()::startsWith);
+        return this.tagsWithSubCategoriesToIgnore.stream().anyMatch(entry.getKey()::startsWith);
     }
 
     /**
