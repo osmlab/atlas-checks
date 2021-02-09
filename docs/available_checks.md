@@ -26,7 +26,7 @@ This document is a list of tables with a description and link to documentation f
 | [LongSegmentCheck](checks/longSegmentCheck.md) | This check identifies long segments/edges (length is more than minimumLength). |
 | [MalformedRoundaboutCheck](checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are three types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, and 3. Roundabouts with poor geometry. |
 | [OverlappingEdgeCheck](checks/overlappingEdgeCheck.md) | The purpose of this check is to identify edges that share the same two consecutive geometry points. |
-| [RoadLinkCheck](checks/roadLinkCheck.md) |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a _link. |
+| [RoadLinkCheck](checks/roadLinkCheck.md) |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a link. |
 | [~~RoundaboutClosedLoopCheck~~ (Deprecated)](checks/roundaboutClosedLoopCheck.md) | The purpose of this check is to identify Roundabout Edges that are bi-directional or have an end Node with less than 2 connections.  **This check has been deprecated and is no longer active.** |
 | [RoundaboutConnectorCheck](checks/roundaboutConnectorCheck.md) | The purpose of this check is to identify roads that connect to a roundabout at too sharp an angle |
 | [RoundaboutValenceCheck](checks/roundaboutValenceCheck.md) | The purpose of this check is to identify OpenStreetMap (OSM) tagged roundabouts that have an unusual number of edges connected to them. |
