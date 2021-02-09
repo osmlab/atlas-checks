@@ -148,7 +148,6 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                 similar -> similar.getSimilarity() != 0);
 
         final List<String> instructions = new ArrayList<>();
-        FeatureChange removeDuplicatesFixSuggestion = null;
         if (!duplicates.isEmpty())
         {
             instructions.addAll(duplicates.entrySet().stream()
@@ -156,21 +155,6 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
                             this.getFallbackInstructions().get(DUPLICATE_INSTRUCTION_INDEX),
                             entry.getKey(), entry.getValue()))
                     .collect(Collectors.toList()));
-
-            final CompleteEntity completeEntity = (CompleteEntity) CompleteEntity
-                    .from((AtlasEntity) object);
-            object.getOsmTags().entrySet().stream()
-                    // only want to create a feature change on tags that contain duplicates
-                    .filter(entry -> duplicates.containsKey(entry.getKey())).forEach(entry ->
-                    {
-                        final String valueWithDuplicatesRemoved = Arrays
-                                .stream(entry.getValue().split(SEMICOLON)).distinct()
-                                .collect(Collectors.joining(SEMICOLON));
-                        completeEntity.withReplacedTag(entry.getKey(), entry.getKey(),
-                                valueWithDuplicatesRemoved);
-                    });
-            removeDuplicatesFixSuggestion = FeatureChange.add((AtlasEntity) completeEntity,
-                    object.getAtlas());
         }
 
         if (!similars.isEmpty())
@@ -184,9 +168,25 @@ public class SimilarTagValueCheck extends BaseCheck<Long>
 
         if (!instructions.isEmpty())
         {
+            final Map<String, String> newTags = object.getOsmTags().entrySet().stream()
+                    .map(entry ->
+                    {
+                        final Entry<String, String> newEntry = new SimpleEntry<>(entry);
+                        if (duplicates.containsKey(entry.getKey()))
+                        {
+                            final String valueWithDuplicatesRemoved = Arrays
+                                    .stream(entry.getValue().split(SEMICOLON)).distinct()
+                                    .collect(Collectors.joining(SEMICOLON));
+                            newEntry.setValue(valueWithDuplicatesRemoved);
+                        }
+                        return newEntry;
+                    }).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
             final String instruction = String.join(". ", instructions);
             return Optional.of(this.createFlag(object, instruction)
-                    .addFixSuggestion(removeDuplicatesFixSuggestion));
+                    .addFixSuggestion(
+                            FeatureChange.add(
+                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                            .from((AtlasEntity) object)).withTags(newTags), object.getAtlas())));
         }
         return Optional.empty();
     }
