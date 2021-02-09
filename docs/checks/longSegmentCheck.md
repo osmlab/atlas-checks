@@ -5,7 +5,7 @@ Checks for Edges that have segments longer than the given configurable length, e
 
 #### Configuration
 
-This check has three configurables that can be changed in the configuration file [config.json](../../config/configuration.json)
+This check has one configurable that can be changed in the configuration file [config.json](../../config/configuration.json)
 
 Defaults:
 - ```"length.minimum.kilometers": 10.0``` - Minimum length in kilometers for a flagged way
