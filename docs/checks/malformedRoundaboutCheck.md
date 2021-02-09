@@ -6,7 +6,10 @@ This check flags roundabouts where:
 2. The segments are multi-directional
 3. The roundabout is incomplete or has overlapping segments
 4. Part of it is not car navigable
-5. It intersects with car navigable edges on the same level as itself and inside itself  
+5. It intersects with car navigable edges on the same level as itself and inside itself
+
+#### AutoFix Suggestion
+AutoFix suggestion covered "wrong direction" cases only. 
 
 #### Live Example
 1) This roundabout [id:242413354](https://www.openstreetmap.org/way/242413354) is multi-directional and
