@@ -31,6 +31,8 @@ public class UnknownHighwayTagCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             NODE_WITH_WAY_TAG_INSTRUCTIONS, WAY_WITH_NODE_TAG_INSTRUCTIONS,
             UNKNOWN_HIGHWAY_TAG_INSTRUCTIONS);
+    private static final Set<String> allHighwayTags = Arrays.stream(HighwayTag.values())
+            .map(Enum::toString).collect(Collectors.toSet());
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -71,8 +73,6 @@ public class UnknownHighwayTagCheck extends BaseCheck<Long>
     {
         markAsFlagged(object.getOsmIdentifier());
         final Optional<String> objectHighwayTag = object.getTag(HighwayTag.KEY);
-        final Set<String> allHighwayTags = Arrays.stream(HighwayTag.values()).map(Enum::toString)
-                .collect(Collectors.toSet());
 
         if (object instanceof Node && HighwayTag.isWayOnlyTag(object))
         {
@@ -88,7 +88,7 @@ public class UnknownHighwayTagCheck extends BaseCheck<Long>
         }
 
         if (objectHighwayTag.isPresent()
-                && !this.isKnownHighwayTag(objectHighwayTag.get().toUpperCase(), allHighwayTags))
+                && !this.isKnownHighwayTag(objectHighwayTag.get().toUpperCase()))
         {
             if (object instanceof Edge)
             {
@@ -111,13 +111,11 @@ public class UnknownHighwayTagCheck extends BaseCheck<Long>
     /**
      * @param highwayTag
      *            object highway tag
-     * @param knownTags
-     *            all known osm tags from https://wiki.openstreetmap.org/wiki/Key:highway
      * @return boolean for if the object's highway tag is contained within the known set of OSM
      *         highway tags.
      */
-    private boolean isKnownHighwayTag(final String highwayTag, final Set<String> knownTags)
+    private boolean isKnownHighwayTag(final String highwayTag)
     {
-        return knownTags.contains(highwayTag);
+        return UnknownHighwayTagCheck.allHighwayTags.contains(highwayTag);
     }
 }
