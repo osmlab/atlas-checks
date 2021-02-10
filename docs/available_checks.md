@@ -23,23 +23,23 @@ This document is a list of tables with a description and link to documentation f
 | [FloatingEdgeCheck](checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
 | [InconsistentRoadClassificationCheck](checks/inconsistentRoadClassificationCheck.md) | The purpose of this check is to identify roads, that transition from one classification to another and then back to the original classification. |
 | [InvalidPiersCheck](checks/invalidPiersCheck.md) | The purpose of this check is to identify piers(OSM Ways with man_made=pier tag) that are ingested in Atlas as edges with linear or polygonal geometry without an area=yes tag |
-| LongSegmentCheck | This check identifies long segments/edges (length is more than minimumLength). |
+| [LongSegmentCheck](checks/longSegmentCheck.md) | This check identifies long segments/edges (length is more than minimumLength). |
 | [MalformedRoundaboutCheck](checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are three types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, and 3. Roundabouts with poor geometry. |
-| OverlappingEdgeCheck | The purpose of this check is to identify edges that share the same two consecutive geometry points. |
-| RoadLinkCheck |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a _link. |
+| [OverlappingEdgeCheck](checks/overlappingEdgeCheck.md) | The purpose of this check is to identify edges that share the same two consecutive geometry points. |
+| [RoadLinkCheck](checks/roadLinkCheck.md) |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a link. |
 | [~~RoundaboutClosedLoopCheck~~ (Deprecated)](checks/roundaboutClosedLoopCheck.md) | The purpose of this check is to identify Roundabout Edges that are bi-directional or have an end Node with less than 2 connections.  **This check has been deprecated and is no longer active.** |
 | [RoundaboutConnectorCheck](checks/roundaboutConnectorCheck.md) | The purpose of this check is to identify roads that connect to a roundabout at too sharp an angle |
 | [RoundaboutValenceCheck](checks/roundaboutValenceCheck.md) | The purpose of this check is to identify OpenStreetMap (OSM) tagged roundabouts that have an unusual number of edges connected to them. |
 | [RoundaboutMissingTag](checks/roundaboutMissingTagCheck.md) | The purpose of this check is to identify Roundabouts with missing junction=roundabout tag. Candidate must be navigable, closed and round shape OSM Way that intersects with at least two navigable roads. |
 | [SharpAngleCheck](checks/sharpAngleCheck.md) | The purpose of this check is to identify roads with angles that are too sharp. Sharp angles may indicate inaccurate digitization once a certain threshold is exceeded. |
-| ShortSegmentCheck |  The purpose of this check is to identify short segments/edges (length is less than a configured minimum length) that have a node with less than or equal to a configured node valence connections. |
+| [ShortSegmentCheck](checks/shortSegmentCheck.md) |  The purpose of this check is to identify short segments/edges (length is less than a configured minimum length) that have a node with less than or equal to a configured node valence connections. |
 | [SignPostCheck](checks/signPostCheck.md) | The purpose of this check is to identify On-/Off-Ramps in motorways and trunk highways that are not relaying information from their respective sign posts. |
 | [SingleSegmentMotorwayCheck](checks/singleSegmentMotorwayCheck.md) | The purpose of this check is to identify ways tagged with highway=motorway that are not connected to any ways tagged the same. |
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
 | [SuddenHighwayTypeChangeCheck](checks/suddenHighwayTypeChangeCheck.md) | The purpose of this check is to identify roads that jump to much different highway classifications. |
 | [UnwalkableWaysCheck](checks/unwalkableWaysCheck.md) | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
-| ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
+| [ValenceOneImportantRoadCheck](checks/valenceOneImportantRoadCheck.md) | This check identifies important roads that either start or end with valance-1 nodes. |
 
 ## Nodes
 | Check Name | Check Description |
