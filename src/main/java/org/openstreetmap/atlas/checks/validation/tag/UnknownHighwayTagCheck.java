@@ -116,6 +116,6 @@ public class UnknownHighwayTagCheck extends BaseCheck<Long>
      */
     private boolean isKnownHighwayTag(final String highwayTag)
     {
-        return UnknownHighwayTagCheck.allHighwayTags.contains(highwayTag);
+        return allHighwayTags.contains(highwayTag);
     }
 }
