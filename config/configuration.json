@@ -271,9 +271,10 @@
   },
   "EdgeCrossingEdgeCheck": {
     "enabled": true,
-    "edge.highway.type": "vehicle",
-    "edge.crossing.highway.type": "vehicle",
+    "edge.highway.type": "pedestrian",
+    "edge.crossing.highway.type": "all",
     "minimum.highway.type": "no",
+    "maximum.highway.type": "trunk",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",

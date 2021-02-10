@@ -60,11 +60,13 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String EDGE_HIGHWAY_DEFAULT = "vehicle";
     private static final String EDGE_CROSSING_HIGHWAY_DEFAULT = "vehicle";
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
+    private static final String MAXIMUM_HIGHWAY_DEFAULT = HighwayTag.MOTORWAY.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private static final long serialVersionUID = 2146863485833228593L;
     private final String edgeHighwayType;
     private final String edgeCrossingHighwayType;
     private final HighwayTag minimumHighwayType;
+    private final HighwayTag maximumHighwayType;
 
     /**
      * Checks whether given {@link PolyLine}s can cross each other.
@@ -98,6 +100,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         super(configuration);
         this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
                 MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
+        this.maximumHighwayType = this.configurationValue(configuration, "maximum.highway.type",
+                MAXIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
         this.edgeHighwayType = this.configurationValue(configuration, "edge.highway.type",
                 EDGE_HIGHWAY_DEFAULT);
         this.edgeCrossingHighwayType = this.configurationValue(configuration,
@@ -292,7 +296,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 final HighwayTag highwayTag = highway.get();
                 return this.getCrossingHighwayType((Edge) object, highwayType)
                         && !HighwayTag.CROSSING.equals(highwayTag)
-                        && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType);
+                        && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType)
+                        && highwayTag.isLessImportantThanOrEqualTo(this.maximumHighwayType);
+
             }
         }
         return false;
