@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
+import org.openstreetmap.atlas.tags.oneway.OneWayTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Hold common Methods (should be used in more than one check)
@@ -18,6 +22,7 @@ import org.openstreetmap.atlas.utilities.collections.Iterables;
  */
 public final class CommonMethods
 {
+    private static final Logger logger = LoggerFactory.getLogger(CommonMethods.class);
     private static final int MODULUS = 1000000;
 
     /**
@@ -32,11 +37,26 @@ public final class CommonMethods
     {
         // Identify and sort by IDs all sections of original OSM way
         final List<Edge> sortedEdges = new ArrayList<>(new OsmWayWalker(edge).collectEdges());
-        // Build original OSM polyline
-        PolyLine geometry = new PolyLine(sortedEdges.get(0).getRawGeometry());
-        for (int index = 1; index < sortedEdges.size(); index++)
+        // Build original OSM polyline.
+        PolyLine geometry = null;
+
+        try
         {
-            geometry = geometry.append(sortedEdges.get(index).asPolyLine());
+            geometry = OneWayTag.isOneWayReversed(edge)
+                    ? new PolyLine(sortedEdges.get(0).getRawGeometry()).reversed()
+                    : new PolyLine(sortedEdges.get(0).getRawGeometry());
+
+            for (int index = 1; index < sortedEdges.size(); index++)
+            {
+                geometry = OneWayTag.isOneWayReversed(edge)
+                        ? geometry.append(sortedEdges.get(index).asPolyLine().reversed())
+                        : geometry.append(sortedEdges.get(index).asPolyLine());
+            }
+        }
+        catch (final CoreException exception)
+        {
+            logger.warn("Unable to build geometry for edge {}({}): {}", edge.getIdentifier(),
+                    edge.getOsmIdentifier(), exception.getMessage());
         }
         return geometry;
     }
@@ -55,8 +75,7 @@ public final class CommonMethods
             // De-duplicating either Point or Node with same OSM Id
             if (entity.getType().toString().matches("POINT|NODE"))
             {
-                return String.valueOf("PointNode")
-                        .concat(String.valueOf(entity.getOsmIdentifier()));
+                return "PointNode".concat(String.valueOf(entity.getOsmIdentifier()));
             }
             return entity.getType().toString().concat(String.valueOf(entity.getOsmIdentifier()));
         }).distinct().count();
