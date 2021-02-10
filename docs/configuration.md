@@ -186,7 +186,8 @@ the value is transformed from a double to a Distance object using the Distance#m
 
 The Atlas Checks framework can also automatically upload all the checks directly to MapRoulette for evaluation and
 fixing by the community. This may or may not be a desirable result, however it is possible, and configuring the 
-Challenge information for the check is easily done in the configuration.
+Challenge information for the check is easily done in the configuration. Note: the MapRouletteUploadCommand may be used
+to upload checks results independent of an Atlas Checks execution.
 
 ```json
 "challenge": {
@@ -202,6 +203,11 @@ Challenge information for the check is easily done in the configuration.
   "mediumPriorityRule": {
     "condition":"OR",
     "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+  },
+  "lowPriorityRule": {
+    "rules":[
+      {"type":"bounds", "operator":"contains", "value":"-86.83593750000001,-63.54855223203643,-53.43750000000001,-42.811521745097885"}
+    ] 
   }
 }
 ```
@@ -209,4 +215,28 @@ Challenge information for the check is easily done in the configuration.
 Not all values for a Challenge in the MapRoulette API is supported, but all that are supported are shown
 above. The priority rules have also been simplified, so that your json does not become overly complex. In
 the priority json, the main difference is the structure of the rules, which is really your tag key value
-pair combinations.
+pair combinations. 
+
+A quick explanation of priority rules is provided here. The above configuration has supplied low, medium, and high 
+priority rules for Tasks in the sample Challenge. Depending on the condition value, Tasks that satisfy any or all rules 
+defined in a priority rule are assigned the corresponding high, medium, or low priority. The default priority in the 
+example is low. If more than one priority rule is satisfied, the higher priority takes precedence.
+
+You may define your own priority rules. Under the "rules" array, provide:
+   1. A "key=value" pair. These represent tags on a given Task's features.
+   2. A json object. An important use case for this is to specify a bounding box that determines Task priority
+      based on Task containment within that bounding box. An example of the bounding box rule is the lowPriorityRule 
+      rule in the above json. "operator" can be keyed to "contains" or "not_contains". The "value" string is the
+      MinX,MinY,MaxX,MaxY coordinates of the bounding box.
+
+You may provide more than one 1) or 2) rule from above to "rules". Use commas as a delimiter.
+      
+The "condition" json field describes how each rule in "rules" should be evaluated with respect to one another to 
+determine if the priority rule as a whole is satisfied; e.g. if we use "condition" AND in the lowPriorityRule, 
+and N denotes the Task to be prioritized in a given Challenge, then rule1 AND rule2 AND rule3 (etc) must be satisfied 
+for TaskN to be lowPriority. A "condition" need not be added if the "rules" array is a singleton.
+
+Other kinds of priority rules can be examined and set in the MapRoulette UI. Navigate to a Challenge of interest, select
+Edit Challenge (you may need to have admin privileges for the challenge), then select Setup task prioritization rules.
+Rules have a slightly different syntax in the MR UI. "Location rule" refers to the bounding box rule described above. 
+You may find it more convenient to set priority rules via the UI rather than the checks configuration.

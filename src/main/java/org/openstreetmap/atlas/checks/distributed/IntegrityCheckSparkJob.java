@@ -139,6 +139,8 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
     {
         final String atlasDirectory = (String) commandMap.get(SparkJob.INPUT);
         final String input = Optional.ofNullable(this.input(commandMap)).orElse(atlasDirectory);
+        final String externalDataInput = Optional
+                .ofNullable((String) commandMap.get(EXTERNAL_DATA_INPUT)).orElse(atlasDirectory);
         final String output = this.output(commandMap);
         final Set<OutputFormats> outputFormats = (Set<OutputFormats>) commandMap
                 .get(OUTPUT_FORMATS);
@@ -169,7 +171,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
 
         final Map<String, String> sparkContext = this.configurationMap();
 
-        final ExternalDataFetcher fileFetcher = new ExternalDataFetcher(input,
+        final ExternalDataFetcher fileFetcher = new ExternalDataFetcher(externalDataInput,
                 this.configurationMap());
         final CheckResourceLoader checkLoader = new CheckResourceLoader(checksConfiguration,
                 fileFetcher);

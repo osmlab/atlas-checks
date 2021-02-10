@@ -106,6 +106,83 @@ public class CommonMethodsTestRule extends CoreTestRule
                     @Member(id = "12000003", type = "edge", role = "") }) })
     private Atlas oneMemberRelationSectionedEdge;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
+                    @Edge(id = "12000002", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }),
+                    @Edge(id = "12000003", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }) })
+    private Atlas closedWay;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
+                    @Edge(id = "12000002", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }), })
+    private Atlas unClosedWay;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
+                    @Edge(id = "12000002", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }),
+                    @Edge(id = "12000003", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }) })
+    private Atlas originalWayGeometry;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12000001", coordinates = { @Loc(value = TWO),
+                            @Loc(value = ONE) }, tags = { "oneway=-1" }),
+                    @Edge(id = "12000002", coordinates = { @Loc(value = THREE),
+                            @Loc(value = TWO) }, tags = { "oneway=-1" }),
+                    @Edge(id = "12000003", coordinates = { @Loc(value = ONE),
+                            @Loc(value = THREE) }, tags = { "oneway=-1" }) })
+    private Atlas originalWayGeometryReversed;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12000001", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
+                    @Edge(id = "12000002", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }) })
+    private Atlas firstSection;
+
+    public Atlas getClosedWay()
+    {
+        return this.closedWay;
+    }
+
+    public Atlas getFirstSection()
+    {
+        return this.firstSection;
+    }
+
     public Atlas getOneMemberRelationArtificialMember()
     {
         return this.oneMemberRelationArtificialMember;
@@ -129,6 +206,21 @@ public class CommonMethodsTestRule extends CoreTestRule
     public Atlas getOneMemberRelationSectionedEdge()
     {
         return this.oneMemberRelationSectionedEdge;
+    }
+
+    public Atlas getOriginalWayGeometry()
+    {
+        return this.originalWayGeometry;
+    }
+
+    public Atlas getOriginalWayGeometryReversed()
+    {
+        return this.originalWayGeometryReversed;
+    }
+
+    public Atlas getUnClosedWay()
+    {
+        return this.unClosedWay;
     }
 
     public Atlas getValidRelation()
