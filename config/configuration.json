@@ -969,6 +969,35 @@
       "tags":"highway"
     }
   },
+  "SimilarTagValueCheck": {
+    "filter": {
+      "commonSimilars": [
+        ["american", "mexican"], ["cafe", "cake"], ["male", "female"], ["woman", "man"],
+        ["women", "men"], ["male_toilet", "female_toilet"], ["radiology", "cardiology"],
+        ["baseball", "basketball"], ["bowls", "boules"], ["padel", "paddel"], ["formal", "informal"],
+        ["hotel", "hostel"], ["hump", "bump"], ["seed", "feed"]
+      ],
+      "tags": [
+        "asset_ref", "collection_times", "except", "is_in", "junction:ref", "maxspeed:conditional",
+        "old_name", "old_ref", "opening_hours", "ref", "restriction_hours", "route_ref", "supervised",
+        "source_ref", "target", "telescope"
+      ],
+      "tagsWithSubCategories": [
+        "addr", "alt_name", "destination", "name", "seamark", "turn"
+      ]
+    },
+    "similarity.threshold": {
+      "min": 0.0,
+      "max": 1.0
+    },
+    "value.length.min": 4.0,
+    "challenge": {
+      "description": "Tasks identify duplicate/similar values in tags.",
+      "blurb": "Duplicate/Similar tag values.",
+      "instruction": "Determine if the duplicate/similar value is necessary or can be removed.",
+      "difficulty": "EASY"
+    }
+  },
   "SingleSegmentMotorwayCheck": {
     "challenge": {
       "description": "Tasks that identify ways tagged with highway=motorway that are not connected to any ways tagged the same.",
@@ -1056,6 +1085,14 @@
       "description": "Toll tags might be incorrect since tolls could possibly be avoided",
       "blurb": "Toll Escape",
       "instruction": "Please see instructions per feature for actions to take."
+    }
+  },
+  "UnknownHighwayTagCheck": {
+    "challenge": {
+      "description": "highway tag is unknown and needs to be fixed.",
+      "blurb": "unknown highway tags.",
+      "instruction": "please change the highway tag to a known tag.",
+      "difficulty": "EASY"
     }
   },
   "UnusualLayerTagsCheck": {

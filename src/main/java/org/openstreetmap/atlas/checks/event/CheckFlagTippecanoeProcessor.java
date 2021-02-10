@@ -2,6 +2,7 @@ package org.openstreetmap.atlas.checks.event;
 
 import java.util.Date;
 
+import org.apache.spark.TaskContext;
 import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
 import org.openstreetmap.atlas.checks.vectortiles.TippecanoeCheckSettings;
 import org.openstreetmap.atlas.generator.tools.spark.utilities.SparkFileHelper;
@@ -64,7 +65,7 @@ public class CheckFlagTippecanoeProcessor extends FileProcessor<CheckFlagEvent>
     @Override
     protected String getFilename()
     {
-        return String.format("%s-%s%s", new Date().getTime(), getCount(),
-                new GeoJsonPathFilter(doesCompressOutput()).getExtension());
+        return String.format("%sP%s-%s%s", new Date().getTime(), TaskContext.getPartitionId(),
+                getCount(), new GeoJsonPathFilter(doesCompressOutput()).getExtension());
     }
 }
