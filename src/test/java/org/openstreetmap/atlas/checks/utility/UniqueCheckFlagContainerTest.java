@@ -1,12 +1,11 @@
 package org.openstreetmap.atlas.checks.utility;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.openstreetmap.atlas.checks.event.CheckFlagEvent;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 
 /**
@@ -24,39 +23,27 @@ public class UniqueCheckFlagContainerTest
     private final CheckFlag flag1 = new CheckFlag("example-flag-1");
     private final CheckFlag flag2 = new CheckFlag("example-flag-2");
     private final CheckFlag flag3 = new CheckFlag("example-flag-3");
-    private final CheckFlag sameIDFlag1 = new CheckFlag("example-flag-1");
     private final CheckFlag sameObjectFlag2 = new CheckFlag("example-flag-4");
 
     @Test
-    public void testStreaming()
+    public void testCheckFlagEvent()
     {
-        final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer();
-        container.add(source1, this.flag1);
-        container.add(source1, this.flag2);
-        container.add(source1, this.flag3);
-        container.add(source2, this.flag1);
-        container.add(source2, this.flag2);
-        container.add(source2, this.flag3);
+        final CheckFlagEvent event = new CheckFlagEvent(source1, this.flag1.makeComplete());
+        final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer(event);
 
-        final Set<CheckFlag> source1Flags = new HashSet<>(
-                Arrays.asList(this.flag1, this.flag2, this.flag3));
-        final Set<CheckFlag> source2Flags = new HashSet<>(
-                Arrays.asList(this.flag1, this.flag2, this.flag3));
+        Assert.assertEquals(event.toString(), container.getEvent().toString());
+    }
 
-        container.reconstructEvents().forEach(flagEvent ->
-        {
-            if (flagEvent.getCheckName().equals(source1))
-            {
-                source1Flags.remove(flagEvent.getCheckFlag());
-            }
-            else if (flagEvent.getCheckName().equals(source2))
-            {
-                source2Flags.remove(flagEvent.getCheckFlag());
-            }
-        });
+    @Test
+    public void testGetters()
+    {
+        this.flag1.addObject(this.setup.atlas().node(1000000L));
+        final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer(source1,
+                this.flag1.getUniqueIdentifiers(), this.flag1);
 
-        Assert.assertTrue(source1Flags.isEmpty());
-        Assert.assertTrue(source2Flags.isEmpty());
+        Assert.assertEquals(source1, container.getCheckName());
+        Assert.assertEquals(Collections.singleton("Node1000000"), container.getUniqueIdentifiers());
+        Assert.assertEquals(this.flag1, container.getCheckFlag());
     }
 
     @Test
@@ -67,33 +54,14 @@ public class UniqueCheckFlagContainerTest
         this.flag3.addObject(this.setup.atlas().edge(1000000L));
         this.sameObjectFlag2.addObject(this.setup.atlas().node(1000000L));
 
-        final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer();
-        // shouldn't deduplicate
-        container.add(source1, this.flag1);
-        container.add(source1, this.flag2);
-        Assert.assertEquals(2L, container.stream().count());
+        final UniqueCheckFlagContainer container1 = new UniqueCheckFlagContainer(source2,
+                this.flag2.getUniqueIdentifiers(), this.flag2);
+        final UniqueCheckFlagContainer container2 = new UniqueCheckFlagContainer(source2,
+                this.flag3.getUniqueIdentifiers(), this.flag3);
+        final UniqueCheckFlagContainer container3 = new UniqueCheckFlagContainer(source2,
+                this.sameObjectFlag2.getUniqueIdentifiers(), this.sameObjectFlag2);
 
-        // should deduplicate
-        container.add(source1, this.sameIDFlag1);
-        Assert.assertEquals(2L, container.stream().count());
-
-        // shouldn't deduplicate
-        container.add(source2, this.flag1);
-        Assert.assertEquals(3L, container.stream().count());
-
-        // should deduplicate
-        container.add(source2, this.flag1);
-        container.add(source2, this.flag1);
-        container.add(source2, this.flag1);
-        container.add(source2, this.flag1);
-        Assert.assertEquals(3L, container.stream().count());
-
-        // Shouldn't deduplicate
-        container.add(source1, this.flag3);
-        Assert.assertEquals(4L, container.stream().count());
-
-        // Should deduplicate
-        container.add(source1, this.sameObjectFlag2);
-        Assert.assertEquals(4L, container.stream().count());
+        Assert.assertEquals(container1, container3);
+        Assert.assertNotEquals(container1, container2);
     }
 }
