@@ -67,5 +67,8 @@ Finally, we check for car navigable Edges that both intersect the roundabout on 
 This finds items that are generally to0 large or complex to be considered roundabouts, roundabouts where the wrong ways/edges have been tagged as `junction=roundabout`, 
 and [throughabouts](https://wiki.openstreetmap.org/wiki/Throughabout) that have been tagged as roundabouts.
 
+Next we  ensure that the roundabout has a minimum number of OSM nodes used to create the roundabout, so long as it is a closed way.
+Finally, we check the angles between the nodes for any sharp angles, that would suggest that the roundabout was poorly mapped and needs adjustment.
+
 To learn more about the code, please look at the comments in the source code for the check.
 [MalformedRoundaboutCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/linear/edges/MalformedRoundaboutCheck.java)
