@@ -63,8 +63,8 @@ whether the roundabout is moving in the incorrect direction. If the roundabout i
 country and the traffic is moving in the clockwise direction or if the roundabout is in a left-driving
 country and the traffic is moving in the counterclockwise direction then a flag is thrown.
 
-Finally, we check for car navigable Edges that both intersect the roundabout on the same z level, and are at least partially inside it. 
-This finds items that are generally to0 large or complex to be considered roundabouts, roundabouts where the wrong ways/edges have been tagged as `junction=roundabout`, 
+We check for car navigable Edges that both intersect the roundabout on the same z level, and are at least partially inside it. 
+This finds items that are generally too large or complex to be considered roundabouts, roundabouts where the wrong ways/edges have been tagged as `junction=roundabout`, 
 and [throughabouts](https://wiki.openstreetmap.org/wiki/Throughabout) that have been tagged as roundabouts.
 
 Next we  ensure that the roundabout has a minimum number of OSM nodes used to create the roundabout, so long as it is a closed way.
