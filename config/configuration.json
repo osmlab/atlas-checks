@@ -397,9 +397,9 @@
     "enabled": true,
     "great.separation.filter":"",
     "challenge": {
-      "description": "Add.",
-      "blurb": "Add",
-      "instruction": "Add.",
+      "description": "Tasks containing Nodes that intersect Ways at different levels.",
+      "blurb": "Invalid Nodes",
+      "instruction": "Disconnect intersection by removing Node from one of the Way or removing incorrect layer tag",
       "difficulty": "EASY"
     }
   },
