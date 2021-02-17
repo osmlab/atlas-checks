@@ -35,6 +35,14 @@ public class IntersectionAtDifferentLevelsCheckTest
     }
 
     @Test
+    public void invalidLevelArea()
+    {
+        this.verifier.actual(this.setup.getInvalidLevelsArea(),
+                new IntersectionAtDifferentLevelsCheck(this.inlineConfigurationEmptyFilter));
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
     public void invalidLevelPedestrianCrossing()
     {
         this.verifier.actual(this.setup.getInvalidLevelsCrossing(),

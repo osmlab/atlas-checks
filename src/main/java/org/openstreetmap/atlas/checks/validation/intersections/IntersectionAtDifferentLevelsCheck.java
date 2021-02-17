@@ -21,7 +21,8 @@ import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags Node that connects Ways at different level.
+ * This check is to detect and flag a node when it is a non-terminal intersection node between two
+ * ways which have different layer tag values.
  *
  * @author Vladimir Lemberg
  */
