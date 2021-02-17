@@ -21,6 +21,9 @@ public class IntersectionAtDifferentLevelsCheckTestRule extends CoreTestRule
     private static final String TEST_NODE_5 = "37.31972,-121.92211";
 
     @TestAtlas(
+            /*
+             * this atlas contains intersection at different levels. true positive case.
+             */
             // nodes
             nodes = { @Node(id = "1234000000", coordinates = @Loc(value = TEST_NODE_1)),
                     @Node(id = "2345000000", coordinates = @Loc(value = TEST_NODE_2)),
@@ -40,6 +43,34 @@ public class IntersectionAtDifferentLevelsCheckTestRule extends CoreTestRule
     private Atlas invalidLevels;
 
     @TestAtlas(
+            /*
+             * this atlas contains intersection at different levels but one of the Edge is an Area.
+             */
+            // nodes
+            nodes = { @Node(id = "1234000000", coordinates = @Loc(value = TEST_NODE_1)),
+                    @Node(id = "2345000000", coordinates = @Loc(value = TEST_NODE_2)),
+                    @Node(id = "3456000000", coordinates = @Loc(value = TEST_NODE_3)),
+                    @Node(id = "4567000000", coordinates = @Loc(value = TEST_NODE_4)),
+                    @Node(id = "5678000000", coordinates = @Loc(value = TEST_NODE_5)) },
+            // edges
+            edges = { @Edge(id = "2345000001", coordinates = { @Loc(value = TEST_NODE_1),
+                    @Loc(value = TEST_NODE_2) }, tags = { "highway=primary", "tunnel=yes" }),
+                    @Edge(id = "2345000002", coordinates = { @Loc(value = TEST_NODE_2),
+                            @Loc(value = TEST_NODE_3) }, tags = { "highway=primary",
+                                    "tunnel=yes" }),
+                    @Edge(id = "3456000001", coordinates = { @Loc(value = TEST_NODE_4),
+                            @Loc(value = TEST_NODE_2) }, tags = { "highway=pedestrian",
+                                    "area=yes" }),
+                    @Edge(id = "3456000002", coordinates = { @Loc(value = TEST_NODE_2),
+                            @Loc(value = TEST_NODE_5) }, tags = { "highway=pedestrian",
+                                    "area=yes" }) })
+    private Atlas invalidLevelsArea;
+
+    @TestAtlas(
+            /*
+             * this atlas contains intersection at different levels. in addition it matches the
+             * filter.
+             */
             // nodes
             nodes = { @Node(id = "1234000000", coordinates = @Loc(value = TEST_NODE_1)),
                     @Node(id = "2345000000", coordinates = @Loc(value = TEST_NODE_2)),
@@ -59,6 +90,10 @@ public class IntersectionAtDifferentLevelsCheckTestRule extends CoreTestRule
     private Atlas invalidLevelsFilter;
 
     @TestAtlas(
+            /*
+             * this atlas contains intersection at different levels but Node is a pedestrian
+             * crossing.
+             */
             // nodes
             nodes = { @Node(id = "1234000000", coordinates = @Loc(value = TEST_NODE_1)),
                     @Node(id = "2345000000", coordinates = @Loc(value = TEST_NODE_2), tags = {
@@ -79,6 +114,10 @@ public class IntersectionAtDifferentLevelsCheckTestRule extends CoreTestRule
     private Atlas invalidLevelsCrossing;
 
     @TestAtlas(
+            /*
+             * this atlas contains intersection at different levels but Node is a railway level
+             * crossing.
+             */
             // nodes
             nodes = { @Node(id = "1234000000", coordinates = @Loc(value = TEST_NODE_1)),
                     @Node(id = "2345000000", coordinates = @Loc(value = TEST_NODE_2), tags = {
@@ -101,6 +140,11 @@ public class IntersectionAtDifferentLevelsCheckTestRule extends CoreTestRule
     public Atlas getInvalidLevels()
     {
         return this.invalidLevels;
+    }
+
+    public Atlas getInvalidLevelsArea()
+    {
+        return this.invalidLevelsArea;
     }
 
     public Atlas getInvalidLevelsCrossing()

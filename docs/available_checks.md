@@ -51,6 +51,7 @@ This document is a list of tables with a description and link to documentation f
 | [LevelCrossingOnRailwayCheck](checks/LevelCrossingOnRailwayCheck.md) | This check identifies incorrectly tagged or missing nodes at railway/highway intersections. |
 | NodeValenceCheck | This check identifies nodes with too many connections. |
 | [OrphanNodeCheck](tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
+| [IntersectionAtDifferentLevelsCheck](checks/intersectionAtDifferentLevelsCheck.md) | The purpose of this check is to identify a node when it is a non-terminal intersection node between two ways which have different layer tag values. |
 
 ## Points
 | Check Name | Check Description |
