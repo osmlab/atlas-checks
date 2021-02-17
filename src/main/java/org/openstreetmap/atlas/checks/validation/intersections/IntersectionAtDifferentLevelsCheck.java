@@ -17,19 +17,22 @@ import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.RailwayTag;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags Nodes that connect Ways at different level.
+ * Flags Node that connects Ways at different level.
  *
  * @author Vladimir Lemberg
  */
 public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
 {
     // Instructions
-    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connecting two Ways with different layers.";
+    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways at different levels.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
+    private static final String GREAT_SEPARATION_FILTER_DEFAULT = "bridge->yes|tunnel->yes|embankment->yes|cutting->yes|ford->yes";
+    private final TaggableFilter greatSeparationFilter;
     private static final long serialVersionUID = 5171171744111206429L;
 
     /**
@@ -41,6 +44,9 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
     public IntersectionAtDifferentLevelsCheck(final Configuration configuration)
     {
         super(configuration);
+        this.greatSeparationFilter = this.configurationValue(configuration,
+                "great.separation.filter", GREAT_SEPARATION_FILTER_DEFAULT,
+                TaggableFilter::forDefinition);
     }
 
     @Override
@@ -60,15 +66,17 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
                         || HighwayTag.isPedestrianNavigableHighway(obj))
                 .filter(obj -> obj.getTag(AreaTag.KEY).isEmpty()).collect(Collectors.toList());
 
-        if (connectedEdges.stream()
+        if (connectedEdges.size() > 1 && connectedEdges.stream()
                 .anyMatch(edge1 -> connectedEdges.stream()
                         .anyMatch(edge2 -> edge1.getOsmIdentifier() != edge2.getOsmIdentifier()
                                 && !LayerTag.areOnSameLayer(edge1, edge2)
                                 // must be an intermediate node for both ways.
                                 && (this.isInterLocationNode(edge1, node)
-                                        && this.isInterLocationNode(edge2, node)))))
+                                        && this.isInterLocationNode(edge2, node))
+                                // one of the edge candidate must match GreatSeparation filter.
+                                && (this.isGreatSeparationFilter(edge1)
+                                        || this.isGreatSeparationFilter(edge2)))))
         {
-            this.markAsFlagged(object.getOsmIdentifier());
             return Optional.of(this.createFlag(object,
                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
@@ -83,13 +91,25 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
     }
 
     /**
-     * This function returns set of intersections locations for given params.
+     * Test {@link Edge} against Great Separation filter.
+     *
+     * @param edge
+     *            Atlas object
+     * @return {@code true} if {@link Edge} matches the filter.
+     */
+    private boolean isGreatSeparationFilter(final Edge edge)
+    {
+        return this.greatSeparationFilter.test(edge);
+    }
+
+    /**
+     * Check if {@link Node} is an intermediate {@link Location} of given {@link Edge}
      *
      * @param edge
      *            Atlas object
      * @param node
      *            crossing edge
-     * @return set of intersection locations.
+     * @return {@code true} if {@link Node} is not {@link Edge#start()} or {@link Edge#end()} point.
      */
     private boolean isInterLocationNode(final Edge edge, final Node node)
     {

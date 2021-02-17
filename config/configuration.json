@@ -395,6 +395,7 @@
   "IntersectionAtDifferentLevelsCheck":
   {
     "enabled": true,
+    "great.separation.filter":"",
     "challenge": {
       "description": "Add.",
       "blurb": "Add",
