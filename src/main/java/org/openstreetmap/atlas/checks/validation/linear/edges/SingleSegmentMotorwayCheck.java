@@ -99,7 +99,8 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
     private Optional<String> getFixSuggestion(final Edge edge)
     {
         final Set<String> options = edge.connectedEdges().stream().filter(Edge::isMainEdge)
-                .map(Edge::highwayTag).map(Enum::toString).collect(Collectors.toSet());
+                .map(HighwayTag::highwayTag).flatMap(Optional::stream).map(Enum::name)
+                .map(String::toLowerCase).collect(Collectors.toSet());
         return options.size() == 1 ? Optional.of(options.iterator().next()) : Optional.empty();
     }
 
