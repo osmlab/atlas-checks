@@ -32,7 +32,10 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
     private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways at different levels.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
-    private static final String GREAT_SEPARATION_FILTER_DEFAULT = "bridge->yes|tunnel->yes|embankment->yes|cutting->yes|ford->yes";
+    /* default filter is empty, however to minimize the scope for great separation cases only, use below filter.
+       example: "bridge->yes|tunnel->yes|embankment->yes|cutting->yes|ford->yes"
+     */
+    private static final String GREAT_SEPARATION_FILTER_DEFAULT = "";
     private final TaggableFilter greatSeparationFilter;
     private static final long serialVersionUID = 5171171744111206429L;
 

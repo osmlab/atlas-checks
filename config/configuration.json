@@ -399,7 +399,7 @@
     "challenge": {
       "description": "Tasks containing Nodes that intersect Ways at different levels.",
       "blurb": "Invalid Nodes",
-      "instruction": "Disconnect intersection by removing Node from one of the Way or removing incorrect layer tag",
+      "instruction": "Disconnect intersection by removing Node from one of the Way or remove incorrect layer tag",
       "difficulty": "EASY"
     }
   },
