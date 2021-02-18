@@ -102,6 +102,23 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
                                     "highway=motorway", "oneway=yes", "junction=roundabout" }), })
     private Atlas invalidMotorwaySegmentOneConnectionRoundaboutAtlas;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)) },
+            // edges
+            edges = {
+                    @Edge(coordinates = { @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = {
+                            "highway=motorway_link" }),
+                    @Edge(coordinates = { @Loc(value = TEST_3), @Loc(value = TEST_5) }, tags = {
+                            "highway=motorway", "oneway=yes" }),
+                    @Edge(coordinates = { @Loc(value = TEST_4), @Loc(value = TEST_3) }, tags = {
+                            "highway=primary", "oneway=yes" }) })
+    private Atlas invalidNoSuggestionMotorwayAtlas;
+
     public Atlas invalidMotorwaySegmentOneConnectionAtlas()
     {
         return this.invalidMotorwaySegmentOneConnectionAtlas;
@@ -110,6 +127,11 @@ public class SingleSegmentMotorwayCheckTestRule extends CoreTestRule
     public Atlas invalidMotorwaySegmentOneConnectionRoundaboutAtlas()
     {
         return this.invalidMotorwaySegmentOneConnectionRoundaboutAtlas;
+    }
+
+    public Atlas invalidNoSuggestionMotorwayAtlas()
+    {
+        return this.invalidNoSuggestionMotorwayAtlas;
     }
 
     public Atlas invalidPrimaryMotorwayPrimarySegmentAtlas()
