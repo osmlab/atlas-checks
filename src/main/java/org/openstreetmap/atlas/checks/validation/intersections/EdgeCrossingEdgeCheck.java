@@ -13,7 +13,6 @@ import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
@@ -33,7 +32,7 @@ import scala.Tuple2;
  * they should have an intersection location shared in both edges. Otherwise, their layer tag should
  * tell the difference.
  *
- * @author mkalender, gpogulsky, bbreithaupt
+ * @author mkalender, gpogulsky, bbreithaupt, vlemberg
  */
 public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
 {
@@ -56,15 +55,18 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
             INVALID_EDGE_FORMAT);
-    private static final String INVALID_HIGHWAY_TYPE = "Invalid highway.type \"{}\" in configuration.";
-    private static final String EDGE_HIGHWAY_DEFAULT = "vehicle";
-    private static final String EDGE_CROSSING_HIGHWAY_DEFAULT = "vehicle";
+    private static final boolean CAR_NAVIGABLE_DEFAULT = true;
+    private static final boolean PEDESTRIAN_NAVIGABLE_DEFAULT = false;
+    private static final boolean CROSSING_CAR_NAVIGABLE_DEFAULT = true;
+    private static final boolean CROSSING_PEDESTRIAN_NAVIGABLE_DEFAULT = false;
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
     private static final String MAXIMUM_HIGHWAY_DEFAULT = HighwayTag.MOTORWAY.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private static final long serialVersionUID = 2146863485833228593L;
-    private final String edgeHighwayType;
-    private final String edgeCrossingHighwayType;
+    private final boolean carNavigable;
+    private final boolean pedestrianNavigable;
+    private final boolean crossingCarNavigable;
+    private final boolean crossingPedestrianNavigable;
     private final HighwayTag minimumHighwayType;
     private final HighwayTag maximumHighwayType;
 
@@ -102,17 +104,21 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
         this.maximumHighwayType = this.configurationValue(configuration, "maximum.highway.type",
                 MAXIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
-        this.edgeHighwayType = this.configurationValue(configuration, "edge.highway.type",
-                EDGE_HIGHWAY_DEFAULT);
-        this.edgeCrossingHighwayType = this.configurationValue(configuration,
-                "edge.crossing.highway.type", EDGE_CROSSING_HIGHWAY_DEFAULT);
+        this.carNavigable = this.configurationValue(configuration, "car.navigable",
+                CAR_NAVIGABLE_DEFAULT);
+        this.pedestrianNavigable = this.configurationValue(configuration, "pedestrian.navigable",
+                PEDESTRIAN_NAVIGABLE_DEFAULT);
+        this.crossingCarNavigable = this.configurationValue(configuration, "crossing.car.navigable",
+                CROSSING_CAR_NAVIGABLE_DEFAULT);
+        this.crossingPedestrianNavigable = this.configurationValue(configuration,
+                "crossing.pedestrian.navigable", CROSSING_PEDESTRIAN_NAVIGABLE_DEFAULT);
     }
 
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
         return TypePredicates.IS_EDGE.test(object)
-                && this.isValidCrossingEdge(object, this.edgeHighwayType);
+                && this.isValidCrossingEdge(object, this.carNavigable, this.pedestrianNavigable);
     }
 
     @Override
@@ -197,23 +203,32 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      *
      * @param edge
      *            Atlas object.
-     * @param highwayType
-     *            Highway Type.
+     * @param carNav
+     *            Car Navigable Highway Type.
+     * @param pedestrianNav
+     *            Pedestrian Navigable Highway Type.
      * @return {@code true} if {@link Edge} is vehicle or pedestrian navigable.
      */
-    private boolean getCrossingHighwayType(final Edge edge, final String highwayType)
+    private boolean getCrossingHighwayType(final Edge edge, final boolean carNav,
+            final boolean pedestrianNav)
     {
-        switch (highwayType)
+        if (carNav && pedestrianNav)
         {
-            case "vehicle":
-                return HighwayTag.isCarNavigableHighway(edge);
-            case "pedestrian":
-                return HighwayTag.isPedestrianNavigableHighway(edge);
-            case "all":
-                return HighwayTag.isCarNavigableHighway(edge)
-                        || HighwayTag.isPedestrianNavigableHighway(edge);
-            default:
-                throw new CoreException(INVALID_HIGHWAY_TYPE, highwayType);
+            return HighwayTag.isCarNavigableHighway(edge)
+                    || HighwayTag.isPedestrianNavigableHighway(edge);
+        }
+        else if (carNav)
+        {
+            return HighwayTag.isCarNavigableHighway(edge);
+        }
+        else if (pedestrianNav)
+        {
+            return HighwayTag.isPedestrianNavigableHighway(edge);
+        }
+        else
+        {
+            return !HighwayTag.isCarNavigableHighway(edge)
+                    || !HighwayTag.isPedestrianNavigableHighway(edge);
         }
     }
 
@@ -252,8 +267,9 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             final Atlas atlas = edge.getAtlas();
             return Iterables.asList(atlas.edgesIntersecting(edgeBounds,
                     // filter out the same edge and non-valid crossing edges
-                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier() && this
-                            .isValidCrossingEdge(crossingEdge, this.edgeCrossingHighwayType)))
+                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
+                            && this.isValidCrossingEdge(crossingEdge, this.crossingCarNavigable,
+                                    this.crossingPedestrianNavigable)))
                     .stream()
                     .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge
                             .getOsmIdentifier())
@@ -285,7 +301,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      *            {@link AtlasObject} to test
      * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
      */
-    private boolean isValidCrossingEdge(final AtlasObject object, final String highwayType)
+    private boolean isValidCrossingEdge(final AtlasObject object, final boolean carNav,
+            final boolean pedNav)
     {
         if (Edge.isMainEdgeIdentifier(object.getIdentifier())
                 && !TagPredicates.IS_AREA.test(object))
@@ -294,7 +311,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             if (highway.isPresent())
             {
                 final HighwayTag highwayTag = highway.get();
-                return this.getCrossingHighwayType((Edge) object, highwayType)
+                return this.getCrossingHighwayType((Edge) object, carNav, pedNav)
                         && !HighwayTag.CROSSING.equals(highwayTag)
                         && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType)
                         && highwayTag.isLessImportantThanOrEqualTo(this.maximumHighwayType);

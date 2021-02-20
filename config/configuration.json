@@ -271,8 +271,10 @@
   },
   "EdgeCrossingEdgeCheck": {
     "enabled": true,
-    "edge.highway.type": "pedestrian",
-    "edge.crossing.highway.type": "all",
+    "car.navigable": false,
+    "pedestrian.navigable": true,
+    "crossing.car.navigable": true,
+    "crossing.pedestrian.navigable": true,
     "minimum.highway.type": "no",
     "maximum.highway.type": "trunk",
     "challenge": {
