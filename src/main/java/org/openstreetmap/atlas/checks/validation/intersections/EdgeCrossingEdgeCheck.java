@@ -270,6 +270,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier()
                             && this.isValidCrossingEdge(crossingEdge, this.crossingCarNavigable,
                                     this.crossingPedestrianNavigable)))
+                    crossingEdge -> edge.getIdentifier() != crossingEdge.getIdentifier() && this
+                            .isValidCrossingEdge(crossingEdge, this.edgeCrossingHighwayType)))
                     .stream()
                     .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge
                             .getOsmIdentifier())
