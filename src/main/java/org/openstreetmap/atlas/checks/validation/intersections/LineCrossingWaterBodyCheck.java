@@ -87,7 +87,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "ford->!no&ford->*";
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
-    private static final String BUILDING_TAGS_DO_NOT_FLAG = "waterway->dam|public_transport->station,platform|aerialway=station";
+    private static final String BUILDING_TAGS_DO_NOT_FLAG = "waterway->dam|public_transport->station,platform|aerialway->station";
     private static final TaggableFilter NONOFFENDING_BUILDINGS = TaggableFilter
             .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
     private static final String DEFAULT_VALID_INTERSECTING_NODE = "ferry->!no&ferry->*|ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
