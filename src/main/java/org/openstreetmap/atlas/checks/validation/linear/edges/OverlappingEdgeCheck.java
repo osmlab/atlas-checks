@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -89,19 +88,22 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
             for (final Edge wayEdge : edges)
             {
                 Location start = null;
-                for (final Location end : wayEdge.asPolyLine()) {
-                    if (start != null) {
+                for (final Location end : wayEdge.asPolyLine())
+                {
+                    if (start != null)
+                    {
                         // we only have to check one end for intersecting edges
                         final Rectangle box = start.boxAround(Distance.meters(0));
                         // add all overlapping edges not yet flagged and not pedestrian areas
-                        overlappingItems.addAll(Iterables
-                                .stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
-                                .filter(notEqual(wayEdge).and(this.notIn(wayEdge))
-                                        .and(this.overlapsSegment(start, end))
-                                        .and(this.filterPedestrianAreas ? edge -> !this.edgeIsArea(edge)
-                                                : this.notPedestrianAreas(wayEdge))
-                                        .and(this.haveSameLevels(wayEdge)))
-                                .collectToSet());
+                        overlappingItems.addAll(
+                                Iterables.stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
+                                        .filter(notEqual(wayEdge).and(this.notIn(wayEdge))
+                                                .and(this.overlapsSegment(start, end))
+                                                .and(this.filterPedestrianAreas
+                                                        ? edge -> !this.edgeIsArea(edge)
+                                                        : this.notPedestrianAreas(wayEdge))
+                                                .and(this.haveSameLevels(wayEdge)))
+                                        .collectToSet());
                     }
                     start = end;
                 }
