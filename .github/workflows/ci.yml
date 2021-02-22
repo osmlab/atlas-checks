@@ -50,7 +50,6 @@ jobs:
       env:
         MERGE_TAG_GITHUB_SECRET_TOKEN: ${{ secrets.MERGE_TAG_GITHUB_SECRET_TOKEN }}
       run: .github/workflow_scripts/merge-dev-to-main.sh
-      if: ${{ secrets.MERGE_TAG_GITHUB_SECRET_TOKEN != "" }}
 
 # Sign and Publish
     - name: Decrypt GPG key (To sign artifacts)
