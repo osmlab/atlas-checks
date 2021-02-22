@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -270,13 +270,7 @@
     }
   },
   "EdgeCrossingEdgeCheck": {
-    "enabled": true,
     "minimum.highway.type": "no",
-    "maximum.highway.type": "trunk",
-    "car.navigable": false,
-    "pedestrian.navigable": true,
-    "crossing.car.navigable": true,
-    "crossing.pedestrian.navigable": true,
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
