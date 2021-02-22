@@ -45,7 +45,7 @@ public class SharpAngleCheckTest
         this.verifier.actual(this.setup.sharpeAnglesAtlas(),
                 new SharpAngleCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("2 angles that are too sharp")));
+        this.verifier
+                .verify(flag -> Assert.assertTrue(flag.getInstructions().contains("The node at ")));
     }
 }
