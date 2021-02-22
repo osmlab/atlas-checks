@@ -81,10 +81,10 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
             final CheckFlag flag = this.createFlag(new OsmWayWalker(edge).collectEdges(),
                     this.getLocalizedInstruction(0, edge.getOsmIdentifier()));
             final Optional<String> fixSuggestion = this.getFixSuggestion(edge);
-            return fixSuggestion.map(s -> flag.addFixSuggestion(FeatureChange.add(
+            return fixSuggestion.map(suggestion -> flag.addFixSuggestion(FeatureChange.add(
                     (AtlasEntity) ((CompleteEntity) CompleteEntity
                             .shallowFrom((AtlasEntity) object)).withTags(object.getTags())
-                                    .withReplacedTag(HighwayTag.KEY, HighwayTag.KEY, s),
+                                    .withReplacedTag(HighwayTag.KEY, HighwayTag.KEY, suggestion),
                     object.getAtlas()))).or(() -> Optional.of(flag));
         }
         return Optional.empty();
