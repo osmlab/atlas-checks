@@ -31,7 +31,7 @@ public class LineCrossingWaterBodyCheckTest
                                 + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\","
                                 + "    \"buildings.flag\": true" + "  }}")));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.invalidIntersectionItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.invalidLineCrossingAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.multipolygonMemberCrossingAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -121,6 +121,13 @@ public class LineCrossingWaterBodyCheckTest
     public void testValidCrossingItemsAtlas()
     {
         this.verifier.actual(this.setup.validCrossingItemsAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidFerryStopIntersection()
+    {
+        this.verifier.actual(this.setup.validFerryStopIntersection(), check);
         this.verifier.verifyEmpty();
     }
 
@@ -163,6 +170,13 @@ public class LineCrossingWaterBodyCheckTest
                 new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
                         "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
                                 + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\" }}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidSlipwayIntersection()
+    {
+        this.verifier.actual(this.setup.validSlipwayIntersection(), check);
         this.verifier.verifyEmpty();
     }
 
