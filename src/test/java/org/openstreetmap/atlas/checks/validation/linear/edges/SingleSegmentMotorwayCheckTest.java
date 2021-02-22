@@ -30,9 +30,10 @@ public class SingleSegmentMotorwayCheckTest
             Assert.assertEquals(1, flags.size());
             Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
             flags.get(0).getFixSuggestions()
-                    .forEach(s -> Assert.assertTrue(
-                            s.getTag(HighwayTag.KEY).isPresent() && s.getTag(HighwayTag.KEY).get()
-                                    .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+                    .forEach(fixSuggestion -> Assert
+                            .assertTrue(fixSuggestion.getTag(HighwayTag.KEY).isPresent()
+                                    && fixSuggestion.getTag(HighwayTag.KEY).get()
+                                            .equals(HighwayTag.PRIMARY.name().toLowerCase())));
         });
     }
 
@@ -46,9 +47,10 @@ public class SingleSegmentMotorwayCheckTest
             Assert.assertEquals(1, flags.size());
             Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
             flags.get(0).getFixSuggestions()
-                    .forEach(s -> Assert.assertTrue(
-                            s.getTag(HighwayTag.KEY).isPresent() && s.getTag(HighwayTag.KEY).get()
-                                    .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+                    .forEach(fixSuggestion -> Assert
+                            .assertTrue(fixSuggestion.getTag(HighwayTag.KEY).isPresent()
+                                    && fixSuggestion.getTag(HighwayTag.KEY).get()
+                                            .equals(HighwayTag.PRIMARY.name().toLowerCase())));
         });
 
     }
@@ -63,9 +65,22 @@ public class SingleSegmentMotorwayCheckTest
             Assert.assertEquals(1, flags.size());
             Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
             flags.get(0).getFixSuggestions()
-                    .forEach(s -> Assert.assertTrue(
-                            s.getTag(HighwayTag.KEY).isPresent() && s.getTag(HighwayTag.KEY).get()
-                                    .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+                    .forEach(fixSuggestion -> Assert
+                            .assertTrue(fixSuggestion.getTag(HighwayTag.KEY).isPresent()
+                                    && fixSuggestion.getTag(HighwayTag.KEY).get()
+                                            .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+        });
+    }
+
+    @Test
+    public void noFixSuggestionTest()
+    {
+        this.verifier.actual(this.setup.invalidNoSuggestionMotorwayAtlas(),
+                new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(0, flags.get(0).getFixSuggestions().size());
         });
     }
 
