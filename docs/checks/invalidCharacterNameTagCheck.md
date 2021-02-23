@@ -4,10 +4,10 @@
 
 The purpose of this check is to identify certain atlas objects with name and localized name tags that contain
 characters that are deemed as invalid. A configurable taggable filter is used to identify valid atlas objects for this check. The following are considered as invalid characters:
-1. Numbers [0-9]
-2. Special characters +,#,$,%,^,&,*,@,~
-3. Double quotes "" 
-4. Smart quotes “”
+1. Numbers (0-9)
+2. Special characters (+,#,$,%,^,&,*,@,~)
+3. Double quotes ("") 
+4. Smart quotes (“”)
 
 #### Live Examples
 
