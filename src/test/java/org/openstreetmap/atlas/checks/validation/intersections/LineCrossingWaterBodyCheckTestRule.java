@@ -27,12 +27,6 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     private static final String AREA_LOCATION_5 = "47.576485, -122.307098";
     private static final String AREA_LOCATION_BETWEEN_2_AND_3 = "47.5751365,-122.3050385";
 
-    private static final String BIG_AREA_LOCATION_1 = "47.942106, -121.9779748";
-    private static final String BIG_AREA_LOCATION_2 = "47.9422305, -121.977766";
-    private static final String BIG_AREA_LOCATION_3 = "47.942417, -121.9777176";
-    private static final String BIG_AREA_LOCATION_4 = "47.9421116, -121.9774615";
-    private static final String LOCATION_OUTSIDE_BIG_AREA_2 = "47.9424908, -121.9778512";
-
     private static final String LOCATION_OUTSIDE_AREA_1 = "47.578064, -122.318642";
     private static final String LOCATION_OUTSIDE_AREA_2 = "47.581829, -122.303734";
     private static final String LOCATION_OUTSIDE_AREA_3 = "47.573128, -122.292999";
@@ -539,21 +533,20 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_OUTSIDE_AREA_1) }, tags = { "highway=track" }) })
     private Atlas validFordedRoad;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = BIG_AREA_LOCATION_1)),
-            @Node(coordinates = @Loc(value = BIG_AREA_LOCATION_2), tags = "leisure=slipway"),
-            @Node(coordinates = @Loc(value = BIG_AREA_LOCATION_3)),
-            @Node(coordinates = @Loc(value = BIG_AREA_LOCATION_4)),
-            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_BIG_AREA_2)) },
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_2), tags = "leisure=slipway"),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_4)),
+            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_2)) },
             // area
-            areas = { @Area(coordinates = { @Loc(value = BIG_AREA_LOCATION_1),
-                    @Loc(value = BIG_AREA_LOCATION_2), @Loc(value = BIG_AREA_LOCATION_3),
-                    @Loc(value = BIG_AREA_LOCATION_4) }, tags = { "natural=water" }) },
+            areas = { @Area(coordinates = { @Loc(value = AREA_LOCATION_1),
+                    @Loc(value = AREA_LOCATION_2), @Loc(value = AREA_LOCATION_3),
+                    @Loc(value = AREA_LOCATION_4) }, tags = { "natural=water" }) },
             // edges
             edges = {
                     // an edge
-                    @Edge(coordinates = { @Loc(value = BIG_AREA_LOCATION_2),
-                            @Loc(value = LOCATION_OUTSIDE_BIG_AREA_2) }, tags = {
-                                    "highway=track" }) })
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_2),
+                            @Loc(value = LOCATION_OUTSIDE_AREA_2) }, tags = { "highway=track" }) })
     private Atlas validSlipwayIntersection;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_1)),
