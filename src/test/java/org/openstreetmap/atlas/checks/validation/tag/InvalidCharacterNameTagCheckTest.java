@@ -100,5 +100,4 @@ public class InvalidCharacterNameTagCheckTest
         this.verifier.actual(this.setup.getSpecialCharactersInNameTagAtlas(), this.check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
-
 }

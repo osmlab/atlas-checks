@@ -74,10 +74,8 @@ public class InvalidCharacterNameTagCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-
         return (object instanceof Area || object instanceof Line || object instanceof Relation)
                 && this.validObjectFilter.test(object);
-
     }
 
     @Override
