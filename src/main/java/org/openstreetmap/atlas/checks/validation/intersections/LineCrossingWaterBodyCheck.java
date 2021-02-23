@@ -158,6 +158,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * validly.
      *
      * @param multipolygonRelations
+     *            multipolygon relations
      * @return {@code true} if the multipolygon has valid tags which makes its members (lines) cross
      *         water body validly.
      */
@@ -171,6 +172,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * it. The VALID_LINE_TAGS allow the line to cross the waterbody.
      *
      * @param osmTags
+     *            tags
      * @return {@code true} if the crossing item has only the valid tags and no other tags.
      */
     private static boolean hasOnlyValidCrossingTags(final Map<String, String> osmTags)
@@ -193,6 +195,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * water body.
      *
      * @param crossingLine
+     *            crossing line
      * @return {@code true} if any of the three conditions are met.
      */
     private static boolean isBoundary(final AtlasEntity crossingLine)
@@ -289,7 +292,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(object));
         newFlag.addObject(object);
         newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
-
         // Only record an OSM id as crossing once in the instruction
         final Set<Long> recordedOsmIds = new HashSet<>();
         // Go through crossing items and collect invalid crossings
@@ -299,6 +301,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // each edge will be marked explicitly.
         for (final AtlasItem crossingItem : invalidCrossingItems)
         {
+
             // Update the flag
             newFlag.addObject(crossingItem);
             if (!recordedOsmIds.contains(crossingItem.getOsmIdentifier()))
@@ -308,7 +311,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 recordedOsmIds.add(crossingItem.getOsmIdentifier());
             }
         }
-
+        final Set<Location> intersectingLocations = this.collectIntersectingLocations(atlas, object,
+                waterbody);
+        intersectingLocations.forEach(newFlag::addPoint);
         return Optional.of(newFlag);
     }
 
@@ -368,6 +373,41 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 && ((Edge) crossingItem).connectedNodes().stream()
                         .filter(node -> waterbody.fullyGeometricallyEncloses(node.getLocation()))
                         .allMatch(nodeHasFordTag);
+    }
+
+    /**
+     * @param atlas
+     *            the atlas
+     * @param object
+     *            waterbody atlasObject
+     * @param waterbody
+     *            geometric shape of waterbody
+     * @return set of intersectingLocations
+     */
+    private Set<Location> collectIntersectingLocations(final Atlas atlas, final AtlasObject object,
+            final GeometricSurface waterbody)
+    {
+        final Set<Location> intersectingLocations = new HashSet<>();
+        final Iterable<LineItem> linesIntersecting = atlas.lineItemsIntersecting(waterbody);
+        for (final LineItem lineItem : linesIntersecting)
+        {
+            if (this.isOffendingLineItem(object).test(lineItem))
+            {
+                final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent = this
+                        .getInteractionsPerWaterbodyComponent(waterbody, object,
+                                lineItem.asPolyLine())
+                        .stream()
+                        .filter(tuple -> !this.canCrossWaterBody(lineItem, waterbody, tuple))
+                        .collect(Collectors.toSet());
+
+                if (!interactionsPerWaterbodyComponent.isEmpty())
+                {
+                    interactionsPerWaterbodyComponent
+                            .forEach(tuple -> intersectingLocations.addAll(tuple.getSecond()));
+                }
+            }
+        }
+        return intersectingLocations;
     }
 
     /**

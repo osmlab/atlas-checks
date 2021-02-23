@@ -54,7 +54,8 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getPolyLines().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getPoints().size()));
     }
 
     @Test
@@ -63,7 +64,8 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.invalidIntersectionItemsAtlas(), check);
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getPolyLines().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(1, flag.getPoints().size()));
     }
 
     @Test
@@ -71,7 +73,8 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.invalidLineCrossingAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(5, flag.getPolyLines().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(8, flag.getPoints().size()));
     }
 
     @Test
@@ -107,7 +110,8 @@ public class LineCrossingWaterBodyCheckTest
     {
         this.verifier.actual(this.setup.multipolygonMemberCrossingAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getPolyLines().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getPoints().size()));
     }
 
     @Test
