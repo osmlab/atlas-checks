@@ -306,14 +306,14 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             newFlag.addObject(crossingItem);
             if (!recordedOsmIds.contains(crossingItem.getOsmIdentifier()))
             {
+                final Set<Location> intersectingLocations = this.collectIntersectingLocations(atlas,
+                        object, waterbody);
+                intersectingLocations.forEach(newFlag::addPoint);
                 newFlag.addInstruction(this.getLocalizedInstruction(
                         crossingItem instanceof Area ? 2 : 1, crossingItem.getOsmIdentifier()));
                 recordedOsmIds.add(crossingItem.getOsmIdentifier());
             }
         }
-        final Set<Location> intersectingLocations = this.collectIntersectingLocations(atlas, object,
-                waterbody);
-        intersectingLocations.forEach(newFlag::addPoint);
         return Optional.of(newFlag);
     }
 
