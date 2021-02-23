@@ -8,7 +8,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * @author mkalender, bbreithaupt
+ * @author mkalender, bbreithaupt, vlemberg
  */
 public class EdgeCrossingEdgeCheckTest
 {
@@ -22,9 +22,30 @@ public class EdgeCrossingEdgeCheckTest
     public void testInvalidCrossingItemsAtlas()
     {
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(),
-                new EdgeCrossingEdgeCheck(this.configuration));
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":true,\"pedestrian.navigable\":true,\"crossing.car.navigable\":true,\"crossing.pedestrian.navigable\":true}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testInvalidCrossingItemsAtlasCarNavigationOnly()
+    {
+        this.verifier.actual(this.setup.invalidCrossingItemsAtlasCarPed(),
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":true,\"pedestrian.navigable\":false,\"crossing.car.navigable\":true,\"crossing.pedestrian.navigable\":false}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testInvalidCrossingItemsAtlasPedestrianNavigationOnly()
+    {
+        this.verifier.actual(this.setup.invalidCrossingItemsAtlasCarPed(),
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":false,\"pedestrian.navigable\":true,\"crossing.car.navigable\":false,\"crossing.pedestrian.navigable\":true}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -42,7 +63,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
