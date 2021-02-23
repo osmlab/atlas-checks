@@ -95,7 +95,7 @@ This document is a list of tables with a description and link to documentation f
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
 | [ConditionalRestrictionCheck](checks/conditionalRestrictionCheck.md) | The purpose of this check is to identify elements that have a :conditional tag that does not respect the established format. |
 | [SourceMaxspeedCheck](checks/sourceMaxspeedCheck.md) | The purpose of this check is to identify elements that have a source:maxspeed tag that does not follow the tagging rules. |
-| [InvalidCharacterNameTagCheck] (checks/invalidCharacterNameTagCheck.md) | The purpose of this checks is to identify Lines, Areas and Relations with invalid characters in name and localized name tags. |
+| [InvalidCharacterNameTagCheck](checks/invalidCharacterNameTagCheck.md) | The purpose of this checks is to identify Lines, Areas and Relations with invalid characters in name and localized name tags. |
 
 ## Ways
 | Check Name | Check Description |
