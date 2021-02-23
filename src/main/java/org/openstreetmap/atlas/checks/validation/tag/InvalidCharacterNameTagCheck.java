@@ -60,7 +60,6 @@ public class InvalidCharacterNameTagCheck extends BaseCheck<String>
         {
             Validators.localizeKeyName(NameTag.class, language)
                     .ifPresent(this.localizedNameTags::add);
-
         }
     }
 
