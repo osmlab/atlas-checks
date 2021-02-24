@@ -36,6 +36,21 @@ public class InvalidCharacterNameTagCheckTestRule extends CoreTestRule
     @TestAtlas(loadFromTextResource = "invalidNameRelation.txt")
     private Atlas invalidCharacterInRelationAtlas;
 
+    @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = POND_1)),
+            @Node(id = "2000000", coordinates = @Loc(value = POND_2)),
+            @Node(id = "3000000", coordinates = @Loc(value = POND_3)),
+            @Node(id = "4000000", coordinates = @Loc(value = POND_4)) }, lines = {
+                    @Line(id = "9001000001", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "name=Rio Guamá 2",
+                                    "natural=cliff" }) }, areas = {
+                                            @Area(id = "1001000000", coordinates = {
+                                                    @Loc(value = POND_1), @Loc(value = POND_2),
+                                                    @Loc(value = POND_3),
+                                                    @Loc(value = POND_4) }, tags = {
+                                                            "name=Pleta \"Chi Poyón\"",
+                                                            "natural=grassland" }) })
+    private Atlas nonWaterFeatures;
+
     @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = TEST_1)),
             @Node(id = "2000000", coordinates = @Loc(value = TEST_2)) }, lines = {
                     @Line(id = "1001000001", coordinates = { @Loc(value = TEST_1),
@@ -110,6 +125,11 @@ public class InvalidCharacterNameTagCheckTestRule extends CoreTestRule
     public Atlas getInvalidCharacterInRelationAtlas()
     {
         return this.invalidCharacterInRelationAtlas;
+    }
+
+    public Atlas getNonWaterFeatures()
+    {
+        return this.nonWaterFeatures;
     }
 
     public Atlas getNumbersInLocalizedNameTagAtlas()

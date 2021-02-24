@@ -16,7 +16,6 @@ import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.locale.IsoLanguage;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -31,13 +30,10 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class InvalidCharacterNameTagCheck extends BaseCheck<String>
 {
     private static final long serialVersionUID = -1478870354774039269L;
-    private static final String VALID_OBJECT_FILTER_DEFAULT = "";
-    private static final Pattern INVALID_CHARS_REGEX_DEFAULT = Pattern
-            .compile(".*[0-9#$%^&*@~\"“”].*");
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "OSM feature with id {0,number,#} has one or more of the following invalid characters in its \"{1}\" tags: numbers, special characters(#$%^&*@~), double quotes or smart quotes(“”).");
     private final Set<String> localizedNameTags = new HashSet<>();
-    private final TaggableFilter validObjectFilter;
+    private final Pattern invalidCharacterRegexPattern;
 
     /**
      * Default constructor
@@ -48,8 +44,8 @@ public class InvalidCharacterNameTagCheck extends BaseCheck<String>
     public InvalidCharacterNameTagCheck(final Configuration configuration)
     {
         super(configuration);
-        this.validObjectFilter = configurationValue(configuration, "valid.object.filter",
-                VALID_OBJECT_FILTER_DEFAULT, TaggableFilter::forDefinition);
+        this.invalidCharacterRegexPattern = Pattern
+                .compile(this.configurationValue(configuration, "invalid.char.regex", ""));
         final Set<Optional<IsoLanguage>> languages = IsoLanguage.allLanguageCodes().stream()
                 .map(languageCode -> Optional.of(IsoLanguage.forLanguageCode(languageCode).get()))
                 .collect(Collectors.toSet());
@@ -73,8 +69,7 @@ public class InvalidCharacterNameTagCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return (object instanceof Area || object instanceof Line || object instanceof Relation)
-                && this.validObjectFilter.test(object);
+        return object instanceof Area || object instanceof Line || object instanceof Relation;
     }
 
     @Override
@@ -84,7 +79,8 @@ public class InvalidCharacterNameTagCheck extends BaseCheck<String>
         final Optional<String> nameTag = NameTag.getNameOf(object);
         // If NameTag is present and its value matches the invalid character pattern, add the Name
         // tag to the invalidCharacterNameTags set.
-        if (nameTag.isPresent() && INVALID_CHARS_REGEX_DEFAULT.matcher(nameTag.get()).matches())
+        if (nameTag.isPresent()
+                && this.invalidCharacterRegexPattern.matcher(nameTag.get()).matches())
         {
             invalidCharacterNameTags.add(NameTag.KEY);
 
@@ -92,7 +88,7 @@ public class InvalidCharacterNameTagCheck extends BaseCheck<String>
         // If the atlas object has localized name tags that matches the invalid character pattern,
         // add it to the invalidCharacterNameTags set.
         Iterables.stream(object.getOsmTags().keySet()).filter(this.localizedNameTags::contains)
-                .filter(localizedNameTag -> INVALID_CHARS_REGEX_DEFAULT
+                .filter(localizedNameTag -> this.invalidCharacterRegexPattern
                         .matcher(object.getTag(localizedNameTag).get()).matches())
                 .forEach(invalidCharacterNameTags::add);
 
