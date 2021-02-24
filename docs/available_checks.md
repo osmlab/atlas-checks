@@ -81,6 +81,7 @@ This document is a list of tables with a description and link to documentation f
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
 | [InvalidAccessTagCheck](checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |
+| [InvalidCharacterNameTagCheck](checks/invalidCharacterNameTagCheck.md) | The purpose of this checks is to identify Lines, Areas and Relations with invalid characters in name and localized name tags. |
 | [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md) | The purpose of this check is to identify highways in OSM with an invalid lanes tag value. |
 | InvalidTagsCheck | This flags features based on configurable filters. Each filter passed contains the atlas entity classes to check and a taggable filter to test objects against. If a feature is of one of the given classes and passes the associated TaggableFilter, it is flagged. |
 | [MixedCaseNameCheck](checks/mixedCaseNameCheck.md) | The purpose of this check is to identify names that contain invalid mixed cases so that they can be edited to be the standard format. |
