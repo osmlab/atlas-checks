@@ -8,6 +8,10 @@ import java.util.Set;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
@@ -83,13 +87,19 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
         if (Validators.hasValuesFor(object, FerryTag.class))
         {
             final int instructionIndex = hasSameHighwayClassification ? 1 : 0;
-            return Optional.of(this.createFlag(edges,
-                    this.getLocalizedInstruction(instructionIndex, object.getOsmIdentifier())));
+            return Optional.of(this
+                    .createFlag(edges,
+                            this.getLocalizedInstruction(instructionIndex,
+                                    object.getOsmIdentifier()))
+                    .addFixSuggestion(
+                            this.getFixSuggestion(object, true, hasSameHighwayClassification)));
         }
         else
         {
-            return Optional.of(this.createFlag(edges,
-                    this.getLocalizedInstruction(2, object.getOsmIdentifier())));
+            return Optional.of(this
+                    .createFlag(edges, this.getLocalizedInstruction(2, object.getOsmIdentifier()))
+                    .addFixSuggestion(
+                            this.getFixSuggestion(object, false, hasSameHighwayClassification)));
         }
     }
 
@@ -97,6 +107,36 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Returns the appropriate fix suggestion based on the highway and ferry tags.
+     * 
+     * @param object
+     *            {@link AtlasObject} whose fix suggestion needs to be established
+     * @param hasFerryTag
+     *            does the object have a ferry tag
+     * @param hasSameHighwayClassification
+     *            do the ferry and highway tags have the same value
+     * @return {@link FeatureChange} with the appropriate fix suggestion
+     */
+    private FeatureChange getFixSuggestion(final AtlasObject object, final boolean hasFerryTag,
+            final boolean hasSameHighwayClassification)
+    {
+        final CompleteEntity<CompleteEdge> completeEntity = (CompleteEntity) CompleteEntity
+                .from((AtlasEntity) object);
+        if (hasFerryTag && !hasSameHighwayClassification)
+        {
+            completeEntity.withReplacedTag(FerryTag.KEY, FerryTag.KEY, object.tag(HighwayTag.KEY));
+
+        }
+        else if (!hasFerryTag)
+        {
+            completeEntity.withAddedTag(FerryTag.KEY, object.tag(HighwayTag.KEY));
+
+        }
+        completeEntity.withRemovedTag(HighwayTag.KEY);
+        return FeatureChange.add((AtlasEntity) completeEntity, object.getAtlas());
     }
 
     /**
