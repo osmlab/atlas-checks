@@ -61,26 +61,26 @@ public class RoundaboutMissingTagCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     // parts of roundabout
-                    @Edge(id = "12340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
+                    @Edge(id = "1234000001", coordinates = { @Loc(value = TEST_NODE_VERTEX_1),
                             @Loc(value = TEST_NODE_SHP_1), @Loc(value = TEST_NODE_SHP_2),
                             @Loc(value = TEST_NODE_SHP_3),
                             @Loc(value = TEST_NODE_VERTEX_2) }, tags = { "highway=primary" }),
-                    @Edge(id = "12340002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                    @Edge(id = "1234000002", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
                             @Loc(value = TEST_NODE_SHP_4), @Loc(value = TEST_NODE_SHP_5),
                             @Loc(value = TEST_NODE_SHP_6),
                             @Loc(value = TEST_NODE_VERTEX_3) }, tags = { "highway=primary" }),
-                    @Edge(id = "12340003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
+                    @Edge(id = "1234000003", coordinates = { @Loc(value = TEST_NODE_VERTEX_3),
                             @Loc(value = TEST_NODE_SHP_7), @Loc(value = TEST_NODE_SHP_8),
                             @Loc(value = TEST_NODE_SHP_9),
                             @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=primary" }),
-                    @Edge(id = "12340004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
+                    @Edge(id = "1234000004", coordinates = { @Loc(value = TEST_NODE_VERTEX_4),
                             @Loc(value = TEST_NODE_SHP_10), @Loc(value = TEST_NODE_SHP_11),
                             @Loc(value = TEST_NODE_SHP_12),
                             @Loc(value = TEST_NODE_VERTEX_1) }, tags = { "highway=primary" }),
                     // connected navigable edges
-                    @Edge(id = "32340001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
+                    @Edge(id = "3234000001", coordinates = { @Loc(value = TEST_NODE_VERTEX_2),
                             @Loc(value = TEST_NODE_2) }, tags = { "highway=tertiary" }),
-                    @Edge(id = "42340001", coordinates = { @Loc(value = TEST_NODE_1),
+                    @Edge(id = "4234000001", coordinates = { @Loc(value = TEST_NODE_1),
                             @Loc(value = TEST_NODE_VERTEX_4) }, tags = { "highway=secondary" }),
 
             })

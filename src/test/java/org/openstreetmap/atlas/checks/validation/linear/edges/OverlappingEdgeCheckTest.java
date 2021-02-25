@@ -62,7 +62,8 @@ public class OverlappingEdgeCheckTest
         final Atlas atlas = this.setup.getOverlappingHeadAtlas();
         this.verifier.actual(atlas, check);
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(check -> verifyFlaggedGeometry(check, atlas));
+        this.verifier.verify(
+                check -> Assert.assertEquals(atlas.numberOfEdges(), check.getPolyLines().size()));
     }
 
     @Test
@@ -80,7 +81,8 @@ public class OverlappingEdgeCheckTest
         final Atlas atlas = this.setup.getOverlappingTailAtlas();
         this.verifier.actual(atlas, check);
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(check -> verifyFlaggedGeometry(check, atlas));
+        this.verifier.verify(
+                check -> Assert.assertEquals(atlas.numberOfEdges(), check.getPolyLines().size()));
     }
 
     @Test

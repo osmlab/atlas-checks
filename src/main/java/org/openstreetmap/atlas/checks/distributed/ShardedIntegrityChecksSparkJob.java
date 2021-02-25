@@ -3,15 +3,20 @@ package org.openstreetmap.atlas.checks.distributed;
 import static org.openstreetmap.atlas.checks.distributed.IntegrityCheckSparkJob.METRICS_FILENAME;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.spark.TaskContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
@@ -60,7 +65,6 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 import scala.Serializable;
-import scala.Tuple2;
 
 /**
  * A spark job for generating integrity checks in a sharded fashion. This allows for a lower local
@@ -106,6 +110,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void start(final CommandMap commandMap)
     {
         final Time start = Time.now();
@@ -116,12 +121,10 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
         // Gather arguments
         final String output = this.output(commandMap);
-        @SuppressWarnings("unchecked")
         final Set<OutputFormats> outputFormats = (Set<OutputFormats>) commandMap
                 .get(OUTPUT_FORMATS);
         final StringList countries = StringList.split((String) commandMap.get(COUNTRIES),
                 CommonConstants.COMMA);
-        @SuppressWarnings("unchecked")
         final Optional<List<String>> checkFilter = (Optional<List<String>>) commandMap
                 .getOption(CHECK_FILTER);
 
@@ -148,7 +151,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 fileFetcher);
 
         // Get sharding
-        @SuppressWarnings("unchecked")
         final Optional<String> alternateShardingFile = (Optional<String>) commandMap
                 .getOption(SHARDING);
         final String shardingPathInAtlas = "dynamic@"
@@ -160,7 +162,6 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
         final Distance distanceToLoadShards = (Distance) commandMap.get(EXPANSION_DISTANCE);
 
         // get timeout
-        @SuppressWarnings("unchecked")
         final Optional<Long> alternateMaxPoolMinutes = (Optional<Long>) commandMap
                 .getOption(MAX_POOL_MINUTES);
         final Duration maxPoolDuration = Duration
@@ -214,11 +215,11 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             {
                 checkPool.queue(() ->
                 {
+                    final String country = countryShard.getKey();
                     // Generate a task for each shard
-                    final List<ShardedCheckFlagsTask> tasksForCountry = countryShard.getValue()
-                            .stream()
-                            .map(shard -> new ShardedCheckFlagsTask(countryShard.getKey(), shard,
-                                    this.countryChecks.get(countryShard.getKey())))
+                    final List<ShardedCheckFlagsTask> tasksForCountry = countryShard
+                            .getValue().stream().map(shard -> new ShardedCheckFlagsTask(country,
+                                    shard, this.countryChecks.get(country)))
                             .collect(Collectors.toList());
 
                     // Set spark UI job title
@@ -226,12 +227,11 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                             .format("Running checks on %s", tasksForCountry.get(0).getCountry()));
 
                     this.getContext().parallelize(tasksForCountry, tasksForCountry.size())
-                            .mapToPair(this.produceFlags(input, output, this.configurationMap(),
+                            .flatMap(this.produceFlags(input, output, this.configurationMap(),
                                     fileHelper, shardingBroadcast, distanceToLoadShards,
                                     (Boolean) commandMap.get(MULTI_ATLAS)))
-                            .reduceByKey(UniqueCheckFlagContainer::combine)
-                            // Generate outputs
-                            .foreach(this.processFlags(output, fileHelper, outputFormats));
+                            .distinct().map(UniqueCheckFlagContainer::getEvent).foreachPartition(
+                                    this.processFlags(output, fileHelper, outputFormats, country));
                 });
             }
         }
@@ -277,18 +277,19 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      * @param outputFormats
      *            {@link Set} of
      *            {@link org.openstreetmap.atlas.checks.distributed.IntegrityChecksCommandArguments.OutputFormats}
-     * @return {@link VoidFunction} that takes a {@link Tuple2} of a {@link String} country code and
-     *         a {@link UniqueCheckFlagContainer}
+     * @param country
+     *            {@link String} ISO code for the country being processed
+     * @return {@link VoidFunction} that takes an {@link Iterator} of {@link CheckFlagEvent}s
      */
     @SuppressWarnings("unchecked")
-    private VoidFunction<Tuple2<String, UniqueCheckFlagContainer>> processFlags(final String output,
-            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats)
+    private VoidFunction<Iterator<CheckFlagEvent>> processFlags(final String output,
+            final SparkFileHelper fileHelper, final Set<OutputFormats> outputFormats,
+            final String country)
     {
-        return tuple ->
+        return iterator ->
         {
-            final String country = tuple._1();
-            final UniqueCheckFlagContainer flagContainer = tuple._2();
-            final EventService<CheckFlagEvent> eventService = EventService.get(country);
+            final EventService<CheckFlagEvent> eventService = EventService
+                    .get(country + TaskContext.getPartitionId());
 
             if (outputFormats.contains(OutputFormats.FLAGS))
             {
@@ -309,7 +310,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                         SparkFileHelper.combine(output, OUTPUT_TIPPECANOE_FOLDER, country)));
             }
 
-            flagContainer.reconstructEvents().parallel().forEach(eventService::post);
+            iterator.forEachRemaining(eventService::post);
             eventService.complete();
         };
     }
@@ -332,11 +333,11 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
      *            {@link Distance} to expand the shard group
      * @param multiAtlas
      *            boolean whether to use a multi or dynamic Atlas
-     * @return {@link PairFunction} that takes {@link ShardedCheckFlagsTask} and returns a
-     *         {@link Tuple2} of a {@link String} country code and {@link UniqueCheckFlagContainer}
+     * @return {@link FlatMapFunction} that takes {@link ShardedCheckFlagsTask} and returns a
+     *         {@link Iterator} of {@link UniqueCheckFlagContainer}s
      */
     @SuppressWarnings("unchecked")
-    private PairFunction<ShardedCheckFlagsTask, String, UniqueCheckFlagContainer> produceFlags(
+    private FlatMapFunction<ShardedCheckFlagsTask, UniqueCheckFlagContainer> produceFlags(
             final String input, final String output, final Map<String, String> configurationMap,
             final SparkFileHelper fileHelper, final Broadcast<Sharding> sharding,
             final Distance shardDistanceExpansion, final boolean multiAtlas)
@@ -376,7 +377,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
 
             // Prepare the event service
             final EventService eventService = task.getEventService();
-            final UniqueCheckFlagContainer container = new UniqueCheckFlagContainer();
+            final Queue<UniqueCheckFlagContainer> container = new ConcurrentLinkedQueue<>();
             eventService.register(new Processor<CheckFlagEvent>()
             {
                 @Override
@@ -390,7 +391,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 @AllowConcurrentEvents
                 public void process(final CheckFlagEvent event)
                 {
-                    container.add(event.getCheckName(), event.getCheckFlag().makeComplete());
+                    container.add(new UniqueCheckFlagContainer(event));
                 }
             });
             // Metrics are output on a per shard level
@@ -411,7 +412,7 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
             }
 
             eventService.complete();
-            return new Tuple2<>(task.getCountry(), container);
+            return container.iterator();
         };
     }
 }

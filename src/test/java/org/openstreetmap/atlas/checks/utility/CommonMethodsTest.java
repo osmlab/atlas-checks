@@ -26,6 +26,18 @@ public class CommonMethodsTest
     }
 
     @Test
+    public void testFirstSection()
+    {
+        assertTrue(CommonMethods.isFirstWaySection(this.setup.getFirstSection().edge(12000001)));
+    }
+
+    @Test
+    public void testFirstSectionNegative()
+    {
+        assertFalse(CommonMethods.isFirstWaySection(this.setup.getFirstSection().edge(12000002)));
+    }
+
+    @Test
     public void testOneMemberRelationArtificialMember()
     {
         assertEquals(1, CommonMethods.getOSMRelationMemberSize(
@@ -67,6 +79,17 @@ public class CommonMethodsTest
         assertEquals(origGeom, CommonMethods
                 .buildOriginalOsmWayGeometry(this.setup.getOriginalWayGeometry().edge(12000003))
                 .toString());
+    }
+
+    @Test
+    public void testOriginalWayGeometryReversed()
+    {
+        final String origGeom = "LINESTRING (-71.7194204 18.4360044, -71.6970306 18.4360737, -71.7052283 18.4273807, -71.7194204 18.4360044)";
+        assertEquals(origGeom,
+                CommonMethods
+                        .buildOriginalOsmWayGeometry(
+                                this.setup.getOriginalWayGeometryReversed().edge(12000003))
+                        .toString());
     }
 
     @Test
