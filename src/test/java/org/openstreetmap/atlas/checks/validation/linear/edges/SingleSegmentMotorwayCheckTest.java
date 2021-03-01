@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.tags.HighwayTag;
 
 /**
  * Unit tests for {@link SingleSegmentMotorwayCheck}.
@@ -24,7 +25,16 @@ public class SingleSegmentMotorwayCheckTest
     {
         this.verifier.actual(this.setup.invalidMotorwaySegmentOneConnectionRoundaboutAtlas(),
                 new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
+            flags.get(0).getFixSuggestions()
+                    .forEach(fixSuggestion -> Assert
+                            .assertTrue(fixSuggestion.getTag(HighwayTag.KEY).isPresent()
+                                    && fixSuggestion.getTag(HighwayTag.KEY).get()
+                                            .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+        });
     }
 
     @Test
@@ -32,7 +42,17 @@ public class SingleSegmentMotorwayCheckTest
     {
         this.verifier.actual(this.setup.invalidMotorwaySegmentOneConnectionAtlas(),
                 new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
+            flags.get(0).getFixSuggestions()
+                    .forEach(fixSuggestion -> Assert
+                            .assertTrue(fixSuggestion.getTag(HighwayTag.KEY).isPresent()
+                                    && fixSuggestion.getTag(HighwayTag.KEY).get()
+                                            .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+        });
+
     }
 
     @Test
@@ -40,7 +60,28 @@ public class SingleSegmentMotorwayCheckTest
     {
         this.verifier.actual(this.setup.invalidPrimaryMotorwayPrimarySegmentAtlas(),
                 new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(1, flags.get(0).getFixSuggestions().size());
+            flags.get(0).getFixSuggestions()
+                    .forEach(fixSuggestion -> Assert
+                            .assertTrue(fixSuggestion.getTag(HighwayTag.KEY).isPresent()
+                                    && fixSuggestion.getTag(HighwayTag.KEY).get()
+                                            .equals(HighwayTag.PRIMARY.name().toLowerCase())));
+        });
+    }
+
+    @Test
+    public void noFixSuggestionTest()
+    {
+        this.verifier.actual(this.setup.invalidNoSuggestionMotorwayAtlas(),
+                new SingleSegmentMotorwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags ->
+        {
+            Assert.assertEquals(1, flags.size());
+            Assert.assertEquals(0, flags.get(0).getFixSuggestions().size());
+        });
     }
 
     @Test
