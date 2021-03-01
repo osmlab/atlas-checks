@@ -23,23 +23,23 @@ This document is a list of tables with a description and link to documentation f
 | [FloatingEdgeCheck](checks/floatingEdgeCheck.md) | The purpose of this check is to identify Edges that are not accessible or navigable from the rest of the Edge network due to lack of connectivity or access restrictions. |
 | [InconsistentRoadClassificationCheck](checks/inconsistentRoadClassificationCheck.md) | The purpose of this check is to identify roads, that transition from one classification to another and then back to the original classification. |
 | [InvalidPiersCheck](checks/invalidPiersCheck.md) | The purpose of this check is to identify piers(OSM Ways with man_made=pier tag) that are ingested in Atlas as edges with linear or polygonal geometry without an area=yes tag |
-| LongSegmentCheck | This check identifies long segments/edges (length is more than minimumLength). |
-| [MalformedRoundaboutCheck](checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are three types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, and 3. Roundabouts with poor geometry. |
-| OverlappingEdgeCheck | The purpose of this check is to identify edges that share the same two consecutive geometry points. |
-| RoadLinkCheck |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a _link. |
+| [LongSegmentCheck](checks/longSegmentCheck.md) | This check identifies long segments/edges (length is more than minimumLength). |
+| [MalformedRoundaboutCheck](checks/malformedRoundaboutCheck.md) | The purpose of this check is to identify roundabouts mapped in the opposite direction of traffic. The check takes into consideration countries with both left-side and right-side traffic. There are five types of map errors that will be flagged by this check: 1. Wrong-way-roundabouts, 2. Multi-directional roundabouts, 3. Roundabouts with poor geometry, 4. Roundabouts with too few OSM Nodes, and 5. Roundabouts with sharp interior angles. |
+| [OverlappingEdgeCheck](checks/overlappingEdgeCheck.md) | The purpose of this check is to identify edges that share the same two consecutive geometry points. |
+| [RoadLinkCheck](checks/roadLinkCheck.md) |  Verifies that one end or the other of an edge is a fork to/from a road of the same class, that is not a link. |
 | [~~RoundaboutClosedLoopCheck~~ (Deprecated)](checks/roundaboutClosedLoopCheck.md) | The purpose of this check is to identify Roundabout Edges that are bi-directional or have an end Node with less than 2 connections.  **This check has been deprecated and is no longer active.** |
 | [RoundaboutConnectorCheck](checks/roundaboutConnectorCheck.md) | The purpose of this check is to identify roads that connect to a roundabout at too sharp an angle |
 | [RoundaboutValenceCheck](checks/roundaboutValenceCheck.md) | The purpose of this check is to identify OpenStreetMap (OSM) tagged roundabouts that have an unusual number of edges connected to them. |
 | [RoundaboutMissingTag](checks/roundaboutMissingTagCheck.md) | The purpose of this check is to identify Roundabouts with missing junction=roundabout tag. Candidate must be navigable, closed and round shape OSM Way that intersects with at least two navigable roads. |
 | [SharpAngleCheck](checks/sharpAngleCheck.md) | The purpose of this check is to identify roads with angles that are too sharp. Sharp angles may indicate inaccurate digitization once a certain threshold is exceeded. |
-| ShortSegmentCheck |  The purpose of this check is to identify short segments/edges (length is less than a configured minimum length) that have a node with less than or equal to a configured node valence connections. |
+| [ShortSegmentCheck](checks/shortSegmentCheck.md) |  The purpose of this check is to identify short segments/edges (length is less than a configured minimum length) that have a node with less than or equal to a configured node valence connections. |
 | [SignPostCheck](checks/signPostCheck.md) | The purpose of this check is to identify On-/Off-Ramps in motorways and trunk highways that are not relaying information from their respective sign posts. |
 | [SingleSegmentMotorwayCheck](checks/singleSegmentMotorwayCheck.md) | The purpose of this check is to identify ways tagged with highway=motorway that are not connected to any ways tagged the same. |
 | [SinkIslandCheck](tutorials/tutorial3-SinkIslandCheck.md) | The purpose of this check is to identify whether a network of car-navigable Edges can be exited. |
 | [SnakeRoadCheck](checks/snakeRoadCheck.md) | The purpose of the SnakeRoad check is to identify roads that should be split into two or more roads. |
 | [SuddenHighwayTypeChangeCheck](checks/suddenHighwayTypeChangeCheck.md) | The purpose of this check is to identify roads that jump to much different highway classifications. |
 | [UnwalkableWaysCheck](checks/unwalkableWaysCheck.md) | The purpose of this check is to identify any non-motorway single carriageway edges with no foot tags that cross any high-priority roads that are dual carriageways. |
-| ValenceOneImportantRoadCheck | This check identifies important roads that either start or end with valance-1 nodes. |
+| [ValenceOneImportantRoadCheck](checks/valenceOneImportantRoadCheck.md) | This check identifies important roads that either start or end with valance-1 nodes. |
 
 ## Nodes
 | Check Name | Check Description |
@@ -81,15 +81,18 @@ This document is a list of tables with a description and link to documentation f
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
 | [InvalidAccessTagCheck](checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |
+| [InvalidCharacterNameTagCheck](checks/invalidCharacterNameTagCheck.md) | The purpose of this checks is to identify Lines, Areas and Relations with invalid characters in name and localized name tags. |
 | [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md) | The purpose of this check is to identify highways in OSM with an invalid lanes tag value. |
 | InvalidTagsCheck | This flags features based on configurable filters. Each filter passed contains the atlas entity classes to check and a taggable filter to test objects against. If a feature is of one of the given classes and passes the associated TaggableFilter, it is flagged. |
 | [MixedCaseNameCheck](checks/mixedCaseNameCheck.md) | The purpose of this check is to identify names that contain invalid mixed cases so that they can be edited to be the standard format. |
 | [RoadNameGapCheck](checks/RoadNameGapCheck.md) | The purpose of this check is to identify edge connected between two edges whose name tag is same. Flag the edge if the edge has a name tag different to name tag of edges connected to it or if there is no name tag itself.
 | [RoadNameSpellingConsistencyCheck](checks/RoadNameSpellingConsistencyCheck.md) | The purpose of this check is to identify road segments that have a name Tag with a different spelling from that of other segments of the same road. This check is primarily meant to catch small errors in spelling, such as a missing letter, letter accent mixups, or capitalization errors. |
+| [SimilarTagValueCheck](checks/SimilarTagValueCheck.md) | The purpose of this check is to identify tags whose values are either duplicates or similar enough to warrant someone to look at them. |
 | ShortNameCheck | The short name check will validate that any and all names contain at least 2 letters in the name. |
 | [StreetNameIntegersOnlyCheck](checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
 | [TollValidationCheck](checks/tollValidationCheck.md) | The purpose of this check is to identify ways that need to have their toll tags investigated/added/removed.
 | [TunnelBridgeHeightLimitCheck](checks/tunnelBridgeHeightLimitCheck.md) | The purpose of this check is to identify roads with limited vertical clearance which do not have a maxheight tag. |
+| [UnknownHighwayTagCheck](checks/unknownHighwayTagCheck.md) | This check attempts to flag all highway tags that are unknown to the [osm wiki page](https://wiki.openstreetmap.org/wiki/Key:highway). |
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
 | [ConditionalRestrictionCheck](checks/conditionalRestrictionCheck.md) | The purpose of this check is to identify elements that have a :conditional tag that does not respect the established format. |
 | [SourceMaxspeedCheck](checks/sourceMaxspeedCheck.md) | The purpose of this check is to identify elements that have a source:maxspeed tag that does not follow the tagging rules. |
