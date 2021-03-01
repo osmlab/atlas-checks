@@ -53,6 +53,5 @@ public class TollValidationCheckTest
     {
         this.verifier.actual(this.setup.intersectingTollFeatureWithoutTag(), this.check);
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
     }
 }
