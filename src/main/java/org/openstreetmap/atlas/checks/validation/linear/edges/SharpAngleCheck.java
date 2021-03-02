@@ -27,8 +27,8 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
 public class SharpAngleCheck extends BaseCheck<Long>
 {
     private static final double THRESHOLD_DEGREES_DEFAULT = 97.0;
-    private static final String TOO_SHARP_INSTRUCTION_1 = "Highway {0,number,#} has too sharp an angle at {1}";
-    private static final String TOO_SHARP_INSTRUCTION_2 = "Highway {0,number,#} has {1} angles that are too sharp";
+    private static final String TOO_SHARP_INSTRUCTION_1 = "Way {0,number,#} has {1} node(s) with angle(s) that are too sharp.";
+    private static final String TOO_SHARP_INSTRUCTION_2 = "The node at {0} is too sharp.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TOO_SHARP_INSTRUCTION_1,
             TOO_SHARP_INSTRUCTION_2);
     private static final long serialVersionUID = 285618700794811828L;
@@ -69,25 +69,17 @@ public class SharpAngleCheck extends BaseCheck<Long>
         if (!offendingAngles.isEmpty() && !this.hasBeenFlagged(edge))
         {
             this.flagEdge(edge);
-            final String checkMessage;
-
-            if (offendingAngles.size() == 1)
-            {
-                // Single offending angle - output the location.
-                checkMessage = this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                        offendingAngles.get(0).getSecond());
-            }
-            else
-            {
-                // Multiple such angles - output the total count.
-                checkMessage = this.getLocalizedInstruction(1, object.getOsmIdentifier(),
-                        offendingAngles.size());
-            }
 
             final List<Location> offendingLocations = this.buildLocationList(offendingAngles);
-            return Optional.of(this.createFlag(object, checkMessage, offendingLocations));
-        }
+            final CheckFlag newFlag = this.createFlag(object, this.getLocalizedInstruction(0,
+                    object.getOsmIdentifier(), offendingAngles.size()), offendingLocations);
 
+            for (final Location sharpAngle : offendingLocations)
+            {
+                newFlag.addInstruction(this.getLocalizedInstruction(1, sharpAngle.toString()));
+            }
+            return Optional.of(newFlag);
+        }
         return Optional.empty();
     }
 
