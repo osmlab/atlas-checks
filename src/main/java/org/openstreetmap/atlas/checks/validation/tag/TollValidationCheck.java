@@ -130,8 +130,8 @@ public class TollValidationCheck extends BaseCheck<Long>
 
         // Case three: tag modeling needs to be investigated on and around edge in question/proved
         // escapable routes
-        if (this.escapableEdgesNullChecker(escapableInEdge, escapableOutEdge) && this
-                .isCaseThree(edgeInQuestion, edgeInQuestionTags, escapableInEdge, escapableOutEdge))
+        if (escapableInEdge != null && escapableOutEdge != null && this.isCaseThree(edgeInQuestion,
+                edgeInQuestionTags, escapableInEdge, escapableOutEdge))
         {
             markAsFlagged(edgeInQuestion.getOsmIdentifier());
             if (!isFlagged(escapableInEdge.getOsmIdentifier())
@@ -369,19 +369,6 @@ public class TollValidationCheck extends BaseCheck<Long>
             }
         }
         return Optional.empty();
-    }
-
-    /**
-     * @param escapableInEdge
-     *            escapable in edge
-     * @param escapableOutEdge
-     *            escapable out edge
-     * @return boolean for if they are both null
-     */
-    private boolean escapableEdgesNullChecker(final Edge escapableInEdge,
-            final Edge escapableOutEdge)
-    {
-        return escapableInEdge != null && escapableOutEdge != null;
     }
 
     /**
