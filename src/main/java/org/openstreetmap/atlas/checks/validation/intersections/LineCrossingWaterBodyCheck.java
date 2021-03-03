@@ -369,8 +369,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             for (final Location location : intersectionLocations)
             {
                 if (Iterables.asList(crossingItem.getAtlas().edgesContaining(location)).stream()
-                        .filter(edge -> this.canCrossWaterBodyFilter.test(edge))
-                        .collect(Collectors.toList()).isEmpty())
+                        .filter(this.canCrossWaterBodyFilter::test).collect(Collectors.toList())
+                        .isEmpty())
                 {
                     return false;
                 }
