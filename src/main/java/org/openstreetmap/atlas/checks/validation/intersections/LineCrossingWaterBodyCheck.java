@@ -159,6 +159,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * validly.
      *
      * @param multipolygonRelations
+     *            multipolygon relations
      * @return {@code true} if the multipolygon has valid tags which makes its members (lines) cross
      *         water body validly.
      */
@@ -172,6 +173,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * it. The VALID_LINE_TAGS allow the line to cross the waterbody.
      *
      * @param osmTags
+     *            tags
      * @return {@code true} if the crossing item has only the valid tags and no other tags.
      */
     private static boolean hasOnlyValidCrossingTags(final Map<String, String> osmTags)
@@ -194,6 +196,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * water body.
      *
      * @param crossingLine
+     *            crossing line
      * @return {@code true} if any of the three conditions are met.
      */
     private static boolean isBoundary(final AtlasEntity crossingLine)
@@ -268,29 +271,29 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 return Optional.empty();
             }
         }
+        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(object));
+        newFlag.addObject(object);
+
         // Then retrieve the invalid crossing edges, lines, buildings
         final Atlas atlas = object.getAtlas();
         final Iterable<AtlasItem> invalidCrossingItems = this.flagBuildings
-                ? new MultiIterable<>(this.collectOffendingLineItems(atlas, object, waterbody),
+                ? new MultiIterable<>(
+                        this.collectOffendingLineItems(atlas, object, waterbody, newFlag),
                         atlas.areasIntersecting(waterbody,
                                 area -> BuildingTag.isBuilding(area)
                                         && !NONOFFENDING_BUILDINGS.test(area)
                                         && LevelTag.areOnSameLevel(object, area)
                                         && !this.getInteractionsPerWaterbodyComponent(waterbody,
-                                                object, area.asPolygon()).isEmpty()))
+                                                object, area.asPolygon(), newFlag).isEmpty()))
                 : new MultiIterable<AtlasItem>(
-                        this.collectOffendingLineItems(atlas, object, waterbody));
-
+                        this.collectOffendingLineItems(atlas, object, waterbody, newFlag));
         // This waterbody has no invalid crossings
         if (!invalidCrossingItems.iterator().hasNext())
         {
             return Optional.empty();
         }
 
-        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(object));
-        newFlag.addObject(object);
         newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
-
         // Only record an OSM id as crossing once in the instruction
         final Set<Long> recordedOsmIds = new HashSet<>();
         // Go through crossing items and collect invalid crossings
@@ -300,6 +303,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // each edge will be marked explicitly.
         for (final AtlasItem crossingItem : invalidCrossingItems)
         {
+
             // Update the flag
             newFlag.addObject(crossingItem);
             if (!recordedOsmIds.contains(crossingItem.getOsmIdentifier()))
@@ -309,7 +313,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 recordedOsmIds.add(crossingItem.getOsmIdentifier());
             }
         }
-
         return Optional.of(newFlag);
     }
 
@@ -397,7 +400,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      * @return An {@link Iterable} of invalidly crossing line items
      */
     private Iterable<LineItem> collectOffendingLineItems(final Atlas atlas,
-            final AtlasObject object, final GeometricSurface waterbody)
+            final AtlasObject object, final GeometricSurface waterbody, final CheckFlag flag)
     {
         return atlas.lineItemsIntersecting(waterbody, lineItem ->
         {
@@ -407,11 +410,21 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 // and the waterbody (or its outer member components if it's a multipolygon)
                 final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent = this
                         .getInteractionsPerWaterbodyComponent(waterbody, object,
-                                lineItem.asPolyLine());
+                                lineItem.asPolyLine(), flag);
+
                 // Just need to see if the intersection points are allowed in OSM; if not flag them
                 return !interactionsPerWaterbodyComponent.isEmpty()
-                        && interactionsPerWaterbodyComponent.stream().anyMatch(
-                                tuple -> !this.canCrossWaterBody(lineItem, waterbody, tuple));
+                        && interactionsPerWaterbodyComponent.stream().anyMatch(tuple ->
+                        {
+                            final boolean validCrossWaterbody = this.canCrossWaterBody(lineItem,
+                                    waterbody, tuple);
+                            if (validCrossWaterbody)
+                            {
+                                flag.getPoints()
+                                        .removeIf(point -> tuple.getSecond().contains(point));
+                            }
+                            return !validCrossWaterbody;
+                        });
             }
             return false;
         });
@@ -438,16 +451,19 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
      */
     private Set<Tuple<PolyLine, Set<Location>>> getInteractionsPerWaterbodyComponent(
             final GeometricSurface waterbody, final AtlasObject object,
-            final PolyLine intersectingFeature)
+            final PolyLine intersectingFeature, final CheckFlag flag)
     {
         if (waterbody instanceof Polygon)
         {
-            final Set<Location> intersectionLocations = ((Polygon) waterbody)
+            Set<Location> intersectionLocations = ((Polygon) waterbody)
                     .intersections(intersectingFeature);
             if (intersectionLocations.isEmpty())
             {
                 return Set.of(Tuple.createTuple((Polygon) waterbody, Set.of()));
             }
+            intersectionLocations = Arrays.stream(intersectionLocations.toArray(new Location[0]))
+                    .collect(Collectors.toSet());
+            intersectionLocations.forEach(flag::addPoint);
             return Set.of(Tuple.createTuple((Polygon) waterbody, intersectionLocations));
         }
         // Get all non-sliced outer polygon members of the waterbody multipolygon relation
@@ -464,8 +480,13 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                     final PolyLine waterbodyComponentGeometry = member.getEntity() instanceof Area
                             ? new Polygon((Area) member.getEntity())
                             : new PolyLine((LineItem) member.getEntity());
-                    return new Tuple<>(waterbodyComponentGeometry,
-                            intersectingFeature.intersections(waterbodyComponentGeometry));
+                    Set<Location> intersectionLocations = intersectingFeature
+                            .intersections(waterbodyComponentGeometry);
+                    intersectionLocations = Arrays
+                            .stream(intersectionLocations.toArray(new Location[0]))
+                            .collect(Collectors.toSet());
+                    intersectionLocations.forEach(flag::addPoint);
+                    return new Tuple<>(waterbodyComponentGeometry, intersectionLocations);
                 })
                 // Only retain members that have intersections with the intersectingFeature OR are
                 // have the intersectingFeature entirely within them and not touching any inner

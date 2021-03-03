@@ -13,7 +13,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  */
 public class LineCrossingWaterBodyCheckTest
 {
-    private static LineCrossingWaterBodyCheck check = new LineCrossingWaterBodyCheck(
+    private static final LineCrossingWaterBodyCheck check = new LineCrossingWaterBodyCheck(
             ConfigurationResolver.emptyConfiguration());
 
     @Rule
@@ -56,7 +56,7 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(3, flag.getPolyLines().size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getPoints().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(8, flag.getPoints().size()));
     }
 
     @Test
@@ -75,7 +75,7 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.invalidLineCrossingAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(5, flag.getPolyLines().size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getPoints().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(8, flag.getPoints().size()));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.multipolygonMemberCrossingAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(4, flag.getPolyLines().size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getPoints().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(8, flag.getPoints().size()));
     }
 
     @Test
