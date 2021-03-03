@@ -287,8 +287,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             return Optional.empty();
         }
 
-        final CheckFlag newFlag = this.createFlag(object,
-                this.getLocalizedInstruction(0, object.getOsmIdentifier()));
+        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(object));
+        newFlag.addObject(object);
+        newFlag.addInstruction(this.getLocalizedInstruction(0, object.getOsmIdentifier()));
 
         // Only record an OSM id as crossing once in the instruction
         final Set<Long> recordedOsmIds = new HashSet<>();
@@ -299,30 +300,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         // each edge will be marked explicitly.
         for (final AtlasItem crossingItem : invalidCrossingItems)
         {
-            // Update the flag for this crossing line
+            // Update the flag
             newFlag.addObject(crossingItem);
             if (!recordedOsmIds.contains(crossingItem.getOsmIdentifier()))
             {
                 newFlag.addInstruction(this.getLocalizedInstruction(
                         crossingItem instanceof Area ? 2 : 1, crossingItem.getOsmIdentifier()));
-                if (crossingItem instanceof Line)
-                {
-                    this.getInteractionsPerWaterbodyComponent(waterbody, object,
-                            ((Line) crossingItem).asPolyLine()).stream()
-                            .forEach(tuple -> newFlag.addPoints(tuple.getSecond()));
-                }
-                else if (crossingItem instanceof Edge)
-                {
-                    this.getInteractionsPerWaterbodyComponent(waterbody, object,
-                            ((Edge) crossingItem).asPolyLine()).stream()
-                            .forEach(tuple -> newFlag.addPoints(tuple.getSecond()));
-                }
-                else if (crossingItem instanceof Area)
-                {
-                    this.getInteractionsPerWaterbodyComponent(waterbody, object,
-                            ((Area) crossingItem).asPolygon()).stream()
-                            .forEach(tuple -> newFlag.addPoints(tuple.getSecond()));
-                }
                 recordedOsmIds.add(crossingItem.getOsmIdentifier());
             }
         }
