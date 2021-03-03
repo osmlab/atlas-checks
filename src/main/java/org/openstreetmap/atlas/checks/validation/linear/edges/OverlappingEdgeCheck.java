@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LevelTag;
@@ -79,32 +80,16 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        final Set<Edge> edges = new OsmWayWalker((Edge) object).collectEdges();
+
         if (!this.isFlagged(object.getIdentifier()))
         {
-            final Atlas atlas = object.getAtlas();
-            final Set<AtlasObject> overlappingItems = new HashSet<>();
-            Location start = null;
-            for (final Location end : ((Edge) object).asPolyLine())
-            {
-                if (start != null)
-                {
-                    // we only have to check one end for intersecting edges
-                    final Rectangle box = start.boxAround(Distance.meters(0));
-                    // add all overlapping edges not yet flagged and not pedestrian areas
-                    overlappingItems.addAll(Iterables
-                            .stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
-                            .filter(notEqual(object).and(this.notIn(object))
-                                    .and(this.overlapsSegment(start, end))
-                                    .and(this.filterPedestrianAreas ? edge -> !this.edgeIsArea(edge)
-                                            : this.notPedestrianAreas((Edge) object))
-                                    .and(this.haveSameLevels(object)))
-                            .collectToSet());
-                }
-                start = end;
-            }
+            final Set<AtlasObject> overlappingItems = this.getOverlappingItems(object.getAtlas(),
+                    edges);
+
             if (!overlappingItems.isEmpty())
             {
-                this.markAsFlagged(object.getIdentifier());
+                edges.forEach(edge -> this.markAsFlagged(edge.getIdentifier()));
                 // Mark overlapping objects as flagged
                 overlappingItems
                         .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getIdentifier()));
@@ -147,6 +132,42 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
                 && (AREA_YES_TAG.test(edge) || CommonMethods.isClosedWay(edge))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && AREA_YES_TAG.test(edge));
+    }
+
+    /**
+     * Finds all overlapping {@link AtlasObject}s.
+     * 
+     * @param atlas
+     *            The {@link Atlas} the object is associated with.
+     * @param edges
+     *            {@link Set} of {@link Edge}s of the way the original object is a part of.
+     */
+    private Set<AtlasObject> getOverlappingItems(final Atlas atlas, final Set<Edge> edges)
+    {
+        final Set<AtlasObject> overlappingItems = new HashSet<>();
+        for (final Edge wayEdge : edges)
+        {
+            Location start = null;
+            for (final Location end : wayEdge.asPolyLine())
+            {
+                if (start != null)
+                {
+                    // we only have to check one end for intersecting edges
+                    final Rectangle box = start.boxAround(Distance.meters(0));
+                    // add all overlapping edges not yet flagged and not pedestrian areas
+                    overlappingItems.addAll(Iterables
+                            .stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
+                            .filter(notEqual(wayEdge).and(this.notIn(wayEdge))
+                                    .and(this.overlapsSegment(start, end))
+                                    .and(this.filterPedestrianAreas ? edge -> !this.edgeIsArea(edge)
+                                            : this.notPedestrianAreas(wayEdge))
+                                    .and(this.haveSameLevels(wayEdge)))
+                            .collectToSet());
+                }
+                start = end;
+            }
+        }
+        return overlappingItems;
     }
 
     /**
