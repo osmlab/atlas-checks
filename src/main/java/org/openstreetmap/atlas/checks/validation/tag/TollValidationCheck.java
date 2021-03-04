@@ -103,8 +103,14 @@ public class TollValidationCheck extends BaseCheck<Long>
         if (this.isCaseOne(edgeInQuestion, edgeInQuestionTags))
         {
             markAsFlagged(edgeInQuestion.getOsmIdentifier());
-            return Optional.of(this.createFlag(new OsmWayWalker(edgeInQuestion).collectEdges(),
-                    this.getLocalizedInstruction(0, edgeInQuestion.getOsmIdentifier())));
+            return Optional.of(this
+                    .createFlag(new OsmWayWalker(edgeInQuestion).collectEdges(),
+                            this.getLocalizedInstruction(0, edgeInQuestion.getOsmIdentifier()))
+                    .addFixSuggestion(FeatureChange.add(
+                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                    .from((AtlasEntity) object)).withAddedTag(TollTag.KEY,
+                                            TollTag.YES.toString().toLowerCase()),
+                            object.getAtlas())));
         }
 
         // Case Two: Inconsistent toll tags on edge.

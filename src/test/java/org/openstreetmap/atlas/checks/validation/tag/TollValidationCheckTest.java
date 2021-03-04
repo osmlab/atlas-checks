@@ -35,7 +35,6 @@ public class TollValidationCheckTest
     @Test
     public void escapableWayNeedsTollTagRemoved()
     {
-        System.out.println("printing");
         this.verifier.actual(this.setup.escapableWayNeedsTollTagRemoved(), this.check);
         this.verifier.verifyExpectedSize(2);
     }
@@ -53,5 +52,6 @@ public class TollValidationCheckTest
     {
         this.verifier.actual(this.setup.intersectingTollFeatureWithoutTag(), this.check);
         this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
     }
 }
