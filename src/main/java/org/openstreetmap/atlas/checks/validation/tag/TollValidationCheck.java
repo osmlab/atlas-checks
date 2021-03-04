@@ -520,7 +520,7 @@ public class TollValidationCheck extends BaseCheck<Long>
                         && HighwayTag.isCarNavigableHighway(outEdge))
                 .sorted().collect(Collectors.toList());
 
-        if (inEdges.size() > 0 && outEdges.size() > 0 && !JunctionTag.isRoundabout(edge)
+        if (!inEdges.isEmpty() && !outEdges.isEmpty() && !JunctionTag.isRoundabout(edge)
                 && !JunctionTag.isCircular(edge))
         {
             return this.allInAndOutEdgesHaveTollTags(inEdges, outEdges);
