@@ -123,8 +123,8 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
     private FeatureChange getFixSuggestion(final AtlasObject object, final boolean hasFerryTag,
             final boolean hasSameHighwayClassification)
     {
-        final CompleteEntity<CompleteEdge> completeEntity = (CompleteEntity) CompleteEntity
-                .from((AtlasEntity) object);
+        final CompleteEntity<CompleteEdge> completeEntity = ((CompleteEntity) CompleteEntity
+                .shallowFrom((AtlasEntity) object)).withTags(object.getTags());
         if (hasFerryTag && !hasSameHighwayClassification)
         {
             completeEntity.withReplacedTag(FerryTag.KEY, FerryTag.KEY, object.tag(HighwayTag.KEY));
