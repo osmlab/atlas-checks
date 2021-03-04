@@ -49,7 +49,7 @@ This document is a list of tables with a description and link to documentation f
 | [DuplicateNodeCheck](checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
 | [InvalidMiniRoundaboutCheck](checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
 | [LevelCrossingOnRailwayCheck](checks/LevelCrossingOnRailwayCheck.md) | This check identifies incorrectly tagged or missing nodes at railway/highway intersections. |
-| NodeValenceCheck | This check identifies nodes with too many connections. |
+| [NodeValenceCheck](checks/nodeValenceCheck.md) | This check identifies nodes with too many connections. |
 | [OrphanNodeCheck](tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
 
 ## Points
