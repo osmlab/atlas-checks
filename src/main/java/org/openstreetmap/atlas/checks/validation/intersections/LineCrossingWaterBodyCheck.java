@@ -398,7 +398,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent = this
                         .getInteractionsPerWaterbodyComponent(waterbody, object,
                                 lineItem.asPolyLine(), flag);
-                AtomicBoolean validCrossWaterbody = new AtomicBoolean(true);
+                final AtomicBoolean validCrossWaterbody = new AtomicBoolean(true);
                 // Just need to see if the intersection points are allowed in OSM; if not flag them
                 if (interactionsPerWaterbodyComponent.isEmpty())
                 {
@@ -449,7 +449,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     {
         if (waterbody instanceof Polygon)
         {
-            Set<Location> intersectionLocations = ((Polygon) waterbody)
+            final Set<Location> intersectionLocations = ((Polygon) waterbody)
                     .intersections(intersectingFeature);
             if (intersectionLocations.isEmpty())
             {
@@ -474,7 +474,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                     final PolyLine waterbodyComponentGeometry = member.getEntity() instanceof Area
                             ? new Polygon((Area) member.getEntity())
                             : new PolyLine((LineItem) member.getEntity());
-                    Set<Location> intersectionLocations = intersectingFeature
+                    final Set<Location> intersectionLocations = intersectingFeature
                             .intersections(waterbodyComponentGeometry);
                     return new Tuple<>(waterbodyComponentGeometry, intersectionLocations);
                 })
