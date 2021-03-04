@@ -2,7 +2,7 @@
 
 #### Description
 
-TThis check flags disconnected Edges in OSM that should be connected. 
+This check flags disconnected Edges in OSM that should be connected. 
 
 #### Configuration
 

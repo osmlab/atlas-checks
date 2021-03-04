@@ -102,7 +102,7 @@ This document is a list of tables with a description and link to documentation f
 | :--------- | :---------------- |
 | [ApproximateWayCheck](checks/approximateWayCheck.md) | The purpose of this check is to identify ways that are crudely drawn, there is a discrepancy between the drawing and the real way, especially for curves. |
 | [BuildingRoadIntersectionCheck](checks/buildingRoadIntersectionCheck.md) | The purpose of this check is to identify buildings that intersect/overlap roads. |
-| DuplicateLocationInPolyLineCheck |  Identifies OSM ways with repeating locations. |
+| [DuplicateLocationInPolyLineCheck](checks/duplicateLocationInPolyLineCheck.md) |  Identifies OSM ways with repeating locations. |
 | [~~DuplicateWaysCheck~~ (Deprecated)](checks/duplicateWaysCheck.md) | The purpose of this check is to identify Ways that have either had their entire length or a segment of their length duplicated or drawn multiple times. **This check has been deprecated and is no longer active.** |
 | [GeneralizedCoastlineCheck](checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart, have angles that are too sharp, and/or have _source=PGS_ Tag values. |
 | [IntersectingBuildingsCheck](checks/intersectingBuildingsCheck.md) | The purpose of this check is to identify buildings that intersect other buildings. |
