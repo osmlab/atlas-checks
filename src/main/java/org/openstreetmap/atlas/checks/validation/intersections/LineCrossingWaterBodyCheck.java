@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -397,20 +398,27 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent = this
                         .getInteractionsPerWaterbodyComponent(waterbody, object,
                                 lineItem.asPolyLine(), flag);
-
+                AtomicBoolean validCrossWaterbody = new AtomicBoolean(true);
                 // Just need to see if the intersection points are allowed in OSM; if not flag them
-                return !interactionsPerWaterbodyComponent.isEmpty()
-                        && interactionsPerWaterbodyComponent.stream().anyMatch(tuple ->
+                if (interactionsPerWaterbodyComponent.isEmpty())
+                {
+                    return false;
+                }
+                else
+                {
+                    interactionsPerWaterbodyComponent.forEach(tuple ->
+                    {
+                        if (this.canCrossWaterBody(lineItem, waterbody, tuple))
                         {
-                            final boolean validCrossWaterbody = this.canCrossWaterBody(lineItem,
-                                    waterbody, tuple);
-                            if (validCrossWaterbody)
-                            {
-                                flag.getPoints()
-                                        .removeIf(point -> tuple.getSecond().contains(point));
-                            }
-                            return !validCrossWaterbody;
-                        });
+                            flag.getPoints().removeIf(point -> tuple.getSecond().contains(point));
+                        }
+                        else
+                        {
+                            validCrossWaterbody.getAndSet(false);
+                        }
+                    });
+                }
+                return !validCrossWaterbody.get();
             }
             return false;
         });
@@ -447,13 +455,13 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             {
                 return Set.of(Tuple.createTuple((Polygon) waterbody, Set.of()));
             }
-            intersectionLocations = Arrays.stream(intersectionLocations.toArray(new Location[0]))
-                    .collect(Collectors.toSet());
             intersectionLocations.forEach(flag::addPoint);
             return Set.of(Tuple.createTuple((Polygon) waterbody, intersectionLocations));
         }
+
         // Get all non-sliced outer polygon members of the waterbody multipolygon relation
-        return ((Relation) object).members().stream()
+        final Set<Tuple<PolyLine, Set<Location>>> membersIntersections = ((Relation) object)
+                .members().stream()
                 .flatMap(member -> member.getEntity() instanceof Relation
                         ? ((Relation) member.getEntity()).members().stream()
                         : Stream.of(member))
@@ -468,10 +476,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                             : new PolyLine((LineItem) member.getEntity());
                     Set<Location> intersectionLocations = intersectingFeature
                             .intersections(waterbodyComponentGeometry);
-                    intersectionLocations = Arrays
-                            .stream(intersectionLocations.toArray(new Location[0]))
-                            .collect(Collectors.toSet());
-                    intersectionLocations.forEach(flag::addPoint);
                     return new Tuple<>(waterbodyComponentGeometry, intersectionLocations);
                 })
                 // Only retain members that have intersections with the intersectingFeature OR are
@@ -484,6 +488,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                                         innerMember -> intersectingFeature.intersects(innerMember)
                                                 || intersectingFeature.within(innerMember))))
                 .collect(Collectors.toSet());
+
+        membersIntersections.forEach(tuple -> tuple.getSecond().forEach(flag::addPoint));
+        return membersIntersections;
     }
 
     /**
