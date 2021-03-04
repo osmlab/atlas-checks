@@ -45,7 +45,7 @@ This document is a list of tables with a description and link to documentation f
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [BigNodeBadDataCheck](checks/bigNodeBadDataCheck.md) | The purpose of this check is to flag any BigNodes that have may have some bad data. |
-| ConnectivityCheck | This check identifies nodes that should be connected to nearby nodes or edges. |
+| [ConnectivityCheck](checks/connectivityCheck.md) | This check identifies nodes that should be connected to nearby nodes or edges. |
 | [DuplicateNodeCheck](checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
 | [InvalidMiniRoundaboutCheck](checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
 | [LevelCrossingOnRailwayCheck](checks/LevelCrossingOnRailwayCheck.md) | This check identifies incorrectly tagged or missing nodes at railway/highway intersections. |
