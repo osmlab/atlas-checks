@@ -54,4 +54,12 @@ public class TollValidationCheckTest
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> verifyFixSuggestions(flag, 1));
     }
+
+    @Test
+    public void nonInconsistentTollTagEscapablePreliminaryCheck()
+    {
+        this.verifier.actual(this.setup.nonInconsistentTollTagEscapablePreliminaryCheck(),
+                this.check);
+        this.verifier.verifyExpectedSize(2);
+    }
 }
