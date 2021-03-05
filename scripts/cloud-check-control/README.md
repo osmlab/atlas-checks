@@ -128,5 +128,5 @@ Required Parameters: `--project`, `--mrkey`, `--checks`
 Example: Create MapRoulette Project "YourProject" and load generated "PoolSizeCheck" for single country.
 
 ```
-./cloudAtlasCheckControl.py --terminate challenge --project="YourProject" --mrkey="api|key" --countries=USA --checks="PoolSizeCheck"  --key=my-key --config=my-s3-bucket/Atlas_Checks/configurations/special_config.json --input=my-s3-bucket/Atlas_Generator/Atlas_Files --jar=my-s3-bucket/atlas-checks-X.X.XX-SNAPSHOT-shadow.jar
+./cloudAtlasCheckControl.py --terminate challenge --project="YourProject" --mrkey="api|key" --countries=USA --checks="PoolSizeCheck"  --key=my-key --config=s3://my-s3-bucket/Atlas_Checks/configurations/special_config.json --input=s3://my-s3-bucket/Atlas_Generator/Atlas_Files --jar=s3://my-s3-bucket/atlas-checks-X.X.XX-SNAPSHOT-shadow.jar
 ```
