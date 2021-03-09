@@ -287,7 +287,7 @@ class CloudAtlasChecksControl:
                 )
             )
             if self.ssh_cmd(
-                "aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
+                "rm -rf {2}flag/*; aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
                     self.s3InFolder, c, self.atlasOutDir
                 )
             ):
