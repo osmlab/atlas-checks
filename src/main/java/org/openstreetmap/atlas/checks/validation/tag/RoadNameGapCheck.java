@@ -13,6 +13,7 @@ import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -54,8 +55,10 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 7104778218412127847L;
     private static final List<String> VALID_HIGHWAY_TAG_DEFAULT = Arrays.asList("primary",
             "secondary", "tertiary", "trunk", "motorway");
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
-            "Edge name {1} is different from in edge name and out edge name.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "Road name is empty for way with id {0,number,#}.",
+            "The name, ''{0}'', for way id {1,number,#} is different from the ways it is connected to, ''{2}''. Consider setting the name so that it is consistent with the other ways.",
+            "The name, ''{0}'', for bridge with id {1,number,#} is different from the ways it is connected to, ''{2}''. Consider setting the name of this way to ''{2}'' so that it is consistent with the other ways, setting ''bridge:name={0}'' to save the original name of the bridge.");
 
     private final List<String> validHighwayTag;
 
@@ -123,9 +126,9 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         }
         // Create flag when we have in edge and out edge with same name but intermediate edge
         // doesn't have a name.
+        final String nameSuggestion = matchingInAndOutEdgeNames.iterator().next();
         if (edge.getName().isEmpty())
         {
-            final String nameSuggestion = matchingInAndOutEdgeNames.iterator().next();
             return Optional
                     .of(this.createFlag(object,
                             this.getLocalizedInstruction(0, edge.getOsmIdentifier()))
@@ -142,10 +145,13 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
+            final int instructionIndex = BridgeTag.isBridge(object) ? 2 : 1;
             return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
                     ? Optional.empty()
-                    : Optional.of(this.createFlag(object, this.getLocalizedInstruction(1,
-                            edge.getOsmIdentifier(), edgeName.get())));
+                    : Optional.of(
+                            this.createFlag(object, this.getLocalizedInstruction(instructionIndex,
+                                    edgeName.get(), edge.getOsmIdentifier(), nameSuggestion)));
+
         }
         return Optional.empty();
     }
