@@ -579,7 +579,7 @@
     "challenge": {
       "description": "Tasks containing features with unusually long names.",
       "blurb": "Unusually long names.",
-      "instruction": "Open your favorite editor validate that the marked names of the features are correct.",
+      "instruction": "Open your favorite editor and validate that the marked names of the features are correct.",
       "difficulty": "EASY"
     }
   },

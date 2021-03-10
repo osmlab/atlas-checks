@@ -1,7 +1,7 @@
 # Long Name Check
 
 This check flags features with names longer than a configurable length. 
-It's expected use is to detect descriptions in name tags or name tags containing multiple names. 
+Its expected use is to detect descriptions in name tags or name tags containing multiple names. 
 
 Multiple localized and non-localized tags are checked. 
 The list of tags can be found [here](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/tags/names/NameFinder.java#L39).

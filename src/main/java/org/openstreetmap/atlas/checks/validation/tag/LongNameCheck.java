@@ -23,7 +23,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author bbreithaupt
  */
-public class LongNameCheck extends BaseCheck<Long>
+public class LongNameCheck extends BaseCheck<String>
 {
     private static final long serialVersionUID = -8395117392888327533L;
     private static final long NAME_MAX_DEFAULT = 40;
@@ -58,7 +58,7 @@ public class LongNameCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !this.isFlagged(object.getOsmIdentifier())
+        return !this.isFlagged(this.getUniqueOSMIdentifier(object))
                 && object.getTags().keySet().stream().anyMatch(this::isNameTag);
     }
 
@@ -79,7 +79,7 @@ public class LongNameCheck extends BaseCheck<Long>
 
         if (!invalidNameTags.isEmpty())
         {
-            this.markAsFlagged(object.getOsmIdentifier());
+            this.markAsFlagged(this.getUniqueOSMIdentifier(object));
             final String instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier(),
                     this.nameMax, String.join(", ", invalidNameTags));
             return Optional.of(object instanceof Edge
