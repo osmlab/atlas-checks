@@ -468,21 +468,39 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                     @Loc(LOCATION_OUTSIDE_AREA_1) }, tags = "railway=tram") })
     private Atlas invalidCrossingLineItemAtlas;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+                    @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
+                    @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) },
+            // Areas
+            areas = { @Area(id = "100", tags = { "iso_country_code=USA",
+                    "another_tag=exists" }, coordinates = { @Loc(AREA_LOCATION_1),
+                            @Loc(AREA_LOCATION_2), @Loc(AREA_LOCATION_3) }) },
+            // Lines
+            lines = { @Line(tags = "railway=yes", coordinates = { @Loc(LOCATION_OUTSIDE_AREA_1),
+                    @Loc(AREA_LOCATION_BETWEEN_2_AND_3) }) },
+            // Relations
+            relations = { @Relation(tags = { "type=multipolygon", "natural=water" }, members = {
+                    @Member(id = "100", role = "outer", type = "area") }) })
+    private Atlas invalidLineCrossingRelationWaterbody;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "ferry=yes"),
             @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
             @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
-            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
-            @Node(coordinates = @Loc(value = AREA_LOCATION_BETWEEN_2_AND_3)) }, areas = {
-                    @Area(id = "100", tags = { "iso_country_code=USA",
-                            "another_tag=exists" }, coordinates = { @Loc(AREA_LOCATION_1),
-                                    @Loc(AREA_LOCATION_2), @Loc(AREA_LOCATION_3) }) }, lines = {
-                                            @Line(tags = "railway=yes", coordinates = {
-                                                    @Loc(LOCATION_OUTSIDE_AREA_1),
-                                                    @Loc(AREA_LOCATION_BETWEEN_2_AND_3) }) }, relations = {
-                                                            @Relation(tags = { "type=multipolygon",
-                                                                    "natural=water" }, members = {
-                                                                            @Member(id = "100", role = "outer", type = "area") }) })
-    private Atlas invalidLineCrossingRelationWaterbody;
+            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)) },
+            // area
+            areas = { @Area(coordinates = { @Loc(value = AREA_LOCATION_1),
+                    @Loc(value = AREA_LOCATION_2),
+                    @Loc(value = AREA_LOCATION_3) }, tags = { "natural=water" }) },
+            // edges
+            edges = {
+                    // an edge
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_1),
+                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }, tags = { "highway=track" }) })
+    private Atlas validFerryStopIntersection;
 
     @TestAtlas(nodes = {
             @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "amenity=FERRY_TERMINAL"),
@@ -497,7 +515,7 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
             edges = {
                     // an edge
                     @Edge(coordinates = { @Loc(value = AREA_LOCATION_1),
-                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }) })
+                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }, tags = { "highway=track" }) })
     private Atlas validFerryTerminalIntersection;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1), tags = "ford=yes"),
@@ -512,8 +530,24 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
             edges = {
                     // an edge
                     @Edge(coordinates = { @Loc(value = AREA_LOCATION_1),
-                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }) })
+                            @Loc(value = LOCATION_OUTSIDE_AREA_1) }, tags = { "highway=track" }) })
     private Atlas validFordedRoad;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_2), tags = "leisure=slipway"),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_3)),
+            @Node(coordinates = @Loc(value = AREA_LOCATION_4)),
+            @Node(coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_2)) },
+            // area
+            areas = { @Area(coordinates = { @Loc(value = AREA_LOCATION_1),
+                    @Loc(value = AREA_LOCATION_2), @Loc(value = AREA_LOCATION_3),
+                    @Loc(value = AREA_LOCATION_4) }, tags = { "natural=water" }) },
+            // edges
+            edges = {
+                    // an edge
+                    @Edge(coordinates = { @Loc(value = AREA_LOCATION_2),
+                            @Loc(value = LOCATION_OUTSIDE_AREA_2) }, tags = { "highway=track" }) })
+    private Atlas validSlipwayIntersection;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_1)),
             @Node(coordinates = @Loc(value = MULIPOLYGON_INNER_2)),
@@ -659,6 +693,11 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
         return this.validCrossingLineItemAtlas;
     }
 
+    public Atlas validFerryStopIntersection()
+    {
+        return this.validFerryStopIntersection;
+    }
+
     public Atlas validFerryTerminalIntersection()
     {
         return this.validFerryTerminalIntersection;
@@ -679,8 +718,14 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
         return this.validIntersectionItemsAtlas;
     }
 
+    public Atlas validSlipwayIntersection()
+    {
+        return this.validSlipwayIntersection;
+    }
+
     public Atlas validStreetWithinInnerMember()
     {
         return this.validStreetWithinInnerMember;
     }
+
 }

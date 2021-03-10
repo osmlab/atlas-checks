@@ -47,6 +47,7 @@ import org.openstreetmap.atlas.tags.SourceTag;
 import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.collections.MultiIterable;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.tuples.Tuple;
@@ -87,10 +88,10 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "ford->!no&ford->*";
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
-    private static final String BUILDING_TAGS_DO_NOT_FLAG = "public_transport->station,aerialway=station";
+    private static final String BUILDING_TAGS_DO_NOT_FLAG = "waterway->dam|public_transport->station,platform|aerialway->station";
     private static final TaggableFilter NONOFFENDING_BUILDINGS = TaggableFilter
             .forDefinition(BUILDING_TAGS_DO_NOT_FLAG);
-    private static final String DEFAULT_VALID_INTERSECTING_NODE = "ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
+    private static final String DEFAULT_VALID_INTERSECTING_NODE = "ferry->!no&ferry->*|ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal";
     private static final long SHAPEPOINTS_MIN_DEFAULT = 1;
     private static final long SHAPEPOINTS_MAX_DEFAULT = 5000;
     private static final Logger logger = LoggerFactory.getLogger(LineCrossingWaterBodyCheck.class);
@@ -360,18 +361,31 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             return false;
         }
 
+        // If a street node is at the water border, it should be tagged with any of
+        // this.intersectingNodesNonoffending or be part of another edge that can cross a water body
+        if (!((Edge) crossingItem).connectedNodes().stream()
+                .filter(node -> waterbodyComponent.contains(node.getLocation()))
+                .allMatch(this.intersectingNodesNonoffending))
+        {
+            for (final Location location : intersectionLocations)
+            {
+                if (Iterables.asList(crossingItem.getAtlas().edgesContaining(location)).stream()
+                        .filter(this.canCrossWaterBodyFilter::test).collect(Collectors.toList())
+                        .isEmpty())
+                {
+                    return false;
+                }
+            }
+        }
+
         final Predicate<Node> nodeHasFordTag = item -> !item.getTag(FordTag.KEY)
                 .orElse(FordTag.NO.name()).equalsIgnoreCase(FordTag.NO.name());
 
-        // If a street node is at the water border, it should be tagged with any of
-        // this.intersectingNodesNonoffending
         // If a street node is in the water, it should be a ford.
         return ((Edge) crossingItem).connectedNodes().stream()
-                .filter(node -> waterbodyComponent.contains(node.getLocation()))
-                .allMatch(this.intersectingNodesNonoffending)
-                && ((Edge) crossingItem).connectedNodes().stream()
-                        .filter(node -> waterbody.fullyGeometricallyEncloses(node.getLocation()))
-                        .allMatch(nodeHasFordTag);
+                .filter(node -> !waterbodyComponent.contains(node.getLocation())
+                        && waterbody.fullyGeometricallyEncloses(node.getLocation()))
+                .allMatch(nodeHasFordTag);
     }
 
     /**

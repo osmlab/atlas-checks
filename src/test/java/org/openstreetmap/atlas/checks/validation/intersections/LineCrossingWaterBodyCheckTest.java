@@ -130,6 +130,13 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testValidFerryStopIntersection()
+    {
+        this.verifier.actual(this.setup.validFerryStopIntersection(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testValidFerryTerminalIntersection()
     {
         this.verifier.actual(this.setup.validFerryTerminalIntersection(), check);
@@ -168,6 +175,13 @@ public class LineCrossingWaterBodyCheckTest
                 new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
                         "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
                                 + "    \"lineItems.offending\": \"railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature\" }}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidSlipwayIntersection()
+    {
+        this.verifier.actual(this.setup.validSlipwayIntersection(), check);
         this.verifier.verifyEmpty();
     }
 
