@@ -1,5 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import org.antlr.v4.runtime.misc.Triple;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Rectangle;
@@ -8,6 +11,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.tags.BuildingHeightTag;
 import org.openstreetmap.atlas.tags.BuildingLevelsTag;
 import org.openstreetmap.atlas.tags.BuildingPartTag;
 import org.openstreetmap.atlas.tags.BuildingTag;
@@ -19,6 +23,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +40,10 @@ public class TallBuildingCheck extends BaseCheck<Long>
     private static final long serialVersionUID = -6979838256518757743L;
     private static final String TALL_BUILDING_INSTRUCTIONS = "Building {0, number, #} has a 'levels' tag over 100 or an outlying 'height' tag, please adjust them as needed.";
     private static final String TALL_BUILDING_OVER_HUNDRED_INSTRUCTIONS = "Building {0, number, #} has a levels tag above 100, please adjust levels as needed.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(TALL_BUILDING_INSTRUCTIONS);
+    private static final List<String> FALLBACK_INSTRUCTIONS = List.of(TALL_BUILDING_INSTRUCTIONS, TALL_BUILDING_OVER_HUNDRED_INSTRUCTIONS);
     private static final double BUFFER_DISTANCE_DEFAULT = 1600.0;
     private final double bufferDistanceMeters;
+    Cache<Rectangle, Triple<Double, Double, Double>> cache = CacheBuilder.newBuilder().build();
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -83,7 +89,6 @@ public class TallBuildingCheck extends BaseCheck<Long>
     {
         markAsFlagged(object.getOsmIdentifier());
         Map<String, String> tags = object.getOsmTags();
-        Set<AtlasObject> flags = new HashSet<>();
 
         try
         {
@@ -96,59 +101,65 @@ public class TallBuildingCheck extends BaseCheck<Long>
         }
         catch (Exception exception)
         {
-            try
+            final Optional<Triple<Double, Double, Double>> objectIntersectsCachedRectangleStatsOptional = this.getObjectIntersectsCachedRectangleStats(cache, object);
+
+            if (this.hasBuildingHeightTag(tags) && buildingHeightCanBeParsed(tags) && objectIntersectsCachedRectangleStatsOptional.isPresent())
             {
-                List<Double> sortedBuildingHeightList = getSortedBuildingHeightsWithinBufferRadius(object);
-                Set<AtlasObject> intersectingBuildings = getIntersectingBuildings(object);
+                final Triple<Double, Double, Double> objectIntersectsCachedRectangleStats = objectIntersectsCachedRectangleStatsOptional.get();
+                double buildingHeight = Double.parseDouble(tags.get(BuildingHeightTag.KEY));
+                if (this.isStrongOutlier(buildingHeight, objectIntersectsCachedRectangleStats.a, objectIntersectsCachedRectangleStats.b, objectIntersectsCachedRectangleStats.c))
+                {
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                        object.getOsmIdentifier())));
+                }
+            }
+
+            if (objectIntersectsCachedRectangleStatsOptional.isEmpty() && this.hasBuildingHeightTag(tags) && this.buildingHeightCanBeParsed(tags))
+            {
+                Rectangle bufferArea = this.getBufferArea(this.getBuildingBounds(object));
+                Iterable<AtlasItem> intersectingItems = object.getAtlas().itemsIntersecting(bufferArea);
+                Set<Map<Long, String>> intersectingBuildings = getIntersectingBuildingsIdAndBuildingHeightTag(object, intersectingItems);
+                List<Double> sortedBuildingHeightList = getSortedBuildingHeightsWithinBufferRadius(intersectingBuildings);
 
                 double lowerQuartile = getLowerQuartile(sortedBuildingHeightList);
                 double upperQuartile = getUpperQuartile(sortedBuildingHeightList);
                 double innerQuartileRange = getInnerQuartileRange(sortedBuildingHeightList);
                 double buildingHeight = Double.parseDouble(tags.get(HeightTag.KEY));
 
-                if (hasBuildingHeightTag(tags) && lowerQuartile != -100.0
+                cache.put(bufferArea, new Triple<>(lowerQuartile, upperQuartile, innerQuartileRange));
+
+                if (lowerQuartile != -100.0
                         && upperQuartile != -100.0
                         && isStrongOutlier(buildingHeight, lowerQuartile, upperQuartile, innerQuartileRange))
                 {
-                    for (AtlasObject intersectingBuilding : intersectingBuildings)
-                    {
-                        Map<String, String> intersectingBuildingTags = intersectingBuilding.getTags();
-                        if (intersectingBuildingTags.containsKey(HeightTag.KEY) && !intersectingBuildingTags.get(HeightTag.KEY).isEmpty())
-                        {
-                            try
-                            {
-                                double intersectingBuildingHeight = Double.parseDouble(intersectingBuildingTags.get(HeightTag.KEY));
-                                if (!isFlagged(intersectingBuilding.getOsmIdentifier())
-                                        && isStrongOutlier(intersectingBuildingHeight, lowerQuartile, upperQuartile, innerQuartileRange))
-                                {
-                                    markAsFlagged(intersectingBuilding.getOsmIdentifier());
-                                    flags.add(intersectingBuilding);
-                                }
-                            }
-                            catch (Exception ignored)
-                            {
-
-                            }
-                        }
-                    }
-                    flags.add(object);
-                    return Optional.of(this.createFlag(flags, this.getLocalizedInstruction(0,
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
                             object.getOsmIdentifier())));
                 }
-            }
-            catch (Exception exception2)
-            {
-                return Optional.empty();
-            }
-        }
 
+            }
+            return Optional.empty();
+        }
         return Optional.empty();
     }
+
 
     @Override
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    private boolean buildingHeightCanBeParsed(Map<String,String> tags)
+    {
+        try
+        {
+            Double.parseDouble(tags.get(BuildingHeightTag.KEY));
+            return true;
+        }
+        catch (Exception exception)
+        {
+            return false;
+        }
     }
 
     private Rectangle getBuildingBounds(AtlasObject  object)
@@ -189,35 +200,33 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return bounds.expand(Distance.meters(this.bufferDistanceMeters));
     }
 
-    private Set<AtlasObject> getIntersectingBuildings(AtlasObject object)
+    private Set<Map<Long, String>> getIntersectingBuildingsIdAndBuildingHeightTag(AtlasObject object, Iterable<AtlasItem> intersectingItems)
     {
-        Set<AtlasObject> buildingsWithinBuffer = new HashSet<>();
-        Rectangle bufferArea = this.getBufferArea(this.getBuildingBounds(object));
-        Iterable<AtlasItem> intersectingItems = object.getAtlas().itemsIntersecting(bufferArea);
+        Set<Map<Long, String>> buildingsWithHeightTagWithinBuffer = new HashSet<>();
         for (AtlasItem atlasItem : intersectingItems)
         {
             Map<String, String> tags = atlasItem.getTags();
             if ((this.isBuildingRelationMember(object) || this.isBuildingOrPart(object)) && this.hasBuildingHeightTag(tags))
             {
-                buildingsWithinBuffer.add(atlasItem);
+                Map<Long, String> atlasItemProperties = new HashMap<>();
+                atlasItemProperties.put(atlasItem.getOsmIdentifier(), tags.get(BuildingHeightTag.KEY));
+                buildingsWithHeightTagWithinBuffer.add(atlasItemProperties);
             }
         }
-        return buildingsWithinBuffer;
+        return buildingsWithHeightTagWithinBuffer;
     }
 
-    private List<Double> getSortedBuildingHeightsWithinBufferRadius(AtlasObject object)
+    private List<Double> getSortedBuildingHeightsWithinBufferRadius(Set<Map<Long, String>> buildingsWithHeightTagWithinBuffer)
     {
         List<Double> buildingHeightsWithinBuffer = new ArrayList<>();
-        Rectangle bufferArea = this.getBufferArea(this.getBuildingBounds(object));
-        Iterable<AtlasItem> intersectingItems = object.getAtlas().itemsIntersecting(bufferArea);
-        for (AtlasItem atlasItem : intersectingItems)
+
+        for (Map<Long, String> buildingWithinBuffer : buildingsWithHeightTagWithinBuffer)
         {
-            Map<String, String> tags = atlasItem.getTags();
-            if ((this.isBuildingRelationMember(object) || this.isBuildingOrPart(object)) && this.hasBuildingHeightTag(tags))
+            for (Map.Entry<Long, String> entry : buildingWithinBuffer.entrySet())
             {
                 try
                 {
-                    double buildingHeight = Double.parseDouble(tags.get(HeightTag.KEY));
+                    double buildingHeight = Double.parseDouble(entry.getValue());
                     buildingHeightsWithinBuffer.add(buildingHeight);
                 }
                 catch(Exception ignored)
@@ -226,6 +235,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 }
             }
         }
+
         Collections.sort(buildingHeightsWithinBuffer);
         return buildingHeightsWithinBuffer;
     }
@@ -261,6 +271,27 @@ public class TallBuildingCheck extends BaseCheck<Long>
                         .anyMatch(member -> member.getEntity().equals(object)
                                 && (member.getRole().equals("outline"))
                                 || member.getRole().equals("part")));
+    }
+
+    private  Optional<Triple<Double, Double, Double>> getObjectIntersectsCachedRectangleStats(Cache<Rectangle, Triple<Double, Double, Double>> cache, AtlasObject object)
+    {
+        if (cache.size() == 0)
+        {
+            return Optional.empty();
+        }
+
+        Map<Rectangle, Triple<Double, Double, Double>> map = cache.asMap();
+
+        for (Map.Entry<Rectangle, Triple<Double, Double, Double>> mapEntry: map.entrySet())
+        {
+            Rectangle rectangleKey = mapEntry.getKey();
+
+            if (!rectangleKey.intersection(object.bounds()).isEmpty())
+            {
+                return Optional.of(mapEntry.getValue());
+            }
+        }
+        return Optional.empty();
     }
 }
 
