@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -91,15 +92,19 @@ public class HighwayToFerryTagCheck extends BaseCheck<Long>
                     .createFlag(edges,
                             this.getLocalizedInstruction(instructionIndex,
                                     object.getOsmIdentifier()))
-                    .addFixSuggestion(
-                            this.getFixSuggestion(object, true, hasSameHighwayClassification)));
+                    .addFixSuggestions(edges.stream().map(
+                            edge -> this.getFixSuggestion(edge, true, hasSameHighwayClassification))
+                            .collect(Collectors.toSet())));
         }
         else
         {
             return Optional.of(this
                     .createFlag(edges, this.getLocalizedInstruction(2, object.getOsmIdentifier()))
-                    .addFixSuggestion(
-                            this.getFixSuggestion(object, false, hasSameHighwayClassification)));
+                    .addFixSuggestions(
+                            edges.stream()
+                                    .map(edge -> this.getFixSuggestion(edge, false,
+                                            hasSameHighwayClassification))
+                                    .collect(Collectors.toSet())));
         }
     }
 
