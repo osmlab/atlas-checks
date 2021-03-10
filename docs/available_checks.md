@@ -45,11 +45,11 @@ This document is a list of tables with a description and link to documentation f
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | [BigNodeBadDataCheck](checks/bigNodeBadDataCheck.md) | The purpose of this check is to flag any BigNodes that have may have some bad data. |
-| ConnectivityCheck | This check identifies nodes that should be connected to nearby nodes or edges. |
+| [ConnectivityCheck](checks/connectivityCheck.md) | This check identifies nodes that should be connected to nearby nodes or edges. |
 | [DuplicateNodeCheck](checks/duplicateNodeCheck.md) | The purpose of this check is to identify Nodes that are in the exact same location. |
 | [InvalidMiniRoundaboutCheck](checks/invalidMiniRoundaboutCheck.md) | The purpose of this check is to identify invalid mini-roundabouts (i.e. roundabouts that share the same rules as other roundabouts, but present as painted circles rather than physical circles). |
 | [LevelCrossingOnRailwayCheck](checks/LevelCrossingOnRailwayCheck.md) | This check identifies incorrectly tagged or missing nodes at railway/highway intersections. |
-| NodeValenceCheck | This check identifies nodes with too many connections. |
+| [NodeValenceCheck](checks/nodeValenceCheck.md) | This check identifies nodes with too many connections. |
 | [OrphanNodeCheck](tutorials/tutorial2-OrphanNodeCheck.md) | The purpose of this check is to identify untagged and unconnected Nodes in OSM. |
 
 ## Points
@@ -90,7 +90,7 @@ This document is a list of tables with a description and link to documentation f
 | [SimilarTagValueCheck](checks/SimilarTagValueCheck.md) | The purpose of this check is to identify tags whose values are either duplicates or similar enough to warrant someone to look at them. |
 | ShortNameCheck | The short name check will validate that any and all names contain at least 2 letters in the name. |
 | [StreetNameIntegersOnlyCheck](checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
-| [TollValidationCheck](checks/tollValidationCheck) | The purpose of this check is to identify ways that need to have their toll tags investigated/added/removed.
+| [TollValidationCheck](checks/tollValidationCheck.md) | The purpose of this check is to identify ways that need to have their toll tags investigated/added/removed.
 | [TunnelBridgeHeightLimitCheck](checks/tunnelBridgeHeightLimitCheck.md) | The purpose of this check is to identify roads with limited vertical clearance which do not have a maxheight tag. |
 | [UnknownHighwayTagCheck](checks/unknownHighwayTagCheck.md) | This check attempts to flag all highway tags that are unknown to the [osm wiki page](https://wiki.openstreetmap.org/wiki/Key:highway). |
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
@@ -102,13 +102,13 @@ This document is a list of tables with a description and link to documentation f
 | :--------- | :---------------- |
 | [ApproximateWayCheck](checks/approximateWayCheck.md) | The purpose of this check is to identify ways that are crudely drawn, there is a discrepancy between the drawing and the real way, especially for curves. |
 | [BuildingRoadIntersectionCheck](checks/buildingRoadIntersectionCheck.md) | The purpose of this check is to identify buildings that intersect/overlap roads. |
-| DuplicateLocationInPolyLineCheck |  Identifies OSM ways with repeating locations. |
+| [DuplicateLocationInPolyLineCheck](checks/duplicateLocationInPolyLineCheck.md) |  Identifies OSM ways with repeating locations. |
 | [~~DuplicateWaysCheck~~ (Deprecated)](checks/duplicateWaysCheck.md) | The purpose of this check is to identify Ways that have either had their entire length or a segment of their length duplicated or drawn multiple times. **This check has been deprecated and is no longer active.** |
 | [GeneralizedCoastlineCheck](checks/generalizedCoastlineCheck.md) | The purpose of this check is to identify coastlines whose nodes are too far apart, have angles that are too sharp, and/or have _source=PGS_ Tag values. |
 | [IntersectingBuildingsCheck](checks/intersectingBuildingsCheck.md) | The purpose of this check is to identify buildings that intersect other buildings. |
 | [InvalidGeometryCheck](checks/invalidGeometryCheck.md) | This check flags invalid polyline and polygon geometries. |
 | [LineCrossingBuildingCheck](checks/lineCrossingBuildingCheck.md) | The purpose of this check is to identify line items (edges or lines) that are crossing buildings invalidly. |
 | [LineCrossingWaterBodyCheck](checks/lineCrossingWaterBodyCheck.md) | The purpose of this check is to identify line items (edges or lines) and optionally buildings, that cross water bodies invalidly. |
-| MalformedPolyLineCheck | This check identifies lines that have only one point, or none, and the ones that are too long. |
+| [MalformedPolyLineCheck](checks/malformedPolyLineCheck.md) | This check identifies lines that have only one point, or none, and the ones that are too long. |
 | [SelfIntersectingPolylineCheck](checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
 | [WaterWayCheck](checks/waterWayCheck.md) | This check finds closed waterways (circular water motion), waterways without a place for water to go (a "sink"), crossing waterways, and waterways that go uphill (requires elevation data). |
