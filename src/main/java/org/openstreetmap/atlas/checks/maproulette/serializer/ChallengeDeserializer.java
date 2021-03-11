@@ -1,6 +1,7 @@
 package org.openstreetmap.atlas.checks.maproulette.serializer;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
@@ -8,6 +9,8 @@ import org.openstreetmap.atlas.checks.maproulette.data.ChallengePriority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -84,6 +87,27 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
     {
         if (object.has(key))
         {
+            if (object.get(key) instanceof JsonArray)
+            {
+                try
+                {
+                    final StringBuilder stringBuilder = new StringBuilder();
+                    final Gson googleJson = new Gson();
+                    final ArrayList jsonObjList = googleJson
+                            .fromJson(object.get(key).getAsJsonArray(), ArrayList.class);
+                    for (final Object obj : jsonObjList)
+                    {
+                        stringBuilder.append(obj);
+                    }
+                    return stringBuilder.toString();
+                }
+                catch (final Exception e)
+                {
+                    logger.warn(String.format("Failed to process configuration key %s.", key, e));
+                    return defaultValue;
+                }
+            }
+
             return object.get(key).getAsString();
         }
         else
