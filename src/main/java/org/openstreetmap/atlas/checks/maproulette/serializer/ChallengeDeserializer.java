@@ -93,7 +93,7 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
                 {
                     final StringBuilder stringBuilder = new StringBuilder();
                     final Gson googleJson = new Gson();
-                    final ArrayList jsonObjList = googleJson
+                    final ArrayList<String> jsonObjList = googleJson
                             .fromJson(object.get(key).getAsJsonArray(), ArrayList.class);
                     for (final Object obj : jsonObjList)
                     {
@@ -103,7 +103,7 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
                 }
                 catch (final Exception e)
                 {
-                    logger.warn(String.format("Failed to process configuration key %s.", key, e));
+                    logger.warn(String.format("Failed to process configuration key %s.", key), e);
                     return defaultValue;
                 }
             }
