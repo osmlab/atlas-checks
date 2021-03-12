@@ -60,6 +60,21 @@ public class ChallengeSerializationTest
     }
 
     /**
+     * Test if a challenge configuration contains String Array.
+     */
+    @Test
+    public void serializationStringArray()
+    {
+        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge5.json");
+
+        Assert.assertEquals("DESCRIPTION1.DESCRIPTION2.", deserializedChallenge.getDescription());
+        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
+        Assert.assertEquals("INSTRUCTION1.INSTRUCTION2.", deserializedChallenge.getInstruction());
+        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
+        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
+    }
+
+    /**
      * Test if a challenge can be deserialized from a test JSON file. The challenge contains
      * MapRoulette priority information for high and medium priority but not for low priority.
      */
@@ -125,21 +140,6 @@ public class ChallengeSerializationTest
         Assert.assertEquals(deserializedJson.get("description"), rawJson.get("description"));
         Assert.assertEquals(deserializedJson.get("blurb"), rawJson.get("blurb"));
         Assert.assertEquals(deserializedJson.get("instruction"), rawJson.get("instruction"));
-    }
-
-    /**
-     * Test if a challenge configuration contains String Array.
-     */
-    @Test
-    public void serializationStringArray()
-    {
-        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge5.json");
-
-        Assert.assertEquals("DESCRIPTION1.DESCRIPTION2.", deserializedChallenge.getDescription());
-        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
-        Assert.assertEquals("INSTRUCTION1.INSTRUCTION2.", deserializedChallenge.getInstruction());
-        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
-        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
     }
 
     /**
