@@ -40,7 +40,7 @@ public class ChallengeSerializationTest
     }
 
     /**
-     * Test if a challange can be deserialized from a test JSON file. The challenge resource json
+     * Test if a challenge can be deserialized from a test JSON file. The challenge resource json
      * contains no MapRoulette priority information.
      */
     @Test
@@ -125,6 +125,21 @@ public class ChallengeSerializationTest
         Assert.assertEquals(deserializedJson.get("description"), rawJson.get("description"));
         Assert.assertEquals(deserializedJson.get("blurb"), rawJson.get("blurb"));
         Assert.assertEquals(deserializedJson.get("instruction"), rawJson.get("instruction"));
+    }
+
+    /**
+     * Test if a challenge configuration contains String Array.
+     */
+    @Test
+    public void serializationStringArray()
+    {
+        final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge5.json");
+
+        Assert.assertEquals("DESCRIPTION1.DESCRIPTION2.", deserializedChallenge.getDescription());
+        Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
+        Assert.assertEquals("INSTRUCTION1.INSTRUCTION2.", deserializedChallenge.getInstruction());
+        Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
+        Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
     }
 
     /**
