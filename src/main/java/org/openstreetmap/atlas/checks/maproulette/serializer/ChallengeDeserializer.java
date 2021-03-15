@@ -93,17 +93,18 @@ public class ChallengeDeserializer implements JsonDeserializer<Challenge>
                 {
                     final StringBuilder stringBuilder = new StringBuilder();
                     final Gson googleJson = new Gson();
-                    final ArrayList<String> jsonObjList = googleJson
+                    final ArrayList<String> jsonObjectList = googleJson
                             .fromJson(object.get(key).getAsJsonArray(), ArrayList.class);
-                    for (final Object obj : jsonObjList)
+                    for (final Object jsonObject : jsonObjectList)
                     {
-                        stringBuilder.append(obj);
+                        stringBuilder.append(jsonObject).append(" ");
                     }
-                    return stringBuilder.toString();
+                    return stringBuilder.toString().trim();
                 }
-                catch (final Exception e)
+                catch (final Exception jsonException)
                 {
-                    logger.warn(String.format("Failed to process configuration key %s.", key), e);
+                    logger.warn(String.format("Failed to process configuration key %s.", key),
+                            jsonException);
                     return defaultValue;
                 }
             }

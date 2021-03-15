@@ -67,9 +67,9 @@ public class ChallengeSerializationTest
     {
         final Challenge deserializedChallenge = this.getChallenge("challenges/testChallenge5.json");
 
-        Assert.assertEquals("DESCRIPTION1.DESCRIPTION2.", deserializedChallenge.getDescription());
+        Assert.assertEquals("DESCRIPTION1. DESCRIPTION2.", deserializedChallenge.getDescription());
         Assert.assertEquals(BLURB, deserializedChallenge.getBlurb());
-        Assert.assertEquals("INSTRUCTION1.INSTRUCTION2.", deserializedChallenge.getInstruction());
+        Assert.assertEquals("INSTRUCTION1. INSTRUCTION2.", deserializedChallenge.getInstruction());
         Assert.assertEquals(ChallengeDifficulty.NORMAL, deserializedChallenge.getDifficulty());
         Assert.assertEquals(ChallengePriority.LOW, deserializedChallenge.getDefaultPriority());
     }
