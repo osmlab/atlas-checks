@@ -68,6 +68,8 @@ The following parameters are used by one or more of the commands. These paramete
 - `-f FORMATS --formats FORMATS` - A comma separated list of formats to use to determine the output format for Atlas Checks. (Default: 'flags')
 - `-m MEMORY,--memory MEMORY` - The Maximum amount of memory in GB for the Spark job to use. (Default: 256GB)
 - `-c COUNTRIES, --countries COUNTRIES` - A comma separated list of ISO3 country codes to perform the checks on.
+  `--project` - MapRoulette project name. 
+  `--mrkey` - MapRoulette API key. You can find this in MapRoulette user settings.
 
 ### check
 
@@ -115,4 +117,16 @@ Example: Terminate a running EC2 instance.
 
 ```
 ./cloudAtlasCheckControl.py --terminate clean --key=my-key --id=i-0d48466b0e91ef786
+```
+
+### challenge
+
+Challenge command can be used to upload Check output (flags) on MapRoulette server.
+
+Required Parameters: `--project`, `--mrkey`, `--checks`
+
+Example: Create MapRoulette Project "YourProject" and load generated "PoolSizeCheck" for single country.
+
+```
+./cloudAtlasCheckControl.py --terminate challenge --project="YourProject" --mrkey="api|key" --countries=USA --checks="PoolSizeCheck"  --key=my-key --config=s3://my-s3-bucket/Atlas_Checks/configurations/special_config.json --input=s3://my-s3-bucket/Atlas_Generator/Atlas_Files --jar=s3://my-s3-bucket/atlas-checks-X.X.XX-SNAPSHOT-shadow.jar
 ```
