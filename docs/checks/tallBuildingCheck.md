@@ -12,36 +12,51 @@ The purpose of this check is to identify invalid building:levels and height tags
 - ***magicNumbers***: Magic numbers to use in the instructions (3 and 4) or statistics (0.25 and 0.75).
 
 #### Live Examples
-Way Intersects Toll Feature - Missing toll tag
-1. The way [id:824285021](https://www.openstreetmap.org/way/824285021) intersects a toll feature and needs a toll=yes tag.
 
-Inconsistent Toll Tags - way sandwiched between 2 toll=yes ways but does not have a toll tag
-1. The way [id:498038529](https://www.openstreetmap.org/way/498038529) is inconsistent with its surrounding toll tags.
+Case 1 - Building has a building:levels tag greater than 100.
+* Small amount of these flags but this was the ask for the original purpose of this check. 
 
-Escapable Toll - Way has routes that escape toll feature so toll should be investigated for removal
-1. The way [id:2039409](https://www.openstreetmap.org/way/546540482) is deemed "escapable" since on either side of it there are ways with toll=no or no toll tag at all before
-   intersecting a toll feature. There needs to be an investigation as to if the way in question or the surrounding ways have been modeled properly.
+Case 2 - Building has an invalid building:levels tag.
+* The building (house) [id:795395318](https://www.openstreetmap.org/way/795395318) has an invalid building:levels tag. (should only be comprised of numerical values)
+
+Case 3 - Building has an outlying building:levels tag compared to buildings around it.
+* The building [id:37625867](https://www.openstreetmap.org/way/37625867) has an outlying height tag compared to it's neighboring homes.
+
+Case 4 - Building has an invalid height tag.
+* The building [id:788365480](https://www.openstreetmap.org/way/788365480) has an invalid height tag. (needs space between '2' and 'm')
+
+Case 5 - Building has an outlying height tag compared to buildings surrounding it.
+* The building (house) [id:710607756](https://www.openstreetmap.org/way/710607756) has an outlying height tag compared to it's neighboring homes.
+
 
 #### Code Review
-This check evaluates [Edges](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java)
-, it attempts to find large jumps in highway classifications.
+This check evaluates [Edges](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Edge.java), and
+[Relations](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Relation.java), validating their buildings:levels tags and height tag statistically and textually.
 
 ##### Validating the Object
 We first validate that the incoming object is:
 * Is a building 
 
 ##### Flagging the Edge
-##### Three scenarios of TollValidationCheck
-###### Scenario 1
-* Way intersects toll feature but does not have a toll tag.
-###### Scenario 2
-* Way has inconsistent toll tagging compared to surrounding ways.
-###### Scenario 3
-* Toll is escapable so the edge in question should not have toll tag since a toll is not required to drive on the road.
+##### Five scenarios of TallBuildingCheck
+###### Scenario One
+* Building has a building:levels tag greater than 100.
 
-##### AutoFix Suggestion
-* AutoFix Suggestion only applied to Way intersecting toll feature, Scenario 1 and inconsistent toll tags, Scenario 2.
+###### Scenario Two
+* Building has an invalid building:levels tag.
+    * tag contains anything other than numerical values.
+    
+###### Scenario Three
+* Building has an outlying building:levels tag compared to buildings around it.
+    * Statistical analysis of the building:levels tag determining if it is an outlier or not compared to all buildings within a mile radius. Statistical parameters can be configured in the config.json.
 
+###### Scenario Four
+* Building has an invalid height tag.
+    * tag contains characters other than numerical, alphabetical, double quotes (""), or apostrophe ('').
+
+###### Scenario Five
+* Building has an outlying height tag compared to buildings surrounding it.
+    * Statistical analysis of the height tag determining if it is an outlier or not compared to all buildings within a mile radius. Statistical parameters can be configured in the config.json.
 
 To learn more about the code, please look at the comments in the source code for the check.  
-[TollValidationCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/TollValidationCheck.java)
+[TallBuildingCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/areas/TallBuildingCheck.java)
