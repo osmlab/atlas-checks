@@ -22,7 +22,7 @@ public class TallBuildingCheckTest
     private final ConcerningAngleBuildingCheck check = new ConcerningAngleBuildingCheck(
             ConfigurationResolver.inlineConfiguration("{\"bufferDistanceMeters\": 1600.0,\n"
                     + "    \"minDatasetSizeForStatsComputation\": 50.0,\n"
-                    + "    \"outlierMultiplier\": 17.0}"));
+                    + "    \"outlierMultiplier\": 17.0, \n" + "    \"maxLevelTagValue\": 100.0 }"));
 
     @Test
     public void heightTagDoesNotContainNumericalCharacter()

@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1067,11 +1067,18 @@
     "minHighwayType": "tertiary"
   },
   "TallBuildingCheck": {
+    "enabled": true,
     "bufferDistanceMeters": 1600.0,
     "minDatasetSizeForStatsComputation": 50.0,
     "maxLevelTagValue": 100.0,
-    "outlierMultiplier": 17.0,
+    "outlierMultiplier": 15.0,
     "invalidHeightCharacters": ["~","`","!","@","#","$","%","^","&","*","(", ")","-","_","+","=","[","[","}","]","|","\\",":",";","<",",",">","?","/"],
+    "magicNumbers": {
+      "three": 3.0,
+      "four": 4.0,
+      "oneQuarter": 0.25,
+      "threeQuarters": 0.75
+    },
     "challenge": {
       "description": "Identifies ways that have suspicious highway tag jumps.",
       "blurb": "Sudden Highway Type Change",

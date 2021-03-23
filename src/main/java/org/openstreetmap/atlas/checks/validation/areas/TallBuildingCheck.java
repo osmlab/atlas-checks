@@ -64,10 +64,14 @@ public class TallBuildingCheck extends BaseCheck<Long>
             "$", "%", "^", "&", "*", "(", ")", "-", "_", "+", "=", "{", "[", "}", "]", "|", "\\",
             ":", ";", "<", ",", ">", "?", "/");
     private final Map<Rectangle, Integer> checkedBuildingsInArea = new HashMap<>();
-    private static final int magicNumber3 = 3;
-    private static final int magicNumber4 = 4;
-    private static final double magicNumberOneQuarter = 0.25;
-    private static final double magicNumberThreeQuarters = 0.75;
+    private final double magicNumber3;
+    private static final double THREE_DEFAULT = 3.0;
+    private final double magicNumber4;
+    private static final double FOUR_DEFAULT = 4.0;
+    private final double magicNumberOneQuarter;
+    private static final double ONE_QUARTER_DEFAULT = 0.25;
+    private final double magicNumberThreeQuarters;
+    private static final double THREE_QUARTER_DEFAULT = 0.75;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -90,6 +94,12 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 OUTLIER_MULTIPLIER_DEFAULT);
         this.invalidHeightCharacters = new HashSet<>(this.configurationValue(configuration,
                 "invalidHeightCharacters", INVALID_CHARACTER_DEFAULT));
+        this.magicNumber3 = this.configurationValue(configuration, "magicNumbers.3", THREE_DEFAULT);
+        this.magicNumber4 = this.configurationValue(configuration, "magicNumbers.4", FOUR_DEFAULT);
+        this.magicNumberOneQuarter = this.configurationValue(configuration,
+                "magicNumbers.oneQuarter", ONE_QUARTER_DEFAULT);
+        this.magicNumberThreeQuarters = this.configurationValue(configuration,
+                "magicNumbers.threeQuarters", THREE_QUARTER_DEFAULT);
     }
 
     /**
@@ -178,8 +188,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
                     || this.heightTagContainsInvalidCharacter(heightTag).isPresent()
                     || !this.stringContainsNumber(heightTag))
             {
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(magicNumber4, object.getOsmIdentifier())));
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                        (int) this.magicNumber4, object.getOsmIdentifier())));
             }
             try
             {
@@ -201,7 +211,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
                                 objectIntersectsCachedRectangleStats.getFourth()))
                         {
                             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                                    magicNumber3, object.getOsmIdentifier())));
+                                    (int) this.magicNumber3, object.getOsmIdentifier())));
                         }
                     }
 
@@ -227,16 +237,38 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * get buffer area by expanding object bounds
+     * 
+     * @param bounds
+     *            bounds of object
+     * @return expanded bounds of object
+     */
     private Rectangle getBufferArea(final Rectangle bounds)
     {
         return bounds.expand(Distance.meters(this.bufferDistanceMeters));
     }
 
+    /**
+     * get object bounds
+     * 
+     * @param object
+     *            building
+     * @return building bounds
+     */
     private Rectangle getBuildingBounds(final AtlasObject object)
     {
         return object.bounds();
     }
 
+    /**
+     * calculates inner quartile range (3rd quartile - 1st quartile) from sorted building height
+     * list
+     * 
+     * @param listOfSortedHeights
+     *            sorted building heights within buffer area
+     * @return inner quartile range from list of sorted height
+     */
     private Optional<Double> getInnerQuartileRange(final List<Double> listOfSortedHeights)
     {
         final Optional<Double> lowerQuartile = this.getLowerQuartile(listOfSortedHeights);
@@ -248,6 +280,15 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    /**
+     * @param object
+     *            building
+     * @param intersectingItems
+     *            all intersecting AtlasItems
+     * @param tagIdentifier
+     *            identifier to filter either height or building:levels tag
+     * @return building ID and relevant tag
+     */
     private Set<Map<Long, String>> getIntersectingBuildingsIdAndRelevantTag(
             final AtlasObject object, final Iterable<AtlasItem> intersectingItems,
             final String tagIdentifier)
@@ -275,7 +316,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
             return Optional.empty();
         }
         return Optional
-                .of(listOfHeights.get((int) Math.round(lengthOfList * magicNumberOneQuarter)));
+                .of(listOfHeights.get((int) Math.round(lengthOfList * this.magicNumberOneQuarter)));
     }
 
     private Optional<Tuple4<String, Double, Double, Double>> getRectangleStatsWhichIntersectObject(
@@ -338,9 +379,9 @@ public class TallBuildingCheck extends BaseCheck<Long>
                         final double levelsTagValue = Double.parseDouble(entry.getValue());
                         tagsWithinBuffer.add(levelsTagValue);
                     }
-                    catch (final Exception e)
+                    catch (final Exception ignored)
                     {
-                        continue;
+                        /* Do Nothing */
                     }
                 }
                 if (tagIdentifier.equals(HeightTag.KEY))
@@ -350,12 +391,13 @@ public class TallBuildingCheck extends BaseCheck<Long>
                         final Optional<Double> height = this.parseHeightTag(entry.getValue());
                         height.ifPresent(tagsWithinBuffer::add);
                     }
-                    catch (final Exception e)
+                    catch (final Exception ignored)
                     {
-                        continue;
+                        /* Do Nothing */
                     }
-
                 }
+                // parseAndAddRelativeTagsToTagsWithinBuffer(tagIdentifier, entry,
+                // tagsWithinBuffer);
             }
         }
 
@@ -398,8 +440,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 if (this.isOutlier(tagValue, lowerQuartile.get(), upperQuartile.get(),
                         innerQuartileRange.get()) && tagIdentifier.equals(HeightTag.KEY))
                 {
-                    return Optional.of(this.createFlag(object,
-                            this.getLocalizedInstruction(magicNumber3, object.getOsmIdentifier())));
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                            (int) this.magicNumber3, object.getOsmIdentifier())));
                 }
 
             }
@@ -414,8 +456,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             return Optional.empty();
         }
-        return Optional
-                .of(listOfHeights.get((int) Math.round(lengthOfList * magicNumberThreeQuarters)));
+        return Optional.of(
+                listOfHeights.get((int) Math.round(lengthOfList * this.magicNumberThreeQuarters)));
     }
 
     private boolean hasBuildingLevelTag(final Map<String, String> tags)
@@ -470,6 +512,33 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return height < lowerQuartile - (innerQuartileRangeAdjusted * this.outlierMultiplier)
                 || height > upperQuartile + (innerQuartileRangeAdjusted * this.outlierMultiplier);
     }
+
+    // private void parseAndAddRelativeTagsToTagsWithinBuffer(String tagIdentifier, Map.Entry<Long,
+    // String> entry, List<Double> tagsWithinBuffer)
+    // {
+    // if (tagIdentifier.equals(BuildingLevelsTag.KEY))
+    // {
+    // try
+    // {
+    // final double levelsTagValue = Double.parseDouble(entry.getValue());
+    // tagsWithinBuffer.add(levelsTagValue);
+    // }
+    // catch (final Exception ignored)
+    // {
+    // }
+    // }
+    // if (tagIdentifier.equals(HeightTag.KEY))
+    // {
+    // try
+    // {
+    // final Optional<Double> height = this.parseHeightTag(entry.getValue());
+    // height.ifPresent(tagsWithinBuffer::add);
+    // }
+    // catch (final Exception ignored)
+    // {
+    // }
+    // }
+    // }
 
     private Optional<Double> parseHeightTag(final String heightTagValue)
     {
