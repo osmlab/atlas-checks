@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Rectangle;
@@ -16,6 +17,7 @@ import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LevelTag;
@@ -78,32 +80,16 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        final Set<Edge> edges = new OsmWayWalker((Edge) object).collectEdges();
+
         if (!this.isFlagged(object.getIdentifier()))
         {
-            final Atlas atlas = object.getAtlas();
-            final Set<AtlasObject> overlappingItems = new HashSet<>();
-            Location start = null;
-            for (final Location end : ((Edge) object).asPolyLine())
-            {
-                if (start != null)
-                {
-                    // we only have to check one end for intersecting edges
-                    final Rectangle box = start.boxAround(Distance.meters(0));
-                    // add all overlapping edges not yet flagged and not pedestrian areas
-                    overlappingItems.addAll(Iterables
-                            .stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
-                            .filter(notEqual(object).and(this.notIn(object))
-                                    .and(this.overlapsSegment(start, end))
-                                    .and(this.filterPedestrianAreas ? edge -> !this.edgeIsArea(edge)
-                                            : this.notPedestrianAreas((Edge) object))
-                                    .and(this.haveSameLevels(object)))
-                            .collectToSet());
-                }
-                start = end;
-            }
+            final Set<AtlasObject> overlappingItems = this.getOverlappingItems(object.getAtlas(),
+                    edges);
+
             if (!overlappingItems.isEmpty())
             {
-                this.markAsFlagged(object.getIdentifier());
+                edges.forEach(edge -> this.markAsFlagged(edge.getIdentifier()));
                 // Mark overlapping objects as flagged
                 overlappingItems
                         .forEach(overlapEdge -> this.markAsFlagged(overlapEdge.getIdentifier()));
@@ -143,9 +129,45 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     {
         return (Validators.isOfType(edge, HighwayTag.class, HighwayTag.PEDESTRIAN)
                 || Validators.isOfType(edge, ManMadeTag.class, ManMadeTag.PIER))
-                && (AREA_YES_TAG.test(edge) || this.isPartOfClosedWay(edge))
+                && (AREA_YES_TAG.test(edge) || CommonMethods.isClosedWay(edge))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)
                         && AREA_YES_TAG.test(edge));
+    }
+
+    /**
+     * Finds all overlapping {@link AtlasObject}s.
+     * 
+     * @param atlas
+     *            The {@link Atlas} the object is associated with.
+     * @param edges
+     *            {@link Set} of {@link Edge}s of the way the original object is a part of.
+     */
+    private Set<AtlasObject> getOverlappingItems(final Atlas atlas, final Set<Edge> edges)
+    {
+        final Set<AtlasObject> overlappingItems = new HashSet<>();
+        for (final Edge wayEdge : edges)
+        {
+            Location start = null;
+            for (final Location end : wayEdge.asPolyLine())
+            {
+                if (start != null)
+                {
+                    // we only have to check one end for intersecting edges
+                    final Rectangle box = start.boxAround(Distance.meters(0));
+                    // add all overlapping edges not yet flagged and not pedestrian areas
+                    overlappingItems.addAll(Iterables
+                            .stream(atlas.edgesIntersecting(box, Edge::isMainEdge))
+                            .filter(notEqual(wayEdge).and(this.notIn(wayEdge))
+                                    .and(this.overlapsSegment(start, end))
+                                    .and(this.filterPedestrianAreas ? edge -> !this.edgeIsArea(edge)
+                                            : this.notPedestrianAreas(wayEdge))
+                                    .and(this.haveSameLevels(wayEdge)))
+                            .collectToSet());
+                }
+                start = end;
+            }
+        }
+        return overlappingItems;
     }
 
     /**
@@ -153,6 +175,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
      * the same level, then it needs to be flagged.
      *
      * @param object
+     *            object to check.
      * @return {@code true} if the {@link AtlasObject} and overlapping items have same level.
      */
     private Predicate<Edge> haveSameLevels(final AtlasObject object)
@@ -166,35 +189,6 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
             // Return true if both edge level and object level are equal
             return objectLevel.equals(edgeLevel);
         };
-    }
-
-    /**
-     * Checks if an edge is part of a closed OSM way.
-     *
-     * @param object
-     *            {@link Edge} to check
-     * @return true if it is part of a closed OSM way
-     */
-    private boolean isPartOfClosedWay(final Edge object)
-    {
-        final HashSet<Long> wayIds = new HashSet<>();
-        Edge nextEdge = object;
-        // Loop through out going edges with the same OSM id
-        while (nextEdge != null)
-        {
-            wayIds.add(nextEdge.getIdentifier());
-            final List<Edge> nextEdgeList = Iterables.stream(nextEdge.outEdges())
-                    .filter(Edge::isMainEdge)
-                    .filter(outEdge -> outEdge.getOsmIdentifier() == object.getOsmIdentifier())
-                    .collectToList();
-            nextEdge = nextEdgeList.isEmpty() ? null : nextEdgeList.get(0);
-            // If original edge is found, the way is closed
-            if (nextEdge != null && wayIds.contains(nextEdge.getIdentifier()))
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Predicate<Edge> notIn(final AtlasObject object)

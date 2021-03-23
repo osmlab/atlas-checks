@@ -1,9 +1,9 @@
 project.ext.versions = [
     checkstyle: '8.18',
     jacoco: '0.8.3',
-    atlas: '6.4.0',
+    atlas: '6.4.7',
     commons:'2.6',
-    atlas_generator: '5.2.3',
+    atlas_generator: '5.3.0',
     atlas_checkstyle: '5.6.9',
     postgis: '2.1.7.2',
     postgres: '42.2.6',

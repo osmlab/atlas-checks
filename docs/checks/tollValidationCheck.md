@@ -41,6 +41,9 @@ We first validate that the incoming object is:
 ###### Scenario 3
 * Toll is escapable so the edge in question should not have toll tag since a toll is not required to drive on the road.
 
+##### AutoFix Suggestion
+* AutoFix Suggestion only applied to Way intersecting toll feature, Scenario 1 and inconsistent toll tags, Scenario 2.
+
 
 To learn more about the code, please look at the comments in the source code for the check.  
 [TollValidationCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/tag/TollValidationCheck.java)

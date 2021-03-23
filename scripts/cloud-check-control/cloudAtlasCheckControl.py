@@ -32,21 +32,6 @@ def setup_logging(default_level=logging.INFO):
     return logging.getLogger("CloudAtlasChecksControl")
 
 
-def finish(error_message=None, status=0):
-    """exit the process
-
-    Method to exit the Python script. It will log the given message and then exit().
-
-    :param error_message: Error message to log upon exiting the process
-    :param status: return code to exit the process with
-    """
-    if error_message:
-        logger.error(error_message)
-    else:
-        logger.info("Done")
-    exit(status)
-
-
 class CloudAtlasChecksControl:
     """Main Class to control atlas checks spark job on EC2"""
 
@@ -63,6 +48,7 @@ class CloudAtlasChecksControl:
         s3fsMount=False,
         s3OutFolder=None,
         terminate=False,
+        force=False,
         templateName="atlas_checks-ec2-template",
         atlasConfig="https://raw.githubusercontent.com/osmlab/atlas-checks/dev/config/configuration.json",
         checks="",
@@ -83,6 +69,7 @@ class CloudAtlasChecksControl:
         self.countries = countries
         self.s3OutFolder = s3OutFolder
         self.terminate = terminate
+        self.force = force
         self.templateName = templateName
         self.homeDir = "/home/ubuntu/"
         self.atlasCheckDir = os.path.join(self.homeDir, "atlas-checks/")
@@ -117,13 +104,30 @@ class CloudAtlasChecksControl:
             region_name = awsRegion,
         )
 
+    def finish(self, error_message=None, status=0):
+        """exit the process
+
+        Method to exit the Python script. It will log the given message and then exit().
+
+        :param error_message: Error message to log upon exiting the process
+        :param status: return code to exit the process with
+        """
+        if error_message:
+            logger.error(error_message)
+        else:
+            logger.info("Done")
+        # terminate instance
+        if self.terminate:
+            self.terminate_instance()
+
+        exit(status)
 
     def setup_config(self, file_preface="file://"):
         if self.atlasConfig.find("s3:") >= 0:
             if self.ssh_cmd(
                 "aws s3 cp {} {}".format(self.atlasConfig, self.localConfig)
             ):
-                finish("Failed to copy config S3://{}".format(self.atlasConfig), -1)
+                self.finish("Failed to copy config S3://{}".format(self.atlasConfig), -1)
             return file_preface + self.localConfig
         elif self.atlasConfig.find("http:") >= 0:
             return self.atlasConfig
@@ -137,7 +141,7 @@ class CloudAtlasChecksControl:
             if self.ssh_cmd(
                 "aws s3 cp {} {}".format(self.jar, self.localJar)
             ):
-                finish("Failed to copy jar S3://{}".format(self.jar), -1)
+                self.finish("Failed to copy jar S3://{}".format(self.jar), -1)
             return self.localJar
         else:
             # if configuration.json is a file then copy it to the EC2 instance
@@ -159,14 +163,19 @@ class CloudAtlasChecksControl:
             self.create_instance()
             self.get_instance_info()
 
-        if not self.is_process_running("SparkSubmit"):
+        if self.is_process_running("SparkSubmit"):
+            logger.info("Detected a running atlas check spark job.")
+
+        if not self.is_process_running("SparkSubmit") and (not self.has_cookie() or self.force):
+            self.write_cookie()
+
             cmd = "mkdir -p {} {}".format(self.atlasLogDir, self.atlasOutDir)
             if self.ssh_cmd(cmd):
-                finish("Unable to create directory {}".format(cmd), -1)
+                self.finish("Unable to create directory {}".format(cmd), -1)
 
             # remove the success or failure files from any last run.
             if self.ssh_cmd("rm -f {}/_*".format(self.atlasOutDir)):
-                finish("Unable to clean up old status files", -1)
+                self.finish("Unable to clean up old status files", -1)
 
             # sync the country folders to the local directory
             for c in list(self.countries.split(",")):
@@ -176,7 +185,7 @@ class CloudAtlasChecksControl:
                         self.s3InFolder, c, self.atlasInDir
                     )
                 ):
-                    finish(
+                    self.finish(
                         "Failed to sync {}/{}".format(self.s3InFolder, c), -1
                     )
             if self.ssh_cmd(
@@ -184,7 +193,7 @@ class CloudAtlasChecksControl:
                     self.s3InFolder, self.atlasInDir
                 )
             ):
-                finish("Failed to copy sharding.txt", -1)
+                self.finish("Failed to copy sharding.txt", -1)
 
             if self.info is not None:
                 cmd = ("echo '{{\n{},\n\"cmd\":\"{}\"\n}}' > {}INFO "
@@ -193,7 +202,7 @@ class CloudAtlasChecksControl:
                 cmd = ("echo '{{\n\"cmd\":\"{}\"\n}}' > {}INFO "
                 .format(" ".join(sys.argv), self.atlasOutDir))
             if self.ssh_cmd(cmd):
-                finish("Unable to write info file", -1)
+                self.finish("Unable to write info file", -1)
 
             atlasConfig = self.setup_config()
             jarFile = self.setup_jar()
@@ -216,22 +225,21 @@ class CloudAtlasChecksControl:
 
             logger.info("Submitting spark job: {}".format(cmd))
             if self.ssh_cmd(cmd):
-                finish("Unable to execute spark job", -1)
+                self.finish("Unable to execute spark job", -1)
             # make sure spark job has started before checking for completion
             time.sleep(5)
-        else:
-            logger.info("Detected a running atlas check spark job.")
 
-        logger.info("About to wait for remote script to complete. If "
-                    "disconnected before the script completes then execute the "
-                    "following command to continue waiting:\n {} --id={}"
-                    .format(" ".join(sys.argv), self.instanceId))
-        # wait for script to complete
-        if self.wait_for_process_to_complete():
-            finish(
-                "Timeout waiting for script to complete. TODO - instructions to reconnect.",
-                -1,
-            )
+        if self.is_process_running("SparkSubmit"):
+            logger.info("About to wait for remote script to complete. If "
+                        "disconnected before the script completes then execute the "
+                        "following command to continue waiting:\n {} --id={}"
+                        .format(" ".join(sys.argv), self.instanceId))
+            # wait for script to complete
+            if self.wait_for_process_to_complete():
+                self.finish(
+                    "Timeout waiting for script to complete. TODO - instructions to reconnect.",
+                    -1,
+                )
 
         self.sync()
 
@@ -259,16 +267,17 @@ class CloudAtlasChecksControl:
             self.atlasOutDir, self.s3OutFolder
         )
         if self.ssh_cmd(cmd):
-            finish("Unable to sync with S3", -1)
-        # terminate instance
-        if self.terminate:
-            self.terminate_instance()
+            self.finish("Unable to sync with S3", -1)
+        self.finish()
 
     def challenge(self):
         if self.instanceId == "":
             self.create_instance()
             self.get_instance_info()
         logger.info("Creating map roulette challenge.")
+
+        atlasConfig = self.setup_config(file_preface="")
+        jarFile = self.setup_jar()
 
         # sync the country folders to the local directory
         for c in list(self.countries.split(",")):
@@ -278,32 +287,31 @@ class CloudAtlasChecksControl:
                 )
             )
             if self.ssh_cmd(
-                "aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
+                "rm -rf {2}flag/*; aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
                     self.s3InFolder, c, self.atlasOutDir
                 )
             ):
-                finish("Failed to sync {}/{}".format(self.s3InFolder, c), -1)
+                self.finish("Failed to sync {}/{}".format(self.s3InFolder, c), -1)
 
-        atlasConfig = self.setup_config(file_preface="")
-        jarFile = self.setup_jar()
+            for check in list(self.checks.split(",")):
+                cmd = (
+                    f"java -cp {jarFile} org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
+                    + f" -maproulette='{self.mrURL}:{self.mrProject}:{self.mrkey}'"
+                    + f" -logfiles='{self.atlasOutDir}flag'"
+                    + f" -outputPath='{self.atlasOutDir}'"
+                    + f" -config='{atlasConfig}'"
+                    + f" -checkinComment='#AtlasChecks #{check}'"
+                    + f" -countries='{c}'"
+                    + f" -checks='{check}'"
+                    +  " -includeFixSuggestions=true"
+                    + f" > {self.atlasCheckLog}"
+                )
 
-        cmd = (
-            "java -cp {}".format(jarFile)
-            + " org.openstreetmap.atlas.checks.maproulette.MapRouletteUploadCommand"
-            + " -maproulette='{}:{}:{}'".format(self.mrURL, self.mrProject, self.mrkey)
-            + " -logfiles='{}flag'".format(self.atlasOutDir)
-            + " -outputPath='{}'".format(self.atlasOutDir)
-            + " -config='{}'".format(atlasConfig)
-            + " -checkinComment='#AtlasChecks'"
-            + " -countries='{}'".format(self.countries)
-            + " -checks='{}'".format(self.checks)
-            + " -includeFixSuggestions=true"
-            + " > {} 2>&1".format(self.atlasCheckLog)
-        )
+                logger.info(f"Starting mr upload for {c} {check}: {cmd}")
+                if self.ssh_cmd(cmd, verbose=True):
+                    finish("Unable to execute spark job", -1)
 
-        logger.info("Starting mr upload: {}".format(cmd))
-        if self.ssh_cmd(cmd, verbose=True):
-            finish("Unable to execute spark job", -1)
+        self.finish()
 
     def clean(self):
         """Clean a running Instance of all produced folders and files
@@ -315,14 +323,12 @@ class CloudAtlasChecksControl:
           - self.instanceId - indicates a running instance or "" to create one
           - self.terminate - indicates if the EC2 instance should be terminated
         """
-        if self.terminate:
-            logger.info("Terminating EC2 instance.")
-            self.terminate_instance()
-        else:
+        if not self.terminate:
             logger.info("Cleaning up EC2 instance.")
             cmd = "rm -rf {}/* {}/* ".format(self.atlasOutDir, self.atlasLogDir)
             if self.ssh_cmd(cmd):
-                finish("Unable to clean", -1)
+                self.finish("Unable to clean", -1)
+        self.finish()
 
     def create_instance(self):
         """Create Instance from atlas_checks-ec2-template template
@@ -350,7 +356,7 @@ class CloudAtlasChecksControl:
             self.instanceId = response["Instances"][0]["InstanceId"]
             logger.info("Instance {} was created".format(self.instanceId))
         except ClientError as e:
-            finish(e, -1)
+            self.finish(e, -1)
 
     def terminate_instance(self):
         """Terminate Instance
@@ -363,7 +369,8 @@ class CloudAtlasChecksControl:
             response = self.ec2.terminate_instances(InstanceIds=[self.instanceId])
             logger.info("Instance {} was terminated".format(self.instanceId))
         except ClientError as e:
-            finish(e, -1)
+            logger.error(e)
+            exit(-1)
 
     def ssh_connect(self):
         """Connect to an EC2 instance"""
@@ -488,21 +495,21 @@ class CloudAtlasChecksControl:
                     "grep 'Success!' {}/_*".format(self.atlasOutDir), quiet=True
                 ):
                     logger.error("Atlas Check spark job Failed.")
-                    logger.error(
-                        "---tail of Atlas Checks Spark job log output ({})--- \n".format(
-                            self.atlasCheckLogName
-                            + " ".join(
-                                map(
-                                    str,
-                                    open(self.atlasCheckLogName, "r").readlines()[-50:],
-                                )
-                            )
-                        )
-                    )
-                    finish(status=-1)
+                    self.finish(status=-1)
                 return 0
             time.sleep(60)
         return 1
+
+    def has_cookie(self):
+        if self.ssh_cmd("ls /tmp/cookie", quiet=True):
+            return 0
+        logger.debug("no cookie ... ")
+        return 1
+
+    def write_cookie(self):
+        if self.ssh_cmd("touch /tmp/cookie", quiet=True):
+            return 1
+        return 0
 
     def is_process_running(self, process):
         """Indicate if process is actively running
@@ -550,7 +557,7 @@ class CloudAtlasChecksControl:
         for _timeout in range(10):
             response = self.ec2.describe_instances(InstanceIds=[self.instanceId])
             if not response["Reservations"]:
-                finish("Instance {} not found".format(self.instanceId), -1)
+                self.finish("Instance {} not found".format(self.instanceId), -1)
             if (
                 response["Reservations"][0]["Instances"][0].get("PublicIpAddress")
                 is None
@@ -575,7 +582,7 @@ class CloudAtlasChecksControl:
                 time.sleep(6)
                 continue
             return
-        finish("Timeout while waiting for EC2 instance to be ready", -1)
+        self.finish("Timeout while waiting for EC2 instance to be ready", -1)
 
 
 def parse_args():
@@ -614,6 +621,12 @@ def parse_args():
         "--terminate",
         default=False,
         help="Terminate EC2 instance after successful execution",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--force",
+        default=False,
+        help="Force atlas checks to be executed even if it already ran",
         action="store_true",
     )
     subparsers = parser.add_subparsers(
@@ -805,8 +818,8 @@ def evaluate(args, cloudctl):
     :param cloudctl: An instance of CloudAtlasChecksControl to use.
     """
     if args.version is True:
-        logger.critical("This is version {0}.".format(VERSION))
-        finish()
+        logger.info("This is version {0}.".format(VERSION))
+        exit()
     if args.name is not None:
         cloudctl.instanceName = args.name
     if args.template is not None:
@@ -841,14 +854,14 @@ def evaluate(args, cloudctl):
         cloudctl.jar = args.jar
     if hasattr(args, "info") and args.jar is not None:
         cloudctl.info = args.info
-    if hasattr(args, "id") and args.id is not None:
+    if hasattr(args, "id") and args.id != "" and args.id is not None:
         cloudctl.instanceId = args.id
         cloudctl.get_instance_info()
 
     if hasattr(args, "func") and args.func is not None:
         args.func(cloudctl)
     else:
-        finish("A command must be specified. Try '-h' for help.")
+        logger.error("A command must be specified. Try '-h' for help.")
 
 
 logger = setup_logging()
@@ -856,8 +869,8 @@ logger = setup_logging()
 if __name__ == "__main__":
     args = parse_args()
     cloudctl = CloudAtlasChecksControl(
+        force=args.force,
         terminate=args.terminate,
         awsRegion=args.zone,
     )
     evaluate(args, cloudctl)
-    finish()

@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.spark.TaskContext;
 import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.distributed.GeoJsonPathFilter;
 import org.openstreetmap.atlas.event.Processor;
@@ -178,7 +179,8 @@ public final class CheckFlagGeoJsonProcessor implements Processor<CheckFlagEvent
 
     protected String getFilename(final String challenge, final int size)
     {
-        return String.format("%s-%s-%s%s", challenge, new Date().getTime(), size,
+        return String.format("%s-%sP%s-%s%s", challenge, new Date().getTime(),
+                TaskContext.getPartitionId(), size,
                 new GeoJsonPathFilter(this.compressOutput).getExtension());
     }
 
