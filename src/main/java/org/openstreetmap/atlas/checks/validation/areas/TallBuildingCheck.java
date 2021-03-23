@@ -150,19 +150,14 @@ public class TallBuildingCheck extends BaseCheck<Long>
                         .getRectangleStatsWhichIntersectObject(this.cache, object,
                                 BuildingLevelsTag.KEY);
 
-                if (rectangleStatsWhichIntersectObjectOptional.isPresent())
+                if (rectangleStatsWhichIntersectObjectOptional.isPresent()
+                        && this.isOutlier(buildingLevelsTagValue,
+                                rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
+                                rectangleStatsWhichIntersectObjectOptional.get().getThird(),
+                                rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
                 {
-                    final Tuple4<String, Double, Double, Double> objectIntersectsCachedRectangleStats = rectangleStatsWhichIntersectObjectOptional
-                            .get();
-                    if (this.isOutlier(buildingLevelsTagValue,
-                            objectIntersectsCachedRectangleStats.getSecond(),
-                            objectIntersectsCachedRectangleStats.getThird(),
-                            objectIntersectsCachedRectangleStats.getFourth()))
-                    {
-
-                        return Optional.of(this.createFlag(object,
-                                this.getLocalizedInstruction(2, object.getOsmIdentifier())));
-                    }
+                    return Optional.of(this.createFlag(object,
+                            this.getLocalizedInstruction(2, object.getOsmIdentifier())));
                 }
 
                 if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
@@ -177,7 +172,6 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 return Optional.of(this.createFlag(object,
                         this.getLocalizedInstruction(1, object.getOsmIdentifier())));
             }
-
         }
 
         // height tag logic
@@ -201,18 +195,14 @@ public class TallBuildingCheck extends BaseCheck<Long>
                             .getRectangleStatsWhichIntersectObject(this.cache, object,
                                     HeightTag.KEY);
 
-                    if (rectangleStatsWhichIntersectObjectOptional.isPresent())
+                    if (rectangleStatsWhichIntersectObjectOptional.isPresent()
+                            && this.isOutlier(buildingHeightTagValue.get(),
+                                    rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
+                                    rectangleStatsWhichIntersectObjectOptional.get().getThird(),
+                                    rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
                     {
-                        final Tuple4<String, Double, Double, Double> objectIntersectsCachedRectangleStats = rectangleStatsWhichIntersectObjectOptional
-                                .get();
-                        if (this.isOutlier(buildingHeightTagValue.get(),
-                                objectIntersectsCachedRectangleStats.getSecond(),
-                                objectIntersectsCachedRectangleStats.getThird(),
-                                objectIntersectsCachedRectangleStats.getFourth()))
-                        {
-                            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                                    (int) this.magicNumber3, object.getOsmIdentifier())));
-                        }
+                        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                                (int) this.magicNumber3, object.getOsmIdentifier())));
                     }
 
                     if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
