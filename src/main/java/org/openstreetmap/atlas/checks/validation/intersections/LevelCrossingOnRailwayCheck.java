@@ -62,7 +62,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         NODE_NO_LAYERS;
     }
 
-    private static final String RAILWAY_FILTER_DEFAULT = "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge";
+    private static final String RAILWAY_FILTER_DEFAULT = "disused:railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge|railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge";
     private final TaggableFilter railwayFilter;
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private final Long layerDefault;
@@ -88,7 +88,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
             + "If the ways are on different layers then remove `railway=level_crossing` tag.";
     private static final int NODE_INVALID_LC_TAG_LAYERS_INDEX = 5;
     private static final String INTERSECTION_MISSING_NODE = "The railway (OSM ID: {0,number,#}) has one or more car navigable intersections on the same layer that are missing intersection nodes. "
-            + "To fix: If highway and railway do cross at the same layer then add appropriate intersection node(s) with `railway=level_crossing` tag. "
+            + "To fix: If highway crosses the railway at the same layer then make sure that there is a node connected to both railway and highway at the intersection with `railway=level_crossing` tag. "
             + "If highway and railway are on different layers then update the appropriate layer tag for the way that goes under or over the other way.";
     private static final int INTERSECTION_MISSING_NODE_INDEX = 6;
     private static final String NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only pedestrian highway(s). "
@@ -252,14 +252,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                         instructIndex = NODE_INVALID_LC_TAG_LAYERS_INDEX;
                         break;
                 }
-                return Optional.of(this
-                        .createFlag(object,
-                                this.getLocalizedInstruction(instructIndex,
-                                        object.getOsmIdentifier()))
-                        .addFixSuggestion(FeatureChange.add(
-                                (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object)).withRemovedTag(RailwayTag.KEY),
-                                object.getAtlas())));
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(instructIndex, object.getOsmIdentifier())));
 
             }
             if (!Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING)

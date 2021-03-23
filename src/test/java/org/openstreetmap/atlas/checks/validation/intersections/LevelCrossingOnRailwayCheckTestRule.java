@@ -33,9 +33,7 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
     @TestAtlas(
             // This atlas contains invalid features with level_crossing tag.
             // nodes
-            nodes = {
-                    @Node(id = "123456789000000", coordinates = @Loc(value = TEST_1), tags = {
-                            "railway=level_crossing" }),
+            nodes = { @Node(id = "123456789000000", coordinates = @Loc(value = TEST_1), tags = {}),
                     @Node(id = "223456789000000", coordinates = @Loc(value = TEST_2), tags = {}),
                     @Node(id = "323456789000000", coordinates = @Loc(value = TEST_3), tags = {}) },
             // points
@@ -80,12 +78,15 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary" }) },
             // lines
             lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
-                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }),
+                    @Line(id = "233456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "disused:railway=rail" }) })
 
     private Atlas noIntersectionNode;
 
     /*
-     * Valid intersections tests: Test to following valid intersections
+     * Valid intersections tests: Test the following valid intersections
      */
 
     @TestAtlas(
@@ -134,7 +135,10 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                     // 1.5: intersecting miniature no layer
                     @Line(id = "533456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2),
-                            @Loc(value = INT1) }, tags = { "railway=miniature" }) })
+                            @Loc(value = INT1) }, tags = { "railway=miniature" }),
+                    @Line(id = "633456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "disused:railway=rail" }) })
 
     private Atlas validIntersectionNoLayer;
 
