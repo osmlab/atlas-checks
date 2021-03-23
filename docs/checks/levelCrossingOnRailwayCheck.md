@@ -16,12 +16,14 @@ The Purpose of this check is to detect and flag object the following scenarios b
 
 #### Auto-Fix Suggestions
 
+For each of the possible issues flagged above these are the fix suggestions proposed.
+
 1. Remove railway tag from object
 2. Replace `railway=crossing` with `railway=level_crossing` on node
 3. Add `railway=level_crossing` tag to node
-4. Remove railway tag from object
-5. Remove railway tag from object
-6. Remove railway tag from object
+4. NA (No suggestion for this case as there are multiple possible fixes)
+5. NA (No suggestion for this case as there are multiple possible fixes)
+6. NA (No suggestion for this case as there are multiple possible fixes)
 7. NA (No suggestion for this case as the cases are too complicated)
 8. Replace `railway=level_crossing` with `railway=crossing` on node
 9. Replace `railway=level_crossing` with `railway=crossing`, add `foot=no`, and add `bicycle=yes` to node.
