@@ -57,7 +57,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
     private static final double MAX_LEVEL_TAG_VALUE_DEFAULT = 100;
     private static final double OUTLIER_MULTIPLIER_DEFAULT = 3;
     private final double outlierMultiplier;
-    private final Cache<Tuple2<Rectangle, Integer>, Tuple4<String, Double, Double, Double>> cache = CacheBuilder
+    private final transient Cache<Tuple2<Rectangle, Integer>, Tuple4<String, Double, Double, Double>> cache = CacheBuilder
             .newBuilder().build();
     private final Set<String> invalidHeightCharacters;
     private static final Set<String> INVALID_CHARACTER_DEFAULT = Set.of("~", "`", "!", "@", "#",
@@ -293,7 +293,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
             final AtlasObject object, final Iterable<AtlasItem> intersectingItems,
             final String tagIdentifier)
     {
-        final Set<Map<Long, String>> buildingsWithHeightTagWithinBuffer = new HashSet<>();
+        final Set<Map<Long, String>> buildingsWithRelevantTagWithinBuffer = new HashSet<>();
         for (final AtlasItem atlasItem : intersectingItems)
         {
             final Map<String, String> tags = atlasItem.getTags();
@@ -302,10 +302,10 @@ public class TallBuildingCheck extends BaseCheck<Long>
             {
                 final Map<Long, String> atlasItemProperties = new HashMap<>();
                 atlasItemProperties.put(atlasItem.getOsmIdentifier(), tags.get(tagIdentifier));
-                buildingsWithHeightTagWithinBuffer.add(atlasItemProperties);
+                buildingsWithRelevantTagWithinBuffer.add(atlasItemProperties);
             }
         }
-        return buildingsWithHeightTagWithinBuffer;
+        return buildingsWithRelevantTagWithinBuffer;
     }
 
     private Optional<Double> getLowerQuartile(final List<Double> listOfHeights)
@@ -372,32 +372,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             for (final Map.Entry<Long, String> entry : buildingWithinBuffer.entrySet())
             {
-                if (tagIdentifier.equals(BuildingLevelsTag.KEY))
-                {
-                    try
-                    {
-                        final double levelsTagValue = Double.parseDouble(entry.getValue());
-                        tagsWithinBuffer.add(levelsTagValue);
-                    }
-                    catch (final Exception ignored)
-                    {
-                        /* Do Nothing */
-                    }
-                }
-                if (tagIdentifier.equals(HeightTag.KEY))
-                {
-                    try
-                    {
-                        final Optional<Double> height = this.parseHeightTag(entry.getValue());
-                        height.ifPresent(tagsWithinBuffer::add);
-                    }
-                    catch (final Exception ignored)
-                    {
-                        /* Do Nothing */
-                    }
-                }
-                // parseAndAddRelativeTagsToTagsWithinBuffer(tagIdentifier, entry,
-                // tagsWithinBuffer);
+                this.parseAndAddRelativeTagsToTagsWithinBuffer(tagIdentifier, entry,
+                        tagsWithinBuffer);
             }
         }
 
@@ -513,32 +489,34 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 || height > upperQuartile + (innerQuartileRangeAdjusted * this.outlierMultiplier);
     }
 
-    // private void parseAndAddRelativeTagsToTagsWithinBuffer(String tagIdentifier, Map.Entry<Long,
-    // String> entry, List<Double> tagsWithinBuffer)
-    // {
-    // if (tagIdentifier.equals(BuildingLevelsTag.KEY))
-    // {
-    // try
-    // {
-    // final double levelsTagValue = Double.parseDouble(entry.getValue());
-    // tagsWithinBuffer.add(levelsTagValue);
-    // }
-    // catch (final Exception ignored)
-    // {
-    // }
-    // }
-    // if (tagIdentifier.equals(HeightTag.KEY))
-    // {
-    // try
-    // {
-    // final Optional<Double> height = this.parseHeightTag(entry.getValue());
-    // height.ifPresent(tagsWithinBuffer::add);
-    // }
-    // catch (final Exception ignored)
-    // {
-    // }
-    // }
-    // }
+    private void parseAndAddRelativeTagsToTagsWithinBuffer(final String tagIdentifier,
+            final Map.Entry<Long, String> entry, final List<Double> tagsWithinBuffer)
+    {
+        if (tagIdentifier.equals(BuildingLevelsTag.KEY))
+        {
+            try
+            {
+                final double levelsTagValue = Double.parseDouble(entry.getValue());
+                tagsWithinBuffer.add(levelsTagValue);
+            }
+            catch (final Exception ignored)
+            {
+                /* Do Nothing */
+            }
+        }
+        if (tagIdentifier.equals(HeightTag.KEY))
+        {
+            try
+            {
+                final Optional<Double> height = this.parseHeightTag(entry.getValue());
+                height.ifPresent(tagsWithinBuffer::add);
+            }
+            catch (final Exception ignored)
+            {
+                /* Do Nothing */
+            }
+        }
+    }
 
     private Optional<Double> parseHeightTag(final String heightTagValue)
     {
