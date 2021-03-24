@@ -78,7 +78,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
             + "If the two ways do intersect on the same layer then add the `railway=level_crossing` tag to this node.";
     private static final int NODE_MISSING_LC_TAG_INDEX = 2;
     private static final String NODE_INVALID_LC_TAG_NO_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection. "
-            + "To fix: Verify that no highway crosses the railway at this node on the same layer and tehn remove `railway=level_crossing` tag.";
+            + "To fix: Verify that no highway crosses the railway at this node on the same layer and then remove `railway=level_crossing` tag.";
     private static final int NODE_INVALID_LC_TAG_NO_HIGHWAY_INDEX = 3;
     private static final String NODE_INVALID_LC_TAG_NO_RAILWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no existing rails at this intersection. "
             + "To fix: Verify that no railway crosses the highway at this node on the same layer and then remove `railway=level_crossing` tag.";
