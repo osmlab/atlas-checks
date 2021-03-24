@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1080,17 +1080,14 @@
     "minHighwayType": "tertiary"
   },
   "TallBuildingCheck": {
-    "enabled": true,
-    "bufferDistanceMeters": 1600.0,
-    "minDatasetSizeForStatsComputation": 50.0,
-    "maxLevelTagValue": 100.0,
-    "outlierMultiplier": 18.0,
-    "invalidHeightCharacters": ["~","`","!","@","#","$","%","^","&","*","(", ")","-","_","+","=","[","[","}","]","|","\\",":",";","<",",",">","?","/"],
+    "buffer.distance.meters": 1600.0,
+    "min.dataset.size.for.stats.computation": 50.0,
+    "max.level.tag.value": 100.0,
+    "outlier.multiplier": 18.0,
+    "invalid.height.characters": ["~","`","!","@","#","$","%","^","&","*","(", ")","-","_","+","=","[","[","}","]","|","\\",":",";","<",",",">","?","/"],
     "magicNumbers": {
-      "three": 3.0,
-      "four": 4.0,
-      "oneQuarter": 0.25,
-      "threeQuarters": 0.75
+      "one.quarter": 0.25,
+      "three.quarters": 0.75
     },
     "challenge": {
       "description": "Identifies invalid or statistically outlying building:levels/height tag values.",
