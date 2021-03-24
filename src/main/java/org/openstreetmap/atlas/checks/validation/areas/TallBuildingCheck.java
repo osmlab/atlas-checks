@@ -479,7 +479,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
     {
         return (!heightTag.contains(" ") && heightTag.contains("m"))
                 || this.heightTagContainsInvalidCharacter(heightTag).isPresent()
-                || !this.stringContainsNumber(heightTag);
+                || !this.stringContainsNumber(heightTag)
+                || this.parseHeightTag(heightTag).isEmpty();
     }
 
     /**

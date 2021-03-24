@@ -62,4 +62,25 @@ public class TallBuildingCheckTest
         this.verifier.verifyExpectedSize(1);
     }
 
+    @Test
+    public void relationMemberInvalidHeightTag()
+    {
+        this.verifier.actual(this.setup.relationMemberInvalidHeightTag(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void validHeightTag()
+    {
+        this.verifier.actual(this.setup.validHeightTag(), this.check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
+    public void validLevelsTag()
+    {
+        this.verifier.actual(this.setup.validLevelsTag(), this.check);
+        this.verifier.verifyExpectedSize(0);
+    }
+
 }
