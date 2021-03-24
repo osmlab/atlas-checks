@@ -20,9 +20,13 @@ public class TallBuildingCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final ConcerningAngleBuildingCheck check = new ConcerningAngleBuildingCheck(
-            ConfigurationResolver.inlineConfiguration("{\"bufferDistanceMeters\": 1600.0,\n"
+            ConfigurationResolver.inlineConfiguration("\"bufferDistanceMeters\": 1600.0,\n"
                     + "    \"minDatasetSizeForStatsComputation\": 50.0,\n"
-                    + "    \"outlierMultiplier\": 17.0, \n" + "    \"maxLevelTagValue\": 100.0 }"));
+                    + "    \"maxLevelTagValue\": 100.0,\n" + "    \"outlierMultiplier\": 18.0,\n"
+                    + "    \"invalidHeightCharacters\": [\"~\",\"`\",\"!\",\"@\",\"#\",\"$\",\"%\",\"^\",\"&\",\"*\",\"(\", \")\",\"-\",\"_\",\"+\",\"=\",\"[\",\"[\",\"}\",\"]\",\"|\",\"\\\\\",\":\",\";\",\"<\",\",\",\">\",\"?\",\"/\"],\n"
+                    + "    \"magicNumbers\": {\n" + "      \"three\": 3.0,\n"
+                    + "      \"four\": 4.0,\n" + "      \"oneQuarter\": 0.25,\n"
+                    + "      \"threeQuarters\": 0.75\n" + "    }"));
 
     @Test
     public void heightTagDoesNotContainNumericalCharacter()
