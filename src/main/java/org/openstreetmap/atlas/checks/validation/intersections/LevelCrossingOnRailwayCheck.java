@@ -20,8 +20,10 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.tags.BicycleTag;
 import org.openstreetmap.atlas.tags.ConstructionDateTag;
 import org.openstreetmap.atlas.tags.ConstructionTag;
+import org.openstreetmap.atlas.tags.FootTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.RailwayTag;
@@ -55,45 +57,51 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         NODE_VALID,
         NODE_NO_RAILWAY,
         NODE_NO_HIGHWAY,
+        NODE_CYCLE_ONLY_HIGHWAY,
+        NODE_PED_ONLY_HIGHWAY,
         NODE_NO_LAYERS;
     }
 
-    private static final String RAILWAY_FILTER_DEFAULT = "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge";
+    private static final String RAILWAY_FILTER_DEFAULT = "disused:railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge|railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge";
     private final TaggableFilter railwayFilter;
     private static final Long OSM_LAYER_DEFAULT = 0L;
     private final Long layerDefault;
-    private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) has `railway=level_crossing` "
-            + "but is not a node. To fix: Remove `railway=level_crossing` tag.";
+    private static final String INVALID_TAGGED_OBJECT = "The object (OSM ID: {0,number,#}) has `railway=level_crossing` but is not a node. "
+            + "To fix: Remove `railway=level_crossing` tag.";
     private static final int INVALID_TAGGED_OBJECT_INDEX = 0;
-    private static final String NODE_MISSING_LC_TAG = "The intersection node (OSM ID: {0,number,#}) is "
-            + "missing a `railway=level_crossing` tag. This means that there are at least one valid railway and one "
-            + "car navigable highway on the same layer at this node. To fix: If the two ways should be on different "
-            + "layers then adjust the layer tags for each way appropriately. If the two ways do intersect on the same "
-            + "layer then add the `railway=level_crossing` tag to this node.";
-    private static final int NODE_MISSING_LC_TAG_INDEX = 1;
-    private static final String NODE_INVALID_LC_TAG_NO_HIGHWAY = "The node (OSM ID: {0,number,#}) has "
-            + "`railway=level_crossing` tag, but there is no car navigable highway at this intersection. "
-            + "To fix: Remove railway=level_crossing tag.";
-    private static final int NODE_INVALID_LC_TAG_NO_HIGHWAY_INDEX = 2;
-    private static final String NODE_INVALID_LC_TAG_NO_RAILWAY = "The node (OSM ID: {0,number,#}) has "
-            + "`railway=level_crossing` tag, but there are no existing rails at this intersection. "
-            + "To fix: Remove railway=level_crossing tag.";
-    private static final int NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX = 3;
-    private static final String NODE_INVALID_LC_TAG_LAYERS = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` "
-            + "tag, but there are no railway and highway intersection on the same layer. "
-            + "To fix: If the railway and highway should be on the same layer then update the layer tags for both ways "
-            + "to be equal. If the ways are on different layers then remove railway=level_crossing tag.";
-    private static final int NODE_INVALID_LC_TAG_LAYERS_INDEX = 4;
-    private static final String INTERSECTION_MISSING_NODE = "The railway (OSM ID: {0,number,#}) has one or more car "
-            + "navigable intersections on the same layer that are missing intersection nodes. To fix: "
-            + "If highway and railway do cross at the same layer then add appropriate intersection node(s) with "
-            + "`railway=level_crossing` tag. If highway and railway are on different layers then update the "
-            + "appropriate layer tag for the way that goes under or over the other way.";
-    private static final int INTERSECTION_MISSING_NODE_INDEX = 5;
+    private static final String NODE_CROSSING_MISSING_LC_TAG = "The node (OSM ID: {0,number,#}) has a `railway=crossing` tag but should be `railway=level_crossing` tag. "
+            + "To fix: replace the `railway=crossing` tag with a `railway=level_crossing` tag";
+    private static final int NODE_CROSSING_MISSING_LC_TAG_INDEX = 1;
+    private static final String NODE_MISSING_LC_TAG = "The intersection node (OSM ID: {0,number,#}) is missing a `railway=level_crossing` tag. "
+            + "This means that there are at least one valid railway and one car navigable highway on the same layer at this node. "
+            + "To fix: If the two ways should be on different layers then adjust the layer tags for each way appropriately. "
+            + "If the two ways do intersect on the same layer then add the `railway=level_crossing` tag to this node.";
+    private static final int NODE_MISSING_LC_TAG_INDEX = 2;
+    private static final String NODE_INVALID_LC_TAG_NO_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection. "
+            + "To fix: Verify that no highway crosses the railway at this node on the same layer and then remove `railway=level_crossing` tag.";
+    private static final int NODE_INVALID_LC_TAG_NO_HIGHWAY_INDEX = 3;
+    private static final String NODE_INVALID_LC_TAG_NO_RAILWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no existing rails at this intersection. "
+            + "To fix: Verify that no railway crosses the highway at this node on the same layer and then remove `railway=level_crossing` tag.";
+    private static final int NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX = 4;
+    private static final String NODE_INVALID_LC_TAG_LAYERS = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there are no railway and highway intersection on the same layer. "
+            + "To fix: If the railway and highway should be on the same layer then update the layer tags for both ways to be equal. "
+            + "If the ways are on different layers then remove `railway=level_crossing` tag.";
+    private static final int NODE_INVALID_LC_TAG_LAYERS_INDEX = 5;
+    private static final String INTERSECTION_MISSING_NODE = "The railway (OSM ID: {0,number,#}) has one or more car navigable intersections on the same layer that are missing intersection nodes. "
+            + "To fix: If highway crosses the railway at the same layer then make sure that there is a node connected to both railway and highway at the intersection with `railway=level_crossing` tag. "
+            + "If highway and railway are on different layers then update the appropriate layer tag for the way that goes under or over the other way.";
+    private static final int INTERSECTION_MISSING_NODE_INDEX = 6;
+    private static final String NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only pedestrian highway(s). "
+            + "To fix: Change `railway=level_crossing` to `railway=crossing`.";
+    private static final int NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY_INDEX = 7;
+    private static final String NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY = "The node (OSM ID: {0,number,#}) has `railway=level_crossing` tag, but there is no car navigable highway at this intersection, only cycleway highway(s). "
+            + "To fix: Change `railway=level_crossing` to `railway=crossing` and add `bicycle=yes` and `foot=no`.";
+    private static final int NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY_INDEX = 8;
 
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INVALID_TAGGED_OBJECT,
-            NODE_MISSING_LC_TAG, NODE_INVALID_LC_TAG_NO_HIGHWAY, NODE_INVALID_LC_TAG_NO_RAILWAY,
-            NODE_INVALID_LC_TAG_LAYERS, INTERSECTION_MISSING_NODE);
+            NODE_CROSSING_MISSING_LC_TAG, NODE_MISSING_LC_TAG, NODE_INVALID_LC_TAG_NO_HIGHWAY,
+            NODE_INVALID_LC_TAG_NO_RAILWAY, NODE_INVALID_LC_TAG_LAYERS, INTERSECTION_MISSING_NODE,
+            NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY, NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY);
     private static final List<String> CONSTRUCTION_TAGS = List.of(HighwayTag.KEY, RailwayTag.KEY);
     private static final long serialVersionUID = -2063033332877849846L;
 
@@ -199,6 +207,41 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                 final int instructIndex;
                 switch (nodeCheck)
                 {
+                    case NODE_CYCLE_ONLY_HIGHWAY:
+                        return Optional.of(this
+                                .createFlag(object,
+                                        this.getLocalizedInstruction(
+                                                NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY_INDEX,
+                                                object.getOsmIdentifier()))
+                                .addFixSuggestion(FeatureChange.add(
+                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                .from((AtlasEntity) object))
+                                                        .withTags(object.getTags())
+                                                        .withReplacedTag(RailwayTag.KEY,
+                                                                RailwayTag.KEY,
+                                                                RailwayTag.CROSSING.name()
+                                                                        .toLowerCase().intern())
+                                                        .withAddedTag(BicycleTag.KEY,
+                                                                BicycleTag.YES.toString()
+                                                                        .toLowerCase())
+                                                        .withAddedTag(FootTag.KEY,
+                                                                FootTag.NO.toString()
+                                                                        .toLowerCase()),
+                                        object.getAtlas())));
+                    case NODE_PED_ONLY_HIGHWAY:
+                        return Optional.of(this
+                                .createFlag(object,
+                                        this.getLocalizedInstruction(
+                                                NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY_INDEX,
+                                                object.getOsmIdentifier()))
+                                .addFixSuggestion(FeatureChange.add(
+                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                .from((AtlasEntity) object))
+                                                        .withTags(object.getTags()).withReplacedTag(
+                                                                RailwayTag.KEY, RailwayTag.KEY,
+                                                                RailwayTag.CROSSING.name()
+                                                                        .toLowerCase().intern()),
+                                        object.getAtlas())));
                     case NODE_NO_RAILWAY:
                         instructIndex = NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX;
                         break;
@@ -209,20 +252,30 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                         instructIndex = NODE_INVALID_LC_TAG_LAYERS_INDEX;
                         break;
                 }
-                return Optional.of(this
-                        .createFlag(object,
-                                this.getLocalizedInstruction(instructIndex,
-                                        object.getOsmIdentifier()))
-                        .addFixSuggestion(FeatureChange.add(
-                                (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object)).withRemovedTag(RailwayTag.KEY),
-                                object.getAtlas())));
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(instructIndex, object.getOsmIdentifier())));
+
             }
             if (!Validators.isOfType(node, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
                     && nodeCheck == NodeCheck.NODE_VALID)
             {
                 // This is a valid railway/highway intersect node that is not tagged with
                 // railway=level_crossing
+                if (Validators.isOfType(node, RailwayTag.class, RailwayTag.CROSSING))
+                {
+                    // This node is tagged as a crossing, but should be a level_crossing
+                    return Optional.of(this
+                            .createFlag(object,
+                                    this.getLocalizedInstruction(NODE_CROSSING_MISSING_LC_TAG_INDEX,
+                                            object.getOsmIdentifier()))
+                            .addFixSuggestion(FeatureChange.add(
+                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                            .from((AtlasEntity) object)).withTags(object.getTags())
+                                                    .withReplacedTag(RailwayTag.KEY, RailwayTag.KEY,
+                                                            RailwayTag.LEVEL_CROSSING.name()
+                                                                    .toLowerCase().intern()),
+                                    object.getAtlas())));
+                }
                 return Optional.of(this
                         .createFlag(object,
                                 this.getLocalizedInstruction(NODE_MISSING_LC_TAG_INDEX,
@@ -340,14 +393,38 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
             // Node has no railways through it
             return NodeCheck.NODE_NO_RAILWAY;
         }
+        // Get pedestrian navigable connections to this node
+        final List<AtlasItem> connectedPedHighways = Iterables
+                .asList(atlas.itemsContaining(node.getLocation())).stream()
+                .filter(object -> HighwayTag.isPedestrianNavigableHighway(object)
+                        || FootTag.isPedestrianAccessible(object))
+                .collect(Collectors.toList());
+        // Get cycleway connections to this node
+        final List<AtlasItem> cyclewayHighways = Iterables
+                .asList(atlas.itemsContaining(node.getLocation())).stream()
+                .filter(object -> Validators.isOfType(object, HighwayTag.class,
+                        HighwayTag.CYCLEWAY))
+                .collect(Collectors.toList());
+
         // Get car navigable connections to this node
         final List<AtlasItem> connectedHighways = Iterables
                 .asList(atlas.itemsContaining(node.getLocation())).stream()
                 .filter(HighwayTag::isCarNavigableHighway).collect(Collectors.toList());
-        if (connectedHighways.isEmpty())
+        if (connectedPedHighways.isEmpty() && connectedHighways.isEmpty()
+                && !cyclewayHighways.isEmpty())
+        {
+            // Node has only cycleways through it
+            return NodeCheck.NODE_CYCLE_ONLY_HIGHWAY;
+        }
+        if (connectedPedHighways.isEmpty() && connectedHighways.isEmpty())
         {
             // Node has no highways through it
             return NodeCheck.NODE_NO_HIGHWAY;
+        }
+        if (connectedHighways.isEmpty())
+        {
+            // Node has no car highways through it, only pedestrian
+            return NodeCheck.NODE_PED_ONLY_HIGHWAY;
         }
 
         // For each railway, check that there is a highway on the same layer that
