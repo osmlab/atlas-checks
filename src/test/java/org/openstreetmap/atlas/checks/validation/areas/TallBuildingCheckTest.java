@@ -19,7 +19,7 @@ public class TallBuildingCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private final ConcerningAngleBuildingCheck check = new ConcerningAngleBuildingCheck(
+    private final TallBuildingCheck check = new TallBuildingCheck(
             ConfigurationResolver.inlineConfiguration("{\"bufferDistanceMeters\": 1600.0, "
                     + "\"minDatasetSizeForStatsComputation\": 50.0, "
                     + "\"maxLevelTagValue\": 100.0, " + "\"outlierMultiplier\": 18.0, "
