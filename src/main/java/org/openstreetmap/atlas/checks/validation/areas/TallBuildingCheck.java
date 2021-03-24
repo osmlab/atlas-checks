@@ -63,8 +63,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
     private static final double ONE_QUARTER_DEFAULT = 0.25;
     private final double magicNumberThreeQuarters;
     private static final double THREE_QUARTER_DEFAULT = 0.75;
-    private static final double three = 3.0;
-    private static final double four = 4.0;
+    private static final double instructionThree = 3.0;
+    private static final double instructionFour = 4.0;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -420,8 +420,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 if (this.isOutlier(tagValue, lowerQuartile.get(), upperQuartile.get(),
                         innerQuartileRange.get()) && tagIdentifier.equals(HeightTag.KEY))
                 {
-                    return Optional.of(this.createFlag(object,
-                            this.getLocalizedInstruction((int) four, object.getOsmIdentifier())));
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                            (int) instructionFour, object.getOsmIdentifier())));
                 }
 
             }
@@ -523,8 +523,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
         // Case 4: building has an invalid "height" tag
         if (this.hasInvalidHeightTag(heightTag))
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction((int) four, object.getOsmIdentifier())));
+            return Optional.of(this.createFlag(object, this
+                    .getLocalizedInstruction((int) instructionFour, object.getOsmIdentifier())));
         }
 
         // Don't run statistics if building contains building=apartments tag (apartments seem to be
@@ -551,8 +551,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
                                     rectangleStatsWhichIntersectObjectOptional.get().getThird(),
                                     rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
                     {
-                        return Optional.of(this.createFlag(object, this
-                                .getLocalizedInstruction((int) three, object.getOsmIdentifier())));
+                        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                                (int) instructionThree, object.getOsmIdentifier())));
                     }
 
                     // Case 5: Building does not intersect stored area but "height" tag is an
