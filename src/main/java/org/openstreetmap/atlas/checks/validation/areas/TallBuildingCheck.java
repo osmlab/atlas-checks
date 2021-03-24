@@ -475,6 +475,13 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return tags.containsKey(HeightTag.KEY);
     }
 
+    private boolean hasInvalidHeightTag(final String heightTag)
+    {
+        return (!heightTag.contains(" ") && heightTag.contains("m"))
+                || this.heightTagContainsInvalidCharacter(heightTag).isPresent()
+                || !this.stringContainsNumber(heightTag);
+    }
+
     /**
      * Function to determine if "height" tag has invalid characters (in the config)
      * 
@@ -510,9 +517,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
         final String heightTag = tags.get(HeightTag.KEY);
 
         // Case 4: building has an invalid "height" tag
-        if ((!heightTag.contains(" ") && heightTag.contains("m"))
-                || this.heightTagContainsInvalidCharacter(heightTag).isPresent()
-                || !this.stringContainsNumber(heightTag))
+        if (this.hasInvalidHeightTag(heightTag))
         {
             return Optional.of(this.createFlag(object, this
                     .getLocalizedInstruction((int) this.magicNumber4, object.getOsmIdentifier())));
