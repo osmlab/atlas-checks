@@ -823,7 +823,7 @@ def evaluate(args, cloudctl):
     if args.name is not None:
         cloudctl.instanceName = args.name
     if args.template is not None:
-        cloudctl.templateName = args.templateName
+        cloudctl.templateName = args.template
     if args.minutes is not None:
         cloudctl.timeoutMinutes = args.minutes
     if hasattr(args, "input") and args.input is not None:
