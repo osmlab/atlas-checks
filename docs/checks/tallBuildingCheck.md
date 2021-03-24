@@ -20,7 +20,7 @@ Case 2 - Building has an invalid building:levels tag.
 * The building (house) [id:795395318](https://www.openstreetmap.org/way/795395318) has an invalid building:levels tag. (should only be comprised of numerical values)
 
 Case 3 - Building has an outlying building:levels tag compared to buildings around it.
-* The building [id:37625867](https://www.openstreetmap.org/way/37625867) has an outlying height tag compared to it's neighboring homes.
+* The building [id:734691356](https://www.openstreetmap.org/way/734691356) has an outlying height tag compared to it's neighboring homes.
 
 Case 4 - Building has an invalid height tag.
 * The building [id:788365480](https://www.openstreetmap.org/way/788365480) has an invalid height tag. (needs space between '2' and 'm')

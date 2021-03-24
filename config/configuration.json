@@ -1079,9 +1079,9 @@
       "threeQuarters": 0.75
     },
     "challenge": {
-      "description": "Identifies ways that have suspicious highway tag jumps.",
-      "blurb": "Sudden Highway Type Change",
-      "instruction": "Check if way has suspicious highway jump and make necessary adjust to tag.",
+      "description": "Identifies invalid or statistically outlying building:levels/height tag values.",
+      "blurb": "Validating building:height/height tags",
+      "instruction": "Please validate building:height/height tags based on https://wiki.openstreetmap.org/wiki/Key:building:levels and https://wiki.openstreetmap.org/wiki/Key:height",
       "difficulty": "MEDIUM",
       "defaultPriority": "LOW"
     }

@@ -26,10 +26,6 @@ import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import groovy.lang.Tuple2;
 import groovy.lang.Tuple4;
 
 /**
@@ -57,13 +53,11 @@ public class TallBuildingCheck extends BaseCheck<Long>
     private static final double MAX_LEVEL_TAG_VALUE_DEFAULT = 100;
     private static final double OUTLIER_MULTIPLIER_DEFAULT = 3;
     private final double outlierMultiplier;
-    private final transient Cache<Tuple2<Rectangle, Integer>, Tuple4<String, Double, Double, Double>> cache = CacheBuilder
-            .newBuilder().build();
+    private final Map<Rectangle, Tuple4<String, Double, Double, Double>> storedAreasWithStatistics = new HashMap<>();
     private final Set<String> invalidHeightCharacters;
     private static final Set<String> INVALID_CHARACTER_DEFAULT = Set.of("~", "`", "!", "@", "#",
             "$", "%", "^", "&", "*", "(", ")", "-", "_", "+", "=", "{", "[", "}", "]", "|", "\\",
             ":", ";", "<", ",", ">", "?", "/");
-    private final Map<Rectangle, Integer> checkedBuildingsInArea = new HashMap<>();
     private final double magicNumber3;
     private static final double THREE_DEFAULT = 3.0;
     private final double magicNumber4;
@@ -136,20 +130,67 @@ public class TallBuildingCheck extends BaseCheck<Long>
         // level tag logic
         if (this.hasBuildingLevelTag(tags))
         {
-            try
+            final Optional<CheckFlag> flag = this.buildingLevelsTagFlagLogic(object, tags);
+            if (flag.isPresent())
             {
-                final double buildingLevelsTagValue = Double
-                        .parseDouble(tags.get(BuildingLevelsTag.KEY));
-                if (buildingLevelsTagValue > this.maxLevelTagValue)
-                {
-                    return Optional.of(this.createFlag(object,
-                            this.getLocalizedInstruction(0, object.getOsmIdentifier())));
-                }
+                return flag;
+            }
+        }
 
+        // height tag logic
+        if (this.hasHeightTag(tags))
+        {
+            final Optional<CheckFlag> flag = this.heightTagFlagLogic(object, tags);
+            if (flag.isPresent())
+            {
+                return flag;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Determines which case the building:levels tag falls under.
+     * 
+     * @param object
+     *            building object
+     * @param tags
+     *            building object tags
+     * @return Optional CheckFlag
+     */
+    private Optional<CheckFlag> buildingLevelsTagFlagLogic(final AtlasObject object,
+            final Map<String, String> tags)
+    {
+        try
+        {
+            final double buildingLevelsTagValue = Double
+                    .parseDouble(tags.get(BuildingLevelsTag.KEY));
+
+            // Case 1: Building:levels tag greater than 100
+            if (buildingLevelsTagValue > this.maxLevelTagValue)
+            {
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            }
+
+            // Don't run statistics if building contains building=apartments tag (apartments seem to
+            // be showing up a lot as outliers)
+            if (!(tags.containsKey(BuildingTag.KEY) && tags.get(BuildingTag.KEY)
+                    .equals(BuildingTag.APARTMENTS.toString().toLowerCase())))
+            {
+                // Check store to see if building intersects stored entry rectangle
                 final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
-                        .getRectangleStatsWhichIntersectObject(this.cache, object,
-                                BuildingLevelsTag.KEY);
+                        .getRectangleStatsWhichIntersectObject(this.storedAreasWithStatistics,
+                                object, BuildingLevelsTag.KEY);
 
+                // Case 3: Building intersects stored area AND Levels tag is a statistical outlier
+                // compared to surrounding buildings with building:levels tag.
                 if (rectangleStatsWhichIntersectObjectOptional.isPresent()
                         && this.isOutlier(buildingLevelsTagValue,
                                 rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
@@ -160,71 +201,25 @@ public class TallBuildingCheck extends BaseCheck<Long>
                             this.getLocalizedInstruction(2, object.getOsmIdentifier())));
                 }
 
+                // Case 3: Building does not intersect stored area but levels tag is a statistical
+                // outlier compared to surrounding buildings with building:levels tag.
                 if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
                 {
-                    return this.getStatisticsWithNewCacheEntry(object, buildingLevelsTagValue,
+                    return this.getStatisticsWithNewStoreEntry(object, buildingLevelsTagValue,
                             BuildingLevelsTag.KEY);
                 }
 
             }
-            catch (final Exception e)
-            {
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(1, object.getOsmIdentifier())));
-            }
+
         }
 
-        // height tag logic
-        if (this.hasHeightTag(tags))
+        // Case 2: Building has an invalid building:levels tag because it cannot be parsed.
+        catch (final Exception e)
         {
-            final String heightTag = tags.get(HeightTag.KEY);
-            if ((!heightTag.contains(" ") && heightTag.contains("m"))
-                    || this.heightTagContainsInvalidCharacter(heightTag).isPresent()
-                    || !this.stringContainsNumber(heightTag))
-            {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                        (int) this.magicNumber4, object.getOsmIdentifier())));
-            }
-            try
-            {
-
-                final Optional<Double> buildingHeightTagValue = this.parseHeightTag(heightTag);
-                if (buildingHeightTagValue.isPresent())
-                {
-                    final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
-                            .getRectangleStatsWhichIntersectObject(this.cache, object,
-                                    HeightTag.KEY);
-
-                    if (rectangleStatsWhichIntersectObjectOptional.isPresent()
-                            && this.isOutlier(buildingHeightTagValue.get(),
-                                    rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
-                                    rectangleStatsWhichIntersectObjectOptional.get().getThird(),
-                                    rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
-                    {
-                        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                                (int) this.magicNumber3, object.getOsmIdentifier())));
-                    }
-
-                    if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
-                    {
-                        return this.getStatisticsWithNewCacheEntry(object,
-                                buildingHeightTagValue.get(), HeightTag.KEY);
-                    }
-                }
-
-            }
-            catch (final Exception e)
-            {
-                return Optional.empty();
-            }
+            return Optional.of(this.createFlag(object,
+                    this.getLocalizedInstruction(1, object.getOsmIdentifier())));
         }
         return Optional.empty();
-    }
-
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -298,53 +293,56 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return buildingsWithRelevantTagWithinBuffer;
     }
 
-    private Optional<Double> getLowerQuartile(final List<Double> listOfHeights)
+    /**
+     * Function to get first quartile value
+     * 
+     * @param listOfRelevantTags
+     *            sorted list of building tags intersecting with buffer area
+     * @return first quarter value from list
+     */
+    private Optional<Double> getLowerQuartile(final List<Double> listOfRelevantTags)
     {
-        final int lengthOfList = listOfHeights.size() - 1;
+        final int lengthOfList = listOfRelevantTags.size() - 1;
         if (lengthOfList == 0)
         {
             return Optional.empty();
         }
-        return Optional
-                .of(listOfHeights.get((int) Math.round(lengthOfList * this.magicNumberOneQuarter)));
+        return Optional.of(listOfRelevantTags
+                .get((int) Math.round(lengthOfList * this.magicNumberOneQuarter)));
     }
 
+    /**
+     * Function to check if building intersects stored area already with statistical values or if a
+     * new store entry needs to be made.
+     * 
+     * @param store
+     *            store of area along with necessary statistical values
+     * @param object
+     *            building object
+     * @param tagIdentifier
+     *            either "building:levels" or "height" to identify category of analysis
+     * @return Optional of relevant statistical values to compare object against.
+     */
     private Optional<Tuple4<String, Double, Double, Double>> getRectangleStatsWhichIntersectObject(
-            final Cache<Tuple2<Rectangle, Integer>, Tuple4<String, Double, Double, Double>> cache,
+            final Map<Rectangle, Tuple4<String, Double, Double, Double>> store,
             final AtlasObject object, final String tagIdentifier)
     {
-        if (cache.size() == 0)
+        if (store.size() == 0)
         {
             return Optional.empty();
         }
 
-        final Map<Tuple2<Rectangle, Integer>, Tuple4<String, Double, Double, Double>> map = cache
-                .asMap();
-
-        for (final Map.Entry<Tuple2<Rectangle, Integer>, Tuple4<String, Double, Double, Double>> mapEntry : map
+        for (final Map.Entry<Rectangle, Tuple4<String, Double, Double, Double>> mapEntry : store
                 .entrySet())
         {
             if (mapEntry.getValue().getFirst().equals(tagIdentifier))
             {
 
-                final Rectangle rectangleKey = mapEntry.getKey().getFirst();
+                final Rectangle rectangleKey = mapEntry.getKey();
                 final Rectangle intersection = rectangleKey.intersection(object.bounds());
-
-                final int numberOfIntersectingBuildingsFromCache = mapEntry.getKey().getSecond();
 
                 if (intersection != null)
                 {
-                    this.checkedBuildingsInArea.put(rectangleKey,
-                            this.checkedBuildingsInArea.get(rectangleKey) + 1);
-                    final int currentlyCheckedIntersectingBuildingsFromArea = this.checkedBuildingsInArea
-                            .get(rectangleKey);
-
-                    if (currentlyCheckedIntersectingBuildingsFromArea == numberOfIntersectingBuildingsFromCache)
-                    {
-                        final Tuple2<Rectangle, Integer> keyToInvalidate = new Tuple2<>(
-                                rectangleKey, numberOfIntersectingBuildingsFromCache);
-                        cache.invalidate(keyToInvalidate);
-                    }
                     return Optional.of(mapEntry.getValue());
                 }
             }
@@ -352,6 +350,16 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    /**
+     * Function to get relevant tags from intersecting buildings and to sort them for statistical
+     * analysis.
+     * 
+     * @param buildingsWithRelevantTagWithinBuffer
+     *            intersecting buildings with relevant tags
+     * @param tagIdentifier
+     *            either building:levels or height tag to determine which analysis to conduct.
+     * @return sorted list of relevant intersecting building tags.
+     */
     private List<Double> getSortedTagValuesWithinBufferRadius(
             final Set<Map<Long, String>> buildingsWithRelevantTagWithinBuffer,
             final String tagIdentifier)
@@ -371,7 +379,19 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return tagsWithinBuffer;
     }
 
-    private Optional<CheckFlag> getStatisticsWithNewCacheEntry(final AtlasObject object,
+    /**
+     * Function to perform new statistical analysis and create new store entry when building does
+     * not intersect an already stored area.
+     * 
+     * @param object
+     *            building object
+     * @param tagValue
+     *            building tag value either "building:levels" or "height".
+     * @param tagIdentifier
+     *            distinguish which tag to conduct analysis on.
+     * @return CheckFlag if building tag is outlier.
+     */
+    private Optional<CheckFlag> getStatisticsWithNewStoreEntry(final AtlasObject object,
             final double tagValue, final String tagIdentifier)
     {
         final Rectangle bufferArea = this.getBufferArea(this.getBuildingBounds(object));
@@ -392,10 +412,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
             if (lowerQuartile.isPresent() && upperQuartile.isPresent()
                     && innerQuartileRange.isPresent())
             {
-                this.cache.put(new Tuple2<>(bufferArea, sortedTagValueList.size()),
-                        new Tuple4<>(tagIdentifier, lowerQuartile.get(), upperQuartile.get(),
-                                innerQuartileRange.get()));
-                this.checkedBuildingsInArea.put(bufferArea, 1);
+                this.storedAreasWithStatistics.put(bufferArea, new Tuple4<>(tagIdentifier,
+                        lowerQuartile.get(), upperQuartile.get(), innerQuartileRange.get()));
                 if (this.isOutlier(tagValue, lowerQuartile.get(), upperQuartile.get(),
                         innerQuartileRange.get()) && tagIdentifier.equals(BuildingLevelsTag.KEY))
                 {
@@ -415,27 +433,55 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
-    private Optional<Double> getUpperQuartile(final List<Double> listOfHeights)
+    /**
+     * Function to get third quartile value from sorted list of relevant tags.
+     * 
+     * @param listOfRelevantTags
+     *            sorted list of relevant tags
+     * @return third quartile value of dataset (tags)
+     */
+    private Optional<Double> getUpperQuartile(final List<Double> listOfRelevantTags)
     {
-        final int lengthOfList = listOfHeights.size() - 1;
+        final int lengthOfList = listOfRelevantTags.size() - 1;
         if (lengthOfList == 0)
         {
             return Optional.empty();
         }
-        return Optional.of(
-                listOfHeights.get((int) Math.round(lengthOfList * this.magicNumberThreeQuarters)));
+        return Optional.of(listOfRelevantTags
+                .get((int) Math.round(lengthOfList * this.magicNumberThreeQuarters)));
     }
 
+    /**
+     * Function to determine if building has "building:levels" tag.
+     * 
+     * @param tags
+     *            building tags
+     * @return boolean if it has specific tag.
+     */
     private boolean hasBuildingLevelTag(final Map<String, String> tags)
     {
         return tags.containsKey(BuildingLevelsTag.KEY);
     }
 
+    /**
+     * Function to determine if building has "height" tag.
+     * 
+     * @param tags
+     *            building tags
+     * @return boolean if it has specific tag.
+     */
     private boolean hasHeightTag(final Map<String, String> tags)
     {
         return tags.containsKey(HeightTag.KEY);
     }
 
+    /**
+     * Function to determine if "height" tag has invalid characters (in the config)
+     * 
+     * @param heightTag
+     *            building height tag raw value
+     * @return Optional string of invalid character
+     */
     private Optional<String> heightTagContainsInvalidCharacter(final String heightTag)
     {
         for (final String invalidHeightTagCharacter : this.invalidHeightCharacters)
@@ -449,6 +495,83 @@ public class TallBuildingCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
+    /**
+     * Function to flag "height" tag
+     * 
+     * @param object
+     *            building object
+     * @param tags
+     *            building tags
+     * @return CheckFlag based on cases
+     */
+    private Optional<CheckFlag> heightTagFlagLogic(final AtlasObject object,
+            final Map<String, String> tags)
+    {
+        final String heightTag = tags.get(HeightTag.KEY);
+
+        // Case 4: building has an invalid "height" tag
+        if ((!heightTag.contains(" ") && heightTag.contains("m"))
+                || this.heightTagContainsInvalidCharacter(heightTag).isPresent()
+                || !this.stringContainsNumber(heightTag))
+        {
+            return Optional.of(this.createFlag(object, this
+                    .getLocalizedInstruction((int) this.magicNumber4, object.getOsmIdentifier())));
+        }
+
+        // Don't run statistics if building contains building=apartments tag (apartments seem to be
+        // showing up a lot as outliers)
+        if (!(tags.containsKey(BuildingTag.KEY) && tags.get(BuildingTag.KEY)
+                .equals(BuildingTag.APARTMENTS.toString().toLowerCase())))
+        {
+            try
+            {
+
+                final Optional<Double> buildingHeightTagValue = this.parseHeightTag(heightTag);
+
+                if (buildingHeightTagValue.isPresent())
+                {
+                    final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
+                            .getRectangleStatsWhichIntersectObject(this.storedAreasWithStatistics,
+                                    object, HeightTag.KEY);
+                    // Case 5: Building intersects stored area AND "height" tag is an outlier
+                    // compared
+                    // to surrounding buildings with "height" tag.
+                    if (rectangleStatsWhichIntersectObjectOptional.isPresent()
+                            && this.isOutlier(buildingHeightTagValue.get(),
+                                    rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
+                                    rectangleStatsWhichIntersectObjectOptional.get().getThird(),
+                                    rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
+                    {
+                        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                                (int) this.magicNumber3, object.getOsmIdentifier())));
+                    }
+
+                    // Case 5: Building does not intersect stored area but "height" tag is an
+                    // outlier
+                    // compared to surrounding buildings with "height tag.
+                    if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
+                    {
+                        return this.getStatisticsWithNewStoreEntry(object,
+                                buildingHeightTagValue.get(), HeightTag.KEY);
+                    }
+                }
+
+            }
+            catch (final Exception ignored)
+            {
+                /* Do Nothing */
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Function to determine if object is a building or part of a building
+     * 
+     * @param object
+     *            Atlas object
+     * @return boolean if is building or part of building
+     */
     private boolean isBuildingOrPart(final AtlasObject object)
     {
         return BuildingTag.isBuilding(object)
@@ -456,6 +579,13 @@ public class TallBuildingCheck extends BaseCheck<Long>
                         || Validators.isNotOfType(object, BuildingTag.class, BuildingTag.ROOF));
     }
 
+    /**
+     * Function to determine if object is a building relation member
+     * 
+     * @param object
+     *            Atlas object
+     * @return boolean if object is a building relation member
+     */
     private boolean isBuildingRelationMember(final AtlasObject object)
     {
         return object instanceof AtlasEntity && ((AtlasEntity) object).relations().stream()
@@ -467,7 +597,20 @@ public class TallBuildingCheck extends BaseCheck<Long>
                                         || member.getRole().equals("part")));
     }
 
-    private boolean isOutlier(final double height, final double lowerQuartile,
+    /**
+     * Function determining if relevantTag is a statistical outlier
+     * 
+     * @param relevantTag
+     *            either building "building:levels" or "height" tag
+     * @param lowerQuartile
+     *            first quarter from sorted relevant tag list.
+     * @param upperQuartile
+     *            third quartile from sorted relevant tag list.
+     * @param innerQuartileRange
+     *            upperQuartile - lowerQuartile
+     * @return boolean if relevant tag is an outlier determined by statistical outlier analysis
+     */
+    private boolean isOutlier(final double relevantTag, final double lowerQuartile,
             final double upperQuartile, final double innerQuartileRange)
     {
         double innerQuartileRangeAdjusted = innerQuartileRange;
@@ -475,10 +618,21 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             innerQuartileRangeAdjusted = innerQuartileRange + 1.0;
         }
-        return height < lowerQuartile - (innerQuartileRangeAdjusted * this.outlierMultiplier)
-                || height > upperQuartile + (innerQuartileRangeAdjusted * this.outlierMultiplier);
+        return relevantTag < lowerQuartile - (innerQuartileRangeAdjusted * this.outlierMultiplier)
+                || relevantTag > upperQuartile
+                        + (innerQuartileRangeAdjusted * this.outlierMultiplier);
     }
 
+    /**
+     * Function to parse and add relevant tag values to list of tags within buffer
+     * 
+     * @param tagIdentifier
+     *            either "building:levels" or "height" tag
+     * @param entry
+     *            single entry key: osmID, value: relevant tag
+     * @param tagsWithinBuffer
+     *            list of relevant tags within buffer area
+     */
     private void parseAndAddRelativeTagsToTagsWithinBuffer(final String tagIdentifier,
             final Map.Entry<Long, String> entry, final List<Double> tagsWithinBuffer)
     {
@@ -508,8 +662,17 @@ public class TallBuildingCheck extends BaseCheck<Long>
         }
     }
 
+    /**
+     * Function to parse "height" tag
+     * 
+     * @param heightTagValue
+     *            raw height tag value
+     * @return height as double
+     */
     private Optional<Double> parseHeightTag(final String heightTagValue)
     {
+        // Valid height tag if there is a space so we split if there is a space and take the first
+        // index to check if it is a number.
         if (heightTagValue.contains(" "))
         {
             try
@@ -525,6 +688,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 return Optional.empty();
             }
         }
+
+        // If there isn't a space we just try to parse a number
         try
         {
             return Optional.of(Double.parseDouble(heightTagValue));
@@ -535,6 +700,13 @@ public class TallBuildingCheck extends BaseCheck<Long>
         }
     }
 
+    /**
+     * Function to determine if string contains numerical value
+     * 
+     * @param heightTag
+     *            raw "height" tag
+     * @return boolean if string contains numerical value
+     */
     private boolean stringContainsNumber(final String heightTag)
     {
         final char[] stringArray = heightTag.toCharArray();
