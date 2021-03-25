@@ -33,9 +33,7 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
     @TestAtlas(
             // This atlas contains invalid features with level_crossing tag.
             // nodes
-            nodes = {
-                    @Node(id = "123456789000000", coordinates = @Loc(value = TEST_1), tags = {
-                            "railway=level_crossing" }),
+            nodes = { @Node(id = "123456789000000", coordinates = @Loc(value = TEST_1), tags = {}),
                     @Node(id = "223456789000000", coordinates = @Loc(value = TEST_2), tags = {}),
                     @Node(id = "323456789000000", coordinates = @Loc(value = TEST_3), tags = {}) },
             // points
@@ -80,12 +78,15 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                             @Loc(value = H2_NODE_2) }, tags = { "highway=secondary" }) },
             // lines
             lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
-                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }),
+                    @Line(id = "233456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "disused:railway=rail" }) })
 
     private Atlas noIntersectionNode;
 
     /*
-     * Valid intersections tests: Test to following valid intersections
+     * Valid intersections tests: Test the following valid intersections
      */
 
     @TestAtlas(
@@ -134,7 +135,10 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                     // 1.5: intersecting miniature no layer
                     @Line(id = "533456789000000", coordinates = { @Loc(value = R_NODE_1),
                             @Loc(value = R_NODE_2),
-                            @Loc(value = INT1) }, tags = { "railway=miniature" }) })
+                            @Loc(value = INT1) }, tags = { "railway=miniature" }),
+                    @Line(id = "633456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "disused:railway=rail" }) })
 
     private Atlas validIntersectionNoLayer;
 
@@ -165,6 +169,27 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                             @Loc(value = INT1) }, tags = { "railway=rail" }) })
 
     private Atlas ignoreConstruction;
+
+    @TestAtlas(
+            /*
+             * Test invalid level crossing with ped highway and no car highway
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // edges
+            edges = { @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                    @Loc(value = H1_NODE_2), @Loc(value = INT1) }, tags = { "highway=cycleway" }) },
+            // lines
+            lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas invalidIntersectionCyclewayHighway;
 
     @TestAtlas(
             /*
@@ -202,6 +227,27 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                     @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
 
     private Atlas invalidIntersectionNoHighway;
+
+    @TestAtlas(
+            /*
+             * Test invalid level crossing with ped highway and no car highway
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=level_crossing" }) },
+            // edges
+            edges = { @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                    @Loc(value = H1_NODE_2), @Loc(value = INT1) }, tags = { "highway=footway" }) },
+            // lines
+            lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas invalidIntersectionPedNoHighway;
 
     @TestAtlas(
             /*
@@ -317,6 +363,11 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
         return this.ignoreConstruction;
     }
 
+    public Atlas getInvalidIntersectionCyclewayHighway()
+    {
+        return this.invalidIntersectionCyclewayHighway;
+    }
+
     public Atlas getInvalidIntersectionNoHighway()
     {
         return this.invalidIntersectionNoHighway;
@@ -325,6 +376,11 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
     public Atlas getInvalidIntersectionNoRailway()
     {
         return this.invalidIntersectionNoRailway;
+    }
+
+    public Atlas getInvalidIntersectionPedNoHighway()
+    {
+        return this.invalidIntersectionPedNoHighway;
     }
 
     public Atlas getInvalidObjectsWithTag()

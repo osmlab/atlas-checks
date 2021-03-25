@@ -7,10 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
-import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
-import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -18,12 +16,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.tags.BridgeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
-import org.openstreetmap.atlas.tags.TunnelTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.tags.names.AlternativeNameTag;
-import org.openstreetmap.atlas.tags.names.BridgeNameTag;
 import org.openstreetmap.atlas.tags.names.NameTag;
-import org.openstreetmap.atlas.tags.names.TunnelNameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.direction.EdgeDirectionComparator;
 
@@ -61,8 +55,10 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 7104778218412127847L;
     private static final List<String> VALID_HIGHWAY_TAG_DEFAULT = Arrays.asList("primary",
             "secondary", "tertiary", "trunk", "motorway");
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList("Edge name is empty.",
-            "Edge name {1} is different from in edge name and out edge name.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "Road name is empty for way with id {0,number,#}.",
+            "The name, ''{0}'', for way id {1,number,#} is different from the ways it is connected to, ''{2}''. Consider setting the name so that it is consistent with the other ways.",
+            "The name, ''{0}'', for bridge with id {1,number,#} is different from the ways it is connected to, ''{2}''. Consider setting the name of this way to ''{2}'' so that it is consistent with the other ways, setting ''bridge:name={0}'' to save the original name of the bridge.");
 
     private final List<String> validHighwayTag;
 
@@ -128,9 +124,9 @@ public class RoadNameGapCheck extends BaseCheck<Long>
             // There is no pair of in edge and out edge with same name.
             return Optional.empty();
         }
-        final String nameSuggestion = matchingInAndOutEdgeNames.iterator().next();
         // Create flag when we have in edge and out edge with same name but intermediate edge
         // doesn't have a name.
+        final String nameSuggestion = matchingInAndOutEdgeNames.iterator().next();
         if (edge.getName().isEmpty())
         {
             return Optional
@@ -149,14 +145,13 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         {
             final Set<Edge> connectedEdges = edge.connectedEdges().stream()
                     .filter(this::validCheckForObject).collect(Collectors.toSet());
+            final int instructionIndex = BridgeTag.isBridge(object) ? 2 : 1;
             return this.findMatchingEdgeNameWithConnectedEdges(connectedEdges, edgeName.get())
                     ? Optional.empty()
-                    : Optional.of(this
-                            .createFlag(object,
-                                    this.getLocalizedInstruction(1, edge.getOsmIdentifier(),
-                                            edgeName.get()))
-                            .addFixSuggestion(this.getComplexFixSuggestion(object, edgeName.get(),
-                                    nameSuggestion)));
+                    : Optional.of(
+                            this.createFlag(object, this.getLocalizedInstruction(instructionIndex,
+                                    edgeName.get(), edge.getOsmIdentifier(), nameSuggestion)));
+
         }
         return Optional.empty();
     }
@@ -182,33 +177,6 @@ public class RoadNameGapCheck extends BaseCheck<Long>
     {
         return connectedEdges.stream().anyMatch(connectedEdge -> connectedEdge.getName().isPresent()
                 && connectedEdge.getName().get().equals(edgeName));
-    }
-
-    private FeatureChange getComplexFixSuggestion(final AtlasObject object,
-            final String originalName, final String nameSuggestion)
-    {
-        final CompleteEntity<CompleteEdge> completeEntity = (CompleteEntity) CompleteEntity
-                .from((AtlasEntity) object);
-        completeEntity.withReplacedTag(NameTag.KEY, NameTag.KEY, nameSuggestion);
-        if (BridgeTag.isBridge(object) && object.getTag(BridgeNameTag.KEY).isEmpty())
-        {
-            completeEntity.withAddedTag(BridgeNameTag.KEY, originalName);
-        }
-        else if (TunnelTag.isTunnel(object) && object.getTag(TunnelNameTag.KEY).isEmpty())
-        {
-            completeEntity.withAddedTag(TunnelNameTag.KEY, originalName);
-        }
-        else
-        {
-            final long altNameCount = object.getOsmTags().keySet().stream()
-                    .filter(key -> key.startsWith(AlternativeNameTag.KEY)).count();
-            final String altNameTag = altNameCount > 0
-                    ? (AlternativeNameTag.KEY + CommonConstants.UNDERSCORE + altNameCount)
-                    : AlternativeNameTag.KEY;
-            completeEntity.withAddedTag(altNameTag, originalName);
-
-        }
-        return FeatureChange.add((AtlasEntity) completeEntity, object.getAtlas());
     }
 
     /**

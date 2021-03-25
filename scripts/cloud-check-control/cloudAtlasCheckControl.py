@@ -287,7 +287,7 @@ class CloudAtlasChecksControl:
                 )
             )
             if self.ssh_cmd(
-                "aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
+                "rm -rf {2}flag/*; aws s3 sync --only-show-errors {0}/flag/{1} {2}flag/{1}".format(
                     self.s3InFolder, c, self.atlasOutDir
                 )
             ):
@@ -823,7 +823,7 @@ def evaluate(args, cloudctl):
     if args.name is not None:
         cloudctl.instanceName = args.name
     if args.template is not None:
-        cloudctl.templateName = args.templateName
+        cloudctl.templateName = args.template
     if args.minutes is not None:
         cloudctl.timeoutMinutes = args.minutes
     if hasattr(args, "input") and args.input is not None:
