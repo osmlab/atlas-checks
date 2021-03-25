@@ -2,12 +2,31 @@
 
 #### Description
 
-The Purpose of this check is to detect and flag nodes under the four scenarios below:
+The Purpose of this check is to detect and flag object the following scenarios below:
 
-1. When a railway crosses a highway on the same layer and intersection node is missing.
-2. When a railway crosses a highway on the same layer and intersection node `railway=level_crossing` tag doesn't exist.
-3. When a node `railway=level_crossing` tag exists, but the node is not the intersection of a highway and railway
-4. When an area or way contain `railway=level_crossing` tag
+1. When an area or way contain `railway=level_crossing` tag.
+2. When a car navigable highway crosses a railway on the same layer and intersection node contains `railway=crossing`.
+3. When a car navigable highway crosses a railway on the same layer and intersection node does not contain `railway` tag.
+4. When a node contains `railway=level_crossing` but there is no car navigable highway that contains this node.
+5. When a node contains `railway=level_crossing` but there is no railway that contains this node.
+6. When a node contains `railway=level_crossing` but there is no railway and car navigable way on the same layer.
+7. When a car navigable highway crosses a railway on the same layer and intersection node is missing.
+8. When a node contains `railway=level_crossing` but there are only pedestrian ways at this intersection.
+9. When a node contains `railway=level_crossing` but there are only bicycle ways at this intersection.
+
+#### Auto-Fix Suggestions
+
+For each of the possible issues flagged above these are the fix suggestions proposed.
+
+1. Remove railway tag from object
+2. Replace `railway=crossing` with `railway=level_crossing` on node
+3. Add `railway=level_crossing` tag to node
+4. NA (No suggestion for this case as there are multiple possible fixes)
+5. NA (No suggestion for this case as there are multiple possible fixes)
+6. NA (No suggestion for this case as there are multiple possible fixes)
+7. NA (No suggestion for this case as the cases are too complicated)
+8. Replace `railway=level_crossing` with `railway=crossing` on node
+9. Replace `railway=level_crossing` with `railway=crossing`, add `foot=no`, and add `bicycle=yes` to node.
 
 #### Live Example
 
@@ -45,10 +64,10 @@ Nodes & Relations; in our case, we’re working with
 In OpenStreetMap, railways are [Ways](https://wiki.openstreetmap.org/wiki/Way) classified with
 the `railway=rail`, `railway=tram`, `railway=disused`, `railway=miniature`, or `railway=preserved` tags. Highways are
 [Ways](https://wiki.openstreetmap.org/wiki/Way) classified with `highway=*` tags. In this check we are interested in
-the intersection of highweays and railways. These are represented by [Nodes](https://wiki.openstreetmap.org/wiki/Node).
+the intersection of highways and railways. These are represented by [Nodes](https://wiki.openstreetmap.org/wiki/Node).
 We’ll use this information to filter our potential flag candidates.
 
-A Car Navigable highway is any higway tagged with any of the following "highway:" tag values: MOTORWAY, TRUNK,
+A Car Navigable highway is any highway tagged with any of the following "highway:" tag values: MOTORWAY, TRUNK,
 PRIMARY, SECONDARY, TERTIARY, UNCLASSIFIED, RESIDENTIAL, SERVICE, MOTORWAY_LINK, TRUNK_LINK, PRIMARY_LINK,
 SECONDARY_LINK, TERTIARY_LINK, LIVING_STREET, TRACK, ROAD.
 
@@ -56,8 +75,8 @@ A valid intersection of a car navigable highway and railway should have a [Node]
 at the intersection of the ways that is classified with a `railway=level_crossing`. Nodes at intersections are only
 necessary if the railway and highway ways are on the same layer. It is common for a way that is classified with a
 `bridge=yes` or `tunnel=yes` to go over or under another way without an intersection node. In those cases a node at the
-intersection is not necessary, and if a node does exist at that intersection then the `railway=level_crossing` tag 
-should not be used. This check assumes that if a highway or railway has been tagged to indicate that this way is a 
+intersection is not necessary, and if a node does exist at that intersection then the `railway=level_crossing` tag
+should not be used. This check assumes that if a highway or railway has been tagged to indicate that this way is a
 bridge or tunnel and the layer tag has not been set, then there is an implied layer of 1 for bridges and -1 for
 tunnels.
 
@@ -68,12 +87,13 @@ The code has three major sections to check for all possible types of railway/hig
 
 1. The first section is specifically designed to look at all [Nodes](https://wiki.openstreetmap.org/wiki/Node). Each
 node is examined to count the number of highways and railways that contain this node.
-    1. If a node is contained in at least one highway and at least one railway on the same layer and is not tagged 
-    with `railway=level_crossing` then it is flagged. A fix suggestion exists for this type of issue and will suggest 
+    1. If a node is contained in at least one highway and at least one railway on the same layer and is not tagged
+    with `railway=level_crossing` then it is flagged. A fix suggestion exists for this type of issue and will suggest
     to add a railway=level_crossing tag to the Node.
-    1. If a node is tagged with `railway=level_crossing` but is not contained in any railways or highways or all
-highways and railways are on separate layers then it is flagged. A fix suggestion exists for this issue and will suggest
-to remove the invalid tag.
+    1. If a node is tagged with `railway=level_crossing` but is not contained in any railways or car navigable highways
+or all highways and railways are on separate layers then it is flagged. Two fix suggestions exists for these issues and
+will suggest to remove the invalid tag if no pedestrian ways cross at this node. If a pedestrian way crosses at this
+node then the suggestion will suggest to change the railway=level_crossing tag to railway=crossing.
 
 2. The second section examines all objects that are not Nodes or Points. If any non-node or point object is tagged
 with `railway=level_crossing` then it is flagged. A fix suggestion exists for this issue and it will suggest to remove
