@@ -4,22 +4,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 
 /**
+ * Contains BoundaryParts and map of relations. It is a main object for analysing
+ * BoundaryIntersectionCheck.
+ *
  * @author srachanski
  */
 public class RelationBoundary
 {
 
     private final Map<String, Relation> tagToRelation;
-    private final Set<BoundaryPart> boundaryParts;
+    private final Set<AtlasEntity> atlasEntities;
 
     public RelationBoundary(final Map<String, Relation> tagToRelation,
-            final Set<BoundaryPart> boundaryParts)
+            final Set<AtlasEntity> atlasEntities)
     {
         this.tagToRelation = tagToRelation;
-        this.boundaryParts = boundaryParts;
+        this.atlasEntities = atlasEntities;
     }
 
     public boolean containsRelationId(final long osmIdentifier)
@@ -28,9 +32,9 @@ public class RelationBoundary
                 .anyMatch(id -> id == osmIdentifier);
     }
 
-    public Set<BoundaryPart> getBoundaryParts()
+    public Set<AtlasEntity> getAtlasEntities()
     {
-        return this.boundaryParts;
+        return this.atlasEntities;
     }
 
     public Set<Relation> getRelationsByBoundaryTags(final Set<String> tags)
