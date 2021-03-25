@@ -59,12 +59,10 @@ public class TallBuildingCheck extends BaseCheck<Long>
     private static final Set<String> INVALID_CHARACTER_DEFAULT = Set.of("~", "`", "!", "@", "#",
             "$", "%", "^", "&", "*", "(", ")", "-", "_", "+", "=", "{", "[", "}", "]", "|", "\\",
             ":", ";", "<", ",", ">", "?", "/");
-    private final double magicNumberOneQuarter;
-    private static final double ONE_QUARTER_DEFAULT = 0.25;
-    private final double magicNumberThreeQuarters;
-    private static final double THREE_QUARTER_DEFAULT = 0.75;
     private static final int INSTRUCTION_THREE = 3;
     private static final int INSTRUCTION_FOUR = 4;
+    private static final double ONE_QUARTER = 0.25;
+    private static final double THREE_QUARTERS = 0.75;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -87,10 +85,6 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 OUTLIER_MULTIPLIER_DEFAULT);
         this.invalidHeightCharacters = new HashSet<>(this.configurationValue(configuration,
                 "invalid.height.characters", INVALID_CHARACTER_DEFAULT));
-        this.magicNumberOneQuarter = this.configurationValue(configuration,
-                "magicNumbers.one.quarter", ONE_QUARTER_DEFAULT);
-        this.magicNumberThreeQuarters = this.configurationValue(configuration,
-                "magicNumbers.three.quarters", THREE_QUARTER_DEFAULT);
     }
 
     /**
@@ -303,8 +297,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             return Optional.empty();
         }
-        return Optional.of(listOfRelevantTags
-                .get((int) Math.round(lengthOfList * this.magicNumberOneQuarter)));
+        return Optional.of(listOfRelevantTags.get((int) Math.round(lengthOfList * ONE_QUARTER)));
     }
 
     /**
@@ -443,8 +436,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             return Optional.empty();
         }
-        return Optional.of(listOfRelevantTags
-                .get((int) Math.round(lengthOfList * this.magicNumberThreeQuarters)));
+        return Optional.of(listOfRelevantTags.get((int) Math.round(lengthOfList * THREE_QUARTERS)));
     }
 
     /**

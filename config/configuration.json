@@ -1085,10 +1085,6 @@
     "max.level.tag.value": 100.0,
     "outlier.multiplier": 18.0,
     "invalid.height.characters": ["~","`","!","@","#","$","%","^","&","*","(", ")","-","_","+","=","[","[","}","]","|","\\",":",";","<",",",">","?","/"],
-    "magicNumbers": {
-      "one.quarter": 0.25,
-      "three.quarters": 0.75
-    },
     "challenge": {
       "description": "Identifies invalid or statistically outlying building:levels/height tag values.",
       "blurb": "Validating building:height/height tags",
