@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -316,7 +316,7 @@
     }
   },
   "HighwayMissingNameOrRefTagCheck": {
-    "enabled": true,
+    "min.contiguous.angle": 30.0,
     "challenge": {
       "description": "This challenge contains roads that are missing a name/ref tag and needs at least one added.",
       "instruction": "Please add a name or ref tag to each road without them."
