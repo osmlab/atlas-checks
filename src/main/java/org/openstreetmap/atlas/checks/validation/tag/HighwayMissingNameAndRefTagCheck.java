@@ -96,6 +96,15 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Function calculate angle between Edges
+     * 
+     * @param edge1
+     *            an edge
+     * @param edge2
+     *            another edge
+     * @return Angle between edges
+     */
     private Angle angleDiffBetweenEdges(final Edge edge1, final Edge edge2)
     {
         final Optional<Heading> edge1heading = edge1.asPolyLine().finalHeading();
@@ -107,6 +116,13 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
         return Angle.NONE;
     }
 
+    /**
+     * Function to collect osm name tags
+     * 
+     * @param edges
+     *            a set of edges (connected edges from edge in question)
+     * @return set of strings representing name tags
+     */
     private Set<String> collectEdgeNameTags(final Set<Edge> edges)
     {
         final Set<String> edgeNames = new HashSet<>();
@@ -121,6 +137,13 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
         return edgeNames;
     }
 
+    /**
+     * Function to collect osm reference tags
+     * 
+     * @param edges
+     *            a set of edges (connected edges from edge in question)
+     * @return Set of strings representing reference tags
+     */
     private Set<String> collectEdgeRefTags(final Set<Edge> edges)
     {
         final Set<String> edgeRefs = new HashSet<>();
@@ -148,6 +171,14 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
                 && !tags.containsKey(ReferenceTag.KEY.toLowerCase());
     }
 
+    /**
+     * Function to determine if edge is a small connector edge which doesn't require a name or ref
+     * tag. Will be ignored.
+     * 
+     * @param edge
+     *            edge in question
+     * @return boolean if edge is a small connector road that doesn't require a name or ref tag.
+     */
     private boolean isConnectorWayToIgnore(final Edge edge)
     {
         final Set<Edge> completeWay = new OsmWayWalker(edge).collectEdges();
@@ -185,6 +216,16 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
         return false;
     }
 
+    /**
+     * Function to determine if there are common tags between edges (helper function to ignore small
+     * connector road)
+     * 
+     * @param tagSet1
+     *            start/end node connected edges set of tags
+     * @param tagSet2
+     *            start/end node connected edges set of tags
+     * @return boolean if there are common tags between edges.
+     */
     private boolean startAndEndNodeShareEdgeWithSameTags(final Set<String> tagSet1,
             final Set<String> tagSet2)
     {
