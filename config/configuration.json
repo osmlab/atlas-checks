@@ -315,7 +315,7 @@
       "tags":"coastline"
     }
   },
-  "HighwayMissingNameOrRefTagCheck": {
+  "HighwayMissingNameAndRefTagCheck": {
     "min.contiguous.angle": 30.0,
     "challenge": {
       "description": "This challenge contains roads that are missing a name/ref tag and needs at least one added.",
