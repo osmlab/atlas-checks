@@ -278,6 +278,8 @@
       "difficulty": "EASY"
     }
   },
+  "FixMeReviewCheck": {
+  },
   "FloatingEdgeCheck": {
     "highway.minimum": "service",
     "length": {
