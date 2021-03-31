@@ -198,6 +198,47 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     }
 
     /**
+     * function to determine which inEdge's name/ref tags to add to respective sets if applicable
+     * based on difference in angle between edge in question and inEdge.
+     *
+     * @param edge
+     *            edge in question
+     * @param inEdges
+     *            edge in question's inEdges
+     * @param inEdgeNames
+     *            Set of inEdges' names
+     * @param inEdgeRefs
+     *            Set of inEdges' refs
+     */
+    private void inEdgeLogic(final Edge edge, final Set<Edge> inEdges,
+            final Set<String> inEdgeNames, final Set<String> inEdgeRefs)
+    {
+        // inEdge logic to add name/ref tag to name/ref sets respectively
+        for (final Edge inEdge : inEdges)
+        {
+            final Map<String, String> inEdgeTags = inEdge.getTags();
+
+            // angle between inEdge and edge in question < 30 (configurable)
+            // inEdge contains either name or ref tag
+            if (this.angleDiffBetweenEdges(inEdge, edge)
+                    .asDegrees() <= this.minAngleForNonContiguousWays
+                    && (inEdgeTags.containsKey(NameTag.KEY)
+                            || inEdgeTags.containsKey(ReferenceTag.KEY)))
+            {
+                if (inEdgeTags.containsKey(NameTag.KEY))
+                {
+                    inEdgeNames.add(inEdgeTags.get(NameTag.KEY));
+                }
+
+                if (inEdgeTags.containsKey(ReferenceTag.KEY))
+                {
+                    inEdgeRefs.add(inEdgeTags.get(ReferenceTag.KEY));
+                }
+            }
+        }
+    }
+
+    /**
      * This function determines whether the edge in question has in and out edges that are
      * "contiguous" (angle difference is less than 30 degrees) and have the same name/ref tag
      * 
@@ -221,48 +262,12 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
         // inEdge logic to add name/ref tag to name/ref sets respectively
         // angle between inEdge and edge in question < 30 (configurable)
         // inEdge contains either name or ref tag
-        for (final Edge inEdge : inEdges)
-        {
-            final Map<String, String> inEdgeTags = inEdge.getTags();
-            if (this.angleDiffBetweenEdges(inEdge, edge)
-                    .asDegrees() <= this.minAngleForNonContiguousWays
-                    && (inEdgeTags.containsKey(NameTag.KEY)
-                            || inEdgeTags.containsKey(ReferenceTag.KEY)))
-            {
-                if (inEdgeTags.containsKey(NameTag.KEY))
-                {
-                    inEdgeNames.add(inEdgeTags.get(NameTag.KEY));
-                }
-
-                if (inEdgeTags.containsKey(ReferenceTag.KEY))
-                {
-                    inEdgeRefs.add(inEdgeTags.get(ReferenceTag.KEY));
-                }
-            }
-        }
+        this.inEdgeLogic(edge, inEdges, inEdgeNames, inEdgeRefs);
 
         // outEdge logic to add name/ref tag to name/ref sets respectively
         // angle between edge in question and outEdge < 30 (configurable)
         // outEdge contains either name or ref tag
-        for (final Edge outEdge : outEdges)
-        {
-            final Map<String, String> outEdgeTags = outEdge.getTags();
-            if (this.angleDiffBetweenEdges(outEdge, edge)
-                    .asDegrees() <= this.minAngleForNonContiguousWays
-                    && (outEdgeTags.containsKey(NameTag.KEY)
-                            || outEdgeTags.containsKey(ReferenceTag.KEY)))
-            {
-                if (outEdgeTags.containsKey(NameTag.KEY))
-                {
-                    outEdgeNames.add(outEdgeTags.get(NameTag.KEY));
-                }
-
-                if (outEdgeTags.containsKey(ReferenceTag.KEY))
-                {
-                    outEdgeRefs.add(outEdgeTags.get(ReferenceTag.KEY));
-                }
-            }
-        }
+        this.outEdgeLogic(edge, outEdges, outEdgeNames, outEdgeRefs);
 
         // Check to see if inEde and outEdge share either the same name or the same ref tag.
         return this.edgesShareTags(inEdgeNames, outEdgeNames)
@@ -326,5 +331,46 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
                     || this.edgesShareTags(startNodeConnectedEdgeRefs, endNodeConnectedEdgeRefs);
         }
         return false;
+    }
+
+    /**
+     * function to determine which edge's name/ref tags to add to respective sets if applicable
+     * based on difference in angle between edge in question and outEdge
+     * 
+     * @param edge
+     *            edge in question
+     * @param outEdges
+     *            edge in question's outEdges
+     * @param outEdgeNames
+     *            Set of outEdges' names
+     * @param outEdgeRefs
+     *            Set of outEdges' refs
+     */
+    private void outEdgeLogic(final Edge edge, final Set<Edge> outEdges,
+            final Set<String> outEdgeNames, final Set<String> outEdgeRefs)
+    {
+        // outEdge logic to add name/ref tag to name/ref sets respectively
+        for (final Edge outEdge : outEdges)
+        {
+            final Map<String, String> outEdgeTags = outEdge.getTags();
+
+            // angle between edge in question and outEdge < 30 (configurable)
+            // outEdge contains either name or ref tag
+            if (this.angleDiffBetweenEdges(outEdge, edge)
+                    .asDegrees() <= this.minAngleForNonContiguousWays
+                    && (outEdgeTags.containsKey(NameTag.KEY)
+                            || outEdgeTags.containsKey(ReferenceTag.KEY)))
+            {
+                if (outEdgeTags.containsKey(NameTag.KEY))
+                {
+                    outEdgeNames.add(outEdgeTags.get(NameTag.KEY));
+                }
+
+                if (outEdgeTags.containsKey(ReferenceTag.KEY))
+                {
+                    outEdgeRefs.add(outEdgeTags.get(ReferenceTag.KEY));
+                }
+            }
+        }
     }
 }
