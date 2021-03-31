@@ -1,0 +1,9 @@
+{
+  "name": "TEST_CHALLENGE",
+  "description": ["DESCRIPTION1.",
+                  "DESCRIPTION2."],
+  "blurb": "BLURB",
+  "instruction": ["INSTRUCTION1.",
+                  "INSTRUCTION2."],
+  "difficulty": "NORMAL"
+}
