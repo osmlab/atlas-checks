@@ -22,9 +22,23 @@ public class HighwayMissingNameAndRefTagCheckTest
             ConfigurationResolver.inlineConfiguration("{\"min.contiguous.angle\": 30.0}"));
 
     @Test
+    public void hasInconsistentTagTruePositive()
+    {
+        this.verifier.actual(this.setup.hasInconsistentTagTruePositive(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
     public void hasNameTagFalsePositive()
     {
         this.verifier.actual(this.setup.hasNameTagFalsePositive(), this.check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void hasRefTagFalsePositive()
+    {
+        this.verifier.actual(this.setup.hasRefTagFalsePositive(), this.check);
         this.verifier.verifyEmpty();
     }
 

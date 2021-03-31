@@ -27,6 +27,23 @@ public class HighwayMissingNameOrRefTagCheckTestRule extends CoreTestRule
                                     "name=highwayname" }),
                     @TestAtlas.Edge(id = "4000001", coordinates = {
                             @TestAtlas.Loc(value = WAY1_NODE2),
+                            @TestAtlas.Loc(value = WAY2_NODE2) }, tags = { "highway=motorway" }),
+                    @TestAtlas.Edge(id = "5000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY2_NODE2),
+                            @TestAtlas.Loc(value = WAY3_NODE2) }, tags = { "highway=motorway",
+                                    "name=highwayname" }) })
+    private Atlas hasInconsistentTagTruePositive;
+
+    @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE2)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY2_NODE2)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY3_NODE2)) }, edges = {
+                    @TestAtlas.Edge(id = "3000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=motorway",
+                                    "name=highwayname" }),
+                    @TestAtlas.Edge(id = "4000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY1_NODE2),
                             @TestAtlas.Loc(value = WAY2_NODE2) }, tags = { "highway=motorway",
                                     "name=highwayname" }),
                     @TestAtlas.Edge(id = "5000001", coordinates = {
@@ -34,6 +51,24 @@ public class HighwayMissingNameOrRefTagCheckTestRule extends CoreTestRule
                             @TestAtlas.Loc(value = WAY3_NODE2) }, tags = { "highway=motorway",
                                     "name=highwayname" }) })
     private Atlas hasNameTagFalsePositive;
+
+    @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE2)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY2_NODE2)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY3_NODE2)) }, edges = {
+                    @TestAtlas.Edge(id = "3000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=motorway",
+                                    "ref=highwayref" }),
+                    @TestAtlas.Edge(id = "4000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY1_NODE2),
+                            @TestAtlas.Loc(value = WAY2_NODE2) }, tags = { "highway=motorway",
+                                    "ref=highwayref" }),
+                    @TestAtlas.Edge(id = "5000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY2_NODE2),
+                            @TestAtlas.Loc(value = WAY3_NODE2) }, tags = { "highway=motorway",
+                                    "ref=highwayref" }) })
+    private Atlas hasRefTagFalsePositive;
 
     @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE2)),
@@ -51,9 +86,19 @@ public class HighwayMissingNameOrRefTagCheckTestRule extends CoreTestRule
                                     "toll=yes" }) })
     private Atlas missingNameAndRefTag;
 
+    public Atlas hasInconsistentTagTruePositive()
+    {
+        return this.hasInconsistentTagTruePositive;
+    }
+
     public Atlas hasNameTagFalsePositive()
     {
         return this.hasNameTagFalsePositive;
+    }
+
+    public Atlas hasRefTagFalsePositive()
+    {
+        return this.hasRefTagFalsePositive;
     }
 
     public Atlas missingNameAndRefTag()

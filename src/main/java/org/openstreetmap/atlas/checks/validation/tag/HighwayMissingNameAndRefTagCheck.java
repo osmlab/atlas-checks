@@ -23,7 +23,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Angle;
 
 /**
- * Auto generated Check template
+ * This check flags ways that have neither a name or ref tag but should have at least one.
  *
  * @author v-garei
  */
@@ -34,6 +34,8 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(MISSING_BOTH_NAME_AND_REF_TAG_INSTRUCTIONS);
     private final double minAngleForNonContiguousWays;
+    private final HighwayTag minHighwayTag;
+    private static final String MIN_HIGHWAY_TAG_DEFAULT = "tertiary";
     private static final double MIN_ANGLE_NON_CONTIGUOUS_WAYS = 30;
 
     /**
@@ -49,6 +51,9 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
         super(configuration);
         this.minAngleForNonContiguousWays = configurationValue(configuration,
                 "min.contiguous.angle", MIN_ANGLE_NON_CONTIGUOUS_WAYS);
+        this.minHighwayTag = Enum.valueOf(HighwayTag.class,
+                this.configurationValue(configuration, "min.highway.type", MIN_HIGHWAY_TAG_DEFAULT)
+                        .toUpperCase());
     }
 
     /**
@@ -61,11 +66,9 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-
-        // by default we will assume all objects as valid
         return object instanceof Edge && ((Edge) object).isMainEdge()
                 && !isFlagged(object.getOsmIdentifier())
-                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(HighwayTag.TERTIARY)
+                && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayTag)
                 && !HighwayTag.isLinkHighway(((Edge) object).highwayTag())
                 && !JunctionTag.isRoundabout(object) && !JunctionTag.isCircular(object);
     }
@@ -80,9 +83,10 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        markAsFlagged(object.getOsmIdentifier());
         final Map<String, String> tags = object.getTags();
-        if (!this.isConnectorWayToIgnore(((Edge) object).getMainEdge())
-                && this.highwayMissingBothNameAndRefTag(tags))
+        if (this.highwayMissingBothNameAndRefTag(tags)
+                && !this.isConnectorWayToIgnore(((Edge) object).getMainEdge()))
         {
             return Optional.of(
                     createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier())));
@@ -159,7 +163,29 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * Determines if Edge object is missing both name and ref tag
+     * Function to determine if there are common tags between edges (helper function to ignore small
+     * connector road)
+     *
+     * @param tagSet1
+     *            start/end node connected edges set of tags
+     * @param tagSet2
+     *            start/end node connected edges set of tags
+     * @return boolean if there are common tags between edges.
+     */
+    private boolean edgesShareTags(final Set<String> tagSet1, final Set<String> tagSet2)
+    {
+        for (final String tag : tagSet1)
+        {
+            if (tagSet2.contains(tag))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Function to determine if Edge object is missing both name and ref tag
      * 
      * @param tags
      *            object tags
@@ -172,9 +198,81 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     }
 
     /**
+     * This function determines whether the edge in question has in and out edges that are
+     * "contiguous" (angle difference is less than 30 degrees) and have the same name/ref tag
+     * 
+     * @param edge
+     *            edge in question
+     * @param inEdges
+     *            edge's inEdges
+     * @param outEdges
+     *            edge's outEdges
+     * @return boolean if edge in question has inconsistent tags with contiguous inEdges/outEdges.
+     */
+    private boolean inconsistentTagsWithContiguousEdges(final Edge edge, final Set<Edge> inEdges,
+            final Set<Edge> outEdges)
+    {
+        final Set<String> inEdgeNames = new HashSet<>();
+        final Set<String> outEdgeNames = new HashSet<>();
+
+        final Set<String> inEdgeRefs = new HashSet<>();
+        final Set<String> outEdgeRefs = new HashSet<>();
+
+        // inEdge logic to add name/ref tag to name/ref sets respectively
+        // angle between inEdge and edge in question < 30 (configurable)
+        // inEdge contains either name or ref tag
+        for (final Edge inEdge : inEdges)
+        {
+            final Map<String, String> inEdgeTags = inEdge.getTags();
+            if (this.angleDiffBetweenEdges(inEdge, edge)
+                    .asDegrees() <= this.minAngleForNonContiguousWays
+                    && (inEdgeTags.containsKey(NameTag.KEY)
+                            || inEdgeTags.containsKey(ReferenceTag.KEY)))
+            {
+                if (inEdgeTags.containsKey(NameTag.KEY))
+                {
+                    inEdgeNames.add(inEdgeTags.get(NameTag.KEY));
+                }
+
+                if (inEdgeTags.containsKey(ReferenceTag.KEY))
+                {
+                    inEdgeRefs.add(inEdgeTags.get(ReferenceTag.KEY));
+                }
+            }
+        }
+
+        // outEdge logic to add name/ref tag to name/ref sets respectively
+        // angle between edge in question and outEdge < 30 (configurable)
+        // outEdge contains either name or ref tag
+        for (final Edge outEdge : outEdges)
+        {
+            final Map<String, String> outEdgeTags = outEdge.getTags();
+            if (this.angleDiffBetweenEdges(outEdge, edge)
+                    .asDegrees() <= this.minAngleForNonContiguousWays
+                    && (outEdgeTags.containsKey(NameTag.KEY)
+                            || outEdgeTags.containsKey(ReferenceTag.KEY)))
+            {
+                if (outEdgeTags.containsKey(NameTag.KEY))
+                {
+                    outEdgeNames.add(outEdgeTags.get(NameTag.KEY));
+                }
+
+                if (outEdgeTags.containsKey(ReferenceTag.KEY))
+                {
+                    outEdgeRefs.add(outEdgeTags.get(ReferenceTag.KEY));
+                }
+            }
+        }
+
+        // Check to see if inEde and outEdge share either the same name or the same ref tag.
+        return this.edgesShareTags(inEdgeNames, outEdgeNames)
+                || this.edgesShareTags(inEdgeRefs, outEdgeRefs);
+    }
+
+    /**
      * Function to determine if edge is a small connector edge which doesn't require a name or ref
      * tag. Will be ignored.
-     * 
+     *
      * @param edge
      *            edge in question
      * @return boolean if edge is a small connector road that doesn't require a name or ref tag.
@@ -183,11 +281,24 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     {
         final Set<Edge> completeWay = new OsmWayWalker(edge).collectEdges();
 
+        // Typical single edges scenario through more basic intersections
         if (completeWay.size() == 1)
         {
             final Node startNode = edge.start();
             final Node endNode = edge.end();
 
+            final Set<Edge> inEdges = edge.inEdges();
+            final Set<Edge> outEdges = edge.outEdges();
+
+            // Scenario captures an edge in between two contiguous edges, one on the the upstream
+            // and one on the downstream side that both share the same name/ref tag.
+            if (this.inconsistentTagsWithContiguousEdges(edge, inEdges, outEdges))
+            {
+                return false;
+            }
+
+            // Keep connected edges if osmIdentifier doesn't match original edge and if edge is not
+            // contiguous with original way.
             final Set<Edge> startNodeConnectedEdges = startNode.connectedEdges().stream()
                     .filter(someEdge -> someEdge.getOsmIdentifier() != edge.getOsmIdentifier()
                             && this.angleDiffBetweenEdges(someEdge, edge)
@@ -198,43 +309,21 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
                             && this.angleDiffBetweenEdges(edge, someEdge)
                                     .asDegrees() >= this.minAngleForNonContiguousWays)
                     .collect(Collectors.toSet());
+
+            // Collect edge name tags from connected edges
             final Set<String> startNodeConnectedEdgeNames = this
                     .collectEdgeNameTags(startNodeConnectedEdges);
             final Set<String> endNodeConnectedEdgeNames = this
                     .collectEdgeNameTags(endNodeConnectedEdges);
 
+            // Collect edge ref tags from connected edges
             final Set<String> startNodeConnectedEdgeRefs = this
                     .collectEdgeRefTags(startNodeConnectedEdges);
             final Set<String> endNodeConnectedEdgeRefs = this
                     .collectEdgeRefTags(endNodeConnectedEdges);
 
-            return this.startAndEndNodeShareEdgeWithSameTags(startNodeConnectedEdgeNames,
-                    endNodeConnectedEdgeNames)
-                    || this.startAndEndNodeShareEdgeWithSameTags(startNodeConnectedEdgeRefs,
-                            endNodeConnectedEdgeRefs);
-        }
-        return false;
-    }
-
-    /**
-     * Function to determine if there are common tags between edges (helper function to ignore small
-     * connector road)
-     * 
-     * @param tagSet1
-     *            start/end node connected edges set of tags
-     * @param tagSet2
-     *            start/end node connected edges set of tags
-     * @return boolean if there are common tags between edges.
-     */
-    private boolean startAndEndNodeShareEdgeWithSameTags(final Set<String> tagSet1,
-            final Set<String> tagSet2)
-    {
-        for (final String tag : tagSet1)
-        {
-            if (tagSet2.contains(tag))
-            {
-                return true;
-            }
+            return this.edgesShareTags(startNodeConnectedEdgeNames, endNodeConnectedEdgeNames)
+                    || this.edgesShareTags(startNodeConnectedEdgeRefs, endNodeConnectedEdgeRefs);
         }
         return false;
     }
