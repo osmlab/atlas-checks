@@ -50,7 +50,7 @@ public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
     {
         super(configuration);
         this.minAngleForNonContiguousWays = configurationValue(configuration,
-                "min.contiguous.angle", MIN_ANGLE_NON_CONTIGUOUS_WAYS);
+                "min.nonContiguous.angle", MIN_ANGLE_NON_CONTIGUOUS_WAYS);
         this.minHighwayTag = Enum.valueOf(HighwayTag.class,
                 this.configurationValue(configuration, "min.highway.type", MIN_HIGHWAY_TAG_DEFAULT)
                         .toUpperCase());

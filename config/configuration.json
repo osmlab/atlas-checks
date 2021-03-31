@@ -316,7 +316,7 @@
     }
   },
   "HighwayMissingNameAndRefTagCheck": {
-    "min.contiguous.angle": 30.0,
+    "min.nonContiguous.angle": 30.0,
     "min.highway.type": "tertiary",
     "challenge": {
       "description": "This challenge contains roads that are missing a name/ref tag and needs at least one added.",
