@@ -25,7 +25,7 @@ import org.openstreetmap.atlas.utilities.scalars.Angle;
 /**
  * This check flags ways that have neither a name or ref tag but should have at least one.
  *
- * @author v-garei
+ * @author v-garei - msft
  */
 public class HighwayMissingNameAndRefTagCheck extends BaseCheck<Long>
 {
