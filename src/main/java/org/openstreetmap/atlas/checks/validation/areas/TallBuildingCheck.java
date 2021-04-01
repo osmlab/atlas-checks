@@ -185,7 +185,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             // Check store to see if building intersects stored entry rectangle
             final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
-                    .getRectangleStatsWhichIntersectObject(this.storedAreasWithStatistics, object,
+                    .getRectangleStatsWhichIntersectObject(object,
                             BuildingLevelsTag.KEY);
 
             // Case 3: Building intersects stored area AND Levels tag is a statistical outlier
@@ -303,9 +303,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
     /**
      * Function to check if building intersects stored area already with statistical values or if a
      * new store entry needs to be made.
-     * 
-     * @param store
-     *            store of area along with necessary statistical values
+     *
      * @param object
      *            building object
      * @param tagIdentifier
@@ -313,15 +311,14 @@ public class TallBuildingCheck extends BaseCheck<Long>
      * @return Optional of relevant statistical values to compare object against.
      */
     private Optional<Tuple4<String, Double, Double, Double>> getRectangleStatsWhichIntersectObject(
-            final Map<Rectangle, Tuple4<String, Double, Double, Double>> store,
             final AtlasObject object, final String tagIdentifier)
     {
-        if (store.size() == 0)
+        if (this.storedAreasWithStatistics.size() == 0)
         {
             return Optional.empty();
         }
 
-        for (final Map.Entry<Rectangle, Tuple4<String, Double, Double, Double>> mapEntry : store
+        for (final Map.Entry<Rectangle, Tuple4<String, Double, Double, Double>> mapEntry : this.storedAreasWithStatistics
                 .entrySet())
         {
             if (mapEntry.getValue().getFirst().equals(tagIdentifier))
@@ -524,43 +521,33 @@ public class TallBuildingCheck extends BaseCheck<Long>
         if (!(tags.containsKey(BuildingTag.KEY)
                 && tags.get(BuildingTag.KEY).equalsIgnoreCase(BuildingTag.APARTMENTS.toString())))
         {
-            try
+            final Optional<Double> buildingHeightTagValue = this.parseHeightTag(heightTag);
+
+            if (buildingHeightTagValue.isPresent())
             {
-
-                final Optional<Double> buildingHeightTagValue = this.parseHeightTag(heightTag);
-
-                if (buildingHeightTagValue.isPresent())
+                final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
+                        .getRectangleStatsWhichIntersectObject(object, HeightTag.KEY);
+                // Case 5: Building intersects stored area AND "height" tag is an outlier
+                // compared
+                // to surrounding buildings with "height" tag.
+                if (rectangleStatsWhichIntersectObjectOptional.isPresent()
+                        && this.isOutlier(buildingHeightTagValue.get(),
+                                rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
+                                rectangleStatsWhichIntersectObjectOptional.get().getThird(),
+                                rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
                 {
-                    final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
-                            .getRectangleStatsWhichIntersectObject(this.storedAreasWithStatistics,
-                                    object, HeightTag.KEY);
-                    // Case 5: Building intersects stored area AND "height" tag is an outlier
-                    // compared
-                    // to surrounding buildings with "height" tag.
-                    if (rectangleStatsWhichIntersectObjectOptional.isPresent()
-                            && this.isOutlier(buildingHeightTagValue.get(),
-                                    rectangleStatsWhichIntersectObjectOptional.get().getSecond(),
-                                    rectangleStatsWhichIntersectObjectOptional.get().getThird(),
-                                    rectangleStatsWhichIntersectObjectOptional.get().getFourth()))
-                    {
-                        return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
-                                INSTRUCTION_THREE, object.getOsmIdentifier())));
-                    }
-
-                    // Case 5: Building does not intersect stored area but "height" tag is an
-                    // outlier
-                    // compared to surrounding buildings with "height tag.
-                    if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
-                    {
-                        return this.getStatisticsWithNewStoreEntry(object,
-                                buildingHeightTagValue.get(), HeightTag.KEY);
-                    }
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(
+                            INSTRUCTION_THREE, object.getOsmIdentifier())));
                 }
 
-            }
-            catch (final Exception ignored)
-            {
-                /* Do Nothing */
+                // Case 5: Building does not intersect stored area but "height" tag is an
+                // outlier
+                // compared to surrounding buildings with "height tag.
+                if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
+                {
+                    return this.getStatisticsWithNewStoreEntry(object,
+                            buildingHeightTagValue.get(), HeightTag.KEY);
+                }
             }
         }
         return Optional.empty();
