@@ -185,8 +185,7 @@ public class TallBuildingCheck extends BaseCheck<Long>
         {
             // Check store to see if building intersects stored entry rectangle
             final Optional<Tuple4<String, Double, Double, Double>> rectangleStatsWhichIntersectObjectOptional = this
-                    .getRectangleStatsWhichIntersectObject(object,
-                            BuildingLevelsTag.KEY);
+                    .getRectangleStatsWhichIntersectObject(object, BuildingLevelsTag.KEY);
 
             // Case 3: Building intersects stored area AND Levels tag is a statistical outlier
             // compared to surrounding buildings with building:levels tag.
@@ -545,8 +544,8 @@ public class TallBuildingCheck extends BaseCheck<Long>
                 // compared to surrounding buildings with "height tag.
                 if (rectangleStatsWhichIntersectObjectOptional.isEmpty())
                 {
-                    return this.getStatisticsWithNewStoreEntry(object,
-                            buildingHeightTagValue.get(), HeightTag.KEY);
+                    return this.getStatisticsWithNewStoreEntry(object, buildingHeightTagValue.get(),
+                            HeightTag.KEY);
                 }
             }
         }
