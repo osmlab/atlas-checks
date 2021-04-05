@@ -12,6 +12,7 @@ This document is a list of tables with a description and link to documentation f
 | [PoolSizeCheck](tutorials/tutorial1-PoolSizeCheck.md) | The purpose of this check is to identify pools that are larger than 5,000,000 square meters or smaller than 5 square meters.  This check was created to be used as a tutorial for developing new checks. |
 | [ShadowDetectionCheck](checks/shadowDetectionCheck.md) | The purpose of this check is to identify floating buildings. |
 | [SpikyBuildingCheck](checks/spikyBuildingCheck.md) | The purpose of this check is to identify buildings with extremely sharp angles in their geometry. |
+| [TallBuildingCheck](checks/tallBuildingCheck.md) | The purpose of this check is to identify invalid building:levels and height tags as well as identify statistically outlying building:levels/height tags. |
 | [WaterAreaCheck](checks/waterAreaCheck.md) | Find overlapping water areas and water areas that should have a waterway. |
 | [WaterbodyAndIslandSizeCheck](checks/waterbodyAndIslandSizeCheck.md) | The purpose of this check is to identify waterbodies and islands which are either too small or too large in size. |
 
