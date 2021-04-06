@@ -1315,5 +1315,14 @@
       "difficulty": "EASY",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "LoneNodeCheck": {
+    "challenge": {
+      "description": "Tasks contain nodes with either inappropriate highway tag value or which are not part of a way with highway or railway tag.",
+      "blurb": "Lone nodes with highway tag",
+      "instruction": "Open your favorite editor and edit the node street names",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
   }
 }
