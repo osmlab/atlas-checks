@@ -315,6 +315,14 @@
       "tags":"coastline"
     }
   },
+  "HighwayMissingNameAndRefTagCheck": {
+    "min.nonContiguous.angle": 30.0,
+    "min.highway.type": "tertiary",
+    "challenge": {
+      "description": "This challenge contains roads that are missing a name/ref tag and needs at least one added.",
+      "instruction": "Please add a name or ref tag to each road without them."
+    }
+  },
   "ImproperAndUnknownRoadNameCheck": {
     "names.improper": [
       "street",
