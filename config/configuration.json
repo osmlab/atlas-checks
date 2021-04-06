@@ -114,6 +114,14 @@
       }
     }
   },
+  "BoundaryIntersectionCheck": {
+    "challenge": {
+      "description": "Task contains Boundaries information describing their intersection",
+      "blurb": "Boundaries Intersecting",
+      "instruction": "Open your favorite editor, check the instruction and modify the points/ways that are causing boundaries to intersect.",
+      "difficulty": "NORMAL"
+    }
+    },
   "BuildingRoadIntersectionCheck": {
     "car.navigable": true,
     "challenge": {
