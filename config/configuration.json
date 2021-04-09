@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -661,6 +661,7 @@
     }
   },
   "MixedCaseNameCheck": {
+    "enabled": true,
     "check_name.countries":["AIA", "ATG", "AUS", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB",
       "CMR", "CAN", "CYM", "DMA", "FJI", "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM",
       "KEN", "LSO", "MWI", "MLT", "MUS", "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE",
@@ -671,7 +672,7 @@
       "affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
       "articles": ["a", "an", "the"],
       "prepositions": ["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as",
-        "into", "like", "near", "onto", "per", "till", "up", "via", "with", "for", "in"],
+        "into", "like", "near", "onto", "per", "till", "up", "via", "with", "for", "in", "de", "la", "del"],
       "units":["kv"]
     },
     "regex.split":" -/&@–",

@@ -40,6 +40,22 @@ public class MixedCaseNameCheckTest
     }
 
     @Test
+    public void invalidNameICase()
+    {
+        this.verifier.actual(this.setup.invalidNameICase(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void invalidNameICaseMiddle()
+    {
+        this.verifier.actual(this.setup.invalidNameICaseMiddle(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void invalidNameLineTest()
     {
         this.verifier.actual(this.setup.invalidNameLineAtlas(),
@@ -133,6 +149,14 @@ public class MixedCaseNameCheckTest
         this.verifier.actual(this.setup.invalidNamePointAtlas(),
                 new MixedCaseNameCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void validNameICase()
+    {
+        this.verifier.actual(this.setup.validNameICase(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test

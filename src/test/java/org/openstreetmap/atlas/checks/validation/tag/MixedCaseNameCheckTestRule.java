@@ -140,8 +140,17 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // points
-            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
-                    "name=Test of Test" }) })
+            points = {
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Test of Test" }),
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Plaza de la Test" }),
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Via del Test" }),
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Test de Test" }),
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Test of Test" }) })
     private Atlas validNamePointLowerCasePrepositionAtlas;
 
     @TestAtlas(
@@ -210,6 +219,27 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
                     "name:en=Test of Test", "name=tEst TeSt" }) })
     private Atlas validNamePointChnAtlas;
 
+    @TestAtlas(
+            // points
+            points = {
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name:en=iTest", "name=iTest" }),
+                    @Point(coordinates = @Loc(value = TEST_2), tags = { "iso_country_code=USA",
+                            "name=Test of iTest Middle" }) })
+    private Atlas validNameICase;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=itest Corp" }) })
+    private Atlas invalidNameICase;
+
+    @TestAtlas(
+            // points
+            points = { @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                    "name=MiddleiTest" }) })
+    private Atlas invalidNameICaseMiddle;
+
     public Atlas invalidNameAreaAtlas()
     {
         return this.invalidNameAreaAtlas;
@@ -218,6 +248,16 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
     public Atlas invalidNameEdgeAtlas()
     {
         return this.invalidNameEdgeAtlas;
+    }
+
+    public Atlas invalidNameICase()
+    {
+        return this.invalidNameICase;
+    }
+
+    public Atlas invalidNameICaseMiddle()
+    {
+        return this.invalidNameICaseMiddle;
     }
 
     public Atlas invalidNameLineAtlas()
@@ -278,6 +318,11 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
     public Atlas invalidNamePointOneWordAtlas()
     {
         return this.invalidNamePointOneWordAtlas;
+    }
+
+    public Atlas validNameICase()
+    {
+        return this.validNameICase;
     }
 
     public Atlas validNamePointAffixAtlas()
