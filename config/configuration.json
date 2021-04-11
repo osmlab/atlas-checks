@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -287,7 +287,6 @@
     }
   },
   "FixMeReviewCheck": {
-    "enabled": true,
     "fixMe.supported.values": ["verify","position","resurvey","Revisar:_este_punto_fue_creado_por_importación_directa","continue", "name", "incomplete", "draw_geometry_and_delete_this_point", "unfinished", "recheck"],
     "min.highway.type": "tertiary",
     "challenge": {
