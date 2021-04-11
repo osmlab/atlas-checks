@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +19,10 @@ import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.tags.names.ReferenceTag;
 import org.openstreetmap.atlas.tags.oneway.OneWayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 
 /**
- * Auto generated Check template
+ * This check flags features which contain the "fixme" or "FIXME" tag as well as other combinations
+ * of important tags.
  *
  * @author v-garei
  */
@@ -31,13 +30,21 @@ public class FixMeReviewCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = -2191776278923026805L;
     private static final String HAS_FIXME_TAG = "Object {0, number, #} has 'fixme' tag and needs to be investigated.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(HAS_FIXME_TAG);
-    private static final List<String> fixMeSupplementaryTags = List.of(WaterwayTag.KEY, OneWayTag.KEY, BuildingTag.KEY,
-            HighwayTag.KEY, NameTag.KEY, ReferenceTag.KEY, PlaceTag.KEY, SurfaceTag.KEY);
-    private static final List<String> FIX_ME_SUPPORTED_VALUES_DEFAULT = List.of("continue", "name", "incomplete", "draw␣geometry␣and␣delete␣this␣point", "unfinished", "recheck");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList(HAS_FIXME_TAG);
+    private static final List<String> fixMeSupplementaryTags = List.of(WaterwayTag.KEY,
+            OneWayTag.KEY, BuildingTag.KEY, HighwayTag.KEY, NameTag.KEY, ReferenceTag.KEY,
+            PlaceTag.KEY, SurfaceTag.KEY);
+    private static final List<String> FIX_ME_SUPPORTED_VALUES_DEFAULT = List.of("verify",
+            "position", "resurvey", "Revisar:_este_punto_fue_creado_por_importación_directa",
+            "continue", "name", "incomplete", "draw␣geometry␣and␣delete␣this␣point", "unfinished",
+            "recheck");
     private final List<String> fixMeSupportedValues;
+    private final HighwayTag minHighwayTag;
+    private static final String MIN_HIGHWAY_TAG_DEFAULT = "tertiary";
     private static final String fixMeLowerCase = "fixme";
     private static final String fixMeUpperCase = "FIXME";
+
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
      * checks with this constructor, supplying a configuration that can be used to adjust any
@@ -50,8 +57,11 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     {
 
         super(configuration);
-        this.fixMeSupportedValues = (this.configurationValue(configuration,
-                "fixMe.supported.values", FIX_ME_SUPPORTED_VALUES_DEFAULT));
+        this.fixMeSupportedValues = this.configurationValue(configuration, "fixMe.supported.values",
+                FIX_ME_SUPPORTED_VALUES_DEFAULT);
+        this.minHighwayTag = Enum.valueOf(HighwayTag.class,
+                this.configurationValue(configuration, "min.highway.type", MIN_HIGHWAY_TAG_DEFAULT)
+                        .toUpperCase());
     }
 
     /**
@@ -64,7 +74,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        Map<String,String> tags = object.getTags();
+        final Map<String, String> tags = object.getTags();
         return !isFlagged(object.getOsmIdentifier())
                 && (tags.containsKey(fixMeUpperCase) || tags.containsKey(fixMeLowerCase));
     }
@@ -80,17 +90,23 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         markAsFlagged(object.getOsmIdentifier());
-        Map<String,String> tags = object.getTags();
+        final Map<String, String> tags = object.getTags();
 
         if (this.featureHasSupplementaryTags(tags) && this.featureHasPriorityFixMeValues(tags))
         {
-            if (object instanceof Edge && ((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(HighwayTag.TERTIARY))
+            // If the object is an edge we only care about tertiary (configurable) and above.
+            if (object instanceof Edge)
             {
-                return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
-                        this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                if (((Edge) object).highwayTag().isMoreImportantThanOrEqualTo(this.minHighwayTag))
+                {
+                    return Optional
+                            .of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                }
+                return Optional.empty();
             }
             return Optional.of(this.createFlag(object,
-                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
 
         }
         return Optional.empty();
@@ -103,11 +119,35 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     }
 
     /**
-     * Function to determine if object tags contain flaggable priority tags
-     * @param tags object osm tags
+     * Function to determining if object's fixme tag contains priority values (configurable values)
+     *
+     * @param tags
+     *            object osm tags
+     * @return boolean if the object's fixme tag contains priority values
+     */
+    private boolean featureHasPriorityFixMeValues(final Map<String, String> tags)
+    {
+        for (final String priorityTagValue : this.fixMeSupportedValues)
+        {
+            if ((tags.containsKey(fixMeUpperCase)
+                    && tags.get(fixMeUpperCase).equals(priorityTagValue))
+                    || (tags.containsKey(fixMeLowerCase)
+                            && tags.get(fixMeLowerCase).equals(priorityTagValue)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Function to determine if object tags contain flaggable priority tags (configurable)
+     *
+     * @param tags
+     *            object osm tags
      * @return boolean if the object has flaggable priority tags.
      */
-    private boolean featureHasSupplementaryTags(final Map<String,String> tags)
+    private boolean featureHasSupplementaryTags(final Map<String, String> tags)
     {
         for (final String supplementaryTag : fixMeSupplementaryTags)
         {
@@ -119,16 +159,4 @@ public class FixMeReviewCheck extends BaseCheck<Long>
         return false;
     }
 
-    private boolean featureHasPriorityFixMeValues(final Map<String, String> tags)
-    {
-        for (final String priorityTagValue :  this.fixMeSupportedValues)
-        {
-            if ((tags.containsKey(fixMeUpperCase) && tags.get(fixMeUpperCase).equals(priorityTagValue))
-                    || (tags.containsKey(fixMeLowerCase) && tags.get(fixMeLowerCase).equals(priorityTagValue)))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 }
