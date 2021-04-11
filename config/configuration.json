@@ -114,6 +114,14 @@
       }
     }
   },
+  "BoundaryIntersectionCheck": {
+    "challenge": {
+      "description": "Task contains Boundaries information describing their intersection",
+      "blurb": "Boundaries Intersecting",
+      "instruction": "Open your favorite editor, check the instruction and modify the points/ways that are causing boundaries to intersect.",
+      "difficulty": "NORMAL"
+    }
+    },
   "BuildingRoadIntersectionCheck": {
     "car.navigable": true,
     "challenge": {
@@ -322,6 +330,14 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "tags":"coastline"
+    }
+  },
+  "HighwayMissingNameAndRefTagCheck": {
+    "min.nonContiguous.angle": 30.0,
+    "min.highway.type": "tertiary",
+    "challenge": {
+      "description": "This challenge contains roads that are missing a name/ref tag and needs at least one added.",
+      "instruction": "Please add a name or ref tag to each road without them."
     }
   },
   "ImproperAndUnknownRoadNameCheck": {
