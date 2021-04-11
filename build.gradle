@@ -141,6 +141,7 @@ shadowJar {
     transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
         resource = 'reference.conf'
     }
+    zip64 = true
 }
 
 artifacts
