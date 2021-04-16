@@ -20,9 +20,8 @@ public class FixMeReviewCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     private final FixMeReviewCheck check = new FixMeReviewCheck(
-            ConfigurationResolver.inlineConfiguration("{\"FixMeReviewCheck\": {"
-                    + "\"fixMe.supported.values\": [\"verify\", \"position\", \"resurvey\", \"Revisar:_este_punto_fue_creado_por_importación_directa\", \"continue\", \"name\", \"incomplete\", \"draw_geometry_and_delete_this_point\", \"unfinished\", \"recheck\"],"
-                    + "\"min.highway.type\": \"tertiary\"}}"));
+            ConfigurationResolver.inlineConfiguration(
+                    "{\"FixMeReviewCheck\": {\"fixMe.supported.values\": [\"verify\", \"position\", \"resurvey\", \"Revisar: este punto fue creado por importación directa\", \"continue\", \"name\", \"incomplete\", \"draw geometry and delete this point\", \"unfinished\", \"recheck\"], \"min.highway.type\": \"tertiary\"}}"));
 
     @Test
     public void nodeWithValidFixMe()
