@@ -21,7 +21,7 @@ public class FixMeReviewCheckTest
 
     private final FixMeReviewCheck check = new FixMeReviewCheck(
             ConfigurationResolver.inlineConfiguration(
-                    "{\"FixMeReviewCheck\": {\"fixMe.supported.values\": [\"verify\", \"position\", \"resurvey\", \"Revisar: este punto fue creado por importación directa\", \"continue\", \"name\", \"incomplete\", \"draw geometry and delete this point\", \"unfinished\", \"recheck\"], \"min.highway.type\": \"tertiary\"}}"));
+                    "{\"FixMeReviewCheck\": {\"fixMe.supported.values\": [\"verify\", \"position\", \"resurvey\", \"continue\", \"name\", \"incomplete\", \"draw geometry and delete this point\", \"unfinished\", \"recheck\"], \"min.highway.type\": \"tertiary\"}}"));
 
     @Test
     public void nodeWithValidFixMe()
