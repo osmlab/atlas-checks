@@ -32,7 +32,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     private static final String HAS_FIXME_TAG = "Object {0, number, #} has 'fixme' tag and needs to be investigated.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(HAS_FIXME_TAG);
-    private static final List<String> fixMeSupplementaryTags = List.of(WaterwayTag.KEY,
+    private static final List<String> FIX_ME_SUPPLEMENTARY_TAGS = List.of(WaterwayTag.KEY,
             OneWayTag.KEY, BuildingTag.KEY, HighwayTag.KEY, NameTag.KEY, ReferenceTag.KEY,
             PlaceTag.KEY, SurfaceTag.KEY);
     private static final List<String> FIX_ME_SUPPORTED_VALUES_DEFAULT = List.of("verify",
@@ -42,8 +42,8 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     private final List<String> fixMeSupportedValues;
     private final HighwayTag minHighwayTag;
     private static final String MIN_HIGHWAY_TAG_DEFAULT = "tertiary";
-    private static final String fixMeLowerCase = "fixme";
-    private static final String fixMeUpperCase = "FIXME";
+    private static final String FIX_ME_LOWERCASE = "fixme";
+    private static final String FIX_ME_UPPERCASE = "FIXME";
 
     /**
      * instantiate config values
@@ -74,7 +74,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     {
         final Map<String, String> tags = object.getTags();
         return !isFlagged(object.getOsmIdentifier())
-                && (tags.containsKey(fixMeUpperCase) || tags.containsKey(fixMeLowerCase));
+                && (tags.containsKey(FIX_ME_UPPERCASE) || tags.containsKey(FIX_ME_LOWERCASE));
     }
 
     /**
@@ -127,10 +127,10 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     {
         for (final String priorityTagValue : this.fixMeSupportedValues)
         {
-            if ((tags.containsKey(fixMeUpperCase)
-                    && tags.get(fixMeUpperCase).equals(priorityTagValue))
-                    || (tags.containsKey(fixMeLowerCase)
-                            && tags.get(fixMeLowerCase).equals(priorityTagValue)))
+            if ((tags.containsKey(FIX_ME_UPPERCASE)
+                    && tags.get(FIX_ME_UPPERCASE).equals(priorityTagValue))
+                    || (tags.containsKey(FIX_ME_LOWERCASE)
+                            && tags.get(FIX_ME_LOWERCASE).equals(priorityTagValue)))
             {
                 return true;
             }
@@ -147,7 +147,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
      */
     private boolean featureHasSupplementaryTags(final Map<String, String> tags)
     {
-        for (final String supplementaryTag : fixMeSupplementaryTags)
+        for (final String supplementaryTag : FIX_ME_SUPPLEMENTARY_TAGS)
         {
             if (tags.containsKey(supplementaryTag))
             {

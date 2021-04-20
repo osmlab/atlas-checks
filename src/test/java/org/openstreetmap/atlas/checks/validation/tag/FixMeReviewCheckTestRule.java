@@ -20,9 +20,31 @@ public class FixMeReviewCheckTestRule extends CoreTestRule
     private static final String WAY3_NODE2 = "40.9082867, 29.4685152";
 
     @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = node1), tags = {
+            "fixme=not valid" }) })
+
+    private Atlas nodeWithInvalidFixMe;
+
+    @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = node1), tags = {
             "fixme=continue", "place=bees" }) })
 
     private Atlas nodeWithValidFixMe;
+
+    @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE2)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY2_NODE2)),
+            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY3_NODE2)) }, edges = {
+                    @TestAtlas.Edge(id = "3000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "FIXME=not valid",
+                                    "toll=yes" }),
+                    @TestAtlas.Edge(id = "4000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY1_NODE2),
+                            @TestAtlas.Loc(value = WAY2_NODE2) }, tags = "highway=motorway"),
+                    @TestAtlas.Edge(id = "5000001", coordinates = {
+                            @TestAtlas.Loc(value = WAY2_NODE2),
+                            @TestAtlas.Loc(value = WAY3_NODE2) }, tags = { "highway=motorway",
+                                    "toll=yes" }) })
+    private Atlas wayWithInvalidFixMe;
 
     @TestAtlas(nodes = { @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
             @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = WAY1_NODE2)),
@@ -41,9 +63,19 @@ public class FixMeReviewCheckTestRule extends CoreTestRule
                                     "toll=yes" }) })
     private Atlas wayWithValidFixMe;
 
+    public Atlas nodeWithInvalidFixMe()
+    {
+        return this.nodeWithInvalidFixMe;
+    }
+
     public Atlas nodeWithValidFixMe()
     {
         return this.nodeWithValidFixMe;
+    }
+
+    public Atlas wayWithInvalidFixMe()
+    {
+        return this.wayWithInvalidFixMe;
     }
 
     public Atlas wayWithValidFixMe()
