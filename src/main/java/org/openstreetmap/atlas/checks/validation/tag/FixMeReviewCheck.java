@@ -46,10 +46,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     private static final String fixMeUpperCase = "FIXME";
 
     /**
-     * The default constructor that must be supplied. The Atlas Checks framework will generate the
-     * checks with this constructor, supplying a configuration that can be used to adjust any
-     * parameters that the check uses during operation.
-     *
+     * instantiate config values
      * @param configuration
      *            the JSON configuration for this check
      */
@@ -80,7 +77,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     }
 
     /**
-     * This is the actual function that will check to see whether the object needs to be flagged.
+     * This is the function that will check to see whether the object needs to be flagged.
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
