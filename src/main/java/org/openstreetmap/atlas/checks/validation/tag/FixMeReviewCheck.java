@@ -47,6 +47,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
 
     /**
      * instantiate config values
+     * 
      * @param configuration
      *            the JSON configuration for this check
      */
