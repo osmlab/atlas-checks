@@ -135,22 +135,12 @@ task shaded(type: Jar) {
     zip64 = true
 }
 
-/*
 shadowJar {
     baseName = project.name
     mergeServiceFiles()
     transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
         resource = 'reference.conf'
     }
-    zip64 = true
-}
-*/
-shadowJar {
-    archiveBaseName = project.name
-    classifier = 'shadow'
-    configurations = [project.configurations.compile]
-    relocate 'com.google.protobuf', 'shadow.com.google.protobuf'
-    relocate 'com.google.common', 'shadow.com.google.common'
     zip64 = true
 }
 
