@@ -55,9 +55,12 @@ class CloudAtlasChecksControl:
         mrkey="",
         mrProject="",
         mrURL="https://maproulette.org:443",
-        jar="atlas-checks/build/libs/atlas-checks-*-SNAPSHOT-shadow.jar",
+        jar="atlas-checks/build/libs/atlas-checks-latest-SNAPSHOT-shadow.jar",
+        s3dbFolder=None,
         awsRegion=AWS_REGION,
+        info=None,
     ):
+        self.info = info
         self.timeoutMinutes = timeoutMinutes
         self.key = key
         self.instanceId = instanceId
@@ -75,6 +78,7 @@ class CloudAtlasChecksControl:
         self.atlasCheckDir = os.path.join(self.homeDir, "atlas-checks/")
         self.atlasOutDir = os.path.join(self.homeDir, "output/")
         self.atlasInDir = os.path.join(self.homeDir, "input/")
+        self.atlasDBDir = os.path.join(self.atlasInDir, "extra/")
         self.atlasLogDir = os.path.join(self.homeDir, "log/")
         self.atlasCheckLogName = "atlasCheck.log"
         self.atlasCheckLog = os.path.join(self.atlasLogDir, self.atlasCheckLogName)
@@ -88,6 +92,7 @@ class CloudAtlasChecksControl:
         self.mrProject = mrProject
         self.mrURL = mrURL
         self.jar = jar
+        self.s3dbFolder = s3dbFolder
 
         self.instanceName = "AtlasChecks"
         self.localJar = '/tmp/atlas-checks.jar'
@@ -194,8 +199,13 @@ class CloudAtlasChecksControl:
                 )
             ):
                 self.finish("Failed to copy sharding.txt", -1)
+            if self.s3dbFolder is not None:
+                logger.info(f"syncing {self.s3dbFolder}")
+                if self.ssh_cmd(f"aws s3 sync --only-show-errors {self.s3dbFolder} {self.atlasDBDir}"):
+                    self.finish(f"Failed to sync {self.s3dbFolder}", -1)
 
             if self.info is not None:
+                logger.info(f"creating INFO: {self.info}")
                 cmd = ("echo '{{\n{},\n\"cmd\":\"{}\"\n}}' > {}INFO "
                 .format(self.info, " ".join(sys.argv), self.atlasOutDir))
             else:
@@ -210,6 +220,7 @@ class CloudAtlasChecksControl:
             cmd = (
                 "/opt/spark/bin/spark-submit"
                 + " --class=org.openstreetmap.atlas.checks.distributed.ShardedIntegrityChecksSparkJob"
+                + " --jars ~/sqlite-jdbc-latest.jar"
                 + " --master=local[{}]".format(self.processes)
                 + " --conf='spark.driver.memory={}g'".format(self.memory)
                 + " --conf='spark.rdd.compress=true'"
@@ -701,9 +712,13 @@ def parse_args():
         help="JAR - s3://path/to/atlas_checks.jar or /local/path/to/atlas_checks.jar to execute",
     )
     parser_check.add_argument(
+        "--db",
+        help="db - The full path to the db folder used for external db checks.",
+    )
+    parser_check.add_argument(
         "--info",
         help="INFO - Json string to add to the 'INFO' file in the output folder "
-        "(e.g. --tag='{\"version\":\"1.6.3\"}')",
+        "(e.g. --info='{\"version\":\"1.6.3\"}')",
     )
     parser_check.set_defaults(func=CloudAtlasChecksControl.atlasCheck)
 
@@ -852,7 +867,9 @@ def evaluate(args, cloudctl):
         cloudctl.mrProject = args.project
     if hasattr(args, "jar") and args.jar is not None:
         cloudctl.jar = args.jar
-    if hasattr(args, "info") and args.jar is not None:
+    if hasattr(args, "db") and args.db is not None:
+        cloudctl.s3dbFolder = args.db
+    if hasattr(args, "info") and args.info is not None:
         cloudctl.info = args.info
     if hasattr(args, "id") and args.id != "" and args.id is not None:
         cloudctl.instanceId = args.id
