@@ -206,6 +206,18 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     }
 
     /**
+     * Tests if {@link String} matches one of the patterns.
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if {@code word} matches the {@code dashAndDashPattern} or {@code iCasePattern}.
+     */
+    private boolean isCombinedPatternHandling(final String word)
+    {
+        return this.isICase(word) || this.isDashAndDashCase(word);
+    }
+
+    /**
      * Tests if {@link String} is "n" or "'n"
      *
      * @param word
@@ -250,8 +262,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
             for (final String word : wordArray)
             {
                 // Check if the word is intentionally mixed case
-                if (!this.isMixedCaseUnit(word) && !this.isICase(word)
-                        && !this.isDashAndDashCase(word))
+                if (!this.isMixedCaseUnit(word) && !this.isCombinedPatternHandling(word))
                 {
                     final Matcher firstLetterMatcher = this.anyLetterPattern.matcher(word);
                     // If the word is not in the list of prepositions, and the
@@ -271,7 +282,6 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                                     && !this.isMixedCaseApostrophe(word)
                                     && this.isProperNonFirstCapital(word))
                     {
-                        System.out.println(value);
                         return true;
                     }
                 }
