@@ -142,6 +142,15 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
             // points
             points = {
                     @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Test-n-Test" }),
+                    @Point(coordinates = @Loc(value = TEST_2), tags = { "iso_country_code=USA",
+                            "name=Test n' Test" }) })
+    private Atlas validNamePointDashAndDash;
+
+    @TestAtlas(
+            // points
+            points = {
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                             "name=Test of Test" }),
                     @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                             "name=Plaza de la Test" }),
@@ -150,7 +159,11 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
                     @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                             "name=Test de Test" }),
                     @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
-                            "name=Test of Test" }) })
+                            "name=Test of Test" }),
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Test van der Test" }),
+                    @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
+                            "name=Test du Test" }) })
     private Atlas validNamePointLowerCasePrepositionAtlas;
 
     @TestAtlas(
@@ -363,6 +376,11 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
     public Atlas validNamePointChnAtlas()
     {
         return this.validNamePointChnAtlas;
+    }
+
+    public Atlas validNamePointDashAndDash()
+    {
+        return this.validNamePointDashAndDash;
     }
 
     public Atlas validNamePointGreekAtlas()

@@ -10,9 +10,6 @@ import java.util.regex.Pattern;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
-import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
@@ -47,7 +44,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
     private static final List<String> LOWER_CASE_PREPOSITIONS_DEFAULT = Arrays.asList("and", "from",
             "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
-            "per", "till", "up", "via", "with", "for", "in", "de", "la", "del");
+            "per", "till", "up", "via", "with", "for", "in", "de", "la", "del", "du", "van", "der");
     private static final List<String> LOWER_CASE_ARTICLES_DEFAULT = Arrays.asList("a", "an", "the");
     private static final String SPLIT_CHARACTERS_DEFAULT = " -/&@–";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
@@ -77,6 +74,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     private final Pattern mixedCaseApostrophePattern;
     private final Pattern nonFirstCapitalPattern;
     private final Pattern iCasePattern;
+    private final Pattern dashAndDashPattern;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -106,7 +104,6 @@ public class MixedCaseNameCheck extends BaseCheck<String>
 
         // Compile regex
         this.upperCasePattern = Pattern.compile("\\p{Lu}");
-        this.iCasePattern = Pattern.compile("^i[A-Z]");
         this.anyLetterPattern = Pattern.compile("\\p{L}");
         this.lowerCasePattern = Pattern.compile("\\p{Ll}");
         this.mixedCaseUnitsPattern = Pattern.compile(
@@ -115,6 +112,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                 .compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')");
         this.nonFirstCapitalPattern = Pattern.compile(String.format(
                 "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes));
+        this.iCasePattern = Pattern.compile("^i[A-Z]");
+        this.dashAndDashPattern = Pattern.compile("^n$|^n'$");
     }
 
     /**
@@ -136,11 +135,12 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
                         && Validators.hasValuesFor(object, NameTag.class)
+                        // Excluding names with following tags to reduce number of legit
+                        // MixedCaseNames
                         && !Validators.hasValuesFor(object, BrandTag.class)
                         && !Validators.hasValuesFor(object, ShopTag.class)
                         && !Validators.hasValuesFor(object, AmenityTag.class)
                         && !Validators.hasValuesFor(object, LeisureTag.class)
-                        // && !Validators.hasValuesFor(object, .class);
                         // And if an Edge, is a main edge
                         && (!(object instanceof Edge) || ((Edge) object).isMainEdge())
                         // Or it must have a specific language name tag from languageNameTags
@@ -191,27 +191,10 @@ public class MixedCaseNameCheck extends BaseCheck<String>
             // Generate the flag
             if (object instanceof Edge)
             {
-                // AutoFix candidate
-                return Optional.of(this
-                        .createFlag(new OsmWayWalker((Edge) object).collectEdges(),
-                                this.getLocalizedInstruction(0, object.getOsmIdentifier()))
-                        .addFixSuggestion(FeatureChange.add(
-                                (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object)).withTags(object.getTags())
-                                                .withReplacedTag(NameTag.KEY, NameTag.KEY,
-                                                        this.toTitleCase(osmTags
-                                                                .get(mixedCaseNameTags.get(0)))),
-                                object.getAtlas())));
+                return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                        instruction));
             }
-            return Optional.of(this
-                    .createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier()))
-                    .addFixSuggestion(FeatureChange.add(
-                            (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                    .from((AtlasEntity) object)).withTags(object.getTags())
-                                            .withReplacedTag(NameTag.KEY, NameTag.KEY,
-                                                    this.toTitleCase(
-                                                            osmTags.get(mixedCaseNameTags.get(0)))),
-                            object.getAtlas())));
+            return Optional.of(this.createFlag(object, instruction));
         }
         return Optional.empty();
     }
@@ -220,6 +203,19 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Tests if {@link String} is "n" or "'n"
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if {@code word} matches the {@code dashAndDashPattern}.
+     */
+    private boolean isDashAndDashCase(final String word)
+    {
+        // return true for following cases: Rock-n-Roll, Rock n' Roll
+        return this.dashAndDashPattern.matcher(word).find();
     }
 
     /**
@@ -254,7 +250,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
             for (final String word : wordArray)
             {
                 // Check if the word is intentionally mixed case
-                if (!this.isMixedCaseUnit(word) && !this.isICase(word))
+                if (!this.isMixedCaseUnit(word) && !this.isICase(word)
+                        && !this.isDashAndDashCase(word))
                 {
                     final Matcher firstLetterMatcher = this.anyLetterPattern.matcher(word);
                     // If the word is not in the list of prepositions, and the
@@ -274,6 +271,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                                     && !this.isMixedCaseApostrophe(word)
                                     && this.isProperNonFirstCapital(word))
                     {
+                        System.out.println(value);
                         return true;
                     }
                 }
@@ -331,27 +329,5 @@ public class MixedCaseNameCheck extends BaseCheck<String>
         // Must not be preceded by an apostrophe or name affix - `(?<!'|%1$s)(\p{Lu})`
         // Must not be the last character if it follows an apostrophe - `(?<=')\p{Lu}(?!.)`
         return this.nonFirstCapitalPattern.matcher(word).find();
-    }
-
-    /**
-     * Convert {@code word} to Title Case
-     *
-     * @param word
-     *            {@link String} to test
-     * @return Title Case string.
-     */
-    private String toTitleCase(final String word)
-    {
-        final StringBuilder stringBuilder = new StringBuilder();
-        boolean capitalCharNext = true;
-
-        for (final char character : word.toCharArray())
-        {
-            final char titleChar = capitalCharNext ? Character.toUpperCase(character)
-                    : Character.toLowerCase(character);
-            stringBuilder.append(titleChar);
-            capitalCharNext = this.splitCharacters.indexOf(character) >= 0;
-        }
-        return stringBuilder.toString();
     }
 }
