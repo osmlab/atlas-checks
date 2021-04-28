@@ -113,7 +113,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
         this.nonFirstCapitalPattern = Pattern.compile(String.format(
                 "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes));
         this.iCasePattern = Pattern.compile("^i[A-Z]");
-        this.dashAndDashPattern = Pattern.compile("^n$|^n'$");
+        this.dashAndDashPattern = Pattern.compile("^n$|^n'$|^'n$|^'n'$");
     }
 
     /**

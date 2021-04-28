@@ -144,7 +144,11 @@ public class MixedCaseNameCheckTestRule extends CoreTestRule
                     @Point(coordinates = @Loc(value = TEST_1), tags = { "iso_country_code=USA",
                             "name=Test-n-Test" }),
                     @Point(coordinates = @Loc(value = TEST_2), tags = { "iso_country_code=USA",
-                            "name=Test n' Test" }) })
+                            "name=Test n' Test" }),
+                    @Point(coordinates = @Loc(value = TEST_2), tags = { "iso_country_code=USA",
+                            "name=Test 'n Test" }),
+                    @Point(coordinates = @Loc(value = TEST_2), tags = { "iso_country_code=USA",
+                            "name=Test 'n' Test" }) })
     private Atlas validNamePointDashAndDash;
 
     @TestAtlas(
