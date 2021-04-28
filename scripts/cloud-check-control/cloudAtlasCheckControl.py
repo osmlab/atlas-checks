@@ -304,6 +304,7 @@ class CloudAtlasChecksControl:
                     + f" -countries='{c}'"
                     + f" -checks='{check}'"
                     +  " -includeFixSuggestions=true"
+                    +  " -purgeIncompleteTasks=true"
                     + f" > {self.atlasCheckLog}"
                 )
 

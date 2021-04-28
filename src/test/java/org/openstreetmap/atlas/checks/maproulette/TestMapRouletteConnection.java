@@ -68,6 +68,19 @@ public class TestMapRouletteConnection implements TaskLoader
         return "";
     }
 
+    @Override
+    public long purgeIncompleteTasks(final long challengeID) throws URISyntaxException
+    {
+        if (this.challengeToTasks.containsKey(challengeID))
+        {
+            return challengeID;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
     public void setProjectNameToId(final Map<String, Long> projectIdMap)
     {
         this.projectNameToId = projectIdMap;

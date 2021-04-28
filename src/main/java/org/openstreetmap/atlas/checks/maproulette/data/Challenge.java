@@ -62,6 +62,7 @@ public class Challenge implements Serializable
     private boolean enabled;
     private boolean updateTasks;
     private String checkName;
+    private boolean purge;
 
     public Challenge(final Challenge challenge)
     {
@@ -109,6 +110,7 @@ public class Challenge implements Serializable
         this.checkinComment = DEFAULT_CHECKIN_COMMENT;
         this.updateTasks = true;
         this.enabled = enabled;
+        this.purge = false;
     }
 
     public String getBlurb()
@@ -196,6 +198,11 @@ public class Challenge implements Serializable
         return this.enabled;
     }
 
+    public boolean isPurge()
+    {
+        return this.purge;
+    }
+
     public boolean isUpdateTasks()
     {
         return this.updateTasks;
@@ -229,6 +236,11 @@ public class Challenge implements Serializable
     public void setParentIdentifier(final long identifier)
     {
         this.parent = identifier;
+    }
+
+    public void setPurge(final boolean purge)
+    {
+        this.purge = purge;
     }
 
     public void setStatus(final long status)

@@ -189,6 +189,11 @@ public class MapRouletteClient implements Serializable
             challenge.setId(challengeId);
             challengeMap.put(challenge.getName(), challenge);
             this.challenges.put(project.getId(), challengeMap);
+            /* If purge is requested then do it now */
+            if (challengeId >= 0 && challenge.isPurge())
+            {
+                this.connection.purgeIncompleteTasks(challengeId);
+            }
         }
         return Optional.of(challenge);
     }
