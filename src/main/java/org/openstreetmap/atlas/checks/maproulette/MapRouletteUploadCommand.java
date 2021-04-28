@@ -181,16 +181,15 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                             {
                                 final Map<String, Challenge> countryToChallengeMap = this.checkNameChallengeMap
                                         .computeIfAbsent(checkName, ignore -> new HashMap<>());
-                                // by default, do NOT purge incomplete tasks from challenges
-                                final boolean purgeIncompleteTasks = (boolean) commandMap
-                                        .getOrDefault(PURGE_CHALLENGES.getName(), false);
                                 final Challenge challengeObject = countryToChallengeMap
                                         .computeIfAbsent(countryCode,
                                                 ignore -> this.getChallenge(checkName, instructions,
                                                         countryCode, checkinCommentPrefix,
                                                         checkinComment, discoverableChallenges,
-                                                        undiscoverableChallenges,
-                                                        purgeIncompleteTasks));
+                                                        undiscoverableChallenges));
+                                // by default, do NOT purge incomplete tasks from challenges
+                                challengeObject.setPurge((boolean) commandMap
+                                        .getOrDefault(PURGE_CHALLENGES.getName(), false));
                                 // by default, upload fix suggestions
                                 final boolean includeFixSuggestions = (boolean) commandMap
                                         .getOrDefault(INCLUDE_FIX_SUGGESTIONS.getName(), true);
@@ -239,8 +238,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Configuration fallbackConfiguration, final String countryCode,
             final String checkinCommentPrefix, final String checkinComment,
             final Optional<List<String>> discoverableChallenges,
-            final Optional<List<String>> undiscoverableChallenges,
-            final boolean purgeIncompleteTasks)
+            final Optional<List<String>> undiscoverableChallenges)
     {
         final Map<String, String> challengeMap = fallbackConfiguration
                 .get(this.getChallengeParameter(checkName), Collections.emptyMap()).value();
@@ -279,8 +277,6 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 || undiscoverableChallenges.isPresent()
                         && !undiscoverableChallenges.get().get(0).equals(StringUtils.EMPTY)
                         && !undiscoverableChallenges.get().contains(checkName));
-        // Store purge flag to indicate if a purge is requested to precede upload.
-        result.setPurge(purgeIncompleteTasks);
         return result;
     }
 
