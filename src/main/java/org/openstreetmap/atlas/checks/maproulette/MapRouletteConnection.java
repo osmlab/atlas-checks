@@ -17,6 +17,7 @@ import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
 import org.openstreetmap.atlas.checks.maproulette.data.Survey;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
+import org.openstreetmap.atlas.streaming.resource.http.DeleteResource;
 import org.openstreetmap.atlas.streaming.resource.http.GetResource;
 import org.openstreetmap.atlas.streaming.resource.http.HttpResource;
 import org.openstreetmap.atlas.streaming.resource.http.PostResource;
@@ -167,6 +168,37 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     public String getConnectionInfo()
     {
         return this.configuration.toString();
+    }
+
+    /**
+     * Will purge incomplete tasks from a challenge.
+     *
+     * @param challengeID
+     *            The challenge ID to purge
+     * @return The id of the challenge
+     * @throws UnsupportedEncodingException
+     *             if cannot encode string for post/put to map roulette
+     * @throws URISyntaxException
+     *             if URI supplied is invalid and cannot be built
+     */
+    @Override
+    public long purgeIncompleteTasks(final long challengeID)
+            throws UnsupportedEncodingException, URISyntaxException
+    {
+        try (HttpResource purge = new DeleteResource(
+                this.uriBuilder.setPath(String.format("/api/v2/challenge/%s/tasks", challengeID))
+                        .addParameter("statusFilters", "0,3").build().toString());)
+        {
+            logger.info("challenge {}: purging incomplete tasks...", challengeID);
+            this.setAuth(purge);
+            if (purge.getStatusCode() != HttpStatus.SC_OK)
+            {
+                logger.error("failed to purge challenge {}...", challengeID);
+                return -1;
+            }
+        }
+        logger.trace("challenge {}: purged all incomplete tasks.", challengeID);
+        return challengeID;
     }
 
     public HttpResource setAuth(final HttpResource resource)

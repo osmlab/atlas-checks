@@ -81,6 +81,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             "undiscoverableChallenges",
             "List of undiscoverable challenges. Supply \"\" for all. See the MR upload command docs for more info",
             string -> Arrays.asList(string.split(",")), Optionality.OPTIONAL, null);
+    private static final Switch<Boolean> PURGE_CHALLENGES = new Switch<>("purgeIncompleteTasks",
+            "true/false whether challenges should be purged of all incomplete tasks before uploading new tasks.",
+            Boolean::parseBoolean, Optionality.OPTIONAL, "false");
 
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
@@ -119,7 +122,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     {
         return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
                 CHECKS, CHECKIN_COMMENT_PREFIX, CHECKIN_COMMENT, DISCOVERABLE_CHALLENGES,
-                UNDISCOVERABLE_CHALLENGES, DISCOVERABLE_PROJECT);
+                UNDISCOVERABLE_CHALLENGES, DISCOVERABLE_PROJECT, INCLUDE_FIX_SUGGESTIONS,
+                PURGE_CHALLENGES);
     }
 
     @Override
@@ -183,11 +187,12 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                                         countryCode, checkinCommentPrefix,
                                                         checkinComment, discoverableChallenges,
                                                         undiscoverableChallenges));
+                                // by default, do NOT purge incomplete tasks from challenges
+                                challengeObject.setPurge((boolean) commandMap
+                                        .getOrDefault(PURGE_CHALLENGES.getName(), false));
                                 // by default, upload fix suggestions
-                                final boolean includeFixSuggestions = commandMap
-                                        .get(INCLUDE_FIX_SUGGESTIONS) == null
-                                        || Boolean.parseBoolean(
-                                                (String) commandMap.get(INCLUDE_FIX_SUGGESTIONS));
+                                final boolean includeFixSuggestions = (boolean) commandMap
+                                        .getOrDefault(INCLUDE_FIX_SUGGESTIONS.getName(), true);
                                 final Task task = uploadFlag
                                         .getMapRouletteTask(includeFixSuggestions);
                                 // task is by default named after its originating check. Overwrite

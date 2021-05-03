@@ -108,6 +108,22 @@ public class MapRouletteUploadCommandTest
     }
 
     @Test
+    public void testIncludeFixSuggestion()
+    {
+        final String[] additionalArguments = { "-includeFixSuggestions=true" };
+        this.runAndTest(additionalArguments, 1, 4, 4, true, Collections.emptyList(),
+                Arrays.asList("SomeCheck", "SomeOtherCheck", "AnotherCheck"));
+    }
+
+    @Test
+    public void testPurgeIncompleteTasks()
+    {
+        final String[] additionalArguments = { "-purgeIncompleteTasks=true" };
+        this.runAndTest(additionalArguments, 1, 4, 4, true, Collections.emptyList(),
+                Arrays.asList("SomeCheck", "SomeOtherCheck", "AnotherCheck"));
+    }
+
+    @Test
     public void testUndiscoverableProject()
     {
         final String[] additionalArguments = { "-discoverableProject=false" };

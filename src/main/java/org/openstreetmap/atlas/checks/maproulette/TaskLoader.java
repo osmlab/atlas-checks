@@ -54,6 +54,20 @@ public interface TaskLoader
     String getConnectionInfo();
 
     /**
+     * Will purge incomplete tasks from a challenge
+     *
+     * @param challengeID
+     *            The challenge ID to purge
+     * @return The id of the challenge
+     * @throws UnsupportedEncodingException
+     *             if json data for API payload cannot be encoded correctly
+     * @throws URISyntaxException
+     *             if the URI for getting/creating/updating project is incorrectly generated
+     */
+    long purgeIncompleteTasks(long challengeID)
+            throws UnsupportedEncodingException, URISyntaxException;
+
+    /**
      * Uploads tasks as a batch, instead of one at a time
      *
      * @param challengeId
