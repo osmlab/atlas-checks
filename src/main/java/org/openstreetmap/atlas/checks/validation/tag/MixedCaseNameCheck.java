@@ -137,10 +137,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                         && Validators.hasValuesFor(object, NameTag.class)
                         // Excluding names with following tags to reduce number of legit
                         // MixedCaseNames
-                        && !Validators.hasValuesFor(object, BrandTag.class)
-                        && !Validators.hasValuesFor(object, ShopTag.class)
-                        && !Validators.hasValuesFor(object, AmenityTag.class)
-                        && !Validators.hasValuesFor(object, LeisureTag.class)
+                        && !Validators.hasValuesFor(object, BrandTag.class, ShopTag.class,
+                                AmenityTag.class, LeisureTag.class)
                         // And if an Edge, is a main edge
                         && (!(object instanceof Edge) || ((Edge) object).isMainEdge())
                         // Or it must have a specific language name tag from languageNameTags
