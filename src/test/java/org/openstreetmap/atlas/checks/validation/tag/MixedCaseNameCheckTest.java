@@ -40,6 +40,22 @@ public class MixedCaseNameCheckTest
     }
 
     @Test
+    public void invalidNameICase()
+    {
+        this.verifier.actual(this.setup.invalidNameICase(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void invalidNameICaseMiddle()
+    {
+        this.verifier.actual(this.setup.invalidNameICaseMiddle(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void invalidNameLineTest()
     {
         this.verifier.actual(this.setup.invalidNameLineAtlas(),
@@ -136,6 +152,15 @@ public class MixedCaseNameCheckTest
     }
 
     @Test
+    public void validNameICase()
+    {
+        // Example: iRobot
+        this.verifier.actual(this.setup.validNameICase(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void validNamePointAffixTest()
     {
         this.verifier.actual(this.setup.validNamePointAffixAtlas(),
@@ -195,6 +220,15 @@ public class MixedCaseNameCheckTest
     public void validNamePointChnTest()
     {
         this.verifier.actual(this.setup.validNamePointChnAtlas(),
+                new MixedCaseNameCheck(this.inlineConfiguration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
+    public void validNamePointDashAndDashTest()
+    {
+        // example: Rock-n-Roll
+        this.verifier.actual(this.setup.validNamePointDashAndDash(),
                 new MixedCaseNameCheck(this.inlineConfiguration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }

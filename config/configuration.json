@@ -696,8 +696,8 @@
       "language.keys":["name:en"],
       "affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
       "articles": ["a", "an", "the"],
-      "prepositions": ["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as",
-        "into", "like", "near", "onto", "per", "till", "up", "via", "with", "for", "in"],
+      "prepositions": ["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near",
+        "onto", "per", "till", "up", "via", "with", "for", "in", "de", "la", "del", "du", "van", "der"],
       "units":["kv"]
     },
     "regex.split":" -/&@–",

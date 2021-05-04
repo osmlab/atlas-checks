@@ -15,7 +15,11 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
+import org.openstreetmap.atlas.tags.AmenityTag;
+import org.openstreetmap.atlas.tags.BrandTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
+import org.openstreetmap.atlas.tags.LeisureTag;
+import org.openstreetmap.atlas.tags.ShopTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -40,7 +44,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     private static final List<String> LANGUAGE_NAME_TAGS_DEFAULT = Arrays.asList("name:en");
     private static final List<String> LOWER_CASE_PREPOSITIONS_DEFAULT = Arrays.asList("and", "from",
             "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near", "onto",
-            "per", "till", "up", "via", "with", "for", "in");
+            "per", "till", "up", "via", "with", "for", "in", "de", "la", "del", "du", "van", "der");
     private static final List<String> LOWER_CASE_ARTICLES_DEFAULT = Arrays.asList("a", "an", "the");
     private static final String SPLIT_CHARACTERS_DEFAULT = " -/&@–";
     private static final List<String> NAME_AFFIXES_DEFAULT = Arrays.asList("Mc", "Mac", "Mck",
@@ -69,6 +73,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     private final Pattern mixedCaseUnitsPattern;
     private final Pattern mixedCaseApostrophePattern;
     private final Pattern nonFirstCapitalPattern;
+    private final Pattern iCasePattern;
+    private final Pattern dashAndDashPattern;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -106,6 +112,8 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                 .compile("([^\\p{Ll}]+'\\p{Ll})|([^\\p{Ll}]+\\p{Ll}')");
         this.nonFirstCapitalPattern = Pattern.compile(String.format(
                 "(\\p{L}.*(?<!'|%1$s)(\\p{Lu}))|(\\p{L}.*(?<=')\\p{Lu}(?!.))", this.nameAffixes));
+        this.iCasePattern = Pattern.compile("^i[A-Z]");
+        this.dashAndDashPattern = Pattern.compile("^n$|^n'$|^'n$|^'n'$");
     }
 
     /**
@@ -127,6 +135,10 @@ public class MixedCaseNameCheck extends BaseCheck<String>
                                 .contains(object.tag(ISOCountryTag.KEY).toUpperCase())
                         // And have a name tag
                         && Validators.hasValuesFor(object, NameTag.class)
+                        // Excluding names with following tags to reduce number of legit
+                        // MixedCaseNames
+                        && !Validators.hasValuesFor(object, BrandTag.class, ShopTag.class,
+                                AmenityTag.class, LeisureTag.class)
                         // And if an Edge, is a main edge
                         && (!(object instanceof Edge) || ((Edge) object).isMainEdge())
                         // Or it must have a specific language name tag from languageNameTags
@@ -192,6 +204,44 @@ public class MixedCaseNameCheck extends BaseCheck<String>
     }
 
     /**
+     * Tests if {@link String} matches one of the patterns.
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if {@code word} matches the {@code dashAndDashPattern} or {@code iCasePattern}.
+     */
+    private boolean isAlowedPatternHandling(final String word)
+    {
+        return this.isMixedCaseUnit(word) || this.isICase(word) || this.isDashAndDashCase(word);
+    }
+
+    /**
+     * Tests if {@link String} is "n" or "'n"
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if {@code word} matches the {@code dashAndDashPattern}.
+     */
+    private boolean isDashAndDashCase(final String word)
+    {
+        // return true for following cases: Rock-n-Roll, Rock n' Roll
+        return this.dashAndDashPattern.matcher(word).find();
+    }
+
+    /**
+     * Tests if {@link String} starts with lower "i" character followed by capital letter.
+     *
+     * @param word
+     *            {@link String} to test
+     * @return true if {@code word} matches the {@code iCasePattern}.
+     */
+    private boolean isICase(final String word)
+    {
+        // return true for following cases: iExample, iCode
+        return this.iCasePattern.matcher(word).find();
+    }
+
+    /**
      * Tests each word in a string for proper use of case in a name.
      *
      * @param value
@@ -210,7 +260,7 @@ public class MixedCaseNameCheck extends BaseCheck<String>
             for (final String word : wordArray)
             {
                 // Check if the word is intentionally mixed case
-                if (!this.isMixedCaseUnit(word))
+                if (!this.isAlowedPatternHandling(word))
                 {
                     final Matcher firstLetterMatcher = this.anyLetterPattern.matcher(word);
                     // If the word is not in the list of prepositions, and the
