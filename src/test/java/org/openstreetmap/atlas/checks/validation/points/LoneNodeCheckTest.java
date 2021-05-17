@@ -41,33 +41,4 @@ public class LoneNodeCheckTest
         });
     }
 
-    @Test
-    public void unexpectedHighwayValueOnLoneNode()
-    {
-        this.verifier.actual(this.setup.loneNodeWithUnexpectedHighwayAtlas(), CHECK);
-        this.verifier.globallyVerify(flags ->
-        {
-            Assert.assertEquals(1, flags.size());
-            flags.forEach(flag -> Assert.assertEquals(2, flag.getRawInstructions().size()));
-        });
-    }
-
-    @Test
-    public void unexpectedHighwayValueTest()
-    {
-        this.verifier.actual(this.setup.unexpectedHighwayValueAtlas(), CHECK);
-        this.verifier.globallyVerify(flags ->
-        {
-            Assert.assertEquals(1, flags.size());
-            flags.forEach(flag -> Assert.assertEquals(1, flag.getRawInstructions().size()));
-        });
-    }
-
-    @Test
-    public void validHighwayNodeTest()
-    {
-        this.verifier.actual(this.setup.validHighwayValueAtlas(), CHECK);
-        this.verifier.globallyVerify(flags -> Assert.assertTrue(flags.isEmpty()));
-    }
-
 }

@@ -16,54 +16,27 @@ public class LoneNodeCheckTestRule extends CoreTestRule
     public static final String THREE = "40.9609826, -5.6425880";
     public static final String FOUR = "40.9610646, -5.6425413";
 
-    @TestAtlas(nodes = {
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=give_way"),
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)),
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = FOUR)) },
+    @TestAtlas(points = {
+            @TestAtlas.Point(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=give_way"),
+            @TestAtlas.Point(coordinates = @TestAtlas.Loc(value = THREE)),
+            @TestAtlas.Point(coordinates = @TestAtlas.Loc(value = FOUR)) },
 
-            edges = {
-                    @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
+            lines = {
+                    @TestAtlas.Line(coordinates = { @TestAtlas.Loc(value = THREE),
                             @TestAtlas.Loc(value = TWO),
                             @TestAtlas.Loc(value = ONE) }, id = "1201", tags = "railway=rail"),
-                    @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = FOUR),
+                    @TestAtlas.Line(coordinates = { @TestAtlas.Loc(value = FOUR),
                             @TestAtlas.Loc(value = ONE) }, id = "1202") })
     private Atlas edgeWithRailwayAtlas;
 
-    @TestAtlas(nodes = {
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=give_way"),
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) },
+    @TestAtlas(points = {
+            @TestAtlas.Point(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=give_way"),
+            @TestAtlas.Point(coordinates = @TestAtlas.Loc(value = THREE)) },
 
-            edges = { @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
+            lines = { @TestAtlas.Line(coordinates = { @TestAtlas.Loc(value = THREE),
                     @TestAtlas.Loc(value = TWO),
                     @TestAtlas.Loc(value = ONE) }, id = "1201", tags = "source=survey") })
     private Atlas loneNodeAtlas;
-
-    @TestAtlas(nodes = {
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=primary"),
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) },
-
-            edges = { @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
-                    @TestAtlas.Loc(value = TWO),
-                    @TestAtlas.Loc(value = ONE) }, id = "1201", tags = "source=survey") })
-    private Atlas loneNodeWithUnexpectedHighwayAtlas;
-
-    @TestAtlas(nodes = {
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=primary"),
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) },
-
-            edges = { @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
-                    @TestAtlas.Loc(value = TWO),
-                    @TestAtlas.Loc(value = ONE) }, id = "1201", tags = "highway=primary") })
-    private Atlas unexpectedHighwayValueAtlas;
-
-    @TestAtlas(nodes = {
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = ONE), id = "1234", tags = "highway=give_way"),
-            @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = THREE)) },
-
-            edges = { @TestAtlas.Edge(coordinates = { @TestAtlas.Loc(value = THREE),
-                    @TestAtlas.Loc(value = TWO),
-                    @TestAtlas.Loc(value = ONE) }, id = "1201", tags = "highway=primary") })
-    private Atlas validHighwayValueAtlas;
 
     public Atlas edgeWithRailwayAtlas()
     {
@@ -75,18 +48,4 @@ public class LoneNodeCheckTestRule extends CoreTestRule
         return this.loneNodeAtlas;
     }
 
-    public Atlas loneNodeWithUnexpectedHighwayAtlas()
-    {
-        return this.loneNodeWithUnexpectedHighwayAtlas;
-    }
-
-    public Atlas unexpectedHighwayValueAtlas()
-    {
-        return this.unexpectedHighwayValueAtlas;
-    }
-
-    public Atlas validHighwayValueAtlas()
-    {
-        return this.validHighwayValueAtlas;
-    }
 }
