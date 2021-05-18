@@ -98,7 +98,7 @@ public class LoneNodeCheck extends BaseCheck<Long>
     @SuppressWarnings("unchecked")
     private boolean isLoneNode(final AtlasObject object)
     {
-        final Point point = (Point) object;
+        final var point = (Point) object;
         final Predicate<? extends AtlasObject> hasHighwayRailway = obj -> obj.getTag(HighwayTag.KEY)
                 .isPresent() || obj.getTag(RailwayTag.KEY).isPresent();
 
