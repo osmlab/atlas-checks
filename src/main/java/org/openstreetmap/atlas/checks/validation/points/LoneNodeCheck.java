@@ -9,8 +9,6 @@ import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
@@ -100,8 +98,8 @@ public class LoneNodeCheck extends BaseCheck<Long>
     @SuppressWarnings("unchecked")
     private boolean isLoneNode(final AtlasObject object)
     {
-        final Atlas atlas = object.getAtlas();
-        final Location pointLocation = ((Point) object).getLocation();
+        final var atlas = object.getAtlas();
+        final var pointLocation = ((Point) object).getLocation();
         final Iterable<LineItem> connectedLines = atlas.lineItemsContaining(pointLocation,
                 (Predicate<LineItem>) HAS_HIGHWAY_RAILWAY);
         final Iterable<Area> connectedAreas = atlas.areasCovering(pointLocation,
