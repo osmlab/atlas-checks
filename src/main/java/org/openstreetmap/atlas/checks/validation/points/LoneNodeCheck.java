@@ -9,28 +9,30 @@ import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Location;
+import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.RailwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check verifies lone {@link Node}s with highway tag that they follow the tagging principles.
+ * This check verifies lone {@link Point}s with highway tag that they follow the tagging principles.
  *
  * @author mm-ciub
  */
 public class LoneNodeCheck extends BaseCheck<Long>
 {
-
     private static final long serialVersionUID = -1489101405354234053L;
 
     private static final List<String> DEFAULT_HIGHWAY_VALUES_CHECKED = List.of("crossing",
             "turning_circle", "traffic_signals", "stop", "give_way", "motorway_junction",
             "mini_roundabout", "passing_place", "turning_loop");
+    private static final Predicate<? extends AtlasObject> HAS_HIGHWAY_RAILWAY = obj -> obj
+            .getTag(HighwayTag.KEY).isPresent() || obj.getTag(RailwayTag.KEY).isPresent();
     private static final String LONE_NODE_INSTRUCTION = "This node {0,number,#} has a Highway tag but is not part of any way that has a highway or railway tag. Either add such a tag to the appropriate parent or remove the highway tag from the node.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(LONE_NODE_INSTRUCTION);
@@ -98,14 +100,12 @@ public class LoneNodeCheck extends BaseCheck<Long>
     @SuppressWarnings("unchecked")
     private boolean isLoneNode(final AtlasObject object)
     {
-        final var point = (Point) object;
-        final Predicate<? extends AtlasObject> hasHighwayRailway = obj -> obj.getTag(HighwayTag.KEY)
-                .isPresent() || obj.getTag(RailwayTag.KEY).isPresent();
-
-        final Iterable<LineItem> connectedLines = object.getAtlas()
-                .lineItemsContaining(point.getLocation(), (Predicate<LineItem>) hasHighwayRailway);
-        final Iterable<Area> connectedAreas = object.getAtlas().areasCovering(point.getLocation(),
-                (Predicate<Area>) hasHighwayRailway);
+        final Atlas atlas = object.getAtlas();
+        final Location pointLocation = ((Point) object).getLocation();
+        final Iterable<LineItem> connectedLines = atlas.lineItemsContaining(pointLocation,
+                (Predicate<LineItem>) HAS_HIGHWAY_RAILWAY);
+        final Iterable<Area> connectedAreas = atlas.areasCovering(pointLocation,
+                (Predicate<Area>) HAS_HIGHWAY_RAILWAY);
         return StreamSupport.stream(connectedAreas.spliterator(), false).count() == 0
                 && StreamSupport.stream(connectedLines.spliterator(), false).count() == 0;
     }

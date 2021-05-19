@@ -24,9 +24,27 @@ public class LoneNodeCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void areaWithHighwayTagTest()
+    {
+        this.verifier.actual(this.setup.areaWithHighwayAtlas(),
+                new LoneNodeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"LoneNodeCheck.valid.highway.tag\":[\"give_way\", \"stop\"]}")));
+        this.verifier.globallyVerify(flags -> Assert.assertTrue(flags.isEmpty()));
+    }
+
+    @Test
     public void edgeWithRailwayTagTest()
     {
         this.verifier.actual(this.setup.edgeWithRailwayAtlas(), CHECK);
+        this.verifier.globallyVerify(flags -> Assert.assertTrue(flags.isEmpty()));
+    }
+
+    @Test
+    public void highwayNotInConfigTest()
+    {
+        this.verifier.actual(this.setup.loneNodeAtlas(),
+                new LoneNodeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"LoneNodeCheck.valid.highway.tag\":[\"crossing\", \"stop\"]}")));
         this.verifier.globallyVerify(flags -> Assert.assertTrue(flags.isEmpty()));
     }
 
