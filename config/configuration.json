@@ -1355,5 +1355,16 @@
       "difficulty": "EASY",
       "defaultPriority": "MEDIUM"
     }
+  },
+  "LoneNodeCheck": {
+    "valid.highway.tag": ["crossing", "turning_circle", "traffic_signals", "stop", "give_way",
+      "motorway_junction", "mini_roundabout", "passing_place", "turning_loop"],
+    "challenge": {
+      "description": "Tasks contain nodes with either inappropriate highway tag value or which are not part of a way with highway or railway tag.",
+      "blurb": "Lone nodes with highway tag",
+      "instruction": "Open your favorite editor and edit the node street names",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
   }
 }
