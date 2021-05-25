@@ -9,7 +9,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -20,8 +19,10 @@ import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
+import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
+import org.openstreetmap.atlas.tags.LevelTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -304,8 +305,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private boolean isValidCrossingEdge(final AtlasObject object, final boolean carNav,
             final boolean pedNav)
     {
-        if (Edge.isMainEdgeIdentifier(object.getIdentifier())
-                && !TagPredicates.IS_AREA.test(object))
+        if (((Edge) object).isMainEdge() && object.getTag(AreaTag.KEY).isEmpty()
+                && object.getTag(LevelTag.KEY).isEmpty())
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
