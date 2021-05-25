@@ -16,7 +16,7 @@ Layer tag range defined in Atlas (min = -5, max = 5, exclude = 0) [TagInfo](http
 4. Line [id:486493202](https://www.openstreetmap.org/way/486493202) and [id:172811290](https://www.openstreetmap.org/way/172811290) are duplicates that intersect at [id:172811276](https://www.openstreetmap.org/way/172811276).
 
 #### Check configuration.
-1) "minimum.highway.type" and "maximum.highway.type" - specifying corridor of OSM ways that will be checks.
+1) "minimum.highway.type" and "maximum.highway.type" - specifying corridor of OSM ways to check.
 ##### Example 
 Check OSM ways that fall into following corridor highway=trunk to highway=primary.
 "minimum.highway.type": "primary",
