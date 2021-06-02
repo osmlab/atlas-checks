@@ -1,6 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.points;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,8 +25,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class DuplicateLocationInPolyLineCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Repeated location found at {0} for feature id {1,number,#} ");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList("Repeated location found at {0} for feature id {1,number,#} ");
     private static final long serialVersionUID = 7403488805532662065L;
 
     public DuplicateLocationInPolyLineCheck(final Configuration configuration)
@@ -45,15 +45,31 @@ public class DuplicateLocationInPolyLineCheck extends BaseCheck<Long>
     {
         final Set<Location> visitedLocations = new HashSet<>();
         final Iterator<Location> locations = ((AtlasItem) object).getRawGeometry().iterator();
+        var firstHit = 0;
+        Location first = null;
         while (locations.hasNext())
         {
-            final Location currentLocation = locations.next();
+            final var currentLocation = locations.next();
+
+            if (first == null)
+            {
+                first = currentLocation;
+            }
+            else if (first.equals(currentLocation))
+            {
+                firstHit++;
+            }
+
             if (visitedLocations.contains(currentLocation)
-                    && !this.isFlagged(object.getOsmIdentifier()))
+                    && !this.isFlagged(object.getOsmIdentifier())
+                    && (!first.equals(currentLocation) && locations.hasNext()
+                            || object instanceof Area || firstHit > 1))
             {
                 this.markAsFlagged(object.getOsmIdentifier());
-                return Optional.of(createFlag(object, this.getLocalizedInstruction(0,
-                        currentLocation.toString(), object.getOsmIdentifier())));
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(0, currentLocation.toString(),
+                                object.getOsmIdentifier()),
+                        Collections.singletonList(currentLocation)));
             }
             else
             {
