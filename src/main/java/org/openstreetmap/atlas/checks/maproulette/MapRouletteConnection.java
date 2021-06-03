@@ -124,7 +124,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                     logger.debug(logSuccessMessage, responseID);
                     return responseID;
                 default:
-                    logger.debug("{} - {}", createUpdate.getStatusCode(),
+                    logger.error("{} - {}", createUpdate.getStatusCode(),
                             createUpdate.getRequestBodyAsString());
                     return -1;
             }
