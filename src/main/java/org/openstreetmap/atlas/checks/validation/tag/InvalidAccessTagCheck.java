@@ -113,6 +113,18 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     }
 
     /**
+     * Checks if {@link AtlasObject} contains synthetic boundary Node
+     *
+     * @param object
+     *            the {@link AtlasObject} to check
+     * @return true if edge contains synthetic boundary Node.
+     */
+    private boolean hasBoundaryNode(final AtlasObject object)
+    {
+        return object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
+    }
+    
+    /**
      * Checks if {@link LineItem} is inside an {@link Area} or {@link Relation} with tag
      * {@code landuse=MILITARY} or tag key {@code military}.
      *
@@ -155,18 +167,6 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
             }
         }
         return false;
-    }
-
-    /**
-     * Checks if {@link AtlasObject} contains synthetic boundary Node
-     *
-     * @param object
-     *            the {@link AtlasObject} to check
-     * @return true if edge contains synthetic boundary Node.
-     */
-    private boolean hasBoundaryNode(final AtlasObject object)
-    {
-        return object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
     }
 
     /**
