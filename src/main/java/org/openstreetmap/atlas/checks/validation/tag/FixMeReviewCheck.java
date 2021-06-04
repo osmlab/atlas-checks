@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.BuildingTag;
+import org.openstreetmap.atlas.tags.FixMeTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.PlaceTag;
 import org.openstreetmap.atlas.tags.SurfaceTag;
@@ -42,8 +43,6 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     private final List<String> fixMeSupportedValues;
     private final HighwayTag minHighwayTag;
     private static final String MIN_HIGHWAY_TAG_DEFAULT = "tertiary";
-    private static final String FIX_ME_LOWERCASE = "fixme";
-    private static final String FIX_ME_UPPERCASE = "FIXME";
 
     /**
      * instantiate config values
@@ -74,7 +73,7 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     {
         final Map<String, String> tags = object.getTags();
         return !isFlagged(object.getOsmIdentifier())
-                && (tags.containsKey(FIX_ME_UPPERCASE) || tags.containsKey(FIX_ME_LOWERCASE));
+                && (tags.containsKey(FixMeTag.KEY) || tags.containsKey(FixMeTag.KEY.toUpperCase()));
     }
 
     /**
@@ -127,10 +126,10 @@ public class FixMeReviewCheck extends BaseCheck<Long>
     {
         for (final String priorityTagValue : this.fixMeSupportedValues)
         {
-            if ((tags.containsKey(FIX_ME_UPPERCASE)
-                    && tags.get(FIX_ME_UPPERCASE).equals(priorityTagValue))
-                    || (tags.containsKey(FIX_ME_LOWERCASE)
-                            && tags.get(FIX_ME_LOWERCASE).equals(priorityTagValue)))
+            if ((tags.containsKey(FixMeTag.KEY.toUpperCase())
+                    && tags.get(FixMeTag.KEY.toUpperCase()).equals(priorityTagValue))
+                    || (tags.containsKey(FixMeTag.KEY)
+                            && tags.get(FixMeTag.KEY).equals(priorityTagValue)))
             {
                 return true;
             }

@@ -63,6 +63,7 @@ public class Challenge implements Serializable
     private boolean updateTasks;
     private String checkName;
     private boolean purge;
+    private boolean changesetUrl = false;
 
     public Challenge(final Challenge challenge)
     {
