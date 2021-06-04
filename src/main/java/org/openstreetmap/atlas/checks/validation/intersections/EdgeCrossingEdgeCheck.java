@@ -200,40 +200,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Check if {@link Edge} highway tag is vehicle or pedestrian navigable.
-     *
-     * @param edge
-     *            Atlas object.
-     * @param carNav
-     *            Car Navigable Highway Type.
-     * @param pedestrianNav
-     *            Pedestrian Navigable Highway Type.
-     * @return {@code true} if {@link Edge} is vehicle or pedestrian navigable.
-     */
-    private boolean getCrossingHighwayType(final Edge edge, final boolean carNav,
-            final boolean pedestrianNav)
-    {
-        if (carNav && pedestrianNav)
-        {
-            return HighwayTag.isCarNavigableHighway(edge)
-                    || HighwayTag.isPedestrianNavigableHighway(edge);
-        }
-        else if (carNav)
-        {
-            return HighwayTag.isCarNavigableHighway(edge);
-        }
-        else if (pedestrianNav)
-        {
-            return HighwayTag.isPedestrianNavigableHighway(edge);
-        }
-        else
-        {
-            return !HighwayTag.isCarNavigableHighway(edge)
-                    && !HighwayTag.isPedestrianNavigableHighway(edge);
-        }
-    }
-
-    /**
      * This function returns set of intersections locations for given params.
      *
      * @param edge1
@@ -295,6 +261,30 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
+     * Check if {@link Edge} highway tag is vehicle or pedestrian navigable.
+     *
+     * @param edge
+     *            Atlas object.
+     * @param carNavigable
+     *            Car Navigable Highway Type.
+     * @param pedestrianNavigable
+     *            Pedestrian Navigable Highway Type.
+     * @return {@code true} if {@link Edge} is vehicle or pedestrian navigable.
+     */
+    private boolean isCrossingHighwayType(final Edge edge, final boolean carNavigable,
+            final boolean pedestrianNavigable)
+    {
+        return (carNavigable && pedestrianNavigable
+                && (HighwayTag.isCarNavigableHighway(edge)
+                        || HighwayTag.isPedestrianNavigableHighway(edge)))
+                || (carNavigable && HighwayTag.isCarNavigableHighway(edge)
+                        || (pedestrianNavigable && HighwayTag.isPedestrianNavigableHighway(edge)))
+                || (!carNavigable && !pedestrianNavigable
+                        && (!HighwayTag.isCarNavigableHighway(edge)
+                                || !HighwayTag.isPedestrianNavigableHighway(edge)));
+    }
+
+    /**
      * Validates given {@link AtlasObject} (assumed to be an {@link Edge}) whether it is a valid
      * crossing edge or not
      *
@@ -302,8 +292,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      *            {@link AtlasObject} to test
      * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
      */
-    private boolean isValidCrossingEdge(final AtlasObject object, final boolean carNav,
-            final boolean pedNav)
+    private boolean isValidCrossingEdge(final AtlasObject object, final boolean carNavigable,
+            final boolean pedNavigable)
     {
         if (((Edge) object).isMainEdge() && object.getTag(AreaTag.KEY).isEmpty()
                 && object.getTag(LevelTag.KEY).isEmpty())
@@ -312,7 +302,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             if (highway.isPresent())
             {
                 final HighwayTag highwayTag = highway.get();
-                return this.getCrossingHighwayType((Edge) object, carNav, pedNav)
+                return this.isCrossingHighwayType((Edge) object, carNavigable, pedNavigable)
                         && !HighwayTag.CROSSING.equals(highwayTag)
                         && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType)
                         && highwayTag.isLessImportantThanOrEqualTo(this.maximumHighwayType);
