@@ -158,6 +158,18 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     }
 
     /**
+     * Checks if {@link AtlasObject} contains synthetic boundary Node
+     *
+     * @param object
+     *            the {@link AtlasObject} to check
+     * @return true if edge contains synthetic boundary Node.
+     */
+    private boolean hasBoundaryNode(final AtlasObject object)
+    {
+        return object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
+    }
+
+    /**
      * Checks if an {@link AtlasObject} is of an equal or greater priority than the minimum. The
      * minimum is supplied as a configuration parameter, the default is {@code "tertiary"}.
      *
@@ -170,17 +182,5 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
         final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
         return result.isPresent()
                 && result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
-    }
-
-    /**
-     * Checks if {@link AtlasObject} contains synthetic boundary Node
-     *
-     * @param object
-     *            the {@link AtlasObject} to check
-     * @return true if edge contains synthetic boundary Node.
-     */
-    private boolean hasBoundaryNode(final AtlasObject object)
-    {
-        return (object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode));
-    }    
+    }  
 }
