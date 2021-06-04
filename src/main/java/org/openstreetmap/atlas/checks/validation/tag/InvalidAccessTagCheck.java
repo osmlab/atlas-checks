@@ -79,7 +79,6 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
                 && !this.hasBoundaryNode(object);
     }
 
-
     /**
      * This is the actual function that will check to see whether the object needs to be flagged.
      *
@@ -121,9 +120,10 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
      */
     private boolean hasBoundaryNode(final AtlasObject object)
     {
-        return object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
+        return object instanceof Edge && ((Edge) object).connectedNodes().stream()
+                .anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
     }
-    
+
     /**
      * Checks if {@link LineItem} is inside an {@link Area} or {@link Relation} with tag
      * {@code landuse=MILITARY} or tag key {@code military}.
@@ -182,5 +182,5 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
         final Optional<HighwayTag> result = HighwayTag.highwayTag(object);
         return result.isPresent()
                 && result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
-    }  
+    }
 }
