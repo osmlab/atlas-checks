@@ -181,10 +181,6 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
      */
     private boolean hasBoundaryNode(final AtlasObject object)
     {
-        if (object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode))
-        {
-            return true;
-        }
-        return false;
+        return (object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode))
     }    
 }
