@@ -1,5 +1,4 @@
 package org.openstreetmap.atlas.checks.validation.tag;
-import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +21,7 @@ import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
 import org.openstreetmap.atlas.tags.MilitaryTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -106,22 +106,6 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
         return Optional.empty();
     }
 
-    /**
-     * Checks if {@link AtlasObject} contains synthetic boundary Node
-     *
-     * @param object
-     *            the {@link AtlasObject} to check
-     * @return true if edge contains synthetic boundary Node.
-     */
-    private boolean hasBoundaryNode(final AtlasObject object)
-    {
-        if (object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode))
-        {
-            return true;
-        }
-        return false;
-    }
-
     @Override
     protected List<String> getFallbackInstructions()
     {
@@ -187,4 +171,20 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
         return result.isPresent()
                 && result.get().isMoreImportantThanOrEqualTo(this.minimumHighwayType);
     }
+
+    /**
+     * Checks if {@link AtlasObject} contains synthetic boundary Node
+     *
+     * @param object
+     *            the {@link AtlasObject} to check
+     * @return true if edge contains synthetic boundary Node.
+     */
+    private boolean hasBoundaryNode(final AtlasObject object)
+    {
+        if (object instanceof Edge && ((Edge) object).connectedNodes().stream().anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode))
+        {
+            return true;
+        }
+        return false;
+    }    
 }
