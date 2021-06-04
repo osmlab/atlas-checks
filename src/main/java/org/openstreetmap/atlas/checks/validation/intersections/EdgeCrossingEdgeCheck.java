@@ -293,7 +293,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
      * @return {@code true} if given {@link AtlasObject} object is a valid crossing edge
      */
     private boolean isValidCrossingEdge(final AtlasObject object, final boolean carNavigable,
-            final boolean pedNavigable)
+            final boolean pedestrianNavigable)
     {
         if (((Edge) object).isMainEdge() && object.getTag(AreaTag.KEY).isEmpty()
                 && object.getTag(LevelTag.KEY).isEmpty())
@@ -302,7 +302,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             if (highway.isPresent())
             {
                 final HighwayTag highwayTag = highway.get();
-                return this.isCrossingHighwayType((Edge) object, carNavigable, pedNavigable)
+                return this.isCrossingHighwayType((Edge) object, carNavigable, pedestrianNavigable)
                         && !HighwayTag.CROSSING.equals(highwayTag)
                         && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType)
                         && highwayTag.isLessImportantThanOrEqualTo(this.maximumHighwayType);
