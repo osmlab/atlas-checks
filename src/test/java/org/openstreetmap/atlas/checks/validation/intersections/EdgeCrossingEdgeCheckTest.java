@@ -19,6 +19,18 @@ public class EdgeCrossingEdgeCheckTest
     private final Configuration configuration = ConfigurationResolver.emptyConfiguration();
 
     @Test
+    public void testInvalidCrossingCarNavigation()
+    {
+        this.verifier.actual(this.setup.invalidCrossingItemsAtlasCarPedestrian(),
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":true,\"pedestrian.navigable\":false,\"crossing.car.navigable\":true,\"crossing.pedestrian.navigable\":false,"
+                                + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
+
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
     public void testInvalidCrossingItemsAtlas()
     {
         this.verifier.actual(this.setup.invalidCrossingItemsAtlas(),
@@ -77,18 +89,6 @@ public class EdgeCrossingEdgeCheckTest
     }
 
     @Test
-    public void testInvalidCrossingItemsAtlasCarNavigationOnly()
-    {
-        this.verifier.actual(this.setup.invalidCrossingItemsAtlasCarPedestrian(),
-                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":true,\"pedestrian.navigable\":false,\"crossing.car.navigable\":true,\"crossing.pedestrian.navigable\":false,"
-                                + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
-
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
-    }
-
-    @Test
     public void testInvalidCrossingItemsAtlasIndoorMapping()
     {
         this.verifier.actual(this.setup.invalidCrossingItemsAtlasIndoorMapping(),
@@ -96,17 +96,6 @@ public class EdgeCrossingEdgeCheckTest
                         "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":true,\"pedestrian.navigable\":true,\"crossing.car.navigable\":true,\"crossing.pedestrian.navigable\":true,"
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
         this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void testInvalidCrossingItemsAtlasPedestrianNavigationOnly()
-    {
-        this.verifier.actual(this.setup.invalidCrossingItemsAtlasCarPedestrian(),
-                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
-                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":false,\"pedestrian.navigable\":true,\"crossing.car.navigable\":false,\"crossing.pedestrian.navigable\":true,"
-                                + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -145,6 +134,17 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testInvalidCrossingPedestrianNavigation()
+    {
+        this.verifier.actual(this.setup.invalidCrossingItemsAtlasCarPedestrian(),
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":false,\"pedestrian.navigable\":true,\"crossing.car.navigable\":false,\"crossing.pedestrian.navigable\":true,"
+                                + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
