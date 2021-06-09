@@ -96,6 +96,16 @@ public class LineCrossingWaterBodyCheckTest
     }
 
     @Test
+    public void testInvalidLineItemNotCrossingWaterBody()
+    {
+        this.verifier.actual(this.setup.invalidCrossingLineItemAtlasNotCrossingWaterBody(),
+                new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
+                                + "    \"lineItems.offending\": \"highway->footway,bridleway,steps,corridor,path\" }}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testInvalidWithinOuterMemberNoInteractionWithInnerMember()
     {
         this.verifier.actual(this.setup.invalidWithinOuterMemberNoInteractionWithInnerMember(),

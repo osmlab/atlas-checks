@@ -86,6 +86,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "embankment->yes|location->underwater,underground|power->line,minor_line|"
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|"
             + "ford->!no&ford->*";
+    private static final String DEFAULT_LINE_ITEMS_OFFENDING_CROSSING_ONLY = "highway->footway,bridleway,steps,corridor,path";
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
     private static final String BUILDING_TAGS_DO_NOT_FLAG = "waterway->dam|public_transport->station,platform|aerialway->station";
@@ -148,6 +149,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 6048659185833217159L;
     private final TaggableFilter canCrossWaterBodyFilter;
     private final TaggableFilter lineItemsOffending;
+    private final TaggableFilter lineItemsOffendingCrossingOnly;
     private final boolean flagBuildings;
     private final HighwayTag highwayMinimum;
     private final List<HighwayTag> highwaysExclude;
@@ -220,6 +222,9 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         super(configuration);
         this.lineItemsOffending = TaggableFilter
                 .forDefinition(this.configurationValue(configuration, "lineItems.offending", ""));
+        this.lineItemsOffendingCrossingOnly = TaggableFilter.forDefinition(
+                this.configurationValue(configuration, "lineItems.offending.crossing.only",
+                        DEFAULT_LINE_ITEMS_OFFENDING_CROSSING_ONLY));
         this.flagBuildings = this.configurationValue(configuration, "buildings.flag", false);
         this.canCrossWaterBodyFilter = TaggableFilter.forDefinition(this.configurationValue(
                 configuration, "lineItems.non_offending", DEFAULT_CAN_CROSS_WATER_BODY_TAGS));
@@ -361,6 +366,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             return false;
         }
 
+        if (intersectionLocations.size() == 1
+                && this.lineItemsOffendingCrossingOnly.test(crossingItem))
+        {
+            return false;
+        }
+
         // If a street node is at the water border, it should be tagged with any of
         // this.intersectingNodesNonoffending or be part of another edge that can cross a water body
         if (!((Edge) crossingItem).connectedNodes().stream()
@@ -417,6 +428,28 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 if (interactionsPerWaterbodyComponent.isEmpty())
                 {
                     return false;
+                }
+                // refer to: https://github.com/osmlab/atlas-checks/issues/561
+                else if (interactionsPerWaterbodyComponent.size() == 1
+                        && this.lineItemsOffendingCrossingOnly.test(lineItem))
+                {
+                    interactionsPerWaterbodyComponent.forEach(tuple ->
+                    {
+                        final Set<Location> interactionLocations = tuple.getSecond();
+                        // crossing only ones or touching.
+                        // ways with highway=steps may go inside waterbody.
+                        if (interactionLocations.size() == 1)
+                        {
+                            if (interactionLocations
+                                    .contains(((Edge) lineItem).start().iterator().next())
+                                    || interactionLocations
+                                            .contains(((Edge) lineItem).end().iterator().next())
+                                    || ((Edge) lineItem).highwayTag().getTagValue().equals("steps"))
+                            {
+                                validCrossWaterbody.getAndSet(true);
+                            }
+                        }
+                    });
                 }
                 else
                 {
