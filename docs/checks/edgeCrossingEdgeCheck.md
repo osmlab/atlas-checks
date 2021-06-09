@@ -41,6 +41,7 @@ Check Pedestrian-Navigable ways crossing with Car-Navigable and Pedestrian Navig
 * Must be a `MainEdge`
 * Must not be an `Area`
 * Must have not contain `level` tag. `level` tag primary usage for indoor mapping. [Level Tag](https://wiki.openstreetmap.org/wiki/Key:level)
+* Must have not contain `indoor` tag. `indoor` tag primary usage for indoor mapping. [Indoor Mapping](https://wiki.openstreetmap.org/wiki/Indoor_Mapping#Proposed_Tags)  
 * The check flags Edges that cross each other if they do not share the same node of intersection, or if none of the Edges have a _layer_ Tag. In addition, this check flags all Edges that cross the "candidate edge" Edge that is currently inspected by the check. The check inspects every Edge, creating duplicated flags when there are multiple Edges invalidly crossing each other.
 
 To learn more about the code, please look at the comments in the source code for the check.

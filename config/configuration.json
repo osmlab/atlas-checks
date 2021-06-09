@@ -276,6 +276,7 @@
     "pedestrian.navigable": false,
     "crossing.car.navigable": true,
     "crossing.pedestrian.navigable": false,
+    "indoor.mapping": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",

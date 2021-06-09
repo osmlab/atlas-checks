@@ -22,7 +22,7 @@ import org.openstreetmap.atlas.geography.atlas.walker.EdgeWalker;
 import org.openstreetmap.atlas.tags.AreaTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LayerTag;
-import org.openstreetmap.atlas.tags.LevelTag;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -70,6 +70,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private final boolean crossingPedestrianNavigable;
     private final HighwayTag minimumHighwayType;
     private final HighwayTag maximumHighwayType;
+    private static final String DEFAULT_INDOOR_MAPPING = "indoor->*|highway->corridor,steps|level->*";
+    private final TaggableFilter indoorMapping;
 
     /**
      * Checks whether given {@link PolyLine}s can cross each other.
@@ -113,6 +115,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 CROSSING_CAR_NAVIGABLE_DEFAULT);
         this.crossingPedestrianNavigable = this.configurationValue(configuration,
                 "crossing.pedestrian.navigable", CROSSING_PEDESTRIAN_NAVIGABLE_DEFAULT);
+        this.indoorMapping = TaggableFilter.forDefinition(
+                this.configurationValue(configuration, "indoor.mapping", DEFAULT_INDOOR_MAPPING));
     }
 
     @Override
@@ -281,7 +285,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         || (pedestrianNavigable && HighwayTag.isPedestrianNavigableHighway(edge)))
                 || (!carNavigable && !pedestrianNavigable
                         && (!HighwayTag.isCarNavigableHighway(edge)
-                                || !HighwayTag.isPedestrianNavigableHighway(edge)));
+                                && !HighwayTag.isPedestrianNavigableHighway(edge)));
     }
 
     /**
@@ -296,7 +300,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
             final boolean pedestrianNavigable)
     {
         if (((Edge) object).isMainEdge() && object.getTag(AreaTag.KEY).isEmpty()
-                && object.getTag(LevelTag.KEY).isEmpty())
+                && !this.indoorMapping.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
