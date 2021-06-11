@@ -437,17 +437,14 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                     {
                         final Set<Location> interactionLocations = tuple.getSecond();
                         // crossing only ones or touching.
-                        // ways with highway=steps may go inside waterbody.
-                        if (interactionLocations.size() == 1)
+                        // ways with highway=steps may go inside the waterbody.
+                        if (interactionLocations.size() == 1 && (interactionLocations
+                                .contains(((Edge) lineItem).start().iterator().next())
+                                || interactionLocations
+                                        .contains(((Edge) lineItem).end().iterator().next())
+                                || ((Edge) lineItem).highwayTag().getTagValue().equals("steps")))
                         {
-                            if (interactionLocations
-                                    .contains(((Edge) lineItem).start().iterator().next())
-                                    || interactionLocations
-                                            .contains(((Edge) lineItem).end().iterator().next())
-                                    || ((Edge) lineItem).highwayTag().getTagValue().equals("steps"))
-                            {
-                                validCrossWaterbody.getAndSet(true);
-                            }
+                            validCrossWaterbody.getAndSet(true);
                         }
                     });
                 }
