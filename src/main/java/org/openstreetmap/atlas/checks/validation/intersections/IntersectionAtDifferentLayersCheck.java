@@ -69,9 +69,8 @@ public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Node intersectingNode = (Node) object;
-        final List<Edge> connectedEdges = intersectingNode.connectedEdges().stream()
-                .filter(Edge::isMainEdge)
+        final Node node = (Node) object;
+        final List<Edge> connectedEdges = node.connectedEdges().stream().filter(Edge::isMainEdge)
                 .filter(obj -> HighwayTag.isCarNavigableHighway(obj)
                         || HighwayTag.isPedestrianNavigableHighway(obj))
                 .filter(obj -> obj.getTag(AreaTag.KEY).isEmpty()).collect(Collectors.toList());
@@ -84,8 +83,8 @@ public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
                                         && !this.isIndoorMappingFilter(edge2))
                                 && !LayerTag.areOnSameLayer(edge1, edge2)
                                 // must be an intermediate node for both ways.
-                                && (this.isInterLocationNode(edge1, intersectingNode)
-                                        && this.isInterLocationNode(edge2, intersectingNode))
+                                && (this.isInterLocationNode(edge1, node)
+                                        && this.isInterLocationNode(edge2, node))
                                 // one of the edge candidate must match GreatSeparation filter.
                                 && (this.isGreatSeparationFilter(edge1)
                                         || this.isGreatSeparationFilter(edge2)))))

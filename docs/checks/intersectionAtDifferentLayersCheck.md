@@ -33,4 +33,4 @@ Our second goal is to identify connected Edges.
 Flag Nodes that connect only matching highway types: "bridge->yes|tunnel->yes|embankment->yes|cutting->yes|ford->yes"; 
 
 To learn more about the code, please look at the comments in the source code for the check.
-[IntersectionAtDifferentLevelsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectionAtDifferentLayersCheck.java)
+[IntersectionAtDifferentLayersCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectionAtDifferentLayersCheck.java)
