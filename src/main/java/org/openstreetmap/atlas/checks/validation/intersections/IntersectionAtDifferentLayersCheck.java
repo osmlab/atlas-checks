@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.validation.intersections;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -29,7 +30,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
 {
     // Instructions
-    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways at different layers.";
+    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways {1} at different layers.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
     /*
@@ -75,22 +76,30 @@ public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
                         || HighwayTag.isPedestrianNavigableHighway(obj))
                 .filter(obj -> obj.getTag(AreaTag.KEY).isEmpty()).collect(Collectors.toList());
 
-        if (connectedEdges.size() > 1 && connectedEdges.stream()
-                .anyMatch(edge1 -> connectedEdges.stream()
-                        .anyMatch(edge2 -> edge1.getOsmIdentifier() != edge2.getOsmIdentifier()
-                                // both candidates must not have indoor mapping tags
-                                && (!this.isIndoorMappingFilter(edge1)
-                                        && !this.isIndoorMappingFilter(edge2))
-                                && !LayerTag.areOnSameLayer(edge1, edge2)
-                                // must be an intermediate node for both ways.
-                                && (this.isInterLocationNode(edge1, node)
-                                        && this.isInterLocationNode(edge2, node))
-                                // one of the edge candidate must match GreatSeparation filter.
-                                && (this.isGreatSeparationFilter(edge1)
-                                        || this.isGreatSeparationFilter(edge2)))))
+        if (connectedEdges.size() > 1)
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            final Set<Edge> edgesToReport = connectedEdges.stream()
+                    .filter(edge1 -> connectedEdges.stream()
+                            .anyMatch(edge2 -> edge1.getOsmIdentifier() != edge2.getOsmIdentifier()
+                                    // both candidates must not have indoor mapping tags
+                                    && (!this.isIndoorMappingFilter(edge1)
+                                            && !this.isIndoorMappingFilter(edge2))
+                                    && !LayerTag.areOnSameLayer(edge1, edge2)
+                                    // must be an intermediate node for both ways
+                                    && (this.isInterLocationNode(edge1, node)
+                                            && this.isInterLocationNode(edge2, node))
+                                    // one of the edge candidate must match GreatSeparation filter.
+                                    && (this.isGreatSeparationFilter(edge1)
+                                            || this.isGreatSeparationFilter(edge2))))
+                    .collect(Collectors.toSet());
+
+            if (!edgesToReport.isEmpty())
+            {
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                                edgesToReport.stream().map(AtlasObject::getOsmIdentifier)
+                                        .collect(Collectors.toList()))));
+            }
         }
 
         return Optional.empty();
