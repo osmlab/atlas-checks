@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -392,10 +392,10 @@
       "tags":"building"
     }
   },
-  "IntersectionAtDifferentLevelsCheck":
+  "IntersectionAtDifferentLayerCheck":
   {
-    "enabled": true,
     "great.separation.filter":"",
+    "indoor.mapping.filter": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
       "description": "Tasks containing Nodes that intersect Ways at different levels.",
       "blurb": "Invalid Nodes",

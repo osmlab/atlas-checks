@@ -26,17 +26,19 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  *
  * @author Vladimir Lemberg
  */
-public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
+public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
 {
     // Instructions
-    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways at different levels.";
+    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways at different layers.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
     /*
      * default filter is empty, however to minimize the scope for great separation cases only, use
      * below filter. example: "bridge->yes|tunnel->yes|embankment->yes|cutting->yes|ford->yes"
      */
+    private static final String INDOOR_MAPPING_DEFAULT = "indoor->*|highway->corridor,steps|level->*";
     private static final String GREAT_SEPARATION_FILTER_DEFAULT = "";
+    private final TaggableFilter indoorMappingFilter;
     private final TaggableFilter greatSeparationFilter;
     private static final long serialVersionUID = 5171171744111206429L;
 
@@ -46,9 +48,11 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
      * @param configuration
      *            {@link Configuration} required to construct any Check
      */
-    public IntersectionAtDifferentLevelsCheck(final Configuration configuration)
+    public IntersectionAtDifferentLayersCheck(final Configuration configuration)
     {
         super(configuration);
+        this.indoorMappingFilter = this.configurationValue(configuration, "indoor.mapping.filter",
+                INDOOR_MAPPING_DEFAULT, TaggableFilter::forDefinition);
         this.greatSeparationFilter = this.configurationValue(configuration,
                 "great.separation.filter", GREAT_SEPARATION_FILTER_DEFAULT,
                 TaggableFilter::forDefinition);
@@ -74,6 +78,9 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
         if (connectedEdges.size() > 1 && connectedEdges.stream()
                 .anyMatch(edge1 -> connectedEdges.stream()
                         .anyMatch(edge2 -> edge1.getOsmIdentifier() != edge2.getOsmIdentifier()
+                                // both candidates must not have indoor mapping tags
+                                && (!this.isIndoorMappingFilter(edge1)
+                                        && !this.isIndoorMappingFilter(edge2))
                                 && !LayerTag.areOnSameLayer(edge1, edge2)
                                 // must be an intermediate node for both ways.
                                 && (this.isInterLocationNode(edge1, node)
@@ -105,6 +112,18 @@ public class IntersectionAtDifferentLevelsCheck extends BaseCheck<Long>
     private boolean isGreatSeparationFilter(final Edge edge)
     {
         return this.greatSeparationFilter.test(edge);
+    }
+
+    /**
+     * Test {@link Edge} against Indoor Mapping filter.
+     *
+     * @param edge
+     *            Atlas object
+     * @return {@code true} if {@link Edge} matches the filter.
+     */
+    private boolean isIndoorMappingFilter(final Edge edge)
+    {
+        return this.indoorMappingFilter.test(edge);
     }
 
     /**
