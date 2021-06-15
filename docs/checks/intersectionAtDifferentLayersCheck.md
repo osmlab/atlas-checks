@@ -1,4 +1,4 @@
-# IntersectionAtDifferentLevelsCheck
+# IntersectionAtDifferentLayersCheck
 
 #### Description
 
@@ -23,13 +23,14 @@ Our first goal is to validate the incoming Atlas Object.
 * Must not be a Railway Level Crossing [OSM-wiki:railway=crossing](https://wiki.openstreetmap.org/wiki/Tag:railway%3Dcrossing).  
 
 Our second goal is to identify connected Edges. 
-* Must be a Main Edge
-* Must be a Car-navigable or Pedestrian-navigable highway type
+* Must be a Main Edge.
+* Must be a Car-navigable or Pedestrian-navigable highway type.
 * Must not be an Area.
+* Must not match Indoor Mapping filter. 
 * Must match Great Separation highway tag filter. Default is empty in configurations.json
 
 #### Great Separation Filter Example 
 Flag Nodes that connect only matching highway types: "bridge->yes|tunnel->yes|embankment->yes|cutting->yes|ford->yes"; 
 
 To learn more about the code, please look at the comments in the source code for the check.
-[IntersectionAtDifferentLevelsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectionAtDifferentLevelsCheck.java)
+[IntersectionAtDifferentLevelsCheck.java](../../src/main/java/org/openstreetmap/atlas/checks/validation/intersections/IntersectionAtDifferentLayersCheck.java)
