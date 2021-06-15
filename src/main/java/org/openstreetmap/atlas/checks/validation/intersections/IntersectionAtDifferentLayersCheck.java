@@ -70,7 +70,7 @@ public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Node node = (Node) object;
+        final var node = (Node) object;
         final List<Edge> connectedEdges = node.connectedEdges().stream().filter(Edge::isMainEdge)
                 .filter(obj -> HighwayTag.isCarNavigableHighway(obj)
                         || HighwayTag.isPedestrianNavigableHighway(obj))
