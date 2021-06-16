@@ -30,7 +30,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class IntersectionAtDifferentLayersCheck extends BaseCheck<Long>
 {
     // Instructions
-    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects two Ways {1} at different layers.";
+    private static final String INSTRUCTION_FORMAT = "The Node id {0,number,#} connects Ways {1} at different layers.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
     /*
