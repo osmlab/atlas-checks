@@ -424,6 +424,17 @@
       "tags":"building"
     }
   },
+  "IntersectionAtDifferentLayersCheck":
+  {
+    "great.separation.filter":"",
+    "indoor.mapping.filter": "indoor->*|highway->corridor,steps|level->*",
+    "challenge": {
+      "description": "Tasks containing Nodes that intersect Ways at different levels.",
+      "blurb": "Invalid Nodes",
+      "instruction": "Disconnect intersection by removing Node from one of the Way or remove incorrect layer tag",
+      "difficulty": "EASY"
+    }
+  },
   "InvalidAccessTagCheck":{
     "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
     "minimum.highway.type":"residential",
