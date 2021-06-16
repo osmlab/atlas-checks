@@ -4,12 +4,12 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
       "maximum": 1000.0,
-      "minimum": 50.0
+      "minimum": 100.0
     }
   },
   "SpikyBuildingCheck": {
@@ -1055,6 +1055,10 @@
       },
       "tags":"highway"
     }
+  },
+  "StreetNameCheck": {
+    "enabled": true,
+    "countries": ["DEU", "AUT", "SWE", "LIE"]
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
