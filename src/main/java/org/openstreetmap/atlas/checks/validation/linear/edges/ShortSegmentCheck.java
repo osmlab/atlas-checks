@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
@@ -13,6 +14,7 @@ import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.tags.BarrierTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
@@ -27,7 +29,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class ShortSegmentCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "This edge {0,number,#} is short (length < {1} m) and it is connected to node {2,number,#} that has less than {3} connections.");
+            "This segment from startNode {0,number,#} to endNode {1,number,#} on way {2,number,#} is short (length < {3} m) and node {4,number,#} has less than {5} connections.");
     // Length for an edge not to be defined as short
     private static final double MAXIMUM_LENGTH_DEFAULT = Distance.ONE_METER.asMeters();
     // Minimum valence for a node to not to flag
@@ -48,10 +50,11 @@ public class ShortSegmentCheck extends BaseCheck<Long>
      *            {@link Edge} to check the {@link Node}s of
      * @param valence
      *            the minimum number of main edges for the node to have an acceptable valence
-     * @return an {@link Optional} containing the first low valence node found
+     * @return an {@link Optional} containing startNode, endNode and the first low valence node
+     *         found
      */
-    private static Optional<Node> getConnectedNodesWithValenceLessThan(final Edge edge,
-            final long valence)
+    private static Optional<Triple<Node, Node, Node>> getConnectedNodesWithValenceLessThan(
+            final Edge edge, final long valence)
     {
         // go through each connected node of given edge
         for (final Node node : edge.connectedNodes())
@@ -72,7 +75,9 @@ public class ShortSegmentCheck extends BaseCheck<Long>
                                             .getOsmIdentifier() == edge.getOsmIdentifier())
                                     .count() > 1))
             {
-                return Optional.of(node);
+                final Triple<Node, Node, Node> edgeNodes = Triple.of(edge.start(), edge.end(),
+                        node);
+                return Optional.of(edgeNodes);
             }
         }
         return Optional.empty();
@@ -111,15 +116,17 @@ public class ShortSegmentCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Optional<Node> lowValenceNodes = getConnectedNodesWithValenceLessThan(edge,
-                this.minimumValence);
-        if (lowValenceNodes.isPresent() && !this.isGateLike((Edge) object))
+        final Optional<Triple<Node, Node, Node>> lowValenceNodes = getConnectedNodesWithValenceLessThan(
+                edge, this.minimumValence);
+        if (lowValenceNodes.isPresent() && !this.isGateLike((Edge) object)
+                && !this.isEdgeWithSyntheticBoundaryNode(edge))
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getIdentifier(),
-                            this.maximumLength.asMeters(), lowValenceNodes.get().getIdentifier(),
-                            this.minimumValence),
-                    Collections.singletonList(lowValenceNodes.get().getLocation())));
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                    lowValenceNodes.get().getLeft().getOsmIdentifier(),
+                    lowValenceNodes.get().getMiddle().getOsmIdentifier(), object.getOsmIdentifier(),
+                    this.maximumLength.asMeters(),
+                    lowValenceNodes.get().getRight().getOsmIdentifier(), this.minimumValence),
+                    Collections.singletonList(lowValenceNodes.get().getRight().getLocation())));
         }
         return Optional.empty();
     }
@@ -128,6 +135,19 @@ public class ShortSegmentCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Checks if {@link Edge} contains synthetic boundary Node
+     *
+     * @param edge
+     *            the {@link Edge} to check
+     * @return true if edge contains synthetic boundary Node.
+     */
+    private boolean isEdgeWithSyntheticBoundaryNode(final Edge edge)
+    {
+        return edge.connectedNodes().stream()
+                .anyMatch(SyntheticBoundaryNodeTag::isSyntheticBoundaryNode);
     }
 
     /**

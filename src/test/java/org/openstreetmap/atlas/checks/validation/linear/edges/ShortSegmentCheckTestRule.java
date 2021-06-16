@@ -161,6 +161,19 @@ public class ShortSegmentCheckTestRule extends CoreTestRule
                                     HIGHWAY_RESIDENTIAL }) })
     private Atlas shortSegmentWithOneValence2NodeOneBarrierNodeAtlas;
 
+    @TestAtlas(nodes = {
+            @Node(coordinates = @Loc(value = COMPANY_STORE), tags = {
+                    "synthetic_boundary_node=yes" }),
+            @Node(coordinates = @Loc(value = A_LOCATION_CLOSE_TO_COMPANY_STORE_1)),
+            @Node(coordinates = @Loc(value = ALVES_CAFFE)) }, edges = {
+                    @Edge(id = "444342903000000", coordinates = { @Loc(value = COMPANY_STORE),
+                            @Loc(value = A_LOCATION_CLOSE_TO_COMPANY_STORE_1) }, tags = {
+                                    HIGHWAY_RESIDENTIAL }),
+                    @Edge(id = "444342904000000", coordinates = { @Loc(value = ALVES_CAFFE),
+                            @Loc(value = A_LOCATION_CLOSE_TO_COMPANY_STORE_1) }, tags = {
+                                    HIGHWAY_RESIDENTIAL }) })
+    private Atlas shortSegmentWithOneValence2NodeOneSyntheticBoundaryNodeAtlas;
+
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
             @Node(coordinates = @Loc(value = A_LOCATION_CLOSE_TO_COMPANY_STORE_1)),
             @Node(coordinates = @Loc(value = A_LOCATION_CLOSE_TO_COMPANY_STORE_2)),
@@ -230,6 +243,11 @@ public class ShortSegmentCheckTestRule extends CoreTestRule
         return this.shortSegmentWithOneValence2NodeOneBarrierNodeAtlas;
     }
 
+    public Atlas shortSegmentWithOneValence2NodeOneSyntheticBoundaryNodeAtlas()
+    {
+        return this.shortSegmentWithOneValence2NodeOneSyntheticBoundaryNodeAtlas;
+    }
+
     public Atlas shortSegmentWithTwoValence1NodesAtlas()
     {
         return this.shortSegmentWithTwoValence1NodesAtlas;
@@ -249,4 +267,5 @@ public class ShortSegmentCheckTestRule extends CoreTestRule
     {
         return this.shortSegmentsWithValence1And2NodesAtlas;
     }
+
 }
