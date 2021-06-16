@@ -128,6 +128,8 @@ public final class OpenStreetMapCheckFlagConverter
                     final Optional<PolyLine> concatenatedAfterPolyline = entry.getValue().stream()
                             .map(FeatureChange::getAfterView)
                             .sorted(Comparator.comparing(AtlasEntity::getIdentifier))
+                            // Removed edges may not have a polyline
+                            .filter(entity -> ((Edge) entity).asPolyLine() != null)
                             .map(entity -> ((Edge) entity).asPolyLine()).reduce(PolyLine::append);
                     if (concatenatedBeforePolyline.isPresent()
                             && concatenatedAfterPolyline.isPresent())

@@ -354,11 +354,16 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
         {
             return Optional.empty();
         }
+        // Get the OSC if present
+        final Optional<String> osc = Optional.ofNullable(fixSuggestion.get("osc"))
+                .map(JsonElement::getAsString);
         // Create a remove FeatureChange from a shallow copy of the before view
         if (ChangeDescriptorType.REMOVE.equals(suggestionType))
         {
-            return Optional.of(new FeatureChange(ChangeType.REMOVE,
-                    CompleteEntity.shallowFrom(beforeView), beforeView));
+            final FeatureChange featureChange = new FeatureChange(ChangeType.REMOVE,
+                    CompleteEntity.shallowFrom(beforeView), beforeView);
+            osc.ifPresent(featureChange::withOsc);
+            return Optional.of(featureChange);
         }
 
         // Create a full copy for the after view
@@ -402,6 +407,9 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
             this.applyGeometryChanges(afterView, geometryChangeDescriptors);
         }
 
-        return Optional.of(new FeatureChange(ChangeType.ADD, (AtlasEntity) afterView, beforeView));
+        final var featureChange = new FeatureChange(ChangeType.ADD, (AtlasEntity) afterView,
+                beforeView);
+        osc.ifPresent(featureChange::withOsc);
+        return Optional.of(featureChange);
     }
 }

@@ -101,6 +101,7 @@ dependencies
 
     // Support Junit 5 tests
     testImplementation packages.junit.api
+    testImplementation packages.junit.params
     testRuntimeOnly packages.junit.engine
     // Support JUnit 3/4 tests
     testCompileOnly packages.junit.junit4

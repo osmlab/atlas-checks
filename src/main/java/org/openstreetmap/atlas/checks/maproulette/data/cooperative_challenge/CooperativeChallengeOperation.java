@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescription;
 import org.openstreetmap.atlas.geography.atlas.change.description.ChangeDescriptorType;
 import org.openstreetmap.atlas.geography.atlas.change.description.descriptors.ChangeDescriptor;
@@ -13,16 +14,17 @@ import com.google.gson.JsonObject;
 
 /***
  * This represents an operation that is embedded in a cooperative challenge. Example: Given a
- * FeatureCollection geojson uploaded to MapRoulette:
- * 
+ * FeatureCollection geojson uploaded to MapRoulette: <br>
+ * For Tag changes:
+ *
  * <pre>
  * {
  *   "type": "FeatureCollection",
  *   "features": [ ... ],            // omitted for readability
- *   "cooperativeWork": {            // special `cooperativeWork` property
+ *   "cooperativeWork": {            // special `cooperativeWork` property
  *     "meta": {
- *       "version": 2,               // must be format version `2`
- *       "type": 1                   // `1` for tag fix type
+ *       "version": 2,               // must be format version `2`
+ *       "type": 1                   // `1` for tag fix type
  *     },
  *     "operations": [               // Operations section (see below)
  *       ...
@@ -30,7 +32,28 @@ import com.google.gson.JsonObject;
  *   }
  * }
  * </pre>
- * 
+ *
+ * For geometry changes:
+ *
+ * <pre>
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [ ... ],            // omitted for readability
+ *   "cooperativeWork": {            // special `cooperativeWork` property
+ *     "meta": {
+ *       "version": 2,               // must be format version `2`
+ *       "type": 2                   // `2` for change file type
+ *     },
+ *     "file": {                     // Operations section (see below)
+ *       "type": "xml",              // only xml is supported at this time
+ *       "format": "osc",            // only osc is supported at this time
+ *       "encoding": "base64",       // only base64 is supported at this time
+ *       "content": "..."            // The base64 encoded OSC file
+ *     }
+ *   }
+ * }
+ * </pre>
+ *
  * This class is an abstract representation of the json material to be found under "operations". Its
  * subclasses should handle the various ChangeDescriptor types, including GeometryChangeDescriptor,
  * LongElementChangeDescriptor, RelationMemberChangeDescriptor, TagChangeDescriptor
@@ -50,6 +73,35 @@ public abstract class CooperativeChallengeOperation
     protected static final String OPERATION_KEY = "operation";
     private static final String DELIMITER = "/";
     private static final int ATLAS_SECTIONING_IDENTIFIER_LENGTH = 6;
+
+    /**
+     * Get the appropriate change operation class
+     *
+     * @param changeDescription
+     *            The change descriptor
+     * @return A class appropriate for the change descriptor
+     */
+    public static Class<? extends CooperativeChallengeOperation> getAppropriateChangeOperation(
+            final ChangeDescription changeDescription)
+    {
+        for (final ChangeDescriptor changeDescriptor : changeDescription.getChangeDescriptors())
+        {
+            switch (changeDescriptor.getName())
+            {
+                case GEOMETRY:
+                    // GEOMETRY requires OSC, which covers just about everything else.
+                    return GeometryChangeOperation.class;
+                case TAG:
+                    break;
+                default:
+                    throw new CoreException(
+                            "No cooperative challenge converter is available for {0}",
+                            changeDescriptor.getName());
+            }
+        }
+        return changeDescription.getOsc().isPresent() ? GeometryChangeOperation.class
+                : TagChangeOperation.class;
+    }
 
     /**
      * Return the string representation of the OSM data type best representing the itemType
@@ -114,5 +166,4 @@ public abstract class CooperativeChallengeOperation
     {
         this.json = json;
     }
-
 }
