@@ -156,6 +156,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private final TaggableFilter intersectingNodesNonoffending;
     private final long shapepointsMin;
     private final long shapepointsMax;
+    private final AtomicBoolean validCrossWaterbody = new AtomicBoolean();
 
     /**
      * Checks if the relation has permitlisted tags that makes its members cross water bodies
@@ -423,7 +424,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent = this
                         .getInteractionsPerWaterbodyComponent(waterbody, object,
                                 lineItem.asPolyLine(), flag);
-                final AtomicBoolean validCrossWaterbody = new AtomicBoolean(true);
+                this.validCrossWaterbody.getAndSet(true);
                 // Just need to see if the intersection points are allowed in OSM; if not flag them
                 if (interactionsPerWaterbodyComponent.isEmpty())
                 {
@@ -433,20 +434,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 else if (interactionsPerWaterbodyComponent.size() == 1
                         && this.lineItemsOffendingCrossingOnly.test(lineItem))
                 {
-                    interactionsPerWaterbodyComponent.forEach(tuple ->
-                    {
-                        final Set<Location> interactionLocations = tuple.getSecond();
-                        // crossing only ones or touching.
-                        // ways with highway=steps may go inside the waterbody.
-                        if (interactionLocations.size() == 1 && (interactionLocations
-                                .contains(((Edge) lineItem).start().iterator().next())
-                                || interactionLocations
-                                        .contains(((Edge) lineItem).end().iterator().next())
-                                || ((Edge) lineItem).highwayTag().getTagValue().equals("steps")))
-                        {
-                            validCrossWaterbody.getAndSet(true);
-                        }
-                    });
+                    this.handlingFootPath(interactionsPerWaterbodyComponent, lineItem);
                 }
                 else
                 {
@@ -458,11 +446,11 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                         }
                         else
                         {
-                            validCrossWaterbody.getAndSet(false);
+                            this.validCrossWaterbody.getAndSet(false);
                         }
                     });
                 }
-                return !validCrossWaterbody.get();
+                return !this.validCrossWaterbody.get();
             }
             return false;
         });
@@ -535,6 +523,33 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 
         membersIntersections.forEach(tuple -> tuple.getSecond().forEach(flag::addPoint));
         return membersIntersections;
+    }
+
+    /**
+     *
+     * @param interactionsPerWaterbodyComponent
+     *
+     * @param lineItem
+     *
+     */
+    private void handlingFootPath(
+            final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent,
+            final AtlasObject lineItem)
+    {
+        interactionsPerWaterbodyComponent.forEach(tuple ->
+        {
+            final Set<Location> interactionLocations = tuple.getSecond();
+            // crossing only ones or touching.
+            // ways with highway=steps may go inside the waterbody.
+            if (interactionLocations.size() == 1
+                    && (interactionLocations.contains(((Edge) lineItem).start().iterator().next())
+                            || interactionLocations
+                                    .contains(((Edge) lineItem).end().iterator().next())
+                            || ((Edge) lineItem).highwayTag().getTagValue().equals("steps")))
+            {
+                this.validCrossWaterbody.getAndSet(true);
+            }
+        });
     }
 
     /**
