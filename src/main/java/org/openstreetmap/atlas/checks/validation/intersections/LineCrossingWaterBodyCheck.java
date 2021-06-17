@@ -526,11 +526,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     /**
-     *
      * @param interactionsPerWaterbodyComponent
-     *
      * @param lineItem
-     *
      */
     private void handlingFootPath(
             final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent,
