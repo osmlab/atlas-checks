@@ -21,6 +21,7 @@ import org.openstreetmap.atlas.tags.AccessTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LandUseTag;
 import org.openstreetmap.atlas.tags.MilitaryTag;
+import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -74,7 +75,8 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     {
         return AccessTag.isNo(object) && ((object instanceof Edge) || (object instanceof Line))
                 && Edge.isMainEdgeIdentifier(object.getIdentifier())
-                && !this.isFlagged(object.getOsmIdentifier()) && this.isMinimumHighway(object);
+                && !this.isFlagged(object.getOsmIdentifier()) && this.isMinimumHighway(object)
+                && !this.hasBoundaryNode(object);
     }
 
     /**
@@ -107,6 +109,19 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Checks if {@link AtlasObject} contains synthetic boundary Node
+     *
+     * @param object
+     *            the {@link AtlasObject} to check
+     * @return true if edge contains synthetic boundary Node.
+     */
+    private boolean hasBoundaryNode(final AtlasObject object)
+    {
+        return object instanceof Edge && ((Edge) object).connectedNodes().stream()
+                .anyMatch(SyntheticBoundaryNodeTag::isBoundaryNode);
     }
 
     /**
