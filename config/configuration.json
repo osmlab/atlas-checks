@@ -1058,7 +1058,7 @@
   },
   "StreetNameCheck": {
     "enabled": true,
-    "countries": ["DEU", "AUT", "SWE", "LIE"]
+    "country": "LIE"
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
