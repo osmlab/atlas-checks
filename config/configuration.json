@@ -279,6 +279,12 @@
   },
   "EdgeCrossingEdgeCheck": {
     "minimum.highway.type": "no",
+    "maximum.highway.type": "motorway",
+    "car.navigable": true,
+    "pedestrian.navigable": false,
+    "crossing.car.navigable": true,
+    "crossing.pedestrian.navigable": false,
+    "indoor.mapping": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
@@ -416,6 +422,17 @@
       "instruction": "Correct intersecting buildings by moving them or dissolving one into another.",
       "difficulty": "NORMAL",
       "tags":"building"
+    }
+  },
+  "IntersectionAtDifferentLayersCheck":
+  {
+    "great.separation.filter":"",
+    "indoor.mapping.filter": "indoor->*|highway->corridor,steps|level->*",
+    "challenge": {
+      "description": "Tasks containing Nodes that intersect Ways at different levels.",
+      "blurb": "Invalid Nodes",
+      "instruction": "Disconnect intersection by removing Node from one of the Way or remove incorrect layer tag",
+      "difficulty": "EASY"
     }
   },
   "InvalidAccessTagCheck":{
