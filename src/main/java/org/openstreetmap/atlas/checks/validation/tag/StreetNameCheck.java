@@ -63,8 +63,6 @@ public class StreetNameCheck extends BaseCheck
     {
         super(configuration);
 
-//        private static final String FALLBACK_INSTRUCTIONS = "The object with OSM ID {0,number,#} with a street_name {1} contains character {2}";
-
         this.countries = (List<String>) this.configurationValue(configuration, "check.countries", COUNTRY_DEFAULT);
         this.containsTags = (List<List<String>>) this.configurationValue(configuration,
                 "check.containsTags", CONTAINS_TAGS_DEFAULT);
@@ -117,6 +115,7 @@ public class StreetNameCheck extends BaseCheck
         final String objectISO = object.tag(ISOCountryTag.KEY);
         final int objectIndex = this.countries.indexOf(objectISO);
 
+        // a list of <ObjectType> that contains all important tags for the object's ISO.
         final CountryInfo countryInfo = new CountryInfo(this.containsTags.get(objectIndex),
                 this.notContainsTags.get(objectIndex), this.deprecatedTags.get(objectIndex), this.tags.get(objectIndex));
 
@@ -124,10 +123,12 @@ public class StreetNameCheck extends BaseCheck
 
         this.markAsFlagged(object.getOsmIdentifier());
 
+        // the item contains a flagged tag but does not contain a tag that isn't to be flagged
         if (containsTags.get(0) != null && containsTags.get(1) == null) {
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, containsTags.get(0))));
         }
 
+        // the item contains a deprecated tag
         if (containsTags.get(2) != null) {
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1, containsTags.get(2))));
         }
@@ -138,6 +139,16 @@ public class StreetNameCheck extends BaseCheck
     @Override
     protected List<String> getFallbackInstructions() { return FALLBACK_INSTRUCTIONS; }
 
+    /**
+     * This is the actual function that will check to see whether the object needs to be flagged.
+     *
+     * @param object
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     * @param countryInfo
+     *            the countryInfo object that contains all the tags needed for flagging
+     * @return an array that contains tags that have been found at their appropriate indeces: 0 = contains tag,
+     *         1 = not contains tag, 2 = tag is deprecated
+     */
     private ArrayList<String> objectContainsTag(final AtlasObject object, final CountryInfo countryInfo) {
         final Map<String, String> tags = object.getTags();
         String street_tag = tags.get(AddressStreetTag.KEY);
@@ -158,6 +169,9 @@ public class StreetNameCheck extends BaseCheck
                         || (name_tag != null && name_tag.toLowerCase().contains(tag))) {
                     contains.add(0, tag);
                 }
+                else{
+                    contains.add(0, null);
+                }
             }
         }
         else {
@@ -171,6 +185,9 @@ public class StreetNameCheck extends BaseCheck
                         || (name_tag != null && name_tag.toLowerCase().contains(notTag))) {
                     contains.add(1, notTag);
                 }
+                else{
+                    contains.add(1, null);
+                }
             }
         }
         else {
@@ -182,6 +199,9 @@ public class StreetNameCheck extends BaseCheck
                 String deprecatedTag = deprecatedTags.get(i);
                 if (type_tag.toLowerCase().contains(deprecatedTag)) {
                     contains.add(2, deprecatedTag);
+                }
+                else{
+                    contains.add(2, null);
                 }
             }
         }
