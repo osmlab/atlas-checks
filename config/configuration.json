@@ -1058,7 +1058,13 @@
   },
   "StreetNameCheck": {
     "enabled": true,
-    "country": "LIE"
+    "check" : {
+      "countries" : ["AUT", "CHE", "DEU", "LIE"],
+      "containsTags" : [["strasse"],["stra\u00dfe"],["strasse"],["stra\u00dfe"]],
+      "notContainsTags" : [["strasser"],[],["strasser"],[]],
+      "deprecatedTags" : [[], [], ["AssociatedStreet"], []],
+      "tags" : [["ss"],["\u00df"],["ss"],["\u00df"]]
+    }
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
