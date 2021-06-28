@@ -156,7 +156,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private final TaggableFilter intersectingNodesNonoffending;
     private final long shapepointsMin;
     private final long shapepointsMax;
-    private final AtomicBoolean validCrossWaterbody = new AtomicBoolean();
+    private final AtomicBoolean validCrossWaterbody;
 
     /**
      * Checks if the relation has permitlisted tags that makes its members cross water bodies
@@ -243,6 +243,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 SHAPEPOINTS_MIN_DEFAULT);
         this.shapepointsMax = this.configurationValue(configuration, "shapepoints.max",
                 SHAPEPOINTS_MAX_DEFAULT);
+        this.validCrossWaterbody = new AtomicBoolean();
     }
 
     @Override
@@ -526,8 +527,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     /**
+     * Handling footpath cases: https://github.com/osmlab/atlas-checks/issues/561
      * @param interactionsPerWaterbodyComponent
+     *      Set of Locations that crossing a waterbody
      * @param lineItem
+     *      Atlas line entity
+     * @return true if footpath crossing waterbody only ones. case highway=steps may go inside waterbody.
      */
     private void handlingFootPath(
             final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent,
