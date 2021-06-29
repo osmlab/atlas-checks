@@ -91,6 +91,102 @@
           ]
         }
       ]
-    }
+    },
+    {
+      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by semicolons.",
+      "regex": [";"],      
+      "tagNames": [
+        "addr:street",
+        "highway",
+        "lanes",
+        "maxspeed",
+        "name",
+        "surface",
+        "telecom:medium",
+        "water", "waterway"
+      ],      
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} BEGINS WITH semicolons.",
+      "regex": ["^;"],
+      "tagNames": [
+        "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
+        "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
+        "covered", "craft", "crossing", "cuisine", "cutting",
+        "disused", "drive_in", "drive_through",
+        "electrified", "embankment", "emergency",
+        "fenced", "foot", "ford",
+        "geological", "goods",
+        "hgv", "highway", "historic",
+        "internet_access",
+        "landuse", "lanes", "leisure",
+        "man_made", "military", "mooring", "motorboat", "mountain_pass", "name", "natural", "noexit", "note",
+        "office",
+        "power", "public_transport",
+        "railway", "route",
+        "sac_scale", "service", "shop", "smoothness", "source", "source_ref", "sport", "surface",
+        "tactile_paving", "toll", "tourism", "tracktype", "traffic_calming", "trail_visibility",
+        "tunnel",
+        "usage",
+        "vehicle",
+        "wall", "waterway", "wheelchair", "wood"
+      ],          
+      "exceptions": []
+    },    
+    {
+      "instruction": "The tag: {0} ENDS WITH semicolons.",
+      "regex": [";$"],
+      "tagNames": [
+        "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
+        "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
+        "covered", "craft", "crossing", "cuisine", "cutting",
+        "disused", "drive_in", "drive_through",
+        "electrified", "embankment", "emergency",
+        "fenced", "foot", "ford",
+        "geological", "goods",
+        "hgv", "highway", "historic",
+        "internet_access",
+        "landuse", "lanes", "leisure",
+        "man_made", "military", "mooring", "motorboat", "mountain_pass", "name", "natural", "noexit", "note",
+        "office",
+        "power", "public_transport",
+        "railway", "route",
+        "sac_scale", "service", "shop", "smoothness", "source", "source_ref", "sport", "surface",
+        "tactile_paving", "toll", "tourism", "tracktype", "traffic_calming", "trail_visibility",
+        "tunnel",
+        "usage",
+        "vehicle",
+        "wall", "waterway", "wheelchair", "wood"
+      ],          
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains EMPTY SPACE in between semicolons.",
+      "regex": [";\\s*;"],
+      "tagNames": [
+        "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
+        "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
+        "covered", "craft", "crossing", "cuisine", "cutting",
+        "disused", "drive_in", "drive_through",
+        "electrified", "embankment", "emergency",
+        "fenced", "foot", "ford",
+        "geological", "goods",
+        "hgv", "highway", "historic",
+        "internet_access",
+        "landuse", "lanes", "leisure",
+        "man_made", "military", "mooring", "motorboat", "mountain_pass", "name", "natural", "noexit", "note",
+        "office",
+        "power", "public_transport",
+        "railway", "route",
+        "sac_scale", "service", "shop", "smoothness", "source", "source_ref", "sport", "surface",
+        "tactile_paving", "toll", "tourism", "tracktype", "traffic_calming", "trail_visibility",
+        "tunnel",
+        "usage",
+        "vehicle",
+        "wall", "waterway", "wheelchair", "wood"
+      ],             
+      "exceptions": []
+    }    
   ]
 }
