@@ -528,11 +528,11 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 
     /**
      * Handling footpath cases: https://github.com/osmlab/atlas-checks/issues/561
+     * 
      * @param interactionsPerWaterbodyComponent
-     *      Set of Locations that crossing a waterbody
+     *            Set of Locations that crossing a waterbody
      * @param lineItem
-     *      Atlas line entity
-     * @return true if footpath crossing waterbody only ones. case highway=steps may go inside waterbody.
+     *            Atlas line entity
      */
     private void handlingFootPath(
             final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent,
