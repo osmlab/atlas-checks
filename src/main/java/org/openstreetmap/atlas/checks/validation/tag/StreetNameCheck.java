@@ -18,8 +18,10 @@ import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Auto generated Check template
- * INCLUDE THE DESCRIPTION
+ * Flags different values (ie "ss", "\u00df", or deprecated tags) for each country specified. Config file contains
+ * all the tags required to tag or not to tag specified for each country. The check looks at the object's ISO code and
+ * then pulls all the needed tags for that country from configuration.json .
+ *
  * @author v-naydinyan
  */
 public class StreetNameCheck extends BaseCheck<Long>
@@ -125,7 +127,7 @@ public class StreetNameCheck extends BaseCheck<Long>
             }
 
             // the item contains a deprecated tag
-            if (!allValuesFoundInObject.get(2).isEmpty()) {
+            if ((allValuesFoundInObject.get(2) != null) && !allValuesFoundInObject.get(2).isEmpty()) {
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1, allValuesFoundInObject.get(2))));
             }
         }
@@ -147,6 +149,8 @@ public class StreetNameCheck extends BaseCheck<Long>
      */
     private ArrayList<ArrayList<String>> objectContainsValues(final AtlasObject object, final CountryInfo countryInfo) {
         final Map<String, String> tags = object.getTags();
+        String objectISO = tags.get(ISOCountryTag.KEY);
+        String deprecatedValueCountry = "DEU";
         String streetTag = tags.get(AddressStreetTag.KEY);
         String nameTag = tags.get(NameTag.KEY);
         String typeTag = tags.get(RelationTypeTag.KEY);
@@ -158,7 +162,13 @@ public class StreetNameCheck extends BaseCheck<Long>
         final ArrayList<ArrayList<String>> contains = new ArrayList<>(3);
         contains.add(0, findValuesToFlag(streetTag, nameTag, valuesToFlag));
         contains.add(1, findValuesToNotFlag(streetTag, nameTag, valuesToNotFlag));
-        contains.add(2, findDeprecatedValuesToFlag(typeTag, deprecatedValuesToFlag));
+
+        if (objectISO.equalsIgnoreCase(deprecatedValueCountry)) {
+            contains.add(2, findDeprecatedValuesToFlag(typeTag, deprecatedValuesToFlag));
+        }
+        else {
+            contains.add(2, null);
+        }
 
         return contains;
     }
@@ -225,7 +235,7 @@ public class StreetNameCheck extends BaseCheck<Long>
         ArrayList<String> deprecatedValuesToFlagInObject = new ArrayList<>();
         if (!deprecatedTags.isEmpty() && (typeTag != null)) {
             deprecatedTags.forEach(tag -> {
-                if (typeTag.toLowerCase().contains(String.valueOf(tag))) {
+                if (typeTag.toLowerCase().contains(String.valueOf(tag.toLowerCase()))) {
                     deprecatedValuesToFlagInObject.add(String.valueOf(tag));
                 }
             });

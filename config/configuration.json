@@ -1060,9 +1060,9 @@
     "enabled": true,
     "check" : {
       "countries" : ["AUT", "CHE", "DEU", "LIE"],
-      "containsTags" : [["strasse"],["stra\u00dfe"],["strasse"],["stra\u00dfe"]],
-      "notContainsTags" : [["strasser"],[],["strasser"],[]],
-      "deprecatedTags" : [[], [], ["AssociatedStreet"], []],
+      "containsValues" : [["strasse"],["stra\u00dfe"],["strasse"],["stra\u00dfe"]],
+      "notContainsValues" : [["strasser"],[],["strasser"],[]],
+      "deprecatedValues" : [[], [], ["AssociatedStreet"], []],
       "tags" : [["ss"],["\u00df"],["ss"],["\u00df"]]
     }
   },
