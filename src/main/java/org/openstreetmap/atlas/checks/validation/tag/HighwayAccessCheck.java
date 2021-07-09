@@ -12,11 +12,13 @@ import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * FIXME: include description
+ * HighwayAccessCheck looks for ways that contain the access tag "yes" or "permissive". If the access tag is found, then
+ * the highway tag is also checked. Finally, the object is flagged if the highway tag is found in either motorway tags
+ * or in the footway tags provided in the beginning.
  *
  * @author v-naydinyan
  */
-public class HighwayAccessCheck extends BaseCheck
+public class HighwayAccessCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = -5533238262833368666L;
@@ -36,16 +38,14 @@ public class HighwayAccessCheck extends BaseCheck
      * checks with this constructor, supplying a configuration that can be used to adjust any
      * parameters that the check uses during operation.
      *
+     * There are no internal variables
+     *
      * @param configuration
      *            the JSON configuration for this check
      */
     public HighwayAccessCheck(final Configuration configuration)
     {
         super(configuration);
-        // any internal variables can be set here from configuration
-        // eg. MAX_LENGTH could be defined as "public static final double MAX_LENGTH = 100;"
-        // this.maxLength = configurationValue(configuration, "length.max", MAX_LENGTH,
-        // Distance::meters);
     }
 
     /**
@@ -82,17 +82,22 @@ public class HighwayAccessCheck extends BaseCheck
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // insert algorithmic check to see whether object needs to be flagged.
-        // Example of flagging an object
-        // return Optional.of(this.createFlag(object, "Instruction how to fix issue or reason behind
-        // flagging the object");
         this.markAsFlagged(object.getOsmIdentifier());
 
-        if (checkAccessTag(object)) {
-            if (checkMotorwayHighwayTag(object)) {
+        String accessTag = object.tag(AccessTag.KEY);
+        String highwayTag = object.tag(HighwayTag.KEY);
+
+        //Check is the access tag is yes or permissive
+        if (AccessTagsToFlag.contains(accessTag))
+        {
+            //Checks if the highway tag is in the motorway tags provided above
+            if (MotorwayHighwayTags.contains(highwayTag))
+            {
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
             }
-            if (checkFootwayHighwayTag(object)) {
+            //Checks if the highway tag is in the footway tags provided above
+            if (FootwayHighwayTags.contains(highwayTag))
+            {
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1)));
             }
         }
@@ -102,33 +107,4 @@ public class HighwayAccessCheck extends BaseCheck
     @Override
     protected List<String> getFallbackInstructions() { return FALLBACK_INSTRUCTIONS; }
 
-    /**
-     * FIXME
-     * @param object
-     * @return
-     */
-    private boolean checkAccessTag(final AtlasObject object) {
-        String accessTag = object.tag(AccessTag.KEY);
-        return AccessTagsToFlag.contains(accessTag);
-    }
-
-    /**
-     * FIXME
-     * @param object
-     * @return
-     */
-    private boolean checkMotorwayHighwayTag(final AtlasObject object) {
-        String highwayTag = object.tag(HighwayTag.KEY);
-        return MotorwayHighwayTags.contains(highwayTag);
-    }
-
-    /**
-     * FIXME
-     * @param object
-     * @return
-     */
-    private boolean checkFootwayHighwayTag(final AtlasObject object) {
-        String highwayTag = object.tag(HighwayTag.KEY);
-        return FootwayHighwayTags.contains(highwayTag);
-    }
 }
