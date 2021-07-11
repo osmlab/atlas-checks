@@ -156,7 +156,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private final TaggableFilter intersectingNodesNonoffending;
     private final long shapepointsMin;
     private final long shapepointsMax;
-    private final AtomicBoolean validCrossWaterbody;
 
     /**
      * Checks if the relation has permitlisted tags that makes its members cross water bodies
@@ -243,7 +242,6 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 SHAPEPOINTS_MIN_DEFAULT);
         this.shapepointsMax = this.configurationValue(configuration, "shapepoints.max",
                 SHAPEPOINTS_MAX_DEFAULT);
-        this.validCrossWaterbody = new AtomicBoolean();
     }
 
     @Override
@@ -425,33 +423,31 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent = this
                         .getInteractionsPerWaterbodyComponent(waterbody, object,
                                 lineItem.asPolyLine(), flag);
-                this.validCrossWaterbody.getAndSet(true);
+                final AtomicBoolean validCrossWaterbody = new AtomicBoolean(true);
                 // Just need to see if the intersection points are allowed in OSM; if not flag them
                 if (interactionsPerWaterbodyComponent.isEmpty())
                 {
                     return false;
                 }
-                // refer to: https://github.com/osmlab/atlas-checks/issues/561
-                else if (interactionsPerWaterbodyComponent.size() == 1
-                        && this.lineItemsOffendingCrossingOnly.test(lineItem))
+
+                if (this.isAllowedFootPath(interactionsPerWaterbodyComponent, lineItem))
                 {
-                    this.handlingFootPath(interactionsPerWaterbodyComponent, lineItem);
+                    return false;
                 }
-                else
+
+                interactionsPerWaterbodyComponent.forEach(tuple ->
                 {
-                    interactionsPerWaterbodyComponent.forEach(tuple ->
+                    if (this.canCrossWaterBody(lineItem, waterbody, tuple))
                     {
-                        if (this.canCrossWaterBody(lineItem, waterbody, tuple))
-                        {
-                            flag.getPoints().removeIf(point -> tuple.getSecond().contains(point));
-                        }
-                        else
-                        {
-                            this.validCrossWaterbody.getAndSet(false);
-                        }
-                    });
-                }
-                return !this.validCrossWaterbody.get();
+                        flag.getPoints().removeIf(point -> tuple.getSecond().contains(point));
+                    }
+                    else
+                    {
+                        validCrossWaterbody.getAndSet(false);
+                    }
+                });
+
+                return !validCrossWaterbody.get();
             }
             return false;
         });
@@ -527,31 +523,38 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     }
 
     /**
-     * Handling footpath cases: https://github.com/osmlab/atlas-checks/issues/561
+     * True if footpath ends on the edge of a waterbody. "steps" may go inside of the waterbody
+     * area. issue: https://github.com/osmlab/atlas-checks/issues/561
      * 
      * @param interactionsPerWaterbodyComponent
      *            Set of Locations that crossing a waterbody
      * @param lineItem
      *            Atlas line entity
      */
-    private void handlingFootPath(
+    private boolean isAllowedFootPath(
             final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent,
             final AtlasObject lineItem)
     {
-        interactionsPerWaterbodyComponent.forEach(tuple ->
+        final AtomicBoolean allowedFootPath = new AtomicBoolean(false);
+        // refer to: https://github.com/osmlab/atlas-checks/issues/561
+        if (interactionsPerWaterbodyComponent.size() == 1
+                && this.lineItemsOffendingCrossingOnly.test(lineItem))
         {
-            final Set<Location> interactionLocations = tuple.getSecond();
-            // crossing only ones or touching.
-            // ways with highway=steps may go inside the waterbody.
-            if (interactionLocations.size() == 1
-                    && (interactionLocations.contains(((Edge) lineItem).start().iterator().next())
-                            || interactionLocations
-                                    .contains(((Edge) lineItem).end().iterator().next())
-                            || ((Edge) lineItem).highwayTag().getTagValue().equals("steps")))
+            interactionsPerWaterbodyComponent.forEach(tuple ->
             {
-                this.validCrossWaterbody.getAndSet(true);
-            }
-        });
+                final Set<Location> interactionLocations = tuple.getSecond();
+                // crossing only ones or touching.
+                // ways with highway=steps may go inside if the waterbody.
+                if (interactionLocations.size() == 1 && (interactionLocations
+                        .contains(((Edge) lineItem).start().iterator().next())
+                        || interactionLocations.contains(((Edge) lineItem).end().iterator().next())
+                        || ((Edge) lineItem).highwayTag().getTagValue().equals("steps")))
+                {
+                    allowedFootPath.getAndSet(true);
+                }
+            });
+        }
+        return allowedFootPath.get();
     }
 
     /**

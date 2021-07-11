@@ -492,8 +492,8 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
                     @Edge(id = "4321000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_1),
                             @Loc(value = AREA_LOCATION_1) }, tags = { "highway=footway" }),
                     // another edge
-                    @Edge(id = "9876000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_2),
-                            @Loc(value = LOCATION_OUTSIDE_AREA_4) }, tags = { "highway=path" }),
+                    @Edge(id = "8765000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_2),
+                            @Loc(value = AREA_LOCATION_5) }, tags = { "highway=path" }),
                     // another edge steps case
                     @Edge(id = "5432000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_2),
                             @Loc(value = LOCATION_INSIDE_AREA_1) }, tags = { "highway=steps" }), })
