@@ -89,6 +89,70 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = LOCATION_5)) },
             // edges
             edges = {
+                    @Edge(id = "123456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "223456789000000", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=motorway", "area=yes" }),
+                    @Edge(id = "323456789000000", coordinates = { @Loc(value = LOCATION_3),
+                            @Loc(value = LOCATION_5) }, tags = { "highway=motorway" }),
+                    @Edge(id = "423456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=motorway" }) })
+    private Atlas invalidCrossingItemsAtlasArea;
+
+    @TestAtlas(
+            /*
+             * This Atlas contains Car and Pedestrian Navigable edges
+             */
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = LOCATION_1)),
+                    @Node(coordinates = @Loc(value = LOCATION_2)),
+                    @Node(coordinates = @Loc(value = LOCATION_3)),
+                    @Node(coordinates = @Loc(value = LOCATION_4)),
+                    @Node(coordinates = @Loc(value = LOCATION_5)) },
+            // edges
+            edges = {
+                    @Edge(id = "123456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_3) }, tags = { "highway=motorway" }),
+                    @Edge(id = "223456789000000", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=primary" }),
+                    @Edge(id = "323456789000000", coordinates = { @Loc(value = LOCATION_3),
+                            @Loc(value = LOCATION_5) }, tags = { "highway=pedestrian" }),
+                    @Edge(id = "423456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=footway" }) })
+    private Atlas invalidCrossingItemsAtlasCarPedestrian;
+
+    @TestAtlas(
+            /*
+             * This Atlas contains Car and Pedestrian Navigable edges
+             */
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = LOCATION_1)),
+                    @Node(coordinates = @Loc(value = LOCATION_2)),
+                    @Node(coordinates = @Loc(value = LOCATION_3)),
+                    @Node(coordinates = @Loc(value = LOCATION_4)),
+                    @Node(coordinates = @Loc(value = LOCATION_5)) },
+            // edges
+            edges = {
+                    @Edge(id = "123456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_3) }, tags = { "highway=steps" }),
+                    @Edge(id = "223456789000000", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=corridor" }),
+                    @Edge(id = "323456789000000", coordinates = { @Loc(value = LOCATION_3),
+                            @Loc(value = LOCATION_5) }, tags = { "highway=pedestrian",
+                                    "indoor=yes" }),
+                    @Edge(id = "423456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=footway", "level=1" }) })
+    private Atlas invalidCrossingItemsAtlasIndoorMapping;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = LOCATION_1)),
+                    @Node(coordinates = @Loc(value = LOCATION_2)),
+                    @Node(coordinates = @Loc(value = LOCATION_3)),
+                    @Node(coordinates = @Loc(value = LOCATION_4)),
+                    @Node(coordinates = @Loc(value = LOCATION_5)) },
+            // edges
+            edges = {
                     @Edge(id = "123456789000000", coordinates = { @Loc(value = LOCATION_3),
                             @Loc(value = LOCATION_1) }, tags = { "highway=motorway" }),
                     @Edge(id = "223456789000000", coordinates = { @Loc(value = LOCATION_4),
@@ -187,6 +251,21 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
     public Atlas invalidCrossingItemsAtlas()
     {
         return this.invalidCrossingItemsAtlas;
+    }
+
+    public Atlas invalidCrossingItemsAtlasArea()
+    {
+        return this.invalidCrossingItemsAtlasArea;
+    }
+
+    public Atlas invalidCrossingItemsAtlasCarPedestrian()
+    {
+        return this.invalidCrossingItemsAtlasCarPedestrian;
+    }
+
+    public Atlas invalidCrossingItemsAtlasIndoorMapping()
+    {
+        return this.invalidCrossingItemsAtlasIndoorMapping;
     }
 
     public Atlas invalidCrossingItemsWithDifferentLayerTagAtlas()
