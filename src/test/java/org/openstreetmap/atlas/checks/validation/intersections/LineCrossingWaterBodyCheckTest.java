@@ -101,7 +101,7 @@ public class LineCrossingWaterBodyCheckTest
         this.verifier.actual(this.setup.invalidCrossingLineItemAtlasNotCrossingWaterBody(),
                 new LineCrossingWaterBodyCheck(ConfigurationResolver.inlineConfiguration(
                         "{  \"LineCrossingWaterBodyCheck\": {" + "    \"enabled\": true,"
-                                + "    \"lineItems.offending\": \"highway->footway,bridleway,steps,corridor,path\" }}")));
+                                + "    \"lineItems.footpath\": \"highway->footway,bridleway,steps,corridor,path\" }}")));
         this.verifier.verifyEmpty();
     }
 
