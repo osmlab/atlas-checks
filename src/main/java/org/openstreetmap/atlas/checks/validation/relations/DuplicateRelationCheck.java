@@ -43,37 +43,39 @@ public class DuplicateRelationCheck extends BaseCheck<Object>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final Relation obj = (Relation) object;
+        final Relation relation = (Relation) object;
         final Set<Relation> relations = new HashSet<>();
-        final List<RelationMember> members = obj.members().stream().collect(Collectors.toList());
+        final List<RelationMember> members = relation.members().stream()
+                .collect(Collectors.toList());
 
         for (final RelationMember member : members)
         {
             relations.addAll(member.getEntity().relations());
         }
 
-        relations.remove(obj);
+        relations.remove(relation);
 
-        final List<Long> duplicates = new ArrayList<Long>();
+        final List<Long> duplicates = new ArrayList<>();
 
-        for (final Relation rel : relations)
+        for (final Relation possibleDuplicate : relations)
         {
-            if (obj.getOsmTags().equals(rel.getOsmTags())
-                    && this.areSameMembers(obj.members(), rel.members()))
+            if (relation.getOsmTags().equals(possibleDuplicate.getOsmTags())
+                    && this.areSameMembers(relation.members(), possibleDuplicate.members()))
             {
-                duplicates.add(rel.getOsmIdentifier());
-                this.markAsFlagged(rel.getOsmIdentifier());
+                duplicates.add(possibleDuplicate.getOsmIdentifier());
+                this.markAsFlagged(possibleDuplicate.getOsmIdentifier());
             }
         }
 
-        this.markAsFlagged(obj.getOsmIdentifier());
+        this.markAsFlagged(relation.getOsmIdentifier());
 
-        final String dup = duplicates.toString().replace("[", "").replace("]", "");
+        final String duplicatesString = duplicates.toString().replace("[", "").replace("]", "");
 
-        if (duplicates.size() > 0)
+        if (!duplicates.isEmpty())
         {
-            return Optional.of(this.createFlag(object,
-                    this.getLocalizedInstruction(0, Long.toString(obj.getOsmIdentifier()), dup)));
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                    Long.toString(relation.getOsmIdentifier()), duplicatesString)));
+
         }
         return Optional.empty();
     }
@@ -103,12 +105,13 @@ public class DuplicateRelationCheck extends BaseCheck<Object>
             return false;
         }
 
-        for (final RelationMember rel : first)
+        for (final RelationMember relationMember : first)
         {
-            final Optional<RelationMember> secMember = this.containsMember(secondMembers, rel);
-            if (secMember.isPresent())
+            final Optional<RelationMember> secondMember = this.containsMember(secondMembers,
+                    relationMember);
+            if (secondMember.isPresent())
             {
-                secondMembers.remove(secMember.get());
+                secondMembers.remove(secondMember.get());
             }
             else
             {
@@ -131,11 +134,11 @@ public class DuplicateRelationCheck extends BaseCheck<Object>
     private Optional<RelationMember> containsMember(final List<RelationMember> membersList,
             final RelationMember member)
     {
-        for (final RelationMember rel : membersList)
+        for (final RelationMember relationMember : membersList)
         {
-            if (rel.compareTo(member) == 0)
+            if (relationMember.compareTo(member) == 0)
             {
-                return Optional.of(rel);
+                return Optional.of(relationMember);
             }
         }
         return Optional.empty();
