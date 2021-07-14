@@ -66,7 +66,7 @@ This document is a list of tables with a description and link to documentation f
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | BoundaryIntersectionCheck |  This check is designed to scan relations marked as boundaries or with ways marked as boundaries and flag them for intersections with other boundaries of the same type. |
-| [DuplicateRelationCheck](checks/DuplicateRelationCheck.md) | This check attempts to idenfy duplicate Relations base on the same OSM tags and the same memebers with same roles. |
+| [DuplicateRelationCheck](checks/DuplicateRelationCheck.md) | This check attempts to idenfy duplicate Relations base on the same OSM tags and the same members with same roles. |
 | InvalidMultiPolygonRelationCheck |  This check is designed to scan through MultiPolygon relations and flag them for invalid geometry. |
 | [InvalidTurnRestrictionCheck](checks/invalidTurnRestrictionCheck.md) | The purpose of this check is to identify invalid turn restrictions in OSM. Invalid turn restrictions occur in a variety of ways from invalid members, Edge geometry issues, not being routable, or wrong topology. |
 | [MissingRelationType](checks/missingRelationType.md) | The purpose of this check is to identify Relations without relation type. |
