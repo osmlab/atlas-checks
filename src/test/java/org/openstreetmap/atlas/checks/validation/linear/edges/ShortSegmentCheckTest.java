@@ -119,6 +119,14 @@ public class ShortSegmentCheckTest
     }
 
     @Test
+    public void testShortSegmentsWithOneValence2NodeOneSyntheticBoundaryNode()
+    {
+        this.verifier.actual(
+                this.setup.shortSegmentWithOneValence2NodeOneSyntheticBoundaryNodeAtlas(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testShortSegmentsWithTwoValence2Nodes()
     {
         this.verifier.actual(this.setup.shortSegmentsWithTwoValence2NodesAtlas(), check);
