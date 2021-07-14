@@ -339,13 +339,6 @@
       "tags":"coastline"
     }
   },
-  "HighwayAccessCheck": {
-    "enabled": true,
-    "challenge": {
-      "difficulty": "EASY",
-      "description": "Checks if the object access is overly permissive"
-    }
-  },
   "HighwayMissingNameAndRefTagCheck": {
     "min.nonContiguous.angle": 30.0,
     "min.highway.type": "tertiary",
