@@ -2,7 +2,7 @@
 
 #### Description
 The Duplicate Relation check flags Relations in OSM that have the same OSM tags and the same members with same roles.
-we don't want instances of duplicate Relation that represent the same feature. 
+We don't want instances of duplicate Relation that represent the same feature. 
 
 #### Live Example
 The following examples illustrate two relations have the same tags and member.
