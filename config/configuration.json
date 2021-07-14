@@ -1071,6 +1071,10 @@
       "notContainsValues" : [["strasser"],[],["strasser"],[]],
       "deprecatedValues" : [[], [], ["AssociatedStreet"], []],
       "tags" : [["ss"],["\u00df"],["ss"],["\u00df"]]
+    },
+    "challenge": {
+      "description": "Checks if the countries specified above contain the values in their tags",
+      "instructions": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
     }
   },
   "StreetNameIntegersOnlyCheck": {
