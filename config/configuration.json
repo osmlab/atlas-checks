@@ -268,6 +268,14 @@
       "difficulty": "EASY"
     }
   },
+  "DuplicateRelationCheck": {
+    "challenge": {
+      "description": "Tasks contain Relations where duplicate relations are found.",
+      "blurb": "Duplicate Relations.",
+      "instruction": "Open your favorite editor and  remove one or more of the duplicate relations until only one remains.",
+      "difficulty": "EASY"
+    }
+  },
   "DuplicateWaysCheck": {
     "enabled": false,
     "challenge": {
