@@ -1,0 +1,4 @@
+fastparquet # Optional dependency of pandas, but is required for parquet support (pyarrow is also allowed)
+pandas
+requests
+tqdm

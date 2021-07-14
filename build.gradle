@@ -92,6 +92,7 @@ dependencies
     compile packages.spring
     compile packages.mockito
     compile packages.log4j
+    compile packages.sqlite
 
     checkstyle packages.checkstyle
     checkstyle packages.atlas_checkstyle

@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -54,13 +55,17 @@ import com.google.gson.JsonParser;
  */
 public class InvalidTagsCheck extends BaseCheck<String>
 {
-
     public static final int INLINE_REGEX_FILTER_SIZE = 3;
     private static final long serialVersionUID = 5150282147895785829L;
     private static final String KEY_VALUE_SEPARATOR = "->";
     private static final String DEFAULT_FILTER_RESOURCE = "invalidTags.txt";
     private static final String DEFAULT_NR_TAGS_INSTRUCTION = "OSM feature {0,number,#} has invalid tags.";
     private static final String DEFAULT_INSTRUCTION = "Check the following tags for missing, conflicting, or incorrect values: {0}";
+    private static final String INSTRUCTION_INVALID_TAGS = "OSM feature {0,number,#} has invalid tags.";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Stream
+            .of(DEFAULT_NR_TAGS_INSTRUCTION, DEFAULT_INSTRUCTION, INSTRUCTION_INVALID_TAGS)
+            .collect(Collectors.toCollection(ArrayList::new));
+
     private static final Logger logger = LoggerFactory.getLogger(InvalidTagsCheck.class);
     private static final String REGEX = "regex";
     private static final int REGEX_INSTRUCTION_INDEX = 3;
@@ -102,14 +107,14 @@ public class InvalidTagsCheck extends BaseCheck<String>
         this.fallbackInstructions.add(DEFAULT_INSTRUCTION);
         final boolean overrideResourceFilters = this.configurationValue(configuration,
                 "filters.resource.override", false);
-        // If the "filters.resource.override" key in the config is set to true, use only the filters
-        // passed through the config,
+        // If the "filters.resource.override" key in the config is set to true, use only
+        // the filters passed through the config,
         if (overrideResourceFilters)
         {
             this.classTagFilters = this.getFiltersFromConfiguration(configuration);
         }
-        // Append filters from config to the default list of filters if "filters.resource.append"
-        // is set to true
+        // Append filters from config to the default list of filters if
+        // "filters.resource.append" is set to true
         else
         {
             final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> defaultFilters = this
@@ -163,14 +168,17 @@ public class InvalidTagsCheck extends BaseCheck<String>
                                 ((RegexTaggableFilter) filter.getFirst()).getMatchedTags(object));
                     }
                 }).collect(Collectors.toList());
+
         if (!instructions.isEmpty())
         {
-            // Mark objects flagged by their class and id to allow for the same id in different
-            // object types
+            // Mark objects flagged by their class and id to allow for the same id in
+            // different object types
             this.markAsFlagged(this.getUniqueOSMIdentifier(object));
 
             // Create a flag with generic instructions
-            final String instruction = this.getLocalizedInstruction(0, object.getOsmIdentifier());
+            final String instruction = this.getLocalizedInstruction(
+                    FALLBACK_INSTRUCTIONS.indexOf(INSTRUCTION_INVALID_TAGS),
+                    object.getOsmIdentifier());
             // If the object is an edge add the edges with the same OSM id
             final CheckFlag flag = (object instanceof Edge)
                     ? this.createFlag(new OsmWayWalker((Edge) object).collectEdges(), instruction)
@@ -180,7 +188,6 @@ public class InvalidTagsCheck extends BaseCheck<String>
             instructions.forEach(flag::addInstruction);
             return Optional.of(flag);
         }
-
         return Optional.empty();
     }
 

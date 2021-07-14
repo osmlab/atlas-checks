@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.relations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,6 +13,7 @@ import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.AtlasToOsmType;
 import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
@@ -21,7 +21,6 @@ import org.openstreetmap.atlas.geography.MultiPolygon;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Polygon;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
@@ -81,7 +80,6 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
             INVALID_OSM_TYPE_INSTRUCTION_FORMAT, INVALID_OVERLAP_INSTRUCTION_FORMAT,
             INNER_MISSING_OUTER_INSTRUCTION_FORMAT, GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT);
     private static final RelationOrAreaToMultiPolygonConverter RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
-    private static final EnumMap<ItemType, String> atlasToOsmType = new EnumMap<>(ItemType.class);
     private static final Logger logger = LoggerFactory
             .getLogger(InvalidMultiPolygonRelationCheck.class);
 
@@ -107,12 +105,6 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
                 .indexOf(INNER_MISSING_OUTER_INSTRUCTION_FORMAT);
         GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT_INDEX = FALLBACK_INSTRUCTIONS
                 .indexOf(GENERIC_INVALID_GEOMETRY_INSTRUCTION_FORMAT);
-        atlasToOsmType.put(ItemType.EDGE, "way");
-        atlasToOsmType.put(ItemType.AREA, "way");
-        atlasToOsmType.put(ItemType.LINE, "way");
-        atlasToOsmType.put(ItemType.NODE, "node");
-        atlasToOsmType.put(ItemType.POINT, "node");
-        atlasToOsmType.put(ItemType.RELATION, "relation");
     }
 
     private final boolean ignoreOneMember;
@@ -413,11 +405,11 @@ public class InvalidMultiPolygonRelationCheck extends BaseCheck<Long>
         for (final RelationMember relationMember : multipolygonRelation.members())
         {
             // Check that each member is a Way
-            if (!atlasToOsmType.get(relationMember.getEntity().getType()).equals("way"))
+            if (!AtlasToOsmType.convert(relationMember.getEntity().getType()).equals("way"))
             {
-                invalidTypeIDs.add(
-                        Tuple.createTuple(atlasToOsmType.get(relationMember.getEntity().getType()),
-                                relationMember.getEntity().getOsmIdentifier()));
+                invalidTypeIDs.add(Tuple.createTuple(
+                        AtlasToOsmType.convert(relationMember.getEntity().getType()),
+                        relationMember.getEntity().getOsmIdentifier()));
             }
             // Check that each member has role outer or inner
             else if (!relationMember.getRole().equals(RelationTypeTag.MULTIPOLYGON_ROLE_OUTER)

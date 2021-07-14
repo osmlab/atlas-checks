@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
@@ -35,6 +36,9 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
     // Distance to search for Edges around a Point
     private final Distance searchDistance;
 
+    @KeyFullyChecked
+    private static final Class<AddressStreetTag> ADDR_STREET = AddressStreetTag.class;
+
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
      * checks with this constructor, supplying a configuration that can be used to adjust any
@@ -60,7 +64,7 @@ public class AddressStreetNameCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Point && Validators.hasValuesFor(object, AddressStreetTag.class);
+        return object instanceof Point && Validators.hasValuesFor(object, ADDR_STREET);
     }
 
     /**
