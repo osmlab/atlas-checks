@@ -3,6 +3,7 @@ package org.openstreetmap.atlas.checks.flag.serializer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -24,6 +25,7 @@ import org.openstreetmap.atlas.geography.atlas.change.ChangeType;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteArea;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteEdge;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteLine;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteNode;
 import org.openstreetmap.atlas.geography.atlas.complete.CompletePoint;
 import org.openstreetmap.atlas.geography.atlas.complete.CompleteRelation;
@@ -165,6 +167,36 @@ public class CheckFlagDeserializerTest
         final CheckFlag checkFlag = gson.fromJson(flag, CheckFlag.class);
         final String instructions = checkFlag.getInstructions();
         Assert.assertNotEquals(0, instructions.length());
+    }
+
+    @Test
+    public void oscDeserializationTest() throws ReflectiveOperationException
+    {
+        final Line line = this.rule.atlas().line(1000000L);
+        final List<Location> locations = Iterables.asList(line.asPolyLine());
+        Collections.reverse(locations);
+        final CheckFlag lineFlag = new CheckFlag("1000000", Collections.singleton(line),
+                Collections.singletonList("Instruction"), locations,
+                Collections.singleton(FeatureChange.add(
+                        (AtlasEntity) CompleteLine.from(line).withGeometry(locations),
+                        this.rule.atlas(), FeatureChange.Options.OSC_IF_POSSIBLE)));
+
+        final Map<String, String> contextualProperties = new HashMap<>();
+        contextualProperties.put("generator", "NullCheck");
+        contextualProperties.put("timestamp", new Date().toString());
+
+        final String serializedJson = CheckFlagEvent.flagToJson(lineFlag, contextualProperties)
+                .toString();
+        final CheckFlag deserializedFlag = gson.fromJson(
+                CheckFlagEvent.flagToJson(lineFlag, contextualProperties), CheckFlag.class);
+        final Field oscField = FeatureChange.class.getDeclaredField("osc");
+        Assert.assertTrue(oscField.trySetAccessible());
+        Assert.assertEquals(1, deserializedFlag.getFixSuggestions().size());
+        Assert.assertEquals(1, lineFlag.getFixSuggestions().size());
+        Assert.assertEquals(
+                lineFlag.getFixSuggestions().iterator().next().explain().toJsonElement()
+                        .getAsJsonObject().get("osc").getAsString(),
+                oscField.get(deserializedFlag.getFixSuggestions().iterator().next()));
     }
 
     @Test

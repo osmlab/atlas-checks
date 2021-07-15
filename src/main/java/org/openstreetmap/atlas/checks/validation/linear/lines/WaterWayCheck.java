@@ -23,6 +23,9 @@ import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Segment;
 import org.openstreetmap.atlas.geography.atlas.Atlas;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.LineItem;
 import org.openstreetmap.atlas.geography.atlas.items.LocationItem;
@@ -494,15 +497,26 @@ public class WaterWayCheck extends BaseCheck<Long>
         if (uphill && this.minResolutionDistance
                 .isGreaterThanOrEqualTo(this.elevationUtils.getResolution(first)))
         {
-            final CheckFlag returnFlag = flag;
             final String instruction = this.getLocalizedInstruction(
                     FALLBACK_INSTRUCTIONS.indexOf(GOES_UPHILL), line.getOsmIdentifier(),
                     this.elevationUtils.getResolution(first).asMeters());
-            if (returnFlag == null)
+            final CheckFlag returnFlag;
+            if (flag == null)
             {
-                return this.createFlag(line, instruction);
+                returnFlag = this.createFlag(line, instruction);
             }
-            returnFlag.addInstruction(instruction);
+            else
+            {
+                returnFlag = flag;
+                returnFlag.addInstruction(instruction);
+            }
+            final CompleteEntity<?> entity = (CompleteEntity<?>) CompleteEntity.shallowFrom(line);
+            final List<Location> points = Iterables.stream(line).collectToList();
+            Collections.reverse(points);
+            entity.withGeometry(points);
+            final var featureChange = FeatureChange.add((AtlasEntity) entity, line.getAtlas(),
+                    FeatureChange.Options.OSC_IF_POSSIBLE);
+            returnFlag.addFixSuggestion(featureChange);
             return returnFlag;
         }
         return flag;

@@ -402,6 +402,13 @@ public class CheckFlagDeserializer implements JsonDeserializer<CheckFlag>
             this.applyGeometryChanges(afterView, geometryChangeDescriptors);
         }
 
-        return Optional.of(new FeatureChange(ChangeType.ADD, (AtlasEntity) afterView, beforeView));
+        final var featureChange = new FeatureChange(ChangeType.ADD, (AtlasEntity) afterView,
+                beforeView);
+        if (fixSuggestion.has("osc"))
+        {
+            featureChange.withOsc(fixSuggestion.get("osc").getAsString());
+        }
+
+        return Optional.of(featureChange);
     }
 }
