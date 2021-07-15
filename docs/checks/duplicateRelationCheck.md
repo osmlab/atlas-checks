@@ -5,7 +5,7 @@ The Duplicate Relation check flags multiple members Relations in OSM that have t
 We don't want instances of duplicate Relation that represent the same feature. 
 
 #### Live Example
-The following examples illustrate two relations have the same tags and member.
+The following examples illustrate two relations have the same tags and members.
 1) This Relation [id:2096616](https://www.openstreetmap.org/relation/2096616) 
 2) This Relation [id:2845741](https://www.openstreetmap.org/relation/2845741) 
 
