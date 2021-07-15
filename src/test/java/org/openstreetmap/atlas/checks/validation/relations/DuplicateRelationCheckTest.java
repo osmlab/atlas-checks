@@ -50,6 +50,13 @@ public class DuplicateRelationCheckTest
     }
 
     @Test
+    public void testOneMemberRelation()
+    {
+        this.verifier.actual(this.setup.getOneMemberRelations(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testSameOSMTagsAndMembersRelations()
     {
         this.verifier.actual(this.setup.getSameOSMTagsAndMembersRelations(), check);

@@ -135,6 +135,22 @@ public class DuplicateRelationCheckTestRule extends CoreTestRule
                                                     "last_edit_version=4" }) })
     private Atlas sameOSMTagsAndMembersRelations;
 
+    @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = ONE)),
+            @Node(id = "2000000", coordinates = @Loc(value = TWO)),
+            @Node(id = "3000000", coordinates = @Loc(value = THREE)) }, edges = {
+                    @Edge(id = "12000000", coordinates = { @Loc(value = ONE), @Loc(value = TWO) }),
+                    @Edge(id = "23000000", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }),
+                    @Edge(id = "31000000", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }) }, relations = {
+                                    @Relation(id = "123", members = {
+                                            @Member(id = "12000000", type = "edge", role = "any") }, tags = {
+                                                    "type=any" }),
+                                    @Relation(id = "124", members = {
+                                            @Member(id = "12000000", type = "edge", role = "any") }, tags = {
+                                                    "type=any" }) })
+    private Atlas oneMemberRelations;
+
     public Atlas getDifferentMembersRelations()
     {
         return this.differentMembersRelations;
@@ -153,6 +169,11 @@ public class DuplicateRelationCheckTestRule extends CoreTestRule
     public Atlas getDuplicateRelations()
     {
         return this.duplicateRelations;
+    }
+
+    public Atlas getOneMemberRelations()
+    {
+        return this.oneMemberRelations;
     }
 
     public Atlas getSameOSMTagsAndMembersRelations()
