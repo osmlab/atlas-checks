@@ -14,6 +14,11 @@ The Purpose of this check is to detect and flag object the following scenarios b
 8. When a node contains `railway=level_crossing` but there are only pedestrian ways at this intersection.
 9. When a node contains `railway=level_crossing` but there are only bicycle ways at this intersection.
 
+#### Railway Disuse
+In case Railway is disused corresponded value will be assigned to Node.  
+[railway](https://wiki.openstreetmap.org/wiki/Tag:railway%3Ddisused)
+[disused:railway](https://wiki.openstreetmap.org/wiki/Key:disused:railway)
+
 #### Auto-Fix Suggestions
 
 For each of the possible issues flagged above these are the fix suggestions proposed.

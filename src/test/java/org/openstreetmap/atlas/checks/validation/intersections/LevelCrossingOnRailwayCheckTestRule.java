@@ -85,6 +85,32 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
 
     private Atlas noIntersectionNode;
 
+    @TestAtlas(
+            /*
+             * This test atlas includes nodes, edges, and lines to test for missing intersections.
+             * Highways are represented as edges in atlas so this test includes two highways. One
+             * highway has a valid intersection with the railway line and the other highway does
+             * not.
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {}),
+                    @Node(id = "623456789000000", coordinates = @Loc(value = H2_NODE_1), tags = {}),
+                    @Node(id = "723456789000000", coordinates = @Loc(value = H2_NODE_2), tags = {}) },
+            // edges
+            edges = { @Edge(id = "233456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                    @Loc(value = H1_NODE_2),
+                    @Loc(value = INT1) }, tags = { "highway=secondary" }) },
+            // lines
+            lines = { @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                    @Loc(value = R_NODE_2), @Loc(value = INT1) }, tags = { "railway=disused" }) })
+
+    private Atlas noIntersectionNodeDisused;
+
     /*
      * Valid intersections tests: Test the following valid intersections
      */
@@ -169,6 +195,34 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                             @Loc(value = INT1) }, tags = { "railway=rail" }) })
 
     private Atlas ignoreConstruction;
+
+    @TestAtlas(
+            /*
+             * Ignore intersections with construction. Generally this would fail because the node
+             * should be tagged but is not. This test should pass because we want to ignore
+             * construction.
+             */
+            // nodes
+            nodes = {
+                    @Node(id = "123456789000000", coordinates = @Loc(value = R_NODE_1), tags = {}),
+                    @Node(id = "223456789000000", coordinates = @Loc(value = R_NODE_2), tags = {}),
+                    @Node(id = "323456789000000", coordinates = @Loc(value = H1_NODE_1), tags = {}),
+                    @Node(id = "423456789000000", coordinates = @Loc(value = H1_NODE_2), tags = {}),
+                    @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {}) },
+            // edges
+            edges = {
+                    // 1.1-1.4: intersecting edge with no layer
+                    @Edge(id = "113456789000000", coordinates = { @Loc(value = H1_NODE_1),
+                            @Loc(value = H1_NODE_2),
+                            @Loc(value = INT1) }, tags = { "highway=service" }) },
+            // lines
+            lines = {
+                    // 1.1: intersecting rail no layer
+                    @Line(id = "133456789000000", coordinates = { @Loc(value = R_NODE_1),
+                            @Loc(value = R_NODE_2),
+                            @Loc(value = INT1) }, tags = { "railway=rail" }) })
+
+    private Atlas ignoreServiceOrLessThan;
 
     @TestAtlas(
             /*
@@ -363,6 +417,11 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
         return this.ignoreConstruction;
     }
 
+    public Atlas getIgnoreMinimumHighway()
+    {
+        return this.ignoreServiceOrLessThan;
+    }
+
     public Atlas getInvalidIntersectionCyclewayHighway()
     {
         return this.invalidIntersectionCyclewayHighway;
@@ -391,6 +450,11 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
     public Atlas getNoIntersectionNode()
     {
         return this.noIntersectionNode;
+    }
+
+    public Atlas getNoIntersectionNodeDisused()
+    {
+        return this.noIntersectionNodeDisused;
     }
 
     public Atlas getValidIntersectionLayerZero()

@@ -103,6 +103,10 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
             NODE_INVALID_LC_TAG_NO_RAILWAY, NODE_INVALID_LC_TAG_LAYERS, INTERSECTION_MISSING_NODE,
             NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY, NODE_INVALID_LC_TAG_CYCLE_ONLY_HIGHWAY);
     private static final List<String> CONSTRUCTION_TAGS = List.of(HighwayTag.KEY, RailwayTag.KEY);
+    private final HighwayTag minimumHighwayType;
+    private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
+    private String railwayTagKey;
+    private String railwayTagValue;
     private static final long serialVersionUID = -2063033332877849846L;
 
     /**
@@ -119,6 +123,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                 OSM_LAYER_DEFAULT);
         this.railwayFilter = this.configurationValue(configuration, "railway.filter",
                 RAILWAY_FILTER_DEFAULT, TaggableFilter::forDefinition);
+        this.minimumHighwayType = this.configurationValue(configuration, "minimum.highway.type",
+                MINIMUM_HIGHWAY_DEFAULT, str -> Enum.valueOf(HighwayTag.class, str.toUpperCase()));
     }
 
     /**
@@ -271,9 +277,9 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                             .addFixSuggestion(FeatureChange.add(
                                     (AtlasEntity) ((CompleteEntity) CompleteEntity
                                             .from((AtlasEntity) object)).withTags(object.getTags())
-                                                    .withReplacedTag(RailwayTag.KEY, RailwayTag.KEY,
-                                                            RailwayTag.LEVEL_CROSSING.name()
-                                                                    .toLowerCase().intern()),
+                                                    .withReplacedTag(RailwayTag.KEY,
+                                                            this.railwayTagKey,
+                                                            this.railwayTagValue),
                                     object.getAtlas())));
                 }
                 return Optional.of(this
@@ -282,8 +288,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                                         object.getOsmIdentifier()))
                         .addFixSuggestion(FeatureChange.add(
                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object)).withAddedTag(RailwayTag.KEY,
-                                                RailwayTag.LEVEL_CROSSING.toString().toLowerCase()),
+                                        .from((AtlasEntity) object)).withAddedTag(
+                                                this.railwayTagKey, this.railwayTagValue),
                                 object.getAtlas())));
 
             }
@@ -361,6 +367,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                 || CONSTRUCTION_TAGS.stream()
                         .anyMatch(tag -> ConstructionTag.KEY.equals(object.getTags().get(tag)))
                 || (HighwayTag.highwayTag(object).isPresent() && RailwayTag.isRailway(object))
+                || (HighwayTag.highwayTag(object).isPresent() && HighwayTag.highwayTag(object).get()
+                        .isLessImportantThan(this.minimumHighwayType))
                 || Validators.isOfType(object, RailwayTag.class, RailwayTag.PROPOSED);
     }
 
@@ -432,6 +440,9 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         for (final AtlasObject railway : connectedRailways)
         {
             final Long railwayLayer = LayerTag.getTaggedOrImpliedValue(railway, this.layerDefault);
+
+            this.setRailwayTagKeyValue(railway);
+
             for (final AtlasObject highway : connectedHighways)
             {
                 final Long highwayLayer = LayerTag.getTaggedOrImpliedValue(highway,
@@ -474,4 +485,20 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
         return Collections.emptyList();
     }
 
+    /**
+     * Set Railway Tag key/value considering disuse tag.
+     *
+     * @param railway
+     *            the Line that represents the railway for evaluation
+     */
+    private void setRailwayTagKeyValue(final AtlasObject railway)
+    {
+        this.railwayTagKey = railway.getTag("disused:" + RailwayTag.KEY).isPresent()
+                ? "disused:" + RailwayTag.KEY
+                : RailwayTag.KEY;
+
+        this.railwayTagValue = "disused".equals(railway.tag(RailwayTag.KEY))
+                ? RailwayTag.DISUSED.toString().toLowerCase()
+                : RailwayTag.LEVEL_CROSSING.toString().toLowerCase();
+    }
 }
