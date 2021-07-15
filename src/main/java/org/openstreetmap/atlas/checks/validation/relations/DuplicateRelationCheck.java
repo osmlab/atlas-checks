@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.CommonMethods;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
@@ -17,8 +18,8 @@ import org.openstreetmap.atlas.geography.atlas.items.RelationMemberList;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * This check looks for two or more {@link Relation}s duplicate with same OSM tags and same members
- * with same roles.
+ * This check looks for multiple members {@link Relation}s duplicate with same OSM tags and same
+ * members with same roles.
  *
  * @author Xiaohong Tang
  */
@@ -44,6 +45,15 @@ public class DuplicateRelationCheck extends BaseCheck<Object>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Relation relation = (Relation) object;
+
+        this.markAsFlagged(relation.getOsmIdentifier());
+
+        // Exclude one member relations in this check, and leave that for the OneMemberRelationCheck
+        if (CommonMethods.getOSMRelationMemberSize(relation) == 1)
+        {
+            return Optional.empty();
+        }
+
         final Set<Relation> relations = new HashSet<>();
         final List<RelationMember> members = relation.members().stream()
                 .collect(Collectors.toList());
@@ -66,8 +76,6 @@ public class DuplicateRelationCheck extends BaseCheck<Object>
                 this.markAsFlagged(possibleDuplicate.getOsmIdentifier());
             }
         }
-
-        this.markAsFlagged(relation.getOsmIdentifier());
 
         final String duplicatesString = duplicates.toString().replace("[", "").replace("]", "");
 
