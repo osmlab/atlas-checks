@@ -7,6 +7,7 @@
     "enabled.value.default": false
   },
   "PoolSizeCheck": {
+    "enabled": false,
     "surface": {
       "maximum": 1000.0,
       "minimum": 100.0
@@ -1074,7 +1075,7 @@
     }
   },
   "StreetNameCheck": {
-    "enabled": false,
+    "enabled": true,
     "check" : {
       "countries" : ["AUT", "CHE", "DEU", "LIE"],
       "containsValues" : [["strasse"],["stra\u00dfe"],["strasse"],["stra\u00dfe"]],
@@ -1084,7 +1085,7 @@
     },
     "challenge": {
       "description": "Checks if the countries specified above contain the values in their tags",
-      "instructions": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
+      "instruction": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
     }
   },
   "StreetNameIntegersOnlyCheck": {
