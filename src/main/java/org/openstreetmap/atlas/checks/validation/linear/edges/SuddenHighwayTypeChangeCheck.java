@@ -131,40 +131,13 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
      *            tag for edge being verified
      * @return boolean
      */
-    private boolean edgeBeingVerifiedCaseOne(final HighwayTag edgeHighwayTag)
+    private boolean edgeBeingVerifiedConcerningJump(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.MOTORWAY.equals(edgeHighwayTag)
                 || HighwayTag.PRIMARY.equals(edgeHighwayTag)
-                || HighwayTag.TRUNK.equals(edgeHighwayTag);
-    }
-
-    /**
-     * Case three: edge being verified is tertiary or tertiary_link
-     * 
-     * @param edgeHighwayTag
-     *            tag for edge being verified
-     * @return boolean
-     */
-    private boolean edgeBeingVerifiedCaseThree(final HighwayTag edgeHighwayTag)
-    {
-        return HighwayTag.TERTIARY.equals(edgeHighwayTag)
-                || HighwayTag.TERTIARY_LINK.equals(edgeHighwayTag);
-    }
-
-    /**
-     * case two: edge being verified is any link but tertiary.
-     * 
-     * @param edgeHighwayTag
-     *            tag for edge being verified
-     * @return boolean
-     */
-    private boolean edgeBeingVerifiedCaseTwo(final HighwayTag edgeHighwayTag)
-    {
-        return HighwayTag.MOTORWAY_LINK.equals(edgeHighwayTag)
-                || HighwayTag.PRIMARY_LINK.equals(edgeHighwayTag)
-                || HighwayTag.TRUNK_LINK.equals(edgeHighwayTag)
+                || HighwayTag.TRUNK.equals(edgeHighwayTag)
                 || HighwayTag.SECONDARY.equals(edgeHighwayTag)
-                || HighwayTag.SECONDARY_LINK.equals(edgeHighwayTag);
+                || HighwayTag.TERTIARY.equals(edgeHighwayTag);
     }
 
     /**
@@ -174,40 +147,13 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
      *            connected edge highway tag
      * @return boolean
      */
-    private boolean edgeCheckedAgainstCaseOne(final HighwayTag edgeHighwayTag)
-    {
-        return HighwayTag.TERTIARY.equals(edgeHighwayTag)
-                || HighwayTag.UNCLASSIFIED.equals(edgeHighwayTag)
-                || HighwayTag.RESIDENTIAL.equals(edgeHighwayTag)
-                || HighwayTag.SERVICE.equals(edgeHighwayTag);
-    }
-
-    /**
-     * case three: edge checked against is living_Street, service, or track
-     * 
-     * @param edgeHighwayTag
-     *            connected edge highway tag
-     * @return boolean
-     */
-    private boolean edgeCheckedAgainstCaseThree(final HighwayTag edgeHighwayTag)
-    {
-        return HighwayTag.LIVING_STREET.equals(edgeHighwayTag)
-                || HighwayTag.TRACK.equals(edgeHighwayTag)
-                || HighwayTag.SERVICE.equals(edgeHighwayTag);
-    }
-
-    /**
-     * case two: edge checked against is residential, service, or unclassified
-     * 
-     * @param edgeHighwayTag
-     *            connected edge highway tag
-     * @return boolean
-     */
-    private boolean edgeCheckedAgainstCaseTwo(final HighwayTag edgeHighwayTag)
+    private boolean edgeCheckedAgainstConcerningJump(final HighwayTag edgeHighwayTag)
     {
         return HighwayTag.UNCLASSIFIED.equals(edgeHighwayTag)
                 || HighwayTag.RESIDENTIAL.equals(edgeHighwayTag)
-                || HighwayTag.SERVICE.equals(edgeHighwayTag);
+                || HighwayTag.SERVICE.equals(edgeHighwayTag)
+                || HighwayTag.LIVING_STREET.equals(edgeHighwayTag)
+                || HighwayTag.TRACK.equals(edgeHighwayTag);
     }
 
     /**
@@ -245,10 +191,8 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                     && !firstEdgeEdgeHighwayTag.equals(HighwayTag.NO)
                     && !firstEdgeStartNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
                     && !this.edgeIsRoundaboutOrCircular(firstEdgeEdge))
-                    && (this.isCaseOne(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                            || this.isCaseTwo(edgeBeingVerifiedHighwayTag, firstEdgeEdgeHighwayTag)
-                            || this.isCaseThree(edgeBeingVerifiedHighwayTag,
-                                    firstEdgeEdgeHighwayTag)))
+                    && (this.isConcerningHighwayTagJump(edgeBeingVerifiedHighwayTag,
+                            firstEdgeEdgeHighwayTag)))
             {
                 return true;
             }
@@ -287,40 +231,11 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
      *            some edge tag
      * @return boolean
      */
-    private boolean isCaseOne(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
+    private boolean isConcerningHighwayTagJump(final HighwayTag edgeHighwayTag1,
+            final HighwayTag edgeHighwayTag2)
     {
-        return this.edgeBeingVerifiedCaseOne(edgeHighwayTag1)
-                && this.edgeCheckedAgainstCaseOne(edgeHighwayTag2);
-    }
-
-    /**
-     * checks if case three for edge being verified and edge checked against is true
-     * 
-     * @param edgeHighwayTag1
-     *            some edge tag
-     * @param edgeHighwayTag2
-     *            some edge tag
-     * @return boolean
-     */
-    private boolean isCaseThree(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
-    {
-        return this.edgeBeingVerifiedCaseThree(edgeHighwayTag1)
-                && this.edgeCheckedAgainstCaseThree(edgeHighwayTag2);
-    }
-
-    /**
-     * checks if case two for edge being verified and edge checked against is true
-     * 
-     * @param edgeHighwayTag1
-     *            some edge tag
-     * @param edgeHighwayTag2
-     *            some edge tag
-     * @return boolean
-     */
-    private boolean isCaseTwo(final HighwayTag edgeHighwayTag1, final HighwayTag edgeHighwayTag2)
-    {
-        return this.edgeBeingVerifiedCaseTwo(edgeHighwayTag1)
-                && this.edgeCheckedAgainstCaseTwo(edgeHighwayTag2);
+        return this.edgeBeingVerifiedConcerningJump(edgeHighwayTag1)
+                && this.edgeCheckedAgainstConcerningJump(edgeHighwayTag2);
     }
 
     /**
@@ -346,10 +261,8 @@ public class SuddenHighwayTypeChangeCheck extends BaseCheck<Long>
                     && !edgeBeingVerifiedHighwayTag.equals(HighwayTag.NO)
                     && !lastEdgeEndNodeEdgesHighwayTags.contains(edgeBeingVerifiedHighwayTag)
                     && !this.edgeIsRoundaboutOrCircular(lastEdgeEdge))
-                    && (this.isCaseOne(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                            || this.isCaseTwo(edgeBeingVerifiedHighwayTag, lastEdgeEdgeHighwayTag)
-                            || this.isCaseThree(edgeBeingVerifiedHighwayTag,
-                                    lastEdgeEdgeHighwayTag)))
+                    && (this.isConcerningHighwayTagJump(edgeBeingVerifiedHighwayTag,
+                            lastEdgeEdgeHighwayTag)))
             {
                 return true;
             }

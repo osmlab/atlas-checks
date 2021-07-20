@@ -36,25 +36,4 @@ public class SuddenHighwayTypeChangeCheckTest
         this.verifier.actual(this.setup.truePositiveSuddenHighwayTypeChangeCheck(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
-
-    @Test
-    public void truePositiveCase1()
-    {
-        this.verifier.actual(this.setup.truePositiveCase1(), this.check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void truePositiveCase2()
-    {
-        this.verifier.actual(this.setup.truePositiveCase2(), this.check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void truePositiveCase3()
-    {
-        this.verifier.actual(this.setup.truePositiveCase3(), this.check);
-        this.verifier.verifyExpectedSize(1);
-    }
 }
