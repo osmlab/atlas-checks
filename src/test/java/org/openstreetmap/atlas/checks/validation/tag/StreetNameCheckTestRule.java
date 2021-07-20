@@ -203,16 +203,15 @@ public class StreetNameCheckTestRule extends CoreTestRule
                                     @Relation(id = "2100004", members = {
                                             @Member(id = "2100003", type = "edge", role = "any"),
                                             @Member(id = "2100002", type = "node", role = "any") }, tags = {
-                                                    "iso_country_code=CHE", "name=Hauptstra\u00dfe" // NOSONAR
-                                    }) })
+                                                    "iso_country_code=CHE",
+                                                    "name=Hauptstra\u00dfe" }) })
     private Atlas truePositiveCheRelationInvalidValue;
 
     @TestAtlas(nodes = { @Node(id = "2200001", coordinates = @Loc(value = WAY1_NODE1)),
             @Node(id = "2200002", coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
                     @Edge(id = "2200003", coordinates = { @Loc(value = WAY1_NODE1),
                             @Loc(value = WAY1_NODE2) }, tags = { "iso_country_code=CHE",
-                                    "name=Hauptstra\u00dfe" // NOSONAR
-                    }) })
+                                    "name=Hauptstra\u00dfe" }) })
     private Atlas truePositiveCheWayInvalidValue;
 
     @TestAtlas(nodes = { @Node(id = "2300001", coordinates = @Loc(value = WAY1_NODE1)),
@@ -253,9 +252,9 @@ public class StreetNameCheckTestRule extends CoreTestRule
 
     @TestAtlas(nodes = { @Node(id = "2700001", coordinates = @Loc(value = WAY1_NODE1)),
             @Node(id = "2700002", coordinates = @Loc(value = WAY1_NODE2), tags = {
-                    "iso_country_code=LIE", "name=Hauptstra\u00dfe" // NOSONAR
-            }) }, edges = { @Edge(id = "2700003", coordinates = { @Loc(value = WAY1_NODE1),
-                    @Loc(value = WAY1_NODE2) }) })
+                    "iso_country_code=LIE", "name=Hauptstra\u00dfe" }) }, edges = {
+                            @Edge(id = "2700003", coordinates = { @Loc(value = WAY1_NODE1),
+                                    @Loc(value = WAY1_NODE2) }) })
     private Atlas truePositiveLieNodeInvalidValue;
 
     @TestAtlas(nodes = { @Node(id = "2800001", coordinates = @Loc(value = WAY1_NODE1)),
@@ -265,16 +264,15 @@ public class StreetNameCheckTestRule extends CoreTestRule
                                     @Relation(id = "2800004", members = {
                                             @Member(id = "2800003", type = "edge", role = "any"),
                                             @Member(id = "2800002", type = "node", role = "any") }, tags = {
-                                                    "iso_country_code=LIE", "name=Hauptstra\u00dfe" // NOSONAR
-                                    }) })
+                                                    "iso_country_code=LIE",
+                                                    "name=Hauptstra\u00dfe" }) })
     private Atlas truePositiveLieRelationInvalidValue;
 
     @TestAtlas(nodes = { @Node(id = "2900001", coordinates = @Loc(value = WAY1_NODE1)),
             @Node(id = "2900002", coordinates = @Loc(value = WAY1_NODE2)) }, edges = {
                     @Edge(id = "2900003", coordinates = { @Loc(value = WAY1_NODE1),
                             @Loc(value = WAY1_NODE2) }, tags = { "iso_country_code=LIE",
-                                    "name=Hauptstra\u00dfe" // NOSONAR
-                    }) })
+                                    "name=Hauptstra\u00dfe" }) })
     private Atlas truePositiveLieWayInvalidValue;
 
     public Atlas falsePositiveAutNodeInvalidValue()
