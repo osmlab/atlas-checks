@@ -359,6 +359,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
      *            Object to check
      * @return true if the object is under construction, otherwise false
      */
+    @SuppressWarnings("squid:S3655")
     private boolean ignoreWay(final AtlasObject object)
     {
         return object.getTags().keySet().stream()
