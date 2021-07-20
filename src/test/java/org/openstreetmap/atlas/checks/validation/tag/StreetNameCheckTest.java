@@ -19,8 +19,8 @@ public class StreetNameCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     // FIXME
-    private final StreetNameCheck check = new StreetNameCheck(ConfigurationResolver
-            .emptyConfiguration());
+    private final StreetNameCheck check = new StreetNameCheck(
+            ConfigurationResolver.emptyConfiguration());
 
     @Test
     public void falsePositiveAutNodeInvalidValue()

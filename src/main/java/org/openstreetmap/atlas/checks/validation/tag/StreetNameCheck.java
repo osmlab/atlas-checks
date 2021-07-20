@@ -20,9 +20,10 @@ import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags different values (ie "ss", "\u00df", or deprecated tags) for each country specified. Config file contains
- * all the tags required to tag or not to tag specified for each country. The check looks at the object's ISO code and
- * then pulls all the needed tags for that country from configuration.json .
+ * Flags different values (ie "ss", "\u00df", or deprecated tags) for each country specified. Config
+ * file contains all the tags required to tag or not to tag specified for each country. The check
+ * looks at the object's ISO code and then pulls all the needed tags for that country from
+ * configuration.json .
  *
  * @author v-naydinyan
  */
@@ -30,7 +31,8 @@ public class StreetNameCheck extends BaseCheck<Long>
 {
 
     /**
-     * The object of class CountryInfo contains all the tags and values needed to be flagged for the object.
+     * The object of class CountryInfo contains all the tags and values needed to be flagged for the
+     * object.
      */
     class CountryInfo
     {
@@ -39,12 +41,8 @@ public class StreetNameCheck extends BaseCheck<Long>
         private List<String> deprecatedTags;
         private List<String> values;
 
-        CountryInfo (
-                final List<String> contains,
-                final List<String> notContains,
-                final List<String> deprecated,
-                final List<String> tags
-        )
+        CountryInfo(final List<String> contains, final List<String> notContains,
+                final List<String> deprecated, final List<String> tags)
         {
             this.tagContains = contains;
             this.tagNotContains = notContains;
@@ -53,34 +51,41 @@ public class StreetNameCheck extends BaseCheck<Long>
         }
 
         public List<String> getDeprecatedTags()
-        {return this.deprecatedTags;}
+        {
+            return this.deprecatedTags;
+        }
 
         public List<String> getTagContains()
-        {return this.tagContains;}
+        {
+            return this.tagContains;
+        }
 
         public List<String> getTagNotContains()
-        {return this.tagNotContains;}
+        {
+            return this.tagNotContains;
+        }
 
         public List<String> getVals()
-        {return this.values;}
+        {
+            return this.values;
+        }
     }
 
-
-    private static final List<String> ALL_COUNTRIES_ISO_DEFAULT = List.of("AUT", "CHE", "DEU", "LIE");
+    private static final List<String> ALL_COUNTRIES_ISO_DEFAULT = List.of("AUT", "CHE", "DEU",
+            "LIE");
     private static final List<List<String>> ALL_VALUES_TO_FLAG_DEFAULT = List.of(List.of("strasse"),
             List.of("stra\u00dfe"), List.of("strasse"), List.of("stra\u00dfe"));
-    private static final List<List<String>> ALL_VALUES_NOT_FLAG_DEFAULT = List.of(List.of("strasser"),
-            List.of(), List.of("strasser"), List.of());
-    private static final List<List<String>> ALL_DEPRECATED_VALUES_TO_FLAG_DEFAULT = List.of(List.of(),
-            List.of(), List.of("associatedstreet"), List.of());
+    private static final List<List<String>> ALL_VALUES_NOT_FLAG_DEFAULT = List
+            .of(List.of("strasser"), List.of(), List.of("strasser"), List.of());
+    private static final List<List<String>> ALL_DEPRECATED_VALUES_TO_FLAG_DEFAULT = List
+            .of(List.of(), List.of(), List.of("associatedstreet"), List.of());
     private static final List<List<String>> ALL_ITEMS_TO_FLAG_DEFAULT = List.of(List.of("ss"),
             List.of("\u00df"), List.of("ss"), List.of("\u00df"));
 
     private static final String CONTAINS_VALUE_INSTRUCTION = "The object contains flagged tags: {0}";
     private static final String CONTAINS_DEPRECATED_VALUE_INSTRUCTION = "The type tag {0} is deprecated.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(CONTAINS_VALUE_INSTRUCTION,
-            CONTAINS_DEPRECATED_VALUE_INSTRUCTION);
-
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+            .asList(CONTAINS_VALUE_INSTRUCTION, CONTAINS_DEPRECATED_VALUE_INSTRUCTION);
 
     private final List<String> allCountriesIsoConfig;
     private final List<List<String>> allValuesToFlagConfig;
@@ -88,10 +93,7 @@ public class StreetNameCheck extends BaseCheck<Long>
     private final List<List<String>> allDeprecatedValuesToFlagConfig;
     private final List<List<String>> allItemsToFlagConfig;
 
-
     private static final long serialVersionUID = 3579562381907303707L;
-
-
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -105,20 +107,22 @@ public class StreetNameCheck extends BaseCheck<Long>
     {
         super(configuration);
 
-        this.allCountriesIsoConfig = this.configurationValue(configuration, "check.countries", ALL_COUNTRIES_ISO_DEFAULT);
-        this.allValuesToFlagConfig = this.configurationValue(configuration,
-                "check.containsValues", ALL_VALUES_TO_FLAG_DEFAULT);
+        this.allCountriesIsoConfig = this.configurationValue(configuration, "check.countries",
+                ALL_COUNTRIES_ISO_DEFAULT);
+        this.allValuesToFlagConfig = this.configurationValue(configuration, "check.containsValues",
+                ALL_VALUES_TO_FLAG_DEFAULT);
         this.allValuesNotFlagConfig = this.configurationValue(configuration,
                 "check.notContainsValues", ALL_VALUES_NOT_FLAG_DEFAULT);
         this.allDeprecatedValuesToFlagConfig = this.configurationValue(configuration,
                 "check.deprecatedValues", ALL_DEPRECATED_VALUES_TO_FLAG_DEFAULT);
-        this.allItemsToFlagConfig = this.configurationValue(configuration, "check.tags", ALL_ITEMS_TO_FLAG_DEFAULT);
+        this.allItemsToFlagConfig = this.configurationValue(configuration, "check.tags",
+                ALL_ITEMS_TO_FLAG_DEFAULT);
     }
 
     /**
-     * This function will validate if the supplied atlas object is valid for the check.
-     * The function checks that the object is of type Node, Relation or Way (only include MainEdge)
-     *      and that is has not been flagged already.
+     * This function will validate if the supplied atlas object is valid for the check. The function
+     * checks that the object is of type Node, Relation or Way (only include MainEdge) and that is
+     * has not been flagged already.
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
@@ -128,13 +132,13 @@ public class StreetNameCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         // Checks that the object is in the ISO list and is Node, Edge or Relation
-        return !this.isFlagged(object.getOsmIdentifier()) && (object instanceof
-                Node || (object instanceof Edge && ((Edge) object).isMainEdge()) || object instanceof Relation);
+        return !this.isFlagged(object.getOsmIdentifier()) && (object instanceof Node
+                || (object instanceof Edge && ((Edge) object).isMainEdge())
+                || object instanceof Relation);
     }
 
     /**
-     * The function makes sure that the edges are flagged as ways.
-     * credit: Brian Jorgenson
+     * The function makes sure that the edges are flagged as ways. credit: Brian Jorgenson
      */
     @Override
     protected CheckFlag createFlag(final AtlasObject object, final String instruction)
@@ -151,7 +155,8 @@ public class StreetNameCheck extends BaseCheck<Long>
      *
      * @param object
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
-     * @return an optional {@link CheckFlag} object that contains that values in the tag that need to be flagged
+     * @return an optional {@link CheckFlag} object that contains that values in the tag that need
+     *         to be flagged
      */
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
@@ -161,19 +166,22 @@ public class StreetNameCheck extends BaseCheck<Long>
 
         if (countryInfo != null)
         {
-            final ArrayList<ArrayList<String>> allValuesFoundInObject = this.objectContainsValues(object, countryInfo);
+            final ArrayList<ArrayList<String>> allValuesFoundInObject = this
+                    .objectContainsValues(object, countryInfo);
             this.markAsFlagged(object.getOsmIdentifier());
 
             // the item contains a flagged tag but does not contain a tag that isn't to be flagged
             if (!allValuesFoundInObject.get(0).isEmpty() && allValuesFoundInObject.get(1).isEmpty())
             {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0, allValuesFoundInObject.get(0))));
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(0, allValuesFoundInObject.get(0))));
             }
 
             // the item contains a deprecated tag
             if (!allValuesFoundInObject.get(2).isEmpty())
             {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1, allValuesFoundInObject.get(2))));
+                return Optional.of(this.createFlag(object,
+                        this.getLocalizedInstruction(1, allValuesFoundInObject.get(2))));
             }
         }
         return Optional.empty();
@@ -181,12 +189,13 @@ public class StreetNameCheck extends BaseCheck<Long>
 
     @Override
     protected List<String> getFallbackInstructions()
-    { return FALLBACK_INSTRUCTIONS; }
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
 
     /**
-     *
      * @param object
-     *              the atlas object supplied by the Atlas-Checks framework for evaluation
+     *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return an object of class CountryInfo if the index of the object is in the config file
      */
     private CountryInfo createCountryInfo(final AtlasObject object)
@@ -197,19 +206,20 @@ public class StreetNameCheck extends BaseCheck<Long>
             return null;
         }
         return new CountryInfo(this.allValuesToFlagConfig.get(objectIndex),
-                this.allValuesNotFlagConfig.get(objectIndex), this.allDeprecatedValuesToFlagConfig.get(objectIndex), this.allItemsToFlagConfig.get(objectIndex));
+                this.allValuesNotFlagConfig.get(objectIndex),
+                this.allDeprecatedValuesToFlagConfig.get(objectIndex),
+                this.allItemsToFlagConfig.get(objectIndex));
     }
 
-
     /**
-     *
      * @param typeTag
-     *              the type tag of the object, null if it doesn't exist
+     *            the type tag of the object, null if it doesn't exist
      * @param deprecatedTags
-     *              the deprecated values that need to be flagged
+     *            the deprecated values that need to be flagged
      * @return return the items
      */
-    private ArrayList<String> findDeprecatedValuesToFlag(final String typeTag, final List<String> deprecatedTags)
+    private ArrayList<String> findDeprecatedValuesToFlag(final String typeTag,
+            final List<String> deprecatedTags)
     {
         final ArrayList<String> deprecatedValuesToFlagInObject = new ArrayList<>();
         if (!deprecatedTags.isEmpty() && (typeTag != null))
@@ -228,16 +238,17 @@ public class StreetNameCheck extends BaseCheck<Long>
     }
 
     /**
-     *
      * @param streetTag
-     *              the street tag of the object, null if doesn't exist
+     *            the street tag of the object, null if doesn't exist
      * @param nameTag
-     *              the name tag of the object, null if doesn't exist
+     *            the name tag of the object, null if doesn't exist
      * @param containTags
-     *              the list of values that need to be flagged
-     * @return an ArrayList of Strings, tags that need to be flagged found in object, otherwise returns null
+     *            the list of values that need to be flagged
+     * @return an ArrayList of Strings, tags that need to be flagged found in object, otherwise
+     *         returns null
      */
-    private ArrayList<String> findValuesToFlag(final String streetTag, final String nameTag, final List<String> containTags)
+    private ArrayList<String> findValuesToFlag(final String streetTag, final String nameTag,
+            final List<String> containTags)
     {
         final ArrayList<String> valuesToFlagInObject = new ArrayList<>();
         if (!containTags.isEmpty() && (streetTag != null || nameTag != null))
@@ -257,16 +268,17 @@ public class StreetNameCheck extends BaseCheck<Long>
     }
 
     /**
-     *
      * @param streetTag
-     *              the street tag of the object, null if doesn't exist
+     *            the street tag of the object, null if doesn't exist
      * @param nameTag
-     *              the name tag of the object, null if doesn't exist
+     *            the name tag of the object, null if doesn't exist
      * @param notContainTags
-     *              list of values that are not to be flagged
-     * @return an ArrayList of Strings, tags that don't need to be flagged found in object, otherwise returns null
+     *            list of values that are not to be flagged
+     * @return an ArrayList of Strings, tags that don't need to be flagged found in object,
+     *         otherwise returns null
      */
-    private ArrayList<String> findValuesToNotFlag(final String streetTag, final String nameTag, final List<String> notContainTags)
+    private ArrayList<String> findValuesToNotFlag(final String streetTag, final String nameTag,
+            final List<String> notContainTags)
     {
         final ArrayList<String> valuesToNotFlagInObject = new ArrayList<>();
         if (!notContainTags.isEmpty() && (streetTag != null || nameTag != null))
@@ -292,10 +304,11 @@ public class StreetNameCheck extends BaseCheck<Long>
      *            the atlas object supplied by the Atlas-Checks framework for evaluation
      * @param countryInfo
      *            the countryInfo object that contains all the values needed for flagging
-     * @return an array that contains tags that have been found at their appropriate indeces: 0 = contains tag,
-     *         1 = not contains tag, 2 = tag is deprecated
+     * @return an array that contains tags that have been found at their appropriate indeces: 0 =
+     *         contains tag, 1 = not contains tag, 2 = tag is deprecated
      */
-    private ArrayList<ArrayList<String>> objectContainsValues(final AtlasObject object, final CountryInfo countryInfo)
+    private ArrayList<ArrayList<String>> objectContainsValues(final AtlasObject object,
+            final CountryInfo countryInfo)
     {
         final Map<String, String> tags = object.getTags();
         final String streetTag = tags.get(AddressStreetTag.KEY);
@@ -315,7 +328,3 @@ public class StreetNameCheck extends BaseCheck<Long>
     }
 
 }
-
-
-
-
