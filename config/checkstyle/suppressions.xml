@@ -10,5 +10,4 @@
     <suppress checks="MultipleStringLiterals" files="src/integrationTest/*" />
     <suppress checks="InnerAssignment" files="src/test/*" />
     <suppress checks="InnerAssignment" files="src/integrationTest/*" />
-    <suppress checks="AvoidEscapedUnicodeCharacters" files=".*StreetNameCheck.*java.*" />
 </suppressions>

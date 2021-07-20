@@ -74,13 +74,13 @@ public class StreetNameCheck extends BaseCheck<Long>
     private static final List<String> ALL_COUNTRIES_ISO_DEFAULT = List.of("AUT", "CHE", "DEU",
             "LIE");
     private static final List<List<String>> ALL_VALUES_TO_FLAG_DEFAULT = List.of(List.of("strasse"),
-            List.of("stra\u00dfe"), List.of("strasse"), List.of("stra\u00dfe"));
+            List.of("straße"), List.of("strasse"), List.of("straße"));
     private static final List<List<String>> ALL_VALUES_NOT_FLAG_DEFAULT = List
             .of(List.of("strasser"), List.of(), List.of("strasser"), List.of());
     private static final List<List<String>> ALL_DEPRECATED_VALUES_TO_FLAG_DEFAULT = List
             .of(List.of(), List.of(), List.of("associatedstreet"), List.of());
     private static final List<List<String>> ALL_ITEMS_TO_FLAG_DEFAULT = List.of(List.of("ss"),
-            List.of("\u00df"), List.of("ss"), List.of("\u00df"));
+            List.of("ß"), List.of("ss"), List.of("ß"));
 
     private static final String CONTAINS_VALUE_INSTRUCTION = "The object contains flagged tags: {0}";
     private static final String CONTAINS_DEPRECATED_VALUE_INSTRUCTION = "The type tag {0} is deprecated.";
@@ -200,7 +200,16 @@ public class StreetNameCheck extends BaseCheck<Long>
      */
     private CountryInfo createCountryInfo(final AtlasObject object)
     {
-        final int objectIndex = this.allCountriesIsoConfig.indexOf(object.tag(ISOCountryTag.KEY));
+        final int objectIndex;
+        final String isoTag = object.tag(ISOCountryTag.KEY);
+        if (isoTag != null)
+        {
+            objectIndex = this.allCountriesIsoConfig.indexOf(object.tag(ISOCountryTag.KEY));
+        }
+        else
+        {
+            objectIndex = -1;
+        }
         if (objectIndex < 0)
         {
             return null;

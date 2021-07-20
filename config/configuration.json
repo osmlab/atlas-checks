@@ -1078,10 +1078,10 @@
     "enabled": true,
     "check" : {
       "countries" : ["AUT", "CHE", "DEU", "LIE"],
-      "containsValues" : [["strasse"],["stra\u00dfe"],["strasse"],["stra\u00dfe"]],
+      "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
       "notContainsValues" : [["strasser"],[],["strasser"],[]],
       "deprecatedValues" : [[], [], ["AssociatedStreet"], []],
-      "tags" : [["ss"],["\u00df"],["ss"],["\u00df"]]
+      "tags" : [["ss"],["ß"],["ss"],["ß"]]
     },
     "challenge": {
       "description": "Checks if the countries specified above contain the values in their tags",
