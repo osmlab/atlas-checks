@@ -1,6 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -34,6 +36,7 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(HIGHWAY_IS_MOTORWAY_INSTRUCTION,
             HIGHWAY_IS_FOOTWAY_INSTRUCTION);
     /**
+     * FIXME
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
      * checks with this constructor, supplying a configuration that can be used to adjust any
      * parameters that the check uses during operation.
@@ -59,7 +62,7 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         // by default we will assume all objects as valid
-        return (!this.isFlagged(object.getOsmIdentifier()) && (object instanceof Edge && ((Edge) object).isMainEdge()));
+        return !this.isFlagged(object.getOsmIdentifier()) && (object instanceof Edge && ((Edge) object).isMainEdge());
     }
 
     @Override
@@ -84,8 +87,8 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     {
         this.markAsFlagged(object.getOsmIdentifier());
 
-        String accessTag = object.tag(AccessTag.KEY);
-        String highwayTag = object.tag(HighwayTag.KEY);
+        final String accessTag = object.tag(AccessTag.KEY);
+        final String highwayTag = object.tag(HighwayTag.KEY);
 
         //Check is the access tag is yes or permissive
         if (AccessTagsToFlag.contains(accessTag))
@@ -105,6 +108,7 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     }
 
     @Override
-    protected List<String> getFallbackInstructions() { return FALLBACK_INSTRUCTIONS; }
+    protected List<String> getFallbackInstructions()
+    { return FALLBACK_INSTRUCTIONS; }
 
 }
