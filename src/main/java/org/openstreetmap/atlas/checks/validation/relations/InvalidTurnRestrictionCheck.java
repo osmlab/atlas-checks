@@ -141,7 +141,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         // Live example: https://www.openstreetmap.org/relation/2741062
         // same link in Osmose 3180:
         // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-34.880444&lon=-56.149815&level=2&fixable=online&issue_uuid=e73991dc-9c90-3e49-f1fc-06076844f568
-        // NOT IMPLEMENTED AS VERIFYING WITH EDITORIAL TEAM Heidi and Kyle.
+        // NOT IMPLEMENTED AFTER VERIFYING WITH EDITORIAL TEAM Heidi and Kyle.
         // while we don't need a turn restriction when there's already a oneway, its existence is
         // not actually breaking anything.
 
@@ -199,11 +199,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
      */
     private boolean isHeadingStraight(final Angle angle)
     {
-        if (Math.abs(angle.asDegrees()) < this.straightOnAngleThreshold.asDegrees())
-        {
-            return true;
-        }
-        return false;
+        return (Math.abs(angle.asDegrees()) < this.straightOnAngleThreshold.asDegrees());
     }
 
     /**
@@ -215,11 +211,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
      */
     private boolean isLeftTurn(final Angle angle)
     {
-        if (angle.asDegrees() < 0 && angle.asDegrees() > -MAXIMUM_ANGLE)
-        {
-            return true;
-        }
-        return false;
+        return (angle.asDegrees() < 0 && angle.asDegrees() > -MAXIMUM_ANGLE);
     }
 
     /**
@@ -231,11 +223,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
      */
     private boolean isRightTurn(final Angle angle)
     {
-        if (angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE)
-        {
-            return true;
-        }
-        return false;
+        return (angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE);
     }
 
     /**
@@ -247,11 +235,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
      */
     private boolean isUTurn(final Angle angle)
     {
-        if (Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees())
-        {
-            return true;
-        }
-        return false;
+        return (Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees());
     }
 
     /**
@@ -293,10 +277,11 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
 
         // find the turnAngle between TO and FROM using angle subtraction
         // the resulting turnAngle will be between -180 to 180 degrees
-        // from
-        // \
-        // \
-        // \------> to
+        // 
+        //    from
+        //      \
+        //       \
+        //        \------> to
         //
 
         final Angle turnAngle = toMembers.iterator().next().asPolyLine().initialHeading().get()
@@ -305,36 +290,15 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         final TurnRestrictionTag turnRestrictionTag = Validators
                 .from(TurnRestrictionTag.class, relation).get();
 
-        // Checking straight-on restriction tag
-        if ((TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
+        return (((TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
                 || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
-                && !this.isHeadingStraight(turnAngle))
-        {
-            return false;
-        }
-
-        // Checking right-turn restriction tag
-        if ((TurnRestrictionTag.ONLY_LEFT_TURN == turnRestrictionTag
+                && !this.isHeadingStraight(turnAngle)) &&
+                ((TurnRestrictionTag.ONLY_LEFT_TURN == turnRestrictionTag
                 || TurnRestrictionTag.NO_LEFT_TURN == turnRestrictionTag)
-                && this.isRightTurn(turnAngle))
-        {
-            return false;
-        }
-
-        // Checking left-turn restriction tag
-        if ((TurnRestrictionTag.ONLY_RIGHT_TURN == turnRestrictionTag
+                && this.isRightTurn(turnAngle)) &&
+                ((TurnRestrictionTag.ONLY_RIGHT_TURN == turnRestrictionTag
                 || TurnRestrictionTag.NO_RIGHT_TURN == turnRestrictionTag)
-                && this.isLeftTurn(turnAngle))
-        {
-            return false;
-        }
-
-        // Checking U-turn restriction tag
-        if (TurnRestrictionTag.NO_U_TURN == turnRestrictionTag && !this.isUTurn(turnAngle))
-        {
-            return false;
-        }
-
-        return true;
+                && this.isLeftTurn(turnAngle)) &&
+                (TurnRestrictionTag.NO_U_TURN == turnRestrictionTag && !this.isUTurn(turnAngle)));
     }
 }
