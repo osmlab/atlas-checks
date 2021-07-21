@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -540,6 +540,9 @@
     }
   },
   "InvalidTurnRestrictionCheck": {
+    "enabled": true,
+    "straight.on.angle.threshold": 60.0,
+    "uturn.angle.threshold": 100.0,
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
       "blurb": "Invalid Turn Restrictions",
