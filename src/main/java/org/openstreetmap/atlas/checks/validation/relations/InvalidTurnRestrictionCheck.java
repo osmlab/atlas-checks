@@ -54,7 +54,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         INVALID_REASON_INSTRUCTION_MAP.put(
                 "has same members in from and to, but has no via members to disambiguate.",
                 "Via member is required for restrictions with the same to and from members");
-        INVALID_REASON_INSTRUCTION_MAP.put("Case 3: Can't build route from", routeInstruction);
+        INVALID_REASON_INSTRUCTION_MAP.put("Can't build route from", routeInstruction);
         INVALID_REASON_INSTRUCTION_MAP.put("Unable to build a route from edges", routeInstruction);
         INVALID_REASON_INSTRUCTION_MAP.put(
                 "A route was found from start to end, but not every unique edge was used",
@@ -141,7 +141,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         // Live example: https://www.openstreetmap.org/relation/2741062
         // same link in Osmose 3180:
         // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-34.880444&lon=-56.149815&level=2&fixable=online&issue_uuid=e73991dc-9c90-3e49-f1fc-06076844f568
-        // NOT IMPLEMENTED AFTER VERIFYING WITH EDITORIAL TEAM Heidi and Kyle.
+        // NOT IMPLEMENTED after verifying with editorial team.
         // while we don't need a turn restriction when there's already a oneway, its existence is
         // not actually breaking anything.
 
@@ -193,56 +193,56 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     /**
      * Return true if the turn angle makes a straight path within the threshold angle
      *
-     * @param Angle
-     *            angle ^ \ | |
+     * @param Angle angle
+     *
      * @return true if the turn angle makes a straight path within the threshold angle
      */
     private boolean isHeadingStraight(final Angle angle)
     {
-        return (Math.abs(angle.asDegrees()) < this.straightOnAngleThreshold.asDegrees());
+        return Math.abs(angle.asDegrees()) < this.straightOnAngleThreshold.asDegrees();
     }
 
     /**
      * Return true if the turn angle makes a left turn
      *
-     * @param Angle
-     *            angle
+     * @param Angle angle
+     *
      * @return true if the turn angle makes a left turn
      */
     private boolean isLeftTurn(final Angle angle)
     {
-        return (angle.asDegrees() < 0 && angle.asDegrees() > -MAXIMUM_ANGLE);
+        return angle.asDegrees() < 0 && angle.asDegrees() > -MAXIMUM_ANGLE;
     }
 
     /**
      * Return true if the turn angle makes a right turn
      *
-     * @param Angle
-     *            angle
+     * @param Angle angle
+     *
      * @return true if the turn angle makes a right turn
      */
     private boolean isRightTurn(final Angle angle)
     {
-        return (angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE);
+        return angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE;
     }
 
     /**
      * Return true if the turn angle makes a U-turn
      *
-     * @param Angle
-     *            angles _ / | v | |
+     * @param Angle angle
+     *
      * @return true if the turn angle makes a U-turn
      */
     private boolean isUTurn(final Angle angle)
     {
-        return (Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees());
+        return Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees();
     }
 
     /**
      * Return true if the turn restriction tag satisfies the topology
      *
-     * @param Relation
-     *            relation
+     * @param Relation relation
+     *
      * @return true if the turn restriction tag satisfies the topology
      */
     private boolean isValidTopology(final Relation relation)
@@ -290,7 +290,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         final TurnRestrictionTag turnRestrictionTag = Validators
                 .from(TurnRestrictionTag.class, relation).get();
 
-        return (((TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
+        return ((TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
                 || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
                 && !this.isHeadingStraight(turnAngle)) &&
                 ((TurnRestrictionTag.ONLY_LEFT_TURN == turnRestrictionTag
@@ -299,6 +299,6 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
                 ((TurnRestrictionTag.ONLY_RIGHT_TURN == turnRestrictionTag
                 || TurnRestrictionTag.NO_RIGHT_TURN == turnRestrictionTag)
                 && this.isLeftTurn(turnAngle)) &&
-                (TurnRestrictionTag.NO_U_TURN == turnRestrictionTag && !this.isUTurn(turnAngle)));
+                (TurnRestrictionTag.NO_U_TURN == turnRestrictionTag && !this.isUTurn(turnAngle));
     }
 }
