@@ -239,6 +239,69 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     }
 
     /**
+     * Return true if the STRAIGHT_ON restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag turnRestrictionTag
+     * 
+     * @param Angle turnAngle
+     *
+     * @return true if the STRAIGHT_ON restriction doesn't match the topology
+     */
+    private boolean isStaightOnTopologyViolated(final TurnRestrictionTag turnRestrictionTag, final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
+                || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
+                && !this.isHeadingStraight(turnAngle);
+    }
+
+    /**
+     * Return true if the LEFT_TURN restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag turnRestrictionTag
+     * 
+     * @param Angle turnAngle
+     *
+     * @return true if the LEFT_TURN restriction doesn't match the topology
+     */
+    private boolean isLeftTurnTopologyViolated(final TurnRestrictionTag turnRestrictionTag, final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_LEFT_TURN == turnRestrictionTag
+                || TurnRestrictionTag.NO_LEFT_TURN == turnRestrictionTag)
+                && this.isRightTurn(turnAngle);
+    }    
+
+    /**
+     * Return true if the RIGHT_TURN restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag turnRestrictionTag
+     * 
+     * @param Angle turnAngle
+     *
+     * @return true if the RIGHT_TURN restriction doesn't match the topology
+     */
+    private boolean isRightTurnTopologyViolated(final TurnRestrictionTag turnRestrictionTag, final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_RIGHT_TURN == turnRestrictionTag
+                || TurnRestrictionTag.NO_RIGHT_TURN == turnRestrictionTag)
+                && this.isLeftTurn(turnAngle);
+    }    
+
+    /**
+     * Return true if the U_TURN restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag turnRestrictionTag
+     * 
+     * @param Angle turnAngle
+     *
+     * @return true if the U_TURN restriction doesn't match the topology
+     */
+    private boolean isUTurnTopologyViolated(final TurnRestrictionTag turnRestrictionTag, final Angle turnAngle)
+    {
+        return TurnRestrictionTag.NO_U_TURN == turnRestrictionTag 
+                && !this.isUTurn(turnAngle);
+    }    
+
+    /**
      * Return true if the turn restriction tag satisfies the topology
      *
      * @param Relation relation
@@ -290,15 +353,10 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         final TurnRestrictionTag turnRestrictionTag = Validators
                 .from(TurnRestrictionTag.class, relation).get();
 
-        return ((TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
-                || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
-                && !this.isHeadingStraight(turnAngle)) &&
-                ((TurnRestrictionTag.ONLY_LEFT_TURN == turnRestrictionTag
-                || TurnRestrictionTag.NO_LEFT_TURN == turnRestrictionTag)
-                && this.isRightTurn(turnAngle)) &&
-                ((TurnRestrictionTag.ONLY_RIGHT_TURN == turnRestrictionTag
-                || TurnRestrictionTag.NO_RIGHT_TURN == turnRestrictionTag)
-                && this.isLeftTurn(turnAngle)) &&
-                (TurnRestrictionTag.NO_U_TURN == turnRestrictionTag && !this.isUTurn(turnAngle));
+        return  !this.isStaightOnTopologyViolated(turnRestrictionTag, turnAngle) &&
+                !this.isLeftTurnTopologyViolated(turnRestrictionTag, turnAngle) &&
+                !this.isRightTurnTopologyViolated(turnRestrictionTag, turnAngle) &&
+                !this.isUTurnTopologyViolated(turnRestrictionTag, turnAngle);
     }
+
 }
