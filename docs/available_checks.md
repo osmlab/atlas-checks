@@ -82,6 +82,7 @@ This document is a list of tables with a description and link to documentation f
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
 | [ConstructionCheck](checks/constructionCheck.md) | The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or the expected finish date has been passed. |
 | [FixMeReviewCheck](checks/fixMeReviewCheck.md) | The purpose of this check is to flag features that contain the "fixme"/"FIXME" tags with along with a variety of other important tags. |
+| [HighwayAccessCheck](checks/highwayAccessCheck.md) | The check flags the objects that contain the proper access and highway tags.
 | [HighwayMissingNameAndRefTagCheck](checks/highwayMissingNameAndRefTagCheck.md) | This check detects highways that are missing a name and ref tag. At least one of them is required. |
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
