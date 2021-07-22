@@ -46,6 +46,9 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     private static final int MAXIMUM_ANGLE = 180;
     static
     {
+        // temporarily add Osmose Class info in this file to make it easier for discussion
+        // all unnecessary comments or figures will be removed in the final PR
+        // and all live examples moved to the InvalidTurnRestrictionCheck.md file
         final String routeInstruction = "Class 3: There is not a single navigable route to restrict, this restriction may be redundant or need to be split in to multiple relations";
         INVALID_REASON_INSTRUCTION_MAP.put("Cannot have a route with no members", routeInstruction);
         INVALID_REASON_INSTRUCTION_MAP.put(
@@ -215,46 +218,6 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     }
 
     /**
-     * Return true if the turn angle makes a right turn
-     *
-     * @param Angle angle
-     *
-     * @return true if the turn angle makes a right turn
-     */
-    private boolean isRightTurn(final Angle angle)
-    {
-        return angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE;
-    }
-
-    /**
-     * Return true if the turn angle makes a U-turn
-     *
-     * @param Angle angle
-     *
-     * @return true if the turn angle makes a U-turn
-     */
-    private boolean isUTurn(final Angle angle)
-    {
-        return Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees();
-    }
-
-    /**
-     * Return true if the STRAIGHT_ON restriction doesn't match the topology
-     *
-     * @param TurnRestrictionTag turnRestrictionTag
-     * 
-     * @param Angle turnAngle
-     *
-     * @return true if the STRAIGHT_ON restriction doesn't match the topology
-     */
-    private boolean isStaightOnTopologyViolated(final TurnRestrictionTag turnRestrictionTag, final Angle turnAngle)
-    {
-        return (TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
-                || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
-                && !this.isHeadingStraight(turnAngle);
-    }
-
-    /**
      * Return true if the LEFT_TURN restriction doesn't match the topology
      *
      * @param TurnRestrictionTag turnRestrictionTag
@@ -271,6 +234,18 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     }    
 
     /**
+     * Return true if the turn angle makes a right turn
+     *
+     * @param Angle angle
+     *
+     * @return true if the turn angle makes a right turn
+     */
+    private boolean isRightTurn(final Angle angle)
+    {
+        return angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE;
+    }
+
+    /**
      * Return true if the RIGHT_TURN restriction doesn't match the topology
      *
      * @param TurnRestrictionTag turnRestrictionTag
@@ -285,6 +260,34 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
                 || TurnRestrictionTag.NO_RIGHT_TURN == turnRestrictionTag)
                 && this.isLeftTurn(turnAngle);
     }    
+
+    /**
+     * Return true if the STRAIGHT_ON restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag turnRestrictionTag
+     * 
+     * @param Angle turnAngle
+     *
+     * @return true if the STRAIGHT_ON restriction doesn't match the topology
+     */
+    private boolean isStaightOnTopologyViolated(final TurnRestrictionTag turnRestrictionTag, final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
+                || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
+                && !this.isHeadingStraight(turnAngle);
+    }   
+
+    /**
+     * Return true if the turn angle makes a U-turn
+     *
+     * @param Angle angle
+     *
+     * @return true if the turn angle makes a U-turn
+     */
+    private boolean isUTurn(final Angle angle)
+    {
+        return Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees();
+    }
 
     /**
      * Return true if the U_TURN restriction doesn't match the topology
