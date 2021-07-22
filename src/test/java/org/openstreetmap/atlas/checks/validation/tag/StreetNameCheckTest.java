@@ -18,7 +18,6 @@ public class StreetNameCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    // FIXME
     private final StreetNameCheck check = new StreetNameCheck(
             ConfigurationResolver.emptyConfiguration());
 
