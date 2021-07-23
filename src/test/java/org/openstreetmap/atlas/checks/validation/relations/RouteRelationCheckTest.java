@@ -7,7 +7,7 @@ import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;  
 
 /**
  * Unit tests for RoutePrintCheck.
