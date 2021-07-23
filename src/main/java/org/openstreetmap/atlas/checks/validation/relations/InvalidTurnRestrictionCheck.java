@@ -6,16 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.TurnRestriction;
@@ -35,9 +31,9 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "Relation ID: {0,number,#} is marked as turn restriction, but it is not well-formed: {1}");
-    private static final String MISSING_TO_FROM_VIA_INSTRUCTION = "Class 1: Missing a FROM and/or TO member and/or VIA member";
-    private static final String INVALID_MEMBER_TYPE_INSTRUCTION = "Class 2: Invalid member type";
-    private static final String TOPOLOGY_NOT_MATCH_RESTRICTION_INSTRUCTION = "Class 5: Restriction doesn't match topology";
+    private static final String MISSING_TO_FROM_VIA_INSTRUCTION = "Missing a FROM and/or TO member and/or VIA member";
+    private static final String INVALID_MEMBER_TYPE_INSTRUCTION = "Invalid member type";
+    private static final String TOPOLOGY_NOT_MATCH_RESTRICTION_INSTRUCTION = "Restriction doesn't match topology";
     private static final String UNKNOWN_ISSUE = "Unable to specify issue";
     private static final Map<String, String> INVALID_REASON_INSTRUCTION_MAP = new HashMap<>();
     private static final long serialVersionUID = -983698716949386657L;
@@ -46,10 +42,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     private static final int MAXIMUM_ANGLE = 180;
     static
     {
-        // temporarily add Osmose Class info in this file to make it easier for discussion
-        // all unnecessary comments or figures will be removed in the final PR
-        // and all live examples moved to the InvalidTurnRestrictionCheck.md file
-        final String routeInstruction = "Class 3: There is not a single navigable route to restrict, this restriction may be redundant or need to be split in to multiple relations";
+        final String routeInstruction = "There is not a single navigable route to restrict, this restriction may be redundant or need to be split in to multiple relations";
         INVALID_REASON_INSTRUCTION_MAP.put("Cannot have a route with no members", routeInstruction);
         INVALID_REASON_INSTRUCTION_MAP.put(
                 "Restriction relation should not have more than 1 via node.",
@@ -97,12 +90,6 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         final Set<AtlasObject> members = relation.members().stream().map(RelationMember::getEntity)
                 .collect(Collectors.toSet());
 
-        // Class 1: "Restriction relation, wrong number of members" : some required member are
-        // missing,
-        // eg. there is a "from" and "via" role, but missing the "to" role.
-        // Live example: https://www.openstreetmap.org/relation/7070408
-        // same link in Osmose 3180:
-        // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-34.881034&lon=-55.048703&level=2&fixable=online&issue_uuid=a647103a-7c01-9a50-fc2b-dd517f6e409e
         if (relation.members().stream()
                 .noneMatch(member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_FROM))
                 || relation.members().stream().noneMatch(
@@ -114,22 +101,14 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
                     relation.getOsmIdentifier(), MISSING_TO_FROM_VIA_INSTRUCTION)));
         }
 
-        // Class 2: "Restriction relation, bad member type"
-        // Invalid member type (e.g. "disused:highway") for TO or FROM
-        // Live example: https://www.openstreetmap.org/relation/3658651
-        // same link in Osmose 3180:
-        // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-33.703765&lon=-53.457542&level=2&fixable=online&issue_uuid=7aece9a1-aa7f-172e-d022-8679ec3499eb
+        // Restriction relation, bad member type
         if (relation.members().stream().anyMatch(member -> member.getEntity() instanceof Line))
         {
             return Optional.of(createFlag(members, this.getLocalizedInstruction(0,
                     relation.getOsmIdentifier(), INVALID_MEMBER_TYPE_INSTRUCTION)));
         }
 
-        // Class 3: "Unconnected restriction relation ways" :
         // Build a turn restriction
-        // Live example: https://www.openstreetmap.org/relation/8221967
-        // same link in Osmose 3180:
-        // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-27.526051&lon=153.055579&level=2&fixable=online&issue_uuid=38ef3192-5827-8899-0024-577812d848c8
         final TurnRestriction turnRestriction = new TurnRestriction(relation);
         // If it is not valid map the reason to an instruction
         if (!turnRestriction.isValid())
@@ -139,19 +118,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
                     this.getInstructionFromInvalidReason(turnRestriction.getInvalidReason()))));
         }
 
-        // Class 4: "Restriction relation, bad oneway direction on "from" or "to" member" :
-        // impossible to reach the restriction by respecting the oneway.
-        // Live example: https://www.openstreetmap.org/relation/2741062
-        // same link in Osmose 3180:
-        // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-34.880444&lon=-56.149815&level=2&fixable=online&issue_uuid=e73991dc-9c90-3e49-f1fc-06076844f568
-        // NOT IMPLEMENTED after verifying with editorial team.
-        // while we don't need a turn restriction when there's already a oneway, its existence is
-        // not actually breaking anything.
-
-        // Class 5: Restriction doesn't match topology
-        // Live example: https://www.openstreetmap.org/relation/5451368
-        // same link in Osmose 3180:
-        // http://osmose.openstreetmap.fr/en/map/#item=3180&zoom=17&lat=-33.236907&lon=-54.379256&level=2&fixable=online&issue_uuid=2b04fd37-d2aa-091a-c005-688cd62b5f28
+        // Restriction doesn't match topology
         if (!this.isValidTopology(relation))
         {
             return Optional.of(createFlag(members, this.getLocalizedInstruction(0,
@@ -159,9 +126,6 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         }
 
         return Optional.empty();
-
-        // Class 31801 "Useless non u-turn restriction, it's forbidden by local law" :
-        // Not implemented because it is no longer an OSMOSE 3180 issue
     }
 
     @Override
@@ -313,45 +277,10 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
      */
     private boolean isValidTopology(final Relation relation)
     {
-        // Build the via members
-        final Set<AtlasItem> viaMembers = relation.members().stream()
-                .filter(member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_VIA))
-                .filter(member -> member.getEntity() instanceof Node
-                        || member.getEntity() instanceof Edge)
-                .map(RelationMember::getEntity).map(entity -> (AtlasItem) entity)
-                .collect(Collectors.toSet());
-
-        // Filter the members to extract only the "from" members that are connected at the end
-        // to VIA members.
-        final Set<Edge> fromMembers = new TreeSet<>();
-        relation.members().stream()
-                .filter(member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_FROM)
-                        && member.getEntity() instanceof Edge
-                        && (!viaMembers.isEmpty()
-                                && ((Edge) member.getEntity()).isConnectedAtEndTo(viaMembers)))
-                .forEach(member -> fromMembers.add((Edge) member.getEntity()));
-
-        // Filter the members to extract only the "TO" members that are connected at the
-        // beginning to VIA members
-        final Set<Edge> toMembers = new TreeSet<>();
-        relation.members().stream()
-                .filter(member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_TO)
-                        && member.getEntity() instanceof Edge
-                        && (!viaMembers.isEmpty()
-                                && ((Edge) member.getEntity()).isConnectedAtStartTo(viaMembers)))
-                .forEach(member -> toMembers.add((Edge) member.getEntity()));
-
-        // find the turnAngle between TO and FROM using angle subtraction
-        // the resulting turnAngle will be between -180 to 180 degrees
-        // 
-        //    from
-        //      \
-        //       \
-        //        \------> to
-        //
-
-        final Angle turnAngle = toMembers.iterator().next().asPolyLine().initialHeading().get()
-                .subtract(fromMembers.iterator().next().asPolyLine().finalHeading().get());
+        final TurnRestriction turnRestriction = new TurnRestriction(relation);
+      
+        final Angle turnAngle = turnRestriction.getTo().asPolyLine().initialHeading().get()
+                .subtract(turnRestriction.getFrom().asPolyLine().finalHeading().get());
 
         final TurnRestrictionTag turnRestrictionTag = Validators
                 .from(TurnRestrictionTag.class, relation).get();

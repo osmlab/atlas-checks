@@ -56,7 +56,7 @@ public class InvalidTurnRestrictionTest
         this.verifier.actual(this.testCaseRule.onlyViaAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
         this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("Missing a from and/or to member")));
+                .assertTrue(flag.getInstructions().contains("Missing a FROM and/or TO member and/or VIA member")));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class InvalidTurnRestrictionTest
         this.verifier.actual(this.testCaseRule.sameFromToNoViaAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "Via member is required for restrictions with the same to and from members")));
+                "Missing a FROM and/or TO member and/or VIA member")));
     }
 
     @Test
