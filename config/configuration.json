@@ -4,8 +4,13 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
+
+  "RouteRelationCheck": {
+    "enabled": true    
+  },
+
   "PoolSizeCheck": {
     "surface": {
       "maximum": 1000.0,
@@ -123,7 +128,7 @@
     }
     },
   "BuildingRoadIntersectionCheck": {
-    "car.navigable": true,
+    "car.navigable": false,
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",
@@ -279,12 +284,6 @@
   },
   "EdgeCrossingEdgeCheck": {
     "minimum.highway.type": "no",
-    "maximum.highway.type": "motorway",
-    "car.navigable": true,
-    "pedestrian.navigable": false,
-    "crossing.car.navigable": true,
-    "crossing.pedestrian.navigable": false,
-    "indoor.mapping": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
@@ -424,17 +423,6 @@
       "tags":"building"
     }
   },
-  "IntersectionAtDifferentLayersCheck":
-  {
-    "great.separation.filter":"",
-    "indoor.mapping.filter": "indoor->*|highway->corridor,steps|level->*",
-    "challenge": {
-      "description": "Tasks containing Nodes that intersect Ways at different levels.",
-      "blurb": "Invalid Nodes",
-      "instruction": "Disconnect intersection by removing Node from one of the Way or remove incorrect layer tag",
-      "difficulty": "EASY"
-    }
-  },
   "InvalidAccessTagCheck":{
     "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
     "minimum.highway.type":"residential",
@@ -475,7 +463,7 @@
     }
   },
   "InvalidMultiPolygonRelationCheck": {
-    "members.one.ignore": true,
+    "members.one.ignore": f,
     "overlap.points.minimum": 0,
     "overlap.points.maximum": 300000,
     "challenge": {
@@ -603,9 +591,8 @@
     "highways.exclude": ["bus_guideway"],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
     "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|ford->!no&ford->*",
-    "lineItems.footpath": "highway->footway,bridleway,steps,corridor,path",
     "nodes.intersecting.non_offending": "ferry->!no&ferry->*|ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal",
-    "buildings.flag": true,
+    "buildings.flag": false,
     "challenge": {
       "description": "Certain OSM features should not cross waterbodies.",
       "blurb": "Edit features overlapping the waterbody so they either validly overlap or do not overlap.",
@@ -779,7 +766,7 @@
   },
   "OverlappingEdgeCheck": {
     "highway.priority.minimum": "residential",
-    "pedestrian.areas.filter": true,
+    "pedestrian.areas.filter": false,
     "challenge": {
       "description": "Tasks will include highways that are overlapped by another highway.",
       "blurb": "Overlapping Highways",
@@ -1002,7 +989,7 @@
   "SignPostCheck": {
     "link":{
       "length.minimum.meters": 50.0,
-      "link.branch.check": true
+      "link.branch.check": false
     },
     "source.filter": "highway->motorway,trunk",
     "ramp.filter":"highway->motorway_link,trunk_link",
@@ -1076,7 +1063,7 @@
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
-    "character.single.ignore": true,
+    "character.single.ignore": false,
     "challenge": {
       "description": "Tasks containing name tags with only integers",
       "blurb": "Street Names Integers Only",
