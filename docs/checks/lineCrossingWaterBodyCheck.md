@@ -8,6 +8,8 @@ An Edge should be flagged if it has the appropriate highway tag (specified in "h
 
 A building should be flagged if the "buildings.flag" is set to true, and the building is not a public_transport->station,aerialway=station, is on the same level as the waterbody, and intersects a valid part of the waterbody.
 
+Footpaths highway=(footway|bridleway|steps|corridor|path) should not be flagged if they are ending at waterbody. Special handling of highway=steps, which may go inside a waterbody. 
+
 #### Live Examples
 
 1. Street [id:32845241](https://www.openstreetmap.org/way/32845241) and building [id:753774494](https://www.openstreetmap.org/way/753774494) intersect waterbody feature [id:10886166](https://www.openstreetmap.org/relation/10886166) invalidly. Both the street and waterbody share a location (node) at the point of intersection, but this node is not tagged with something from "nodes.intersecting.non_offending".

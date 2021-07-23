@@ -31,6 +31,7 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     private static final String LOCATION_OUTSIDE_AREA_2 = "47.581829, -122.303734";
     private static final String LOCATION_OUTSIDE_AREA_3 = "47.573128, -122.292999";
     private static final String LOCATION_OUTSIDE_AREA_4 = "47.569073, -122.309608";
+    private static final String LOCATION_INSIDE_AREA_1 = "47.5758164, -122.3059201";
 
     private static final String MULIPOLYGON_OUTER_1 = "47.6265, -122.3815";
     private static final String MULIPOLYGON_OUTER_2 = "47.5948, -122.3854";
@@ -469,6 +470,36 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     private Atlas invalidCrossingLineItemAtlas;
 
     @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1234000000", coordinates = @Loc(value = AREA_LOCATION_1)),
+                    @Node(id = "2345000000", coordinates = @Loc(value = AREA_LOCATION_2)),
+                    @Node(id = "3467000000", coordinates = @Loc(value = AREA_LOCATION_3)),
+                    @Node(id = "4567000000", coordinates = @Loc(value = AREA_LOCATION_4)),
+                    @Node(id = "5678000000", coordinates = @Loc(value = AREA_LOCATION_5)),
+                    @Node(id = "6789000000", coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_1)),
+                    @Node(id = "7891000000", coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_2)),
+                    @Node(id = "8912000000", coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_3)),
+                    @Node(id = "9123000000", coordinates = @Loc(value = LOCATION_OUTSIDE_AREA_4)),
+                    @Node(id = "9234000000", coordinates = @Loc(value = LOCATION_INSIDE_AREA_1)) },
+            // area
+            areas = { @Area(id = "9876000000", coordinates = { @Loc(value = AREA_LOCATION_1),
+                    @Loc(value = AREA_LOCATION_2), @Loc(value = AREA_LOCATION_3),
+                    @Loc(value = AREA_LOCATION_4),
+                    @Loc(value = AREA_LOCATION_5) }, tags = { "natural=water" }) },
+            // edges
+            edges = {
+                    // an edge
+                    @Edge(id = "4321000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_1),
+                            @Loc(value = AREA_LOCATION_1) }, tags = { "highway=footway" }),
+                    // another edge
+                    @Edge(id = "8765000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_2),
+                            @Loc(value = AREA_LOCATION_5) }, tags = { "highway=path" }),
+                    // another edge steps case
+                    @Edge(id = "5432000000", coordinates = { @Loc(value = LOCATION_OUTSIDE_AREA_2),
+                            @Loc(value = LOCATION_INSIDE_AREA_1) }, tags = { "highway=steps" }), })
+    private Atlas invalidCrossingLineItemAtlasNotCrossingWaterBody;
+
+    @TestAtlas(
             // Nodes
             nodes = { @Node(coordinates = @Loc(value = AREA_LOCATION_1)),
                     @Node(coordinates = @Loc(value = AREA_LOCATION_2)),
@@ -651,6 +682,11 @@ public class LineCrossingWaterBodyCheckTestRule extends CoreTestRule
     public Atlas invalidCrossingLineItemAtlas()
     {
         return this.invalidCrossingLineItemAtlas;
+    }
+
+    public Atlas invalidCrossingLineItemAtlasNotCrossingWaterBody()
+    {
+        return this.invalidCrossingLineItemAtlasNotCrossingWaterBody;
     }
 
     public Atlas invalidIntersectionItemsAtlas()
