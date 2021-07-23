@@ -119,22 +119,20 @@ public class RouteRelationCheck extends BaseCheck<Object>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-
+/*
         return object instanceof Relation && (Validators.isOfType(object, RelationTypeTag.class,
                 RelationTypeTag.ROUTE_MASTER) || Validators.isOfType(object, RelationTypeTag.class,
                 RelationTypeTag.ROUTE))
                 && !this.isFlagged(object.getOsmIdentifier());
+*/
 
 
-
-        /* all route masters 1171711000000, 6336539000000, 1183420000000, 5793083000000, 2840654000000 1171481000000 14165000000 14163000000
-        6685941000000 6683658000000
-        */
-        /*
+       //all route masters 1171711000000, 6336539000000, 1183420000000, 5793083000000, 2840654000000 1171481000000
+        // 14165000000 14163000000 6685941000000 6683658000000
         return object instanceof Relation && (Validators.isOfType(object, RelationTypeTag.class,
                 RelationTypeTag.ROUTE_MASTER))
-                //&& Long.toString(object.getIdentifier()).equals("14165000000") //6685941000000
-                && !this.isFlagged(object.getOsmIdentifier());*/
+                && Long.toString(object.getIdentifier()).equals("1171711000000") //6685941000000
+                && !this.isFlagged(object.getOsmIdentifier());
     }
 
     /**
@@ -276,7 +274,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private List<String> checkRouteForGaps(final Relation rel)
     {
         logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
-        //logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.toString());
         List<String> instructionsAdd =  new ArrayList<>();
 
         final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
@@ -301,15 +298,14 @@ public class RouteRelationCheck extends BaseCheck<Object>
                         .map(member -> member.asPolyLine()),
                 allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
 
-
         if (allPolylines.size()>1) {
 
-            LinkedList<PolyLine> createdRoute = RouteFromNonArrangedEdgeSet(allPolylines);
+            LinkedList<PolyLine> createdRoute = RouteFromNonArrangedEdgeSet2(allPolylines);
 
             logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
 
 
-            if (createdRoute.size() != allPolylines.size()) {
+            if (createdRoute.size() < allPolylines.size()) {
                 instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
                         rel.getOsmIdentifier()));
             }
@@ -339,8 +335,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         // initialize routeCreated
         routeCreated.add(members.get(0));
 
-
-        logger.info("here check");
         logger.info("numberFailures at creating: "+ numberFailures);
 
 
@@ -388,8 +382,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             numberFailures = numberFailures + 1;
         }
 
-
-
         logger.info("/* currentRouteSize routeCreated.size(): " + routeCreated.size()+"   /* numberFailures*/" + numberFailures
                     + "   routeCreated.getFirst(): "+ routeCreated.getFirst()+ "   members.size(): " + members.size());
         logger.info("  members: " + members);
@@ -401,6 +393,113 @@ public class RouteRelationCheck extends BaseCheck<Object>
         logger.info("exit numberFailures: "+ numberFailures + "members.size(): " + members.size() + "routeCreated.size(): " + routeCreated.size());
 
         return routeCreated;
+    }
+
+    private LinkedList<PolyLine> RouteFromNonArrangedEdgeSet2(List<PolyLine> linesInRoute) {
+        int numberFailures = 0;
+        final List<PolyLine> members = new ArrayList<>();
+        members.addAll(linesInRoute);
+        LinkedList<PolyLine> routeCreated = new LinkedList<>();
+        // initialize routeCreated
+        routeCreated.add(members.get(0));
+
+
+        logger.info("here check");
+        logger.info("numberFailures at creating: " + numberFailures);
+        logger.info("members: "+ members);
+
+
+        int previousRouteSize = -1;
+        int currentRouteSize = 0;
+        PolyLine startConectLine = null;
+        PolyLine endConectLine = null;
+        // check to append both start and end of the created route
+        Distance startMinDistance = null;
+        Distance endMinDistance = null;
+
+        while (routeCreated.size() < members.size()
+                && previousRouteSize < currentRouteSize
+                && numberFailures < members.size()) {
+
+
+            /* keep adding edges till no way to expand the route*/
+            logger.info("/* keep adding edges till no way to expand the route*/");
+            for (PolyLine lineMember : members) {
+                previousRouteSize = routeCreated.size();
+
+                if (routeCreated.contains(lineMember)) {
+                    continue;
+                }
+
+                if (lineMember.first().equals(routeCreated.getLast().last())) {
+                    routeCreated.addLast(lineMember);
+                    //ableToAdd = true;
+                    logger.info("addLast(lineMember)");
+                    //break;
+                } else if (lineMember.last().equals(routeCreated.getFirst().first())) {
+                    routeCreated.addFirst(lineMember);
+                    //ableToAdd = true;
+                    logger.info("addFirst(lineMember)");
+                    //break;
+                }
+                // append at beginning
+                Distance tmpStartDistance = lineMember.last().distanceTo(routeCreated.getFirst().first());
+                if (startMinDistance==null || tmpStartDistance.isLessThan(startMinDistance)){
+                    startMinDistance = tmpStartDistance;
+                    startConectLine = lineMember;
+                    logger.info("startMinDistance " + startMinDistance + "lineMember " + lineMember);
+                }
+
+                // append at end
+                Distance tmpEndDistance = lineMember.first().distanceTo(routeCreated.getLast().last());
+                if (endMinDistance==null || tmpEndDistance.isLessThan(startMinDistance)){
+                    endMinDistance = tmpEndDistance;
+                    endConectLine = lineMember;
+                }
+
+                currentRouteSize = routeCreated.size();
+                logger.info("/* previousRouteSize*/" + previousRouteSize + "routeCreated.size(): " + routeCreated.size());
+            }
+
+            logger.info(" in while loop end startMinDistance: " + startMinDistance
+                    + " startConectLine.first(): " + startConectLine.first()
+                    + " startConectLine.last(): " + startConectLine.last()
+                    + " endMinDistance: " + endMinDistance
+                    + " endConectLine.first(): " + endConectLine.first()
+                    + " endConectLine.last(): " + endConectLine.last()
+                    + " routeCreated.size(): " + routeCreated.size()
+                    + " numberFailures: " + numberFailures);
+
+
+            // check if route can be expanded with allowed distance
+
+            if (routeCreated.size() < members.size()){
+
+                if (startMinDistance.isLessThan(Distance.meters(10))){
+                    routeCreated.addFirst(startConectLine);
+                }
+
+                if (endMinDistance.isLessThan(Distance.meters(10))){
+                    routeCreated.addLast(endConectLine);
+                }
+
+            }
+
+            //the maximal times to run loop equals to number of total lines
+            numberFailures = numberFailures + 1;
+        }
+
+        logger.info(" loop end startMinDistance: " + startMinDistance
+                + " startConectLine.first(): " + startConectLine.first()
+                + " startConectLine.last(): " + startConectLine.last()
+                + " endMinDistance: " + endMinDistance
+                + " endConectLine.first(): " + endConectLine.first()
+                + " endConectLine.last(): " + endConectLine.last()
+                + " routeCreated.size(): " + routeCreated.size()
+                + " numberFailures: " + numberFailures);
+
+        return routeCreated;
+
     }
 
 
