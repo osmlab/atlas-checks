@@ -8,7 +8,7 @@
   },
 
   "RouteRelationCheck": {
-    "enabled": true    
+    "enabled": true
   },
 
   "PoolSizeCheck": {
@@ -463,7 +463,7 @@
     }
   },
   "InvalidMultiPolygonRelationCheck": {
-    "members.one.ignore": f,
+    "members.one.ignore": false,
     "overlap.points.minimum": 0,
     "overlap.points.maximum": 300000,
     "challenge": {
