@@ -1,43 +1,51 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
-import java.util.*;
-import java.io.*;
-import java.util.stream.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Spliterator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
+import org.openstreetmap.atlas.geography.Snapper.SnappedLocation;
+import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Line;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.ItemType;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiPoint;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiNode;
-import org.openstreetmap.atlas.geography.Snapper.SnappedLocation;
-import org.openstreetmap.atlas.geography.atlas.items.*;
-import org.openstreetmap.atlas.geography.atlas.items.Relation;
-
-import org.openstreetmap.atlas.tags.AddressHousenumberTag;
-import org.openstreetmap.atlas.tags.AddressStreetTag;
-import org.openstreetmap.atlas.tags.RouteTag;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.tags.names.NameTag;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import com.google.common.base.Strings;
+//import com.google.common.base.Strings;
 
 
 /**
- * This check identifies route objects in OSM that have gaps in tracks. a specified street number (addr:housenumber)
- * but no specified street name (addr:street) and are not part of an associated street Relation. No
- * specified street name refers to either having a null value for the street name key, or no street
- * name key present at all.
+ * This check identifies
+ * 1."The track of this route contains gaps"
+ * 2."The stop or platform is too far from the track of this route"
+ * 3, "Non route relation member in route_master relation"
+ * 4 "Public transport relation route not in route_master relation"
+ * 5 "network, operator, ref, colour tag should be the same on route and route_master relations" :
  *
  * @author Lluc
  */
@@ -92,7 +100,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
     public static final int DM7_PER_DEGREE = 10_000_000;
 
-    private static final long serialVersionUID = 7671409062471623430L;  //7761409062471623430L
+    private static final long serialVersionUID = 7671409062471623430L;
     private static final Logger logger = LoggerFactory.getLogger(RouteRelationCheck.class);
 
 
@@ -119,20 +127,21 @@ public class RouteRelationCheck extends BaseCheck<Object>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-/*
+
         return object instanceof Relation && (Validators.isOfType(object, RelationTypeTag.class,
                 RelationTypeTag.ROUTE_MASTER) || Validators.isOfType(object, RelationTypeTag.class,
                 RelationTypeTag.ROUTE))
                 && !this.isFlagged(object.getOsmIdentifier());
-*/
 
 
-       //all route masters 1171711000000, 6336539000000, 1183420000000, 5793083000000, 2840654000000 1171481000000
+        /*
+        //all route masters 1171711000000, 6336539000000, 1183420000000, 5793083000000, 2840654000000 1171481000000
         // 14165000000 14163000000 6685941000000 6683658000000
         return object instanceof Relation && (Validators.isOfType(object, RelationTypeTag.class,
                 RelationTypeTag.ROUTE_MASTER))
                 && Long.toString(object.getIdentifier()).equals("1171711000000") //6685941000000
                 && !this.isFlagged(object.getOsmIdentifier());
+         */
     }
 
     /**
@@ -155,35 +164,38 @@ public class RouteRelationCheck extends BaseCheck<Object>
             logger.info("object.getIdentifier()" + object.getIdentifier());
             logger.info("------------++++process route relation : " + routeRel.toString());
 
-            Set<Relation> routeSet = RouteMember_Route_Rels(routeRel);
-            //instructions.add(routeRel.toString());
-            //logger.info(routeRel.toString());
+            final Set<Relation> routeSet = this.RouteMember_Route_Rels(routeRel);
             logger.info("String.valueOf(routeSet.size()): " + routeSet.size()+ "size");
 
             // check track has no gaps. Check stops and platforms are not too far from the track
-            for (Relation rel: routeSet) {
+            for (final Relation rel: routeSet)
+            {
                 //logger.info("process route relation {} to check track gaps: " + rel.getIdentifier());
-                List<String> processRelInstructions = processRel(rel);
-                if (!processRelInstructions.isEmpty()) {
+                final List<String> processRelInstructions = this.processRel(rel);
+                if (!processRelInstructions.isEmpty())
+                {
                     instructions.addAll(processRelInstructions);
                 }
             }
 
             // check existing non route element
-            if (routeSet.size() < routeRel.members().size()){
+            if (routeSet.size() < routeRel.members().size())
+            {
                 instructions.add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NONROUTE_ELEMENT_INDEX,
                         routeRel.getOsmIdentifier()));
                 logger.info("non route elements");
             }
 
             // check consistent of the network_operator_ref_colour tags
-            List<String> tmpInstructions = check_network_operator_ref_colour_tag(routeRel);
-            if (!tmpInstructions.isEmpty()){
+            final List<String> tmpInstructions = this.check_network_operator_ref_colour_tag(routeRel);
+            if (!tmpInstructions.isEmpty())
+            {
                 instructions.addAll(tmpInstructions);
             }
 
             // mark all route relation in the route master as flagged
-            for (Relation rel: routeSet) {
+            for (final Relation rel: routeSet)
+            {
                 this.markAsFlagged(rel.getOsmIdentifier());
                 //logger.info(";;;;;;marked as flagged" + Long.toString(rel.getIdentifier())+ ";;;");
             }
@@ -193,21 +205,23 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             logger.info("===////////////////++++process route relation : " + routeRel.toString());
             // check track has no gaps. Check stops and platforms are not too far from the track
-            List<String> processRelInstructions = processRel(routeRel);
-            if (!processRelInstructions.isEmpty()) {
+            final List<String> processRelInstructions = this.processRel(routeRel);
+            if (!processRelInstructions.isEmpty())
+            {
                 logger.info("//////////////////process route relation {} to check track gaps: " + routeRel.getIdentifier());
                 instructions.addAll(processRelInstructions);
                 //instructions.add(routeRel.toString());
             }
 
             final Optional<String> transportType = object.getTag("route");
-            if (transportType.isPresent()) {
-
+            if (transportType.isPresent())
+            {
                 if (Public_transport_Types.contains(transportType.get())){
 
                     logger.info("}}}}}}}}}}}}}}}}}}}}}}}} check contained in route master: " + object.getTag("route").get());
 
-                    if (!relContainedInRouteMasters(object)){
+                    if (!this.relContainedInRouteMasters(object))
+                    {
                         instructions.add(this.getLocalizedInstruction(PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
                                 routeRel.getOsmIdentifier(), object.getTag("route").get()));
                         logger.info("&&&&&&&&&&&&&&&&&&&&It should be contained in a Route Master relation: " + object.getIdentifier());
@@ -239,23 +253,24 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private List<String> processRel(final Relation rel)
     {
         logger.info("processRel : {}", rel.getIdentifier());
-        List<String> instructionsAdd =  checkRouteForGaps(rel);
-        //List<String> instructionsAdd =  new ArrayList<>();
+        final List<String> instructionsAdd =  this.checkRouteForGaps(rel);
         logger.info("&&&&&&&&&&&&&&&&processRel : {}"+rel.toString());
 
-        Set<Location> allStopsLocations = allStopsOrPlatformLocations(rel, "stop");
-        Set<Location> allPlatformsLocations = allStopsOrPlatformLocations(rel, "platform");
-        Set<PolyLine>  allEdges = PolylineRouteRel(rel);
+        final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(rel, "stop");
+        final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(rel, "platform");
+        final Set<PolyLine>  allEdges = this.PolylineRouteRel(rel);
 
         logger.info("check stops are too far from track", rel.getIdentifier());
-        if (checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges)){
+        if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
+        {
             logger.info("check stops");
             instructionsAdd.add(this.getLocalizedInstruction(STOP_TOOFARFROM_ROUTE_TRACK_INDEX,
                     rel.getOsmIdentifier()));
         }
 
         logger.info("platforms are too far from track", rel.getIdentifier());
-        if (checkStopPlatformTooFarFromTrack(allPlatformsLocations, allEdges)){
+        if (this.checkStopPlatformTooFarFromTrack(allPlatformsLocations, allEdges))
+        {
             instructionsAdd.add(this.getLocalizedInstruction(PLATFORM_TOOFARFROM_ROUTE_TRACK_INDEX,
                     rel.getOsmIdentifier()));
         }
@@ -554,7 +569,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private Set<Location> allStopsOrPlatformLocations(final Relation rel, final String stopOrPlatform){
 
         logger.info("start check stops: ");
-        Set<AtlasEntity> allSigns = rel.members().stream()
+        final  Set<AtlasEntity> allSigns = rel.members().stream()
                 .filter(member -> member.getRole().equals(stopOrPlatform))
                 .map(RelationMember::getEntity).collect(Collectors.toSet());
 
@@ -562,19 +577,24 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         Set<Location> allLocations  = new HashSet<Location>();
 
-        for (AtlasEntity entity : allSigns) {
+        for (final AtlasEntity entity : allSigns)
+        {
 
             logger.info("--allLocations0:" + allLocations);
-            if (entity instanceof MultiPoint) {
+            if (entity instanceof MultiPoint)
+            {
                 logger.info("--allLocations1:" + allLocations);
                 allLocations.add(((MultiPoint) entity).getLocation());
-            } else if (entity instanceof MultiNode) {
+            } else if (entity instanceof MultiNode)
+            {
                 logger.info("--allLocations2:" + allLocations);
                 allLocations.add(((MultiNode) entity).getLocation());
-            } else if (entity instanceof Node) {
+            } else if (entity instanceof Node)
+            {
                 logger.info("--allLocations3:" + allLocations);
                 allLocations.add(((Node) entity).getLocation());
-            } else if (entity instanceof Point) {
+            } else if (entity instanceof Point)
+            {
                 logger.info("--allLocations4:" + allLocations);
                 allLocations.add(((Point) entity).getLocation());
             }
@@ -584,7 +604,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return allLocations;
     }
 
-
     /**
      * @param object
      *
@@ -593,33 +612,22 @@ public class RouteRelationCheck extends BaseCheck<Object>
      */
     private boolean relContainedInRouteMasters(final AtlasObject object)
     {
-        Iterable<Relation>  relationsInAtlas = object.getAtlas().relations();
+        final Iterable<Relation>  relationsInAtlas = object.getAtlas().relations();
         final List<String> instructions = new ArrayList<>();
         final boolean flag;
 
         logger.info("+++<<<<<<<<<<< relContainedInRouteMasters"+object.getIdentifier());
-        Spliterator<Relation>
+        final Spliterator<Relation>
                 spliterator = relationsInAtlas.spliterator();
 
-        Set<String> matchedRouteID = StreamSupport.stream(spliterator, false)
+        return StreamSupport.stream(spliterator, false)
                 .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
-                .flatMap(relation -> relation.members().stream()
-                        .map(RelationMember::getEntity)
-                        .filter(member -> member.getType().equals(ItemType.RELATION))
-                        .filter(member -> Validators.isOfType(member, RelationTypeTag.class,
-                                RelationTypeTag.ROUTE))
-                        .filter(member -> Long.toString(member.getIdentifier()).equals(Long.toString(object.getIdentifier())))
-                        .map(member -> Long.toString(member.getIdentifier())))
-                .collect(Collectors.toSet());
-
-        logger.info("matchedRouteID" + matchedRouteID);
-
-        if (matchedRouteID.size()>0){
-            return true;
-        }
-
-        return false;
+                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
+                .filter(member -> member.getType().equals(ItemType.RELATION))
+                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,RelationTypeTag.ROUTE))
+                .anyMatch(member -> Long.toString(member.getIdentifier()).equals(Long.toString(object.getIdentifier())));
     }
+
 
 
     /**
@@ -643,11 +651,11 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     rel.getOsmIdentifier()));
         }
 
-        Set<Relation> routeSet = RouteMember_Route_Rels(rel);
+        final Set<Relation> routeSet = RouteMember_Route_Rels(rel);
 
         logger.info("rel:"+rel);
 
-        for (Relation relRoute: routeSet) {
+        for (final Relation relRoute: routeSet) {
             final Optional<String> routeNetwork = relRoute.getTag("network");
             final Optional<String> routeOperator = relRoute.getTag("operator");
             final Optional<String> routeRef = relRoute.getTag("ref");
@@ -730,19 +738,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return routeSet;
     }
 
-    // Function to get the Stream
-    public static <T> Stream<T>
-    getStreamFromIterable(Iterable<T> iterable)
-    {
-
-        // Convert the Iterable to Spliterator
-        Spliterator<T>
-                spliterator = iterable.spliterator();
-
-        // Get a Sequential Stream from spliterator
-        return StreamSupport.stream(spliterator, false);
-    }
-
     @Override
     protected List<String> getFallbackInstructions()
     {
@@ -751,31 +746,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
 }
 
-/*
-
-"RoutePrintCheck": {
-    "enabled": true,
-    "surface": {
-      "maximum": 1000.0,
-      "minimum": 50.0
-    }
-  },
 
 
-Details
-Class 1 "The track of this route contains gaps" :
-Class 2 "The stop or platform is too far from the track of this route" :
-Class 3 "Non route relation member in route_master relation" :
-Class 4 "Public transport relation route not in route_master relation" :
-Class 5 "network, operator, ref, colour tag should be the same on route and route_master relations" :
-Fix
-Class 1 "The track of this route contains gaps" :
-Class 2 "The stop or platform is too far from the track of this route" :
-Class 3 "Non route relation member in route_master relation" :
-Class 4 "Public transport relation route not in route_master relation" :
-Class 5 "network, operator, ref, colour tag should be the same on route and route_master relations" :
 
-*/
 
 
 
