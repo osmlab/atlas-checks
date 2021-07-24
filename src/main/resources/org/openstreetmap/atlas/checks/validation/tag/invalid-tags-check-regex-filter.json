@@ -97,10 +97,14 @@
       "regex": [";"],      
       "tagNames": [
         "addr:street",
+        "aerialway", 
+        "aeroway",         
         "highway",
         "lanes",
         "maxspeed",
         "name",
+        "railway",
+        "route",
         "surface",
         "telecom:medium",
         "water", "waterway"
