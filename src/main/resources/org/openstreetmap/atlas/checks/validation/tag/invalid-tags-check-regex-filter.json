@@ -111,6 +111,7 @@
       "instruction": "The tag: {0} BEGINS WITH semicolons.",
       "regex": ["^;"],
       "tagNames": [
+        "addr:street",
         "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
         "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
         "covered", "craft", "crossing", "cuisine", "cutting",
@@ -138,6 +139,7 @@
       "instruction": "The tag: {0} ENDS WITH semicolons.",
       "regex": [";$"],
       "tagNames": [
+        "addr:street",
         "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
         "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
         "covered", "craft", "crossing", "cuisine", "cutting",
@@ -165,6 +167,7 @@
       "instruction": "The tag: {0} contains EMPTY SPACE in between semicolons.",
       "regex": [";\\s*;"],
       "tagNames": [
+        "addr:street",
         "abutters", "access", "admin_level", "aerialway", "aeroway", "amenity",
         "barrier", "bicycle", "boat", "border_type", "boundary", "bridge", "building", "construction",
         "covered", "craft", "crossing", "cuisine", "cutting",
@@ -187,6 +190,62 @@
         "wall", "waterway", "wheelchair", "wood"
       ],             
       "exceptions": []
-    }    
+    },
+    {
+      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by FORWARD SLASH '/'.",
+      "regex": ["[^0-9]\\s?/\\s?[^0-9]"],
+      "tagNames": [
+        "addr:street",
+        "aerialway", 
+        "aeroway", 
+        "highway", 
+        "lanes",  
+        "railway", 
+        "route", 
+        "waterway"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by BACKSLASH '\\'.",
+      "regex": ["\\\\"],
+      "tagNames": [
+        "addr:street",
+        "aerialway", 
+        "aeroway", 
+        "highway", 
+        "lanes",  
+        "railway", 
+        "route", 
+        "waterway"],
+      "exceptions": []
+    },    
+    {
+      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by PLUS sign '+'.",
+      "regex": ["\\+"],
+      "tagNames": [
+        "addr:street",
+        "aerialway", 
+        "aeroway", 
+        "highway", 
+        "lanes",  
+        "railway", 
+        "route", 
+        "waterway"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by question mark '?'.",
+      "regex": ["\\?"],
+      "tagNames": [
+        "addr:street",
+        "aerialway", 
+        "aeroway", 
+        "highway", 
+        "lanes",  
+        "railway", 
+        "route", 
+        "waterway"],
+      "exceptions": []
+    }
   ]
 }
