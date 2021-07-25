@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Point;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
+
 /**
  * Cases for unit tests for RouteRelationCheck.
  *
