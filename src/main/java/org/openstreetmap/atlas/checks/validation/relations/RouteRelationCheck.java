@@ -317,50 +317,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
-     *
-     * @param allSignsOrPlatformsLocations
-     *            the se of points representing the stops or platforms in the route.
-     * @param allEdgePolyLines
-     *      *     the set of polylines from either edge or line contained in the route
-     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
-     */
-    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
-    {
-        logger.info("checkStopPlatformTooFarFromTrack");
-
-        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
-        {
-            return false;
-        }
-
-        SnappedLocation minSnap = null;
-
-        for (final Location location : allSignsOrPlatformsLocations)
-        {
-
-
-            for (final PolyLine edges : allEdgePolyLines)
-            {
-                final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
-                {
-                    minSnap = snappedTo;
-                }
-
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.72)))
-                {
-                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
      * This is the helper function that do the check
      * contains stops and platforms that are too far from the track. This method using the logic in
      * fromNonArrangedEdgeSet(final Set<Edge> candidates, final boolean shuffle) from the route.java.
@@ -448,6 +404,48 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
 
+    /**
+     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
+     *
+     * @param allSignsOrPlatformsLocations
+     *            the se of points representing the stops or platforms in the route.
+     * @param allEdgePolyLines
+     *      *     the set of polylines from either edge or line contained in the route
+     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
+     */
+    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
+    {
+        logger.info("checkStopPlatformTooFarFromTrack");
+
+        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
+        {
+            return false;
+        }
+
+        SnappedLocation minSnap = null;
+
+        for (final Location location : allSignsOrPlatformsLocations)
+        {
+
+
+            for (final PolyLine edges : allEdgePolyLines)
+            {
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
+                    minSnap = snappedTo;
+                }
+
+                if (minSnap.getDistance().isLessThan(Distance.meters(1.72)))
+                {
+                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     /**
      * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
@@ -500,6 +498,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
         logger.info("--allLocations:" + allLocations);
         return allLocations;
     }
+
+
+
 
     /**
      * Return the list of instructions that describes inconsistency of any tags in the group of
