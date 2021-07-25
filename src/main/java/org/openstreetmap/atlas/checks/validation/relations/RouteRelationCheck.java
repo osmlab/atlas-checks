@@ -1,38 +1,37 @@
 package org.openstreetmap.atlas.checks.validation.relations;
 
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Snapper.SnappedLocation;
-import org.openstreetmap.atlas.geography.atlas.items.Point;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiPoint;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiNode;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,8 +215,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
             final Optional<String> transportType = object.getTag("route");
             if (transportType.isPresent())
             {
-                if (Public_transport_Types.contains(transportType.get())){
-
+                if (Public_transport_Types.contains(transportType.get()))
+                {
                     logger.info("}}}}}}}}}}}}}}}}}}}}}}}} check contained in route master: " + object.getTag("route").get());
 
                     if (!this.relContainedInRouteMasters(object))
@@ -241,6 +240,145 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 : Optional.of(this.createFlag(routeRel.flatten(), instructions));
     }
 
+
+
+    /**
+     * This is the helper function that do the check
+     * contains stops and platforms that are too far from the track. This method using the logic in
+     * fromNonArrangedEdgeSet(final Set<Edge> candidates, final boolean shuffle) from the route.java.
+     * Check by endpoints. If endpoint can be connected then no gap. orders are not considered.
+     * Check two end points of an edge to see they can be connected as an edge
+     *
+     * @param linesInRoute
+     *            the set of lines and edges from the route relation combined in a list of PolyLines
+     * @return a list of strings that are instructions for creating flags
+     */
+    private LinkedList<PolyLine> routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
+    {
+        int numberFailures = 0;
+        final List<PolyLine> members = new ArrayList<>();
+        members.addAll(linesInRoute);
+        LinkedList<PolyLine> routeCreated = new LinkedList<>();
+        // initialize routeCreated
+        routeCreated.add(members.get(0));
+
+        logger.info("numberFailures at creating: "+ numberFailures);
+
+
+        //logger.info("numberFailures: "+ numberFailures);
+        int previousRouteSize = -1;
+        int currentRouteSize = 0;
+        while (routeCreated.size() < members.size()
+                && previousRouteSize < currentRouteSize
+                && numberFailures < members.size())
+        {
+
+            /* keep adding edges till no way to expand the route*/
+            logger.info("/* keep adding edges till no way to expand the route*/");
+            for (PolyLine lineMember : members) {
+                previousRouteSize = routeCreated.size();
+
+                //Location fistLineStart = routeCreated.getFirst().first();
+                //Location lastLineEnd = routeCreated.getLast().last();
+
+                if (routeCreated.contains(lineMember))
+                {
+                    continue;
+                }
+
+                logger.info("lineMember: " + lineMember);
+                logger.info("routeCreated: " + routeCreated);
+                logger.info("routeCreated.getLast().last(): " + routeCreated.getLast().last());
+                logger.info("routeCreated.getFirst().first(): " + routeCreated.getFirst().first());
+
+                if (lineMember.first().equals(routeCreated.getLast().last()))
+                {
+                    routeCreated.addLast(lineMember);
+                    logger.info("addLast(lineMember)");
+                    //break;
+                } else if (lineMember.last().equals(routeCreated.getFirst().first()))
+                {
+                    routeCreated.addFirst(lineMember);
+                    logger.info("addFirst(lineMember)");
+                    //break;
+                }
+
+                currentRouteSize = routeCreated.size();
+                logger.info("/* previousRouteSize*/" + previousRouteSize + "routeCreated.size(): " + routeCreated.size());
+                //logger.info("/* currentRouteSize*/" + currentRouteSize + "routeCreated.size(): " + routeCreated.size());
+            }
+
+            /* the maximal times to run for loop maximal equals to number of total lines
+             */
+            numberFailures = numberFailures + 1;
+        }
+
+        logger.info("/* currentRouteSize routeCreated.size(): " + routeCreated.size()+"   /* numberFailures*/" + numberFailures
+                + "   routeCreated.getFirst(): "+ routeCreated.getFirst()+ "   members.size(): " + members.size());
+        logger.info("  members: " + members);
+        for (PolyLine lineMember : members)
+        {
+            logger.info("lineMember.first(): "+ lineMember.first()+ " lineMember.last(): "+ lineMember.last());
+        }
+
+
+        logger.info("exit numberFailures: "+ numberFailures + "members.size(): " + members.size() + "routeCreated.size(): " + routeCreated.size());
+
+        return routeCreated;
+    }
+
+    /**
+     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
+     * contains stops and platforms that are too far from the track.
+     *
+     * @param rel
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @return a list of strings that are instructions for creating flags
+     */
+    private List<String> checkRouteForGaps(final Relation rel)
+    {
+        logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
+        final List<String> instructionsAdd =  new ArrayList<>();
+
+        final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.EDGE))
+                .map(member -> (Edge) member)
+                .filter(member -> member.isMainEdge()).collect(Collectors.toList());
+
+
+        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.LINE))
+                .map(member -> (Line) member).collect(Collectors.toList());
+
+        // Need to have at least one edge or line
+        if (allMainEdges.isEmpty() && allLines.isEmpty())
+        {
+            //logger.info("processRel : empty edges" + rel.getIdentifier());
+            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        final List<PolyLine> allPolylines = Stream.concat(allMainEdges.stream()
+                        .map(member -> member.asPolyLine()),
+                allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
+
+        if (allPolylines.size()>1)
+        {
+            final LinkedList<PolyLine> createdRoute = this.routeFromNonArrangedEdgeSet(allPolylines);
+            logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
+
+
+            if (createdRoute.size() < allPolylines.size())
+            {
+                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
+                        rel.getOsmIdentifier()));
+            }
+
+            logger.info("come to end/ check gaps");
+        }
+
+        return instructionsAdd;
+    }
 
     /**
      * This is the function that will check to see whether a route has gaps in the track and whether or not a route
@@ -279,284 +417,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
-     * contains stops and platforms that are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> checkRouteForGaps(final Relation rel)
-    {
-        logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
-        List<String> instructionsAdd =  new ArrayList<>();
-
-        final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE))
-                .map(member -> (Edge) member)
-                .filter(member -> member.isMainEdge()).collect(Collectors.toList());
-
-
-        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.LINE))
-                .map(member -> (Line) member).collect(Collectors.toList());
-
-        // Need to have at least one edge or line
-        if (allMainEdges.isEmpty() && allLines.isEmpty())
-        {
-            //logger.info("processRel : empty edges" + rel.getIdentifier());
-            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
-                    rel.getOsmIdentifier()));
-        }
-
-        List<PolyLine> allPolylines = Stream.concat(allMainEdges.stream()
-                        .map(member -> member.asPolyLine()),
-                allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
-
-        if (allPolylines.size()>1) {
-
-            LinkedList<PolyLine> createdRoute = RouteFromNonArrangedEdgeSet2(allPolylines);
-
-            logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
-
-
-            if (createdRoute.size() < allPolylines.size()) {
-                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
-                        rel.getOsmIdentifier()));
-            }
-
-            logger.info("come to end/ check gaps");
-        }
-
-        return instructionsAdd;
-    }
-
-    /**
-     * This is the helper function that do the check
-     * contains stops and platforms that are too far from the track. This method using the logic in
-     * fromNonArrangedEdgeSet(final Set<Edge> candidates, final boolean shuffle) from the route.java.
-     * Check by endpoints. If endpoint can be connected then no gap. orders are not considered.
-     * Check two end points of an edge to see they can be connected as an edge
-     *
-     * @param linesInRoute
-     *            the set of lines and edges from the route relation combined in a list of PolyLines
-     * @return a list of strings that are instructions for creating flags
-     */
-    private LinkedList<PolyLine> RouteFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute) {
-        int numberFailures = 0;
-        final List<PolyLine> members = new ArrayList<>();
-        members.addAll(linesInRoute);
-        LinkedList<PolyLine> routeCreated = new LinkedList<>();
-        // initialize routeCreated
-        routeCreated.add(members.get(0));
-
-        logger.info("numberFailures at creating: "+ numberFailures);
-
-
-            //logger.info("numberFailures: "+ numberFailures);
-        int previousRouteSize = -1;
-        int currentRouteSize = 0;
-        while (routeCreated.size() < members.size()
-                && previousRouteSize < currentRouteSize
-                && numberFailures < members.size()) {
-
-            /* keep adding edges till no way to expand the route*/
-            logger.info("/* keep adding edges till no way to expand the route*/");
-            for (PolyLine lineMember : members) {
-                previousRouteSize = routeCreated.size();
-
-                //Location fistLineStart = routeCreated.getFirst().first();
-                //Location lastLineEnd = routeCreated.getLast().last();
-
-                if (routeCreated.contains(lineMember)) {
-                    continue;
-                }
-
-                logger.info("lineMember: " + lineMember);
-                logger.info("routeCreated: " + routeCreated);
-                logger.info("routeCreated.getLast().last(): " + routeCreated.getLast().last());
-                logger.info("routeCreated.getFirst().first(): " + routeCreated.getFirst().first());
-
-                if (lineMember.first().equals(routeCreated.getLast().last())) {
-                    routeCreated.addLast(lineMember);
-                    logger.info("addLast(lineMember)");
-                    //break;
-                } else if (lineMember.last().equals(routeCreated.getFirst().first())) {
-                    routeCreated.addFirst(lineMember);
-                    logger.info("addFirst(lineMember)");
-                    //break;
-                }
-
-                currentRouteSize = routeCreated.size();
-                logger.info("/* previousRouteSize*/" + previousRouteSize + "routeCreated.size(): " + routeCreated.size());
-                //logger.info("/* currentRouteSize*/" + currentRouteSize + "routeCreated.size(): " + routeCreated.size());
-            }
-
-            /* the maximal times to run for loop maximal equals to number of total lines
-             */
-            numberFailures = numberFailures + 1;
-        }
-
-        logger.info("/* currentRouteSize routeCreated.size(): " + routeCreated.size()+"   /* numberFailures*/" + numberFailures
-                    + "   routeCreated.getFirst(): "+ routeCreated.getFirst()+ "   members.size(): " + members.size());
-        logger.info("  members: " + members);
-        for (PolyLine lineMember : members){
-            logger.info("lineMember.first(): "+ lineMember.first()+ " lineMember.last(): "+ lineMember.last());
-        }
-
-
-        logger.info("exit numberFailures: "+ numberFailures + "members.size(): " + members.size() + "routeCreated.size(): " + routeCreated.size());
-
-        return routeCreated;
-    }
-
-    private LinkedList<PolyLine> RouteFromNonArrangedEdgeSet2(List<PolyLine> linesInRoute) {
-        int numberFailures = 0;
-        final List<PolyLine> members = new ArrayList<>();
-        members.addAll(linesInRoute);
-        LinkedList<PolyLine> routeCreated = new LinkedList<>();
-        // initialize routeCreated
-        routeCreated.add(members.get(0));
-
-
-        logger.info("here check");
-        logger.info("numberFailures at creating: " + numberFailures);
-        logger.info("members: "+ members);
-
-
-        int previousRouteSize = -1;
-        int currentRouteSize = 0;
-        PolyLine startConectLine = null;
-        PolyLine endConectLine = null;
-        // check to append both start and end of the created route
-        Distance startMinDistance = null;
-        Distance endMinDistance = null;
-
-        while (routeCreated.size() < members.size()
-                && previousRouteSize < currentRouteSize
-                && numberFailures < members.size()) {
-
-
-            /* keep adding edges till no way to expand the route*/
-            logger.info("/* keep adding edges till no way to expand the route*/");
-            for (PolyLine lineMember : members) {
-                previousRouteSize = routeCreated.size();
-
-                if (routeCreated.contains(lineMember)) {
-                    continue;
-                }
-
-                if (lineMember.first().equals(routeCreated.getLast().last())) {
-                    routeCreated.addLast(lineMember);
-                    //ableToAdd = true;
-                    logger.info("addLast(lineMember)");
-                    //break;
-                } else if (lineMember.last().equals(routeCreated.getFirst().first())) {
-                    routeCreated.addFirst(lineMember);
-                    //ableToAdd = true;
-                    logger.info("addFirst(lineMember)");
-                    //break;
-                }
-                // append at beginning
-                Distance tmpStartDistance = lineMember.last().distanceTo(routeCreated.getFirst().first());
-                if (startMinDistance==null || tmpStartDistance.isLessThan(startMinDistance)){
-                    startMinDistance = tmpStartDistance;
-                    startConectLine = lineMember;
-                    logger.info("startMinDistance " + startMinDistance + "lineMember " + lineMember);
-                }
-
-                // append at end
-                Distance tmpEndDistance = lineMember.first().distanceTo(routeCreated.getLast().last());
-                if (endMinDistance==null || tmpEndDistance.isLessThan(startMinDistance)){
-                    endMinDistance = tmpEndDistance;
-                    endConectLine = lineMember;
-                }
-
-                currentRouteSize = routeCreated.size();
-                logger.info("/* previousRouteSize*/" + previousRouteSize + "routeCreated.size(): " + routeCreated.size());
-            }
-
-            logger.info(" in while loop end startMinDistance: " + startMinDistance
-                    + " startConectLine.first(): " + startConectLine.first()
-                    + " startConectLine.last(): " + startConectLine.last()
-                    + " endMinDistance: " + endMinDistance
-                    + " endConectLine.first(): " + endConectLine.first()
-                    + " endConectLine.last(): " + endConectLine.last()
-                    + " routeCreated.size(): " + routeCreated.size()
-                    + " numberFailures: " + numberFailures);
-
-
-            // check if route can be expanded with allowed distance
-
-            if (routeCreated.size() < members.size()){
-
-                if (startMinDistance.isLessThan(Distance.meters(10))){
-                    routeCreated.addFirst(startConectLine);
-                }
-
-                if (endMinDistance.isLessThan(Distance.meters(10))){
-                    routeCreated.addLast(endConectLine);
-                }
-
-            }
-
-            //the maximal times to run loop equals to number of total lines
-            numberFailures = numberFailures + 1;
-        }
-
-        logger.info(" loop end startMinDistance: " + startMinDistance
-                + " startConectLine.first(): " + startConectLine.first()
-                + " startConectLine.last(): " + startConectLine.last()
-                + " endMinDistance: " + endMinDistance
-                + " endConectLine.first(): " + endConectLine.first()
-                + " endConectLine.last(): " + endConectLine.last()
-                + " routeCreated.size(): " + routeCreated.size()
-                + " numberFailures: " + numberFailures);
-
-        return routeCreated;
-
-    }
-
-
-    /**
-     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
-     *
-     * @param allSignsOrPlatformsLocations
-     *            the se of points representing the stops or platforms in the route.
-     * @param allEdgePolyLines
-     *      *     the set of polylines from either edge or line contained in the route
-     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
-     */
-    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines) {
-        logger.info("checkStopPlatformTooFarFromTrack");
-
-        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty())) {
-            return false;
-        }
-
-        SnappedLocation minSnap = null;
-
-        for (Location location : allSignsOrPlatformsLocations) {
-
-
-            for (PolyLine edges : allEdgePolyLines) {
-                SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0) {
-                    minSnap = snappedTo;
-                }
-
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.5))) {
-                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
      * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
      * stops and platforms in the route are too far from the track.
      *
@@ -566,7 +426,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *             indicate whether we want locations for stops or platforms
      * @return a list of locations for either stops or platforms
      */
-    private Set<Location> allStopsOrPlatformLocations(final Relation rel, final String stopOrPlatform){
+    private Set<Location> allStopsOrPlatformLocations(final Relation rel, final String stopOrPlatform)
+    {
 
         logger.info("start check stops: ");
         final  Set<AtlasEntity> allSigns = rel.members().stream()
@@ -605,6 +466,50 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
+     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
+     *
+     * @param allSignsOrPlatformsLocations
+     *            the se of points representing the stops or platforms in the route.
+     * @param allEdgePolyLines
+     *      *     the set of polylines from either edge or line contained in the route
+     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
+     */
+    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
+    {
+        logger.info("checkStopPlatformTooFarFromTrack");
+
+        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
+        {
+            return false;
+        }
+
+        SnappedLocation minSnap = null;
+
+        for (final Location location : allSignsOrPlatformsLocations)
+        {
+
+
+            for (PolyLine edges : allEdgePolyLines) {
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
+                    minSnap = snappedTo;
+                }
+
+                if (minSnap.getDistance().isLessThan(Distance.meters(1.5)))
+                {
+                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+
+    /**
      * @param object
      *
      * @return an instance of CheckRouteMasterValues containing information about
@@ -614,7 +519,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         final Iterable<Relation>  relationsInAtlas = object.getAtlas().relations();
         final List<String> instructions = new ArrayList<>();
-        final boolean flag;
 
         logger.info("+++<<<<<<<<<<< relContainedInRouteMasters"+object.getIdentifier());
         final Spliterator<Relation>
@@ -627,7 +531,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 .filter(member -> Validators.isOfType(member, RelationTypeTag.class,RelationTypeTag.ROUTE))
                 .anyMatch(member -> Long.toString(member.getIdentifier()).equals(Long.toString(object.getIdentifier())));
     }
-
 
 
     /**
@@ -646,7 +549,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final Optional<String> refTag = rel.getTag("ref");
         final Optional<String> colourTag = rel.getTag("colour");
 
-        if (!networkTag.isPresent() || !operatorTag.isPresent()  || !refTag.isPresent() || !colourTag.isPresent()) {
+        if (!networkTag.isPresent() || !operatorTag.isPresent()  || !refTag.isPresent() || !colourTag.isPresent())
+        {
             Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
                     rel.getOsmIdentifier()));
         }
@@ -655,7 +559,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         logger.info("rel:"+rel);
 
-        for (final Relation relRoute: routeSet) {
+        for (final Relation relRoute: routeSet)
+        {
             final Optional<String> routeNetwork = relRoute.getTag("network");
             final Optional<String> routeOperator = relRoute.getTag("operator");
             final Optional<String> routeRef = relRoute.getTag("ref");
@@ -664,31 +569,40 @@ public class RouteRelationCheck extends BaseCheck<Object>
             logger.info("relRoute:"+relRoute);
 
             if (!routeNetwork.isPresent() || !operatorTag.isPresent()
-                    || !routeRef.isPresent() || !routeColour.isPresent()) {
+                    || !routeRef.isPresent() || !routeColour.isPresent())
+            {
                 Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
                         rel.getOsmIdentifier()));
             }
 
-            if (routeNetwork.isPresent() && networkTag.isPresent()) {
-                if (!routeNetwork.equals(networkTag)) {
+            if (routeNetwork.isPresent() && networkTag.isPresent())
+            {
+                if (!routeNetwork.equals(networkTag))
+                {
                     instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
                 }
             }
 
-            if (routeOperator.isPresent() && operatorTag.isPresent()) {
-                if (!routeOperator.equals(operatorTag)) {
+            if (routeOperator.isPresent() && operatorTag.isPresent())
+            {
+                if (!routeOperator.equals(operatorTag))
+                {
                     instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
                 }
             }
 
-            if (routeRef.isPresent() && refTag.isPresent()) {
-                if (!routeRef.equals(refTag)) {
+            if (routeRef.isPresent() && refTag.isPresent())
+            {
+                if (!routeRef.equals(refTag))
+                {
                     instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
                 }
             }
 
-            if (routeColour.isPresent() && colourTag.isPresent()) {
-                if (!routeColour.equals(colourTag)) {
+            if (routeColour.isPresent() && colourTag.isPresent())
+            {
+                if (!routeColour.equals(colourTag))
+                {
                     instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
                 }
             }
@@ -707,18 +621,25 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private Set<PolyLine> PolylineRouteRel(final Relation rel)
     {
         //edges in the route RelationMember::getRole)
-        Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
+        final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.EDGE))
                 .map(member -> (Edge) member)
                 .map(member -> member.asPolyLine()).collect(Collectors.toSet());
 
-        Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
+        final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.LINE))
                 .map(member -> (Line) member)
                 .map(member -> member.asPolyLine()).collect(Collectors.toSet());
 
         return Stream.of(allEdges, allLines).flatMap(x -> x.stream())
                 .collect(Collectors.toSet());
+    }
+
+
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
     }
 
     /**
@@ -728,7 +649,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      */
     private Set<Relation> RouteMember_Route_Rels(final Relation rel)
     {
-        Set<Relation> routeSet = rel.members().stream()
+        final Set<Relation> routeSet = rel.members().stream()
                 .map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.RELATION))
                 .map(member -> (Relation) member)
@@ -738,11 +659,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return routeSet;
     }
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
 
 }
 
