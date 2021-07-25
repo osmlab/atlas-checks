@@ -2,10 +2,10 @@ package org.openstreetmap.atlas.checks.validation.relations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
@@ -17,25 +17,24 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Snapper.SnappedLocation;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.ItemType;
-import org.openstreetmap.atlas.geography.atlas.multi.MultiPoint;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiNode;
+import org.openstreetmap.atlas.geography.atlas.multi.MultiPoint;
+
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-//import com.google.common.base.Strings;
 
 
 /**
@@ -160,16 +159,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
         //5793083000000 && Long.toString(object.getIdentifier()).equals("5793083000000")
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
         {
-            logger.info("object.getIdentifier()" + object.getIdentifier());
-            logger.info("------------++++process route relation : " + routeRel.toString());
-
-            final Set<Relation> routeSet = this.RouteMember_Route_Rels(routeRel);
+            final Set<Relation> routeSet = this.routeMemberRouteRelations(routeRel);
             logger.info("String.valueOf(routeSet.size()): " + routeSet.size()+ "size");
 
             // check track has no gaps. Check stops and platforms are not too far from the track
             for (final Relation rel: routeSet)
             {
-                //logger.info("process route relation {} to check track gaps: " + rel.getIdentifier());
                 final List<String> processRelInstructions = this.processRel(rel);
                 if (!processRelInstructions.isEmpty())
                 {
@@ -186,7 +181,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             }
 
             // check consistent of the network_operator_ref_colour tags
-            final List<String> tmpInstructions = this.check_network_operator_ref_colour_tag(routeRel);
+            final List<String> tmpInstructions = this.checkNetworkOperatorRefColourTag(routeRel);
             if (!tmpInstructions.isEmpty())
             {
                 instructions.addAll(tmpInstructions);
@@ -196,20 +191,16 @@ public class RouteRelationCheck extends BaseCheck<Object>
             for (final Relation rel: routeSet)
             {
                 this.markAsFlagged(rel.getOsmIdentifier());
-                //logger.info(";;;;;;marked as flagged" + Long.toString(rel.getIdentifier())+ ";;;");
             }
         }
 
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE) )
         {
-            logger.info("===////////////////++++process route relation : " + routeRel.toString());
             // check track has no gaps. Check stops and platforms are not too far from the track
             final List<String> processRelInstructions = this.processRel(routeRel);
             if (!processRelInstructions.isEmpty())
             {
-                logger.info("//////////////////process route relation {} to check track gaps: " + routeRel.getIdentifier());
                 instructions.addAll(processRelInstructions);
-                //instructions.add(routeRel.toString());
             }
 
             final Optional<String> transportType = object.getTag("route");
@@ -217,7 +208,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             {
                 if (Public_transport_Types.contains(transportType.get()))
                 {
-                    logger.info("}}}}}}}}}}}}}}}}}}}}}}}} check contained in route master: " + object.getTag("route").get());
 
                     if (!this.relContainedInRouteMasters(object))
                     {
@@ -229,9 +219,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             }
         }
 
-
-        logger.info("--------instructions are: " + instructions);
-        logger.info("--------instructions end ***: ");
+        logger.info("--------instructions are: " + instructions +"--------instructions end ***: ");
         logger.info("--------routeRel.toString() : " + routeRel.toString());
 
         // mark this object as flagged
@@ -240,6 +228,11 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 : Optional.of(this.createFlag(routeRel.flatten(), instructions));
     }
 
+    @Override
+    protected List<String> getFallbackInstructions()
+    {
+        return FALLBACK_INSTRUCTIONS;
+    }
 
 
     /**
@@ -258,7 +251,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         int numberFailures = 0;
         final List<PolyLine> members = new ArrayList<>();
         members.addAll(linesInRoute);
-        LinkedList<PolyLine> routeCreated = new LinkedList<>();
+        final LinkedList<PolyLine> routeCreated = new LinkedList<>();
         // initialize routeCreated
         routeCreated.add(members.get(0));
 
@@ -275,7 +268,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
             /* keep adding edges till no way to expand the route*/
             logger.info("/* keep adding edges till no way to expand the route*/");
-            for (PolyLine lineMember : members) {
+            for (final PolyLine lineMember : members)
+            {
                 previousRouteSize = routeCreated.size();
 
                 //Location fistLineStart = routeCreated.getFirst().first();
@@ -316,7 +310,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         logger.info("/* currentRouteSize routeCreated.size(): " + routeCreated.size()+"   /* numberFailures*/" + numberFailures
                 + "   routeCreated.getFirst(): "+ routeCreated.getFirst()+ "   members.size(): " + members.size());
         logger.info("  members: " + members);
-        for (PolyLine lineMember : members)
+        for (final PolyLine lineMember : members)
         {
             logger.info("lineMember.first(): "+ lineMember.first()+ " lineMember.last(): "+ lineMember.last());
         }
@@ -436,7 +430,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         logger.info("rel"+rel.toString());
 
-        Set<Location> allLocations  = new HashSet<Location>();
+        final Set<Location> allLocations  = new HashSet<Location>();
 
         for (final AtlasEntity entity : allSigns)
         {
@@ -446,15 +440,18 @@ public class RouteRelationCheck extends BaseCheck<Object>
             {
                 logger.info("--allLocations1:" + allLocations);
                 allLocations.add(((MultiPoint) entity).getLocation());
-            } else if (entity instanceof MultiNode)
+            }
+            else if (entity instanceof MultiNode)
             {
                 logger.info("--allLocations2:" + allLocations);
                 allLocations.add(((MultiNode) entity).getLocation());
-            } else if (entity instanceof Node)
+            }
+            else if (entity instanceof Node)
             {
                 logger.info("--allLocations3:" + allLocations);
                 allLocations.add(((Node) entity).getLocation());
-            } else if (entity instanceof Point)
+            }
+            else if (entity instanceof Point)
             {
                 logger.info("--allLocations4:" + allLocations);
                 allLocations.add(((Point) entity).getLocation());
@@ -489,14 +486,15 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
 
 
-            for (PolyLine edges : allEdgePolyLines) {
+            for (final PolyLine edges : allEdgePolyLines)
+            {
                 final SnappedLocation snappedTo = location.snapTo(edges);
                 if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
                 {
                     minSnap = snappedTo;
                 }
 
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.5)))
+                if (minSnap.getDistance().isLessThan(Distance.meters(1.60)))
                 {
                     //logger.info("true checkDistance : minSnap.getDistance() {}", true);
                     return false;
@@ -541,9 +539,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            The route master relation under check
      * @return the list of instructions that describes inconsistency
      */
-    private List<String> check_network_operator_ref_colour_tag(final Relation rel)
+    private List<String> checkNetworkOperatorRefColourTag(final Relation rel)
     {
-        List<String> instructionsAdd =  new ArrayList<>();
+        final List<String> instructionsAdd =  new ArrayList<>();
         final Optional<String> networkTag = rel.getTag("network");
         final Optional<String> operatorTag = rel.getTag("operator");
         final Optional<String> refTag = rel.getTag("ref");
@@ -555,7 +553,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     rel.getOsmIdentifier()));
         }
 
-        final Set<Relation> routeSet = RouteMember_Route_Rels(rel);
+        final Set<Relation> routeSet = this.routeMemberRouteRelations(rel);
 
         logger.info("rel:"+rel);
 
@@ -636,18 +634,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
 
-    @Override
-    protected List<String> getFallbackInstructions()
-    {
-        return FALLBACK_INSTRUCTIONS;
-    }
-
     /**
      * @param rel
      *
      * @return set of route relations contained in the route master
      */
-    private Set<Relation> RouteMember_Route_Rels(final Relation rel)
+    private Set<Relation> routeMemberRouteRelations(final Relation rel)
     {
         final Set<Relation> routeSet = rel.members().stream()
                 .map(RelationMember::getEntity)
