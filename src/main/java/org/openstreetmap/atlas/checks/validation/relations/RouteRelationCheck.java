@@ -28,8 +28,8 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiNode;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiPoint;
-import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
@@ -264,6 +264,59 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
+     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
+     * contains stops and platforms that are too far from the track.
+     *
+     * @param rel
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @return a list of strings that are instructions for creating flags
+     */
+    private List<String> checkRouteForGaps(final Relation rel)
+    {
+        logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
+        final List<String> instructionsAdd =  new ArrayList<>();
+
+        final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.EDGE))
+                .map(member -> (Edge) member)
+                .filter(member -> member.isMainEdge()).collect(Collectors.toList());
+
+
+        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.LINE))
+                .map(member -> (Line) member).collect(Collectors.toList());
+
+        // Need to have at least one edge or line
+        if (allMainEdges.isEmpty() && allLines.isEmpty())
+        {
+            //logger.info("processRel : empty edges" + rel.getIdentifier());
+            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        final List<PolyLine> allPolylines = Stream.concat(allMainEdges.stream()
+                        .map(member -> member.asPolyLine()),
+                allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
+
+        if (allPolylines.size()>1)
+        {
+            final LinkedList<PolyLine> createdRoute = this.routeFromNonArrangedEdgeSet(allPolylines);
+            logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
+
+
+            if (createdRoute.size() < allPolylines.size())
+            {
+                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
+                        rel.getOsmIdentifier()));
+            }
+
+            logger.info("come to end/ check gaps");
+        }
+
+        return instructionsAdd;
+    }
+
+    /**
      * This is the helper function that do the check
      * contains stops and platforms that are too far from the track. This method using the logic in
      * fromNonArrangedEdgeSet(final Set<Edge> candidates, final boolean shuffle) from the route.java.
@@ -351,59 +404,50 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
-     * contains stops and platforms that are too far from the track.
+     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
      *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
+     * @param allSignsOrPlatformsLocations
+     *            the se of points representing the stops or platforms in the route.
+     * @param allEdgePolyLines
+     *      *     the set of polylines from either edge or line contained in the route
+     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
      */
-    private List<String> checkRouteForGaps(final Relation rel)
+    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
     {
-        logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
-        final List<String> instructionsAdd =  new ArrayList<>();
+        logger.info("checkStopPlatformTooFarFromTrack");
 
-        final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE))
-                .map(member -> (Edge) member)
-                .filter(member -> member.isMainEdge()).collect(Collectors.toList());
-
-
-        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.LINE))
-                .map(member -> (Line) member).collect(Collectors.toList());
-
-        // Need to have at least one edge or line
-        if (allMainEdges.isEmpty() && allLines.isEmpty())
+        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
         {
-            //logger.info("processRel : empty edges" + rel.getIdentifier());
-            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
-                    rel.getOsmIdentifier()));
+            return false;
         }
 
-        final List<PolyLine> allPolylines = Stream.concat(allMainEdges.stream()
-                        .map(member -> member.asPolyLine()),
-                allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
+        SnappedLocation minSnap = null;
 
-        if (allPolylines.size()>1)
+        for (final Location location : allSignsOrPlatformsLocations)
         {
-            final LinkedList<PolyLine> createdRoute = this.routeFromNonArrangedEdgeSet(allPolylines);
-            logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
 
 
-            if (createdRoute.size() < allPolylines.size())
+            for (final PolyLine edges : allEdgePolyLines)
             {
-                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
-                        rel.getOsmIdentifier()));
-            }
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
+                    minSnap = snappedTo;
+                }
 
-            logger.info("come to end/ check gaps");
+                if (minSnap.getDistance().isLessThan(Distance.meters(1.72)))
+                {
+                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
+                    return false;
+                }
+            }
         }
 
-        return instructionsAdd;
+        return true;
     }
 
-     /**
+
+    /**
      * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
      * stops and platforms in the route are too far from the track.
      *
@@ -453,49 +497,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         logger.info("--allLocations:" + allLocations);
         return allLocations;
-    }
-
-    /**
-     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
-     *
-     * @param allSignsOrPlatformsLocations
-     *            the se of points representing the stops or platforms in the route.
-     * @param allEdgePolyLines
-     *      *     the set of polylines from either edge or line contained in the route
-     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
-     */
-    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
-    {
-        logger.info("checkStopPlatformTooFarFromTrack");
-
-        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
-        {
-            return false;
-        }
-
-        SnappedLocation minSnap = null;
-
-        for (final Location location : allSignsOrPlatformsLocations)
-        {
-
-
-            for (final PolyLine edges : allEdgePolyLines)
-            {
-                final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
-                {
-                    minSnap = snappedTo;
-                }
-
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.7)))
-                {
-                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
 
