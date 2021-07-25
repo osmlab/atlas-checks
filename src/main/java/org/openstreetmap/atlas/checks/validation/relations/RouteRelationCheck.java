@@ -288,35 +288,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
-     * contains stops and platforms that are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> processRel(final Relation rel)
-    {
-        logger.info("processRel : {}", rel.getIdentifier());
-        final List<String> instructionsAdd =  this.checkRouteForGaps(rel);
-        logger.info("&&&&&&&&&&&&&&&&processRel : {}"+rel.toString());
-
-        final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(rel, "stop");
-        final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(rel, "platform");
-        final Set<PolyLine>  allEdges = this.polylineRouteRel(rel);
-
-        logger.info("check stops are too far from track", rel.getIdentifier());
-        if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
-        {
-            logger.info("check stops");
-            instructionsAdd.add(this.getLocalizedInstruction(STOP_TOOFARFROM_ROUTE_TRACK_INDEX,
-                    rel.getOsmIdentifier()));
-        }
-
-        return instructionsAdd;
-    }
-
-    /**
      * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
      * stops and platforms in the route are too far from the track.
      *
@@ -369,6 +340,37 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
 
+    /**
+     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
+     * contains stops and platforms that are too far from the track.
+     *
+     * @param rel
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @return a list of strings that are instructions for creating flags
+     */
+    private List<String> processRel(final Relation rel)
+    {
+        logger.info("processRel : {}", rel.getIdentifier());
+        final List<String> instructionsAdd =  this.checkRouteForGaps(rel);
+        logger.info("&&&&&&&&&&&&&&&&processRel : {}"+rel.toString());
+
+        final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(rel, "stop");
+        final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(rel, "platform");
+        final Set<PolyLine>  allEdges = this.polylineRouteRel(rel);
+
+        logger.info("check stops are too far from track", rel.getIdentifier());
+        if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
+        {
+            logger.info("check stops");
+            instructionsAdd.add(this.getLocalizedInstruction(STOP_TOOFARFROM_ROUTE_TRACK_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        return instructionsAdd;
+    }
+
+
+
 
     /**
      * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
@@ -382,6 +384,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
     {
         logger.info("checkStopPlatformTooFarFromTrack");
+
+        final Distance threshHold = Distance.meters(1.5);
 
         if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
         {
@@ -402,7 +406,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     minSnap = snappedTo;
                 }
 
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.72f)))
+                if (minSnap.getDistance().isLessThan(threshHold))
                 {
                     //logger.info("true checkDistance : minSnap.getDistance() {}", true);
                     return false;
@@ -411,6 +415,87 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         return true;
+    }
+
+    /**
+     * Return the list of instructions that describes inconsistency of any tags in the group of
+     * network, operator, ref, and colour between a route master and its member routes
+     *
+     * @param rel
+     *            The route master relation under check
+     * @return the list of instructions that describes inconsistency
+     */
+    private List<String> checkNetworkOperatorRefColourTag(final Relation rel)
+    {
+        final List<String> instructionsAdd =  new ArrayList<>();
+        final Optional<String> networkTag = rel.getTag("network");
+        final Optional<String> operatorTag = rel.getTag("operator");
+        final Optional<String> refTag = rel.getTag("ref");
+        final Optional<String> colourTag = rel.getTag("colour");
+
+        logger.info("checkNetworkOperatorRefColourTag " + rel.getIdentifier());
+
+        if (!networkTag.isPresent() || !operatorTag.isPresent()  || !refTag.isPresent() || !colourTag.isPresent())
+        {
+            Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        final Set<Relation> routeSet = this.routeMemberRouteRelations(rel);
+
+        logger.info("rel:"+rel);
+
+        for (final Relation relRoute: routeSet)
+        {
+            final Optional<String> routeNetwork = relRoute.getTag("network");
+            final Optional<String> routeOperator = relRoute.getTag("operator");
+            final Optional<String> routeRef = relRoute.getTag("ref");
+            final Optional<String> routeColour = relRoute.getTag("colour");
+
+            logger.info("relRoute:"+relRoute);
+
+            if (!routeNetwork.isPresent() || !operatorTag.isPresent()
+                    || !routeRef.isPresent() || !routeColour.isPresent())
+            {
+                Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
+                        rel.getOsmIdentifier()));
+            }
+
+            if (routeNetwork.isPresent() && networkTag.isPresent())
+            {
+                if (!routeNetwork.equals(networkTag))
+                {
+                    logger.info("routeNetwork:"+routeNetwork + "networkTag:"+networkTag);
+                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
+                }
+            }
+
+            if (routeOperator.isPresent() && operatorTag.isPresent())
+            {
+                if (!routeOperator.equals(operatorTag))
+                {
+                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
+                }
+            }
+
+            if (routeRef.isPresent() && refTag.isPresent())
+            {
+                if (!routeRef.equals(refTag))
+                {
+                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
+                }
+            }
+
+            if (routeColour.isPresent() && colourTag.isPresent())
+            {
+                if (!routeColour.equals(colourTag))
+                {
+                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
+                }
+            }
+        }
+
+        return instructionsAdd;
     }
 
     /**
@@ -505,86 +590,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
 
 
-    /**
-     * Return the list of instructions that describes inconsistency of any tags in the group of
-     * network, operator, ref, and colour between a route master and its member routes
-     *
-     * @param rel
-     *            The route master relation under check
-     * @return the list of instructions that describes inconsistency
-     */
-    private List<String> checkNetworkOperatorRefColourTag(final Relation rel)
-    {
-        final List<String> instructionsAdd =  new ArrayList<>();
-        final Optional<String> networkTag = rel.getTag("network");
-        final Optional<String> operatorTag = rel.getTag("operator");
-        final Optional<String> refTag = rel.getTag("ref");
-        final Optional<String> colourTag = rel.getTag("colour");
 
-        logger.info("checkNetworkOperatorRefColourTag " + rel.getIdentifier());
-
-        if (!networkTag.isPresent() || !operatorTag.isPresent()  || !refTag.isPresent() || !colourTag.isPresent())
-        {
-            Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
-                    rel.getOsmIdentifier()));
-        }
-
-        final Set<Relation> routeSet = this.routeMemberRouteRelations(rel);
-
-        logger.info("rel:"+rel);
-
-        for (final Relation relRoute: routeSet)
-        {
-            final Optional<String> routeNetwork = relRoute.getTag("network");
-            final Optional<String> routeOperator = relRoute.getTag("operator");
-            final Optional<String> routeRef = relRoute.getTag("ref");
-            final Optional<String> routeColour = relRoute.getTag("colour");
-
-            logger.info("relRoute:"+relRoute);
-
-            if (!routeNetwork.isPresent() || !operatorTag.isPresent()
-                    || !routeRef.isPresent() || !routeColour.isPresent())
-            {
-                Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
-                        rel.getOsmIdentifier()));
-            }
-
-            if (routeNetwork.isPresent() && networkTag.isPresent())
-            {
-                if (!routeNetwork.equals(networkTag))
-                {
-                    logger.info("routeNetwork:"+routeNetwork + "networkTag:"+networkTag);
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
-            }
-
-            if (routeOperator.isPresent() && operatorTag.isPresent())
-            {
-                if (!routeOperator.equals(operatorTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
-            }
-
-            if (routeRef.isPresent() && refTag.isPresent())
-            {
-                if (!routeRef.equals(refTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
-            }
-
-            if (routeColour.isPresent() && colourTag.isPresent())
-            {
-                if (!routeColour.equals(colourTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
-            }
-        }
-
-        return instructionsAdd;
-    }
 
     /**
      * This is the function that will collect all the edges and lines in the relation into one set.
