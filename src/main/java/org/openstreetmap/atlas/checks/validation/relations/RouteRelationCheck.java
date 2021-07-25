@@ -158,7 +158,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
         {
             final Set<Relation> routeSet = this.routeMemberRouteRelations(routeRel);
-            logger.info("String.valueOf(routeSet.size()): " + routeSet.size()+ "size");
 
             // check track has no gaps. Check stops and platforms are not too far from the track
             for (final Relation rel: routeSet)
@@ -170,8 +169,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 }
             }
 
-            logger.info("checkNetworkOperatorRefColourTag in  processrel" +
-                    "rel.getIdentifier()" + routeRel.getIdentifier() + "routeMasterOrNot ");
             // check consistent of the network_operator_ref_colour tags
             final List<String> tmpInstructions = this.checkNetworkOperatorRefColourTag(routeRel);
             if (!tmpInstructions.isEmpty())
@@ -330,37 +327,25 @@ public class RouteRelationCheck extends BaseCheck<Object>
                         rel.getOsmIdentifier()));
             }
 
-            if (routeNetwork.isPresent() && networkTag.isPresent())
+            if (routeNetwork.isPresent() && networkTag.isPresent() && !routeNetwork.equals(networkTag))
             {
-                if (!routeNetwork.equals(networkTag))
-                {
-                    logger.info("routeNetwork:"+routeNetwork + "networkTag:"+networkTag);
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                logger.info("routeNetwork:"+routeNetwork + "networkTag:"+networkTag);
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
             }
 
-            if (routeOperator.isPresent() && operatorTag.isPresent())
+            if (routeOperator.isPresent() && operatorTag.isPresent() && !routeOperator.equals(operatorTag))
             {
-                if (!routeOperator.equals(operatorTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
             }
 
-            if (routeRef.isPresent() && refTag.isPresent())
+            if (routeRef.isPresent() && refTag.isPresent() && !routeRef.equals(refTag))
             {
-                if (!routeRef.equals(refTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
             }
 
-            if (routeColour.isPresent() && colourTag.isPresent())
+            if (routeColour.isPresent() && colourTag.isPresent() && !routeColour.equals(colourTag))
             {
-                if (!routeColour.equals(colourTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
             }
         }
 
@@ -404,7 +389,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         if (allPolylines.size()>1)
         {
-            final LinkedList<PolyLine> createdRoute = this.routeFromNonArrangedEdgeSet(allPolylines);
+            final LinkedList<PolyLine> createdRoute = this.routeFormNonArrangedEdgeSet(allPolylines);
             logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
 
 
@@ -434,6 +419,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         logger.info("checkStopPlatformTooFarFromTrack");
 
+        final Distance threshHold = Distance.meters(1.5);
+
         if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
         {
             return false;
@@ -453,7 +440,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     minSnap = snappedTo;
                 }
 
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.72)))
+                if (minSnap.getDistance().isLessThan(threshHold))
                 {
                     //logger.info("true checkDistance : minSnap.getDistance() {}", true);
                     return false;
@@ -463,6 +450,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         return true;
     }
+
 
     /**
      * This is the function that will collect all the edges and lines in the relation into one set.
@@ -543,8 +531,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
 
-
-
     /**
      * This is the helper function that do the check
      * contains stops and platforms that are too far from the track. This method using the logic in
@@ -556,7 +542,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the set of lines and edges from the route relation combined in a list of PolyLines
      * @return a list of strings that are instructions for creating flags
      */
-    private LinkedList<PolyLine> routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
+    private LinkedList<PolyLine> routeFormNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
     {
         int numberFailures = 0;
         final List<PolyLine> members = new ArrayList<>();
@@ -631,7 +617,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         return routeCreated;
     }
-
 
 
     /**
