@@ -300,7 +300,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         if (allPolylines.size()>1)
         {
-            final LinkedList<PolyLine> createdRoute = this.routeFromNonArrangedEdgeSet(allPolylines);
+            final LinkedList<PolyLine> createdRoute = this.routeFormNonArrangedEdgeSet(allPolylines);
             logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
 
 
@@ -317,6 +317,50 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
+     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
+     *
+     * @param allSignsOrPlatformsLocations
+     *            the se of points representing the stops or platforms in the route.
+     * @param allEdgePolyLines
+     *      *     the set of polylines from either edge or line contained in the route
+     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
+     */
+    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
+    {
+        logger.info("checkStopPlatformTooFarFromTrack");
+
+        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
+        {
+            return false;
+        }
+
+        SnappedLocation minSnap = null;
+
+        for (final Location location : allSignsOrPlatformsLocations)
+        {
+
+
+            for (final PolyLine edges : allEdgePolyLines)
+            {
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
+                    minSnap = snappedTo;
+                }
+
+                if (minSnap.getDistance().isLessThan(Distance.meters(1.72)))
+                {
+                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+    /**
      * This is the helper function that do the check
      * contains stops and platforms that are too far from the track. This method using the logic in
      * fromNonArrangedEdgeSet(final Set<Edge> candidates, final boolean shuffle) from the route.java.
@@ -327,7 +371,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the set of lines and edges from the route relation combined in a list of PolyLines
      * @return a list of strings that are instructions for creating flags
      */
-    private LinkedList<PolyLine> routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
+    private LinkedList<PolyLine> routeFormNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
     {
         int numberFailures = 0;
         final List<PolyLine> members = new ArrayList<>();
@@ -403,48 +447,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return routeCreated;
     }
 
-    /**
-     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
-     *
-     * @param allSignsOrPlatformsLocations
-     *            the se of points representing the stops or platforms in the route.
-     * @param allEdgePolyLines
-     *      *     the set of polylines from either edge or line contained in the route
-     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
-     */
-    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
-    {
-        logger.info("checkStopPlatformTooFarFromTrack");
-
-        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
-        {
-            return false;
-        }
-
-        SnappedLocation minSnap = null;
-
-        for (final Location location : allSignsOrPlatformsLocations)
-        {
-
-
-            for (final PolyLine edges : allEdgePolyLines)
-            {
-                final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
-                {
-                    minSnap = snappedTo;
-                }
-
-                if (minSnap.getDistance().isLessThan(Distance.meters(1.72)))
-                {
-                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
 
 
     /**
@@ -498,32 +500,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         logger.info("--allLocations:" + allLocations);
         return allLocations;
     }
-
-
-
-    /**
-     * @param routeRelation
-     *
-     * @return an instance of CheckRouteMasterValues containing information about
-     * whether or not this public transport route is contained in a route master
-     */
-    private boolean relContainedInRouteMasters(final Relation routeRelation)
-    {
-        final Iterable<Relation>  relationsInAtlas = routeRelation.getAtlas().relations();
-        final List<String> instructions = new ArrayList<>();
-
-        logger.info("+++<<<<<<<<<<< relContainedInRouteMasters"+routeRelation.getIdentifier());
-        final Spliterator<Relation>
-                spliterator = relationsInAtlas.spliterator();
-
-        return StreamSupport.stream(spliterator, false)
-                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
-                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
-                .filter(member -> member.getType().equals(ItemType.RELATION))
-                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,RelationTypeTag.ROUTE))
-                .anyMatch(member -> Long.toString(member.getIdentifier()).equals(Long.toString(routeRelation.getIdentifier())));
-    }
-
 
     /**
      * Return the list of instructions that describes inconsistency of any tags in the group of
@@ -605,6 +581,31 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         return instructionsAdd;
     }
+
+
+    /**
+     * @param routeRelation
+     *
+     * @return an instance of CheckRouteMasterValues containing information about
+     * whether or not this public transport route is contained in a route master
+     */
+    private boolean relContainedInRouteMasters(final Relation routeRelation)
+    {
+        final Iterable<Relation>  relationsInAtlas = routeRelation.getAtlas().relations();
+        final List<String> instructions = new ArrayList<>();
+
+        logger.info("+++<<<<<<<<<<< relContainedInRouteMasters"+routeRelation.getIdentifier());
+        final Spliterator<Relation>
+                spliterator = relationsInAtlas.spliterator();
+
+        return StreamSupport.stream(spliterator, false)
+                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
+                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
+                .filter(member -> member.getType().equals(ItemType.RELATION))
+                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,RelationTypeTag.ROUTE))
+                .anyMatch(member -> Long.toString(member.getIdentifier()).equals(Long.toString(routeRelation.getIdentifier())));
+    }
+
 
     /**
      * This is the function that will collect all the edges and lines in the relation into one set.
