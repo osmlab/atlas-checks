@@ -163,11 +163,39 @@ public class RouteRelationCheck extends BaseCheck<Object>
             // check track has no gaps. Check stops and platforms are not too far from the track
             for (final Relation rel: routeSet)
             {
-                final List<String> processRelInstructions = this.processRel(rel);
-                if (!processRelInstructions.isEmpty())
+                final List<String> instructionsForGap = checkRouteForGaps(rel);
+
+                if (!instructionsForGap.isEmpty())
                 {
-                    instructions.addAll(processRelInstructions);
+                    instructions.addAll(instructionsForGap);
                 }
+
+                final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(rel, "stop");
+                final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(rel, "platform");
+                final Set<PolyLine>  allEdges = this.polylineRouteRel(rel);
+
+                if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
+                {
+                    logger.info("check stops");
+                    instructions.add(this.getLocalizedInstruction(STOP_TOOFARFROM_ROUTE_TRACK_INDEX,
+                            rel.getOsmIdentifier()));
+                }
+
+                if (this.checkStopPlatformTooFarFromTrack(allPlatformsLocations, allEdges))
+                {
+                    logger.info("check platforms");
+                    instructions.add(this.getLocalizedInstruction(PLATFORM_TOOFARFROM_ROUTE_TRACK_INDEX,
+                            rel.getOsmIdentifier()));
+                }
+
+            }
+
+            // check existing non route element
+            if (routeSet.size() < routeRel.members().size())
+            {
+                instructions.add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NONROUTE_ELEMENT_INDEX,
+                        routeRel.getOsmIdentifier()));
+                logger.info("non route elements");
             }
 
             logger.info("checkNetworkOperatorRefColourTag in  processrel" +
@@ -179,13 +207,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 instructions.addAll(tmpInstructions);
             }
 
-            // check existing non route element
-            if (routeSet.size() < routeRel.members().size())
-            {
-                instructions.add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NONROUTE_ELEMENT_INDEX,
-                        routeRel.getOsmIdentifier()));
-                logger.info("non route elements");
-            }
 
             // mark all route relation in the route master as flagged
             for (final Relation rel: routeSet)
@@ -197,19 +218,52 @@ public class RouteRelationCheck extends BaseCheck<Object>
         else if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE) )
         {
             // check track has no gaps. Check stops and platforms are not too far from the track
-            final List<String> processRelInstructions = this.processRel(routeRel);
-            if (!processRelInstructions.isEmpty())
+            //final List<String> processRelInstructions = this.processRel(routeRel);
+            final List<String> instructionsForGap = checkRouteForGaps(routeRel);
+
+            if (!instructionsForGap.isEmpty())
             {
-                instructions.addAll(processRelInstructions);
+                instructions.addAll(instructionsForGap);
             }
+
+            final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(routeRel, "stop");
+            final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(routeRel, "platform");
+            final Set<PolyLine>  allEdges = this.polylineRouteRel(routeRel);
+
+            if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
+            {
+                logger.info("check stops");
+                instructions.add(this.getLocalizedInstruction(STOP_TOOFARFROM_ROUTE_TRACK_INDEX,
+                        routeRel.getOsmIdentifier()));
+            }
+
+            if (this.checkStopPlatformTooFarFromTrack(allPlatformsLocations, allEdges))
+            {
+                logger.info("check platforms");
+                instructions.add(this.getLocalizedInstruction(PLATFORM_TOOFARFROM_ROUTE_TRACK_INDEX,
+                        routeRel.getOsmIdentifier()));
+            }
+
 
             final Optional<String> transportType = routeRel.getTag("route");
             if (transportType.isPresent())
             {
                 if (Public_transport_Types.contains(transportType.get()))
                 {
+                    final Iterable<Relation>  relationsInAtlas = routeRel.getAtlas().relations();
 
-                    if (!this.relContainedInRouteMasters(routeRel))
+                    logger.info("+++<<<<<<<<<<< relContainedInRouteMasters"+routeRel.getIdentifier());
+                    final Spliterator<Relation>
+                            spliterator = relationsInAtlas.spliterator();
+
+                    boolean containedInRouteMaster = StreamSupport.stream(spliterator, false)
+                            .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
+                            .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
+                            .filter(member -> member.getType().equals(ItemType.RELATION))
+                            .filter(member -> Validators.isOfType(member, RelationTypeTag.class,RelationTypeTag.ROUTE))
+                            .anyMatch(member -> Long.toString(member.getIdentifier()).equals(Long.toString(routeRel.getIdentifier())));
+
+                    if (!containedInRouteMaster)
                     {
                         instructions.add(this.getLocalizedInstruction(PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
                                 routeRel.getOsmIdentifier(), routeRel.getTag("route").get()));
@@ -351,37 +405,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             {
                 instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
             }
-        }
-
-        return instructionsAdd;
-    }
-
-
-
-    /**
-     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
-     * contains stops and platforms that are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> processRel(final Relation rel)
-    {
-        logger.info("processRel : {}", rel.getIdentifier());
-        final List<String> instructionsAdd =  this.checkRouteForGaps(rel);
-        logger.info("&&&&&&&&&&&&&&&&processRel : {}"+rel.toString());
-
-        final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(rel, "stop");
-        final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(rel, "platform");
-        final Set<PolyLine>  allEdges = this.polylineRouteRel(rel);
-
-        logger.info("check stops are too far from track", rel.getIdentifier());
-        if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
-        {
-            logger.info("check stops");
-            instructionsAdd.add(this.getLocalizedInstruction(STOP_TOOFARFROM_ROUTE_TRACK_INDEX,
-                    rel.getOsmIdentifier()));
         }
 
         return instructionsAdd;
@@ -602,33 +625,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         return routeCreated;
     }
-
-
-
-
-    /**
-     * @param routeRelation
-     *
-     * @return an instance of CheckRouteMasterValues containing information about
-     * whether or not this public transport route is contained in a route master
-     */
-    private boolean relContainedInRouteMasters(final Relation routeRelation)
-    {
-        final Iterable<Relation>  relationsInAtlas = routeRelation.getAtlas().relations();
-        final List<String> instructions = new ArrayList<>();
-
-        logger.info("+++<<<<<<<<<<< relContainedInRouteMasters"+routeRelation.getIdentifier());
-        final Spliterator<Relation>
-                spliterator = relationsInAtlas.spliterator();
-
-        return StreamSupport.stream(spliterator, false)
-                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
-                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
-                .filter(member -> member.getType().equals(ItemType.RELATION))
-                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,RelationTypeTag.ROUTE))
-                .anyMatch(member -> Long.toString(member.getIdentifier()).equals(Long.toString(routeRelation.getIdentifier())));
-    }
-
 
 
 
