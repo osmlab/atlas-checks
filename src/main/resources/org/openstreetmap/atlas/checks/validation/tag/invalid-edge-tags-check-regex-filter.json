@@ -93,7 +93,7 @@
       ]
     },
     {
-      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by semicolons.",
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by semicolons.",
       "regex": [";"],      
       "tagNames": [
         "addr:street",
@@ -112,7 +112,7 @@
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} BEGINS WITH semicolons.",
+      "instruction": "The edge tag: {0} BEGINS WITH semicolons.",
       "regex": ["^;"],
       "tagNames": [
         "addr:street",
@@ -140,7 +140,7 @@
       "exceptions": []
     },    
     {
-      "instruction": "The tag: {0} ENDS WITH semicolons.",
+      "instruction": "The edge tag: {0} ENDS WITH semicolons.",
       "regex": [";$"],
       "tagNames": [
         "addr:street",
@@ -168,7 +168,7 @@
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} contains EMPTY SPACE in between semicolons.",
+      "instruction": "The edge tag: {0} contains EMPTY SPACE in between semicolons.",
       "regex": [";\\s*;"],
       "tagNames": [
         "addr:street",
@@ -196,7 +196,7 @@
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by FORWARD SLASH '/'.",
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by FORWARD SLASH '/'.",
       "regex": ["[^0-9]\\s?/\\s?[^0-9]"],
       "tagNames": [
         "addr:street",
@@ -204,13 +204,14 @@
         "aeroway", 
         "highway", 
         "lanes",
+        "name",  
         "railway", 
         "route", 
         "waterway"],
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by BACKSLASH '\\'.",
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by BACKSLASH '\\'.",
       "regex": ["\\\\"],
       "tagNames": [
         "addr:street",
@@ -218,13 +219,14 @@
         "aeroway", 
         "highway", 
         "lanes",
+        "name",  
         "railway", 
         "route", 
         "waterway"],
       "exceptions": []
     },    
     {
-      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by PLUS sign '+'.",
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by PLUS sign '+'.",
       "regex": ["\\+"],
       "tagNames": [
         "addr:street",
@@ -232,13 +234,14 @@
         "aeroway", 
         "highway", 
         "lanes",
+        "name",  
         "railway", 
         "route", 
         "waterway"],
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by question mark '?'.",
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by question mark '?'.",
       "regex": ["\\?"],
       "tagNames": [
         "addr:street",

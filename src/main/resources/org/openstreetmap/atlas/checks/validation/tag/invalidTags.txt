@@ -4,4 +4,4 @@ relation:invalid-tags-check-regex-filter.json
 line:invalid-tags-check-regex-filter.json
 point:invalid-tags-check-regex-filter.json
 node:invalid-tags-check-regex-filter.json
-edge:invalid-tags-check-regex-filter.json
+edge:invalid-edge-tags-check-regex-filter.json
