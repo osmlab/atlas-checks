@@ -245,7 +245,7 @@
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} contains MULTIPLE VALUES separated by question mark '?'.",
+      "instruction": "The tag: {0} contains QUESTION MARK '?'.",
       "regex": ["\\?"],
       "tagNames": [
         "addr:street",

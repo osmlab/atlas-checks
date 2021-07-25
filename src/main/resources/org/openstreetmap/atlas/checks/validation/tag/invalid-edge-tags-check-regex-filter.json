@@ -248,7 +248,7 @@
       "exceptions": []
     },
     {
-      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by question mark '?'.",
+      "instruction": "The edge tag: {0} contains QUESTION MARK '?'.",
       "regex": ["\\?"],
       "tagNames": [
         "addr:street",
