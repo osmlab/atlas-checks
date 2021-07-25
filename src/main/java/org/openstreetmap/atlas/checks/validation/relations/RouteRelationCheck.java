@@ -170,8 +170,67 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     instructions.addAll(instructionsForGap);
                 }
 
-                final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(rel, "stop");
-                final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(rel, "platform");
+                final  Set<AtlasEntity> allStops = rel.members().stream()
+                        .filter(member -> member.getRole().equals("stop"))
+                        .map(RelationMember::getEntity).collect(Collectors.toSet());
+
+
+
+                final Set<Location> allStopsLocations  = new HashSet<Location>();
+
+                for (final AtlasEntity entity : allStops)
+                {
+
+                    logger.info("--allLocations0:" + allStopsLocations);
+                    if (entity instanceof MultiPoint)
+                    {
+                        //logger.info("--allLocations1:" + allLocations);
+                        allStopsLocations.add(((MultiPoint) entity).getLocation());
+                    }
+                    else if (entity instanceof MultiNode)
+                    {
+                        logger.info("--allLocations2:" + allStopsLocations);
+                        allStopsLocations.add(((MultiNode) entity).getLocation());
+                    }
+                    else if (entity instanceof Node)
+                    {
+                        logger.info("--allLocations3:" + allStopsLocations);
+                        allStopsLocations.add(((Node) entity).getLocation());
+                    }
+                    else if (entity instanceof Point)
+                    {
+                        logger.info("--allLocations4:" + allStopsLocations);
+                        allStopsLocations.add(((Point) entity).getLocation());
+                    }
+                }
+
+                final  Set<AtlasEntity> allPlatforms = rel.members().stream()
+                        .filter(member -> member.getRole().equals("platform"))
+                        .map(RelationMember::getEntity).collect(Collectors.toSet());
+
+                final Set<Location> allPlatformsLocations  = new HashSet<Location>();
+
+                for (final AtlasEntity entity : allPlatforms)
+                {
+                    if (entity instanceof MultiPoint)
+                    {
+                        //logger.info("--allLocations1:" + allLocations);
+                        allStopsLocations.add(((MultiPoint) entity).getLocation());
+                    }
+                    else if (entity instanceof MultiNode)
+                    {
+                        allStopsLocations.add(((MultiNode) entity).getLocation());
+                    }
+                    else if (entity instanceof Node)
+                    {
+                        allStopsLocations.add(((Node) entity).getLocation());
+                    }
+                    else if (entity instanceof Point)
+                    {
+                        allStopsLocations.add(((Point) entity).getLocation());
+                    }
+                }
+
                 final Set<PolyLine>  allEdges = this.polylineRouteRel(rel);
 
                 if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
@@ -226,8 +285,71 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 instructions.addAll(instructionsForGap);
             }
 
-            final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(routeRel, "stop");
-            final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(routeRel, "platform");
+            //final Set<Location> allStopsLocations = this.allStopsOrPlatformLocations(routeRel, "stop");
+
+            final  Set<AtlasEntity> allStops = routeRel.members().stream()
+                    .filter(member -> member.getRole().equals("stop"))
+                    .map(RelationMember::getEntity).collect(Collectors.toSet());
+
+
+
+            final Set<Location> allStopsLocations  = new HashSet<Location>();
+
+            for (final AtlasEntity entity : allStops)
+            {
+
+                logger.info("--allLocations0:" + allStopsLocations);
+                if (entity instanceof MultiPoint)
+                {
+                    //logger.info("--allLocations1:" + allLocations);
+                    allStopsLocations.add(((MultiPoint) entity).getLocation());
+                }
+                else if (entity instanceof MultiNode)
+                {
+                    logger.info("--allLocations2:" + allStopsLocations);
+                    allStopsLocations.add(((MultiNode) entity).getLocation());
+                }
+                else if (entity instanceof Node)
+                {
+                    logger.info("--allLocations3:" + allStopsLocations);
+                    allStopsLocations.add(((Node) entity).getLocation());
+                }
+                else if (entity instanceof Point)
+                {
+                    logger.info("--allLocations4:" + allStopsLocations);
+                    allStopsLocations.add(((Point) entity).getLocation());
+                }
+            }
+
+            final  Set<AtlasEntity> allPlatforms = routeRel.members().stream()
+                    .filter(member -> member.getRole().equals("platform"))
+                    .map(RelationMember::getEntity).collect(Collectors.toSet());
+
+            final Set<Location> allPlatformsLocations  = new HashSet<Location>();
+
+            for (final AtlasEntity entity : allPlatforms)
+            {
+                if (entity instanceof MultiPoint)
+                {
+                    //logger.info("--allLocations1:" + allLocations);
+                    allStopsLocations.add(((MultiPoint) entity).getLocation());
+                }
+                else if (entity instanceof MultiNode)
+                {
+                    allStopsLocations.add(((MultiNode) entity).getLocation());
+                }
+                else if (entity instanceof Node)
+                {
+                    allStopsLocations.add(((Node) entity).getLocation());
+                }
+                else if (entity instanceof Point)
+                {
+                    allStopsLocations.add(((Point) entity).getLocation());
+                }
+            }
+
+
+            //final Set<Location> allPlatformsLocations = this.allStopsOrPlatformLocations(routeRel, "platform");
             final Set<PolyLine>  allEdges = this.polylineRouteRel(routeRel);
 
             if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
@@ -411,61 +533,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
 
-
-
-
-
-    /**
-     * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
-     * stops and platforms in the route are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     *  @param stopOrPlatform
-     *             indicate whether we want locations for stops or platforms
-     * @return a list of locations for either stops or platforms
-     */
-    private Set<Location> allStopsOrPlatformLocations(final Relation rel, final String stopOrPlatform)
-    {
-
-        logger.info("start check stops: ");
-        final  Set<AtlasEntity> allSigns = rel.members().stream()
-                .filter(member -> member.getRole().equals(stopOrPlatform))
-                .map(RelationMember::getEntity).collect(Collectors.toSet());
-
-        logger.info("rel"+rel.toString());
-
-        final Set<Location> allLocations  = new HashSet<Location>();
-
-        for (final AtlasEntity entity : allSigns)
-        {
-
-            logger.info("--allLocations0:" + allLocations);
-            if (entity instanceof MultiPoint)
-            {
-                logger.info("--allLocations1:" + allLocations);
-                allLocations.add(((MultiPoint) entity).getLocation());
-            }
-            else if (entity instanceof MultiNode)
-            {
-                logger.info("--allLocations2:" + allLocations);
-                allLocations.add(((MultiNode) entity).getLocation());
-            }
-            else if (entity instanceof Node)
-            {
-                logger.info("--allLocations3:" + allLocations);
-                allLocations.add(((Node) entity).getLocation());
-            }
-            else if (entity instanceof Point)
-            {
-                logger.info("--allLocations4:" + allLocations);
-                allLocations.add(((Point) entity).getLocation());
-            }
-        }
-
-        logger.info("--allLocations:" + allLocations);
-        return allLocations;
-    }
 
     /**
      * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
