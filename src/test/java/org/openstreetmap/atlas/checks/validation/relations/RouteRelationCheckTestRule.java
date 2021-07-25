@@ -12,7 +12,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
 /**
- * Cases for unit tests for RoutePrintCheck.  
+ * Cases for unit tests for RoutePrintCheck.
  *
  * @author Lluc
  */
@@ -398,33 +398,40 @@ public class RouteRelationCheckTestRule extends CoreTestRule {
     )
     private Atlas invalidRouteMasterTwo;
 
-    public Atlas getValidRouteOne() {
+    public Atlas getValidRouteOne()
+    {
         return this.validRouteOne;
     }
 
-    public Atlas getInvalidRouteOne() {
+    public Atlas getInvalidRouteOne()
+    {
         return this.invalidRouteOne;
     }
 
 
-    public Atlas getInvalidRouteTwo() {
+    public Atlas getInvalidRouteTwo()
+    {
         return this.invalidRouteTwo;
     }
 
 
-    public Atlas getInvalidRouteThree() {
+    public Atlas getInvalidRouteThree()
+    {
         return this.invalidRouteThree;
     }
 
-    public Atlas getValidRouteMaster() {
+    public Atlas getValidRouteMaster()
+    {
         return this.validRouteMaster;
     }
 
-    public Atlas getInvalidRouteMasterOne() {
+    public Atlas getInvalidRouteMasterOne()
+    {
         return this.invalidRouteMasterOne;
     }
 
-    public Atlas getInvalidRouteMasterTwo() {
+    public Atlas getInvalidRouteMasterTwo()
+    {
         return this.invalidRouteMasterTwo;
     }
 

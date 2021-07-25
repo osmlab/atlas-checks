@@ -5,9 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
-import org.openstreetmap.atlas.geography.atlas.items.Relation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;  
+
 
 /**
  * Unit tests for RoutePrintCheck.
@@ -24,59 +22,6 @@ public class RouteRelationCheckTest {
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void validRouteOneTest()
-    {
-        this.verifier.actual(this.setup.getValidRouteOne(), check);
-        this.verifier.verifyEmpty();
-    }
-
-
-
-    @Test
-    public void invalidRouteOneTest()
-    {
-        this.verifier.actual(this.setup.getInvalidRouteOne(), check);
-
-        this.verifier.verifyExpectedSize(1);
-
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("It should be contained in a Route Master relation")));
-    }
-
-
-    @Test
-    public void invalidRouteTwoTest()
-    {
-        this.verifier.actual(this.setup.getInvalidRouteTwo(), check);
-        this.verifier.verifyExpectedSize(1);
-
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("It should be contained in a Route Master relation")
-                        && flag.getInstructions().contains("has gaps in the track")
-                        && flag.getInstructions().contains("should be contained in a Route Master relation")));
-    }
-
-
-    @Test
-    public void invalidRouteThreeTest()
-    {
-        this.verifier.actual(this.setup.getInvalidRouteThree(), check);
-        this.verifier.verifyExpectedSize(1);
-
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("has gaps in the track")));
-    }
-
-
-    @Test
-    public void validRouteMasterTest()
-    {
-        this.verifier.actual(this.setup.getValidRouteMaster(), check);
-        this.verifier.verifyEmpty();
-    }
-
-
-    @Test
     public void invalidRouteMasterOneTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterOne(), check);
@@ -86,7 +31,6 @@ public class RouteRelationCheckTest {
                         && flag.getInstructions().contains("are too far from the track")
                         && flag.getInstructions().contains("contains non route element")));
     }
-
 
     @Test
     public void invalidRouteMasterTwoTest()
@@ -104,5 +48,52 @@ public class RouteRelationCheckTest {
                         || (flag.getInstructions().contains("It should be contained in a Route Master relation")
                         && flag.getInstructions().contains("has gaps in the track"))));
     }
+
+    @Test
+    public void invalidRouteOneTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteOne(), check);
+
+        this.verifier.verifyExpectedSize(1);
+
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("It should be contained in a Route Master relation")));
+    }
+
+    @Test
+    public void invalidRouteThreeTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteThree(), check);
+        this.verifier.verifyExpectedSize(1);
+
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("has gaps in the track")));
+    }
+    @Test
+    public void invalidRouteTwoTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteTwo(), check);
+        this.verifier.verifyExpectedSize(1);
+
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("It should be contained in a Route Master relation")
+                        && flag.getInstructions().contains("has gaps in the track")
+                        && flag.getInstructions().contains("should be contained in a Route Master relation")));
+    }
+
+    @Test
+    public void validRouteMasterTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteMaster(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validRouteOneTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteOne(), check);
+        this.verifier.verifyEmpty();
+    }
+
 
 }
