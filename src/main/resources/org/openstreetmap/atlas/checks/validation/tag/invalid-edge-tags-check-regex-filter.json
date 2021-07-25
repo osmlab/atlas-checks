@@ -208,7 +208,14 @@
         "railway", 
         "route", 
         "waterway"],
-      "exceptions": []
+        "exceptions": [
+          {
+            "tagName": "name",
+            "values": [
+              "Vehicular/ Peatonal"
+            ]
+          }
+        ]
     },
     {
       "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by BACKSLASH '\\'.",

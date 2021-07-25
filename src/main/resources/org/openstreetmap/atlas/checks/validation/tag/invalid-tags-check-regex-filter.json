@@ -207,7 +207,14 @@
         "railway", 
         "route", 
         "waterway"],
-      "exceptions": []
+      "exceptions": [
+        {
+          "tagName": "addr:street",
+          "values": [
+            "Vehicular/ Peatonal"
+          ]
+        }
+      ]
     },
     {
       "instruction": "The tag: {0} contains MULTIPLE VALUES separated by BACKSLASH '\\'.",
