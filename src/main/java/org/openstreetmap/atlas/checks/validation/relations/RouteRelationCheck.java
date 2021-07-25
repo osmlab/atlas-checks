@@ -163,7 +163,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             // check track has no gaps. Check stops and platforms are not too far from the track
             for (final Relation rel: routeSet)
             {
-                final List<String> instructionsForGap = checkRouteForGaps(rel);
+                final List<String> instructionsForGap = this.checkRouteForGaps(rel);
 
                 if (!instructionsForGap.isEmpty())
                 {
@@ -219,7 +219,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             // check track has no gaps. Check stops and platforms are not too far from the track
             //final List<String> processRelInstructions = this.processRel(routeRel);
-            final List<String> instructionsForGap = checkRouteForGaps(routeRel);
+            final List<String> instructionsForGap = this.checkRouteForGaps(routeRel);
 
             if (!instructionsForGap.isEmpty())
             {
@@ -256,7 +256,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     final Spliterator<Relation>
                             spliterator = relationsInAtlas.spliterator();
 
-                    boolean containedInRouteMaster = StreamSupport.stream(spliterator, false)
+                    final boolean containedInRouteMaster = StreamSupport.stream(spliterator, false)
                             .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
                             .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
                             .filter(member -> member.getType().equals(ItemType.RELATION))
@@ -413,50 +413,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
 
 
-    /**
-     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
-     *
-     * @param allSignsOrPlatformsLocations
-     *            the se of points representing the stops or platforms in the route.
-     * @param allEdgePolyLines
-     *      *     the set of polylines from either edge or line contained in the route
-     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
-     */
-    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
-    {
-        logger.info("checkStopPlatformTooFarFromTrack");
-
-        final Distance threshHold = Distance.meters(1.5);
-
-        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
-        {
-            return false;
-        }
-
-        SnappedLocation minSnap = null;
-
-        for (final Location location : allSignsOrPlatformsLocations)
-        {
-
-
-            for (final PolyLine edges : allEdgePolyLines)
-            {
-                final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
-                {
-                    minSnap = snappedTo;
-                }
-
-                if (minSnap.getDistance().isLessThan(threshHold))
-                {
-                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
 
 
     /**
@@ -509,6 +465,51 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         logger.info("--allLocations:" + allLocations);
         return allLocations;
+    }
+
+    /**
+     * This is the function that will check to see whether a set of stops or platforms that are too far from the track.
+     *
+     * @param allSignsOrPlatformsLocations
+     *            the se of points representing the stops or platforms in the route.
+     * @param allEdgePolyLines
+     *      *     the set of polylines from either edge or line contained in the route
+     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
+     */
+    private boolean checkStopPlatformTooFarFromTrack(final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
+    {
+        logger.info("checkStopPlatformTooFarFromTrack");
+
+        final Distance threshHold = Distance.meters(1.5);
+
+        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
+        {
+            return false;
+        }
+
+        SnappedLocation minSnap = null;
+
+        for (final Location location : allSignsOrPlatformsLocations)
+        {
+
+
+            for (final PolyLine edges : allEdgePolyLines)
+            {
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
+                    minSnap = snappedTo;
+                }
+
+                if (minSnap.getDistance().isLessThan(threshHold))
+                {
+                    //logger.info("true checkDistance : minSnap.getDistance() {}", true);
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
 
