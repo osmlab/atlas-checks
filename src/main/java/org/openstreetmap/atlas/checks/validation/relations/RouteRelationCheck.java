@@ -288,56 +288,74 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
-     * stops and platforms in the route are too far from the track.
+     * Return the list of instructions that describes inconsistency of any tags in the group of
+     * network, operator, ref, and colour between a route master and its member routes
      *
      * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     *  @param stopOrPlatform
-     *             indicate whether we want locations for stops or platforms
-     * @return a list of locations for either stops or platforms
+     *            The route master relation under check
+     * @return the list of instructions that describes inconsistency
      */
-    private Set<Location> allStopsOrPlatformLocations(final Relation rel, final String stopOrPlatform)
+    private List<String> checkNetworkOperatorRefColourTag(final Relation rel)
     {
+        final List<String> instructionsAdd =  new ArrayList<>();
+        final Optional<String> networkTag = rel.getTag("network");
+        final Optional<String> operatorTag = rel.getTag("operator");
+        final Optional<String> refTag = rel.getTag("ref");
+        final Optional<String> colourTag = rel.getTag("colour");
 
-        logger.info("start check stops: ");
-        final  Set<AtlasEntity> allSigns = rel.members().stream()
-                .filter(member -> member.getRole().equals(stopOrPlatform))
-                .map(RelationMember::getEntity).collect(Collectors.toSet());
+        logger.info("checkNetworkOperatorRefColourTag " + rel.getIdentifier());
 
-        logger.info("rel"+rel.toString());
-
-        final Set<Location> allLocations  = new HashSet<Location>();
-
-        for (final AtlasEntity entity : allSigns)
+        if (!networkTag.isPresent() || !operatorTag.isPresent()  || !refTag.isPresent() || !colourTag.isPresent())
         {
+            Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
+                    rel.getOsmIdentifier()));
+        }
 
-            logger.info("--allLocations0:" + allLocations);
-            if (entity instanceof MultiPoint)
+        final Set<Relation> routeSet = this.routeMemberRouteRelations(rel);
+
+        logger.info("rel:"+rel);
+
+        for (final Relation relRoute: routeSet)
+        {
+            final Optional<String> routeNetwork = relRoute.getTag("network");
+            final Optional<String> routeOperator = relRoute.getTag("operator");
+            final Optional<String> routeRef = relRoute.getTag("ref");
+            final Optional<String> routeColour = relRoute.getTag("colour");
+
+            logger.info("relRoute:"+relRoute);
+
+            if (!routeNetwork.isPresent() || !operatorTag.isPresent()
+                    || !routeRef.isPresent() || !routeColour.isPresent())
             {
-                logger.info("--allLocations1:" + allLocations);
-                allLocations.add(((MultiPoint) entity).getLocation());
+                Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
+                        rel.getOsmIdentifier()));
             }
-            else if (entity instanceof MultiNode)
+
+            if (routeNetwork.isPresent() && networkTag.isPresent() && !routeNetwork.equals(networkTag))
             {
-                logger.info("--allLocations2:" + allLocations);
-                allLocations.add(((MultiNode) entity).getLocation());
+                logger.info("routeNetwork:"+routeNetwork + "networkTag:"+networkTag);
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
             }
-            else if (entity instanceof Node)
+
+            if (routeOperator.isPresent() && operatorTag.isPresent() && !routeOperator.equals(operatorTag))
             {
-                logger.info("--allLocations3:" + allLocations);
-                allLocations.add(((Node) entity).getLocation());
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
             }
-            else if (entity instanceof Point)
+
+            if (routeRef.isPresent() && refTag.isPresent() && !routeRef.equals(refTag))
             {
-                logger.info("--allLocations4:" + allLocations);
-                allLocations.add(((Point) entity).getLocation());
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
+            }
+
+            if (routeColour.isPresent() && colourTag.isPresent() && !routeColour.equals(colourTag))
+            {
+                instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
             }
         }
 
-        logger.info("--allLocations:" + allLocations);
-        return allLocations;
+        return instructionsAdd;
     }
+
 
 
     /**
@@ -417,86 +435,86 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return true;
     }
 
+
     /**
-     * Return the list of instructions that describes inconsistency of any tags in the group of
-     * network, operator, ref, and colour between a route master and its member routes
+     * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
+     * stops and platforms in the route are too far from the track.
      *
      * @param rel
-     *            The route master relation under check
-     * @return the list of instructions that describes inconsistency
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     *  @param stopOrPlatform
+     *             indicate whether we want locations for stops or platforms
+     * @return a list of locations for either stops or platforms
      */
-    private List<String> checkNetworkOperatorRefColourTag(final Relation rel)
+    private Set<Location> allStopsOrPlatformLocations(final Relation rel, final String stopOrPlatform)
     {
-        final List<String> instructionsAdd =  new ArrayList<>();
-        final Optional<String> networkTag = rel.getTag("network");
-        final Optional<String> operatorTag = rel.getTag("operator");
-        final Optional<String> refTag = rel.getTag("ref");
-        final Optional<String> colourTag = rel.getTag("colour");
 
-        logger.info("checkNetworkOperatorRefColourTag " + rel.getIdentifier());
+        logger.info("start check stops: ");
+        final  Set<AtlasEntity> allSigns = rel.members().stream()
+                .filter(member -> member.getRole().equals(stopOrPlatform))
+                .map(RelationMember::getEntity).collect(Collectors.toSet());
 
-        if (!networkTag.isPresent() || !operatorTag.isPresent()  || !refTag.isPresent() || !colourTag.isPresent())
+        logger.info("rel"+rel.toString());
+
+        final Set<Location> allLocations  = new HashSet<Location>();
+
+        for (final AtlasEntity entity : allSigns)
         {
-            Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
-                    rel.getOsmIdentifier()));
-        }
 
-        final Set<Relation> routeSet = this.routeMemberRouteRelations(rel);
-
-        logger.info("rel:"+rel);
-
-        for (final Relation relRoute: routeSet)
-        {
-            final Optional<String> routeNetwork = relRoute.getTag("network");
-            final Optional<String> routeOperator = relRoute.getTag("operator");
-            final Optional<String> routeRef = relRoute.getTag("ref");
-            final Optional<String> routeColour = relRoute.getTag("colour");
-
-            logger.info("relRoute:"+relRoute);
-
-            if (!routeNetwork.isPresent() || !operatorTag.isPresent()
-                    || !routeRef.isPresent() || !routeColour.isPresent())
+            logger.info("--allLocations0:" + allLocations);
+            if (entity instanceof MultiPoint)
             {
-                Optional.of(this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
-                        rel.getOsmIdentifier()));
+                logger.info("--allLocations1:" + allLocations);
+                allLocations.add(((MultiPoint) entity).getLocation());
             }
-
-            if (routeNetwork.isPresent() && networkTag.isPresent())
+            else if (entity instanceof MultiNode)
             {
-                if (!routeNetwork.equals(networkTag))
-                {
-                    logger.info("routeNetwork:"+routeNetwork + "networkTag:"+networkTag);
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_NETWORK_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                logger.info("--allLocations2:" + allLocations);
+                allLocations.add(((MultiNode) entity).getLocation());
             }
-
-            if (routeOperator.isPresent() && operatorTag.isPresent())
+            else if (entity instanceof Node)
             {
-                if (!routeOperator.equals(operatorTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_OPERATOR_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                logger.info("--allLocations3:" + allLocations);
+                allLocations.add(((Node) entity).getLocation());
             }
-
-            if (routeRef.isPresent() && refTag.isPresent())
+            else if (entity instanceof Point)
             {
-                if (!routeRef.equals(refTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_REF_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
-            }
-
-            if (routeColour.isPresent() && colourTag.isPresent())
-            {
-                if (!routeColour.equals(colourTag))
-                {
-                    instructionsAdd.add(this.getLocalizedInstruction(INCONSISTENT_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
-                }
+                logger.info("--allLocations4:" + allLocations);
+                allLocations.add(((Point) entity).getLocation());
             }
         }
 
-        return instructionsAdd;
+        logger.info("--allLocations:" + allLocations);
+        return allLocations;
     }
+
+
+    /**
+     * This is the function that will collect all the edges and lines in the relation into one set.
+     *
+     * @param rel
+     *
+     * @return all the edges and lines in the relation in one set.
+     */
+    private Set<PolyLine> polylineRouteRel(final Relation rel)
+    {
+        //edges in the route RelationMember::getRole)
+        final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.EDGE))
+                .map(member -> (Edge) member)
+                .map(member -> member.asPolyLine()).collect(Collectors.toSet());
+
+        final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.LINE))
+                .map(member -> (Line) member)
+                .map(member -> member.asPolyLine()).collect(Collectors.toSet());
+
+        return Stream.of(allEdges, allLines).flatMap(x -> x.stream())
+                .collect(Collectors.toSet());
+    }
+
+
+
 
     /**
      * This is the helper function that do the check
@@ -586,35 +604,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
 
-
-
-
-
-
-
-    /**
-     * This is the function that will collect all the edges and lines in the relation into one set.
-     *
-     * @param rel
-     *
-     * @return all the edges and lines in the relation in one set.
-     */
-    private Set<PolyLine> polylineRouteRel(final Relation rel)
-    {
-        //edges in the route RelationMember::getRole)
-        final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE))
-                .map(member -> (Edge) member)
-                .map(member -> member.asPolyLine()).collect(Collectors.toSet());
-
-        final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.LINE))
-                .map(member -> (Line) member)
-                .map(member -> member.asPolyLine()).collect(Collectors.toSet());
-
-        return Stream.of(allEdges, allLines).flatMap(x -> x.stream())
-                .collect(Collectors.toSet());
-    }
 
 
     /**
