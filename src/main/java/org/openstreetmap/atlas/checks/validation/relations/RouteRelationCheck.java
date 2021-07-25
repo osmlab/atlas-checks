@@ -410,58 +410,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    /**
-     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
-     * contains stops and platforms that are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> checkRouteForGaps(final Relation rel)
-    {
-        logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
-        final List<String> instructionsAdd =  new ArrayList<>();
-
-        final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE))
-                .map(member -> (Edge) member)
-                .filter(member -> member.isMainEdge()).collect(Collectors.toList());
-
-
-        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.LINE))
-                .map(member -> (Line) member).collect(Collectors.toList());
-
-        // Need to have at least one edge or line
-        if (allMainEdges.isEmpty() && allLines.isEmpty())
-        {
-            //logger.info("processRel : empty edges" + rel.getIdentifier());
-            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
-                    rel.getOsmIdentifier()));
-        }
-
-        final List<PolyLine> allPolylines = Stream.concat(allMainEdges.stream()
-                        .map(member -> member.asPolyLine()),
-                allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
-
-        if (allPolylines.size()>1)
-        {
-            final LinkedList<PolyLine> createdRoute = this.routeFormNonArrangedEdgeSet(allPolylines);
-            logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
-
-
-            if (createdRoute.size() < allPolylines.size())
-            {
-                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
-                        rel.getOsmIdentifier()));
-            }
-
-            logger.info("come to end/ check gaps");
-        }
-
-        return instructionsAdd;
-    }
 
     /**
      * Return the list of instructions that describes inconsistency of any tags in the group of
@@ -532,6 +480,58 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return instructionsAdd;
     }
 
+    /**
+     * This is the function that will check to see whether a route has gaps in the track and whether or not a route
+     * contains stops and platforms that are too far from the track.
+     *
+     * @param rel
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @return a list of strings that are instructions for creating flags
+     */
+    private List<String> checkRouteForGaps(final Relation rel)
+    {
+        logger.info("checkRouteForGapscontainsGapscontainsGapscontainsGaps: " + rel.getIdentifier());
+        final List<String> instructionsAdd =  new ArrayList<>();
+
+        final List<Edge> allMainEdges = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.EDGE))
+                .map(member -> (Edge) member)
+                .filter(member -> member.isMainEdge()).collect(Collectors.toList());
+
+
+        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.LINE))
+                .map(member -> (Line) member).collect(Collectors.toList());
+
+        // Need to have at least one edge or line
+        if (allMainEdges.isEmpty() && allLines.isEmpty())
+        {
+            //logger.info("processRel : empty edges" + rel.getIdentifier());
+            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        final List<PolyLine> allPolylines = Stream.concat(allMainEdges.stream()
+                        .map(member -> member.asPolyLine()),
+                allLines.stream().map(member -> member.asPolyLine())).collect(Collectors.toList());
+
+        if (allPolylines.size()>1)
+        {
+            final LinkedList<PolyLine> createdRoute = this.routeFormNonArrangedEdgeSet(allPolylines);
+            logger.info("createdRoute.size(): " + createdRoute.size() + " allPolylines.size():" + allPolylines.size() );
+
+
+            if (createdRoute.size() < allPolylines.size())
+            {
+                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
+                        rel.getOsmIdentifier()));
+            }
+
+            logger.info("come to end/ check gaps");
+        }
+
+        return instructionsAdd;
+    }
 
 
     /**
