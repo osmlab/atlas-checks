@@ -12,7 +12,8 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
  *
  * @author Lluc
  */
-public class RouteRelationCheckTest {
+public class RouteRelationCheckTest
+{
 
     private static final RouteRelationCheck check = new RouteRelationCheck(
             ConfigurationResolver.emptyConfiguration());
