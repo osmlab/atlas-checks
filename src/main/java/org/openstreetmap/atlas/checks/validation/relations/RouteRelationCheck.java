@@ -9,8 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.stream.Stream;    
+import java.util.stream.StreamSupport;   
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -32,21 +32,16 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
- * This check identifies
- * 1."The track of this route contains gaps"
- * 2."The stop or platform is too far from the track of this route"
- * 3, "Non route relation member in route_master relation"
- * 4 "Public transport relation route not in route_master relation"
- * 5 "network, operator, ref, colour tag should be the same on route and route_master relations" :
+ * Finds relations that meet at least one of the following requirements: The track of this
+ * route contains gaps. The stop or platform is too far from the track of this route. Non
+ * route relation member in route_master relation. Public transport relation route not in
+ * route_master relation. network, operator, ref, colour tag should be the same on route
+ * and route_master relations"
  *
- * @author Lluc
+ * @author micah-nacht
  */
-
 public class RouteRelationCheck extends BaseCheck<Object>
 {
     private static final String TEMP_RELATION_ID_INSTRUCTION = "The relation with ID={0,number,#} is problematic.";
@@ -55,21 +50,14 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private static final String STOP_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The stops in the route relation with ID={0,number,#} are too far from the track.";
     private static final String PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The platforms in the route relation with ID={0,number,#} are too far from the track.";
     private static final String ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INSTRUCTION = "The route master relation with ID={0,number,#} contains non route element.";
-    private static final String PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INSTRUCTION = "The relation with ID={0,number,#} is a public transportation route and " +
-            "has route type being {1}. It should be contained in a Route Master relation.";
-    private static final String MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} missing some tags in the category of " +
-            "network, operator, ref, a colour.";
-    private static final String INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} has inconsistent network, " +
-            "operator, ref, or colour tag with " +
-            "its route master.";
-
+    private static final String PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INSTRUCTION = "The relation with ID={0,number,#} is a public transportation route and has route type being {1}. It should be contained in a Route Master relation.";
+    private static final String MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} missing some tags in the category of network, operator, ref, a colour.";
+    private static final String INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} has inconsistent network, operator, ref, or colour tag with its route master.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             TEMP_RELATION_ID_INSTRUCTION, EMPTY_ROUTE_INSTRUCTION, GAPS_IN_ROUTE_TRACK_INSTRUCTION,
             STOP_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION, PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION,
             ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INSTRUCTION, PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INSTRUCTION,
-            MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION ,
-            INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION);
-
+            MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION, INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION);
     private static final int TEMP_RELATION_ID_INDEX = 0;
     private static final int EMPTY_ROUTE_INDEX = 1;
     private static final int GAPS_IN_ROUTE_TRACK_INDEX = 2;
@@ -79,17 +67,10 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private static final int PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX = 6;
     private static final int MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 7;
     private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 8;
-
-
-
-
-    private static final long serialVersionUID = 7671409062471623430L;
-    private static final Logger logger = LoggerFactory.getLogger(RouteRelationCheck.class);
-
-    // Cable cars, chair lifts, gondolas, etc         //route => train], bus, 	bus
     private static final Set<String> Public_transport_Types = Set.of("train", "subway", "bus", "trolleybus",
             "minibus", "light_rail", "share_taxi",
             "railway", "rail", "tram", "aircraft", "ferry");
+    private static final long serialVersionUID = 7671409062471623430L;
 
     public RouteRelationCheck(final Configuration configuration)
     {
@@ -177,12 +158,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
             {
                 instructions.add(this.getLocalizedInstruction(PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
                         routeRel.getOsmIdentifier(), transportType.get()));
-                logger.info("&&&&&&&&&&&&&&&&&&&&It should be contained in a Route Master relation: " + routeRel.getIdentifier());
             }
         }
 
-        logger.info("object.getIdentifier: " + object.getIdentifier());
-        logger.info("instructions: " + instructions);
         // mark this object as flagged
         this.markAsFlagged(object.getOsmIdentifier());
         return instructions.size() == 1 ? Optional.empty()
