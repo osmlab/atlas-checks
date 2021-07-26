@@ -9,8 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;    
-import java.util.stream.StreamSupport;   
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -40,7 +40,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  * route_master relation. network, operator, ref, colour tag should be the same on route
  * and route_master relations"
  *
- * @author micah-nacht
+ * @author lluc
  */
 public class RouteRelationCheck extends BaseCheck<Object>
 {
