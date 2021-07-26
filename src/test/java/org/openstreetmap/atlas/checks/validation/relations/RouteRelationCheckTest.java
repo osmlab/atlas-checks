@@ -6,11 +6,13 @@ import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
 
-
 /**
- * Unit tests for RoutePrintCheck.
+ * Finds relations that meet at least one of the following requirements: The track of this route
+ * contains gaps, The stop or platform is too far from the track of this route, Non route relation
+ * member in route_master relation, Public transport relation route not in route_master relation,
+ * network, operator, ref, colour tag should be the same on route and route_master relations.
  *
- * @author Lluc
+ * @author micah-nacht
  */
 public class RouteRelationCheckTest
 {
@@ -27,10 +29,10 @@ public class RouteRelationCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterOne(), check);
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("has inconsistent network tag with its route master")
-                        && flag.getInstructions().contains("are too far from the track")
-                        && flag.getInstructions().contains("contains non route element")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "inconsistent network, operator, ref, or colour tag with its route master")
+                && flag.getInstructions().contains("are too far from the track")
+                && flag.getInstructions().contains("contains non route element")));
     }
 
     @Test
@@ -40,13 +42,12 @@ public class RouteRelationCheckTest
         this.verifier.verifyNotEmpty();
         this.verifier.verifyExpectedSize(3);
 
-        this.verifier.verify(flag -> Assert
-                .assertTrue((flag.getInstructions().contains("has inconsistent network tag with its route master")
-                        && flag.getInstructions().contains("has inconsistent ref tag with its route master")
-                        && flag.getInstructions().contains("has inconsistent colour tag with its route master")
-                        && flag.getInstructions().contains("contains non route element")) ||
-                        flag.getInstructions().contains("has gaps in the track")
-                        || (flag.getInstructions().contains("It should be contained in a Route Master relation")
+        this.verifier.verify(flag -> Assert.assertTrue((flag.getInstructions().contains(
+                "inconsistent network, operator, ref, or colour tag with its route master")
+                && flag.getInstructions().contains("contains non route element"))
+                || flag.getInstructions().contains("has gaps in the track")
+                || (flag.getInstructions()
+                        .contains("It should be contained in a Route Master relation")
                         && flag.getInstructions().contains("has gaps in the track"))));
     }
 
@@ -57,8 +58,8 @@ public class RouteRelationCheckTest
 
         this.verifier.verifyExpectedSize(1);
 
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("It should be contained in a Route Master relation")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("It should be contained in a Route Master relation")));
     }
 
     @Test
@@ -70,16 +71,18 @@ public class RouteRelationCheckTest
         this.verifier.verify(flag -> Assert
                 .assertTrue(flag.getInstructions().contains("has gaps in the track")));
     }
+
     @Test
     public void invalidRouteTwoTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteTwo(), check);
         this.verifier.verifyExpectedSize(1);
 
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("It should be contained in a Route Master relation")
+        this.verifier.verify(flag -> Assert.assertTrue(
+                flag.getInstructions().contains("It should be contained in a Route Master relation")
                         && flag.getInstructions().contains("has gaps in the track")
-                        && flag.getInstructions().contains("should be contained in a Route Master relation")));
+                        && flag.getInstructions()
+                                .contains("should be contained in a Route Master relation")));
     }
 
     @Test
@@ -95,6 +98,5 @@ public class RouteRelationCheckTest
         this.verifier.actual(this.setup.getValidRouteOne(), check);
         this.verifier.verifyEmpty();
     }
-
 
 }
