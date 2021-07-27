@@ -24,12 +24,6 @@
       "regex": ["\\+"],
       "tagNames": ["name"],
       "exceptions": []
-    },
-    {
-      "instruction": "The edge tag: {0} contains QUESTION MARK '?'.",
-      "regex": ["\\?"],
-      "tagNames": ["name"],
-      "exceptions": []
     }
   ]
 }
