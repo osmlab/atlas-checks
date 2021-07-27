@@ -25,6 +25,17 @@ public class RouteRelationCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void invalidRouteFourTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteFour(), check);
+
+        this.verifier.verifyExpectedSize(1);
+        this.verifier
+                .verify(flag -> Assert.assertTrue(flag.getInstructions().contains("The platforms")
+                        && flag.getInstructions().contains("are too far from the track")));
+    }
+
+    @Test
     public void invalidRouteMasterFourTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterFour(), check);
@@ -59,17 +70,6 @@ public class RouteRelationCheckTest
 
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
                 "inconsistent network, operator, ref, or colour tag with its route master")));
-    }
-
-    @Test
-    public void invalidRouteFourTest()
-    {
-        this.verifier.actual(this.setup.getInvalidRouteFour(), check);
-
-        this.verifier.verifyExpectedSize(1);
-        this.verifier
-                .verify(flag -> Assert.assertTrue(flag.getInstructions().contains("The platforms")
-                        && flag.getInstructions().contains("are too far from the track")));
     }
 
     @Test

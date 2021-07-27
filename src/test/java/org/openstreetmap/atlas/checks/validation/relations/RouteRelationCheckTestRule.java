@@ -618,6 +618,11 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                                     "colour=#A10082" }) })
     private Atlas invalidRouteMasterFour;
 
+    public Atlas getInvalidRouteFour()
+    {
+        return this.invalidRouteFour;
+    }
+
     public Atlas getInvalidRouteMasterFour()
     {
         return this.invalidRouteMasterFour;
@@ -636,11 +641,6 @@ public class RouteRelationCheckTestRule extends CoreTestRule
     public Atlas getInvalidRouteMasterTwo()
     {
         return this.invalidRouteMasterTwo;
-    }
-
-    public Atlas getInvalidRouteFour()
-    {
-        return this.invalidRouteFour;
     }
 
     public Atlas getInvalidRouteOne()
