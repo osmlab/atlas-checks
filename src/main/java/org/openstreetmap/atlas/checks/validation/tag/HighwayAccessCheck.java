@@ -24,12 +24,14 @@ public class HighwayAccessCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = -5533238262833368666L;
-    private static final List<String> ACCESS_TAGS_TO_FLAG_DEFAULT = Arrays.asList("yes", "permissive");
-    private static final List<String> HIGHWAY_TAGS_TO_FLAG_DEFAULT = Arrays.asList("motorway", "trunk", "footway",
-            "bridleway", "steps", "path", "cycleway", "pedestrian", "track", "bus_guideway", "busway", "raceway");
+    private static final List<String> ACCESS_TAGS_TO_FLAG_DEFAULT = Arrays.asList("yes",
+            "permissive");
+    private static final List<String> HIGHWAY_TAGS_TO_FLAG_DEFAULT = Arrays.asList("motorway",
+            "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
+            "bus_guideway", "busway", "raceway");
 
-    private static final List<String> FALLBACK_INSTRUCTIONS =
-            Arrays.asList("The access tag value is probably too generic for this way. A tag value of \"yes\" or \"permissive\" allows access to all types of traffic. If special access is granted or restricted on this way then please specify it or remove the access tag. See https://wiki.openstreetmap.org/wiki/Key:access?uselang=en#Transport_mode_restrictions for more information.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
+            "The access tag value is probably too generic for this way. A tag value of \"yes\" or \"permissive\" allows access to all types of traffic. If special access is granted or restricted on this way then please specify it or remove the access tag. See https://wiki.openstreetmap.org/wiki/Key:access?uselang=en#Transport_mode_restrictions for more information.");
 
     private final List<String> accessTagsToFlag;
     private final List<String> highwayTagsToFlag;
@@ -46,8 +48,10 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     {
         super(configuration);
 
-        this.accessTagsToFlag = this.configurationValue(configuration, "tags.accessTags", ACCESS_TAGS_TO_FLAG_DEFAULT);
-        this.highwayTagsToFlag = this.configurationValue(configuration, "tags.highwayTags", HIGHWAY_TAGS_TO_FLAG_DEFAULT);
+        this.accessTagsToFlag = this.configurationValue(configuration, "tags.accessTags",
+                ACCESS_TAGS_TO_FLAG_DEFAULT);
+        this.highwayTagsToFlag = this.configurationValue(configuration, "tags.highwayTags",
+                HIGHWAY_TAGS_TO_FLAG_DEFAULT);
 
     }
 
@@ -91,7 +95,8 @@ public class HighwayAccessCheck extends BaseCheck<Long>
         final String highwayTag = object.tag(HighwayTag.KEY);
 
         // Check if the access tag is yes or permissive
-        if (this.accessTagsToFlag.contains(accessTag) && this.highwayTagsToFlag.contains(highwayTag))
+        if (this.accessTagsToFlag.contains(accessTag)
+                && this.highwayTagsToFlag.contains(highwayTag))
         {
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
 
