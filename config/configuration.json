@@ -340,7 +340,6 @@
     }
   },
   "HighwayAccessCheck": {
-    "enabled": true,
     "tags": {
       "accessTags":["yes", "permissive"],
       "highwayTags": ["motorway", "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
