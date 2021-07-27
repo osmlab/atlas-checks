@@ -24,16 +24,15 @@ public class HighwayAccessCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = -5533238262833368666L;
-    private static final List<String> AccessTagsToFlag = Arrays.asList("yes", "permissive");
-    private static final List<String> MotorwayHighwayTags = Arrays.asList("motorway", "trunk");
-    private static final List<String> FootwayHighwayTags = Arrays.asList("footway", "bridleway",
-            "steps", "path", "cycleway", "pedestrian", "track", "bus_guideway", "busway",
-            "raceway");
+    private static final List<String> ACCESS_TAGS_TO_FLAG_DEFAULT = Arrays.asList("yes", "permissive");
+    private static final List<String> HIGHWAY_TAGS_TO_FLAG_DEFAULT = Arrays.asList("motorway", "trunk", "footway",
+            "bridleway", "steps", "path", "cycleway", "pedestrian", "track", "bus_guideway", "busway", "raceway");
 
-    private static final String HIGHWAY_IS_MOTORWAY_INSTRUCTION = "Including ski, horse, moped, hazmat and so on, unless explicitly excluded.";
-    private static final String HIGHWAY_IS_FOOTWAY_INSTRUCTION = "Including car, horse, moped, hazmat and so on, unless explicitly excluded.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(HIGHWAY_IS_MOTORWAY_INSTRUCTION, HIGHWAY_IS_FOOTWAY_INSTRUCTION);
+    private static final List<String> FALLBACK_INSTRUCTIONS =
+            Arrays.asList("The access tag value is probably too generic for this way. A tag value of \"yes\" or \"permissive\" allows access to all types of traffic. If special access is granted or restricted on this way then please specify it or remove the access tag. See https://wiki.openstreetmap.org/wiki/Key:access?uselang=en#Transport_mode_restrictions for more information.");
+
+    private final List<String> accessTagsToFlag;
+    private final List<String> highwayTagsToFlag;
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -46,6 +45,10 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     public HighwayAccessCheck(final Configuration configuration)
     {
         super(configuration);
+
+        this.accessTagsToFlag = this.configurationValue(configuration, "tags.accessTags", ACCESS_TAGS_TO_FLAG_DEFAULT);
+        this.highwayTagsToFlag = this.configurationValue(configuration, "tags.highwayTags", HIGHWAY_TAGS_TO_FLAG_DEFAULT);
+
     }
 
     /**
@@ -58,7 +61,6 @@ public class HighwayAccessCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // by default we will assume all objects as valid
         return !this.isFlagged(object.getOsmIdentifier())
                 && (object instanceof Edge && ((Edge) object).isMainEdge());
     }
@@ -88,19 +90,11 @@ public class HighwayAccessCheck extends BaseCheck<Long>
         final String accessTag = object.tag(AccessTag.KEY);
         final String highwayTag = object.tag(HighwayTag.KEY);
 
-        // Check is the access tag is yes or permissive
-        if (AccessTagsToFlag.contains(accessTag))
+        // Check if the access tag is yes or permissive
+        if (this.accessTagsToFlag.contains(accessTag) && this.highwayTagsToFlag.contains(highwayTag))
         {
-            // Checks if the highway tag is in the motorway tags provided above
-            if (MotorwayHighwayTags.contains(highwayTag))
-            {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
-            }
-            // Checks if the highway tag is in the footway tags provided above
-            if (FootwayHighwayTags.contains(highwayTag))
-            {
-                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1)));
-            }
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
+
         }
         return Optional.empty();
     }

@@ -7,10 +7,9 @@
     "enabled.value.default": false
   },
   "PoolSizeCheck": {
-    "enabled": false,
     "surface": {
       "maximum": 1000.0,
-      "minimum": 100.0
+      "minimum": 50.0
     }
   },
   "SpikyBuildingCheck": {
@@ -342,6 +341,11 @@
   },
   "HighwayAccessCheck": {
     "enabled": true,
+    "tags": {
+      "accessTags":["yes", "permissive"],
+      "highwayTags": ["motorway", "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
+        "bus_guideway", "busway", "raceway"]
+    },
     "challenge": {
       "difficulty": "EASY",
       "description": "Checks if the object access is overly permissive"
