@@ -24,15 +24,31 @@ public class RouteRelationCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+
+    @Test
+    public void invalidRouteMasterFourTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteMasterFour(), check);
+
+        this.verifier.verifyExpectedSize(3);
+    }
+
     @Test
     public void invalidRouteMasterOneTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterOne(), check);
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "inconsistent network, operator, ref, or colour tag with its route master")
-                && flag.getInstructions().contains("are too far from the track")
-                && flag.getInstructions().contains("contains non route element")));
+                "inconsistent network, operator, ref, or colour tag with its route master")));
+    }
+
+    @Test
+    public void invalidRouteMasterThreeTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteMasterThree(), check);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "contains non route element")));
     }
 
     @Test
@@ -40,15 +56,21 @@ public class RouteRelationCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterTwo(), check);
         this.verifier.verifyNotEmpty();
-        this.verifier.verifyExpectedSize(3);
+        this.verifier.verifyExpectedSize(1);
 
-        this.verifier.verify(flag -> Assert.assertTrue((flag.getInstructions().contains(
-                "inconsistent network, operator, ref, or colour tag with its route master")
-                && flag.getInstructions().contains("contains non route element"))
-                || flag.getInstructions().contains("has gaps in the track")
-                || (flag.getInstructions()
-                        .contains("It should be contained in a Route Master relation")
-                        && flag.getInstructions().contains("has gaps in the track"))));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "inconsistent network, operator, ref, or colour tag with its route master")));
+    }
+
+    @Test
+    public void invalidRouteFourTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteFour(), check);
+
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("The platforms") && flag.getInstructions()
+                .contains("are too far from the track")));
     }
 
     @Test
@@ -66,30 +88,21 @@ public class RouteRelationCheckTest
     public void invalidRouteThreeTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteThree(), check);
-        this.verifier.verifyExpectedSize(1);
 
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("has gaps in the track")));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("The stops") && flag.getInstructions()
+                .contains("are too far from the track")));
     }
 
     @Test
     public void invalidRouteTwoTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteTwo(), check);
+
         this.verifier.verifyExpectedSize(1);
-
-        this.verifier.verify(flag -> Assert.assertTrue(
-                flag.getInstructions().contains("It should be contained in a Route Master relation")
-                        && flag.getInstructions().contains("has gaps in the track")
-                        && flag.getInstructions()
-                                .contains("should be contained in a Route Master relation")));
-    }
-
-    @Test
-    public void validRouteMasterTest()
-    {
-        this.verifier.actual(this.setup.getValidRouteMaster(), check);
-        this.verifier.verifyEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("has gaps in the track")));
     }
 
     @Test
