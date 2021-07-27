@@ -1,3 +1,4 @@
+edge:invalid-tags-check-inconsistent-highway-filter.json
 area:invalid-tags-check-regex-filter.json
 relation:invalid-tags-check-regex-filter.json
 line:invalid-tags-check-regex-filter.json
