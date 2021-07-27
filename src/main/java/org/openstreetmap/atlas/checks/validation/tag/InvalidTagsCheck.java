@@ -254,7 +254,7 @@ public class InvalidTagsCheck extends BaseCheck<String>
         final List<Tuple<? extends Class<AtlasEntity>, List<Tuple<? extends Predicate<Taggable>, Integer>>>> regexFilters = this
                 .readRegexConfigurationFilter(configuration);
         allFilters.addAll(regexFilters);
-        return allFilters;
+        return regexFilters;
     }
 
     /**
