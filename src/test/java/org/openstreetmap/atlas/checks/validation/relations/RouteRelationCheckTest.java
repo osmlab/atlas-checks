@@ -24,7 +24,6 @@ public class RouteRelationCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-
     @Test
     public void invalidRouteMasterFourTest()
     {
@@ -47,8 +46,8 @@ public class RouteRelationCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterThree(), check);
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "contains non route element")));
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("contains non route element")));
     }
 
     @Test
@@ -68,9 +67,9 @@ public class RouteRelationCheckTest
         this.verifier.actual(this.setup.getInvalidRouteFour(), check);
 
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains("The platforms") && flag.getInstructions()
-                .contains("are too far from the track")));
+        this.verifier
+                .verify(flag -> Assert.assertTrue(flag.getInstructions().contains("The platforms")
+                        && flag.getInstructions().contains("are too far from the track")));
     }
 
     @Test
@@ -90,9 +89,8 @@ public class RouteRelationCheckTest
         this.verifier.actual(this.setup.getInvalidRouteThree(), check);
 
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains("The stops") && flag.getInstructions()
-                .contains("are too far from the track")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains("The stops")
+                && flag.getInstructions().contains("are too far from the track")));
     }
 
     @Test
@@ -101,8 +99,8 @@ public class RouteRelationCheckTest
         this.verifier.actual(this.setup.getInvalidRouteTwo(), check);
 
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains("has gaps in the track")));
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("has gaps in the track")));
     }
 
     @Test

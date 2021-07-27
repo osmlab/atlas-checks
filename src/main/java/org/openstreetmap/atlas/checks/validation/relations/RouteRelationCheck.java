@@ -114,7 +114,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
         {
-            final List<String> processMasterRouteRelationInstructions = processRouteMasterRelation(routeRel);
+            final List<String> processMasterRouteRelationInstructions = this
+                    .processRouteMasterRelation(routeRel);
             if (!processMasterRouteRelationInstructions.isEmpty())
             {
                 instructions.addAll(processMasterRouteRelationInstructions);
@@ -123,7 +124,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         else if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE))
         {
             // check track has no gaps. Check stops and platforms are not too far from the track
-            final List<String> processRouteRelationInstructions = this.processRouteRelation(routeRel);
+            final List<String> processRouteRelationInstructions = this
+                    .processRouteRelation(routeRel);
             if (!processRouteRelationInstructions.isEmpty())
             {
                 instructions.addAll(processRouteRelationInstructions);
@@ -259,17 +261,18 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private List<String> checkRouteForGaps(final Relation rel)
     {
         final List<String> instructionsAdd = new ArrayList<>();
-        final Set<PolyLine> allPolyLines = polylineRouteRel(rel);
+        final Set<PolyLine> allPolyLines = this.polylineRouteRel(rel);
 
         if (allPolyLines.isEmpty())
         {
-            instructionsAdd.add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX,
-                        rel.getOsmIdentifier()));
+            instructionsAdd
+                    .add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX, rel.getOsmIdentifier()));
         }
 
         if (allPolyLines.size() > 1)
         {
-            final LinkedList<PolyLine> createdRoute = this.routeFormNonArrangedEdgeSet(allPolyLines);
+            final LinkedList<PolyLine> createdRoute = this
+                    .routeFormNonArrangedEdgeSet(allPolyLines);
 
             if (createdRoute.size() < allPolyLines.size())
             {
@@ -334,9 +337,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         // edges in the route RelationMember::getRole)
         final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE))
-                .map(Edge.class::cast).filter(Edge::isMainEdge)
-                .map(Edge::asPolyLine).collect(Collectors.toSet());
+                .filter(member -> member.getType().equals(ItemType.EDGE)).map(Edge.class::cast)
+                .filter(Edge::isMainEdge).map(Edge::asPolyLine).collect(Collectors.toSet());
 
         final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
@@ -351,7 +353,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
      * or not a route contains stops and platforms that are too far from the track.
      *
      * @param routeMasterRelation
-     *            the route master relation entity supplied by the Atlas-Checks framework for evaluation
+     *            the route master relation entity supplied by the Atlas-Checks framework for
+     *            evaluation
      * @return a list of strings that are instructions for creating flags
      */
     private List<String> processRouteMasterRelation(final Relation routeMasterRelation)
@@ -362,7 +365,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         // check track has no gaps. Check stops and platforms are not too far from the track
         for (final Relation relation : routeSet)
         {
-            final List<String> processRouteRelationInstructions = this.processRouteRelation(relation);
+            final List<String> processRouteRelationInstructions = this
+                    .processRouteRelation(relation);
             if (!processRouteRelationInstructions.isEmpty())
             {
                 instructionsAdd.addAll(processRouteRelationInstructions);
@@ -370,7 +374,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         // check consistent of the network_operator_ref_colour tags
-        final List<String> tmpInstructions = this.checkNetworkOperatorRefColourTag(routeMasterRelation);
+        final List<String> tmpInstructions = this
+                .checkNetworkOperatorRefColourTag(routeMasterRelation);
         if (!tmpInstructions.isEmpty())
         {
             instructionsAdd.addAll(tmpInstructions);
@@ -379,8 +384,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
         // check existing non route element
         if (routeSet.size() < routeMasterRelation.members().size())
         {
-            instructionsAdd.add(this.getLocalizedInstruction(
-                    ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX, routeMasterRelation.getOsmIdentifier()));
+            instructionsAdd
+                    .add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX,
+                            routeMasterRelation.getOsmIdentifier()));
         }
 
         // mark all route relation in the route master as flagged
