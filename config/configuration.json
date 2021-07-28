@@ -578,6 +578,7 @@
     }
   },
   "LevelCrossingOnRailwayCheck": {
+    "minimum.highway.type": "residential",
     "layer.default": 0,
     "railway.filter": "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge",
     "challenge": {
