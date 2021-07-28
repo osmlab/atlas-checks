@@ -347,7 +347,7 @@
       "tags":"coastline"
     }
   },
-  "GenericTagCheck": {
+    "GenericTagCheck": {
     "db": {
       "taginfo": "extra/taginfo-db.db",
       "wikidata": "extra/wikidata.db"
@@ -363,6 +363,17 @@
       "instruction": "Open your favorite editor and check that the listed tags are correct.",
       "difficulty": "EXPERT",
       "tags":"tags"
+    }
+  },
+  "HighwayAccessCheck": {
+    "tags": {
+      "accessTags":["yes", "permissive"],
+      "highwayTags": ["motorway", "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
+        "bus_guideway", "busway", "raceway"]
+    },
+    "challenge": {
+      "difficulty": "EASY",
+      "description": "Checks if the object access is overly permissive"
     }
   },
   "HighwayMissingNameAndRefTagCheck": {
