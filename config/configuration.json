@@ -269,6 +269,14 @@
       "difficulty": "EASY"
     }
   },
+  "DuplicateRelationCheck": {
+    "challenge": {
+      "description": "Tasks contain Relations where duplicate relations are found.",
+      "blurb": "Duplicate Relations",
+      "instruction": "Open your favorite editor and  remove one or more of the duplicate relations until only one remains.",
+      "difficulty": "EASY"
+    }
+  },
   "DuplicateWaysCheck": {
     "enabled": false,
     "challenge": {
@@ -338,6 +346,35 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "tags":"coastline"
+    }
+  },
+    "GenericTagCheck": {
+    "db": {
+      "taginfo": "extra/taginfo-db.db",
+      "wikidata": "extra/wikidata.db"
+    },
+    "tag": {
+      "usage.min": 100,
+      "percentage_of_key_for_popular": 10
+    },
+    "wikidata.tag_removal": ["abandoned", "deprecated", "imported", "obsolete", "rejected"],
+    "challenge": {
+      "description": "This challenge contains tasks that identify features with OSM Tags (https://wiki.openstreetmap.org/wiki/Tags) that contain invalid tag keys or missing, conflicting, incorrect or illegal tag values. In many tasks in this challenge the task will identify an illegal or questionable tag key or value and provide a link to the Control Wiki Page (wiki page with identification string starting with Q, following with 3 to 4 digits, e.g. https://wiki.osm.org/Item:Q1189) that is used to define that tag’s characteristics in a computer readable format. That Control Wiki Page should contain a link to the Documentation Wiki Page for that tag that is a human readable page that discusses the proper use of the tag and other useful information.\nFor some tasks in this challenge the task may indicate a tag value that is valid or widely used that is not documented in the wiki. For these cases the mapper should not make any changes to the OSM data, but should instead consider adding documentation to the wiki to validate the tag value officially.\nFor more information on the Atlas Check that is used to create this challenge please go to https://github.com/osmlab/atlas-checks/tree/dev/docs/checks/genericTagCheck.md",
+      "blurb": "Features with invalid tags",
+      "instruction": "Open your favorite editor and check that the listed tags are correct.",
+      "difficulty": "EXPERT",
+      "tags":"tags"
+    }
+  },
+  "HighwayAccessCheck": {
+    "tags": {
+      "accessTags":["yes", "permissive"],
+      "highwayTags": ["motorway", "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
+        "bus_guideway", "busway", "raceway"]
+    },
+    "challenge": {
+      "difficulty": "EASY",
+      "description": "Checks if the object access is overly permissive"
     }
   },
   "HighwayMissingNameAndRefTagCheck": {
@@ -561,6 +598,7 @@
     }
   },
   "LevelCrossingOnRailwayCheck": {
+    "minimum.highway.type": "residential",
     "layer.default": 0,
     "railway.filter": "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge",
     "challenge": {
@@ -604,6 +642,7 @@
     "highways.exclude": ["bus_guideway"],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
     "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|ford->!no&ford->*",
+    "lineItems.footpath": "highway->footway,bridleway,steps,corridor,path",
     "nodes.intersecting.non_offending": "ferry->!no&ferry->*|ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal",
     "buildings.flag": true,
     "challenge": {

@@ -53,6 +53,16 @@ public class LevelCrossingOnRailwayCheckTest
     }
 
     @Test
+    public void ignoreMinimumHighwayTypeTest()
+    {
+        this.verifier.actual(this.setup.getIgnoreMinimumHighway(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.inlineConfiguration(
+                        "{  \"LevelCrossingOnRailwayCheck\": {" + "    \"enabled\": true,"
+                                + "    \"minimum.highway.type\": \"residential\" }}")));
+        this.verifier.verifyExpectedSize(0);
+    }
+
+    @Test
     public void invalidIntersectionCyclewayHighwayTest()
     {
         this.verifier.actual(this.setup.getInvalidIntersectionCyclewayHighway(),
@@ -103,6 +113,14 @@ public class LevelCrossingOnRailwayCheckTest
         this.verifier.actual(this.setup.getNoIntersectionNode(),
                 new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(3, flags.size()));
+    }
+
+    @Test
+    public void nodeAtIntersectionTestDisused()
+    {
+        this.verifier.actual(this.setup.getNoIntersectionNodeDisused(),
+                new LevelCrossingOnRailwayCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
