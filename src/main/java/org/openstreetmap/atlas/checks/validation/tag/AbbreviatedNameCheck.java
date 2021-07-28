@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.tags.names.NameTag;
@@ -40,6 +41,9 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     private static final long serialVersionUID = -3648610800112828238L;
     private final Set<String> abbreviations;
 
+    @KeyFullyChecked
+    static final Class<NameTag> NAME_TAG = NameTag.class;
+
     /**
      * Default constructor
      *
@@ -59,8 +63,8 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof AtlasEntity
-                && !this.isFlagged(this.getUniqueOSMIdentifier(object));
+        return object instanceof AtlasEntity && !this.isFlagged(this.getUniqueOSMIdentifier(object))
+                && NameTag.getNameOf(object).isPresent();
     }
 
     /**
@@ -73,23 +77,20 @@ public class AbbreviatedNameCheck extends BaseCheck<String>
         this.markAsFlagged(this.getUniqueOSMIdentifier(object));
 
         // Fetch the name
-        final Optional<String> optionalName = NameTag.getNameOf(object);
-        if (!optionalName.isPresent())
+        final String name = NameTag.getNameOf(object).orElse(null);
+        if (name != null)
         {
-            return Optional.empty();
-        }
+            // Lowercase name and parse it into tokens
+            final String lowercaseName = name.toLowerCase(this.getLocale());
+            final Set<String> tokens = Sets.newHashSet(NAME_SPLITTER.split(lowercaseName));
 
-        // Lowercase name and parse it into tokens
-        final String name = optionalName.get();
-        final String lowercaseName = name.toLowerCase(this.getLocale());
-        final Set<String> tokens = Sets.newHashSet(NAME_SPLITTER.split(lowercaseName));
-
-        // Flag if it has any abbreviations
-        if (tokens.stream().anyMatch(this.abbreviations::contains))
-        {
-            final CheckFlag flag = this.createFlag(object,
-                    this.getLocalizedInstruction(0, object.getOsmIdentifier(), name));
-            return Optional.of(flag);
+            // Flag if it has any abbreviations
+            if (tokens.stream().anyMatch(this.abbreviations::contains))
+            {
+                final CheckFlag flag = this.createFlag(object,
+                        this.getLocalizedInstruction(0, object.getOsmIdentifier(), name));
+                return Optional.of(flag);
+            }
         }
 
         return Optional.empty();

@@ -86,6 +86,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             + "embankment->yes|location->underwater,underground|power->line,minor_line|"
             + "man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|"
             + "ford->!no&ford->*";
+    private static final String DEFAULT_LINE_ITEMS_FOOTPATH = "highway->footway,bridleway,steps,corridor,path";
     private static final String DEFAULT_HIGHWAY_MINIMUM = "TOLL_GANTRY";
     private static final List<String> DEFAULT_HIGHWAYS_EXCLUDE = Collections.emptyList();
     private static final String BUILDING_TAGS_DO_NOT_FLAG = "waterway->dam|public_transport->station,platform|aerialway->station";
@@ -148,6 +149,7 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     private static final long serialVersionUID = 6048659185833217159L;
     private final TaggableFilter canCrossWaterBodyFilter;
     private final TaggableFilter lineItemsOffending;
+    private final TaggableFilter lineItemsOffendingCrossingOnly;
     private final boolean flagBuildings;
     private final HighwayTag highwayMinimum;
     private final List<HighwayTag> highwaysExclude;
@@ -220,6 +222,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
         super(configuration);
         this.lineItemsOffending = TaggableFilter
                 .forDefinition(this.configurationValue(configuration, "lineItems.offending", ""));
+        this.lineItemsOffendingCrossingOnly = TaggableFilter.forDefinition(this.configurationValue(
+                configuration, "lineItems.footpath", DEFAULT_LINE_ITEMS_FOOTPATH));
         this.flagBuildings = this.configurationValue(configuration, "buildings.flag", false);
         this.canCrossWaterBodyFilter = TaggableFilter.forDefinition(this.configurationValue(
                 configuration, "lineItems.non_offending", DEFAULT_CAN_CROSS_WATER_BODY_TAGS));
@@ -361,6 +365,12 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
             return false;
         }
 
+        if (intersectionLocations.size() == 1
+                && this.lineItemsOffendingCrossingOnly.test(crossingItem))
+        {
+            return false;
+        }
+
         // If a street node is at the water border, it should be tagged with any of
         // this.intersectingNodesNonoffending or be part of another edge that can cross a water body
         if (!((Edge) crossingItem).connectedNodes().stream()
@@ -418,20 +428,24 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
                 {
                     return false;
                 }
-                else
+
+                if (this.isAllowedFootPath(interactionsPerWaterbodyComponent, lineItem))
                 {
-                    interactionsPerWaterbodyComponent.forEach(tuple ->
-                    {
-                        if (this.canCrossWaterBody(lineItem, waterbody, tuple))
-                        {
-                            flag.getPoints().removeIf(point -> tuple.getSecond().contains(point));
-                        }
-                        else
-                        {
-                            validCrossWaterbody.getAndSet(false);
-                        }
-                    });
+                    return false;
                 }
+
+                interactionsPerWaterbodyComponent.forEach(tuple ->
+                {
+                    if (this.canCrossWaterBody(lineItem, waterbody, tuple))
+                    {
+                        flag.getPoints().removeIf(point -> tuple.getSecond().contains(point));
+                    }
+                    else
+                    {
+                        validCrossWaterbody.getAndSet(false);
+                    }
+                });
+
                 return !validCrossWaterbody.get();
             }
             return false;
@@ -505,6 +519,41 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
 
         membersIntersections.forEach(tuple -> tuple.getSecond().forEach(flag::addPoint));
         return membersIntersections;
+    }
+
+    /**
+     * True if footpath ends on the edge of a waterbody. "steps" may go inside of the waterbody
+     * area. issue: https://github.com/osmlab/atlas-checks/issues/561
+     * 
+     * @param interactionsPerWaterbodyComponent
+     *            Set of Locations that crossing a waterbody
+     * @param lineItem
+     *            Atlas line entity
+     */
+    private boolean isAllowedFootPath(
+            final Set<Tuple<PolyLine, Set<Location>>> interactionsPerWaterbodyComponent,
+            final AtlasObject lineItem)
+    {
+        final AtomicBoolean allowedFootPath = new AtomicBoolean(false);
+        // refer to: https://github.com/osmlab/atlas-checks/issues/561
+        if (interactionsPerWaterbodyComponent.size() == 1
+                && this.lineItemsOffendingCrossingOnly.test(lineItem))
+        {
+            interactionsPerWaterbodyComponent.forEach(tuple ->
+            {
+                final Set<Location> interactionLocations = tuple.getSecond();
+                // crossing only ones or touching.
+                // ways with highway=steps may go inside of the waterbody.
+                if (interactionLocations.size() == 1 && (interactionLocations
+                        .contains(((Edge) lineItem).start().iterator().next())
+                        || interactionLocations.contains(((Edge) lineItem).end().iterator().next())
+                        || ((Edge) lineItem).highwayTag().getTagValue().equals("steps")))
+                {
+                    allowedFootPath.getAndSet(true);
+                }
+            });
+        }
+        return allowedFootPath.get();
     }
 
     /**
