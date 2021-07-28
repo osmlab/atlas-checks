@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
@@ -34,7 +35,8 @@ public class InvalidLanesTagCheck extends BaseCheck<Long>
     // Maximum number of connected edges that are checked for toll booth nodes
     private static final int MAX_TOLL_PLAZA_EDGES = 20;
     // Valid values of the lanes OSM key
-    private static final String LANES_FILTER_DEFAULT = "lanes->1,1.5,2,3,4,5,6,7,8,9,10";
+    @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
+    static final String LANES_FILTER_DEFAULT = "lanes->1,1.5,2,3,4,5,6,7,8,9,10";
     private final TaggableFilter lanesFilter;
 
     // Edges that can skip the toll booth test, because they have already been checked.

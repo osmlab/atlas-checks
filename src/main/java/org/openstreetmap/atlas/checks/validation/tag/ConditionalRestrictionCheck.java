@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -30,6 +31,7 @@ public class ConditionalRestrictionCheck extends BaseCheck<String>
 
     private static final long serialVersionUID = 6726352951073801440L;
 
+    @KeyFullyChecked(KeyFullyChecked.Type.PARTIAL)
     public static final String CONDITIONAL = ":conditional";
     private static final List<String> RESTRICTION_TYPES = List.of("access", "restriction",
             "maxspeed", "minspeed", "maxweight", "maxaxleload", "maxheight", "maxlength", "maxstay",
