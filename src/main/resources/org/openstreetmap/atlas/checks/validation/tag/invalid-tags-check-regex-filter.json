@@ -197,7 +197,7 @@
     },
     {
       "instruction": "The tag: {0} contains MULTIPLE VALUES separated by FORWARD SLASH '/'.",
-      "regex": ["[^0-9]\\s?/\\s?[^0-9]"],
+      "regex": ["[A-Z0-9]{5}\\s?/"],
       "tagNames": [
         "addr:street",
         "aerialway", 
