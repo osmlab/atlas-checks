@@ -1,8 +1,7 @@
 # StreetNameCheck
 
 #### Description
-This check flags all the objects (Nodes, Ways and Relations) with "ss" or "ß" found in objects. In addition, it flags 
-Relations with deprecated tags as seen on  [OSMOSE](https://osmose.openstreetmap.fr/en/errors?item=9009).
+This check flags all the objects (Nodes, Ways and Relations) with "ss" or "ß" found in objects.
 
 #### Configurables
 All these variables are lists and correspond to each other with their indeces. For example, if you are looking to add a
