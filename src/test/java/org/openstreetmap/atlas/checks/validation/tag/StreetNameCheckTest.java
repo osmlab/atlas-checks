@@ -29,13 +29,6 @@ public class StreetNameCheckTest
     }
 
     @Test
-    public void falsePositiveAutRelationDeprecatedTag()
-    {
-        this.verifier.actual(this.setup.falsePositiveAutRelationDeprecatedTag(), this.check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
     public void falsePositiveAutRelationInvalidValue()
     {
         this.verifier.actual(this.setup.falsePositiveAutRelationInvalidValue(), this.check);
@@ -53,13 +46,6 @@ public class StreetNameCheckTest
     public void falsePositiveCheNodeInvalidValue()
     {
         this.verifier.actual(this.setup.falsePositiveCheNodeInvalidValue(), this.check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void falsePositiveCheRelationDeprecatedTag()
-    {
-        this.verifier.actual(this.setup.falsePositiveCheRelationDeprecatedTag(), this.check);
         this.verifier.verifyEmpty();
     }
 
@@ -85,13 +71,6 @@ public class StreetNameCheckTest
     }
 
     @Test
-    public void falsePositiveDeuRelationDeprecatedTag()
-    {
-        this.verifier.actual(this.setup.falsePositiveDeuRelationDeprecatedTag(), this.check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
     public void falsePositiveDeuRelationInvalidValue()
     {
         this.verifier.actual(this.setup.falsePositiveDeuRelationInvalidValue(), this.check);
@@ -109,13 +88,6 @@ public class StreetNameCheckTest
     public void falsePositiveLieNodeInvalidValue()
     {
         this.verifier.actual(this.setup.falsePositiveLieNodeInvalidValue(), this.check);
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void falsePositiveLieRelationDeprecatedTag()
-    {
-        this.verifier.actual(this.setup.falsePositiveLieRelationDeprecatedTag(), this.check);
         this.verifier.verifyEmpty();
     }
 
@@ -179,13 +151,6 @@ public class StreetNameCheckTest
     public void truePositiveDeuNodeInvalidValue()
     {
         this.verifier.actual(this.setup.truePositiveDeuNodeInvalidValue(), this.check);
-        this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void truePositiveDeuRelationDeprecatedTag()
-    {
-        this.verifier.actual(this.setup.truePositiveDeuRelationDeprecatedTag(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
 

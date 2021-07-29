@@ -11,15 +11,13 @@ are no elements to put, then add an empty list "[]".
 - ***countries*** a list of the countries where the check needs to flag items
 - ***containsValues*** a list of values that we are looking for in the name or street_name tags
 - ***notContainsValues*** a list of values that mustn't be flagged in this check
-- ***deprecatedValues*** a list of values in the type tag of a Relation that need to be flagged as a deprecated tag
 - ***tags*** what specific value we are looking at for "containsValue". These do not affect code.
-
+- ***correctTags*** the proper value that needs to be substituted in.
 
 #### Live Examples
 
 1. [Way:44446981](https://www.openstreetmap.org/way/44446981) in AUT the way has a name that contains the value "Strasse".
-2. [Relation:2700377](https://www.openstreetmap.org/relation/2700377) in DEU contains deprecated tag "associatedStreet".
-3. [Way:168119181](https://www.openstreetmap.org/way/168119181) in LIE the way has a name that contains the value "Straße"
+2. [Way:168119181](https://www.openstreetmap.org/way/168119181) in LIE the way has a name that contains the value "Straße"
 
 #### Code Review
 This check evaluates [Nodes](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Node.java) and
@@ -34,10 +32,7 @@ We first validate that the incoming object is:
 
 
 ##### Flagging the Object
-###### Scenario 1
 * The object has a name or street_name tag that contain the values provided in the containsValues variables in the config file.
-###### Scenario 2
-* The object is Relation, and it has a type tag that is the deprecatedValue variable from the config file.
 
 ##### Not flagging the Object
 * The object contains a containsValue variables but in addition contains the notContainsValue variable.

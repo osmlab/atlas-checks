@@ -4,13 +4,12 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
-    "enabled": false,
     "surface": {
       "maximum": 1000.0,
-      "minimum": 100.0
+      "minimum": 50.0
     }
   },
   "SpikyBuildingCheck": {
@@ -1114,13 +1113,12 @@
     }
   },
   "StreetNameCheck": {
-    "enabled": true,
     "check" : {
       "countries" : ["AUT", "CHE", "DEU", "LIE"],
       "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
       "notContainsValues" : [["strasser"],[],["strasser"],[]],
-      "deprecatedValues" : [[], [], ["AssociatedStreet"], []],
-      "tags" : [["ss"],["ß"],["ss"],["ß"]]
+      "tags" : [["ss"],["ß"],["ss"],["ß"]],
+      "correctTags" : [["ß"],["ss"],["ß"],["ss"]]
     },
     "challenge": {
       "description": "Checks if the countries specified above contain the values in their tags",

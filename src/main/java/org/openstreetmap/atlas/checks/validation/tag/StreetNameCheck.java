@@ -15,15 +15,13 @@ import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.AddressStreetTag;
 import org.openstreetmap.atlas.tags.ISOCountryTag;
-import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.names.NameTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
- * Flags different values (ie "ss", "\u00df", or deprecated tags) for each country specified. Config
- * file contains all the tags required to tag or not to tag specified for each country. The check
- * looks at the object's ISO code and then pulls all the needed tags for that country from
- * configuration.json .
+ * Flags different values "ss" or "ß" for each country specified. Config file contains all the tags
+ * required to tag or not to tag specified for each country. The check looks at the object's ISO
+ * code and then pulls all the needed tags for that country from configuration.json .
  *
  * @author v-naydinyan
  */
@@ -38,21 +36,21 @@ public class StreetNameCheck extends BaseCheck<Long>
     {
         private List<String> tagContains;
         private List<String> tagNotContains;
-        private List<String> deprecatedTags;
-        private List<String> values;
+        private List<String> tagValues;
+        private List<String> correctValues;
 
         CountryInfo(final List<String> contains, final List<String> notContains,
-                final List<String> deprecated, final List<String> tags)
+                final List<String> tags, final List<String> correctTags)
         {
             this.tagContains = contains;
             this.tagNotContains = notContains;
-            this.deprecatedTags = deprecated;
-            this.values = tags;
+            this.tagValues = tags;
+            this.correctValues = correctTags;
         }
 
-        public List<String> getDeprecatedTags()
+        public List<String> getCorrectValues()
         {
-            return this.deprecatedTags;
+            return this.correctValues;
         }
 
         public List<String> getTagContains()
@@ -65,9 +63,9 @@ public class StreetNameCheck extends BaseCheck<Long>
             return this.tagNotContains;
         }
 
-        public List<String> getVals()
+        public List<String> getTagValues()
         {
-            return this.values;
+            return this.tagValues;
         }
     }
 
@@ -77,21 +75,20 @@ public class StreetNameCheck extends BaseCheck<Long>
             List.of("straße"), List.of("strasse"), List.of("straße"));
     private static final List<List<String>> ALL_VALUES_NOT_FLAG_DEFAULT = List
             .of(List.of("strasser"), List.of(), List.of("strasser"), List.of());
-    private static final List<List<String>> ALL_DEPRECATED_VALUES_TO_FLAG_DEFAULT = List
-            .of(List.of(), List.of(), List.of("associatedstreet"), List.of());
     private static final List<List<String>> ALL_ITEMS_TO_FLAG_DEFAULT = List.of(List.of("ss"),
             List.of("ß"), List.of("ss"), List.of("ß"));
+    private static final List<List<String>> ALL_CORRECT_ITEMS_TO_SUBSTITUTE = List.of(List.of("ß"),
+            List.of("ss"), List.of("ß"), List.of("ss"));
 
-    private static final String CONTAINS_VALUE_INSTRUCTION = "The object contains flagged tags: {0}";
-    private static final String CONTAINS_DEPRECATED_VALUE_INSTRUCTION = "The type tag {0} is deprecated.";
+    private static final String CONTAINS_VALUE_INSTRUCTION = "The name of the object contains the value {0}. Please substitute it with an appropriate value {1}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(CONTAINS_VALUE_INSTRUCTION, CONTAINS_DEPRECATED_VALUE_INSTRUCTION);
+            .asList(CONTAINS_VALUE_INSTRUCTION);
 
     private final List<String> allCountriesIsoConfig;
     private final List<List<String>> allValuesToFlagConfig;
     private final List<List<String>> allValuesNotFlagConfig;
-    private final List<List<String>> allDeprecatedValuesToFlagConfig;
     private final List<List<String>> allItemsToFlagConfig;
+    private final List<List<String>> allCorrectValuesToSubstitute;
 
     private static final long serialVersionUID = 3579562381907303707L;
 
@@ -113,10 +110,10 @@ public class StreetNameCheck extends BaseCheck<Long>
                 ALL_VALUES_TO_FLAG_DEFAULT);
         this.allValuesNotFlagConfig = this.configurationValue(configuration,
                 "check.notContainsValues", ALL_VALUES_NOT_FLAG_DEFAULT);
-        this.allDeprecatedValuesToFlagConfig = this.configurationValue(configuration,
-                "check.deprecatedValues", ALL_DEPRECATED_VALUES_TO_FLAG_DEFAULT);
         this.allItemsToFlagConfig = this.configurationValue(configuration, "check.tags",
                 ALL_ITEMS_TO_FLAG_DEFAULT);
+        this.allCorrectValuesToSubstitute = this.configurationValue(configuration,
+                "check.correctTags", ALL_CORRECT_ITEMS_TO_SUBSTITUTE);
     }
 
     /**
@@ -173,15 +170,8 @@ public class StreetNameCheck extends BaseCheck<Long>
             // the item contains a flagged tag but does not contain a tag that isn't to be flagged
             if (!allValuesFoundInObject.get(0).isEmpty() && allValuesFoundInObject.get(1).isEmpty())
             {
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(0, allValuesFoundInObject.get(0))));
-            }
-
-            // the item contains a deprecated tag
-            if (!allValuesFoundInObject.get(2).isEmpty())
-            {
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(1, allValuesFoundInObject.get(2))));
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                        countryInfo.getTagValues(), countryInfo.getCorrectValues())));
             }
         }
         return Optional.empty();
@@ -216,34 +206,8 @@ public class StreetNameCheck extends BaseCheck<Long>
         }
         return new CountryInfo(this.allValuesToFlagConfig.get(objectIndex),
                 this.allValuesNotFlagConfig.get(objectIndex),
-                this.allDeprecatedValuesToFlagConfig.get(objectIndex),
-                this.allItemsToFlagConfig.get(objectIndex));
-    }
-
-    /**
-     * @param typeTag
-     *            the type tag of the object, null if it doesn't exist
-     * @param deprecatedTags
-     *            the deprecated values that need to be flagged
-     * @return return the items
-     */
-    private ArrayList<String> findDeprecatedValuesToFlag(final String typeTag,
-            final List<String> deprecatedTags)
-    {
-        final ArrayList<String> deprecatedValuesToFlagInObject = new ArrayList<>();
-        if (!deprecatedTags.isEmpty() && (typeTag != null))
-        {
-            deprecatedTags.forEach(tag ->
-            {
-                if (typeTag.toLowerCase().contains(String.valueOf(tag).toLowerCase()))
-                {
-                    deprecatedValuesToFlagInObject.add(String.valueOf(tag));
-                }
-            });
-        }
-
-        return deprecatedValuesToFlagInObject;
-
+                this.allItemsToFlagConfig.get(objectIndex),
+                this.allCorrectValuesToSubstitute.get(objectIndex));
     }
 
     /**
@@ -322,16 +286,13 @@ public class StreetNameCheck extends BaseCheck<Long>
         final Map<String, String> tags = object.getTags();
         final String streetTag = tags.get(AddressStreetTag.KEY);
         final String nameTag = tags.get(NameTag.KEY);
-        final String typeTag = tags.get(RelationTypeTag.KEY);
 
         final List<String> valuesToFlag = countryInfo.getTagContains();
         final List<String> valuesToNotFlag = countryInfo.getTagNotContains();
-        final List<String> deprecatedValuesToFlag = countryInfo.getDeprecatedTags();
 
-        final ArrayList<ArrayList<String>> contains = new ArrayList<>(3);
+        final ArrayList<ArrayList<String>> contains = new ArrayList<>(2);
         contains.add(0, this.findValuesToFlag(streetTag, nameTag, valuesToFlag));
         contains.add(1, this.findValuesToNotFlag(streetTag, nameTag, valuesToNotFlag));
-        contains.add(2, this.findDeprecatedValuesToFlag(typeTag, deprecatedValuesToFlag));
 
         return contains;
     }
