@@ -352,7 +352,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             final RouteFromNonArrangedEdgeSetData routeInformation = this
                     .routeFromNonArrangedEdgeSet(allPolyLines);
-            final LinkedList<PolyLine> createdRoute = routeInformation.getRouteCreated();
+            final List<PolyLine> createdRoute = routeInformation.getRouteCreated();
             final List<PolyLine> disconnectedMembers = routeInformation.getDisconnectedMembers();
 
             if (createdRoute.size() < allPolyLines.size())
@@ -385,7 +385,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             final List<PolyLine> linesInRoute)
     {
         final List<PolyLine> members = new ArrayList<>(linesInRoute);
-        final List<PolyLine> disconnectedMembers = new ArrayList<>();
         final LinkedList<PolyLine> routeCreated = new LinkedList<>();
         // initialize routeCreated
         routeCreated.add(members.get(0));
@@ -420,8 +419,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
             // the maximal times to run for loop maximal equals to number of total lines
             numberFailures = numberFailures + 1;
         }
-
-        disconnectedMembers.addAll(this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
+        
+        final List<PolyLine> disconnectedMembers = new ArrayList<>(this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
 
         return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
     }
@@ -485,10 +484,10 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private static final class RouteFromNonArrangedEdgeSetData
     {
 
-        private final LinkedList<PolyLine> routeCreated;
+        private final List<PolyLine> routeCreated;
         private final List<PolyLine> disconnectedMembers;
 
-        RouteFromNonArrangedEdgeSetData(final LinkedList<PolyLine> routeCreated,
+        RouteFromNonArrangedEdgeSetData(final List<PolyLine> routeCreated,
                 final List<PolyLine> disconnectedMembers)
         {
             this.routeCreated = routeCreated;
@@ -500,7 +499,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             return this.disconnectedMembers;
         }
 
-        public LinkedList<PolyLine> getRouteCreated()
+        public List<PolyLine> getRouteCreated()
         {
             return this.routeCreated;
         }
