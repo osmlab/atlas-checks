@@ -139,7 +139,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
             }
 
             // add relation itself when none of the edges and signs are flagged
-            if (atlasObjectFlagged.isEmpty()) {
+            if (atlasObjectFlagged.isEmpty())
+            {
                 atlasObjectFlagged.add(routeRel);
             }
         }
@@ -324,12 +325,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<AtlasEntity> edgesLinesFlagged = new ArrayList<>();
         final List<PolyLine> allPolyLines = new ArrayList<>();
 
-        for (Edge edge: allEdges)
+        for (final Edge edge: allEdges)
         {
             edgesLines.add(edge);
             allPolyLines.add(edge.asPolyLine());
         }
-        for (Line line: allLines)
+        for (final Line line: allLines)
         {
             edgesLines.add(line);
             allPolyLines.add(line.asPolyLine());
@@ -401,27 +402,34 @@ public class RouteRelationCheck extends BaseCheck<Object>
             /* keep adding edges till no way to expand the route */
             previousSize = routeCreated.size();
 
-            for (final PolyLine lineMember : members) {
-                if (routeCreated.contains(lineMember)) {
+            for (final PolyLine lineMember : members)
+            {
+                if (routeCreated.contains(lineMember))
+                {
                     continue;
                 }
 
-                if (lineMember.first().equals(routeCreated.getLast().last())) {
+                if (lineMember.first().equals(routeCreated.getLast().last()))
+                {
                     routeCreated.addLast(lineMember);
-                } else if (lineMember.last().equals(routeCreated.getFirst().first())) {
+                }
+                else if (lineMember.last().equals(routeCreated.getFirst().first()))
+                {
                     routeCreated.addFirst(lineMember);
                 }
 
                 // append at beginning
-                Distance tmpStartDistance = lineMember.last().distanceTo(routeCreated.getFirst().first());
-                if (startMinDistance==null || tmpStartDistance.isLessThan(startMinDistance)){
+                final Distance tmpStartDistance = lineMember.last().distanceTo(routeCreated.getFirst().first());
+                if (startMinDistance==null || tmpStartDistance.isLessThan(startMinDistance))
+                {
                     startMinDistance = tmpStartDistance;
                     startConnectLine = lineMember;
                 }
 
                 // append at end
-                Distance tmpEndDistance = lineMember.first().distanceTo(routeCreated.getLast().last());
-                if (endMinDistance==null || tmpEndDistance.isLessThan(startMinDistance)){
+                final Distance tmpEndDistance = lineMember.first().distanceTo(routeCreated.getLast().last());
+                if (endMinDistance==null || tmpEndDistance.isLessThan(startMinDistance))
+                {
                     endMinDistance = tmpEndDistance;
                     endConnectLine = lineMember;
                 }
@@ -440,18 +448,18 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
     private static final class RouteFromNonArrangedEdgeSetData {
 
-        final LinkedList<PolyLine> routeCreated;
-        final List<PolyLine> disconnectedMembers;
+        private final LinkedList<PolyLine> routeCreated;
+        private final List<PolyLine> disconnectedMembers;
 
-        public RouteFromNonArrangedEdgeSetData(LinkedList<PolyLine> routeCreated,
-                                               List<PolyLine> disconnectedMembers)
+        RouteFromNonArrangedEdgeSetData(final LinkedList<PolyLine> routeCreated,
+                                               final List<PolyLine> disconnectedMembers)
         {
             this.routeCreated = routeCreated;
             this.disconnectedMembers = disconnectedMembers;
         }
 
-        public LinkedList<PolyLine> getRouteCreated() {return this.routeCreated;}
         public List<PolyLine> getDisconnectedMembers() {return this.disconnectedMembers;}
+        public LinkedList<PolyLine> getRouteCreated() {return this.routeCreated;}
     }
 
     /**
@@ -466,6 +474,29 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 .map(Relation.class::cast).filter(member -> Validators.isOfType(member,
                         RelationTypeTag.class, RelationTypeTag.ROUTE))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * @param routeRelation
+     *            the public transport route relation. this method checks whether the route
+     *            relation is contained in a route master
+     * @return an instance of CheckRouteMasterValues containing information about whether
+     *         this public transport route is contained in a route master
+     */
+    private boolean testContainedInRouteMasters(final Relation routeRelation)
+    {
+        final Iterable<Relation> relationsInAtlas = routeRelation.getAtlas().relations();
+        final Spliterator<Relation> spliterator = relationsInAtlas.spliterator();
+
+        return StreamSupport.stream(spliterator, false)
+                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
+                        RelationTypeTag.ROUTE_MASTER))
+                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
+                .filter(member -> member.getType().equals(ItemType.RELATION))
+                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,
+                        RelationTypeTag.ROUTE))
+                .anyMatch(member -> Long.toString(member.getIdentifier())
+                        .equals(Long.toString(routeRelation.getIdentifier())));
     }
 
     /**
@@ -497,14 +528,18 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         SnappedLocation minSnap = null;
 
-        for (final Location location : allSignsLocations) {
-            for (final PolyLine edges : allEdgePolyLines) {
+        for (final Location location : allSignsLocations)
+        {
+            for (final PolyLine edges : allEdgePolyLines)
+            {
                 final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0) {
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
                     minSnap = snappedTo;
                 }
             }
-            if (minSnap != null && minSnap.getDistance().isGreaterThan(threshHold)) {
+            if (minSnap != null && minSnap.getDistance().isGreaterThan(threshHold))
+            {
                 signLocationsFlagged.add(location);
             }
         }
@@ -572,9 +607,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         private final Set<AtlasEntity> nonRouteMembers;
 
-        public TestStructureData(List<String> instructions, List<AtlasEntity> edgesLines,
-                                 List<AtlasEntity> allSigns, List<Location> allSignsLocations,
-                                 Set<AtlasEntity> nonRouteMembers)
+        TestStructureData(final List<String> instructions, final List<AtlasEntity> edgesLines,
+                          final List<AtlasEntity> allSigns, final List<Location> allSignsLocations,
+                          final Set<AtlasEntity> nonRouteMembers)
         {
             this.instructions = instructions;
             this.edgesLines = edgesLines;
@@ -583,35 +618,14 @@ public class RouteRelationCheck extends BaseCheck<Object>
             this.nonRouteMembers = nonRouteMembers;
         }
 
-        public List<String> getInstructions() {return this.instructions;}
-        public List<AtlasEntity> getEdgesLines() {return this.edgesLines;}
         public List<AtlasEntity> getAllSigns() {return this.allSigns;}
         public List<Location> getAllSignsLocations() {return this.allSignsLocations;}
+        public List<AtlasEntity> getEdgesLines() {return this.edgesLines;}
+        public List<String> getInstructions() {return this.instructions;}
         public Set<AtlasEntity> getNonRouteMembers() {return this.nonRouteMembers;}
     }
 
-    /**
-     * @param routeRelation
-     *            the public transport route relation. this method checks whether the route
-     *            relation is contained in a route master
-     * @return an instance of CheckRouteMasterValues containing information about whether
-     *         this public transport route is contained in a route master
-     */
-    private boolean testContainedInRouteMasters(final Relation routeRelation)
-    {
-        final Iterable<Relation> relationsInAtlas = routeRelation.getAtlas().relations();
-        final Spliterator<Relation> spliterator = relationsInAtlas.spliterator();
 
-        return StreamSupport.stream(spliterator, false)
-                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
-                        RelationTypeTag.ROUTE_MASTER))
-                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
-                .filter(member -> member.getType().equals(ItemType.RELATION))
-                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,
-                        RelationTypeTag.ROUTE))
-                .anyMatch(member -> Long.toString(member.getIdentifier())
-                        .equals(Long.toString(routeRelation.getIdentifier())));
-    }
 
     /**
      * Return the list of instructions that describes inconsistency of any tags in the group of
