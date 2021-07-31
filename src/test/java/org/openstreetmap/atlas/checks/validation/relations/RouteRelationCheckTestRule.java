@@ -274,7 +274,7 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                             @Member(id = Edge3ID, role = "", type = "EDGE"),
                                                                             @Member(id = Edge1ID, role = "", type = "EDGE"),
                                                                             @Member(id = Edge2ID, role = "", type = "EDGE"),
-                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT")}, id = RELATION1ID, tags = {
+                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT") }, id = RELATION1ID, tags = {
                                                                                     "type=route",
                                                                                     "route=bus",
                                                                                     "network=lcn",
@@ -286,7 +286,7 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                             @Member(id = Edge4ID, role = "", type = "EDGE"),
                                                                             @Member(id = Edge3ID, role = "", type = "EDGE"),
                                                                             @Member(id = Line5ID, role = "", type = "LINE"),
-                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT")}, id = RELATION2ID, tags = {
+                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT") }, id = RELATION2ID, tags = {
                                                                                     "type=route",
                                                                                     "route=bicycle",
                                                                                     "network=lcn",
