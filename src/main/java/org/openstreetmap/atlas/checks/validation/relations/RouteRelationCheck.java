@@ -158,11 +158,11 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will collect all the edges and lines in the relation into one set.
+     * This is the function that will collect all the edges and lines in the route relation.
      *
      * @param rel
      *            the route relation containing edges and lines forming the route track
-     * @return all the edges and lines in the relation in one set.
+     * @return the set of PolyLine representations for the edges and lines in the relation.
      */
     private Set<PolyLine> polylineRouteRel(final Relation rel)
     {
@@ -265,12 +265,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will check to see whether a route has gaps in the track and whether
-     * a route contains stops and platforms that are too far from the track.
+     * This the function that identifies gaps in the route track and
+     * the stops and platforms that are too far from the track.
      *
      * @param rel
      *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
+     * @return a TestStructureData class containing instructions for creating flags
      */
     private TestStructureData processRouteRelationHelper(final Relation rel)
     {
@@ -312,12 +312,11 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that will check to see whether a route has gaps in the track and whether
-     * a route contains stops and platforms that are too far from the track.
+     * This is the function that will check to see whether a route has gaps.
      *
      * @param rel
      *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags CheckRouteForGaps
+     * @return a TestStructureData for creating flags CheckRouteForGaps
      */
     private TestStructureData routeForGaps(final Relation rel)
     {
@@ -376,15 +375,11 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the helper function that do the check contains stops and platforms that are too far
-     * from the track. This method using the logic in fromNonArrangedEdgeSet(final Set<Edge>
-     * candidates, final boolean shuffle) from the route.java. Check by endpoints. If endpoint can
-     * be connected then no gap. orders are not considered. Check two end points of an edge to see
-     * they can be connected as an edge
+     * This is the function that create a route from the edges in a route relation.
      *
      * @param linesInRoute
      *            the set of lines and edges from the route relation combined in a list of PolyLines
-     * @return a list of strings that are instructions for creating flags
+     * @return a RouteFromNonArrangedEdgeSetData for creating flags
      */
     private RouteFromNonArrangedEdgeSetData routeFromNonArrangedEdgeSet(
             final List<PolyLine> linesInRoute)
@@ -392,17 +387,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<PolyLine> members = new ArrayList<>(linesInRoute);
         final List<PolyLine> disconnectedMembers = new ArrayList<>();
         final LinkedList<PolyLine> routeCreated = new LinkedList<>();
-
         // initialize routeCreated
         routeCreated.add(members.get(0));
         int numberFailures = 0;
         int previousSize = -1;
         int currentSize = routeCreated.size();
-        PolyLine startConnectLine = null;
-        PolyLine endConnectLine = null;
-        // check to append both start and end of the created route
-        Distance startMinDistance = null;
-        Distance endMinDistance = null;
+
         while (routeCreated.size() < members.size() && numberFailures <= members.size()
                 && previousSize < currentSize)
         {
@@ -424,29 +414,56 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 {
                     routeCreated.addFirst(lineMember);
                 }
-
-                // append at beginning
-                final Distance tmpStartDistance = lineMember.last()
-                        .distanceTo(routeCreated.getFirst().first());
-                if (startMinDistance == null || tmpStartDistance.isLessThan(startMinDistance))
-                {
-                    startMinDistance = tmpStartDistance;
-                    startConnectLine = lineMember;
-                }
-
-                // append at end
-                final Distance tmpEndDistance = lineMember.first()
-                        .distanceTo(routeCreated.getLast().last());
-                if (endMinDistance == null || tmpEndDistance.isLessThan(startMinDistance))
-                {
-                    endMinDistance = tmpEndDistance;
-                    endConnectLine = lineMember;
-                }
             }
-            currentSize = routeCreated.size();
 
+            currentSize = routeCreated.size();
             // the maximal times to run for loop maximal equals to number of total lines
             numberFailures = numberFailures + 1;
+        }
+
+        disconnectedMembers.addAll(routeFromNonArrangedEdgeSetHelper(members, routeCreated));
+
+        return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
+    }
+
+    /**
+     * This is the helper function that check the edges that are closest to the two endpoints
+     * of a created route from connected edges of a route relation
+     *
+     * @param members
+     *            the set of PolyLine representation of the edges in a route relation.
+     *@param routeCreated
+     *            the set of PolyLines forming a connected route
+     * @return a list of strings that are instructions for creating flags
+     */
+    private List<PolyLine> routeFromNonArrangedEdgeSetHelper(List<PolyLine> members,
+            final LinkedList<PolyLine> routeCreated)
+    {
+        final List<PolyLine> disconnectedMembers = new ArrayList<>();
+        PolyLine startConnectLine = null;
+        PolyLine endConnectLine = null;
+        // check to append both start and end of the created route
+        Distance startMinDistance = null;
+        Distance endMinDistance = null;
+
+        for (final PolyLine lineMember : members)
+        {
+            final Distance tmpStartDistance = lineMember.last()
+                    .distanceTo(routeCreated.getFirst().first());
+            if (startMinDistance == null || tmpStartDistance.isLessThan(startMinDistance))
+            {
+                startMinDistance = tmpStartDistance;
+                startConnectLine = lineMember;
+            }
+
+            // append at end
+            final Distance tmpEndDistance = lineMember.first()
+                    .distanceTo(routeCreated.getLast().last());
+            if (endMinDistance == null || tmpEndDistance.isLessThan(startMinDistance))
+            {
+                endMinDistance = tmpEndDistance;
+                endConnectLine = lineMember;
+            }
         }
 
         if (startConnectLine != null)
@@ -458,7 +475,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             disconnectedMembers.add(endConnectLine);
         }
 
-        return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
+        return disconnectedMembers;
     }
 
     /**
@@ -591,7 +608,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the route relation to check.
      * @param stopOrPlatform
      *            * indicate to check either stops of platforms
-     * @return a list containing information for creating the flag.
+     * @return a TestStructureData for creating the flag.
      */
     private TestStructureData testStopPlatformTooFarFromTrack(final Relation rel,
             final String stopOrPlatform)
@@ -651,7 +668,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the relation entity supplied by the Atlas-Checks framework for evaluation
      * @param stopOrPlatform
      *            indicate whether we want locations for stops or platforms
-     * @return a list of locations and atlas entities for either stops or platforms
+     * @return a TestStructureData instance for either stops or platforms
      */
     private TestStructureData testStopsOrPlatformsTooFarLocations(final Relation rel,
             final String stopOrPlatform)
