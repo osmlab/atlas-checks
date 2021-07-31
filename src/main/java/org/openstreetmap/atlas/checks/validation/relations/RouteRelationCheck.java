@@ -421,7 +421,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             numberFailures = numberFailures + 1;
         }
 
-        disconnectedMembers.addAll(routeFromNonArrangedEdgeSetHelper(members, routeCreated));
+        disconnectedMembers.addAll(this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
 
         return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
     }
@@ -436,7 +436,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the set of PolyLines forming a connected route
      * @return a list of strings that are instructions for creating flags
      */
-    private List<PolyLine> routeFromNonArrangedEdgeSetHelper(List<PolyLine> members,
+    private List<PolyLine> routeFromNonArrangedEdgeSetHelper(final List<PolyLine> members,
             final LinkedList<PolyLine> routeCreated)
     {
         final List<PolyLine> disconnectedMembers = new ArrayList<>();
