@@ -265,8 +265,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This the function that identifies gaps in the route track and
-     * the stops and platforms that are too far from the track.
+     * This the function that identifies gaps in the route track and the stops and platforms that
+     * are too far from the track.
      *
      * @param rel
      *            the relation entity supplied by the Atlas-Checks framework for evaluation
@@ -420,19 +420,19 @@ public class RouteRelationCheck extends BaseCheck<Object>
             // the maximal times to run for loop maximal equals to number of total lines
             numberFailures = numberFailures + 1;
         }
-        
+
         disconnectedMembers.addAll(this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
 
         return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
     }
 
     /**
-     * This is the helper function that check the edges that are closest to the two endpoints
-     * of a created route from connected edges of a route relation
+     * This is the helper function that check the edges that are closest to the two endpoints of a
+     * created route from connected edges of a route relation
      *
      * @param members
      *            the set of PolyLine representation of the edges in a route relation.
-     *@param routeCreated
+     * @param routeCreated
      *            the set of PolyLines forming a connected route
      * @return a list of strings that are instructions for creating flags
      */
