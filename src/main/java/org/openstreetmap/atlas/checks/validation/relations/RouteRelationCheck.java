@@ -419,8 +419,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
             // the maximal times to run for loop maximal equals to number of total lines
             numberFailures = numberFailures + 1;
         }
-        
-        final List<PolyLine> disconnectedMembers = new ArrayList<>(this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
+
+        final List<PolyLine> disconnectedMembers = new ArrayList<>(
+                this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
 
         return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
     }
