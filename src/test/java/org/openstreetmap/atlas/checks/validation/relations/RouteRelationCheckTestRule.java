@@ -30,14 +30,14 @@ public class RouteRelationCheckTestRule extends CoreTestRule
     private static final String PLATFORM1 = "47.648899, -122.373809";
     private static final String PLATFORM2 = "47.678899, -122.403809";
 
-    private static final String START_ID = "1000000";
-    private static final String TWO_ID = "2000000";
-    private static final String THREE_ID = "3000000";
-    private static final String FOUR_ID = "4000000";
-    private static final String FIVE_ID = "5000000";
-    private static final String SIX_ID = "6000000";
-    private static final String SEVEN_ID = "7000000";
-    private static final String EIGHT_ID = "8000000";
+    private static final String START_ID = "10000000";
+    private static final String TWO_ID = "20000000";
+    private static final String THREE_ID = "30000000";
+    private static final String FOUR_ID = "40000000";
+    private static final String FIVE_ID = "50000000";
+    private static final String SIX_ID = "60000000";
+    private static final String SEVEN_ID = "70000000";
+    private static final String EIGHT_ID = "80000000";
 
     private static final String Edge1ID = "10000000";
     private static final String Edge2ID = "20000000";
@@ -274,7 +274,7 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                             @Member(id = Edge3ID, role = "", type = "EDGE"),
                                                                             @Member(id = Edge1ID, role = "", type = "EDGE"),
                                                                             @Member(id = Edge2ID, role = "", type = "EDGE"),
-                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT") }, id = RELATION1ID, tags = {
+                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT")}, id = RELATION1ID, tags = {
                                                                                     "type=route",
                                                                                     "route=bus",
                                                                                     "network=lcn",
@@ -286,7 +286,7 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                             @Member(id = Edge4ID, role = "", type = "EDGE"),
                                                                             @Member(id = Edge3ID, role = "", type = "EDGE"),
                                                                             @Member(id = Line5ID, role = "", type = "LINE"),
-                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT") }, id = RELATION2ID, tags = {
+                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT")}, id = RELATION2ID, tags = {
                                                                                     "type=route",
                                                                                     "route=bicycle",
                                                                                     "network=lcn",

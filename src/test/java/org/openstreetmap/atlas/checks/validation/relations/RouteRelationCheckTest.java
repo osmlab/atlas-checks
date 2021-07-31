@@ -40,7 +40,7 @@ public class RouteRelationCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterFour(), check);
 
-        this.verifier.verifyExpectedSize(3);
+        this.verifier.verifyExpectedSize(3); //
     }
 
     @Test

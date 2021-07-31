@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -37,7 +38,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  * Finds·relations·that·meet·at·least·one·of·the·following·requirements:·The·track·of·this·route
  * contains·gaps.·The·stop·or·platform·is·too·far·from·the·track·of·this·route.·Non·route·relation
  * ·member·in·route_master·relation.·Public·transport·relation·route·not·in·route_master·relation.
- * ·network,·operator,·ref,·colour·tag·should·be·the·same·on·route·and·route_master·relations"
+ * ·network,·operator,·ref,·colour·tag·should·be·the·same·on·route·and·route_master·relations
  *
  * @author lluc
  */
@@ -92,8 +93,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         return object instanceof Relation
                 && (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER)
-                        || Validators.isOfType(object, RelationTypeTag.class,
-                                RelationTypeTag.ROUTE))
+                || Validators.isOfType(object, RelationTypeTag.class,
+                RelationTypeTag.ROUTE))
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -109,42 +110,44 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         final Relation routeRel = (Relation) object;
         final List<String> instructions = new ArrayList<>();
+        TestStructureData routeSignInstructions = null;
+
         instructions.add(
                 this.getLocalizedInstruction(TEMP_RELATION_ID_INDEX, routeRel.getOsmIdentifier()));
 
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER))
         {
-            final List<String> processMasterRouteRelationInstructions = this
-                    .processRouteMasterRelation(routeRel);
-            if (!processMasterRouteRelationInstructions.isEmpty())
-            {
-                instructions.addAll(processMasterRouteRelationInstructions);
-            }
+            routeSignInstructions = this.processRouteMasterRelation(routeRel);
         }
-        else if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE))
+
+        if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE))
         {
-            // check track has no gaps. Check stops and platforms are not too far from the track
-            final List<String> processRouteRelationInstructions = this
-                    .processRouteRelation(routeRel);
-            if (!processRouteRelationInstructions.isEmpty())
+            routeSignInstructions = this.processRouteRelation(routeRel);
+        }
+
+        final Set<AtlasEntity> atlasObjectFlagged = new HashSet<>();
+
+        if (Objects.nonNull(routeSignInstructions))
+        {
+            instructions.addAll(routeSignInstructions.getInstructions());
+            atlasObjectFlagged.addAll(routeSignInstructions.getEdgesLines());
+            atlasObjectFlagged.addAll(routeSignInstructions.getAllSigns());
+
+            if (routeSignInstructions.getNonRouteMembers() != null)
             {
-                instructions.addAll(processRouteRelationInstructions);
+                atlasObjectFlagged.addAll(routeSignInstructions.getNonRouteMembers());
             }
 
-            final Optional<String> transportType = routeRel.getTag("route");
-            if (transportType.isPresent() && Public_transport_Types.contains(transportType.get())
-                    && !this.relContainedInRouteMasters(routeRel))
-            {
-                instructions.add(this.getLocalizedInstruction(
-                        PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
-                        routeRel.getOsmIdentifier(), transportType.get()));
+            // add relation itself when none of the edges and signs are flagged
+            if (atlasObjectFlagged.isEmpty()) {
+                atlasObjectFlagged.add(routeRel);
             }
         }
 
         // mark this object as flagged
         this.markAsFlagged(object.getOsmIdentifier());
         return instructions.size() == 1 ? Optional.empty()
-                : Optional.of(this.createFlag(routeRel.flatten(), instructions));
+                : Optional.of(this.createFlag(atlasObjectFlagged, instructions));
     }
 
     @Override
@@ -154,22 +157,388 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether or not
-     * stops and platforms in the route are too far from the track.
+     * This is the function that will collect all the edges and lines in the relation into one set.
+     *
+     * @param rel
+     *            the route relation containing edges and lines forming the route track
+     * @return all the edges and lines in the relation in one set.
+     */
+    private Set<PolyLine> polylineRouteRel(final Relation rel)
+    {
+        // edges in the route RelationMember::getRole
+        final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.EDGE)).map(Edge.class::cast)
+                .filter(Edge::isMainEdge).map(Edge::asPolyLine).collect(Collectors.toSet());
+
+        final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
+                .map(Line::asPolyLine).collect(Collectors.toSet());
+
+        return Stream.of(allEdges, allLines).flatMap(Set<PolyLine>::stream)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * This is the function that will check to see whether a route has gaps in the track and
+     * whether a route contains stops and platforms that are too far from the track.
+     *
+     * @param routeMasterRelation
+     *            the route master relation entity supplied by the Atlas-Checks framework for
+     *            evaluation
+     * @return a list of strings that are instructions for creating flags
+     */
+    private TestStructureData processRouteMasterRelation(final Relation routeMasterRelation)
+    {
+        final List<String> instructionsAdd = new ArrayList<>();
+        final List<AtlasEntity> allEdgesLinesFlagged = new ArrayList<>();
+        final List<AtlasEntity> allSignsEntitiesFlagged = new ArrayList<>();
+        final List<Location> allSignsLocationsFlagged = new ArrayList<>();
+        final Set<AtlasEntity> nonRouteMembers = new HashSet<>();
+        final Set<Relation> routeSet = this.routeMemberRouteRelations(routeMasterRelation);
+
+
+        // check track has no gaps. Check stops and platforms are not too far from the track
+        for (final Relation relation : routeSet)
+        {
+            final TestStructureData routeSignInstructions = this
+                    .processRouteRelationHelper(relation);
+            instructionsAdd.addAll(routeSignInstructions.getInstructions());
+            allEdgesLinesFlagged.addAll(routeSignInstructions.getEdgesLines());
+            allSignsEntitiesFlagged.addAll(routeSignInstructions.getAllSigns());
+            allSignsLocationsFlagged.addAll(routeSignInstructions.getAllSignsLocations());
+        }
+
+        // check consistent of the network_operator_ref_colour tags
+        final List<String> tmpInstructions = this
+                .testNetworkOperatorRefColourTag(routeMasterRelation);
+
+        if (!tmpInstructions.isEmpty())
+        {
+            instructionsAdd.addAll(tmpInstructions);
+        }
+
+        // check existing non route element
+        if (routeSet.size() < routeMasterRelation.members().size())
+        {
+            final Set<AtlasEntity> otherMembers = routeMasterRelation.members().stream()
+                    .map(RelationMember::getEntity)
+                    .filter(member -> !(Validators.isOfType(member, RelationTypeTag.class, RelationTypeTag.ROUTE)))
+                    .collect(Collectors.toSet());
+            nonRouteMembers.addAll(otherMembers);
+            instructionsAdd
+                    .add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX,
+                            routeMasterRelation.getOsmIdentifier()));
+        }
+
+        return new TestStructureData(instructionsAdd, allEdgesLinesFlagged,
+                allSignsEntitiesFlagged, allSignsLocationsFlagged, nonRouteMembers);
+    }
+
+    private TestStructureData processRouteRelation(final Relation rel)
+    {
+        final TestStructureData routeSignInstructions = this.processRouteRelationHelper(rel);
+        final List<String> instructionsAdd = routeSignInstructions.getInstructions();
+        final List<AtlasEntity> allEdgesLinesFlagged = routeSignInstructions.getEdgesLines();
+        final List<AtlasEntity> allSignsEntitiesFlagged = routeSignInstructions.getAllSigns();
+        final List<Location> allSignsLocationsFlagged = routeSignInstructions.getAllSignsLocations();
+
+        final Optional<String> transportType = rel.getTag("route");
+        if (transportType.isPresent() && Public_transport_Types.contains(transportType.get())
+                && !this.testContainedInRouteMasters(rel))
+        {
+            instructionsAdd.add(this.getLocalizedInstruction(
+                    PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
+                    rel.getOsmIdentifier(), transportType.get()));
+        }
+
+        return new TestStructureData(instructionsAdd, allEdgesLinesFlagged,
+                allSignsEntitiesFlagged, allSignsLocationsFlagged, null);
+    }
+
+    /**
+     * This is the function that will check to see whether a route has gaps in the track and
+     * whether a route contains stops and platforms that are too far from the track.
+     *
+     * @param rel
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @return a list of strings that are instructions for creating flags
+     */
+    private TestStructureData processRouteRelationHelper(final Relation rel)
+    {
+        final TestStructureData routeResults = this.routeForGaps(rel);
+        final List<String> instructionsAdd = routeResults.getInstructions();
+        final List<AtlasEntity> edgesLinesFlagged = routeResults.getEdgesLines();
+        final List<AtlasEntity> allSignsFlagged = new ArrayList<>();
+        final List<Location> allStopsPlatformsFlagged = new ArrayList<>();
+
+        final TestStructureData stopsFlaggedInfo = this.
+                testStopPlatformTooFarFromTrack(rel, "stop");
+        final List<Location> stopsLocationsFlagged = stopsFlaggedInfo.getAllSignsLocations();
+        final List<AtlasEntity> stopsEntitiesFlagged = stopsFlaggedInfo.getAllSigns();
+
+        if (!stopsLocationsFlagged.isEmpty() && !stopsEntitiesFlagged.isEmpty())
+        {
+            allStopsPlatformsFlagged.addAll(stopsLocationsFlagged);
+            allSignsFlagged.addAll(stopsEntitiesFlagged);
+            instructionsAdd.add(this.getLocalizedInstruction(STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        final TestStructureData platformsFlaggedInfo = this.
+                testStopPlatformTooFarFromTrack(rel, "platform");
+        final List<Location> platformsLocationsFlagged = platformsFlaggedInfo.getAllSignsLocations();
+        final List<AtlasEntity> platformsEntitiesFlagged = platformsFlaggedInfo.getAllSigns();
+
+        if (!platformsLocationsFlagged.isEmpty()
+                && !platformsEntitiesFlagged.isEmpty())
+        {
+            allStopsPlatformsFlagged.addAll(platformsLocationsFlagged);
+            allSignsFlagged.addAll(platformsEntitiesFlagged);
+            instructionsAdd.add(this.getLocalizedInstruction(PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX,
+                    rel.getOsmIdentifier()));
+        }
+
+        return new TestStructureData(instructionsAdd, edgesLinesFlagged,
+                allSignsFlagged, allStopsPlatformsFlagged, null);
+    }
+
+    /**
+     * This is the function that will check to see whether a route has gaps in the track and
+     * whether a route contains stops and platforms that are too far from the track.
+     *
+     * @param rel
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @return a list of strings that are instructions for creating flags CheckRouteForGaps
+     */
+    private TestStructureData routeForGaps(final Relation rel)
+    {
+        final List<String> instructionsAdd = new ArrayList<>();
+        final List<Edge> allEdges = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.EDGE)).map(Edge.class::cast)
+                .filter(Edge::isMainEdge).collect(Collectors.toList());
+
+        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
+                .collect(Collectors.toList());
+        final List<AtlasEntity> edgesLines = new ArrayList<>();
+        final List<AtlasEntity> edgesLinesFlagged = new ArrayList<>();
+        final List<PolyLine> allPolyLines = new ArrayList<>();
+
+        for (Edge edge: allEdges)
+        {
+            edgesLines.add(edge);
+            allPolyLines.add(edge.asPolyLine());
+        }
+        for (Line line: allLines)
+        {
+            edgesLines.add(line);
+            allPolyLines.add(line.asPolyLine());
+        }
+        if (allPolyLines.isEmpty())
+        {
+            instructionsAdd
+                    .add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX, rel.getOsmIdentifier()));
+        }
+
+        if (allPolyLines.size() > 1)
+        {
+            final RouteFromNonArrangedEdgeSetData routeInformation= this.
+                    routeFromNonArrangedEdgeSet(allPolyLines);
+            final LinkedList<PolyLine> createdRoute = routeInformation.getRouteCreated();
+            final List<PolyLine> disconnectedMembers = routeInformation.getDisconnectedMembers();
+
+            if (createdRoute.size() < allPolyLines.size())
+            {
+                // add the edges and lines that are flagged
+                for (int i=0; i<allPolyLines.size(); i++)
+                {
+                    if (disconnectedMembers.contains(allPolyLines.get(i)))
+                    {
+                        edgesLinesFlagged.add(edgesLines.get(i));
+                    }
+                }
+
+                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
+                        rel.getOsmIdentifier()));
+            }
+        }
+
+        return new TestStructureData(instructionsAdd, edgesLinesFlagged,
+                null, null, null);
+    }
+
+    /**
+     * This is the helper function that do the check contains stops and platforms that are too far
+     * from the track. This method using the logic in fromNonArrangedEdgeSet(final Set<Edge>
+     * candidates, final boolean shuffle) from the route.java. Check by endpoints. If endpoint can
+     * be connected then no gap. orders are not considered. Check two end points of an edge to see
+     * they can be connected as an edge
+     *
+     * @param linesInRoute
+     *            the set of lines and edges from the route relation combined in a list of PolyLines
+     * @return a list of strings that are instructions for creating flags
+     */
+    private RouteFromNonArrangedEdgeSetData routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
+    {
+        final List<PolyLine> members = new ArrayList<>(linesInRoute);
+        final List<PolyLine> disconnectedMembers = new ArrayList<>();
+        final LinkedList<PolyLine> routeCreated = new LinkedList<>();
+
+        // initialize routeCreated
+        routeCreated.add(members.get(0));
+        int numberFailures = 0;
+        int previousSize = -1;
+        int currentSize = routeCreated.size();
+        PolyLine startConnectLine = null;
+        PolyLine endConnectLine = null;
+        // check to append both start and end of the created route
+        Distance startMinDistance = null;
+        Distance endMinDistance = null;
+        while (routeCreated.size() < members.size()
+                && numberFailures <= members.size()
+                && previousSize<currentSize)
+        {
+            /* keep adding edges till no way to expand the route */
+            previousSize = routeCreated.size();
+
+            for (final PolyLine lineMember : members) {
+                if (routeCreated.contains(lineMember)) {
+                    continue;
+                }
+
+                if (lineMember.first().equals(routeCreated.getLast().last())) {
+                    routeCreated.addLast(lineMember);
+                } else if (lineMember.last().equals(routeCreated.getFirst().first())) {
+                    routeCreated.addFirst(lineMember);
+                }
+
+                // append at beginning
+                Distance tmpStartDistance = lineMember.last().distanceTo(routeCreated.getFirst().first());
+                if (startMinDistance==null || tmpStartDistance.isLessThan(startMinDistance)){
+                    startMinDistance = tmpStartDistance;
+                    startConnectLine = lineMember;
+                }
+
+                // append at end
+                Distance tmpEndDistance = lineMember.first().distanceTo(routeCreated.getLast().last());
+                if (endMinDistance==null || tmpEndDistance.isLessThan(startMinDistance)){
+                    endMinDistance = tmpEndDistance;
+                    endConnectLine = lineMember;
+                }
+            }
+            currentSize=routeCreated.size();
+
+            // the maximal times to run for loop maximal equals to number of total lines
+            numberFailures = numberFailures + 1;
+        }
+
+        if (startConnectLine != null) {disconnectedMembers.add(startConnectLine);}
+        if (endConnectLine != null && ! disconnectedMembers.contains(endConnectLine)) {disconnectedMembers.add(endConnectLine);}
+
+        return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
+    }
+
+    private static final class RouteFromNonArrangedEdgeSetData {
+
+        final LinkedList<PolyLine> routeCreated;
+        final List<PolyLine> disconnectedMembers;
+
+        public RouteFromNonArrangedEdgeSetData(LinkedList<PolyLine> routeCreated,
+                                               List<PolyLine> disconnectedMembers)
+        {
+            this.routeCreated = routeCreated;
+            this.disconnectedMembers = disconnectedMembers;
+        }
+
+        public LinkedList<PolyLine> getRouteCreated() {return this.routeCreated;}
+        public List<PolyLine> getDisconnectedMembers() {return this.disconnectedMembers;}
+    }
+
+    /**
+     * @param rel
+     *            The master route relation containing members of route relation
+     * @return set of route relations contained in the route master
+     */
+    private Set<Relation> routeMemberRouteRelations(final Relation rel)
+    {
+        return rel.members().stream().map(RelationMember::getEntity)
+                .filter(member -> member.getType().equals(ItemType.RELATION))
+                .map(Relation.class::cast).filter(member -> Validators.isOfType(member,
+                        RelationTypeTag.class, RelationTypeTag.ROUTE))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * This is the function that will check to see whether a set of stops or platforms that are too
+     * far from the track.
+     *
+     * @param rel
+     *            the route relation to check.
+     * @param stopOrPlatform
+     *            * indicate to check either stops of platforms
+     * @return a list containing information for creating the flag.
+     */
+    private TestStructureData testStopPlatformTooFarFromTrack(final Relation rel, final String stopOrPlatform)
+    {
+        final Set<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel);
+        final TestStructureData allSignsInfo = this.testStopsOrPlatformsTooFarLocations(rel, stopOrPlatform);
+        final List<Location> allSignsLocations = allSignsInfo.getAllSignsLocations();
+        final List<AtlasEntity> allSignsEntities = allSignsInfo.getAllSigns();
+
+        final Distance threshHold = Distance.meters(15.0);
+        final List<Location> signLocationsFlagged = new ArrayList<>();
+        final List<AtlasEntity> allSignsEntitiesFlagged = new ArrayList<>();
+
+        if (allSignsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
+        {
+            return new TestStructureData(null, null,
+                    allSignsEntitiesFlagged, signLocationsFlagged, null);
+        }
+
+        SnappedLocation minSnap = null;
+
+        for (final Location location : allSignsLocations) {
+            for (final PolyLine edges : allEdgePolyLines) {
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0) {
+                    minSnap = snappedTo;
+                }
+            }
+            if (minSnap != null && minSnap.getDistance().isGreaterThan(threshHold)) {
+                signLocationsFlagged.add(location);
+            }
+        }
+
+        for (int i=0; i<allSignsLocations.size(); i++)
+        {
+            final Location loc = allSignsLocations.get(i);
+            if (signLocationsFlagged.contains(loc))
+            {
+                allSignsEntitiesFlagged.add(allSignsEntities.get(i));
+            }
+        }
+
+        return new TestStructureData(null, null,
+                allSignsEntitiesFlagged, signLocationsFlagged, null);
+    }
+    
+    /**
+     * This is the helper function for checkStopPlatformTooFarFromTrack that checks
+     * whether stops and platforms in the route are too far from the track.
      *
      * @param rel
      *            the relation entity supplied by the Atlas-Checks framework for evaluation
      * @param stopOrPlatform
      *            indicate whether we want locations for stops or platforms
-     * @return a list of locations for either stops or platforms
+     * @return a list of locations and atlas entities for either stops or platforms
      */
-    private Set<Location> allStopsOrPlatformsLocations(final Relation rel,
-            final String stopOrPlatform)
+    private TestStructureData testStopsOrPlatformsTooFarLocations(final Relation rel,
+                                                       final String stopOrPlatform)
     {
-        final Set<AtlasEntity> allSigns = rel.members().stream()
+        final List<AtlasEntity> allSigns = rel.members().stream()
                 .filter(member -> member.getRole().equals(stopOrPlatform))
-                .map(RelationMember::getEntity).collect(Collectors.toSet());
-        final Set<Location> allLocations = new HashSet<>();
+                .map(RelationMember::getEntity).collect(Collectors.toList());
+        final List<Location> allLocations = new ArrayList<>();
 
         for (final AtlasEntity entity : allSigns)
         {
@@ -190,7 +559,58 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 allLocations.add(((Point) entity).getLocation());
             }
         }
-        return allLocations;
+        return new TestStructureData(null, null,
+                allSigns, allLocations, null);
+    }
+
+    private static final class TestStructureData {
+
+        private final List<String> instructions;
+        private final List<AtlasEntity> edgesLines;
+        private final List<AtlasEntity> allSigns;
+        private final List<Location> allSignsLocations;
+
+        private final Set<AtlasEntity> nonRouteMembers;
+
+        public TestStructureData(List<String> instructions, List<AtlasEntity> edgesLines,
+                                 List<AtlasEntity> allSigns, List<Location> allSignsLocations,
+                                 Set<AtlasEntity> nonRouteMembers)
+        {
+            this.instructions = instructions;
+            this.edgesLines = edgesLines;
+            this.allSigns = allSigns;
+            this.allSignsLocations = allSignsLocations;
+            this.nonRouteMembers = nonRouteMembers;
+        }
+
+        public List<String> getInstructions() {return this.instructions;}
+        public List<AtlasEntity> getEdgesLines() {return this.edgesLines;}
+        public List<AtlasEntity> getAllSigns() {return this.allSigns;}
+        public List<Location> getAllSignsLocations() {return this.allSignsLocations;}
+        public Set<AtlasEntity> getNonRouteMembers() {return this.nonRouteMembers;}
+    }
+
+    /**
+     * @param routeRelation
+     *            the public transport route relation. this method checks whether the route
+     *            relation is contained in a route master
+     * @return an instance of CheckRouteMasterValues containing information about whether
+     *         this public transport route is contained in a route master
+     */
+    private boolean testContainedInRouteMasters(final Relation routeRelation)
+    {
+        final Iterable<Relation> relationsInAtlas = routeRelation.getAtlas().relations();
+        final Spliterator<Relation> spliterator = relationsInAtlas.spliterator();
+
+        return StreamSupport.stream(spliterator, false)
+                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
+                        RelationTypeTag.ROUTE_MASTER))
+                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
+                .filter(member -> member.getType().equals(ItemType.RELATION))
+                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,
+                        RelationTypeTag.ROUTE))
+                .anyMatch(member -> Long.toString(member.getIdentifier())
+                        .equals(Long.toString(routeRelation.getIdentifier())));
     }
 
     /**
@@ -201,7 +621,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            The route master relation under check
      * @return the list of instructions that describes inconsistency
      */
-    private List<String> checkNetworkOperatorRefColourTag(final Relation rel)
+    private List<String> testNetworkOperatorRefColourTag(final Relation rel)
     {
         final List<String> instructionsAdd = new ArrayList<>();
         final Optional<String> networkTag = rel.getTag("network");
@@ -236,10 +656,10 @@ public class RouteRelationCheck extends BaseCheck<Object>
             if ((routeNetwork.isPresent() && networkTag.isPresent()
                     && !routeNetwork.equals(networkTag))
                     || (routeOperator.isPresent() && operatorTag.isPresent()
-                            && !routeOperator.equals(operatorTag))
+                    && !routeOperator.equals(operatorTag))
                     || (routeRef.isPresent() && refTag.isPresent() && !routeRef.equals(refTag))
                     || (routeColour.isPresent() && colourTag.isPresent()
-                            && !routeColour.equals(colourTag)))
+                    && !routeColour.equals(colourTag)))
             {
                 instructionsAdd.add(this.getLocalizedInstruction(
                         INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
@@ -250,262 +670,4 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return instructionsAdd;
     }
 
-    /**
-     * This is the function that will check to see whether a route has gaps in the track and whether
-     * or not a route contains stops and platforms that are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> checkRouteForGaps(final Relation rel)
-    {
-        final List<String> instructionsAdd = new ArrayList<>();
-        final Set<PolyLine> allPolyLines = this.polylineRouteRel(rel);
-
-        if (allPolyLines.isEmpty())
-        {
-            instructionsAdd
-                    .add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX, rel.getOsmIdentifier()));
-        }
-
-        if (allPolyLines.size() > 1)
-        {
-            final LinkedList<PolyLine> createdRoute = this
-                    .routeFormNonArrangedEdgeSet(allPolyLines);
-
-            if (createdRoute.size() < allPolyLines.size())
-            {
-                instructionsAdd.add(this.getLocalizedInstruction(GAPS_IN_ROUTE_TRACK_INDEX,
-                        rel.getOsmIdentifier()));
-            }
-        }
-
-        return instructionsAdd;
-    }
-
-    /**
-     * This is the function that will check to see whether a set of stops or platforms that are too
-     * far from the track.
-     *
-     * @param allSignsOrPlatformsLocations
-     *            the se of points representing the stops or platforms in the route.
-     * @param allEdgePolyLines
-     *            * the set of all PolyLines from either edge or line contained in the route
-     * @return a boolean yes if stops or platforms are too far from the track. Otherwise no.
-     */
-    private boolean checkStopPlatformTooFarFromTrack(
-            final Set<Location> allSignsOrPlatformsLocations, final Set<PolyLine> allEdgePolyLines)
-    {
-        final Distance threshHold = Distance.meters(1.5);
-
-        if (allSignsOrPlatformsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
-        {
-            return false;
-        }
-
-        SnappedLocation minSnap = null;
-
-        for (final Location location : allSignsOrPlatformsLocations)
-        {
-            for (final PolyLine edges : allEdgePolyLines)
-            {
-                final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
-                {
-                    minSnap = snappedTo;
-                }
-
-                if (minSnap.getDistance().isLessThan(threshHold))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * This is the function that will collect all the edges and lines in the relation into one set.
-     *
-     * @param rel
-     *            the route relation containing edges and lines forming the route track
-     * @return all the edges and lines in the relation in one set.
-     */
-    private Set<PolyLine> polylineRouteRel(final Relation rel)
-    {
-        // edges in the route RelationMember::getRole)
-        final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE)).map(Edge.class::cast)
-                .filter(Edge::isMainEdge).map(Edge::asPolyLine).collect(Collectors.toSet());
-
-        final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
-                .map(Line::asPolyLine).collect(Collectors.toSet());
-
-        return Stream.of(allEdges, allLines).flatMap(Set<PolyLine>::stream)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * This is the function that will check to see whether a route has gaps in the track and whether
-     * or not a route contains stops and platforms that are too far from the track.
-     *
-     * @param routeMasterRelation
-     *            the route master relation entity supplied by the Atlas-Checks framework for
-     *            evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> processRouteMasterRelation(final Relation routeMasterRelation)
-    {
-        final List<String> instructionsAdd = new ArrayList<>();
-        final Set<Relation> routeSet = this.routeMemberRouteRelations(routeMasterRelation);
-
-        // check track has no gaps. Check stops and platforms are not too far from the track
-        for (final Relation relation : routeSet)
-        {
-            final List<String> processRouteRelationInstructions = this
-                    .processRouteRelation(relation);
-            if (!processRouteRelationInstructions.isEmpty())
-            {
-                instructionsAdd.addAll(processRouteRelationInstructions);
-            }
-        }
-
-        // check consistent of the network_operator_ref_colour tags
-        final List<String> tmpInstructions = this
-                .checkNetworkOperatorRefColourTag(routeMasterRelation);
-        if (!tmpInstructions.isEmpty())
-        {
-            instructionsAdd.addAll(tmpInstructions);
-        }
-
-        // check existing non route element
-        if (routeSet.size() < routeMasterRelation.members().size())
-        {
-            instructionsAdd
-                    .add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX,
-                            routeMasterRelation.getOsmIdentifier()));
-        }
-
-        // mark all route relation in the route master as flagged
-        for (final Relation relation : routeSet)
-        {
-            this.markAsFlagged(relation.getOsmIdentifier());
-        }
-        return instructionsAdd;
-    }
-
-    /**
-     * This is the function that will check to see whether a route has gaps in the track and whether
-     * or not a route contains stops and platforms that are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @return a list of strings that are instructions for creating flags
-     */
-    private List<String> processRouteRelation(final Relation rel)
-    {
-        final List<String> instructionsAdd = this.checkRouteForGaps(rel);
-        final Set<Location> allStopsLocations = this.allStopsOrPlatformsLocations(rel, "stop");
-        final Set<Location> allPlatformsLocations = this.allStopsOrPlatformsLocations(rel,
-                "platform");
-        final Set<PolyLine> allEdges = this.polylineRouteRel(rel);
-
-        if (this.checkStopPlatformTooFarFromTrack(allStopsLocations, allEdges))
-        {
-            instructionsAdd.add(this.getLocalizedInstruction(STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX,
-                    rel.getOsmIdentifier()));
-        }
-        if (this.checkStopPlatformTooFarFromTrack(allPlatformsLocations, allEdges))
-        {
-            instructionsAdd.add(this.getLocalizedInstruction(
-                    PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX, rel.getOsmIdentifier()));
-        }
-        return instructionsAdd;
-    }
-
-    /**
-     * @param routeRelation
-     *            the public transport route relation. this method checks whether or not the route
-     *            relation is contained in a route master
-     * @return an instance of CheckRouteMasterValues containing information about whether or not
-     *         this public transport route is contained in a route master
-     */
-    private boolean relContainedInRouteMasters(final Relation routeRelation)
-    {
-        final Iterable<Relation> relationsInAtlas = routeRelation.getAtlas().relations();
-        final Spliterator<Relation> spliterator = relationsInAtlas.spliterator();
-
-        return StreamSupport.stream(spliterator, false)
-                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
-                        RelationTypeTag.ROUTE_MASTER))
-                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
-                .filter(member -> member.getType().equals(ItemType.RELATION))
-                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,
-                        RelationTypeTag.ROUTE))
-                .anyMatch(member -> Long.toString(member.getIdentifier())
-                        .equals(Long.toString(routeRelation.getIdentifier())));
-    }
-
-    /**
-     * This is the helper function that do the check contains stops and platforms that are too far
-     * from the track. This method using the logic in fromNonArrangedEdgeSet(final Set<Edge>
-     * candidates, final boolean shuffle) from the route.java. Check by endpoints. If endpoint can
-     * be connected then no gap. orders are not considered. Check two end points of an edge to see
-     * they can be connected as an edge
-     *
-     * @param linesInRoute
-     *            the set of lines and edges from the route relation combined in a list of PolyLines
-     * @return a list of strings that are instructions for creating flags
-     */
-    private LinkedList<PolyLine> routeFormNonArrangedEdgeSet(final Set<PolyLine> linesInRoute)
-    {
-        final List<PolyLine> members = new ArrayList<>(linesInRoute);
-        final LinkedList<PolyLine> routeCreated = new LinkedList<>();
-
-        // initialize routeCreated
-        routeCreated.add(members.get(0));
-        int numberFailures = 0;
-
-        while (routeCreated.size() < members.size() && numberFailures <= members.size())
-        {
-            /* keep adding edges till no way to expand the route */
-            for (final PolyLine lineMember : members)
-            {
-                if (routeCreated.contains(lineMember))
-                {
-                    continue;
-                }
-
-                if (lineMember.first().equals(routeCreated.getLast().last()))
-                {
-                    routeCreated.addLast(lineMember);
-                }
-                else if (lineMember.last().equals(routeCreated.getFirst().first()))
-                {
-                    routeCreated.addFirst(lineMember);
-                }
-            }
-
-            // the maximal times to run for loop maximal equals to number of total lines
-            numberFailures = numberFailures + 1;
-        }
-        return routeCreated;
-    }
-
-    /**
-     * @param rel
-     *            The master route relation containing members of route relation
-     * @return set of route relations contained in the route master
-     */
-    private Set<Relation> routeMemberRouteRelations(final Relation rel)
-    {
-        return rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.RELATION))
-                .map(Relation.class::cast).filter(member -> Validators.isOfType(member,
-                        RelationTypeTag.class, RelationTypeTag.ROUTE))
-                .collect(Collectors.toSet());
-    }
 }
