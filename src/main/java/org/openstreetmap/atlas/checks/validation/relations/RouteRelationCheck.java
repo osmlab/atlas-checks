@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -158,25 +157,61 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
+     * A wrapper class for transferring edges and lines information generated for route relations.
+     */
+    private static final class EdgeLineData
+    {
+        private final List<PolyLine> allPolyLines;
+        private final List<AtlasEntity> edgesLines;
+
+        EdgeLineData(final List<PolyLine> allPolyLines, final List<AtlasEntity> edgesLines)
+        {
+            this.allPolyLines = allPolyLines;
+            this.edgesLines = edgesLines;
+        }
+
+        public List<PolyLine> getAllPolyLines()
+        {
+            return this.allPolyLines;
+        }
+
+        public List<AtlasEntity> getEdgesLines()
+        {
+            return this.edgesLines;
+        }
+    }
+
+    /**
      * This is the function that will collect all the edges and lines in the route relation.
      *
      * @param rel
      *            the route relation containing edges and lines forming the route track
      * @return the set of PolyLine representations for the edges and lines in the relation.
      */
-    private Set<PolyLine> polylineRouteRel(final Relation rel)
+    private EdgeLineData polylineRouteRel(final Relation rel)
     {
-        // edges in the route RelationMember::getRole
-        final Set<PolyLine> allEdges = rel.members().stream().map(RelationMember::getEntity)
+        final List<Edge> allEdges = rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.EDGE)).map(Edge.class::cast)
-                .filter(Edge::isMainEdge).map(Edge::asPolyLine).collect(Collectors.toSet());
+                .filter(Edge::isMainEdge).collect(Collectors.toList());
 
-        final Set<PolyLine> allLines = rel.members().stream().map(RelationMember::getEntity)
+        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
-                .map(Line::asPolyLine).collect(Collectors.toSet());
+                .collect(Collectors.toList());
+        final List<AtlasEntity> edgesLines = new ArrayList<>();
+        final List<PolyLine> allPolyLines = new ArrayList<>();
 
-        return Stream.of(allEdges, allLines).flatMap(Set<PolyLine>::stream)
-                .collect(Collectors.toSet());
+        for (final Edge edge : allEdges)
+        {
+            edgesLines.add(edge);
+            allPolyLines.add(edge.asPolyLine());
+        }
+        for (final Line line : allLines)
+        {
+            edgesLines.add(line);
+            allPolyLines.add(line.asPolyLine());
+        }
+
+        return new EdgeLineData(allPolyLines, edgesLines);
     }
 
     /**
@@ -321,27 +356,11 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private TestStructureData routeForGaps(final Relation rel)
     {
         final List<String> instructionsAdd = new ArrayList<>();
-        final List<Edge> allEdges = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.EDGE)).map(Edge.class::cast)
-                .filter(Edge::isMainEdge).collect(Collectors.toList());
-
-        final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
-                .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
-                .collect(Collectors.toList());
-        final List<AtlasEntity> edgesLines = new ArrayList<>();
+        final EdgeLineData edgesPolyLines = this.polylineRouteRel(rel);
+        final List<AtlasEntity> edgesLines = edgesPolyLines.getEdgesLines();
+        final List<PolyLine> allPolyLines = edgesPolyLines.getAllPolyLines();
         final List<AtlasEntity> edgesLinesFlagged = new ArrayList<>();
-        final List<PolyLine> allPolyLines = new ArrayList<>();
 
-        for (final Edge edge : allEdges)
-        {
-            edgesLines.add(edge);
-            allPolyLines.add(edge.asPolyLine());
-        }
-        for (final Line line : allLines)
-        {
-            edgesLines.add(line);
-            allPolyLines.add(line.asPolyLine());
-        }
         if (allPolyLines.isEmpty())
         {
             instructionsAdd
@@ -350,10 +369,10 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         if (allPolyLines.size() > 1)
         {
-            final RouteFromNonArrangedEdgeSetData routeInformation = this
+            final List<List<PolyLine>> routeInformation = this
                     .routeFromNonArrangedEdgeSet(allPolyLines);
-            final List<PolyLine> createdRoute = routeInformation.getRouteCreated();
-            final List<PolyLine> disconnectedMembers = routeInformation.getDisconnectedMembers();
+            final List<PolyLine> createdRoute = routeInformation.get(0);
+            final List<PolyLine> disconnectedMembers = routeInformation.get(1);
 
             if (createdRoute.size() < allPolyLines.size())
             {
@@ -381,8 +400,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the set of lines and edges from the route relation combined in a list of PolyLines
      * @return a RouteFromNonArrangedEdgeSetData for creating flags
      */
-    private RouteFromNonArrangedEdgeSetData routeFromNonArrangedEdgeSet(
-            final List<PolyLine> linesInRoute)
+    private List<List<PolyLine>> routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
     {
         final List<PolyLine> members = new ArrayList<>(linesInRoute);
         final LinkedList<PolyLine> routeCreated = new LinkedList<>();
@@ -423,7 +441,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<PolyLine> disconnectedMembers = new ArrayList<>(
                 this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
 
-        return new RouteFromNonArrangedEdgeSetData(routeCreated, disconnectedMembers);
+        return Arrays.asList(routeCreated, disconnectedMembers);
     }
 
     /**
@@ -476,34 +494,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         return disconnectedMembers;
-    }
-
-    /**
-     * A wrapper class for transferring information generated by methods that create routes for
-     * route relations.
-     */
-    private static final class RouteFromNonArrangedEdgeSetData
-    {
-
-        private final List<PolyLine> routeCreated;
-        private final List<PolyLine> disconnectedMembers;
-
-        RouteFromNonArrangedEdgeSetData(final List<PolyLine> routeCreated,
-                final List<PolyLine> disconnectedMembers)
-        {
-            this.routeCreated = routeCreated;
-            this.disconnectedMembers = disconnectedMembers;
-        }
-
-        public List<PolyLine> getDisconnectedMembers()
-        {
-            return this.disconnectedMembers;
-        }
-
-        public List<PolyLine> getRouteCreated()
-        {
-            return this.routeCreated;
-        }
     }
 
     /**
@@ -613,7 +603,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private TestStructureData testStopPlatformTooFarFromTrack(final Relation rel,
             final String stopOrPlatform)
     {
-        final Set<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel);
+        final List<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel).getAllPolyLines();
         final TestStructureData allSignsInfo = this.testStopsOrPlatformsTooFarLocations(rel,
                 stopOrPlatform);
         final List<Location> allSignsLocations = allSignsInfo.getAllSignsLocations();
@@ -710,7 +700,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         private final List<AtlasEntity> edgesLines;
         private final List<AtlasEntity> allSigns;
         private final List<Location> allSignsLocations;
-
         private final Set<AtlasEntity> nonRouteMembers;
 
         TestStructureData(final List<String> instructions, final List<AtlasEntity> edgesLines,
