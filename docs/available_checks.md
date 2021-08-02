@@ -66,6 +66,7 @@ This document is a list of tables with a description and link to documentation f
 | Check Name | Check Description |
 | :--------- | :---------------- |
 | BoundaryIntersectionCheck |  This check is designed to scan relations marked as boundaries or with ways marked as boundaries and flag them for intersections with other boundaries of the same type. |
+| [DuplicateRelationCheck](checks/DuplicateRelationCheck.md) | This check attempts to scan multiple members Relations to identify duplicate Relations based on the same OSM tags and the same members with same roles. |
 | InvalidMultiPolygonRelationCheck |  This check is designed to scan through MultiPolygon relations and flag them for invalid geometry. |
 | [InvalidTurnRestrictionCheck](checks/invalidTurnRestrictionCheck.md) | The purpose of this check is to identify invalid turn restrictions in OSM. Invalid turn restrictions occur in a variety of ways from invalid members, Edge geometry issues, not being routable, or wrong topology. |
 | [MissingRelationType](checks/missingRelationType.md) | The purpose of this check is to identify Relations without relation type. |
@@ -82,6 +83,8 @@ This document is a list of tables with a description and link to documentation f
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
 | [ConstructionCheck](checks/constructionCheck.md) | The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or the expected finish date has been passed. |
 | [FixMeReviewCheck](checks/fixMeReviewCheck.md) | The purpose of this check is to flag features that contain the "fixme"/"FIXME" tags with along with a variety of other important tags. |
+| [GenericTagCheck](checks/genericTagCheck.md) | This check uses TagInfo and Wiki Data databases to look for invalid tags and suggest replacements. |
+| [HighwayAccessCheck](checks/highwayAccessCheck.md) | The check flags the objects that contain the proper access and highway tags. |
 | [HighwayMissingNameAndRefTagCheck](checks/highwayMissingNameAndRefTagCheck.md) | This check detects highways that are missing a name and ref tag. At least one of them is required. |
 | [HighwayToFerryTagCheck](checks/highwayToFerryTagCheck.md) | The purpose of this check is to identify all Edges with route=FERRY and highway=PATH (or higher). |
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
