@@ -101,7 +101,7 @@ This document is a list of tables with a description and link to documentation f
 | [StreetNameIntegersOnlyCheck](checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
 | [TollValidationCheck](checks/tollValidationCheck.md) | The purpose of this check is to identify ways that need to have their toll tags investigated/added/removed.
 | [TunnelBridgeHeightLimitCheck](checks/tunnelBridgeHeightLimitCheck.md) | The purpose of this check is to identify roads with limited vertical clearance which do not have a maxheight tag. |
-| [UnknownHighwayTagCheck](checks/unknownHighwayTagCheck.md) | This check attempts to flag all highway tags that are unknown to the [osm wiki page](https://wiki.openstreetmap.org/wiki/Key:highway). |
+| [UnknownHighwayTagCheck](checks/unknownHighwayTagCheck.md) | This check attempts to flag all highway tags that are unknown to the [osm wiki page](https://wiki.openstreetmap.org/wiki/Key:highway) and flags features that have highway tags that are exclusive to other feature types (a way that has a node exclusive highway tag or a node that has a way exclusive highway tag). |
 | [UnusualLayerTagsCheck](checks/unusualLayerTagsCheck.md) | The purpose of this check is to identify layer tag values when accompanied by invalid tunnel and bridge tags. |
 | [ConditionalRestrictionCheck](checks/conditionalRestrictionCheck.md) | The purpose of this check is to identify elements that have a :conditional tag that does not respect the established format. |
 | [SourceMaxspeedCheck](checks/sourceMaxspeedCheck.md) | The purpose of this check is to identify elements that have a source:maxspeed tag that does not follow the tagging rules. |

@@ -1,12 +1,12 @@
 # UnknownHighwayTagCheck
 
 #### Description
-This check attempts to flag all highway tags that are unknown to the [osm wiki page](https://wiki.openstreetmap.org/wiki/Key:highway).
+This check attempts to flag all highway tags that are unknown to the [osm wiki page](https://wiki.openstreetmap.org/wiki/Key:highway) and flags features that have highway tags that are exclusive to other feature types (a way that has a node exclusive highway tag or a node that has a way exclusive highway tag)
 
 #### Live Examples
 
 Highway tag does not exist on the OSM Wiki page.
-1. [Node:313559095](https://www.openstreetmap.org/node/313559095) has a highway tag that is unknown (“highway=priority”)
+1. [Node:313559095](https://www.openstreetmap.org/node/313559095) has a highway tag that is unknown (“highway=priority”).
 
 #### Code Review
 This check evaluates [Nodes](https://github.com/osmlab/atlas/blob/dev/src/main/java/org/openstreetmap/atlas/geography/atlas/items/Node.java) and
