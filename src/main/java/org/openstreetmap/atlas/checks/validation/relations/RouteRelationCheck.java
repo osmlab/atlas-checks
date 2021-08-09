@@ -44,7 +44,6 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
 public class RouteRelationCheck extends BaseCheck<Object>
 {
     private static final String TEMP_RELATION_ID_INSTRUCTION = "The relation with ID={0,number,#} is problematic.";
-    private static final String EMPTY_ROUTE_INSTRUCTION = "The route in relation with ID = {0,number,#} is empty. Please add this road segments(edges).";
     private static final String GAPS_IN_ROUTE_TRACK_INSTRUCTION = "The route in relation with ID = {0,number,#} has gaps in the track.";
     private static final String STOP_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The stops in the route relation with ID={0,number,#} are too far from the track.";
     private static final String PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The platforms in the route relation with ID={0,number,#} are too far from the track.";
@@ -53,7 +52,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private static final String MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} missing some tags in the category of network, operator, ref, a colour.";
     private static final String INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} has inconsistent network, operator, ref, or colour tag with its route master.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            TEMP_RELATION_ID_INSTRUCTION, EMPTY_ROUTE_INSTRUCTION, GAPS_IN_ROUTE_TRACK_INSTRUCTION,
+            TEMP_RELATION_ID_INSTRUCTION, GAPS_IN_ROUTE_TRACK_INSTRUCTION,
             STOP_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION,
             PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION,
             ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INSTRUCTION,
@@ -61,14 +60,13 @@ public class RouteRelationCheck extends BaseCheck<Object>
             MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION,
             INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION);
     private static final int TEMP_RELATION_ID_INDEX = 0;
-    private static final int EMPTY_ROUTE_INDEX = 1;
-    private static final int GAPS_IN_ROUTE_TRACK_INDEX = 2;
-    private static final int STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX = 3;
-    private static final int PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX = 4;
-    private static final int ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX = 5;
-    private static final int PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX = 6;
-    private static final int MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 7;
-    private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 8;
+    private static final int GAPS_IN_ROUTE_TRACK_INDEX = 1;
+    private static final int STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX = 2;
+    private static final int PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX = 3;
+    private static final int ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX = 4;
+    private static final int PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX = 5;
+    private static final int MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 6;
+    private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 7;
     private static final Set<String> Public_transport_Types = Set.of("train", "subway", "bus",
             "trolleybus", "minibus", "light_rail", "share_taxi", "railway", "rail", "tram",
             "aircraft", "ferry");
@@ -89,7 +87,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-
         return object instanceof Relation
                 && (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER)
                         || Validators.isOfType(object, RelationTypeTag.class,
@@ -118,7 +115,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             routeSignInstructions = this.processRouteMasterRelation(routeRel);
         }
-
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE))
         {
             routeSignInstructions = this.processRouteRelation(routeRel);
@@ -140,7 +136,24 @@ public class RouteRelationCheck extends BaseCheck<Object>
             // add relation itself when none of the edges and signs are flagged
             if (atlasObjectFlagged.isEmpty())
             {
-                atlasObjectFlagged.add(routeRel);
+                // if no edges and points are flagged, just add one edge to
+                // the flagged set
+                // add one member
+
+                final AtlasEntity firstMember = routeRel.members().stream()
+                        .map(RelationMember::getEntity).findFirst()
+                        // if stream is empty
+                        // null is returned
+                        .orElse(null);
+
+                try
+                {
+                    atlasObjectFlagged.add(firstMember);
+                }
+                catch (final Exception error)
+                {
+                    /* Do Nothing */
+                }
             }
         }
 
@@ -230,7 +243,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<AtlasEntity> allSignsEntitiesFlagged = new ArrayList<>();
         final List<Location> allSignsLocationsFlagged = new ArrayList<>();
         final Set<AtlasEntity> nonRouteMembers = new HashSet<>();
-        final Set<Relation> routeSet = this.routeMemberRouteRelations(routeMasterRelation);
+        final Set<Relation> routeSet = this.routeSetMemberRelations(routeMasterRelation);
 
         // check track has no gaps. Check stops and platforms are not too far from the track
         for (final Relation relation : routeSet)
@@ -361,20 +374,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<PolyLine> allPolyLines = edgesPolyLines.getAllPolyLines();
         final List<AtlasEntity> edgesLinesFlagged = new ArrayList<>();
 
-        if (allPolyLines.isEmpty())
-        {
-            instructionsAdd
-                    .add(this.getLocalizedInstruction(EMPTY_ROUTE_INDEX, rel.getOsmIdentifier()));
-        }
-
         if (allPolyLines.size() > 1)
         {
-            final List<List<PolyLine>> routeInformation = this
+            final List<PolyLine> disconnectedMembers = this
                     .routeFromNonArrangedEdgeSet(allPolyLines);
-            final List<PolyLine> createdRoute = routeInformation.get(0);
-            final List<PolyLine> disconnectedMembers = routeInformation.get(1);
 
-            if (createdRoute.size() < allPolyLines.size())
+            if (!disconnectedMembers.isEmpty())
             {
                 // add the edges and lines that are flagged
                 for (int i = 0; i < allPolyLines.size(); i++)
@@ -398,11 +403,48 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *
      * @param linesInRoute
      *            the set of lines and edges from the route relation combined in a list of PolyLines
-     * @return a RouteFromNonArrangedEdgeSetData for creating flags
+     * @return a list containing the edges that are not contained in the created route
      */
-    private List<List<PolyLine>> routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
+    private List<PolyLine> routeFromNonArrangedEdgeSet(final List<PolyLine> linesInRoute)
+    {
+        // list to store all routes created
+        final List<LinkedList<PolyLine>> routes = new ArrayList<>();
+        // form the first route segment
+        final List<LinkedList<PolyLine>> routeInformation = this.routeSet(linesInRoute);
+        routes.add(routeInformation.get(0));
+        List<PolyLine> membersLeft = new ArrayList<>(routeInformation.get(1));
+
+        while (!membersLeft.isEmpty())
+        {
+            final List<LinkedList<PolyLine>> routeInformationTmp = this.routeSet(membersLeft);
+            final LinkedList<PolyLine> routeAdded = routeInformationTmp.get(0);
+            membersLeft = new ArrayList<>(routeInformationTmp.get(1));
+            routes.add(routeAdded);
+        }
+
+        final List<PolyLine> disconnectedMembers = new ArrayList<>();
+
+        if (routes.size() > 1)
+        {
+            disconnectedMembers.addAll(this.routeSetDisconnected(routes));
+        }
+
+        return disconnectedMembers;
+    }
+
+    /**
+     * This is the function that create a single route from the edges in a route relation.
+     *
+     * @param linesInRoute
+     *            the current set of lines and edges from the route relation combined in a list of
+     *            PolyLines
+     * @return a list of linked list for created route and the rest of the edges currently not
+     *         contained in any sub route
+     */
+    private List<LinkedList<PolyLine>> routeSet(final List<PolyLine> linesInRoute)
     {
         final List<PolyLine> members = new ArrayList<>(linesInRoute);
+        final LinkedList<PolyLine> membersLeft = new LinkedList<>();
         final LinkedList<PolyLine> routeCreated = new LinkedList<>();
         // initialize routeCreated
         routeCreated.add(members.get(0));
@@ -438,62 +480,168 @@ public class RouteRelationCheck extends BaseCheck<Object>
             numberFailures = numberFailures + 1;
         }
 
-        final List<PolyLine> disconnectedMembers = new ArrayList<>(
-                this.routeFromNonArrangedEdgeSetHelper(members, routeCreated));
+        for (final PolyLine lineMember : members)
+        {
+            if (!routeCreated.contains(lineMember))
+            {
+                membersLeft.add(lineMember);
+            }
+        }
 
-        return Arrays.asList(routeCreated, disconnectedMembers);
+        return Arrays.asList(routeCreated, membersLeft);
+    }
+
+    /**
+     * This is the function that check whether two sub routes are connected at a certain point.
+     *
+     * @param routeOne
+     *            sub route one
+     * @param routeTwo
+     *            * sub route two
+     * @return true of the two routes are connected. otherwise false
+     */
+    private boolean routeSetConnectedCheck(final LinkedList<PolyLine> routeOne,
+            final LinkedList<PolyLine> routeTwo)
+    {
+        for (final PolyLine lineOne : routeOne)
+        {
+            for (final PolyLine lineTwo : routeTwo)
+            {
+                if (lineOne.intersects(lineTwo))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
      * This is the helper function that check the edges that are closest to the two endpoints of a
      * created route from connected edges of a route relation
      *
-     * @param members
-     *            the set of PolyLine representation of the edges in a route relation.
-     * @param routeCreated
+     * @param routes
      *            the set of PolyLines forming a connected route
      * @return a list of strings that are instructions for creating flags
      */
-    private List<PolyLine> routeFromNonArrangedEdgeSetHelper(final List<PolyLine> members,
-            final LinkedList<PolyLine> routeCreated)
+    private List<PolyLine> routeSetDisconnected(final List<LinkedList<PolyLine>> routes)
     {
-        final List<PolyLine> disconnectedMembers = new ArrayList<>();
-        PolyLine startConnectLine = null;
-        PolyLine endConnectLine = null;
-        // check to append both start and end of the created route
-        Distance startMinDistance = null;
-        Distance endMinDistance = null;
+        final Set<PolyLine> disconnectedRoutes = new HashSet<>();
+        final Set<PolyLine> routeCreated = new HashSet<>();
+        final Set<Integer> connectedIndex = new HashSet<>();
 
-        for (final PolyLine lineMember : members)
+        for (int i = 0; i < routes.size(); i++)
         {
-            final Distance tmpStartDistance = lineMember.last()
-                    .distanceTo(routeCreated.getFirst().first());
-            if (startMinDistance == null || tmpStartDistance.isLessThan(startMinDistance))
+            if (connectedIndex.contains(i))
             {
-                startMinDistance = tmpStartDistance;
-                startConnectLine = lineMember;
+                continue;
             }
 
-            // append at end
-            final Distance tmpEndDistance = lineMember.first()
-                    .distanceTo(routeCreated.getLast().last());
-            if (endMinDistance == null || tmpEndDistance.isLessThan(startMinDistance))
+            boolean connected = false;
+            final LinkedList<PolyLine> routeOne = routes.get(i);
+            for (int j = 0; j < routes.size(); j++)
             {
-                endMinDistance = tmpEndDistance;
-                endConnectLine = lineMember;
+                if (j != i && !connected)
+                {
+                    final LinkedList<PolyLine> routeTwo = routes.get(j);
+                    if (this.routeSetConnectedCheck(routeOne, routeTwo))
+                    {
+                        connected = true;
+                        connectedIndex.add(i);
+                        connectedIndex.add(j);
+                        routeCreated.addAll(routes.get(i));
+                        routeCreated.addAll(routes.get(j));
+                    }
+                }
+            }
+
+            if (!connected)
+            {
+                disconnectedRoutes.addAll(routeOne);
             }
         }
 
-        if (startConnectLine != null)
+        final List<PolyLine> disconnectedMembersMinimal = new ArrayList<>();
+
+        if (!disconnectedRoutes.isEmpty())
         {
-            disconnectedMembers.add(startConnectLine);
-        }
-        if (endConnectLine != null && !disconnectedMembers.contains(endConnectLine))
-        {
-            disconnectedMembers.add(endConnectLine);
+            disconnectedMembersMinimal
+                    .addAll(this.routeSetDisconnectedClosest(routeCreated, disconnectedRoutes));
         }
 
-        return disconnectedMembers;
+        return disconnectedMembersMinimal;
+    }
+
+    /**
+     * This is the function that check whether two sub routes are connected at a certain point.
+     *
+     * @param routeCreated
+     *            the set of create sub routes that are connected to each other
+     * @param disconnectedMembers
+     *            the set of edges that are not connected to the route created
+     * @return a list of PolyLines representing two edges closest to the created route
+     */
+    private List<PolyLine> routeSetDisconnectedClosest(final Set<PolyLine> routeCreated,
+            final Set<PolyLine> disconnectedMembers)
+    {
+        final List<PolyLine> disconnectedMembersMinimal = new ArrayList<>();
+        PolyLine closestDisconnectedEdge = null;
+        PolyLine closestRouteEdge = null;
+        Distance minDis = null;
+
+        if (!routeCreated.isEmpty() && !disconnectedMembers.isEmpty())
+        {
+            for (final PolyLine lineOne : disconnectedMembers)
+            {
+                final Location lineOneStart = lineOne.first();
+                final Location lineOneEnd = lineOne.last();
+                for (final PolyLine lineTwo : routeCreated)
+                {
+                    final Location lineTwoStart = lineTwo.first();
+                    final Location lineTwoEnd = lineTwo.last();
+                    final Distance startDistanceStart = lineOneStart.distanceTo(lineTwoStart);
+                    final Distance startDistanceEnd = lineOneStart.distanceTo(lineTwoEnd);
+                    final Distance endDistanceStart = lineOneEnd.distanceTo(lineTwoStart);
+                    final Distance endDistanceEnd = lineOneEnd.distanceTo(lineTwoEnd);
+                    Distance tmpMin = startDistanceStart;
+                    if (startDistanceEnd.isLessThan(tmpMin))
+                    {
+                        tmpMin = startDistanceEnd;
+                    }
+                    if (endDistanceStart.isLessThan(tmpMin))
+                    {
+                        tmpMin = endDistanceStart;
+                    }
+                    if (endDistanceEnd.isLessThan(tmpMin))
+                    {
+                        tmpMin = endDistanceEnd;
+                    }
+
+                    if (minDis == null || tmpMin.isLessThan(minDis))
+                    {
+                        minDis = startDistanceStart;
+                        closestDisconnectedEdge = lineOne;
+                        closestRouteEdge = lineTwo;
+                    }
+                }
+            }
+        }
+        else if (!disconnectedMembers.isEmpty())
+        {
+            for (final PolyLine lineOne : disconnectedMembers)
+            {
+                // set the two ends of the same element fo the disconnectedMembers
+                closestDisconnectedEdge = lineOne;
+                closestRouteEdge = lineOne;
+            }
+        }
+
+        // add two edges that describes the gap
+        disconnectedMembersMinimal.add(closestDisconnectedEdge);
+        disconnectedMembersMinimal.add(closestRouteEdge);
+
+        return disconnectedMembersMinimal;
     }
 
     /**
@@ -501,7 +649,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            The master route relation containing members of route relation
      * @return set of route relations contained in the route master
      */
-    private Set<Relation> routeMemberRouteRelations(final Relation rel)
+    private Set<Relation> routeSetMemberRelations(final Relation rel)
     {
         return rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.RELATION))
@@ -556,7 +704,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
         }
 
-        final Set<Relation> routeSet = this.routeMemberRouteRelations(rel);
+        final Set<Relation> routeSet = this.routeSetMemberRelations(rel);
 
         for (final Relation relRoute : routeSet)
         {
