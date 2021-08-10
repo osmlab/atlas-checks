@@ -569,6 +569,58 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                             @Member(id = Line5ID, role = "", type = "LINE"),
                                                                             @Member(id = STOP1ID, role = "stop", type = "POINT") }, id = RELATION1ID, tags = {
                                                                                     "type=route",
+                                                                                    "route=bus",
+                                                                                    "network=lcn",
+                                                                                    "operator=Valley Flyer",
+                                                                                    "ref=110",
+                                                                                    "colour=#A10082" }),
+                                                                    @Relation(members = {
+                                                                            @Member(id = RELATION1ID, role = "", type = "RELATION") }, id = RELATION_ROUTE_MASTER1ID, tags = {
+                                                                                    "type=route_master",
+                                                                                    "route_master=bus",
+                                                                                    "network=lcn",
+                                                                                    "operator=Valley Flyer",
+                                                                                    "ref=110",
+                                                                                    "colour=#A10082" }) })
+    private Atlas validRouteMasterOne;
+
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = START), id = START_ID),
+            @Node(coordinates = @Loc(value = TWO), id = TWO_ID),
+            @Node(coordinates = @Loc(value = THREE), id = THREE_ID),
+            @Node(coordinates = @Loc(value = FOUR), id = FOUR_ID),
+            @Node(coordinates = @Loc(value = FIVE), id = FIVE_ID),
+            @Node(coordinates = @Loc(value = SIX), id = SIX_ID),
+            @Node(coordinates = @Loc(value = SEVEN), id = SEVEN_ID),
+            @Node(coordinates = @Loc(value = EIGHT), id = EIGHT_ID) }, points = {
+                    @Point(coordinates = @Loc(value = STOP1), id = STOP1ID),
+                    @Point(coordinates = @Loc(value = PLATFORM1), id = PLATFORM1ID),
+                    @Point(coordinates = @Loc(value = PLATFORM2), id = PLATFORM2ID), }, edges = {
+                            @Edge(coordinates = { @Loc(value = START),
+                                    @Loc(value = TWO) }, id = Edge1ID),
+                            @Edge(coordinates = { @Loc(value = TWO),
+                                    @Loc(value = THREE) }, id = Edge2ID),
+                            @Edge(coordinates = { @Loc(value = THREE),
+                                    @Loc(value = FOUR) }, id = Edge3ID),
+                            @Edge(coordinates = { @Loc(value = FOUR),
+                                    @Loc(value = FIVE) }, id = Edge4ID),
+                            @Edge(coordinates = { @Loc(value = SEVEN),
+                                    @Loc(value = EIGHT) }, id = Edge5ID) }, lines = {
+                                            @Line(id = Line5ID, coordinates = { @Loc(value = FIVE),
+                                                    @Loc(value = SIX) }, tags = {
+                                                            "natural=coastline" }),
+                                            @Line(id = Line6ID, coordinates = { @Loc(value = SIX),
+                                                    @Loc(value = SEVEN) }, tags = {
+                                                            "natural=coastline" }) }, relations = {
+                                                                    @Relation(members = {
+                                                                            @Member(id = Edge4ID, role = "", type = "EDGE"),
+                                                                            @Member(id = Edge5ID, role = "", type = "EDGE"),
+                                                                            @Member(id = Edge2ID, role = "", type = "EDGE"),
+                                                                            @Member(id = Edge1ID, role = "", type = "EDGE"),
+                                                                            @Member(id = Line6ID, role = "", type = "LINE"),
+                                                                            @Member(id = Edge3ID, role = "", type = "EDGE"),
+                                                                            @Member(id = Line5ID, role = "", type = "LINE"),
+                                                                            @Member(id = STOP1ID, role = "stop", type = "POINT") }, id = RELATION1ID, tags = {
+                                                                                    "type=route",
                                                                                     "route=bicycle",
                                                                                     "network=lcn",
                                                                                     "operator=Valley Flyer",
@@ -876,6 +928,11 @@ public class RouteRelationCheckTestRule extends CoreTestRule
     public Atlas getValidRouteOne()
     {
         return this.validRouteOne;
+    }
+
+    public Atlas getValidRouteMasterOne()
+    {
+        return this.validRouteMasterOne;
     }
 
     public Atlas getValidRouteThree()

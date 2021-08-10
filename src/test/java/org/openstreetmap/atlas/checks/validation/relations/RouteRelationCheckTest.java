@@ -132,6 +132,13 @@ public class RouteRelationCheckTest
     }
 
     @Test
+    public void validRouteMasterOneTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteMasterOne(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void validRouteOneTest()
     {
         this.verifier.actual(this.setup.getValidRouteOne(), check);
