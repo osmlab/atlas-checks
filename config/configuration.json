@@ -189,6 +189,7 @@
     "nearby.edge.distance.meters": 2.0,
     "denylisted.highway.filter": "highway->no",
     "challenge": {
+      "name": "Connectivity Check / Дорожное соединение",
       "description": "Checks if a node should be connected to a nearby node or edge.",
       "blurb": "Connectivity Check",
       "instruction": "Open your favorite editor and check if the referenced node should be connected to a nearby node or edge.",
@@ -294,6 +295,7 @@
     "crossing.pedestrian.navigable": false,
     "indoor.mapping": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
+      "name": "Crossing Roads Check / Пересечение дорог",
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
       "instruction": "Open your favorite editor and connect the ways at the point of intersection.",
@@ -317,6 +319,7 @@
       "minimum.meters": 100.0
     },
     "challenge": {
+      "name": "Floating & Disconnected Roads / Плавающие и отключенные дороги",
       "description": "Tasks contain ways that are disconnected from the road network.",
       "blurb": "Connected Edges",
       "instruction": "Open your favorite editor and remove disconnected edges.",
@@ -819,6 +822,7 @@
     "highway.priority.minimum": "residential",
     "pedestrian.areas.filter": true,
     "challenge": {
+      "name": "Overlapping Roads Check / Перекрывающиеся Пути",
       "description": "Tasks will include highways that are overlapped by another highway.",
       "blurb": "Overlapping Highways",
       "instruction": "Open your favorite editor and either remove the overlap way segment or correct tagging so that only a single highway remains.",
@@ -1096,6 +1100,7 @@
     "minimum.highway.type": "service",
     "filter.pedestrian.network": false,
     "challenge": {
+      "name": "Sink Island and Impossible Routing Check / Невозможная маршрутизаци",
       "description": "Tasks that identify islands of roads where it is impossible to get out. The simplest is a one-way that dead-ends; that would be a one-edge island.",
       "blurb": "Identify islands of roads.",
       "instruction": "Open your favorite editor and apply tags (if need to change one way roads), or update roads to remove any islands of roads",
