@@ -8,9 +8,36 @@
   },
 
   "RouteRelationCheck": {
-    "enabled": true
+    "enabled": true,
+    "challenge": {
+      "description": "OSMOSE 1260. Check route relations and route master relations for gaps in tracks, signs too far from track and some others. ",
+      "difficulty": "Medium"
+    }
   },
-
+  "StreetNameCheck": {
+    "check" : {
+      "countries" : ["AUT", "CHE", "DEU", "LIE"],
+      "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
+      "notContainsValues" : [["strasser"],[],["strasser"],[]],
+      "tags" : [["ss"],["ß"],["ss"],["ß"]],
+      "correctTags" : [["ß"],["ss"],["ß"],["ss"]]
+    },
+    "challenge": {
+      "description": "Checks if the countries specified above contain the values in their tags",
+      "instruction": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
+    }
+  },
+  "StreetNameIntegersOnlyCheck": {
+    "name.keys.filter":["name","name:left","name:right"],
+    "character.single.ignore": true,
+    "challenge": {
+      "description": "Tasks containing name tags with only integers",
+      "blurb": "Street Names Integers Only",
+      "instruction": "Correct the road with only integers for names.",
+      "difficulty": "Medium",
+      "tags":"highway,name"
+    }
+  },
   "PoolSizeCheck": {
     "surface": {
       "maximum": 1000.0,
@@ -474,6 +501,7 @@
     }
   },
   "InvalidSignBoardRelationCheck": {
+    "enable": false,
     "countries": [
       "RUS"
     ],

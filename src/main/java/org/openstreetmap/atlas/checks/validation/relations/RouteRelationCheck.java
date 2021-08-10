@@ -87,6 +87,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
+
         return object instanceof Relation
                 && (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER)
                         || Validators.isOfType(object, RelationTypeTag.class,
@@ -542,17 +543,14 @@ public class RouteRelationCheck extends BaseCheck<Object>
             final LinkedList<PolyLine> routeOne = routes.get(i);
             for (int j = 0; j < routes.size(); j++)
             {
-                if (j != i && !connected)
+                final LinkedList<PolyLine> routeTwo = routes.get(j);
+                if (j != i && !connected && this.routeSetConnectedCheck(routeOne, routeTwo))
                 {
-                    final LinkedList<PolyLine> routeTwo = routes.get(j);
-                    if (this.routeSetConnectedCheck(routeOne, routeTwo))
-                    {
-                        connected = true;
-                        connectedIndex.add(i);
-                        connectedIndex.add(j);
-                        routeCreated.addAll(routes.get(i));
-                        routeCreated.addAll(routes.get(j));
-                    }
+                    connected = true;
+                    connectedIndex.add(i);
+                    connectedIndex.add(j);
+                    routeCreated.addAll(routes.get(i));
+                    routeCreated.addAll(routes.get(j));
                 }
             }
 
@@ -574,7 +572,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the function that check whether two sub routes are connected at a certain point.
+     * This is the function that find two edges from the created route and the rest of the edges.
+     * These two edges represent the shortest distance among the two sets.
      *
      * @param routeCreated
      *            the set of create sub routes that are connected to each other
@@ -594,33 +593,14 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             for (final PolyLine lineOne : disconnectedMembers)
             {
-                final Location lineOneStart = lineOne.first();
-                final Location lineOneEnd = lineOne.last();
                 for (final PolyLine lineTwo : routeCreated)
                 {
-                    final Location lineTwoStart = lineTwo.first();
-                    final Location lineTwoEnd = lineTwo.last();
-                    final Distance startDistanceStart = lineOneStart.distanceTo(lineTwoStart);
-                    final Distance startDistanceEnd = lineOneStart.distanceTo(lineTwoEnd);
-                    final Distance endDistanceStart = lineOneEnd.distanceTo(lineTwoStart);
-                    final Distance endDistanceEnd = lineOneEnd.distanceTo(lineTwoEnd);
-                    Distance tmpMin = startDistanceStart;
-                    if (startDistanceEnd.isLessThan(tmpMin))
-                    {
-                        tmpMin = startDistanceEnd;
-                    }
-                    if (endDistanceStart.isLessThan(tmpMin))
-                    {
-                        tmpMin = endDistanceStart;
-                    }
-                    if (endDistanceEnd.isLessThan(tmpMin))
-                    {
-                        tmpMin = endDistanceEnd;
-                    }
+                    final Distance tmpMin = this.routeSetDisconnectedClosestHelper(lineOne,
+                            lineTwo);
 
                     if (minDis == null || tmpMin.isLessThan(minDis))
                     {
-                        minDis = startDistanceStart;
+                        minDis = tmpMin;
                         closestDisconnectedEdge = lineOne;
                         closestRouteEdge = lineTwo;
                     }
@@ -642,6 +622,45 @@ public class RouteRelationCheck extends BaseCheck<Object>
         disconnectedMembersMinimal.add(closestRouteEdge);
 
         return disconnectedMembersMinimal;
+    }
+
+    /**
+     * This is the helper function to find the closest edges from the route and the rest of the
+     * edges. It is created to reduce complexity.
+     *
+     * @param lineOne
+     *            the first sub routes to check
+     * @param lineTwo
+     *            the second sub routes to check
+     * @return a minimal distance between ends of the two sub routes
+     */
+    private Distance routeSetDisconnectedClosestHelper(final PolyLine lineOne,
+            final PolyLine lineTwo)
+    {
+        final Location lineOneStart = lineOne.first();
+        final Location lineOneEnd = lineOne.last();
+        final Location lineTwoStart = lineTwo.first();
+        final Location lineTwoEnd = lineTwo.last();
+        final Distance startDistanceStart = lineOneStart.distanceTo(lineTwoStart);
+        final Distance startDistanceEnd = lineOneStart.distanceTo(lineTwoEnd);
+        final Distance endDistanceStart = lineOneEnd.distanceTo(lineTwoStart);
+        final Distance endDistanceEnd = lineOneEnd.distanceTo(lineTwoEnd);
+        Distance tmpMin = startDistanceStart;
+
+        if (startDistanceEnd.isLessThan(tmpMin))
+        {
+            tmpMin = startDistanceEnd;
+        }
+        if (endDistanceStart.isLessThan(tmpMin))
+        {
+            tmpMin = endDistanceStart;
+        }
+        if (endDistanceEnd.isLessThan(tmpMin))
+        {
+            tmpMin = endDistanceEnd;
+        }
+
+        return tmpMin;
     }
 
     /**
@@ -843,7 +862,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
      */
     private static final class TestStructureData
     {
-
         private final List<String> instructions;
         private final List<AtlasEntity> edgesLines;
         private final List<AtlasEntity> allSigns;
