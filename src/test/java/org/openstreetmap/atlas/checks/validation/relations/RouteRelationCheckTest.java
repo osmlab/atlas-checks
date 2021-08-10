@@ -30,9 +30,8 @@ public class RouteRelationCheckTest
         this.verifier.actual(this.setup.getInvalidRouteFive(), check);
         this.verifier.verifyExpectedSize(1);
 
-        this.verifier
-                .verify(flag -> Assert.assertTrue(flag.getInstructions().contains("has gaps in the track")));
-
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("has gaps in the track")));
 
     }
 
@@ -119,6 +118,13 @@ public class RouteRelationCheckTest
     public void validRouteOneTest()
     {
         this.verifier.actual(this.setup.getValidRouteOne(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validRouteThreeTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteThree(), check);
         this.verifier.verifyEmpty();
     }
 
