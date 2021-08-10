@@ -25,6 +25,18 @@ public class RouteRelationCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
+    public void invalidRouteFiveTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteFive(), check);
+        this.verifier.verifyExpectedSize(1);
+
+        this.verifier
+                .verify(flag -> Assert.assertTrue(flag.getInstructions().contains("has gaps in the track")));
+
+
+    }
+
+    @Test
     public void invalidRouteFourTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteFour(), check);
@@ -47,6 +59,7 @@ public class RouteRelationCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterOne(), check);
         this.verifier.verifyExpectedSize(1);
+
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
                 "inconsistent network, operator, ref, or colour tag with its route master")));
     }
@@ -106,6 +119,13 @@ public class RouteRelationCheckTest
     public void validRouteOneTest()
     {
         this.verifier.actual(this.setup.getValidRouteOne(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void validRouteTwoTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteTwo(), check);
         this.verifier.verifyEmpty();
     }
 
