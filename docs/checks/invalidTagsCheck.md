@@ -67,6 +67,12 @@ in json format: `{
 The `instruction` attribute is optional. 
 To be mentioned here that the resource file for the `RegexTaggableFilter` must contain the word `regex` in it's name.
 
+#### Live Example
+This way [id:609158689] https://www.openstreetmap.org/way/609158689 contains '/'
+This way [id:895641297] https://www.openstreetmap.org/way/895641297 contains '?'
+This way [id:26830712] https://www.openstreetmap.org/way/26830712 contains ';'
+This way [id:919752321] https://www.openstreetmap.org/way/919752321 contains '+'
+
 #### Code Review
 
 In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, Nodes, Areas & Relations; in our case, we’re are looking at
