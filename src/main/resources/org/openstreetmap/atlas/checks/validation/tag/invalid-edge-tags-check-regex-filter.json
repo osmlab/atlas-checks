@@ -1,0 +1,29 @@
+{
+  "filters": [   
+    {
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by FORWARD SLASH '/'.",
+      "regex": ["[A-Z0-9]{5}\\s?/"],
+      "tagNames": ["name"],
+        "exceptions": [
+          {
+            "tagName": "name",
+            "values": [
+              "Vehicular/ Peatonal"
+            ]
+          }
+        ]
+    },
+    {
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by BACKSLASH '\\'.",
+      "regex": ["\\\\"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },    
+    {
+      "instruction": "The edge tag: {0} contains MULTIPLE VALUES separated by PLUS sign '+'.",
+      "regex": ["\\+"],
+      "tagNames": ["name"],
+      "exceptions": []
+    }
+  ]
+}
