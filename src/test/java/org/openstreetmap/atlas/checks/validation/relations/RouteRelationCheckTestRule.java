@@ -925,14 +925,14 @@ public class RouteRelationCheckTestRule extends CoreTestRule
         return this.validRouteFour;
     }
 
-    public Atlas getValidRouteOne()
-    {
-        return this.validRouteOne;
-    }
-
     public Atlas getValidRouteMasterOne()
     {
         return this.validRouteMasterOne;
+    }
+
+    public Atlas getValidRouteOne()
+    {
+        return this.validRouteOne;
     }
 
     public Atlas getValidRouteThree()
