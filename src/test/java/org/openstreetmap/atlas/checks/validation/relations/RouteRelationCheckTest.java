@@ -47,10 +47,21 @@ public class RouteRelationCheckTest
     }
 
     @Test
+    public void invalidRouteMasterFiveTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteMasterFive(), check);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "inconsistent network, operator, ref, or colour tag with its route master")));
+    }
+
+    @Test
     public void invalidRouteMasterFourTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterFour(), check);
-        this.verifier.verifyExpectedSize(3);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "inconsistent network, operator, ref, or colour tag with its route master")));
     }
 
     @Test
@@ -58,7 +69,6 @@ public class RouteRelationCheckTest
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterOne(), check);
         this.verifier.verifyExpectedSize(1);
-
         this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
                 "inconsistent network, operator, ref, or colour tag with its route master")));
     }
@@ -112,6 +122,13 @@ public class RouteRelationCheckTest
         this.verifier.verifyExpectedSize(1);
         this.verifier.verify(flag -> Assert
                 .assertTrue(flag.getInstructions().contains("has gaps in the track")));
+    }
+
+    @Test
+    public void validRouteFourTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteFour(), check);
+        this.verifier.verifyEmpty();
     }
 
     @Test
