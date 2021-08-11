@@ -74,6 +74,15 @@ public class RouteRelationCheckTest
     }
 
     @Test
+    public void invalidRouteMasterSevenTest()
+    {
+        this.verifier.actual(this.setup.getInvalidRouteMasterSeven(), check);
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
+                "inconsistent network, operator, ref, or colour tag with its route master")));
+    }
+
+    @Test
     public void invalidRouteMasterSixTest()
     {
         this.verifier.actual(this.setup.getInvalidRouteMasterSix(), check);
