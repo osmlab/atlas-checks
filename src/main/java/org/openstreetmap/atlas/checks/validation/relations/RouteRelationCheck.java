@@ -29,8 +29,6 @@ import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Finds·relations·that·meet·at·least·one·of·the·following·requirements:·The·track·of·this·route
@@ -42,7 +40,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RouteRelationCheck extends BaseCheck<Object>
 {
-    private static final Logger logger = LoggerFactory.getLogger(Edge.class);
     private static final String TEMP_RELATION_ID_INSTRUCTION = "The relation with ID={0,number,#} is problematic.";
     private static final String GAPS_IN_ROUTE_TRACK_INSTRUCTION = "The route in relation with ID = {0,number,#} has gaps in the track.";
     private static final String STOP_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The stops in the route relation with ID={0,number,#} are too far from the track.";
@@ -322,29 +319,22 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<AtlasEntity> allSignsFlagged = new ArrayList<>();
         final List<Location> allStopsPlatformsFlagged = new ArrayList<>();
 
-        final TestStructureData stopsFlaggedInfo = this.testStopPlatformTooFarFromTrack(rel,
-                "stop");
-        final List<Location> stopsLocationsFlagged = stopsFlaggedInfo.getAllSignsLocations();
+        final TestStructureData stopsFlaggedInfo = this.stopPlatformTooFarFromTrack(rel, "stop");
         final List<AtlasEntity> stopsEntitiesFlagged = stopsFlaggedInfo.getAllSigns();
 
         if (!stopsEntitiesFlagged.isEmpty())
         {
-            // allStopsPlatformsFlagged.addAll(stopsLocationsFlagged);
             allSignsFlagged.addAll(stopsEntitiesFlagged);
             instructionsAdd.add(this.getLocalizedInstruction(STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX,
                     rel.getOsmIdentifier()));
         }
 
-        final TestStructureData platformsFlaggedInfo = this.testStopPlatformTooFarFromTrack(rel,
+        final TestStructureData platformsFlaggedInfo = this.stopPlatformTooFarFromTrack(rel,
                 "platform");
-
-        final List<Location> platformsLocationsFlagged = platformsFlaggedInfo
-                .getAllSignsLocations();
         final List<AtlasEntity> platformsEntitiesFlagged = platformsFlaggedInfo.getAllSigns();
 
         if (!platformsEntitiesFlagged.isEmpty())
         {
-            // allStopsPlatformsFlagged.addAll(platformsLocationsFlagged);
             allSignsFlagged.addAll(platformsEntitiesFlagged);
             instructionsAdd.add(this.getLocalizedInstruction(
                     PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX, rel.getOsmIdentifier()));
@@ -668,6 +658,79 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
+     * This is the function that will check to see whether a set of stops or platforms that are too
+     * far from the track.
+     *
+     * @param rel
+     *            the route relation to check.
+     * @param stopOrPlatform
+     *            * indicate to check either stops of platforms
+     * @return a TestStructureData for creating the flag.
+     */
+    private TestStructureData stopPlatformTooFarFromTrack(final Relation rel,
+            final String stopOrPlatform)
+    {
+        final List<AtlasEntity> allSigns = rel.members().stream()
+                .filter(member -> member.getRole().equals(stopOrPlatform))
+                .map(RelationMember::getEntity).collect(Collectors.toList());
+
+        final List<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel).getAllPolyLines();
+        final List<Location> signLocationsFlagged = new ArrayList<>();
+        final List<AtlasEntity> allSignsEntitiesFlagged = new ArrayList<>();
+
+        for (final AtlasEntity entity : allSigns)
+        {
+            final List<Location> signLocations = new ArrayList<>();
+            if (entity instanceof AtlasItem)
+            {
+                final AtlasItem signPositions = (AtlasItem) entity;
+                signPositions.getRawGeometry().forEach(signLocations::add);
+            }
+
+            if (this.stopPlatformTooFarFromTrackCheck(signLocations, allEdgePolyLines))
+            {
+                allSignsEntitiesFlagged.add(entity);
+            }
+
+        }
+
+        return new TestStructureData(null, null, allSignsEntitiesFlagged, signLocationsFlagged,
+                null);
+    }
+
+    /**
+     * This is the helper function for checkStopPlatformTooFarFromTrack that do the check.
+     *
+     * @param signLocations
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @param allEdgePolyLines
+     *            indicate whether we want locations for stops or platforms
+     * @return a boolean indicating whether the stop or platform is too far from the track
+     */
+
+    private boolean stopPlatformTooFarFromTrackCheck(final List<Location> signLocations,
+            final List<PolyLine> allEdgePolyLines)
+    {
+        final Distance threshHold = Distance.meters(15.0);
+        SnappedLocation minSnap = null;
+        // Location minLoc = null
+
+        for (final Location location : signLocations)
+        {
+            for (final PolyLine edges : allEdgePolyLines)
+            {
+                final SnappedLocation snappedTo = location.snapTo(edges);
+                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
+                {
+                    minSnap = snappedTo;
+                }
+            }
+        }
+
+        return minSnap != null && minSnap.getDistance().isGreaterThan(threshHold);
+    }
+
+    /**
      * @param routeRelation
      *            the public transport route relation. this method checks whether the route relation
      *            is contained in a route master
@@ -729,79 +792,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         return instructionsAdd;
-    }
-
-    /**
-     * This is the function that will check to see whether a set of stops or platforms that are too
-     * far from the track.
-     *
-     * @param rel
-     *            the route relation to check.
-     * @param stopOrPlatform
-     *            * indicate to check either stops of platforms
-     * @return a TestStructureData for creating the flag.
-     */
-    private TestStructureData testStopPlatformTooFarFromTrack(final Relation rel,
-            final String stopOrPlatform)
-    {
-        final List<AtlasEntity> allSigns = rel.members().stream()
-                .filter(member -> member.getRole().equals(stopOrPlatform))
-                .map(RelationMember::getEntity).collect(Collectors.toList());
-
-        final List<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel).getAllPolyLines();
-        final List<Location> signLocationsFlagged = new ArrayList<>();
-        final List<AtlasEntity> allSignsEntitiesFlagged = new ArrayList<>();
-
-        for (final AtlasEntity entity : allSigns)
-        {
-            final List<Location> signLocations = new ArrayList<>();
-            if (entity instanceof AtlasItem)
-            {
-                final AtlasItem signPositions = (AtlasItem) entity;
-                signPositions.getRawGeometry().forEach(signLocations::add);
-            }
-
-            if (this.testStopPlatformTooFarFromTrackCheck(signLocations, allEdgePolyLines))
-            {
-                allSignsEntitiesFlagged.add(entity);
-            }
-
-        }
-
-        return new TestStructureData(null, null, allSignsEntitiesFlagged, signLocationsFlagged,
-                null);
-    }
-
-    /**
-     * This is the helper function for checkStopPlatformTooFarFromTrack that do the check.
-     *
-     * @param signLocations
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @param allEdgePolyLines
-     *            indicate whether we want locations for stops or platforms
-     * @return a boolean indicating whether the stop or platform is too far from the track
-     */
-
-    private boolean testStopPlatformTooFarFromTrackCheck(final List<Location> signLocations,
-            final List<PolyLine> allEdgePolyLines)
-    {
-        final Distance threshHold = Distance.meters(15.0);
-        SnappedLocation minSnap = null;
-        // Location minLoc = null
-
-        for (final Location location : signLocations)
-        {
-            for (final PolyLine edges : allEdgePolyLines)
-            {
-                final SnappedLocation snappedTo = location.snapTo(edges);
-                if (minSnap == null || snappedTo.compareTo(minSnap) < 0)
-                {
-                    minSnap = snappedTo;
-                }
-            }
-        }
-
-        return (minSnap != null && minSnap.getDistance().isGreaterThan(threshHold)) ? true : false;
     }
 
     /**

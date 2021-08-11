@@ -125,6 +125,13 @@ public class RouteRelationCheckTest
     }
 
     @Test
+    public void validRouteFiveTest()
+    {
+        this.verifier.actual(this.setup.getValidRouteFive(), check);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void validRouteFourTest()
     {
         this.verifier.actual(this.setup.getValidRouteFour(), check);
