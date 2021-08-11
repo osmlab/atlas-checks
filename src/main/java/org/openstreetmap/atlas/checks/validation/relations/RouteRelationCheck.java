@@ -18,20 +18,19 @@ import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
 import org.openstreetmap.atlas.geography.Snapper.SnappedLocation;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
-import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
-import org.openstreetmap.atlas.geography.atlas.multi.MultiNode;
-import org.openstreetmap.atlas.geography.atlas.multi.MultiPoint;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Finds·relations·that·meet·at·least·one·of·the·following·requirements:·The·track·of·this·route
@@ -43,13 +42,13 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class RouteRelationCheck extends BaseCheck<Object>
 {
+    private static final Logger logger = LoggerFactory.getLogger(Edge.class);
     private static final String TEMP_RELATION_ID_INSTRUCTION = "The relation with ID={0,number,#} is problematic.";
     private static final String GAPS_IN_ROUTE_TRACK_INSTRUCTION = "The route in relation with ID = {0,number,#} has gaps in the track.";
     private static final String STOP_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The stops in the route relation with ID={0,number,#} are too far from the track.";
     private static final String PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION = "The platforms in the route relation with ID={0,number,#} are too far from the track.";
     private static final String ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INSTRUCTION = "The route master relation with ID={0,number,#} contains non route element.";
     private static final String PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INSTRUCTION = "The relation with ID={0,number,#} is a public transportation route and has route type being {1}. It should be contained in a Route Master relation.";
-    private static final String MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} missing some tags in the category of network, operator, ref, a colour.";
     private static final String INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION = "The relation with ID={0,number,#} has inconsistent network, operator, ref, or colour tag with its route master.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
             TEMP_RELATION_ID_INSTRUCTION, GAPS_IN_ROUTE_TRACK_INSTRUCTION,
@@ -57,7 +56,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INSTRUCTION,
             ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INSTRUCTION,
             PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INSTRUCTION,
-            MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION,
             INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION);
     private static final int TEMP_RELATION_ID_INDEX = 0;
     private static final int GAPS_IN_ROUTE_TRACK_INDEX = 1;
@@ -65,8 +63,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private static final int PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX = 3;
     private static final int ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX = 4;
     private static final int PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX = 5;
-    private static final int MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 6;
-    private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 7;
+    private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 6;
     private static final Set<String> Public_transport_Types = Set.of("train", "subway", "bus",
             "trolleybus", "minibus", "light_rail", "share_taxi", "railway", "rail", "tram",
             "aircraft", "ferry");
@@ -87,11 +84,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-
-        return object instanceof Relation
-                && (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER)
-                        || Validators.isOfType(object, RelationTypeTag.class,
-                                RelationTypeTag.ROUTE))
+        return object instanceof Relation && Validators.isOfType(object, RelationTypeTag.class,
+                RelationTypeTag.ROUTE_MASTER, RelationTypeTag.ROUTE)
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -116,6 +110,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             routeSignInstructions = this.processRouteMasterRelation(routeRel);
         }
+
         if (Validators.isOfType(object, RelationTypeTag.class, RelationTypeTag.ROUTE))
         {
             routeSignInstructions = this.processRouteRelation(routeRel);
@@ -138,9 +133,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             if (atlasObjectFlagged.isEmpty())
             {
                 // if no edges and points are flagged, just add one edge to
-                // the flagged set
-                // add one member
-
+                // the flagged set or add one member
                 final AtlasEntity firstMember = routeRel.members().stream()
                         .map(RelationMember::getEntity).findFirst()
                         // if stream is empty
@@ -334,9 +327,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<Location> stopsLocationsFlagged = stopsFlaggedInfo.getAllSignsLocations();
         final List<AtlasEntity> stopsEntitiesFlagged = stopsFlaggedInfo.getAllSigns();
 
-        if (!stopsLocationsFlagged.isEmpty() && !stopsEntitiesFlagged.isEmpty())
+        if (!stopsEntitiesFlagged.isEmpty())
         {
-            allStopsPlatformsFlagged.addAll(stopsLocationsFlagged);
+            // allStopsPlatformsFlagged.addAll(stopsLocationsFlagged);
             allSignsFlagged.addAll(stopsEntitiesFlagged);
             instructionsAdd.add(this.getLocalizedInstruction(STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX,
                     rel.getOsmIdentifier()));
@@ -344,13 +337,14 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
         final TestStructureData platformsFlaggedInfo = this.testStopPlatformTooFarFromTrack(rel,
                 "platform");
+
         final List<Location> platformsLocationsFlagged = platformsFlaggedInfo
                 .getAllSignsLocations();
         final List<AtlasEntity> platformsEntitiesFlagged = platformsFlaggedInfo.getAllSigns();
 
-        if (!platformsLocationsFlagged.isEmpty() && !platformsEntitiesFlagged.isEmpty())
+        if (!platformsEntitiesFlagged.isEmpty())
         {
-            allStopsPlatformsFlagged.addAll(platformsLocationsFlagged);
+            // allStopsPlatformsFlagged.addAll(platformsLocationsFlagged);
             allSignsFlagged.addAll(platformsEntitiesFlagged);
             instructionsAdd.add(this.getLocalizedInstruction(
                     PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX, rel.getOsmIdentifier()));
@@ -449,12 +443,10 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final LinkedList<PolyLine> routeCreated = new LinkedList<>();
         // initialize routeCreated
         routeCreated.add(members.get(0));
-        int numberFailures = 0;
         int previousSize = -1;
         int currentSize = routeCreated.size();
 
-        while (routeCreated.size() < members.size() && numberFailures <= members.size()
-                && previousSize < currentSize)
+        while (routeCreated.size() < members.size() && previousSize < currentSize)
         {
             /* keep adding edges till no way to expand the route */
             previousSize = routeCreated.size();
@@ -477,8 +469,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             }
 
             currentSize = routeCreated.size();
-            // the maximal times to run for loop maximal equals to number of total lines
-            numberFailures = numberFailures + 1;
         }
 
         for (final PolyLine lineMember : members)
@@ -716,29 +706,13 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final Optional<String> refTag = rel.getTag("ref");
         final Optional<String> colourTag = rel.getTag("colour");
 
-        if (networkTag.isEmpty() || operatorTag.isEmpty() || refTag.isEmpty()
-                || colourTag.isEmpty())
-        {
-            instructionsAdd.add(this.getLocalizedInstruction(
-                    MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX, rel.getOsmIdentifier()));
-        }
-
         final Set<Relation> routeSet = this.routeSetMemberRelations(rel);
-
         for (final Relation relRoute : routeSet)
         {
             final Optional<String> routeNetwork = relRoute.getTag("network");
             final Optional<String> routeOperator = relRoute.getTag("operator");
             final Optional<String> routeRef = relRoute.getTag("ref");
             final Optional<String> routeColour = relRoute.getTag("colour");
-
-            if (routeNetwork.isEmpty() || operatorTag.isEmpty() || routeRef.isEmpty()
-                    || routeColour.isEmpty())
-            {
-                instructionsAdd.add(
-                        this.getLocalizedInstruction(MISSING_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
-                                relRoute.getOsmIdentifier()));
-            }
 
             if ((routeNetwork.isPresent() && networkTag.isPresent()
                     && !routeNetwork.equals(networkTag))
@@ -770,25 +744,52 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private TestStructureData testStopPlatformTooFarFromTrack(final Relation rel,
             final String stopOrPlatform)
     {
-        final List<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel).getAllPolyLines();
-        final TestStructureData allSignsInfo = this.testStopsOrPlatformsTooFarLocations(rel,
-                stopOrPlatform);
-        final List<Location> allSignsLocations = allSignsInfo.getAllSignsLocations();
-        final List<AtlasEntity> allSignsEntities = allSignsInfo.getAllSigns();
+        final List<AtlasEntity> allSigns = rel.members().stream()
+                .filter(member -> member.getRole().equals(stopOrPlatform))
+                .map(RelationMember::getEntity).collect(Collectors.toList());
 
-        final Distance threshHold = Distance.meters(15.0);
+        final List<PolyLine> allEdgePolyLines = this.polylineRouteRel(rel).getAllPolyLines();
         final List<Location> signLocationsFlagged = new ArrayList<>();
         final List<AtlasEntity> allSignsEntitiesFlagged = new ArrayList<>();
 
-        if (allSignsLocations.isEmpty() || (allEdgePolyLines.isEmpty()))
+        for (final AtlasEntity entity : allSigns)
         {
-            return new TestStructureData(null, null, allSignsEntitiesFlagged, signLocationsFlagged,
-                    null);
+            final List<Location> signLocations = new ArrayList<>();
+            if (entity instanceof AtlasItem)
+            {
+                final AtlasItem signPositions = (AtlasItem) entity;
+                signPositions.getRawGeometry().forEach(signLocations::add);
+            }
+
+            if (this.testStopPlatformTooFarFromTrackCheck(signLocations, allEdgePolyLines))
+            {
+                allSignsEntitiesFlagged.add(entity);
+            }
+
         }
 
-        SnappedLocation minSnap = null;
+        return new TestStructureData(null, null, allSignsEntitiesFlagged, signLocationsFlagged,
+                null);
+    }
 
-        for (final Location location : allSignsLocations)
+    /**
+     * This is the helper function for checkStopPlatformTooFarFromTrack that do the check.
+     *
+     * @param signLocations
+     *            the relation entity supplied by the Atlas-Checks framework for evaluation
+     * @param allEdgePolyLines
+     *            indicate whether we want locations for stops or platforms
+     * @return a boolean indicating whether the stop or platform is too far from the track
+     */
+
+    private boolean testStopPlatformTooFarFromTrackCheck(final List<Location> signLocations,
+            final List<PolyLine> allEdgePolyLines)
+    {
+        final Distance threshHold = Distance.meters(15.0);
+        SnappedLocation minSnap = null;
+        // Location minLoc = null
+
+        for (final Location location : signLocations)
         {
             for (final PolyLine edges : allEdgePolyLines)
             {
@@ -798,63 +799,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     minSnap = snappedTo;
                 }
             }
-            if (minSnap != null && minSnap.getDistance().isGreaterThan(threshHold))
-            {
-                signLocationsFlagged.add(location);
-            }
         }
 
-        for (int i = 0; i < allSignsLocations.size(); i++)
-        {
-            final Location loc = allSignsLocations.get(i);
-            if (signLocationsFlagged.contains(loc))
-            {
-                allSignsEntitiesFlagged.add(allSignsEntities.get(i));
-            }
-        }
-
-        return new TestStructureData(null, null, allSignsEntitiesFlagged, signLocationsFlagged,
-                null);
-    }
-
-    /**
-     * This is the helper function for checkStopPlatformTooFarFromTrack that checks whether stops
-     * and platforms in the route are too far from the track.
-     *
-     * @param rel
-     *            the relation entity supplied by the Atlas-Checks framework for evaluation
-     * @param stopOrPlatform
-     *            indicate whether we want locations for stops or platforms
-     * @return a TestStructureData instance for either stops or platforms
-     */
-    private TestStructureData testStopsOrPlatformsTooFarLocations(final Relation rel,
-            final String stopOrPlatform)
-    {
-        final List<AtlasEntity> allSigns = rel.members().stream()
-                .filter(member -> member.getRole().equals(stopOrPlatform))
-                .map(RelationMember::getEntity).collect(Collectors.toList());
-        final List<Location> allLocations = new ArrayList<>();
-
-        for (final AtlasEntity entity : allSigns)
-        {
-            if (entity instanceof MultiPoint)
-            {
-                allLocations.add(((MultiPoint) entity).getLocation());
-            }
-            else if (entity instanceof MultiNode)
-            {
-                allLocations.add(((MultiNode) entity).getLocation());
-            }
-            else if (entity instanceof Node)
-            {
-                allLocations.add(((Node) entity).getLocation());
-            }
-            else if (entity instanceof Point)
-            {
-                allLocations.add(((Point) entity).getLocation());
-            }
-        }
-        return new TestStructureData(null, null, allSigns, allLocations, null);
+        return (minSnap != null && minSnap.getDistance().isGreaterThan(threshHold)) ? true : false;
     }
 
     /**
