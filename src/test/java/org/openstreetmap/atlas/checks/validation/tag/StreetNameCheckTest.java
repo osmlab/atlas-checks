@@ -188,4 +188,18 @@ public class StreetNameCheckTest
         this.verifier.actual(this.setup.truePositiveLieWayInvalidValue(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
+
+    /**
+     * This test removes the notContainsValue for a German configuration. The item that was
+     * falsePositive is now truePositive.
+     */
+    @Test
+    public void truePositiveTestWithInlineConfig()
+    {
+        final StreetNameCheck thisTest = new StreetNameCheck(
+                ConfigurationResolver.inlineConfiguration(
+                        "{\"StreetNameCheck\":{\"check\":{\"countries\":[\"DEU\"], \"containsValues\":[[\"strasse\"]], \"notContainsValues\":[[]]}}}"));
+        this.verifier.actual(this.setup.falsePositiveDeuNodeInvalidValue(), thisTest);
+        this.verifier.verifyExpectedSize(1);
+    }
 }
