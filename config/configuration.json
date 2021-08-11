@@ -4,7 +4,39 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
+  },
+
+  "RouteRelationCheck": {
+    "enabled": true,
+    "challenge": {
+      "description": "OSMOSE 1260. Check route relations and route master relations for gaps in tracks, signs too far from track and some others. ",
+      "difficulty": "Medium"
+    }
+  },
+  "StreetNameCheck": {
+    "check" : {
+      "countries" : ["AUT", "CHE", "DEU", "LIE"],
+      "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
+      "notContainsValues" : [["strasser"],[],["strasser"],[]],
+      "tags" : [["ss"],["ß"],["ss"],["ß"]],
+      "correctTags" : [["ß"],["ss"],["ß"],["ss"]]
+    },
+    "challenge": {
+      "description": "Checks if the countries specified above contain the values in their tags",
+      "instruction": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
+    }
+  },
+  "StreetNameIntegersOnlyCheck": {
+    "name.keys.filter":["name","name:left","name:right"],
+    "character.single.ignore": true,
+    "challenge": {
+      "description": "Tasks containing name tags with only integers",
+      "blurb": "Street Names Integers Only",
+      "instruction": "Correct the road with only integers for names.",
+      "difficulty": "Medium",
+      "tags":"highway,name"
+    }
   },
   "PoolSizeCheck": {
     "surface": {
@@ -123,7 +155,7 @@
     }
     },
   "BuildingRoadIntersectionCheck": {
-    "car.navigable": true,
+    "car.navigable": false,
     "challenge": {
       "description": "Tasks contain buildings which intersect with surrounding roads",
       "blurb": "Intersecting Buildings and Roads",
@@ -268,14 +300,6 @@
       "difficulty": "EASY"
     }
   },
-  "DuplicateRelationCheck": {
-    "challenge": {
-      "description": "Tasks contain Relations where duplicate relations are found.",
-      "blurb": "Duplicate Relations",
-      "instruction": "Open your favorite editor and  remove one or more of the duplicate relations until only one remains.",
-      "difficulty": "EASY"
-    }
-  },
   "DuplicateWaysCheck": {
     "enabled": false,
     "challenge": {
@@ -287,12 +311,6 @@
   },
   "EdgeCrossingEdgeCheck": {
     "minimum.highway.type": "no",
-    "maximum.highway.type": "motorway",
-    "car.navigable": true,
-    "pedestrian.navigable": false,
-    "crossing.car.navigable": true,
-    "crossing.pedestrian.navigable": false,
-    "indoor.mapping": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
       "description": "Tasks contain ways that do not have shared nodes but cross each other.",
       "blurb": "Crossing Ways",
@@ -345,35 +363,6 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "tags":"coastline"
-    }
-  },
-    "GenericTagCheck": {
-    "db": {
-      "taginfo": "extra/taginfo-db.db",
-      "wikidata": "extra/wikidata.db"
-    },
-    "tag": {
-      "usage.min": 100,
-      "percentage_of_key_for_popular": 10
-    },
-    "wikidata.tag_removal": ["abandoned", "deprecated", "imported", "obsolete", "rejected"],
-    "challenge": {
-      "description": "This challenge contains tasks that identify features with OSM Tags (https://wiki.openstreetmap.org/wiki/Tags) that contain invalid tag keys or missing, conflicting, incorrect or illegal tag values. In many tasks in this challenge the task will identify an illegal or questionable tag key or value and provide a link to the Control Wiki Page (wiki page with identification string starting with Q, following with 3 to 4 digits, e.g. https://wiki.osm.org/Item:Q1189) that is used to define that tag’s characteristics in a computer readable format. That Control Wiki Page should contain a link to the Documentation Wiki Page for that tag that is a human readable page that discusses the proper use of the tag and other useful information.\nFor some tasks in this challenge the task may indicate a tag value that is valid or widely used that is not documented in the wiki. For these cases the mapper should not make any changes to the OSM data, but should instead consider adding documentation to the wiki to validate the tag value officially.\nFor more information on the Atlas Check that is used to create this challenge please go to https://github.com/osmlab/atlas-checks/tree/dev/docs/checks/genericTagCheck.md",
-      "blurb": "Features with invalid tags",
-      "instruction": "Open your favorite editor and check that the listed tags are correct.",
-      "difficulty": "EXPERT",
-      "tags":"tags"
-    }
-  },
-  "HighwayAccessCheck": {
-    "tags": {
-      "accessTags":["yes", "permissive"],
-      "highwayTags": ["motorway", "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
-        "bus_guideway", "busway", "raceway"]
-    },
-    "challenge": {
-      "difficulty": "EASY",
-      "description": "Checks if the object access is overly permissive"
     }
   },
   "HighwayMissingNameAndRefTagCheck": {
@@ -461,17 +450,6 @@
       "tags":"building"
     }
   },
-  "IntersectionAtDifferentLayersCheck":
-  {
-    "great.separation.filter":"",
-    "indoor.mapping.filter": "indoor->*|highway->corridor,steps|level->*",
-    "challenge": {
-      "description": "Tasks containing Nodes that intersect Ways at different levels.",
-      "blurb": "Invalid Nodes",
-      "instruction": "Disconnect intersection by removing Node from one of the Way or remove incorrect layer tag",
-      "difficulty": "EASY"
-    }
-  },
   "InvalidAccessTagCheck":{
     "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
     "minimum.highway.type":"residential",
@@ -512,7 +490,7 @@
     }
   },
   "InvalidMultiPolygonRelationCheck": {
-    "members.one.ignore": true,
+    "members.one.ignore": false,
     "overlap.points.minimum": 0,
     "overlap.points.maximum": 300000,
     "challenge": {
@@ -523,6 +501,7 @@
     }
   },
   "InvalidSignBoardRelationCheck": {
+    "enable": false,
     "countries": [
       "RUS"
     ],
@@ -597,7 +576,6 @@
     }
   },
   "LevelCrossingOnRailwayCheck": {
-    "minimum.highway.type": "residential",
     "layer.default": 0,
     "railway.filter": "railway->rail,tram,disused,preserved,miniature,light_rail,subway,narrow_gauge",
     "challenge": {
@@ -641,9 +619,8 @@
     "highways.exclude": ["bus_guideway"],
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
     "lineItems.non_offending": "waterway->*|boundary->*|landuse->*|bridge->yes,viaduct,aqueduct,boardwalk,covered,low_water_crossing,movable,suspension|tunnel->yes,culvert,building_passage|embankment->yes|location->underwater,underground|power->line,minor_line|man_made->pier,breakwater,embankment,groyne,dyke,pipeline|route->ferry|highway->proposed,construction|ice_road->yes|winter_road->yes|snowmobile->yes|ski->yes|ford->!no&ford->*",
-    "lineItems.footpath": "highway->footway,bridleway,steps,corridor,path",
     "nodes.intersecting.non_offending": "ferry->!no&ferry->*|ford->!no&ford->*|leisure->slipway|amenity->ferry_terminal",
-    "buildings.flag": true,
+    "buildings.flag": false,
     "challenge": {
       "description": "Certain OSM features should not cross waterbodies.",
       "blurb": "Edit features overlapping the waterbody so they either validly overlap or do not overlap.",
@@ -817,7 +794,7 @@
   },
   "OverlappingEdgeCheck": {
     "highway.priority.minimum": "residential",
-    "pedestrian.areas.filter": true,
+    "pedestrian.areas.filter": false,
     "challenge": {
       "description": "Tasks will include highways that are overlapped by another highway.",
       "blurb": "Overlapping Highways",
@@ -1040,7 +1017,7 @@
   "SignPostCheck": {
     "link":{
       "length.minimum.meters": 50.0,
-      "link.branch.check": true
+      "link.branch.check": false
     },
     "source.filter": "highway->motorway,trunk",
     "ramp.filter":"highway->motorway_link,trunk_link",
@@ -1114,7 +1091,7 @@
   },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
-    "character.single.ignore": true,
+    "character.single.ignore": false,
     "challenge": {
       "description": "Tasks containing name tags with only integers",
       "blurb": "Street Names Integers Only",
