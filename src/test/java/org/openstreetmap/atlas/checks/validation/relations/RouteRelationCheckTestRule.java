@@ -907,6 +907,20 @@ public class RouteRelationCheckTestRule extends CoreTestRule
                                                                                     "colour=#A10082" }) })
     private Atlas invalidRouteMasterFive;
 
+    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = START), id = START_ID),
+            @Node(coordinates = @Loc(value = TWO), id = TWO_ID) }, edges = { @Edge(coordinates = {
+                    @Loc(value = START), @Loc(value = TWO) }, id = Edge1ID) }, relations = {
+                            @Relation(members = {
+                                    @Member(id = Edge1ID, role = "", type = "EDGE") }, id = RELATION1ID, tags = {
+                                            "type=route", "route=bus", "network=Metlink",
+                                            "operator=Valley Flyer", "ref=115", "colour=#A10080" }),
+                            @Relation(members = {
+                                    @Member(id = RELATION1ID, role = "", type = "RELATION") }, id = RELATION_ROUTE_MASTER2ID, tags = {
+                                            "type=route_master", "route_master=train",
+                                            "network=Metlink", "operator=Valley Flyer", "ref=110",
+                                            "colour=#A10082" }) })
+    private Atlas invalidRouteMasterSix;
+
     public Atlas getInvalidRouteFive()
     {
         return this.invalidRouteFive;
@@ -930,6 +944,11 @@ public class RouteRelationCheckTestRule extends CoreTestRule
     public Atlas getInvalidRouteMasterOne()
     {
         return this.invalidRouteMasterOne;
+    }
+
+    public Atlas getInvalidRouteMasterSix()
+    {
+        return this.invalidRouteMasterSix;
     }
 
     public Atlas getInvalidRouteMasterThree()
