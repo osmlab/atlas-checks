@@ -1112,6 +1112,19 @@
       "tags":"highway"
     }
   },
+  "StreetNameCheck": {
+    "check" : {
+      "countries" : ["AUT", "CHE", "DEU", "LIE"],
+      "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
+      "notContainsValues" : [["strasser"],[],["strasser"],[]],
+      "tags" : [["ss"],["ß"],["ss"],["ß"]],
+      "correctTags" : [["ß"],["ss"],["ß"],["ss"]]
+    },
+    "challenge": {
+      "description": "Checks if the countries specified above contain the values in their tags",
+      "instruction": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
+    }
+  },
   "StreetNameIntegersOnlyCheck": {
     "name.keys.filter":["name","name:left","name:right"],
     "character.single.ignore": true,
