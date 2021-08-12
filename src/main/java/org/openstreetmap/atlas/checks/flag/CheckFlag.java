@@ -454,23 +454,6 @@ public class CheckFlag implements Iterable<Location>, Located, Serializable
         task.setChallengeName(this.getChallengeName().orElse(this.getClass().getSimpleName()));
         task.setTaskIdentifier(this.identifier);
 
-        // Add custom pin point(s), if supplied.
-        final Set<Location> points = this.getPoints();
-        if (!points.isEmpty())
-        {
-            task.setPoints(points);
-        }
-        else
-        {
-            final Set<PolyLine> polyLines = this.getPolyLines();
-            if (!polyLines.isEmpty())
-            {
-                // Retrieve the first item in the list and retrieve the first point in the
-                // geometry for the object
-                task.setPoint(polyLines.iterator().next().iterator().next());
-            }
-        }
-
         final JsonArray features = new JsonArray();
         // Features
         if (!this.getGeometryWithProperties().isEmpty())
