@@ -184,40 +184,10 @@ public class ConnectivityCheckTestRule extends CoreTestRule
                             @Edge(coordinates = { @Loc(TEST3), @Loc(TEST8) }, tags = {
                                     "highway=secondary" }),
                             @Edge(coordinates = { @Loc(TEST5), @Loc(TEST2) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST2), @Loc(TEST7) }, tags = {
-                                    "highway=secondary" }) })
-    private Atlas invalidDisconnectedNodesCrossingAtlas;
-
-    @TestAtlas(
-            // Nodes
-            nodes = { @Node(coordinates = @Loc(TEST1)), @Node(coordinates = @Loc(TEST2)),
-                    @Node(coordinates = @Loc(TEST3)), @Node(coordinates = @Loc(TEST5)),
-                    @Node(coordinates = @Loc(TEST7)), @Node(coordinates = @Loc(TEST8)) }, edges = {
-                            @Edge(coordinates = { @Loc(TEST1), @Loc(TEST3) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST3), @Loc(TEST8) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST5), @Loc(TEST2) }, tags = {
                                     "highway=secondary", "layer=1" }),
                             @Edge(coordinates = { @Loc(TEST2), @Loc(TEST7) }, tags = {
                                     "highway=secondary", "layer=1" }) })
     private Atlas validDisconnectedNodesCrossingLayerAtlas;
-
-    @TestAtlas(
-            // Nodes
-            nodes = { @Node(coordinates = @Loc(TEST1)), @Node(coordinates = @Loc(TEST2)),
-                    @Node(coordinates = @Loc(TEST3)), @Node(coordinates = @Loc(TEST5)),
-                    @Node(coordinates = @Loc(TEST7)), @Node(coordinates = @Loc(TEST8)) }, edges = {
-                            @Edge(coordinates = { @Loc(TEST1), @Loc(TEST3) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST3), @Loc(TEST8) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST5), @Loc(TEST2) }, tags = {
-                                    "highway=secondary", "layer=1" }),
-                            @Edge(coordinates = { @Loc(TEST2), @Loc(TEST7) }, tags = {
-                                    "highway=secondary" }) })
-    private Atlas invalidDisconnectedNodesCrossingLayerAtlas;
 
     @TestAtlas(
             // Nodes
@@ -263,19 +233,6 @@ public class ConnectivityCheckTestRule extends CoreTestRule
                             @Edge(coordinates = { @Loc(TEST2), @Loc(TEST7) }, tags = {
                                     "highway=pedestrian" }) })
     private Atlas validDisconnectedNodesCrossingPedestrianAtlas;
-
-    @TestAtlas(
-            // Nodes
-            nodes = { @Node(coordinates = @Loc(TEST1)), @Node(coordinates = @Loc(TEST3)),
-                    @Node(coordinates = @Loc(TEST5)), @Node(coordinates = @Loc(TEST7)),
-                    @Node(coordinates = @Loc(TEST8)) }, edges = {
-                            @Edge(coordinates = { @Loc(TEST1), @Loc(TEST3) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST3), @Loc(TEST8) }, tags = {
-                                    "highway=secondary" }),
-                            @Edge(coordinates = { @Loc(TEST5), @Loc(TEST7) }, tags = {
-                                    "highway=secondary" }) })
-    private Atlas invalidDisconnectedEdgeCrossingAtlas;
 
     @TestAtlas(
             // Nodes
@@ -357,11 +314,6 @@ public class ConnectivityCheckTestRule extends CoreTestRule
         return this.invalidConnectedNodesAtlas;
     }
 
-    public Atlas invalidDisconnectedEdgeCrossingAtlas()
-    {
-        return this.invalidDisconnectedEdgeCrossingAtlas;
-    }
-
     public Atlas invalidDisconnectedEdgesAtlas()
     {
         return this.invalidDisconnectedEdgesAtlas;
@@ -375,16 +327,6 @@ public class ConnectivityCheckTestRule extends CoreTestRule
     public Atlas invalidDisconnectedNodesAtlas()
     {
         return this.invalidDisconnectedNodesOppositeAtlas;
-    }
-
-    public Atlas invalidDisconnectedNodesCrossingAtlas()
-    {
-        return this.invalidDisconnectedNodesCrossingAtlas;
-    }
-
-    public Atlas invalidDisconnectedNodesCrossingLayerAtlas()
-    {
-        return this.invalidDisconnectedNodesCrossingLayerAtlas;
     }
 
     public Atlas invalidDisconnectedNodesOppositeAtlas()

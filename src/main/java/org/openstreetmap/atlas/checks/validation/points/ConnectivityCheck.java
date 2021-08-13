@@ -72,7 +72,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
         return object instanceof Node && !SyntheticBoundaryNodeTag.isSyntheticBoundaryNode(object)
                 && !this.isFlagged(object.getOsmIdentifier()) && !BarrierTag.isBarrier(object)
                 && !Validators.isOfType(object, NoExitTag.class, NoExitTag.YES)
-                && !this.connectedEdgesHaveLevelTags((Node) object)
+                && !this.connectedEdgesHaveLevelTags((Node) object) && this.isDeadEnd((Node) object)
                 // Node is part of a valid road, for this check
                 && ((Node) object).connectedEdges().stream().anyMatch(this::validEdgeFilter);
     }
@@ -518,6 +518,18 @@ public class ConnectivityCheck extends BaseCheck<Long>
             return this.headingsFormTriangle(firstHeading, connectionHeading, lastHeading);
         }
         return false;
+    }
+
+    /**
+     * Checks if {@link Node} is at the start or end of the {@link Edge} segment.
+     * 
+     * @param node
+     *            {@link Node} to check.
+     * @return true if {@link Node} has only one connected {@link Edge}
+     */
+    private boolean isDeadEnd(final Node node)
+    {
+        return node.connectedEdges().stream().count() < 2;
     }
 
     /**
