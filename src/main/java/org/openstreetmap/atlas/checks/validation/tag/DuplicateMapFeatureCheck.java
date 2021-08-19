@@ -38,11 +38,11 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  */
 public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 {
-    private static final String Duplicate_Features_INSTRUCTIONS = "{0} and {1} are duplicate feature {2}.";
+    private static final String Duplicate_Features_Instructions = "{0} and {1} are duplicate feature {2}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(Duplicate_Features_INSTRUCTIONS);
+            .asList(Duplicate_Features_Instructions);
 
-    private static final List<String> FeaturesTagsShouldRepresentOnlyOnce = Arrays
+    private static final List<String> Features_Tags_Should_Represent_Only_Once = Arrays
             .asList(AmenityTag.KEY, LeisureTag.KEY, BuildingTag.KEY, ShopTag.KEY);
 
     private static final List<ItemType> NodeItemsTypesToCompare = Arrays.asList(ItemType.NODE,
@@ -60,7 +60,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
         super(configuration);
         this.featuresTagsShouldRepresentOnlyOnce = this.configurationValue(configuration,
                 "features.tags.should.represent.only.once.in.area",
-                this.FeaturesTagsShouldRepresentOnlyOnce);
+                Features_Tags_Should_Represent_Only_Once);
     }
 
     @Override
@@ -339,11 +339,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
     private Optional<Map<String, String>> verifyObjectTaggedTwice(
             final Map<String, String> firstTags, final Map<String, String> secondTags)
     {
-        if (firstTags.isEmpty() || secondTags.isEmpty())
-        {
-            return Optional.empty();
-        }
-
         final Map<String, String> inFirstTagsFeatureAllowRepresentOnce = firstTags.entrySet()
                 .stream()
                 .filter(map -> this.featuresTagsShouldRepresentOnlyOnce.contains(map.getKey()))
