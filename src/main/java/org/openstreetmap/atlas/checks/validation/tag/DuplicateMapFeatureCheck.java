@@ -82,9 +82,12 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
         final Set<String> duplicateFeatures = new HashSet<>();
         final Map<String, String> duplicateFeaturesTags = new HashMap<>();
+        String objectInstructionString = "";
 
         if (object instanceof Area)
         {
+            objectInstructionString = "Area type Way " + Long.toString(object.getOsmIdentifier());
+
             final Area area = (Area) object;
             try
             {
@@ -93,10 +96,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
                 for (final AtlasEntity entity : entities)
                 {
-                    if (entity.getOsmTags().isEmpty())
-                    {
-                        continue;
-                    }
                     final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
                             .verifyDuplicateFeature(area, entity);
 
@@ -111,29 +110,17 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
             {
                 // Do Nothing
             }
-
-            if (!duplicateFeatures.isEmpty())
-            {
-                final String duplicateFeatureString = this.getStringForList(duplicateFeatures);
-
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(0,
-                                "Area type Way " + Long.toString(object.getOsmIdentifier()),
-                                duplicateFeatureString, duplicateFeaturesTags)));
-            }
         }
 
         if (object instanceof Edge)
         {
+            objectInstructionString = "Way " + Long.toString(object.getOsmIdentifier());
+
             final Edge edge = (Edge) object;
 
             final Set<Node> nodes = edge.connectedNodes();
             for (final Node node : nodes)
             {
-                if (node.getOsmTags().isEmpty())
-                {
-                    continue;
-                }
                 final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
                         .verifyDuplicateFeature(edge, node);
 
@@ -143,20 +130,12 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
                     duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
                 }
             }
-
-            if (!duplicateFeatures.isEmpty())
-            {
-                final String duplicateFeatureString = this.getStringForList(duplicateFeatures);
-
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(0,
-                                "Way " + Long.toString(object.getOsmIdentifier()),
-                                duplicateFeatureString, duplicateFeaturesTags)));
-            }
         }
 
         if (object instanceof Relation)
         {
+            objectInstructionString = "Relation " + Long.toString(object.getOsmIdentifier());
+
             final Relation relation = (Relation) object;
 
             final List<RelationMember> members = relation.members().stream()
@@ -165,10 +144,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
             for (final RelationMember member : members)
             {
-                if (member.getEntity().getOsmTags().isEmpty())
-                {
-                    continue;
-                }
                 final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
                         .verifyDuplicateFeature(relation, member.getEntity());
 
@@ -189,8 +164,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
                     for (final AtlasEntity entity : entities)
                     {
-                        if (this.isRelationMember(relation, entity)
-                                || entity.getOsmTags().isEmpty())
+                        if (this.isRelationMember(relation, entity))
                         {
                             continue;
                         }
@@ -210,16 +184,14 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
                     // Do Nothing
                 }
             }
+        }
 
-            if (!duplicateFeatures.isEmpty())
-            {
-                final String duplicateFeatureString = this.getStringForList(duplicateFeatures);
+        if (!duplicateFeatures.isEmpty())
+        {
+            final String duplicateFeatureString = this.getStringForList(duplicateFeatures);
 
-                return Optional.of(this.createFlag(object,
-                        this.getLocalizedInstruction(0,
-                                "Relation " + Long.toString(object.getOsmIdentifier()),
-                                duplicateFeatureString, duplicateFeaturesTags)));
-            }
+            return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
+                    objectInstructionString, duplicateFeatureString, duplicateFeaturesTags)));
         }
 
         return Optional.empty();
@@ -362,7 +334,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
         if (!featuresTaggedTwice.isEmpty())
         {
-
             // amenity or leisure with different building tags are not duplicate feature
             if (firstTags.get(BuildingTag.KEY) != null && secondTags.get(BuildingTag.KEY) != null
                     && !firstTags.get(BuildingTag.KEY).equals(secondTags.get(BuildingTag.KEY)))
@@ -387,7 +358,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
             {
                 if (Objects.equals(firstTags.get(SportTag.KEY), secondTags.get(SportTag.KEY)))
                 {
-
                     if (firstTags.get(SportTag.KEY) != null)
                     {
                         featuresTaggedTwice.put(SportTag.KEY, firstTags.get(SportTag.KEY));
@@ -405,7 +375,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
             if (Objects.equals(firstTags.get(NameTag.KEY), secondTags.get(NameTag.KEY)))
             {
-
                 if (firstTags.get(NameTag.KEY) != null)
                 {
                     featuresTaggedTwice.put(NameTag.KEY, firstTags.get(NameTag.KEY));
