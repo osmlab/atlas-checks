@@ -38,9 +38,9 @@ import org.openstreetmap.atlas.utilities.tuples.Tuple;
  */
 public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 {
-    private static final String Duplicate_Features_Instructions = "{0} and {1} are duplicate feature {2}.";
+    private static final String DUPLICATE_FEATURE_INSTRUCTIONS = "{0} and {1} are duplicate feature {2}.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList(Duplicate_Features_Instructions);
+            .asList(DUPLICATE_FEATURE_INSTRUCTIONS);
 
     private static final List<String> Features_Tags_Should_Represent_Only_Once = Arrays
             .asList(AmenityTag.KEY, LeisureTag.KEY, BuildingTag.KEY, ShopTag.KEY);
