@@ -429,17 +429,17 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
         final Map<String, String> inFirstTagsFeatureAllowRepresentOnce = firstTags.entrySet()
                 .stream()
                 .filter(map -> this.featuresTagsShouldRepresentOnlyOnce.contains(map.getKey()))
-                .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         final Map<String, String> inSecondTagsFeatureAllowRepresentOnce = secondTags.entrySet()
                 .stream()
                 .filter(map -> this.featuresTagsShouldRepresentOnlyOnce.contains(map.getKey()))
-                .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         final Map<String, String> featuresTaggedTwice = inFirstTagsFeatureAllowRepresentOnce
                 .entrySet().stream()
                 .filter(map -> map.getValue()
                         .equals(inSecondTagsFeatureAllowRepresentOnce.get(map.getKey())))
-                .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         if (featuresTaggedTwice.isEmpty())
         {
