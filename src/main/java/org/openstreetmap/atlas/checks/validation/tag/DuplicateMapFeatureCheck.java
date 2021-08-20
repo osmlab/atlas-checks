@@ -80,8 +80,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
             return Optional.empty();
         }
 
-        final Set<String> duplicateFeatures = new HashSet<>();
-        final Map<String, String> duplicateFeaturesTags = new HashMap<>();
+        Optional<Tuple<Set<String>, Map<String, String>>> duplicateFeatures = Optional.empty();
         String objectInstructionString = "";
 
         if (object instanceof Area)
@@ -89,27 +88,8 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
             objectInstructionString = "Area type Way " + Long.toString(object.getOsmIdentifier());
 
             final Area area = (Area) object;
-            try
-            {
-                final Iterable<AtlasEntity> entities = area.getAtlas().entitiesWithin(area.bounds(),
-                        entity -> NodeItemsTypesToCompare.contains(entity.getType()));
 
-                for (final AtlasEntity entity : entities)
-                {
-                    final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
-                            .verifyDuplicateFeature(area, entity);
-
-                    if (duplicateFeature.isPresent())
-                    {
-                        duplicateFeatures.add(duplicateFeature.get().getFirst());
-                        duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
-                    }
-                }
-            }
-            catch (final Exception ignored)
-            {
-                // Do Nothing
-            }
+            duplicateFeatures = this.checkArea(area);
         }
 
         if (object instanceof Edge)
@@ -118,18 +98,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
             final Edge edge = (Edge) object;
 
-            final Set<Node> nodes = edge.connectedNodes();
-            for (final Node node : nodes)
-            {
-                final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
-                        .verifyDuplicateFeature(edge, node);
-
-                if (duplicateFeature.isPresent())
-                {
-                    duplicateFeatures.add(duplicateFeature.get().getFirst());
-                    duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
-                }
-            }
+            duplicateFeatures = this.checkEdge(edge);
         }
 
         if (object instanceof Relation)
@@ -138,57 +107,14 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
             final Relation relation = (Relation) object;
 
-            final List<RelationMember> members = relation.members().stream()
-                    .filter(m -> WayNodeItemsTypesToCompare.contains(m.getEntity().getType()))
-                    .collect(Collectors.toList());
-
-            for (final RelationMember member : members)
-            {
-                final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
-                        .verifyDuplicateFeature(relation, member.getEntity());
-
-                if (duplicateFeature.isPresent())
-                {
-                    duplicateFeatures.add(duplicateFeature.get().getFirst());
-                    duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
-                }
-            }
-
-            if (relation.isGeometric())
-            {
-                try
-                {
-                    final Iterable<AtlasEntity> entities = relation.getAtlas().entitiesWithin(
-                            relation.bounds(),
-                            entity -> WayNodeItemsTypesToCompare.contains(entity.getType()));
-
-                    for (final AtlasEntity entity : entities)
-                    {
-                        if (this.isRelationMember(relation, entity))
-                        {
-                            continue;
-                        }
-
-                        final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
-                                .verifyDuplicateFeature(relation, entity);
-
-                        if (duplicateFeature.isPresent())
-                        {
-                            duplicateFeatures.add(duplicateFeature.get().getFirst());
-                            duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
-                        }
-                    }
-                }
-                catch (final Exception ignored)
-                {
-                    // Do Nothing
-                }
-            }
+            duplicateFeatures = this.checkRelation(relation);
         }
 
-        if (!duplicateFeatures.isEmpty())
+        if (duplicateFeatures.isPresent())
         {
-            final String duplicateFeatureString = this.getStringForList(duplicateFeatures);
+            final Set<String> duplicateFeatureIds = duplicateFeatures.get().getFirst();
+            final Map<String, String> duplicateFeaturesTags = duplicateFeatures.get().getSecond();
+            final String duplicateFeatureString = this.getStringForList(duplicateFeatureIds);
 
             return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0,
                     objectInstructionString, duplicateFeatureString, duplicateFeaturesTags)));
@@ -203,9 +129,181 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
         return FALLBACK_INSTRUCTIONS;
     }
 
+    /**
+     * Checks if the {@link Area} has duplicate feature.
+     *
+     * @param area
+     *            the area to check
+     * @return duplicate feature and tags if the area has duplicate feature.
+     */
+    private Optional<Tuple<Set<String>, Map<String, String>>> checkArea(final Area area)
+    {
+        final Set<String> duplicateFeaturesIds = new HashSet<>();
+        final Map<String, String> duplicateFeaturesTags = new HashMap<>();
+
+        try
+        {
+            final Iterable<AtlasEntity> entities = area.getAtlas().entitiesWithin(area.bounds(),
+                    entity -> NodeItemsTypesToCompare.contains(entity.getType()));
+
+            for (final AtlasEntity entity : entities)
+            {
+                final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
+                        .verifyDuplicateFeature(area, entity);
+
+                if (duplicateFeature.isPresent())
+                {
+                    duplicateFeaturesIds.add(duplicateFeature.get().getFirst());
+                    duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
+                }
+            }
+
+            if (!duplicateFeaturesIds.isEmpty())
+            {
+                final Tuple<Set<String>, Map<String, String>> duplicateFeatures = Tuple
+                        .createTuple(duplicateFeaturesIds, duplicateFeaturesTags);
+
+                return Optional.of(duplicateFeatures);
+            }
+        }
+        catch (final Exception ignored)
+        {
+            // Do Nothing
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Checks if the {@link Edge} has duplicate feature.
+     *
+     * @param edge
+     *            the edge to check
+     * @return duplicate feature and tags if the edge has duplicate feature.
+     */
+    private Optional<Tuple<Set<String>, Map<String, String>>> checkEdge(final Edge edge)
+    {
+        final Set<String> duplicateFeaturesIds = new HashSet<>();
+        final Map<String, String> duplicateFeaturesTags = new HashMap<>();
+
+        final Set<Node> nodes = edge.connectedNodes();
+        for (final Node node : nodes)
+        {
+            final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
+                    .verifyDuplicateFeature(edge, node);
+
+            if (duplicateFeature.isPresent())
+            {
+                duplicateFeaturesIds.add(duplicateFeature.get().getFirst());
+                duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
+            }
+        }
+
+        if (!duplicateFeaturesIds.isEmpty())
+        {
+            final Tuple<Set<String>, Map<String, String>> duplicateFeatures = Tuple
+                    .createTuple(duplicateFeaturesIds, duplicateFeaturesTags);
+
+            return Optional.of(duplicateFeatures);
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Checks if the {@link Relation} has duplicate feature.
+     *
+     * @param relation
+     *            the relation to check
+     * @return duplicate feature and tags if the relation has duplicate feature.
+     */
+    private Optional<Tuple<Set<String>, Map<String, String>>> checkRelation(final Relation relation)
+    {
+        final Set<String> duplicateFeaturesIds = new HashSet<>();
+        final Map<String, String> duplicateFeaturesTags = new HashMap<>();
+
+        final List<RelationMember> members = relation.members().stream()
+                .filter(m -> WayNodeItemsTypesToCompare.contains(m.getEntity().getType()))
+                .collect(Collectors.toList());
+
+        for (final RelationMember member : members)
+        {
+            final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
+                    .verifyDuplicateFeature(relation, member.getEntity());
+
+            if (duplicateFeature.isPresent())
+            {
+                duplicateFeaturesIds.add(duplicateFeature.get().getFirst());
+                duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
+            }
+        }
+
+        if (relation.isGeometric())
+        {
+            try
+            {
+                final Iterable<AtlasEntity> entities = relation.getAtlas().entitiesWithin(
+                        relation.bounds(),
+                        entity -> WayNodeItemsTypesToCompare.contains(entity.getType()));
+
+                for (final AtlasEntity entity : entities)
+                {
+                    if (this.isRelationMember(relation, entity))
+                    {
+                        continue;
+                    }
+
+                    final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
+                            .verifyDuplicateFeature(relation, entity);
+
+                    if (duplicateFeature.isPresent())
+                    {
+                        duplicateFeaturesIds.add(duplicateFeature.get().getFirst());
+                        duplicateFeaturesTags.putAll(duplicateFeature.get().getSecond());
+                    }
+                }
+            }
+            catch (final Exception ignored)
+            {
+                // Do Nothing
+            }
+        }
+
+        if (!duplicateFeaturesIds.isEmpty())
+        {
+            final Tuple<Set<String>, Map<String, String>> duplicateFeatures = Tuple
+                    .createTuple(duplicateFeaturesIds, duplicateFeaturesTags);
+
+            return Optional.of(duplicateFeatures);
+        }
+
+        return Optional.empty();
+    }
+
     private String getStringForList(final Set<String> list)
     {
         return list.toString().replace("[", "").replace("]", "");
+    }
+
+    /**
+     * Checks if two set tags have the key but different value
+     *
+     * @param firstTags
+     *            the first Osm tags to check
+     * @param secondTags
+     *            the second Osm tags to check
+     * @param key
+     *            the key to check
+     * @return true if two set tags have the key but different value.
+     */
+    private boolean hasDifferentValueOfKey(final Map<String, String> firstTags,
+            final Map<String, String> secondTags, final String key)
+    {
+        if (firstTags.get(key) != null && secondTags.get(key) != null
+                && !firstTags.get(key).equals(secondTags.get(key)))
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -320,69 +418,59 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
                 .filter(map -> this.featuresTagsShouldRepresentOnlyOnce.contains(map.getKey()))
                 .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
 
-        if (inFirstTagsFeatureAllowRepresentOnce.isEmpty()
-                || inSecondTagsFeatureAllowRepresentOnce.isEmpty())
-        {
-            return Optional.empty();
-        }
-
         final Map<String, String> featuresTaggedTwice = inFirstTagsFeatureAllowRepresentOnce
                 .entrySet().stream()
                 .filter(map -> map.getValue()
                         .equals(inSecondTagsFeatureAllowRepresentOnce.get(map.getKey())))
                 .collect(Collectors.toMap(map -> map.getKey(), map -> map.getValue()));
 
-        if (!featuresTaggedTwice.isEmpty())
+        if (featuresTaggedTwice.isEmpty())
         {
-            // amenity or leisure with different building tags are not duplicate feature
-            if (firstTags.get(BuildingTag.KEY) != null && secondTags.get(BuildingTag.KEY) != null
-                    && !firstTags.get(BuildingTag.KEY).equals(secondTags.get(BuildingTag.KEY)))
-            {
-                return Optional.empty();
-            }
+            return Optional.empty();
+        }
 
-            // only same building tags without name are not duplicate feature
-            if (featuresTaggedTwice.keySet().contains(BuildingTag.KEY)
-                    && featuresTaggedTwice.keySet().size() == 1
-                    && (firstTags.get(NameTag.KEY) == null || secondTags.get(NameTag.KEY) == null))
-            {
-                return Optional.empty();
-            }
+        // only same building tags without name are not duplicate feature
+        if (featuresTaggedTwice.keySet().contains(BuildingTag.KEY)
+                && featuresTaggedTwice.keySet().size() == 1
+                && (firstTags.get(NameTag.KEY) == null || secondTags.get(NameTag.KEY) == null))
+        {
+            return Optional.empty();
+        }
 
-            // leisure=pitch and different sport=* tags are not duplicate feature
-            // leisure=track and different sport=* tags are not duplicate feature
-            if (LeisureTag.PITCH.name().toLowerCase()
-                    .equals(featuresTaggedTwice.get(LeisureTag.KEY))
-                    || LeisureTag.TRACK.name().toLowerCase()
-                            .equals(featuresTaggedTwice.get(LeisureTag.KEY)))
-            {
-                if (Objects.equals(firstTags.get(SportTag.KEY), secondTags.get(SportTag.KEY)))
-                {
-                    if (firstTags.get(SportTag.KEY) != null)
-                    {
-                        featuresTaggedTwice.put(SportTag.KEY, firstTags.get(SportTag.KEY));
-                    }
-                    return Optional.of(featuresTaggedTwice);
-                }
-                else
-                {
-                    if (firstTags.get(SportTag.KEY) != null && secondTags.get(SportTag.KEY) != null)
-                    {
-                        return Optional.empty();
-                    }
-                }
-            }
+        // amenity or leisure with different building tags are not duplicate feature
+        if (this.hasDifferentValueOfKey(firstTags, secondTags, BuildingTag.KEY))
+        {
+            return Optional.empty();
+        }
 
-            if (Objects.equals(firstTags.get(NameTag.KEY), secondTags.get(NameTag.KEY)))
+        // leisure=pitch and different sport=* tags are not duplicate feature
+        // leisure=track and different sport=* tags are not duplicate feature
+        if (LeisureTag.PITCH.name().toLowerCase().equals(featuresTaggedTwice.get(LeisureTag.KEY))
+                || LeisureTag.TRACK.name().toLowerCase()
+                        .equals(featuresTaggedTwice.get(LeisureTag.KEY)))
+        {
+            if (Objects.equals(firstTags.get(SportTag.KEY), secondTags.get(SportTag.KEY)))
             {
-                if (firstTags.get(NameTag.KEY) != null)
+                if (firstTags.get(SportTag.KEY) != null)
                 {
-                    featuresTaggedTwice.put(NameTag.KEY, firstTags.get(NameTag.KEY));
+                    featuresTaggedTwice.put(SportTag.KEY, firstTags.get(SportTag.KEY));
                 }
                 return Optional.of(featuresTaggedTwice);
             }
+            else
+            {
+                return Optional.empty();
+            }
         }
 
+        if (Objects.equals(firstTags.get(NameTag.KEY), secondTags.get(NameTag.KEY)))
+        {
+            if (firstTags.get(NameTag.KEY) != null)
+            {
+                featuresTaggedTwice.put(NameTag.KEY, firstTags.get(NameTag.KEY));
+            }
+            return Optional.of(featuresTaggedTwice);
+        }
         return Optional.empty();
     }
 }
