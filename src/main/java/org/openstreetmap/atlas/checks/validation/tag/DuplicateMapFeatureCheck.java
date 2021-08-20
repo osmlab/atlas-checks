@@ -298,12 +298,29 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
     private boolean hasDifferentValueOfKey(final Map<String, String> firstTags,
             final Map<String, String> secondTags, final String key)
     {
-        if (firstTags.get(key) != null && secondTags.get(key) != null
-                && !firstTags.get(key).equals(secondTags.get(key)))
-        {
-            return true;
-        }
-        return false;
+        return firstTags.get(key) != null && secondTags.get(key) != null
+                && !firstTags.get(key).equals(secondTags.get(key));
+    }
+
+    /**
+     * Checks if two set tags have only building tag without name for features which should
+     * represent once
+     *
+     * @param firstTags
+     *            the first Osm tags to check
+     * @param secondTags
+     *            the second Osm tags to check
+     * @param featuresTaggedTwice
+     *            the features tags in both sets of tags for features which should represent once
+     * @return true if two set tags have only building tag without name for features which should
+     *         represent once.
+     */
+    private boolean hasOnlyBuildingWithoutName(final Map<String, String> firstTags,
+            final Map<String, String> secondTags, final Map<String, String> featuresTaggedTwice)
+    {
+        return featuresTaggedTwice.keySet().contains(BuildingTag.KEY)
+                && featuresTaggedTwice.keySet().size() == 1
+                && (firstTags.get(NameTag.KEY) == null || secondTags.get(NameTag.KEY) == null);
     }
 
     /**
@@ -430,9 +447,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
         }
 
         // only same building tags without name are not duplicate feature
-        if (featuresTaggedTwice.keySet().contains(BuildingTag.KEY)
-                && featuresTaggedTwice.keySet().size() == 1
-                && (firstTags.get(NameTag.KEY) == null || secondTags.get(NameTag.KEY) == null))
+        if (this.hasOnlyBuildingWithoutName(firstTags, secondTags, featuresTaggedTwice))
         {
             return Optional.empty();
         }
@@ -457,7 +472,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
                 }
                 return Optional.of(featuresTaggedTwice);
             }
-            else
+            else if (this.hasDifferentValueOfKey(firstTags, secondTags, SportTag.KEY))
             {
                 return Optional.empty();
             }
