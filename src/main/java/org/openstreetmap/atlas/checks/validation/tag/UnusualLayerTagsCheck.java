@@ -3,7 +3,6 @@ package org.openstreetmap.atlas.checks.validation.tag;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -11,13 +10,10 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Line;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
-import org.openstreetmap.atlas.tags.BridgeTag;
-import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.JunctionTag;
-import org.openstreetmap.atlas.tags.LayerTag;
-import org.openstreetmap.atlas.tags.Taggable;
-import org.openstreetmap.atlas.tags.TunnelTag;
+import org.openstreetmap.atlas.tags.*;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
@@ -35,6 +31,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             LayerTag.getMinValue(), LayerTag.getMaxValue());
     public static final String JUNCTION_INSTRUCTION = "Junctions with valid layer values "
             + "must include bridge or tunnel tags";
+    public static final String FIRST_INSTRUCTION = "Landuse feature is not on the ground";
+    public static final String SECOND_INSTRUCTION = "Natural feature underground";
+    public static final String THIRD_INSTRUCTION = "Highway underground and no tunnel";
+    public static final String FOURTH_INSTRUCTION = "Highway above ground and no bridge";
+    public static final String FIFTH_INSTRUCTION = "Waterway underground and no tunnel";
+    public static final String SIXTH_INSTRUCTION = "Waterway above ground and no tunnel";
     @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
     static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
@@ -51,7 +53,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             "Tunnels must have layer tags set to a value in [%d, %d].", TUNNEL_LAYER_TAG_MIN_VALUE,
             TUNNEL_LAYER_TAG_MAX_VALUE);
     public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TUNNEL_INSTRUCTION,
-            JUNCTION_INSTRUCTION, BRIDGE_INSTRUCTION, INVALID_LAYER_INSTRUCTION);
+            JUNCTION_INSTRUCTION, BRIDGE_INSTRUCTION, INVALID_LAYER_INSTRUCTION, FIRST_INSTRUCTION,
+            SECOND_INSTRUCTION, THIRD_INSTRUCTION, FOURTH_INSTRUCTION,FIFTH_INSTRUCTION,SIXTH_INSTRUCTION);
     // tunnel=building_passage should be excluded from eligible candidates
     private static final Predicate<Taggable> ELIGIBLE_TUNNEL_TAGS = object -> Validators
             .hasValuesFor(object, TunnelTag.class)
@@ -85,15 +88,20 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge
-                // must be highway navigable
-                && HighwayTag.isCarNavigableHighway(object)
-                // and one of the following
-                && ALLOWED_TAGS.test(object)
-                // removes one of two bi-directional edge candidates
-                && ((Edge) object).isMainEdge()
+        return (object instanceof Node || object instanceof Line || (object instanceof Edge && ((Edge) object).isMainEdge()))
                 // remove way sectioned duplicates
-                && !this.isFlagged(object.getOsmIdentifier());
+                && !this.isFlagged(object.getOsmIdentifier())
+                && (object.getOsmIdentifier() == 765184174 || object.getOsmIdentifier() == 801489147);
+    }
+
+    @Override
+    protected CheckFlag createFlag(final AtlasObject object, final String instruction)
+    {
+        if (object instanceof Edge)
+        {
+            return super.createFlag(new OsmWayWalker((Edge) object).collectEdges(), instruction);
+        }
+        return super.createFlag(object, instruction);
     }
 
     /**
@@ -106,40 +114,87 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         final Optional<Long> layerTagValue = LayerTag.getTaggedValue(object);
         final boolean isTagValueValid = layerTagValue.isPresent();
 
+
         // mark osm id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
 
-        // Gather all edges from the original way
-        final Set<Edge> osmWay = new OsmWayWalker((Edge) object).collectEdges();
-        // Rule: tunnel edges must have a layer tag value in [-5, -1]
-        if (TunnelTag.isTunnel(object)
-                && (!isTagValueValid || layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE
-                        || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE))
+        if(isTagValueValid && !layerTagValue.equals(0L))
         {
-            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(0)));
-        }
+            if(object.tag(LandUseTag.KEY) != null)
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(4)));
+            }
+            if(layerTagValue.get() < 0L
+                    && object.tag(NaturalTag.KEY) != null
+                    && object.tag(NaturalTag.KEY).equalsIgnoreCase("water"))
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(5)));
+            }
+            if(layerTagValue.get() < 0L
+                    && (object.tag(HighwayTag.KEY) != null && !object.tag(HighwayTag.KEY).equalsIgnoreCase("steps"))
+                    && (object.tag(TunnelTag.KEY) == null || object.tag(TunnelTag.KEY).equalsIgnoreCase("no")))
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(6)));
+            }
 
-        // Rule: bridge edges must have no layer tag or a layer tag value in [1, 5]
-        if (BridgeTag.isBridge(object) && (!isTagValueValid || layerTagValue.get() != 0)
-                && (!isTagValueValid || layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
-                        || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE))
-        {
-            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(2)));
-        }
+            if(layerTagValue.get() > 0L
+                    && (object.tag(HighwayTag.KEY) != null && !object.tag(HighwayTag.KEY).equalsIgnoreCase("steps"))
+                    && (object.tag(BridgeTag.KEY) == null || object.tag(BridgeTag.KEY).equalsIgnoreCase("no"))
+                    && (object.tag(ManMadeTag.KEY) == null || !object.tag(ManMadeTag.KEY).equalsIgnoreCase("pier")))
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(7)));
+            }
 
-        // Rule: Junction edges with valid layer must include bridge or tunnel tag
-        if (JunctionTag.isRoundabout(object) && isTagValueValid && layerTagValue.get() != 0L
-                && !(TunnelTag.isTunnel(object) || BridgeTag.isBridge(object)))
-        {
-            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(1)));
+            if(object.tag(WaterwayTag.KEY) != null
+                    || (object.tag(NaturalTag.KEY) != null && object.tag(NaturalTag.KEY).equalsIgnoreCase("water")))
+            {
+                if(layerTagValue.get() < 0L
+                        && (object.tag(TunnelTag.KEY) == null ||  object.tag(TunnelTag.KEY).equalsIgnoreCase("no"))
+                        &&( object.tag(LocationTag.KEY) == null || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground")))
+                {
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(8)));
+                }
+                if(layerTagValue.get() > 0L
+                        && (object.tag(BridgeTag.KEY) == null || !object.tag(BridgeTag.KEY).equalsIgnoreCase("no")))
+                {
+                    return Optional.of(this.createFlag(object, this.getLocalizedInstruction(9)));
+                }
+            }
         }
-
-        // Verify that if layer tag is present it should have a valid long value
-        // We are doing this verification here (after other more specific checks) to let above
-        // checks create a more specific flag
-        if (!isTagValueValid)
+        if(object instanceof Edge
+                && HighwayTag.isCarNavigableHighway(object)
+                && ALLOWED_TAGS.test(object))
         {
-            return Optional.of(createFlag(osmWay, this.getLocalizedInstruction(THREE)));
+            // Rule: tunnel edges must have a layer tag value in [-5, -1]
+            if (TunnelTag.isTunnel(object)
+                    && (!isTagValueValid || layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE
+                    || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE))
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(0)));
+            }
+
+            // Rule: bridge edges must have no layer tag or a layer tag value in [1, 5]
+            if (BridgeTag.isBridge(object) && (!isTagValueValid || layerTagValue.get() != 0)
+                    && (!isTagValueValid || layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
+                    || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE))
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(2)));
+            }
+
+            // Rule: Junction edges with valid layer must include bridge or tunnel tag
+            if (JunctionTag.isRoundabout(object) && isTagValueValid && layerTagValue.get() != 0L
+                    && !(TunnelTag.isTunnel(object) || BridgeTag.isBridge(object)))
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(1)));
+            }
+
+            // Verify that if layer tag is present it should have a valid long value
+            // We are doing this verification here (after other more specific checks) to let above
+            // checks create a more specific flag
+            if (!isTagValueValid)
+            {
+                return Optional.of(this.createFlag(object, this.getLocalizedInstruction(THREE)));
+            }
         }
 
         return Optional.empty();
