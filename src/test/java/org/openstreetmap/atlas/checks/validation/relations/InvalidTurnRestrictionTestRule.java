@@ -216,6 +216,48 @@ public class InvalidTurnRestrictionTestRule extends CoreTestRule
                             "restriction=only_straight_on" }) })
     private Atlas straightTopologyAtlas;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO) }, tags = { "highway=road" }),
+                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }, tags = { "highway=road" }),
+                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }, tags = { "highway=road" }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                    @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                    @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                            "restriction=only_left_turn" }) })
+    private Atlas onlyLeftTurnTopologyAtlas;
+    
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
+                    @Node(id = "2", coordinates = @Loc(value = TWO)),
+                    @Node(id = "3", coordinates = @Loc(value = THREE)) },
+            // edges
+            edges = {
+                    @Edge(id = "12", coordinates = { @Loc(value = ONE),
+                            @Loc(value = TWO) }, tags = { "highway=road" }),
+                    @Edge(id = "23", coordinates = { @Loc(value = TWO),
+                            @Loc(value = THREE) }, tags = { "highway=road" }),
+                    @Edge(id = "31", coordinates = { @Loc(value = THREE),
+                            @Loc(value = ONE) }, tags = { "highway=road" }) },
+            // relations
+            relations = { @Relation(id = "123", members = {
+                    @Member(id = "12", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_FROM),
+                    @Member(id = "2", type = "node", role = RelationTypeTag.RESTRICTION_ROLE_VIA),
+                    @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
+                            "restriction=no_right_turn" }) })
+    private Atlas noRightTurnTopologyAtlas;
+
     public Atlas disconnectedFromAtlas()
     {
         return this.disconnectedFromAtlas;
@@ -244,6 +286,16 @@ public class InvalidTurnRestrictionTestRule extends CoreTestRule
     public Atlas getInvalidRelationAtlas()
     {
         return this.invalidRelationAtlas;
+    }
+
+    public Atlas noRightTurnTopologyAtlas()
+    {
+        return this.noRightTurnTopologyAtlas;
+    }
+
+    public Atlas onlyLeftTurnTopologyAtlas()
+    {
+        return this.onlyLeftTurnTopologyAtlas;
     }
 
     public Atlas onlyViaAtlas()
