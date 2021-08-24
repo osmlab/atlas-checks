@@ -85,6 +85,15 @@ public class InvalidTurnRestrictionTest
     }
 
     @Test
+    public void testStraightTopology()
+    {
+        this.verifier.actual(this.testCaseRule.straightTopologyAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("Restriction doesn't match topology")));        
+    }
+
+    @Test
     public void testInvalidAtlas()
     {
         this.verifier.actual(this.testCaseRule.getInvalidAtlas(), testCheck);
@@ -97,4 +106,5 @@ public class InvalidTurnRestrictionTest
         this.verifier.actual(this.testCaseRule.getInvalidRelationAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
     }
+
 }

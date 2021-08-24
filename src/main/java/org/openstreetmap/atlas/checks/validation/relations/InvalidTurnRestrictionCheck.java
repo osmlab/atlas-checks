@@ -285,11 +285,14 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
 
         final Optional<Heading> toAngle = turnRestriction.getTo().asPolyLine().initialHeading();
         final Optional<Heading> fromAngle = turnRestriction.getFrom().asPolyLine().finalHeading();
-        final Angle turnAngle = (toAngle.isPresent() && fromAngle.isPresent())? toAngle.get().subtract(fromAngle.get()): Angle.NONE;
-                
-        final Optional<TurnRestrictionTag> turnRestrictionTag = Validators.from(TurnRestrictionTag.class, relation);
+        final Angle turnAngle = (toAngle.isPresent() && fromAngle.isPresent())
+                ? toAngle.get().subtract(fromAngle.get())
+                : Angle.NONE;
 
-        return turnRestrictionTag.isPresent() 
+        final Optional<TurnRestrictionTag> turnRestrictionTag = Validators
+                .from(TurnRestrictionTag.class, relation);
+
+        return turnRestrictionTag.isPresent()
                 && !this.isStaightOnTopologyViolated(turnRestrictionTag.get(), turnAngle)
                 && !this.isLeftTurnTopologyViolated(turnRestrictionTag.get(), turnAngle)
                 && !this.isRightTurnTopologyViolated(turnRestrictionTag.get(), turnAngle)
