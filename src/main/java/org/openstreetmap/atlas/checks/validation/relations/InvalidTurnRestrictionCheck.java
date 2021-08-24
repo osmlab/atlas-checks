@@ -37,8 +37,8 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     private static final String UNKNOWN_ISSUE = "Unable to specify issue";
     private static final Map<String, String> INVALID_REASON_INSTRUCTION_MAP = new HashMap<>();
     private static final long serialVersionUID = -983698716949386657L;
-    public static final double STRAIGHT_ROUTE_ANGLE_THRESHOLD_DEFAULT = 60.0;
-    public static final double UTURN_ROUTE_ANGLE_THRESHOLD_DEFAULT = 100.0;
+    public static final double STRAIGHT_ROUTE_ANGLE_THRESHOLD_DEFAULT = 80.0;
+    public static final double UTURN_ROUTE_ANGLE_THRESHOLD_DEFAULT = 40.0;
     private static final int MAXIMUM_ANGLE = 180;
     static
     {
