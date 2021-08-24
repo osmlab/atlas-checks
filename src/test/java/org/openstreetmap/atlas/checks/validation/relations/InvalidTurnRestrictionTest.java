@@ -62,10 +62,10 @@ public class InvalidTurnRestrictionTest
     {
         this.verifier.actual(this.testCaseRule.onlyLeftTurnTopologyAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
-                .contains("Restriction doesn't match topology")));
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("Restriction doesn't match topology")));
     }
-        
+
     @Test
     public void onlyViaTest()
     {

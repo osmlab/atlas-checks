@@ -236,7 +236,7 @@ public class InvalidTurnRestrictionTestRule extends CoreTestRule
                     @Member(id = "23", type = "edge", role = RelationTypeTag.RESTRICTION_ROLE_TO) }, tags = {
                             "restriction=only_left_turn" }) })
     private Atlas onlyLeftTurnTopologyAtlas;
-    
+
     @TestAtlas(
             // nodes
             nodes = { @Node(id = "1", coordinates = @Loc(value = ONE)),
