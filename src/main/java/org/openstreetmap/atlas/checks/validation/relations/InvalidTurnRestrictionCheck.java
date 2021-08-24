@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Heading;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
@@ -282,16 +283,17 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     {
         final TurnRestriction turnRestriction = new TurnRestriction(relation);
 
-        final Angle turnAngle = turnRestriction.getTo().asPolyLine().initialHeading().get()
-                .subtract(turnRestriction.getFrom().asPolyLine().finalHeading().get());
+        final Optional<Heading> toAngle = turnRestriction.getTo().asPolyLine().initialHeading();
+        final Optional<Heading> fromAngle = turnRestriction.getFrom().asPolyLine().finalHeading();
+        final Angle turnAngle = (toAngle.isPresent() && fromAngle.isPresent())? toAngle.get().subtract(fromAngle.get()): Angle.NONE;
+                
+        final Optional<TurnRestrictionTag> turnRestrictionTag = Validators.from(TurnRestrictionTag.class, relation);
 
-        final TurnRestrictionTag turnRestrictionTag = Validators
-                .from(TurnRestrictionTag.class, relation).get();
-
-        return !this.isStaightOnTopologyViolated(turnRestrictionTag, turnAngle)
-                && !this.isLeftTurnTopologyViolated(turnRestrictionTag, turnAngle)
-                && !this.isRightTurnTopologyViolated(turnRestrictionTag, turnAngle)
-                && !this.isUTurnTopologyViolated(turnRestrictionTag, turnAngle);
+        return turnRestrictionTag.isPresent() 
+                && !this.isStaightOnTopologyViolated(turnRestrictionTag.get(), turnAngle)
+                && !this.isLeftTurnTopologyViolated(turnRestrictionTag.get(), turnAngle)
+                && !this.isRightTurnTopologyViolated(turnRestrictionTag.get(), turnAngle)
+                && !this.isUTurnTopologyViolated(turnRestrictionTag.get(), turnAngle);
     }
 
 }
