@@ -32,7 +32,7 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "Relation ID: {0,number,#} is marked as turn restriction, but it is not well-formed: {1}");
     private static final String MISSING_TO_FROM_VIA_INSTRUCTION = "Missing a FROM and/or TO member and/or VIA member";
-    private static final String INVALID_MEMBER_TYPE_INSTRUCTION = "Invalid member type";
+    private static final String INVALID_MEMBER_TYPE_INSTRUCTION = "Invalid member type: ways are disused or under construction ";
     private static final String TOPOLOGY_NOT_MATCH_RESTRICTION_INSTRUCTION = "Restriction doesn't match topology";
     private static final String UNKNOWN_ISSUE = "Unable to specify issue";
     private static final Map<String, String> INVALID_REASON_INSTRUCTION_MAP = new HashMap<>();
