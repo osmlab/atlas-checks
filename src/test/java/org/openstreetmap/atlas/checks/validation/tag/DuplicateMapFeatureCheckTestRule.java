@@ -111,7 +111,7 @@ public class DuplicateMapFeatureCheckTestRule extends CoreTestRule
                     @Edge(id = "23000000", coordinates = { @Loc(value = TWO),
                             @Loc(value = THREE) }, tags = { "amenity=park", "name=two" }),
                     @Edge(id = "31000000", coordinates = { @Loc(value = THREE),
-                            @Loc(value = ONE) }) }, relations = {
+                            @Loc(value = ONE) }, tags = { "building=yes" }) }, relations = {
                                     @Relation(id = "523318400000000", members = {
                                             @Member(id = "12000000", type = "edge", role = "any"),
                                             @Member(id = "2000000", type = "node", role = "any"),
@@ -121,7 +121,12 @@ public class DuplicateMapFeatureCheckTestRule extends CoreTestRule
                                             @Member(id = "12000000", type = "edge", role = "any"),
                                             @Member(id = "2000000", type = "node", role = "any"),
                                             @Member(id = "23000000", type = "edge", role = "any") }, tags = {
-                                                    "amenity=park", "name=one", "type=any" }) })
+                                                    "amenity=park", "name=one", "type=any" }),
+                                    @Relation(id = "523318600000000", members = {
+                                            @Member(id = "23000000", type = "edge", role = "any"),
+                                            @Member(id = "3000000", type = "node", role = "any"),
+                                            @Member(id = "31000000", type = "edge", role = "any") }, tags = {
+                                                    "building=yes", "type=any" }) })
     private Atlas relationEdgeNotDuplicateFeature;
 
     @TestAtlas(nodes = { @Node(id = "1000000", coordinates = @Loc(value = Node_LOCATION), tags = {

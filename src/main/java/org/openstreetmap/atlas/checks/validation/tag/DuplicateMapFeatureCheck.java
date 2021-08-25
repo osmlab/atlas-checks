@@ -67,13 +67,13 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return (object instanceof Area || object instanceof Edge || object instanceof Relation)
-                && !isFlagged(object.getOsmIdentifier());
+                && !isFlagged(this.getUniqueOSMIdentifier(object));
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        this.markAsFlagged(object.getOsmIdentifier());
+        this.markAsFlagged(this.getUniqueOSMIdentifier(object));
 
         if (object.getOsmTags().isEmpty())
         {
@@ -222,7 +222,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
         final Map<String, String> duplicateFeaturesTags = new HashMap<>();
 
         final List<RelationMember> members = relation.members().stream()
-                .filter(m -> WayNodeItemsTypesToCompare.contains(m.getEntity().getType()))
+                .filter(member -> WayNodeItemsTypesToCompare.contains(member.getEntity().getType()))
                 .collect(Collectors.toList());
 
         for (final RelationMember member : members)
@@ -334,17 +334,9 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
      */
     private boolean isRelationMember(final Relation relation, final AtlasEntity entity)
     {
-        final List<RelationMember> members = relation.members().stream()
-                .collect(Collectors.toList());
-
-        for (final RelationMember relationMember : members)
-        {
-            if (relationMember.getEntity().getOsmIdentifier() == entity.getOsmIdentifier())
-            {
-                return true;
-            }
-        }
-        return false;
+        return relation.members().stream()
+                .anyMatch(member -> member.getEntity().getType().equals(entity.getType())
+                        && member.getEntity().getOsmIdentifier() == entity.getOsmIdentifier());
     }
 
     /**
@@ -359,7 +351,7 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
     private Optional<Tuple<String, Map<String, String>>> verifyDuplicateFeature(
             final AtlasEntity firstEntity, final AtlasEntity secondEntity)
     {
-        final String duplicateFeatureStr;
+        final String duplicateFeatureString;
 
         if (firstEntity.getOsmTags().isEmpty() || secondEntity.getOsmTags().isEmpty())
         {
@@ -373,17 +365,17 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
             if (secondEntity instanceof LocationItem)
             {
-                duplicateFeatureStr = "Node " + Long.toString(secondEntity.getOsmIdentifier())
+                duplicateFeatureString = "Node " + Long.toString(secondEntity.getOsmIdentifier())
                         + " with the same tags as " + firstEntityString;
             }
             else
             {
-                duplicateFeatureStr = "Way " + Long.toString(secondEntity.getOsmIdentifier())
+                duplicateFeatureString = "Way " + Long.toString(secondEntity.getOsmIdentifier())
                         + " with the same tags as " + firstEntityString;
             }
 
             final Tuple<String, Map<String, String>> duplicateFeature = Tuple
-                    .createTuple(duplicateFeatureStr, firstEntity.getOsmTags());
+                    .createTuple(duplicateFeatureString, firstEntity.getOsmTags());
 
             return Optional.of(duplicateFeature);
 
@@ -397,15 +389,17 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
             {
                 if (secondEntity instanceof LocationItem)
                 {
-                    duplicateFeatureStr = "Node " + Long.toString(secondEntity.getOsmIdentifier());
+                    duplicateFeatureString = "Node "
+                            + Long.toString(secondEntity.getOsmIdentifier());
                 }
                 else
                 {
-                    duplicateFeatureStr = "Way " + Long.toString(secondEntity.getOsmIdentifier());
+                    duplicateFeatureString = "Way "
+                            + Long.toString(secondEntity.getOsmIdentifier());
                 }
 
                 final Tuple<String, Map<String, String>> duplicateFeature = Tuple
-                        .createTuple(duplicateFeatureStr, featuresTaggedTwice.get());
+                        .createTuple(duplicateFeatureString, featuresTaggedTwice.get());
 
                 return Optional.of(duplicateFeature);
             }
