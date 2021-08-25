@@ -12,6 +12,7 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.multi.MultiArea;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.*;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
@@ -88,10 +89,10 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return (object instanceof Node || object instanceof Line || (object instanceof Edge && ((Edge) object).isMainEdge()))
+        return
+        (object instanceof Node || object instanceof MultiArea || (object instanceof Edge && ((Edge) object).isMainEdge()))
                 // remove way sectioned duplicates
-                && !this.isFlagged(object.getOsmIdentifier())
-                && (object.getOsmIdentifier() == 765184174 || object.getOsmIdentifier() == 801489147);
+                && !this.isFlagged(object.getOsmIdentifier());
     }
 
     @Override
