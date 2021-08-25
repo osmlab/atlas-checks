@@ -51,12 +51,28 @@ public class InvalidTurnRestrictionTest
     }
 
     @Test
+    public void noRightTurnTopologyTest()
+    {
+        this.verifier.actual(this.testCaseRule.noRightTurnTopologyAtlas(), testCheck);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void onlyLeftTurnTopologyTest()
+    {
+        this.verifier.actual(this.testCaseRule.onlyLeftTurnTopologyAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("Restriction doesn't match topology")));
+    }
+
+    @Test
     public void onlyViaTest()
     {
         this.verifier.actual(this.testCaseRule.onlyViaAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag -> Assert
-                .assertTrue(flag.getInstructions().contains("Missing a from and/or to member")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("Missing a FROM and/or TO member and/or VIA member")));
     }
 
     @Test
@@ -73,8 +89,8 @@ public class InvalidTurnRestrictionTest
     {
         this.verifier.actual(this.testCaseRule.sameFromToNoViaAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions().contains(
-                "Via member is required for restrictions with the same to and from members")));
+        this.verifier.verify(flag -> Assert.assertTrue(flag.getInstructions()
+                .contains("Missing a FROM and/or TO member and/or VIA member")));
     }
 
     @Test
@@ -96,5 +112,14 @@ public class InvalidTurnRestrictionTest
     {
         this.verifier.actual(this.testCaseRule.getInvalidRelationAtlas(), testCheck);
         this.verifier.verifyNotEmpty();
+    }
+
+    @Test
+    public void testTopology()
+    {
+        this.verifier.actual(this.testCaseRule.straightTopologyAtlas(), testCheck);
+        this.verifier.verifyNotEmpty();
+        this.verifier.verify(flag -> Assert
+                .assertTrue(flag.getInstructions().contains("Restriction doesn't match topology")));
     }
 }

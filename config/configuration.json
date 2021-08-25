@@ -588,6 +588,8 @@
     }
   },
   "InvalidTurnRestrictionCheck": {
+    "straight.on.angle.threshold": 80.0,
+    "uturn.angle.threshold": 40.0,
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
       "blurb": "Invalid Turn Restrictions",
