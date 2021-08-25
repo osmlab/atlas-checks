@@ -6,11 +6,13 @@ This check flags disconnected Edges in OSM that should be connected.
 
 #### Configuration
 
-This check has one configurable that can be changed in the configuration file [config.json](../../config/configuration.json)
+This check has some configurables that can be changed in the configuration file [config.json](../../config/configuration.json)
 
 Defaults:
 - ```"nearby.edge.distance.meters": 2.0``` - Distance (meters) between disconnected Edge and Node
 - ```"denylisted.highway.filter": "highway->no"``` - Highway value(s) not included
+- ```"checked.highway.values":["motorway","trunk", ...]``` - The attribute describes what highway types are considered 
+valid for checking. By default, only car navigable road are taken into account.  
 
 #### Live Examples
 

@@ -55,6 +55,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
     private static final long serialVersionUID = -380675222726130708L;
     private final TaggableFilter denylistedHighwaysTaggableFilter;
     private final Distance threshold;
+    private final List<String> checkedHighwayValues;
 
     public ConnectivityCheck(final Configuration configuration)
     {
@@ -64,6 +65,8 @@ public class ConnectivityCheck extends BaseCheck<Long>
         this.denylistedHighwaysTaggableFilter = TaggableFilter
                 .forDefinition(this.configurationValue(configuration, "denylisted.highway.filter",
                         DEFAULT_DENYLISTED_HIGHWAYS_TAG_FILTER));
+        this.checkedHighwayValues = this.configurationValue(configuration, "checked.highway.values",
+                new ArrayList<>());
     }
 
     @Override
@@ -530,7 +533,10 @@ public class ConnectivityCheck extends BaseCheck<Long>
      */
     private boolean validEdgeFilter(final Edge edge)
     {
-        return HighwayTag.isCarNavigableHighway(edge)
-                && !this.denylistedHighwaysTaggableFilter.test(edge) && !BarrierTag.isBarrier(edge);
+        final boolean validHighwayValue = this.checkedHighwayValues.isEmpty()
+                ? HighwayTag.isCarNavigableHighway(edge)
+                : this.checkedHighwayValues.contains(edge.highwayTag().getTagValue());
+        return validHighwayValue && !this.denylistedHighwaysTaggableFilter.test(edge)
+                && !BarrierTag.isBarrier(edge);
     }
 }
