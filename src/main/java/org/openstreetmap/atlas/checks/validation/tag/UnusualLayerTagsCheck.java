@@ -154,7 +154,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
                     return Optional.of(this.createFlag(object, this.getLocalizedInstruction(8)));
                 }
                 if(layerTagValue.get() > 0L
-                        && (object.tag(BridgeTag.KEY) == null || !object.tag(BridgeTag.KEY).equalsIgnoreCase("no")))
+                        && (object.tag(BridgeTag.KEY) == null || object.tag(BridgeTag.KEY).equalsIgnoreCase("no")))
                 {
                     return Optional.of(this.createFlag(object, this.getLocalizedInstruction(9)));
                 }
