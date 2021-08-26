@@ -22,6 +22,10 @@ public class ConnectivityCheckTest
     private final Configuration denylistedHighwayFilterConfig = ConfigurationResolver
             .inlineConfiguration(
                     "{\"ConnectivityCheck\":{\"denylisted.highway.filter\":\"highway->secondary\"}}");
+    private final Configuration highwayValuesConfig = ConfigurationResolver.inlineConfiguration(
+            "{\"ConnectivityCheck\":{\"checked.highway.values\":[\"motorway\", \"trunk\"]}}");
+    private final Configuration secondaryHighwayConfig = ConfigurationResolver.inlineConfiguration(
+            "{\"ConnectivityCheck\":{\"checked.highway.values\":[\"secondary\"]}}");
 
     @Test
     public void highwayFilterOnInvalidDisconnectedEdgeCrossingTest()
@@ -109,6 +113,22 @@ public class ConnectivityCheckTest
         this.verifier.actual(this.setup.invalidDisconnectedNodesAtlas(),
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void specificHighwayValuesFlaggedTest()
+    {
+        this.verifier.actual(this.setup.invalidDisconnectedNodesCrossingAtlas(),
+                new ConnectivityCheck(this.secondaryHighwayConfig));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void specificHighwayValuesTest()
+    {
+        this.verifier.actual(this.setup.invalidDisconnectedNodesAtlas(),
+                new ConnectivityCheck(this.highwayValuesConfig));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
     @Test
@@ -262,5 +282,4 @@ public class ConnectivityCheckTest
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
-
 }

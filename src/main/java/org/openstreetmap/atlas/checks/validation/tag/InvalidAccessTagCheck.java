@@ -149,7 +149,7 @@ public class InvalidAccessTagCheck extends BaseCheck<Long>
                 object.bounds(),
                 relation -> (Validators.isOfType(relation, LandUseTag.class, LandUseTag.MILITARY)
                         || Validators.hasValuesFor(relation, MilitaryTag.class))
-                        && relation.isMultiPolygon()))
+                        && relation.isGeometric()))
         {
             try
             {

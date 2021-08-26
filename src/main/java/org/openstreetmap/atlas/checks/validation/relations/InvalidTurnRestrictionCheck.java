@@ -10,13 +10,17 @@ import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.Heading;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
+import org.openstreetmap.atlas.geography.atlas.items.Line;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.geography.atlas.items.RelationMember;
 import org.openstreetmap.atlas.geography.atlas.items.TurnRestriction;
 import org.openstreetmap.atlas.tags.RelationTypeTag;
 import org.openstreetmap.atlas.tags.TurnRestrictionTag;
+import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Angle;
 
 /**
  * Check for invalid turn restrictions
@@ -28,11 +32,15 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
 {
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
             "Relation ID: {0,number,#} is marked as turn restriction, but it is not well-formed: {1}");
-    private static final String MISSING_TO_FROM_INSTRUCTION = "Missing a from and/or to member";
+    private static final String MISSING_TO_FROM_VIA_INSTRUCTION = "Missing a FROM and/or TO member and/or VIA member";
+    private static final String INVALID_MEMBER_TYPE_INSTRUCTION = "Invalid member type: ways are disused or under construction ";
+    private static final String TOPOLOGY_NOT_MATCH_RESTRICTION_INSTRUCTION = "Restriction doesn't match topology";
     private static final String UNKNOWN_ISSUE = "Unable to specify issue";
     private static final Map<String, String> INVALID_REASON_INSTRUCTION_MAP = new HashMap<>();
     private static final long serialVersionUID = -983698716949386657L;
-
+    public static final double STRAIGHT_ROUTE_ANGLE_THRESHOLD_DEFAULT = 80.0;
+    public static final double UTURN_ROUTE_ANGLE_THRESHOLD_DEFAULT = 40.0;
+    private static final int MAXIMUM_ANGLE = 180;
     static
     {
         final String routeInstruction = "There is not a single navigable route to restrict, this restriction may be redundant or need to be split in to multiple relations";
@@ -51,6 +59,8 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         INVALID_REASON_INSTRUCTION_MAP.put("No edge that connects to the current route",
                 routeInstruction);
     }
+    private final Angle straightOnAngleThreshold;
+    private final Angle uturnAngleThreshold;
 
     /**
      * Default constructor
@@ -61,6 +71,11 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
     public InvalidTurnRestrictionCheck(final Configuration configuration)
     {
         super(configuration);
+        this.straightOnAngleThreshold = this.configurationValue(configuration,
+                "straight.on.angle.threshold", STRAIGHT_ROUTE_ANGLE_THRESHOLD_DEFAULT,
+                Angle::degrees);
+        this.uturnAngleThreshold = this.configurationValue(configuration, "uturn.angle.threshold",
+                UTURN_ROUTE_ANGLE_THRESHOLD_DEFAULT, Angle::degrees);
     }
 
     @Override
@@ -76,14 +91,22 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         final Set<AtlasObject> members = relation.members().stream().map(RelationMember::getEntity)
                 .collect(Collectors.toSet());
 
-        // A to and from member are required
         if (relation.members().stream()
                 .noneMatch(member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_FROM))
                 || relation.members().stream().noneMatch(
-                        member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_TO)))
+                        member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_TO))
+                || relation.members().stream().noneMatch(
+                        member -> member.getRole().equals(RelationTypeTag.RESTRICTION_ROLE_VIA)))
         {
             return Optional.of(createFlag(members, this.getLocalizedInstruction(0,
-                    relation.getOsmIdentifier(), MISSING_TO_FROM_INSTRUCTION)));
+                    relation.getOsmIdentifier(), MISSING_TO_FROM_VIA_INSTRUCTION)));
+        }
+
+        // Restriction relation, bad member type
+        if (relation.members().stream().anyMatch(member -> member.getEntity() instanceof Line))
+        {
+            return Optional.of(createFlag(members, this.getLocalizedInstruction(0,
+                    relation.getOsmIdentifier(), INVALID_MEMBER_TYPE_INSTRUCTION)));
         }
 
         // Build a turn restriction
@@ -96,8 +119,14 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
                     this.getInstructionFromInvalidReason(turnRestriction.getInvalidReason()))));
         }
 
-        return Optional.empty();
+        // Restriction doesn't match topology
+        if (!this.isValidTopology(relation))
+        {
+            return Optional.of(createFlag(members, this.getLocalizedInstruction(0,
+                    relation.getOsmIdentifier(), TOPOLOGY_NOT_MATCH_RESTRICTION_INSTRUCTION)));
+        }
 
+        return Optional.empty();
     }
 
     @Override
@@ -127,6 +156,147 @@ public class InvalidTurnRestrictionCheck extends BaseCheck<Long>
         }
 
         return instruction;
+    }
+
+    /**
+     * Return true if the turn angle makes a straight path within the threshold angle
+     *
+     * @param Angle
+     *            angle
+     * @return true if the turn angle makes a straight path within the threshold angle
+     */
+    private boolean isHeadingStraight(final Angle angle)
+    {
+        return Math.abs(angle.asDegrees()) < this.straightOnAngleThreshold.asDegrees();
+    }
+
+    /**
+     * Return true if the turn angle makes a left turn
+     *
+     * @param Angle
+     *            angle
+     * @return true if the turn angle makes a left turn
+     */
+    private boolean isLeftTurn(final Angle angle)
+    {
+        return angle.asDegrees() < 0 && angle.asDegrees() > -MAXIMUM_ANGLE;
+    }
+
+    /**
+     * Return true if the LEFT_TURN restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag
+     *            turnRestrictionTag
+     * @param Angle
+     *            turnAngle
+     * @return true if the LEFT_TURN restriction doesn't match the topology
+     */
+    private boolean isLeftTurnTopologyViolated(final TurnRestrictionTag turnRestrictionTag,
+            final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_LEFT_TURN == turnRestrictionTag
+                || TurnRestrictionTag.NO_LEFT_TURN == turnRestrictionTag)
+                && this.isRightTurn(turnAngle);
+    }
+
+    /**
+     * Return true if the turn angle makes a right turn
+     *
+     * @param Angle
+     *            angle
+     * @return true if the turn angle makes a right turn
+     */
+    private boolean isRightTurn(final Angle angle)
+    {
+        return angle.asDegrees() > 0 && angle.asDegrees() < MAXIMUM_ANGLE;
+    }
+
+    /**
+     * Return true if the RIGHT_TURN restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag
+     *            turnRestrictionTag
+     * @param Angle
+     *            turnAngle
+     * @return true if the RIGHT_TURN restriction doesn't match the topology
+     */
+    private boolean isRightTurnTopologyViolated(final TurnRestrictionTag turnRestrictionTag,
+            final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_RIGHT_TURN == turnRestrictionTag
+                || TurnRestrictionTag.NO_RIGHT_TURN == turnRestrictionTag)
+                && this.isLeftTurn(turnAngle);
+    }
+
+    /**
+     * Return true if the STRAIGHT_ON restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag
+     *            turnRestrictionTag
+     * @param Angle
+     *            turnAngle
+     * @return true if the STRAIGHT_ON restriction doesn't match the topology
+     */
+    private boolean isStaightOnTopologyViolated(final TurnRestrictionTag turnRestrictionTag,
+            final Angle turnAngle)
+    {
+        return (TurnRestrictionTag.ONLY_STRAIGHT_ON == turnRestrictionTag
+                || TurnRestrictionTag.NO_STRAIGHT_ON == turnRestrictionTag)
+                && !this.isHeadingStraight(turnAngle);
+    }
+
+    /**
+     * Return true if the turn angle makes a U-turn
+     *
+     * @param Angle
+     *            angle
+     * @return true if the turn angle makes a U-turn
+     */
+    private boolean isUTurn(final Angle angle)
+    {
+        return Math.abs(angle.asDegrees()) > this.uturnAngleThreshold.asDegrees();
+    }
+
+    /**
+     * Return true if the U_TURN restriction doesn't match the topology
+     *
+     * @param TurnRestrictionTag
+     *            turnRestrictionTag
+     * @param Angle
+     *            turnAngle
+     * @return true if the U_TURN restriction doesn't match the topology
+     */
+    private boolean isUTurnTopologyViolated(final TurnRestrictionTag turnRestrictionTag,
+            final Angle turnAngle)
+    {
+        return TurnRestrictionTag.NO_U_TURN == turnRestrictionTag && !this.isUTurn(turnAngle);
+    }
+
+    /**
+     * Return true if the turn restriction tag satisfies the topology
+     *
+     * @param Relation
+     *            relation
+     * @return true if the turn restriction tag satisfies the topology
+     */
+    private boolean isValidTopology(final Relation relation)
+    {
+        final TurnRestriction turnRestriction = new TurnRestriction(relation);
+
+        final Optional<Heading> toAngle = turnRestriction.getTo().asPolyLine().initialHeading();
+        final Optional<Heading> fromAngle = turnRestriction.getFrom().asPolyLine().finalHeading();
+        final Angle turnAngle = (toAngle.isPresent() && fromAngle.isPresent())
+                ? toAngle.get().subtract(fromAngle.get())
+                : Angle.NONE;
+
+        final Optional<TurnRestrictionTag> turnRestrictionTag = Validators
+                .from(TurnRestrictionTag.class, relation);
+
+        return turnRestrictionTag.isPresent()
+                && !this.isStaightOnTopologyViolated(turnRestrictionTag.get(), turnAngle)
+                && !this.isLeftTurnTopologyViolated(turnRestrictionTag.get(), turnAngle)
+                && !this.isRightTurnTopologyViolated(turnRestrictionTag.get(), turnAngle)
+                && !this.isUTurnTopologyViolated(turnRestrictionTag.get(), turnAngle);
     }
 
 }

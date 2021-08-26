@@ -206,8 +206,8 @@ public class LineCrossingWaterBodyCheck extends BaseCheck<Long>
     {
         final Map<String, String> osmTags = crossingLine.getOsmTags();
         final Set<Relation> relations = crossingLine.relations();
-        final Set<Relation> multipolygonRelations = relations.stream()
-                .filter(Relation::isMultiPolygon).collect(Collectors.toSet());
+        final Set<Relation> multipolygonRelations = relations.stream().filter(Relation::isGeometric)
+                .collect(Collectors.toSet());
         // Crossing item is not part of any relation and has no tags, then infer it as part of a
         // boundary/coastline relation that is not ingested in the atlas.
         return osmTags.isEmpty() && relations.isEmpty()

@@ -284,6 +284,20 @@
       }
     }
   },
+  "DuplicateMapFeatureCheck": {
+    "features.tags.should.represent.only.once.in.area": [
+      "amenity",
+      "leisure",
+      "building",
+      "shop"
+    ],
+    "challenge": {
+      "description": "Tasks contain node, way or relation where duplicate map features are found.",
+      "blurb": "Duplicate Relations.",
+      "instruction": "Open your favorite editor and  remove one or more of the duplicate map features until only one remains..",
+      "difficulty": "NORMAL"
+    }
+  },
   "DuplicateNodeCheck": {
     "challenge": {
       "description": "Tasks contain node locations that have duplicate nodes found.",
@@ -567,6 +581,8 @@
     }
   },
   "InvalidTurnRestrictionCheck": {
+    "straight.on.angle.threshold": 80.0,
+    "uturn.angle.threshold": 40.0,
     "challenge": {
       "description": "Tasks containing invalid turn restrictions",
       "blurb": "Invalid Turn Restrictions",
@@ -1087,6 +1103,19 @@
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
       },
       "tags":"highway"
+    }
+  },
+  "StreetNameCheck": {
+    "check" : {
+      "countries" : ["AUT", "CHE", "DEU", "LIE"],
+      "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
+      "notContainsValues" : [["strasser"],[],["strasser"],[]],
+      "tags" : [["ss"],["ß"],["ss"],["ß"]],
+      "correctTags" : [["ß"],["ss"],["ß"],["ss"]]
+    },
+    "challenge": {
+      "description": "Checks if the countries specified above contain the values in their tags",
+      "instruction": "If modifying values in the config file, make sure the list indeces are all appropriate for each country"
     }
   },
   "StreetNameIntegersOnlyCheck": {

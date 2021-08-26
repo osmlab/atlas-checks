@@ -198,7 +198,7 @@ public class FlaggedRelation extends FlaggedObject
      */
     private MultiPolygon relationGeometry(final Relation relation)
     {
-        if (relation.isMultiPolygon())
+        if (relation.isGeometric())
         {
             try
             {

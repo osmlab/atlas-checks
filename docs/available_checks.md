@@ -82,6 +82,7 @@ This document is a list of tables with a description and link to documentation f
 | [ConflictingAreaTagCombination](checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
 | [ConstructionCheck](checks/constructionCheck.md) | The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or the expected finish date has been passed. |
+| [DuplicateMapFeatureCheck](checks/duplicateMapFeatureCheck) | The purpose of this check is to identify node, way or relation which have duplicate map features in areas or connected locations. |
 | [FixMeReviewCheck](checks/fixMeReviewCheck.md) | The purpose of this check is to flag features that contain the "fixme"/"FIXME" tags with along with a variety of other important tags. |
 | [GenericTagCheck](checks/genericTagCheck.md) | This check uses TagInfo and Wiki Data databases to look for invalid tags and suggest replacements. |
 | [HighwayAccessCheck](checks/highwayAccessCheck.md) | The check flags the objects that contain the proper access and highway tags. |
@@ -98,6 +99,7 @@ This document is a list of tables with a description and link to documentation f
 | [RoadNameSpellingConsistencyCheck](checks/RoadNameSpellingConsistencyCheck.md) | The purpose of this check is to identify road segments that have a name Tag with a different spelling from that of other segments of the same road. This check is primarily meant to catch small errors in spelling, such as a missing letter, letter accent mixups, or capitalization errors. |
 | [SimilarTagValueCheck](checks/SimilarTagValueCheck.md) | The purpose of this check is to identify tags whose values are either duplicates or similar enough to warrant someone to look at them. |
 | ShortNameCheck | The short name check will validate that any and all names contain at least 2 letters in the name. |
+| [StreetNameCheck](checks/streetNameCheck.md) |This check looks for "ss" or "ß" in street_name or name tags in AUT, CHE, DEU and LIE. |
 | [StreetNameIntegersOnlyCheck](checks/streetNameIntegersOnlyCheck.md) | The purpose of this check is to identify streets whose names contain integers only. |
 | [TollValidationCheck](checks/tollValidationCheck.md) | The purpose of this check is to identify ways that need to have their toll tags investigated/added/removed.
 | [TunnelBridgeHeightLimitCheck](checks/tunnelBridgeHeightLimitCheck.md) | The purpose of this check is to identify roads with limited vertical clearance which do not have a maxheight tag. |
