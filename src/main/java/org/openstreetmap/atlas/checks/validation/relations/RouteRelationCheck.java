@@ -501,7 +501,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final Set<PolyLine> routeCreated = new HashSet<>();
         final Set<Integer> connectedIndex = new HashSet<>();
 
-        for (int i = 0; i < routes.size(); i++)
+        for (int routeOneIndex = 0; routeOneIndex < routes.size(); routeOneIndex++)
         {
             if (connectedIndex.contains(i))
             {
