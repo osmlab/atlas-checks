@@ -656,7 +656,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            * indicate to check either stops of platforms
      * @return a TestStructureData for creating the flag.
      */
-    private TestStructureData stopPlatformTooFarFromTrack(final Relation rel,
+    private TestStructureData stopPlatformTooFarFromTrack(final Relation relation,
             final String stopOrPlatform)
     {
         final List<AtlasEntity> allSigns = rel.members().stream()
