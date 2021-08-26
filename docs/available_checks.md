@@ -83,6 +83,7 @@ This document is a list of tables with a description and link to documentation f
 | ConflictingTagCombinationCheck | This check verifies whether an atlas object has a conflicting tag combination or not. |
 | [ConstructionCheck](checks/constructionCheck.md) | The purpose of this check is to identify construction tags where the construction hasn't been checked on recently, or the expected finish date has been passed. |
 | [DuplicateMapFeatureCheck](checks/duplicateMapFeatureCheck) | The purpose of this check is to identify node, way or relation which have duplicate map features in areas or connected locations. |
+| [RouteRelationCheck](checks/RouteRelationCheck.md) | The purpose of this check is to flag route and route master relation objects that have at least one of the five problems. The track of this route contains gaps. The stop or platform is too far from the track of this route. Non route relation member in route master relation. Public transport relation route not in route master relation. Network, operator, ref, colour tag are not consistent on route and route master relations.|
 | [FixMeReviewCheck](checks/fixMeReviewCheck.md) | The purpose of this check is to flag features that contain the "fixme"/"FIXME" tags with along with a variety of other important tags. |
 | [GenericTagCheck](checks/genericTagCheck.md) | This check uses TagInfo and Wiki Data databases to look for invalid tags and suggest replacements. |
 | [HighwayAccessCheck](checks/highwayAccessCheck.md) | The check flags the objects that contain the proper access and highway tags. |
