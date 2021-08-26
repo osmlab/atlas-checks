@@ -564,7 +564,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             {
                 for (final PolyLine lineTwo : routeCreated)
                 {
-                    final Distance tmpMin = this.routeSetDisconnectedClosestHelper(lineOne,
+                    final Distance tempMin = this.routeSetDisconnectedClosestHelper(lineOne,
                             lineTwo);
 
                     if (minDis == null || tmpMin.isLessThan(minDis))
