@@ -241,7 +241,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         // check consistent of the network_operator_ref_colour tags
-        final List<String> tmpInstructions = this
+        final List<String> tempInstructions = this
                 .testNetworkOperatorRefColourTag(routeMasterRelation);
 
         if (!tmpInstructions.isEmpty())
