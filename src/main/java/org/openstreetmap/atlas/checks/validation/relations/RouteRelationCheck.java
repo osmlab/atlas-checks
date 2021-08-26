@@ -274,7 +274,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the route relation entity supplied by the Atlas-Checks framework for evaluation
      * @return a TestStructureData class containing instructions for creating flags
      */
-    private TestStructureData processRouteRelation(final Relation rel)
+    private TestStructureData processRouteRelation(final Relation relation)
     {
         final TestStructureData routeSignInstructions = this.processRouteRelationHelper(rel);
         final List<String> instructionsAdd = routeSignInstructions.getInstructions();
