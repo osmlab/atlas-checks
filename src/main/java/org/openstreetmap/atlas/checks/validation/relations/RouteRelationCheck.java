@@ -702,7 +702,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         final Distance threshHold = Distance.meters(15.0);
         SnappedLocation minSnap = null;
-        // Location minLoc = null
 
         for (final Location location : signLocations)
         {
