@@ -8,10 +8,7 @@ import java.util.function.Predicate;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
-import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Edge;
-import org.openstreetmap.atlas.geography.atlas.items.Line;
-import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.items.*;
 import org.openstreetmap.atlas.geography.atlas.multi.MultiArea;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.*;
@@ -90,7 +87,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return
-        (object instanceof Node || object instanceof MultiArea || (object instanceof Edge && ((Edge) object).isMainEdge()))
+        (
+                object instanceof Node || object instanceof Area || object instanceof Line || (object instanceof Edge && ((Edge) object).isMainEdge()))
                 // remove way sectioned duplicates
                 && !this.isFlagged(object.getOsmIdentifier());
     }
@@ -127,7 +125,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             }
             if(layerTagValue.get() < 0L
                     && object.tag(NaturalTag.KEY) != null
-                    && object.tag(NaturalTag.KEY).equalsIgnoreCase("water"))
+                    && !object.tag(NaturalTag.KEY).equalsIgnoreCase("water"))
             {
                 return Optional.of(this.createFlag(object, this.getLocalizedInstruction(5)));
             }
