@@ -283,7 +283,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<Location> allSignsLocationsFlagged = routeSignInstructions
                 .getAllSignsLocations();
 
-        final Optional<String> transportType = rel.getTag("route");
+        final Optional<String> transportType = rel.getTag(RouteTag.KEY);
         if (transportType.isPresent() && Public_transport_Types.contains(transportType.get())
                 && !this.testContainedInRouteMasters(rel))
         {
