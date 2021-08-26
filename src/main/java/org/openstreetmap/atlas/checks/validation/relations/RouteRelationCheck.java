@@ -360,7 +360,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             if (!disconnectedMembers.isEmpty())
             {
                 // add the edges and lines that are flagged
-                for (int i = 0; i < allPolyLines.size(); i++)
+                for (int index = 0; index < allPolyLines.size(); index++)
                 {
                     if (disconnectedMembers.contains(allPolyLines.get(i)))
                     {
