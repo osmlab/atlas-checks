@@ -62,7 +62,7 @@ public class OneMemberRelationCheck extends BaseCheck<Object>
                                 members.get(0).getEntity().getOsmIdentifier())));
             }
             // If the relation is a multi-polygon,
-            if (relation.isMultiPolygon())
+            if (relation.isGeometric())
             {
                 return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
                         this.getLocalizedInstruction(1, relation.getOsmIdentifier())));
