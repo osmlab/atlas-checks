@@ -201,19 +201,12 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<Line> allLines = rel.members().stream().map(RelationMember::getEntity)
                 .filter(member -> member.getType().equals(ItemType.LINE)).map(Line.class::cast)
                 .collect(Collectors.toList());
-        final List<AtlasEntity> edgesLines = new ArrayList<>();
+        final List<LineItem> edgesLines = new ArrayList<>();
         final List<PolyLine> allPolyLines = new ArrayList<>();
-
-        for (final Edge edge : allEdges)
-        {
-            edgesLines.add(edge);
-            allPolyLines.add(edge.asPolyLine());
-        }
-        for (final Line line : allLines)
-        {
-            edgesLines.add(line);
-            allPolyLines.add(line.asPolyLine());
-        }
+        
+        edgesLines.addAll(allEdges);
+        edgesLines.addAll(allLines);
+        edgesLines.forEach(lineItem -> allPolyLines.add(lineItem.asPolyLine()))
 
         return new EdgeLineData(allPolyLines, edgesLines);
     }
