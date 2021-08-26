@@ -477,7 +477,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             for (final PolyLine lineTwo : routeTwo)
             {
-                if (lineOne.intersects(lineTwo))
+                if (lineOne.stream().anyMatch(location -> lineTwo.contains(location)))
                 {
                     return true;
                 }
