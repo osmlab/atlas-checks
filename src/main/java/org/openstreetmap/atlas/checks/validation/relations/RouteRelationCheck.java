@@ -556,7 +556,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final List<PolyLine> disconnectedMembersMinimal = new ArrayList<>();
         PolyLine closestDisconnectedEdge = null;
         PolyLine closestRouteEdge = null;
-        Distance minDis = null;
+        Distance minimumDistance = null;
 
         if (!routeCreated.isEmpty() && !disconnectedMembers.isEmpty())
         {
