@@ -818,7 +818,7 @@
   "RouteRelationCheck": {
     "challenge": {
       "description": "Check route relations and route master relations for gaps in tracks, signs too far from track and some others. ",
-      "blurb": "Route and Route Master Relation Errors.",
+      "blurb": "Route and route master relation errors.",
       "instruction": "Open your favorite editor and validate that the relations are mapped correctly",
       "difficulty": "Medium"
     }
