@@ -510,7 +510,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
 
             boolean connected = false;
             final LinkedList<PolyLine> routeOne = routes.get(i);
-            for (int j = 0; j < routes.size(); j++)
+            for (int routeTwoIndex = 0; routeTwoIndex < routes.size(); routeTwoIndex++)
             {
                 final LinkedList<PolyLine> routeTwo = routes.get(j);
                 if (j != i && !connected && this.routeSetConnectedCheck(routeOne, routeTwo))
