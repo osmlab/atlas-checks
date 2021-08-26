@@ -387,17 +387,13 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         // list to store all routes created
         final List<LinkedList<PolyLine>> routes = new ArrayList<>();
-        // form the first route segment
-        final List<LinkedList<PolyLine>> routeInformation = this.routeSet(linesInRoute);
-        routes.add(routeInformation.get(0));
-        List<PolyLine> membersLeft = new ArrayList<>(routeInformation.get(1));
+        List<PolyLine> membersLeft = linesInRoute;
 
         while (!membersLeft.isEmpty())
         {
-            final List<LinkedList<PolyLine>> routeInformationTmp = this.routeSet(membersLeft);
-            final LinkedList<PolyLine> routeAdded = routeInformationTmp.get(0);
-            membersLeft = new ArrayList<>(routeInformationTmp.get(1));
-            routes.add(routeAdded);
+            final List<LinkedList<PolyLine>> routeInformation = this.routeSet(membersLeft);
+            routes.add(routeInformation.get(0));
+            membersLeft = routeInformation.get(1);
         }
 
         final List<PolyLine> disconnectedMembers = new ArrayList<>();
