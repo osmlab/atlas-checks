@@ -749,7 +749,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            The route master relation under check
      * @return the list of instructions that describes inconsistency
      */
-    private List<String> testNetworkOperatorRefColourTag(final Relation rel)
+    private List<String> testNetworkOperatorReferenceColourTag(final Relation relation)
     {
         final List<String> instructionsAdd = new ArrayList<>();
         final Optional<String> networkTag = rel.getTag("network");
