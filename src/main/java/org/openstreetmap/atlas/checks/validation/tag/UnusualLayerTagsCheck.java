@@ -25,30 +25,30 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
     // Instructions
     public static final String INVALID_LAYER_INSTRUCTION = String.format(
-            "A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
+            "Case 4 A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
             LayerTag.getMinValue(), LayerTag.getMaxValue());
-    public static final String JUNCTION_INSTRUCTION = "Junctions with valid layer values "
+    public static final String JUNCTION_INSTRUCTION = "Case 2 Junctions with valid layer values "
             + "must include bridge or tunnel tags";
-    public static final String FIRST_INSTRUCTION = "Landuse feature is not on the ground";
-    public static final String SECOND_INSTRUCTION = "Natural feature underground";
-    public static final String THIRD_INSTRUCTION = "Highway underground and no tunnel";
-    public static final String FOURTH_INSTRUCTION = "Highway above ground and no bridge";
-    public static final String FIFTH_INSTRUCTION = "Waterway underground and no tunnel";
-    public static final String SIXTH_INSTRUCTION = "Waterway above ground and no tunnel";
+    public static final String FIRST_INSTRUCTION = "Case 5 Landuse feature is not on the ground";
+    public static final String SECOND_INSTRUCTION = "Case 6 Natural feature underground";
+    public static final String THIRD_INSTRUCTION = "Case 7 Highway underground and no tunnel";
+    public static final String FOURTH_INSTRUCTION = "Case 8 Highway above ground and no bridge";
+    public static final String FIFTH_INSTRUCTION = "Case 9 Waterway underground and no tunnel";
+    public static final String SIXTH_INSTRUCTION = "Case 10 Waterway above ground and no bridge";
     @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
     static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
     // Constants for bridge checks
     private static final long BRIDGE_LAYER_TAG_MIN_VALUE = 1;
     public static final String BRIDGE_INSTRUCTION = String.format(
-            "Bridges must have a layer tag set to a value in [%d, %d].", BRIDGE_LAYER_TAG_MIN_VALUE,
+            "Case 3 Bridges must have a layer tag set to a value in [%d, %d].", BRIDGE_LAYER_TAG_MIN_VALUE,
             BRIDGE_LAYER_TAG_MAX_VALUE);
     private static final int THREE = 3;
     private static final long TUNNEL_LAYER_TAG_MAX_VALUE = -1;
     // Constants for tunnel checks
     private static final long TUNNEL_LAYER_TAG_MIN_VALUE = LayerTag.getMinValue();
     public static final String TUNNEL_INSTRUCTION = String.format(
-            "Tunnels must have layer tags set to a value in [%d, %d].", TUNNEL_LAYER_TAG_MIN_VALUE,
+            "Case 1 Tunnels must have layer tags set to a value in [%d, %d].", TUNNEL_LAYER_TAG_MIN_VALUE,
             TUNNEL_LAYER_TAG_MAX_VALUE);
     public static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(TUNNEL_INSTRUCTION,
             JUNCTION_INSTRUCTION, BRIDGE_INSTRUCTION, INVALID_LAYER_INSTRUCTION, FIRST_INSTRUCTION,
