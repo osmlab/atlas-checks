@@ -580,7 +580,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             for (final PolyLine lineOne : disconnectedMembers)
             {
-                // set the two ends of the same element fo the disconnectedMembers
+                // set the two ends of the same element for the disconnectedMembers
                 closestDisconnectedEdge = lineOne;
                 closestRouteEdge = lineOne;
             }
