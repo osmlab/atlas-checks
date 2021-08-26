@@ -344,7 +344,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the relation entity supplied by the Atlas-Checks framework for evaluation
      * @return a TestStructureData for creating flags CheckRouteForGaps
      */
-    private TestStructureData routeForGaps(final Relation rel)
+    private TestStructureData routeForGaps(final Relation relation)
     {
         final List<String> instructionsAdd = new ArrayList<>();
         final EdgeLineData edgesPolyLines = this.polylineRouteRel(rel);
