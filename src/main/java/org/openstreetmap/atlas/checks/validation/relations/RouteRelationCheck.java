@@ -765,9 +765,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final Set<Relation> routeSet = this.routeSetMemberRelations(rel);
         for (final Relation relRoute : routeSet)
         {
-            final Optional<String> routeNetwork = relRoute.getTag("network");
+            final Optional<String> routeNetwork = relRoute.getTag(NetworkTag.KEY);
             final Optional<String> routeOperator = relRoute.getTag("operator");
-            final Optional<String> routeRef = relRoute.getTag("ref");
+            final Optional<String> routeRef = relRoute.getTag(ReferenceTag.KEY);
             final Optional<String> routeColour = relRoute.getTag("colour");
 
             if ((routeNetwork.isPresent() && networkTag.isPresent()
