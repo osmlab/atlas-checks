@@ -614,7 +614,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         final Distance startDistanceEnd = lineOneStart.distanceTo(lineTwoEnd);
         final Distance endDistanceStart = lineOneEnd.distanceTo(lineTwoStart);
         final Distance endDistanceEnd = lineOneEnd.distanceTo(lineTwoEnd);
-        Distance tmpMin = startDistanceStart;
+        Distance tempMin = startDistanceStart;
 
         if (startDistanceEnd.isLessThan(tmpMin))
         {
