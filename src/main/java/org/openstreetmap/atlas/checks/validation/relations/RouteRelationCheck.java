@@ -701,7 +701,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
             final List<PolyLine> allEdgePolyLines)
     {
         final Distance threshHold = Distance.meters(15.0);
-        SnappedLocation minSnap = null;
+        SnappedLocation minimumSnap = null;
 
         for (final Location location : signLocations)
         {
