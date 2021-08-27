@@ -73,7 +73,7 @@ This document is a list of tables with a description and link to documentation f
 | InvalidSignBoardRelationCheck | Identifies signboard relations that do not meet all the requirements for a signboard relation. |
 | [OneMemberRelationCheck](checks/oneMemberRelationCheck.md) | The purpose of this check is to identify Relations in OSM which only have one Member. |
 | [OpenBoundaryCheck](checks/openBoundaryCheck.md) | This check attempts to check for Admin Boundary Relations that should be closed polygons but are not closed. |
-| [RouteRelationCheck](checks/RouteRelationCheck.md) | This purpose of this check is to identify route relations that contains gaps in tracks and have stops or platforms too far from the track. It will also flag public transport route relatons that are not contained in a route master. Further, route master relations containing non route elements and route master relaions that have inconsistent network, operator, ref, colour tags will also be flagged. |
+| [RouteRelationCheck](checks/routeRelationCheck.md) | The purpose of this check is to identify route relations that contains gaps in tracks and have stops or platforms too far from the track. It will also flag public transport route relatons that are not contained in a route master. Further, route master relations containing non route elements and route master relaions that have inconsistent network, operator, ref, colour tags will also be flagged. |
 
 ## Tags
 | Check Name | Check Description |

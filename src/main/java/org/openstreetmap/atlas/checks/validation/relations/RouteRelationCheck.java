@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
@@ -283,12 +282,18 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 .getAllSignsLocations();
 
         final Optional<String> transportType = relation.getTag(RouteTag.KEY);
-        if (transportType.isPresent() && this.publicTransportTypes.contains(transportType.get())
-                && !this.testContainedInRouteMasters(relation))
+        if (transportType.isPresent() && this.publicTransportTypes.contains(transportType.get()))
         {
-            instructionsAdd.add(
-                    this.getLocalizedInstruction(PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
-                            relation.getOsmIdentifier(), transportType.get()));
+            // check if a public transport relation is contained in a route master relation
+            final Set<Relation> relationsContained = relation.relations();
+            if (!relationsContained.stream().anyMatch(member -> Validators.isOfType(member,
+                    RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER)))
+            {
+                instructionsAdd.add(this.getLocalizedInstruction(
+                        PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
+                        relation.getOsmIdentifier(), transportType.get()));
+            }
+
         }
 
         return new FlagTransferData(instructionsAdd, allEdgesLinesFlagged, allSignsEntitiesFlagged,
@@ -720,25 +725,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         return minimumSnap != null && minimumSnap.getDistance().isGreaterThan(threshHold);
-    }
-
-    /**
-     * @param routeRelation
-     *            the public transport route relation. this method checks whether the route relation
-     *            is contained in a route master
-     * @return a boolean indicating whether the route relation is contained in a route master
-     */
-    private boolean testContainedInRouteMasters(final Relation routeRelation)
-    {
-        return StreamSupport.stream(routeRelation.getAtlas().relations().spliterator(), false)
-                .filter(relation -> Validators.isOfType(relation, RelationTypeTag.class,
-                        RelationTypeTag.ROUTE_MASTER))
-                .flatMap(relation -> relation.members().stream().map(RelationMember::getEntity))
-                .filter(member -> member.getType().equals(ItemType.RELATION))
-                .filter(member -> Validators.isOfType(member, RelationTypeTag.class,
-                        RelationTypeTag.ROUTE))
-                .anyMatch(member -> Long.toString(member.getIdentifier())
-                        .equals(Long.toString(routeRelation.getIdentifier())));
     }
 
     /**
