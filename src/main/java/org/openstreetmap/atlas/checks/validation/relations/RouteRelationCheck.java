@@ -60,9 +60,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
     private static final int ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX = 3;
     private static final int PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX = 4;
     private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX = 5;
-    private static final List<String> Public_Transport_Types_Default = Arrays.asList("train", "subway", "bus",
-            "trolleybus", "minibus", "light_rail", "share_taxi", "railway", "rail", "tram",
-            "aircraft", "ferry");
+    private static final List<String> Public_Transport_Types_Default = Arrays.asList("train",
+            "subway", "bus", "trolleybus", "minibus", "light_rail", "share_taxi", "railway", "rail",
+            "tram", "aircraft", "ferry");
     private final List<String> publicTransportTypes;
     private static final long serialVersionUID = 7671409062471623430L;
 
@@ -70,8 +70,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
     {
         super(configuration);
         this.publicTransportTypes = this.configurationValue(configuration,
-                "features.public.transport",
-                Public_Transport_Types_Default);
+                "features.public.transport", Public_Transport_Types_Default);
     }
 
     /**
@@ -257,8 +256,9 @@ public class RouteRelationCheck extends BaseCheck<Object>
                             RelationTypeTag.class, RelationTypeTag.ROUTE)))
                     .collect(Collectors.toSet());
             nonRouteMembers.addAll(otherMembers);
-            instructionsAdd.add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX,
-                    routeMasterRelation.getOsmIdentifier()));
+            instructionsAdd
+                    .add(this.getLocalizedInstruction(ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX,
+                            routeMasterRelation.getOsmIdentifier()));
         }
 
         return new FlagTransferData(instructionsAdd, allEdgesLinesFlagged, allSignsEntitiesFlagged,
@@ -286,8 +286,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         if (transportType.isPresent() && this.publicTransportTypes.contains(transportType.get())
                 && !this.testContainedInRouteMasters(relation))
         {
-            instructionsAdd
-                    .add(this.getLocalizedInstruction(PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
+            instructionsAdd.add(
+                    this.getLocalizedInstruction(PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX,
                             relation.getOsmIdentifier(), transportType.get()));
         }
 
@@ -329,8 +329,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         if (!platformsEntitiesFlagged.isEmpty())
         {
             allSignsFlagged.addAll(platformsEntitiesFlagged);
-            instructionsAdd.add(this.getLocalizedInstruction(PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX,
-                    relation.getOsmIdentifier()));
+            instructionsAdd.add(this.getLocalizedInstruction(
+                    PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX, relation.getOsmIdentifier()));
         }
 
         return new FlagTransferData(instructionsAdd, edgesLinesFlagged, allSignsFlagged,
@@ -474,7 +474,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      * @return true of the two routes are connected. otherwise false
      */
     private boolean routeSetConnectedCheck(final LinkedList<PolyLine> routeOne,
-                                           final LinkedList<PolyLine> routeTwo)
+            final LinkedList<PolyLine> routeTwo)
     {
         for (final PolyLine lineOne : routeOne)
         {
@@ -555,7 +555,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      * @return a list of PolyLines representing two edges closest to the created route
      */
     private List<PolyLine> routeSetDisconnectedClosest(final Set<PolyLine> routeCreated,
-                                                       final Set<PolyLine> disconnectedMembers)
+            final Set<PolyLine> disconnectedMembers)
     {
         final List<PolyLine> disconnectedMembersMinimal = new ArrayList<>();
         PolyLine closestDisconnectedEdge = null;
@@ -608,7 +608,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      * @return a minimal distance between ends of the two sub routes
      */
     private Distance routeSetDisconnectedClosestHelper(final PolyLine lineOne,
-                                                       final PolyLine lineTwo)
+            final PolyLine lineTwo)
     {
         final Location lineOneStart = lineOne.first();
         final Location lineOneEnd = lineOne.last();
@@ -661,7 +661,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      * @return a FlagTransferData for creating the flag.
      */
     private FlagTransferData stopPlatformTooFarFromTrack(final Relation relation,
-                                                         final String stopOrPlatform)
+            final String stopOrPlatform)
     {
         final List<AtlasEntity> allSigns = relation.members().stream()
                 .filter(member -> member.getRole().equals(stopOrPlatform))
@@ -702,7 +702,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      */
 
     private boolean stopPlatformTooFarFromTrackCheck(final List<Location> signLocations,
-                                                     final List<PolyLine> allEdgePolyLines)
+            final List<PolyLine> allEdgePolyLines)
     {
         final Distance threshHold = Distance.meters(15.0);
         SnappedLocation minimumSnap = null;
@@ -768,10 +768,10 @@ public class RouteRelationCheck extends BaseCheck<Object>
             if ((routeNetwork.isPresent() && networkTag.isPresent()
                     && !routeNetwork.equals(networkTag))
                     || (routeOperator.isPresent() && operatorTag.isPresent()
-                    && !routeOperator.equals(operatorTag))
+                            && !routeOperator.equals(operatorTag))
                     || (routeRef.isPresent() && refTag.isPresent() && !routeRef.equals(refTag))
                     || (routeColour.isPresent() && colourTag.isPresent()
-                    && !routeColour.equals(colourTag)))
+                            && !routeColour.equals(colourTag)))
             {
                 instructionsAdd.add(this.getLocalizedInstruction(
                         INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX,
@@ -794,8 +794,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
         private final Set<AtlasEntity> nonRouteMembers;
 
         FlagTransferData(final List<String> instructions, final List<AtlasEntity> edgesLines,
-                         final List<AtlasEntity> allSigns, final List<Location> allSignsLocations,
-                         final Set<AtlasEntity> nonRouteMembers)
+                final List<AtlasEntity> allSigns, final List<Location> allSignsLocations,
+                final Set<AtlasEntity> nonRouteMembers)
         {
             this.instructions = instructions;
             this.edgesLines = edgesLines;
