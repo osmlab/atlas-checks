@@ -54,18 +54,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
             ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INSTRUCTION,
             PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INSTRUCTION,
             INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INSTRUCTION);
-    private static final int GAPS_IN_ROUTE_TRACK_INDEX_DEFAULT = 0;
-    private static final int STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX_DEFAULT = 1;
-    private static final int PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX_DEFAULT = 2;
-    private static final int ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX_DEFAULT = 3;
-    private static final int PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX_DEFAULT = 4;
-    private static final int INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX_DEFAULT = 5;
-    private final int gapsInRouteTrackIndex;
-    private final int stopTooDarFromRouteTrackIndex;
-    private final int platformTooDarFromRouteTrackIndex;
-    private final int routeMaterHasNonRouteElementIndex;
-    private final int publicTransportNotInRouteMasterIndex;
-    private final int inconsistentNetworkOperatorRefColourTagsIndex;
     private static final Set<String> Public_transport_Types = Set.of("train", "subway", "bus",
             "trolleybus", "minibus", "light_rail", "share_taxi", "railway", "rail", "tram",
             "aircraft", "ferry");
@@ -74,23 +62,6 @@ public class RouteRelationCheck extends BaseCheck<Object>
     public RouteRelationCheck(final Configuration configuration)
     {
         super(configuration);
-        this.gapsInRouteTrackIndex = this.configurationValue(configuration,
-                "indexes.gapsInRouteTrackIndex", GAPS_IN_ROUTE_TRACK_INDEX_DEFAULT);
-        this.stopTooDarFromRouteTrackIndex = this.configurationValue(configuration,
-                "indexes.stopTooDarFromRouteTrackIndex",
-                STOP_TOO_FAR_FROM_ROUTE_TRACK_INDEX_DEFAULT);
-        this.platformTooDarFromRouteTrackIndex = this.configurationValue(configuration,
-                "indexes.platformTooDarFromRouteTrackIndex",
-                PLATFORM_TOO_FAR_FROM_ROUTE_TRACK_INDEX_DEFAULT);
-        this.routeMaterHasNonRouteElementIndex = this.configurationValue(configuration,
-                "indexes.routeMaterHasNonRouteElementIndex",
-                ROUTE_MASTER_HAS_NON_ROUTE_ELEMENT_INDEX_DEFAULT);
-        this.publicTransportNotInRouteMasterIndex = this.configurationValue(configuration,
-                "indexes.publicTransportNotInRouteMasterIndex",
-                PUBLIC_TRANSPORT_ROUTE_NOT_IN_ROUTE_MASTER_INDEX_DEFAULT);
-        this.inconsistentNetworkOperatorRefColourTagsIndex = this.configurationValue(configuration,
-                "indexes.inconsistentNetworkOperatorRefColourTagsIndex",
-                INCONSISTENT_NETWORK_OPERATOR_REF_COLOUR_TAGS_INDEX_DEFAULT);
     }
 
     /**
@@ -276,7 +247,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                             RelationTypeTag.class, RelationTypeTag.ROUTE)))
                     .collect(Collectors.toSet());
             nonRouteMembers.addAll(otherMembers);
-            instructionsAdd.add(this.getLocalizedInstruction(this.routeMaterHasNonRouteElementIndex,
+            instructionsAdd.add(this.getLocalizedInstruction(3,
                     routeMasterRelation.getOsmIdentifier()));
         }
 
@@ -306,7 +277,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 && !this.testContainedInRouteMasters(relation))
         {
             instructionsAdd
-                    .add(this.getLocalizedInstruction(this.publicTransportNotInRouteMasterIndex,
+                    .add(this.getLocalizedInstruction(4,
                             relation.getOsmIdentifier(), transportType.get()));
         }
 
@@ -337,7 +308,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         if (!stopsEntitiesFlagged.isEmpty())
         {
             allSignsFlagged.addAll(stopsEntitiesFlagged);
-            instructionsAdd.add(this.getLocalizedInstruction(this.stopTooDarFromRouteTrackIndex,
+            instructionsAdd.add(this.getLocalizedInstruction(1,
                     relation.getOsmIdentifier()));
         }
 
@@ -348,7 +319,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         if (!platformsEntitiesFlagged.isEmpty())
         {
             allSignsFlagged.addAll(platformsEntitiesFlagged);
-            instructionsAdd.add(this.getLocalizedInstruction(this.platformTooDarFromRouteTrackIndex,
+            instructionsAdd.add(this.getLocalizedInstruction(2,
                     relation.getOsmIdentifier()));
         }
 
@@ -387,7 +358,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     }
                 }
 
-                instructionsAdd.add(this.getLocalizedInstruction(this.gapsInRouteTrackIndex,
+                instructionsAdd.add(this.getLocalizedInstruction(0,
                         relation.getOsmIdentifier()));
             }
         }
@@ -792,8 +763,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
                     || (routeColour.isPresent() && colourTag.isPresent()
                             && !routeColour.equals(colourTag)))
             {
-                instructionsAdd.add(this.getLocalizedInstruction(
-                        this.inconsistentNetworkOperatorRefColourTagsIndex,
+                instructionsAdd.add(this.getLocalizedInstruction(5,
                         relRoute.getOsmIdentifier()));
             }
         }
