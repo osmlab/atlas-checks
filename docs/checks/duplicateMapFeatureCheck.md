@@ -2,20 +2,20 @@
 
 #### Description
 The DuplicateMapFeaturecheck flags node, way or relation which have duplicate map features in areas or connected locations.
-[Osmose#4080](https://wiki.openstreetmap.org/wiki/Osmose/issues#4080):
-    Details
-    Object tagged twice as node, way or relation:
-    Class 1 "Object tagged twice as node and way" 
-    Class 2 "Object tagged twice as way and relation" 
-    Class 3 "Object tagged twice as node and relation" 
+[Osmose#4080](https://wiki.openstreetmap.org/wiki/Osmose/issues#4080): \
+Details \
+Object tagged twice as node, way or relation: \
+* Class 1 "Object tagged twice as node and way" 
+* Class 2 "Object tagged twice as way and relation" 
+* Class 3 "Object tagged twice as node and relation" 
 
 This check attempts to identify duplicate map features in areas or connected locations for Class#1/#2/#3 when they have the same OSM tags or have the same following features on node/way/relation:
-    1)  amenity
-    2)  leisure
-    3)  building 
-    4)  shop  
-
-
+1)  amenity
+2)  leisure
+3)  building 
+4)  shop  
+&nbsp;
+&nbsp;
 #### Live Example
 The following examples illustrate map feature tagged as node and way.
 1) Way [id:945675753](https://www.openstreetmap.org/way/945675753)
