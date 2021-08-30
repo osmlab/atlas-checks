@@ -525,7 +525,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
      * 
      * @param node
      *            {@link Node} to check.
-     * @return true if {@link Node} has only one connected valid {@link Edge}
+     * @return true if {@link Node} has only one connected valid navigable {@link Edge}
      */
     private boolean isDeadEnd(final Node node)
     {
