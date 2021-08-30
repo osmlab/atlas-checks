@@ -35,6 +35,21 @@ public class ConnectivityCheckTestRule extends CoreTestRule
 
     @TestAtlas(
             // Nodes
+            nodes = { @Node(id = "1000000", coordinates = @Loc(TEST1)),
+                    @Node(id = "2000000", coordinates = @Loc(TEST2)),
+                    @Node(id = "3000000", coordinates = @Loc(TEST3)),
+                    @Node(id = "4000000", coordinates = @Loc(TEST4)),
+                    @Node(id = "6000000", coordinates = @Loc(TEST6)) }, edges = {
+                            @Edge(id = "1234000000", coordinates = { @Loc(TEST1),
+                                    @Loc(TEST2) }, tags = { "highway=secondary" }),
+                            @Edge(id = "2345000000", coordinates = { @Loc(TEST3),
+                                    @Loc(TEST4) }, tags = { "highway=secondary" }),
+                            @Edge(id = "3456000000", coordinates = { @Loc(TEST2),
+                                    @Loc(TEST6) }, tags = { "boundary=administrative" }) })
+    private Atlas invalidDisconnectedNodesAtlasNavigableDeadEnd;
+
+    @TestAtlas(
+            // Nodes
             nodes = { @Node(coordinates = @Loc(TEST1)), @Node(coordinates = @Loc(TEST2)),
                     @Node(coordinates = @Loc(TEST3)), @Node(coordinates = @Loc(TEST4)) }, edges = {
                             @Edge(coordinates = { @Loc(TEST1), @Loc(TEST2) }, tags = {
@@ -312,6 +327,11 @@ public class ConnectivityCheckTestRule extends CoreTestRule
     public Atlas invalidConnectedNodesAtlas()
     {
         return this.invalidConnectedNodesAtlas;
+    }
+
+    public Atlas invalidConnectedNodesAtlasNavigableDeadEnd()
+    {
+        return this.invalidDisconnectedNodesAtlasNavigableDeadEnd;
     }
 
     public Atlas invalidDisconnectedEdgesAtlas()

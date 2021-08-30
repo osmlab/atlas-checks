@@ -56,6 +56,14 @@ public class ConnectivityCheckTest
     }
 
     @Test
+    public void invalidConnectedNodesTestNavigableDeadEnd()
+    {
+        this.verifier.actual(this.setup.invalidConnectedNodesAtlasNavigableDeadEnd(),
+                new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void invalidDisconnectedEdgesTest()
     {
         this.verifier.actual(this.setup.invalidDisconnectedEdgesAtlas(),

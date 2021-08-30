@@ -525,11 +525,11 @@ public class ConnectivityCheck extends BaseCheck<Long>
      * 
      * @param node
      *            {@link Node} to check.
-     * @return true if {@link Node} has only one connected {@link Edge}
+     * @return true if {@link Node} has only one connected valid {@link Edge}
      */
     private boolean isDeadEnd(final Node node)
     {
-        return node.connectedEdges().stream().count() < 2;
+        return node.connectedEdges().stream().filter(this::validEdgeFilter).count() < 2;
     }
 
     /**
