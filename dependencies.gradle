@@ -12,6 +12,7 @@ project.ext.versions = [
     junit4: '4.13.1',
     junit: '5.7.0',
     sqlite: '3.32.3.2',
+    spark: '3.0.1',
     log4j: '1.2.17'
 ]
 
@@ -32,5 +33,9 @@ project.ext.packages = [
         engine: "org.junit.jupiter:junit-jupiter-engine:${versions.junit}",
     ],
     sqlite: "org.xerial:sqlite-jdbc:${versions.sqlite}",
+    spark:[
+        core: "org.apache.spark:spark-core_2.12:${versions.spark}",
+        sql : "org.apache.spark:spark-sql_2.12:${versions.spark}",
+    ],
     log4j: "log4j:log4j:${versions.log4j}"
 ]
