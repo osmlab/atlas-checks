@@ -351,7 +351,7 @@ class DeployAtlasScriptOnAws(object):
                 if index != len(self.country_list) - 1:
                     steps.append(self.emr_step_template("CONTINUE", step[0]))
                 else:
-                    steps.append(self.emr_step_template("CONTINUE", step[0]))
+                    steps.append(self.emr_step_template("TERMINATE_CLUSTER", step[0]))
         except TypeError as e:
             terminate(e)
         return steps
