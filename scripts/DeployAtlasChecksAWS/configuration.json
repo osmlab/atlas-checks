@@ -1,0 +1,185 @@
+{
+   "application":{
+      "name":"atlas-checks",
+      "main_class":"org.openstreetmap.atlas.checks.distributed.ShardedIntegrityChecksSparkJob",
+      "parameters": {
+         "configuration": {
+         },
+         "border": {
+         },
+         "other": {
+
+         }
+      }
+   },
+   "aws":{
+      "emr":{
+         "version":"emr-6.2.0",
+         "software":[
+            {
+               "Name":"Hadoop"
+            },
+            {
+               "Name":"Spark"
+            }
+         ],
+         "region":{
+            "zone":"",
+            "subnet":""
+         }
+      },
+      "ec2":{
+         "master":{
+            "type":"m5.xlarge",
+            "count":1,
+            "market":"ON_DEMAND"
+         },
+         "core":{
+            "type":"r5d.2xlarge",
+            "count":130,
+            "market":"ON_DEMAND"
+         }
+      },
+      "s3":{
+         "bucket":"",
+         "logging":"",
+         "bootstrap":"",
+         "atlas_jar":"",
+         "atlas_utilities":""
+      }
+   },
+   "spark":[
+      {
+         "Classification": "hadoop-env",
+         "Configurations": [
+               {
+                  "Classification": "export",
+                  "Configurations": [],
+                  "Properties": {
+                     "JAVA_HOME": "/usr/lib/jvm/java-11-amazon-corretto.x86_64",
+                     "JAVA_OPTS": "-XX:+IgnoreUnrecognizedVMOptions"
+                  }
+               }
+         ],
+         "Properties": {}
+      },
+      {
+         "Classification": "spark-env",
+         "Configurations": [
+               {
+                  "Classification": "export",
+                  "Configurations": [],
+                  "Properties": {
+                     "JAVA_HOME": "/usr/lib/jvm/java-11-amazon-corretto.x86_64",
+                     "JAVA_OPTS": "-XX:+IgnoreUnrecognizedVMOptions"
+                  }
+               }
+         ],
+         "Properties": {}
+      },
+      {
+         "Classification":"yarn-site",
+         "Properties":{
+            "yarn.nodemanager.pmem-check-enabled":"false",
+            "yarn.nodemanager.vmem-check-enabled":"false"
+         }
+      },
+      {
+         "Classification":"spark",
+         "Properties":{
+            "maximizeResourceAllocation":"true"
+         }
+      },
+      {
+         "Classification":"spark-defaults",
+         "Properties":{
+            "spark.executor.defaultJavaOptions": "-verbose:gc -XX:OnOutOfMemoryError\u003d\u0027kill -9 %p\u0027 -XX:+UseParallelGC -XX:InitiatingHeapOccupancyPercent\u003d70",
+            "spark.executorEnv.JAVA_HOME": "/usr/lib/jvm/java-11-amazon-corretto.x86_64",
+            "spark.executorEnv.JAVA_OPTS": "-XX:+IgnoreUnrecognizedVMOptions",
+            "spark.executor.memory":"48g",
+            "spark.driver.memory":"48g",
+            "spark.driver.cores":"5",
+            "spark.executor.heartbeatInterval":"60s",
+            "spark.scheduler.listenerbus.eventqueue.capacity":"100000",
+            "spark.yarn.maxAppAttempts":"1",
+            "spark.network.timeout":"800s",
+            "spark.executor.cores":"5",
+            "spark.hadoop.validateOutputSpecs":"false",
+            "spark.driver.userClassPathFirst":"true",
+            "spark.default.parallelism":"1290",
+            "spark.executor.userClassPathFirst":"true",
+            "spark.scheduler.mode":"FIFO",
+            "spark.executor.memoryOverhead":"8g",
+            "spark.executor.instances":"129"
+         }
+      }
+   ],
+   "regions":{
+      "america":{
+         "title":"North, Central, South",
+         "iso":[
+            [
+               "ARG,BHS,BLZ,BOL,BRA,CAN,CHL,COL,CRI,CUB,DOM,ECU,GTM,GUY,HND,HTI,JAM,MEX,NIC,PAN,PER,PRY,SLV,SUR,URY,USA,VEN"
+            ]
+         ]
+      },
+      "europe":{
+         "title":"Western, Eastern",
+         "iso":[
+            [
+               "ALB,AND,AUT,BEL,BGR,BIH,BLR,CHE,CYP,CZE,DEU,DNK,ESP,EST,FIN,FRA,GBR,GIB,GRC,HRV,HUN,IRL,ITA,LIE,LTU,LUX,LVA,MDA,MKD,MLT,NLD,NOR,POL,PRT,ROU,RUS,SRB,SVK,SVN,SWE,UKR"
+            ]
+         ]
+      },
+      "africa":{
+         "title":"Africa",
+         "iso":[
+            [
+               "AGO,BDI,BEN,BFA,BWA,CAF,CIV,CMR,COD,COG,COM,CPV,DJI,DZA,EGY,ERI,ETH,GAB,GHA,GIN,GMB,GNB,GNQ,KEN,LBR,LBY,LSO,MAR,MDG,MLI,MOZ,MRT,MUS,MWI,MYT,NAM,NER,NGA,REU,RWA,SDN,SEN,SHN,SLE,SOM,SSD,STP,SWZ,SYC,TCD,TGO,TUN,TZA,UGA,ZAF,ZMB,ZWE"
+            ]
+         ]
+      },
+      "asia":{
+         "title":"Asia",
+         "iso":[
+            [
+               "AFG,ARE,AZE,BHR,BRN,BTN,CCK,CHN,CXR,GEO,HKG,IOT,IRQ,JOR,KGZ,KHM,KWT,LAO,LBN,MAC,MDV,MMR,MNG,MYS,OMN,PHL,PRK,PSE,QAT,SAU,SGP,SYR,TJK,TUR,TWN,UZB,VNM"
+            ],
+            [
+               "ARM,BGD,IDN,IND,IRN,ISR,JPN,KAZ,KOR,LKA,NPL,PAK,THA,TKM,YEM"
+            ]
+         ]
+      },
+      "oceania":{
+         "title":"Oceania",
+         "iso":[
+            [
+               "ASM,AUS,COK,FJI,FSM,GRL,GUM,ISL,KIR,MHL,MNP,NCL,NFK,NIU,NRU,NZL,PLW,PNG,PYF,SLB,TKL,TLS,TON,TUV,UMI,VUT,WLF,WSM"
+            ]
+         ]
+      },
+      "global":{
+         "title":"Europe, Oceania, Asia1, Asia2, Africa, America",
+         "iso":[
+            [
+               "ALB,AND,AUT,BEL,BGR,BIH,BLR,CHE,CYP,CZE,DEU,DNK,ESP,EST,FIN,FRA,GBR,GIB,GRC,HRV,HUN,IRL,ITA,LIE,LTU,LUX,LVA,MDA,MKD,MLT,NLD,NOR,POL,PRT,ROU,RUS,SRB,SVK,SVN,SWE,UKR"
+            ],
+            [
+               "ASM,AUS,COK,FJI,FSM,GRL,GUM,ISL,KIR,MHL,MNP,NCL,NFK,NIU,NRU,NZL,PLW,PNG,PYF,SLB,TKL,TLS,TON,TUV,UMI,VUT,WLF,WSM"
+            ],
+            [
+               "AFG,ARE,AZE,BHR,BRN,BTN,CCK,CHN,CXR,GEO,HKG,IOT,IRQ,JOR,KGZ,KHM,KWT,LAO,LBN,MAC,MDV,MMR,MNG,MYS,OMN,PHL,PRK,PSE,QAT,SAU,SGP,SYR,TJK,TUR,TWN,UZB,VNM"
+            ],
+            [
+               "ARM,BGD,IDN,IND,IRN,ISR,JPN,KAZ,KOR,LKA,NPL,PAK,THA,TKM,YEM"
+            ],
+            [
+               "AGO,BDI,BEN,BFA,BWA,CAF,CIV,CMR,COD,COG,COM,CPV,DJI,DZA,EGY,ERI,ETH,GAB,GHA,GIN,GMB,GNB,GNQ,KEN,LBR,LBY,LSO,MAR,MDG,MLI,MOZ,MRT,MUS,MWI,MYT,NAM,NER,NGA,REU,RWA,SDN,SEN,SHN,SLE,SOM,SSD,STP,SWZ,SYC,TCD,TGO,TUN,TZA,UGA,ZAF,ZMB,ZWE"
+            ],
+            [
+               "ARG,BHS,BLZ,BOL,BRA,CAN,CHL,COL,CRI,CUB,DOM,ECU,GTM,GUY,HND,HTI,JAM,MEX,NIC,PAN,PER,PRY,SLV,SUR,URY,USA,VEN"
+            ]
+         ]
+      }
+   }
+}
