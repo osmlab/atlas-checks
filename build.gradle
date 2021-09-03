@@ -67,8 +67,7 @@ configurations
         {
             force packages.atlas
             force packages.atlas_generator
-            force packages.spark.core
-            force packages.spark.sql
+
             // Snappy 1.1.1.6 is the one that has the proper .so libs.
             // https://github.com/xerial/snappy-java/issues/6
             force 'org.xerial.snappy:snappy-java:1.1.1.6'
@@ -77,7 +76,7 @@ configurations
         exclude group: 'org.apache.hadoop'
         exclude group: 'org.apache.spark'
         exclude group: 'org.scala-lang'
-        exclude group: 'org.slf4j', module: 'slf4j-api'
+        exclude group: 'org.slf4j'
     }
     runtime
     archives
@@ -88,8 +87,6 @@ dependencies
     compile packages.commons
     compile packages.atlas
     compile packages.atlas_generator
-    compile packages.spark.core
-    compile packages.spark.sql
     compile packages.postgis
     compile packages.postgres
     compile packages.spring
