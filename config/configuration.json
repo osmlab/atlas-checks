@@ -362,7 +362,7 @@
     }
   },
     "GenericTagCheck": {
-    "db": {
+    "database": {
       "taginfo": "extra/taginfo-db.db",
       "wikidata": "extra/wikidata.db"
     },

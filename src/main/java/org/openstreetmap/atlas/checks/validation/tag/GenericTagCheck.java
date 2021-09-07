@@ -178,9 +178,10 @@ public class GenericTagCheck extends BaseCheck<String>
         this.wikiTable = DEFAULT_WIKI_TABLE;
         this.tagInfoTagTable = DEFAULT_TAGINFO_TAG_TABLE;
         this.tagInfoKeyTable = DEFAULT_TAGINFO_KEY_TABLE;
-        this.tagInfoDB = this.configurationValue(configuration, "db.taginfo", DEFAULT_TAGINFO_DB);
-        this.wikiDataDB = this.configurationValue(configuration, "db.wikidata",
-                DEFAULT_WIKIDATA_DB);
+        this.tagInfoDB = this.configurationValue(configuration, "database.taginfo",
+                this.configurationValue(configuration, "db.taginfo", DEFAULT_TAGINFO_DB));
+        this.wikiDataDB = this.configurationValue(configuration, "database.wikidata",
+                this.configurationValue(configuration, "db.wikidata", DEFAULT_WIKIDATA_DB));
 
         // At time of implementation, this.configurationValue(..., ..., Integer) returns
         // a Long.
@@ -215,7 +216,7 @@ public class GenericTagCheck extends BaseCheck<String>
          * *always* required.
          */
         final boolean errorIfDatabaseNotFound = this.configurationValue(configuration,
-                "db.require_all", DEFAULT_ERROR_IF_DATABASE_IS_MISSING);
+                "database.require_all", DEFAULT_ERROR_IF_DATABASE_IS_MISSING);
         if (errorIfDatabaseNotFound && (this.sqliteUtilsTagInfoKeyTable == null
                 || this.sqliteUtilsTagInfoTagTable == null || this.sqliteUtilsWikiData == null))
         {
