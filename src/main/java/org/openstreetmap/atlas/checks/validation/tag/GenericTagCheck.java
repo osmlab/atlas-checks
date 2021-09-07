@@ -214,9 +214,9 @@ public class GenericTagCheck extends BaseCheck<String>
          * popular (i.e., they ran with wiki data but no tag info). Regardless, wiki data is
          * *always* required.
          */
-        final boolean errorIfDbNotFound = this.configurationValue(configuration, "db.require_all",
-                DEFAULT_ERROR_IF_DATABASE_IS_MISSING);
-        if (errorIfDbNotFound && (this.sqliteUtilsTagInfoKeyTable == null
+        final boolean errorIfDatabaseNotFound = this.configurationValue(configuration,
+                "db.require_all", DEFAULT_ERROR_IF_DATABASE_IS_MISSING);
+        if (errorIfDatabaseNotFound && (this.sqliteUtilsTagInfoKeyTable == null
                 || this.sqliteUtilsTagInfoTagTable == null || this.sqliteUtilsWikiData == null))
         {
             throw new CoreException(
