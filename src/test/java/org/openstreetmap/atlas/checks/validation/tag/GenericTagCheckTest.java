@@ -2,6 +2,8 @@ package org.openstreetmap.atlas.checks.validation.tag;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,8 @@ import org.openstreetmap.atlas.checks.database.wikidata.WikiData;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.SQLiteUtils;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.exception.CoreException;
+import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,9 +97,8 @@ public class GenericTagCheckTest
         // This call also takes ~0.25s, so avoid where possible.
         genericTagCheck = new GenericTagCheck(ConfigurationResolver.inlineConfiguration(
                 "{\"GenericTagCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[], "
-                        + databaseConfiguration(databases) + "}}"),
+                        + databaseConfiguration(databases) + ", \"db.require_all\": false}}"),
                 new ExternalDataFetcher("", Collections.emptyMap()));
-
         databases.put(TAGINFO, getGenericTagCheckSqliteUtils(genericTagCheck).get(0).getFile());
         databases.put(WIKI_DATA, getGenericTagCheckSqliteUtils(genericTagCheck).get(1).getFile());
     }
@@ -356,6 +359,26 @@ public class GenericTagCheckTest
             // Area or line are ok by default
             this.verifier.verifyExpectedSize(0);
         }
+    }
+
+    @Test
+    public void testConstructor() throws SQLException, ReflectiveOperationException
+    {
+        final ExternalDataFetcher externalDataFetcher = new ExternalDataFetcher("",
+                Collections.emptyMap());
+        final Configuration emptyConfiguration = ConfigurationResolver.emptyConfiguration();
+        assertThrows(CoreException.class,
+                () -> new GenericTagCheck(emptyConfiguration, externalDataFetcher));
+
+        final Configuration basicConfiguration = ConfigurationResolver.inlineConfiguration(
+                "{\"GenericTagCheck\":{\"filters.resource.override\": true,\"filters.classes.tags\":[], "
+                        + databaseConfiguration(databases) + "}}");
+        assertDoesNotThrow(() -> new GenericTagCheck(basicConfiguration, externalDataFetcher));
+
+        this.verifier.verify(ignore ->
+        {
+            /* Do nothing -- just required to avoid the verifier from dying */
+        });
     }
 
     @Test
