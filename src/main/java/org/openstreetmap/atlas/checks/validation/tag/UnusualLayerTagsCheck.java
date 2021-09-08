@@ -21,7 +21,7 @@ import javax.swing.text.html.Option;
  * Checks {@link Edge}'s {@link LayerTag} and flags it if the value is unusual. Also see
  * http://wiki.openstreetmap.org/wiki/Key:layer
  *
- * @author mkalender, bbreithaupt
+ * @author mkalender, bbreithaupt, v-naydinyan
  */
 public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
@@ -115,6 +115,17 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         // mark osm id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
 
+        if(HighwayTag.isCarNavigableHighway(object)
+            && ALLOWED_TAGS.test(object))
+        {
+            if(!checkTunnelLayerValue(object, layerTagValue, isTagValueValid).isEmpty()) {
+                return Optional.of(this.createFlag(object, checkTunnelLayerValue(object, layerTagValue, isTagValueValid)));
+            }
+            else if(!checkBridgeLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
+            {
+                return Optional.of(this.createFlag(object, checkBridgeLayerValue(object, layerTagValue, isTagValueValid)));
+            }
+        }
         if(isTagValueValid && !layerTagValue.equals(0L)) {
             if(!landUseNotOnGround(object).isEmpty())
             {
@@ -135,30 +146,19 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             }
 
         }
-        if(HighwayTag.isCarNavigableHighway(object)
-                && ALLOWED_TAGS.test(object))
+        else if(!isTagValueValid)
         {
-            if(!checkTunnelLayerValue(object, layerTagValue, isTagValueValid).isEmpty()) {
-                return Optional.of(this.createFlag(object, checkTunnelLayerValue(object, layerTagValue, isTagValueValid)));
-            }
-            else if(!checkBridgeLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, checkBridgeLayerValue(object, layerTagValue, isTagValueValid)));
-            }
-            else if(!checkJunction(object, layerTagValue, isTagValueValid).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, checkJunction(object, layerTagValue, isTagValueValid)));
-            }
-            else if(!isTagValueValid)
-            {
-                return Optional.of(this.createFlag(object, this.INVALID_LAYER_INSTRUCTION));
-            }
+            return Optional.of(this.createFlag(object, this.INVALID_LAYER_INSTRUCTION));
         }
 
         return Optional.empty();
     }
 
-
+    /**
+     *
+     * @param object
+     * @return
+     */
     private String landUseNotOnGround(AtlasObject object)
     {
         if (object.tag(LandUseTag.KEY) != null)
@@ -168,6 +168,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return "";
     }
 
+    /**
+     *
+     * @param object
+     * @return
+     */
     private String naturalNotOnGround(AtlasObject object)
     {
         if (object.tag(NaturalTag.KEY) != null
@@ -177,6 +182,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return "";
     }
 
+    /**
+     *
+     * @param object
+     * @param layerTagValue
+     * @return
+     */
     private String highwayNotOnGround(AtlasObject object, final Optional<Long> layerTagValue)
     {
         if (object.tag(HighwayTag.KEY) != null && !object.tag(HighwayTag.KEY).equalsIgnoreCase("steps"))
@@ -197,6 +208,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return "";
     }
 
+    /**
+     *
+     * @param object
+     * @param layerTagValue
+     * @return
+     */
     private String waterNotOnGround(AtlasObject object, Optional<Long> layerTagValue)
     {
         if (object.tag(WaterwayTag.KEY) != null
@@ -213,6 +230,13 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return "";
     }
 
+    /**
+     *
+     * @param object
+     * @param layerTagValue
+     * @param isTagValueValid
+     * @return
+     */
     private String checkTunnelLayerValue(AtlasObject object, Optional<Long>layerTagValue, final boolean isTagValueValid)
     {
         if (objectIsTunnel(object)
@@ -223,6 +247,13 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return "";
     }
 
+    /**
+     *
+     * @param object
+     * @param layerTagValue
+     * @param isTagValueValid
+     * @return
+     */
     private String checkBridgeLayerValue(AtlasObject object, final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
         if (objectIsBridge(object)
@@ -234,15 +265,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return "";
     }
 
-    private String checkJunction(AtlasObject object, final Optional<Long> layerTagValue, final boolean isTagValueValid)
-    {
-        if (JunctionTag.isRoundabout(object) && isTagValueValid && layerTagValue.get() != 0L
-                && !(objectIsTunnel(object) || objectIsBridge(object))) {
-            return this.JUNCTION_INSTRUCTION;
-        }
-        return "";
-    }
-
+    /**
+     *
+     * @param object
+     * @return
+     */
     private boolean objectIsBridge(AtlasObject object)
     {
         if(BridgeTag.isBridge(object)
@@ -253,6 +280,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return false;
     }
 
+    /**
+     *
+     * @param object
+     * @return
+     */
     private boolean objectIsTunnel (AtlasObject object)
     {
         if(TunnelTag.isTunnel(object)
