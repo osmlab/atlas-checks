@@ -4,7 +4,7 @@
 The DuplicateMapFeaturecheck flags node, way or relation which have duplicate map features in areas or connected locations.
 [Osmose#4080](https://wiki.openstreetmap.org/wiki/Osmose/issues#4080): \
 Details \
-Object tagged twice as node, way or relation: \
+Object tagged twice as node, way or relation: 
 * Class 1 "Object tagged twice as node and way" 
 * Class 2 "Object tagged twice as way and relation" 
 * Class 3 "Object tagged twice as node and relation" 
