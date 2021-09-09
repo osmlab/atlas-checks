@@ -86,9 +86,10 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     {
         return
         (
-                object instanceof Node || object instanceof Area || object instanceof Line || (object instanceof Edge && ((Edge) object).isMainEdge()))
+                (object instanceof Node || object instanceof Area || object instanceof Line || (object instanceof Edge && ((Edge) object).isMainEdge()))
+                && ALLOWED_TAGS.test(object)
                 // remove way sectioned duplicates
-                && !this.isFlagged(object.getOsmIdentifier());
+                && !this.isFlagged(object.getOsmIdentifier()));
     }
 
     @Override
@@ -115,17 +116,14 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         // mark osm id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
 
-        if(HighwayTag.isCarNavigableHighway(object)
-            && ALLOWED_TAGS.test(object))
-        {
-            if(!checkTunnelLayerValue(object, layerTagValue, isTagValueValid).isEmpty()) {
-                return Optional.of(this.createFlag(object, checkTunnelLayerValue(object, layerTagValue, isTagValueValid)));
-            }
-            else if(!checkBridgeLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, checkBridgeLayerValue(object, layerTagValue, isTagValueValid)));
-            }
+        if(!checkTunnelLayerValue(object, layerTagValue, isTagValueValid).isEmpty()) {
+            return Optional.of(this.createFlag(object, checkTunnelLayerValue(object, layerTagValue, isTagValueValid)));
         }
+        else if(!checkBridgeLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
+        {
+            return Optional.of(this.createFlag(object, checkBridgeLayerValue(object, layerTagValue, isTagValueValid)));
+        }
+
         if(isTagValueValid && !layerTagValue.equals(0L)) {
             if(!landUseNotOnGround(object).isEmpty())
             {
@@ -155,7 +153,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     }
 
     /**
-     *
+     * Checks if the object has a LandUse tag and a layer tag that is not 0
      * @param object
      * @return
      */
@@ -169,7 +167,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     }
 
     /**
-     *
+     * Checks if the object has a Natural Tag (excluding "water") and a layer tag that is not 0
      * @param object
      * @return
      */
@@ -183,7 +181,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     }
 
     /**
-     *
+     * Checks if the object has a Highway Tag (excluding steps) and a layer tag.
+     * If the layer tag is less than 0m the method checks for tunnel tag; if the layer tag is greater than 0 - for bridge tag./
      * @param object
      * @param layerTagValue
      * @return
