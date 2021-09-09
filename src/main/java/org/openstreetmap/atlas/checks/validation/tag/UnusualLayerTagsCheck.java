@@ -37,6 +37,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     public static final String HIGHWAY_ABOVE_GROUND_INSTRUCTION = "Case 8 Highway above ground and no bridge";
     public static final String WATERWAY_UNDER_GROUND_INSTRUCTION = "Case 9 Waterway underground and no tunnel";
     public static final String WATERWAY_ABOVE_GROUND_INSTRUCTION = "Case 10 Waterway above ground and no bridge";
+    public static final String LAYER_LEVEL_IS_ZERO = "Layer level should not be 0";
     @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
     static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
@@ -92,6 +93,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
                 && !this.isFlagged(object.getOsmIdentifier()));
     }
 
+    /**
+     * A function that collected all Edges for an Edge object and flags it as a Way.
+     * @param object
+     * @param instruction
+     * @return
+     */
     @Override
     protected CheckFlag createFlag(final AtlasObject object, final String instruction)
     {
@@ -116,37 +123,26 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         // mark osm id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
 
-        if(!checkTunnelLayerValue(object, layerTagValue, isTagValueValid).isEmpty()) {
-            return Optional.of(this.createFlag(object, checkTunnelLayerValue(object, layerTagValue, isTagValueValid)));
-        }
-        else if(!checkBridgeLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
+        if(object.tag(LayerTag.KEY) != null && object.tag(LayerTag.KEY).equals("0"))
         {
-            return Optional.of(this.createFlag(object, checkBridgeLayerValue(object, layerTagValue, isTagValueValid)));
+            return Optional.of(this.createFlag(object, this.LAYER_LEVEL_IS_ZERO));
         }
 
-        if(isTagValueValid && !layerTagValue.equals(0L)) {
-            if(!landUseNotOnGround(object).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, landUseNotOnGround(object)));
-            }
-
-            else if(!naturalNotOnGround(object).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, naturalNotOnGround(object)));
-            }
-            else if(!highwayNotOnGround(object, layerTagValue).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, highwayNotOnGround(object, layerTagValue)));
-            }
-            else if(!waterNotOnGround(object, layerTagValue).isEmpty())
-            {
-                return Optional.of(this.createFlag(object, waterNotOnGround(object, layerTagValue)));
-            }
-
-        }
-        else if(!isTagValueValid)
+        else if(!landUseNotOnGround(object, isTagValueValid).isEmpty())
         {
-            return Optional.of(this.createFlag(object, this.INVALID_LAYER_INSTRUCTION));
+            return Optional.of(this.createFlag(object, landUseNotOnGround(object, isTagValueValid)));
+        }
+        else if(!naturalNotOnGround(object, isTagValueValid).isEmpty())
+        {
+            return Optional.of(this.createFlag(object, naturalNotOnGround(object, isTagValueValid)));
+        }
+        else if(!highwayNotOnGround(object, layerTagValue, isTagValueValid).isEmpty())
+        {
+            return Optional.of(this.createFlag(object, highwayNotOnGround(object, layerTagValue, isTagValueValid)));
+        }
+        else if(!waterNotOnGround(object, layerTagValue, isTagValueValid).isEmpty())
+        {
+            return Optional.of(this.createFlag(object, waterNotOnGround(object, layerTagValue, isTagValueValid)));
         }
 
         return Optional.empty();
@@ -155,11 +151,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     /**
      * Checks if the object has a LandUse tag and a layer tag that is not 0
      * @param object
-     * @return
+     * @return instructions for flagging
      */
-    private String landUseNotOnGround(AtlasObject object)
+    private String landUseNotOnGround(AtlasObject object, final boolean isTagValueValid)
     {
-        if (object.tag(LandUseTag.KEY) != null)
+        if (isTagValueValid && object.tag(LandUseTag.KEY) != null)
         {
             return this.LANDUSE_INSTRUCTION;
         }
@@ -169,11 +165,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     /**
      * Checks if the object has a Natural Tag (excluding "water") and a layer tag that is not 0
      * @param object
-     * @return
+     * @return instructions for flagging
      */
-    private String naturalNotOnGround(AtlasObject object)
+    private String naturalNotOnGround(AtlasObject object, final boolean isTagValueValid)
     {
-        if (object.tag(NaturalTag.KEY) != null
+        if (isTagValueValid
+                && object.tag(NaturalTag.KEY) != null
                 && !object.tag(NaturalTag.KEY).equalsIgnoreCase("water")) {
             return this.NATURAL_UNDER_GROUND_INSTRUCTION;
         }
@@ -185,89 +182,101 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * If the layer tag is less than 0m the method checks for tunnel tag; if the layer tag is greater than 0 - for bridge tag./
      * @param object
      * @param layerTagValue
-     * @return
+     * @return instructions for flagging
      */
-    private String highwayNotOnGround(AtlasObject object, final Optional<Long> layerTagValue)
+    private String highwayNotOnGround(AtlasObject object, final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
         if (object.tag(HighwayTag.KEY) != null && !object.tag(HighwayTag.KEY).equalsIgnoreCase("steps"))
         {
-            if (layerTagValue.get() < 0L
+            if (isTagValueValid
+                    && layerTagValue.get() < 0L
                     && !objectIsTunnel(object))
             {
                 return this.HIGHWAY_UNDER_GROUND_INSTRUCTION;
             }
-            else if (layerTagValue.get() > 0L
+            else if (isTagValueValid
+                    && layerTagValue.get() > 0L
                     && !objectIsBridge(object)
                     && !ManMadeTag.isPier(object))
             {
                 return this.HIGHWAY_ABOVE_GROUND_INSTRUCTION;
             }
+            else if (!checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
+            {
+                return checkLayerValue(object, layerTagValue, isTagValueValid);
+            }
         }
 
         return "";
     }
 
     /**
-     *
+     * Checks if a water object is not on the ground (Natural tag = "water" or a Waterway tag)
      * @param object
      * @param layerTagValue
-     * @return
+     * @return instructions for flagging
      */
-    private String waterNotOnGround(AtlasObject object, Optional<Long> layerTagValue)
+    private String waterNotOnGround(AtlasObject object, Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
         if (object.tag(WaterwayTag.KEY) != null
                 || (NaturalTag.get(object).isPresent() && object.tag(NaturalTag.KEY).equalsIgnoreCase("water"))) {
-            if (layerTagValue.get() < 0L
+            if (isTagValueValid
+                    && layerTagValue.get() < 0L
                     && (!TunnelTag.isTunnel(object))
                     && (object.tag(LocationTag.KEY) == null || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground"))) {
                 return this.WATERWAY_UNDER_GROUND_INSTRUCTION;
-            } else if (layerTagValue.get() > 0L
+            } else if (isTagValueValid
+                    && layerTagValue.get() > 0L
                     && (!BridgeTag.isBridge(object))) {
                 return this.WATERWAY_ABOVE_GROUND_INSTRUCTION;
+            }
+            else if (!checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
+            {
+                return checkLayerValue(object, layerTagValue, isTagValueValid);
             }
         }
         return "";
     }
 
     /**
-     *
+     * Checks if the tunnel object has the proper layer value (that it exists and is within the range specified above).
      * @param object
      * @param layerTagValue
      * @param isTagValueValid
-     * @return
+     * @return instructions for flagging
      */
-    private String checkTunnelLayerValue(AtlasObject object, Optional<Long>layerTagValue, final boolean isTagValueValid)
+    private boolean checkTunnelLayerValue(AtlasObject object, Optional<Long>layerTagValue, final boolean isTagValueValid)
     {
         if (objectIsTunnel(object)
                 && (!isTagValueValid || layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE
                 || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE)) {
-            return this.TUNNEL_INSTRUCTION;
+            return true;
         }
-        return "";
+        return false;
     }
 
     /**
-     *
+     * Checks if the bridge object has the proper layer value (that it exists and is within the range specified above)
      * @param object
      * @param layerTagValue
      * @param isTagValueValid
-     * @return
+     * @return instructions for flagging
      */
-    private String checkBridgeLayerValue(AtlasObject object, final Optional<Long> layerTagValue, final boolean isTagValueValid)
+    private boolean checkBridgeLayerValue(AtlasObject object, final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
         if (objectIsBridge(object)
                 && (!isTagValueValid || layerTagValue.get() != 0)
                 && (!isTagValueValid || layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
                 || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE)) {
-            return this.BRIDGE_INSTRUCTION;
+            return true;
         }
-        return "";
+        return false;
     }
 
     /**
-     *
+     * Helper function that determines if the object is a bridge. It checks for both the bridge and the man_made=bridge tags.
      * @param object
-     * @return
+     * @return true if the object is a bridge, otherwise - false
      */
     private boolean objectIsBridge(AtlasObject object)
     {
@@ -280,9 +289,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     }
 
     /**
-     *
+     * Helper function that determines if the object is a tunnel. It checks for both the tunnel and the man_made=tunnel tags.
      * @param object
-     * @return
+     * @return true if the object is a tunnel, otherwise - false
      */
     private boolean objectIsTunnel (AtlasObject object)
     {
@@ -292,6 +301,19 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             return true;
         }
         return false;
+    }
+
+    private String checkLayerValue(AtlasObject object, final Optional<Long> layerTagValue, final boolean isTagValueValid)
+    {
+        if(checkTunnelLayerValue(object, layerTagValue, isTagValueValid))
+        {
+            return this.TUNNEL_INSTRUCTION;
+        }
+        else if(checkBridgeLayerValue(object, layerTagValue, isTagValueValid))
+        {
+            return this.BRIDGE_INSTRUCTION;
+        }
+        return "";
     }
 }
 
