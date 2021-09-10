@@ -1,11 +1,8 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.checkerframework.checker.nullness.Opt;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.KeyFullyChecked;
@@ -14,8 +11,6 @@ import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.*;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-
-import javax.swing.text.html.Option;
 
 /**
  * Checks {@link Edge}'s {@link LayerTag} and flags it if the value is unusual. Also see
@@ -26,18 +21,18 @@ import javax.swing.text.html.Option;
 public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
     // Instructions
-    public static final String INVALID_LAYER_INSTRUCTION = String.format(
-            "Case 4 A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
-            LayerTag.getMinValue(), LayerTag.getMaxValue());
-    public static final String JUNCTION_INSTRUCTION = "Case 2 Junctions with valid layer values "
-            + "must include bridge or tunnel tags";
-    public static final String LANDUSE_INSTRUCTION = "Case 5 Landuse feature is not on the ground";
-    public static final String NATURAL_UNDER_GROUND_INSTRUCTION = "Case 6 Natural feature underground";
-    public static final String HIGHWAY_UNDER_GROUND_INSTRUCTION = "Case 7 Highway underground and no tunnel";
-    public static final String HIGHWAY_ABOVE_GROUND_INSTRUCTION = "Case 8 Highway above ground and no bridge";
-    public static final String WATERWAY_UNDER_GROUND_INSTRUCTION = "Case 9 Waterway underground and no tunnel";
-    public static final String WATERWAY_ABOVE_GROUND_INSTRUCTION = "Case 10 Waterway above ground and no bridge";
-    public static final String LAYER_LEVEL_IS_ZERO = "Layer level should not be 0";
+//    public static final String INVALID_LAYER_INSTRUCTION = String.format(
+//            "Case 4 A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
+//            LayerTag.getMinValue(), LayerTag.getMaxValue());
+//    public static final String JUNCTION_INSTRUCTION = "Case 2 Junctions with valid layer values "
+//            + "must include bridge or tunnel tags";
+    public static final String LANDUSE_INSTRUCTION = "Case 2: Landuse feature is not on the ground";
+    public static final String NATURAL_INSTRUCTION = "Case 3: Natural feature underground";
+    public static final String HIGHWAY_UNDER_GROUND_INSTRUCTION = "Case 4: Highway underground and no tunnel";
+    public static final String HIGHWAY_ABOVE_GROUND_INSTRUCTION = "Case 5: Highway above ground and no bridge";
+    public static final String WATERWAY_UNDER_GROUND_INSTRUCTION = "Case 6: Waterway underground and no tunnel";
+    public static final String WATERWAY_ABOVE_GROUND_INSTRUCTION = "Case 7: Waterway above ground and no bridge";
+    public static final String LAYER_LEVEL_IS_ZERO = "Case 1: Layer level should not be 0";
     @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
     static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
@@ -172,7 +167,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         if (isTagValueValid
                 && object.tag(NaturalTag.KEY) != null
                 && !object.tag(NaturalTag.KEY).equalsIgnoreCase("water")) {
-            return this.NATURAL_UNDER_GROUND_INSTRUCTION;
+            return this.NATURAL_INSTRUCTION;
         }
         return "";
     }
