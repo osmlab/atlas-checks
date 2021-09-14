@@ -267,6 +267,7 @@ class DeployAtlasScriptOnAws(object):
                         }
                     },
                 ],
+                AutoScalingRole="EMR_AutoScaling_DefaultRole",
                 Configurations=self.spark_config,
                 JobFlowRole='EMR_EC2_DefaultRole',
                 ServiceRole='EMR_DefaultRole',
@@ -403,13 +404,22 @@ class DeployAtlasScriptOnAws(object):
         :param role:
         :return:
         """
-        return {
+        group_template = {
             'Name': name,
             'Market': market,
             'InstanceRole': role,
             'InstanceType': self.get_instance_type(role),
             'InstanceCount': self.get_instance_count(role),
         }
+        if role == "CORE":
+            group_template['AutoScalingPolicy'] = self.get_auto_scaling_policy()
+        return group_template
+
+    def get_auto_scaling_policy(self):
+        """
+        :return: EC2 Auto Scaling Policy
+        """
+        return self.ec2['core']['AutoScalingPolicy']
 
     def get_instance_type(self, role):
         """
