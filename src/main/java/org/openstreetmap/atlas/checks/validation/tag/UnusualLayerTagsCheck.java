@@ -23,10 +23,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
     // Instructions
     // public static final String INVALID_LAYER_INSTRUCTION = String.format(
-    // "Case 4 A layer tag must have a value in [%d, %d] and 0 should not be used explicitly.",
-    // LayerTag.getMinValue(), LayerTag.getMaxValue());
-    // public static final String JUNCTION_INSTRUCTION = "Case 2 Junctions with valid layer values "
-    // + "must include bridge or tunnel tags";
+
     public static final String LANDUSE_INSTRUCTION = "Landuse feature is not on the ground";
     public static final String NATURAL_INSTRUCTION = "Natural feature is not on the ground";
     public static final String HIGHWAY_UNDER_GROUND_INSTRUCTION = "Highway underground and no tunnel";
@@ -111,11 +108,6 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        if (!LandUseTag.get(object).isEmpty())
-        {
-            System.out.println(object);
-        }
-
         // Retrieve layer tag value and evaluate it
         final Optional<Long> layerTagValue = LayerTag.getTaggedValue(object);
         final boolean isTagValueValid = layerTagValue.isPresent();
