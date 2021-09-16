@@ -194,7 +194,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             final boolean isTagValueValid)
     {
         if (HighwayTag.highwayTag(object).isPresent()
-                && HighwayTag.highwayTag(object).equals("steps"))
+                && !HighwayTag.highwayTag(object).equals("steps"))
         {
             if (isTagValueValid && layerTagValue.get() < 0L && !objectIsTunnel(object))
             {
