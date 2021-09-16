@@ -4,6 +4,11 @@
 
 This check flags disconnected Edges in OSM that should be connected. 
 
+##### Scope
+08/10/21 (Change)
+Reducing the scope by removing disconnected crossing edges cases due to logic duplication with [edgeCrossingEdgeCheck](edgeCrossingEdgeCheck.md).
+Corresponded unit tests moved to edgeCrossingEdgeCheck: invalidDisconnectedNodesCrossingTest, invalidDisconnectedEdgeCrossingTest.
+
 #### Configuration
 
 This check has some configurables that can be changed in the configuration file [config.json](../../config/configuration.json)

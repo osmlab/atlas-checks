@@ -148,6 +148,22 @@ public class EdgeCrossingEdgeCheckTest
     }
 
     @Test
+    public void testInvalidDisconnectedEdgeCrossingTest()
+    {
+        this.verifier.actual(this.setup.invalidDisconnectedEdgeCrossingAtlas(),
+                new EdgeCrossingEdgeCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testInvalidDisconnectedNodesCrossingTest()
+    {
+        this.verifier.actual(this.setup.invalidDisconnectedNodesCrossingAtlas(),
+                new EdgeCrossingEdgeCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testNoCrossingItemsAtlas()
     {
         this.verifier.actual(this.setup.noCrossingItemsAtlas(),

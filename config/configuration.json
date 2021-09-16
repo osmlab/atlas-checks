@@ -253,6 +253,7 @@
     }
   },
   "DuplicateMapFeatureCheck": {
+    "enabled": false,
     "features.tags.should.represent.only.once.in.area": [
       "amenity",
       "leisure",
@@ -362,7 +363,7 @@
     }
   },
   "GenericTagCheck": {
-    "db": {
+    "database": {
       "taginfo": "extra/taginfo-db.db",
       "wikidata": "extra/wikidata.db"
     },

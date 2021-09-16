@@ -19,6 +19,12 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
     private static final String LOCATION_3 = "47.574612, -122.305855";
     private static final String LOCATION_4 = "47.575371, -122.308121";
     private static final String LOCATION_5 = "47.576485, -122.307098";
+    private static final String TEST1 = "47.2620768463041,-122.474848242369";
+    private static final String TEST2 = "47.2618703753848,-122.474832590205";
+    private static final String TEST3 = "47.26186971149,-122.474824764123";
+    private static final String TEST4 = "47.2618624086451,-122.475082046561";
+    private static final String TEST5 = "47.2618624086451,-122.474591938191";
+    private static final String TEST6 = "47.2617588409197,-122.474843351067";
 
     @TestAtlas(
             // nodes
@@ -248,6 +254,33 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
                             @Loc(value = LOCATION_5) }, tags = { "highway=motorway" }) })
     private Atlas validIntersectionItemsAtlas;
 
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(id = "1000000", coordinates = @Loc(TEST1)),
+                    @Node(id = "2000000", coordinates = @Loc(TEST2)),
+                    @Node(id = "3000000", coordinates = @Loc(TEST3)),
+                    @Node(id = "4000000", coordinates = @Loc(TEST4)),
+                    @Node(id = "5000000", coordinates = @Loc(TEST5)),
+                    @Node(id = "6000000", coordinates = @Loc(TEST6)) }, edges = {
+                            @Edge(id = "1234000000", coordinates = { @Loc(TEST1), @Loc(TEST3),
+                                    @Loc(TEST6) }, tags = { "highway=secondary" }),
+                            @Edge(id = "2345000000", coordinates = { @Loc(TEST4), @Loc(TEST2),
+                                    @Loc(TEST5) }, tags = { "highway=secondary" }), })
+    private Atlas invalidDisconnectedNodesCrossingAtlas;
+
+    @TestAtlas(
+            // Nodes
+            nodes = { @Node(id = "1000000", coordinates = @Loc(TEST1)),
+                    @Node(id = "2000000", coordinates = @Loc(TEST3)),
+                    @Node(id = "3000000", coordinates = @Loc(TEST4)),
+                    @Node(id = "4000000", coordinates = @Loc(TEST5)),
+                    @Node(id = "5000000", coordinates = @Loc(TEST6)) }, edges = {
+                            @Edge(id = "1234000000", coordinates = { @Loc(TEST1), @Loc(TEST3),
+                                    @Loc(TEST6) }, tags = { "highway=secondary" }),
+                            @Edge(id = "2345000000", coordinates = { @Loc(TEST4),
+                                    @Loc(TEST5) }, tags = { "highway=secondary" }) })
+    private Atlas invalidDisconnectedEdgeCrossingAtlas;
+
     public Atlas invalidCrossingItemsAtlas()
     {
         return this.invalidCrossingItemsAtlas;
@@ -286,6 +319,16 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
     public Atlas invalidCrossingNonMainItemsAtlas()
     {
         return this.invalidCrossingNonMainItemsAtlas;
+    }
+
+    public Atlas invalidDisconnectedEdgeCrossingAtlas()
+    {
+        return this.invalidDisconnectedEdgeCrossingAtlas;
+    }
+
+    public Atlas invalidDisconnectedNodesCrossingAtlas()
+    {
+        return this.invalidDisconnectedNodesCrossingAtlas;
     }
 
     public Atlas noCrossingItemsAtlas()
