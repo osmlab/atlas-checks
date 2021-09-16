@@ -112,8 +112,6 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         final Optional<Long> layerTagValue = LayerTag.getTaggedValue(object);
         final boolean isTagValueValid = layerTagValue.isPresent();
 
-        final ManMadeTag bridgeIsManMade = ManMadeTag.BRIDGE;
-
         // mark osm id as flagged
         this.markAsFlagged(object.getOsmIdentifier());
 
