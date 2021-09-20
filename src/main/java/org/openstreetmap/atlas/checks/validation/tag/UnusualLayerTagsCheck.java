@@ -140,6 +140,10 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             return Optional.of(this.createFlag(object,
                     waterNotOnGround(object, layerTagValue, isTagValueValid)));
         }
+        else if (!checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
+        {
+            return Optional.of(this.createFlag(object, checkLayerValue(object, layerTagValue, isTagValueValid)));
+        }
 
         return Optional.empty();
     }
@@ -154,7 +158,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     {
         if (isTagValueValid
                 && object.tag(LandUseTag.KEY) != null
-                && (!objectIsTunnel(object) || !objectIsBridge(object)))
+                && (!objectIsTunnel(object) && !objectIsBridge(object) && !objectIsCovered(object)))
         {
             return this.LANDUSE_INSTRUCTION;
         }
@@ -171,8 +175,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     {
         if (isTagValueValid
                 && NaturalTag.get(object).isPresent()
-                && !NaturalTag.get(object).equals("water")
-                && (!objectIsTunnel(object) || !objectIsBridge(object)))
+                && !NaturalTag.get(object).get().equals(NaturalTag.WATER)
+                && (!objectIsTunnel(object) && !objectIsBridge(object) && !objectIsCovered(object)))
         {
             return this.NATURAL_INSTRUCTION;
         }
@@ -191,22 +195,28 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private String highwayNotOnGround(AtlasObject object, final Optional<Long> layerTagValue,
             final boolean isTagValueValid)
     {
-        if (HighwayTag.highwayTag(object).isPresent()
-                && !HighwayTag.highwayTag(object).equals("steps"))
+        if (isTagValueValid
+                && HighwayTag.highwayTag(object).isPresent()
+                && !HighwayTag.highwayTag(object).get().equals(HighwayTag.STEPS))
         {
-            if (isTagValueValid && layerTagValue.get() < 0L && !objectIsTunnel(object))
+            if(!objectIsTunnel(object) && !objectIsBridge(object) && !objectIsCovered(object))
             {
-                return this.HIGHWAY_UNDER_GROUND_INSTRUCTION;
+                return HIGHWAY_UNDER_GROUND_INSTRUCTION;
             }
-            else if (isTagValueValid && layerTagValue.get() > 0L && !objectIsBridge(object)
-                    && !ManMadeTag.isPier(object))
-            {
-                return this.HIGHWAY_ABOVE_GROUND_INSTRUCTION;
-            }
-            else if (!checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
-            {
-                return checkLayerValue(object, layerTagValue, isTagValueValid);
-            }
+//            if (layerTagValue.get() < 0L
+//                    && (!objectIsTunnel(object)))
+//            {
+//                return this.HIGHWAY_UNDER_GROUND_INSTRUCTION;
+//            }
+//            else if (layerTagValue.get() > 0L && !objectIsBridge(object)
+//                    && !ManMadeTag.isPier(object))
+//            {
+//                return this.HIGHWAY_ABOVE_GROUND_INSTRUCTION;
+//            }
+//            else if (!objectIsCovered(object))
+//            {
+//                return this.HIGHWAY_UNDER_GROUND_INSTRUCTION;
+//            }
         }
 
         return "";
@@ -222,23 +232,30 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private String waterNotOnGround(AtlasObject object, Optional<Long> layerTagValue,
             final boolean isTagValueValid)
     {
-        if (object.tag(WaterwayTag.KEY) != null || (NaturalTag.get(object).isPresent()
-                && object.tag(NaturalTag.KEY).equalsIgnoreCase("water")))
+        if (isTagValueValid
+                && WaterwayTag.get(object).isPresent()
+                || (NaturalTag.get(object).isPresent() && NaturalTag.get(object).get().equals(NaturalTag.WATER)))
         {
-            if (isTagValueValid && layerTagValue.get() < 0L && (!objectIsTunnel(object))
+            if(!objectIsTunnel(object) && !objectIsBridge(object) && !objectIsCovered(object)
                     && (object.tag(LocationTag.KEY) == null
                             || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground")))
             {
-                return this.WATERWAY_UNDER_GROUND_INSTRUCTION;
+                return WATERWAY_UNDER_GROUND_INSTRUCTION;
             }
-            else if (isTagValueValid && layerTagValue.get() > 0L && (!objectIsBridge(object)))
-            {
-                return this.WATERWAY_ABOVE_GROUND_INSTRUCTION;
-            }
-            else if (!checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
-            {
-                return checkLayerValue(object, layerTagValue, isTagValueValid);
-            }
+//            if (layerTagValue.get() < 0L && (!objectIsTunnel(object) && !objectIsCovered(object))
+//                    && (object.tag(LocationTag.KEY) == null
+//                            || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground")))
+//            {
+//                return this.WATERWAY_UNDER_GROUND_INSTRUCTION;
+//            }
+//            else if (layerTagValue.get() > 0L && (!objectIsBridge(object) && !objectIsCovered(object)))
+//            {
+//                return this.WATERWAY_ABOVE_GROUND_INSTRUCTION;
+//            }
+//            else if (!objectIsCovered(object))
+//            {
+//                return this.WATERWAY_UNDER_GROUND_INSTRUCTION;
+//            }
         }
         return "";
     }
@@ -319,17 +336,34 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         return false;
     }
 
-    private String checkLayerValue(AtlasObject object, final Optional<Long> layerTagValue,
-            final boolean isTagValueValid)
+    private boolean objectIsCovered(AtlasObject object)
     {
-        if (checkTunnelLayerValue(object, layerTagValue, isTagValueValid))
+        if(object.tag(CoveredTag.KEY) != null && !object.tag(CoveredTag.KEY).equalsIgnoreCase("no"))
         {
-            return this.TUNNEL_INSTRUCTION;
+            return true;
         }
-        else if (checkBridgeLayerValue(object, layerTagValue, isTagValueValid))
-        {
+        return false;
+    }
+
+    private String checkLayerValue(AtlasObject object, final Optional<Long> layerTagValue,
+            final boolean isTagValueValid) {
+        if (checkTunnelLayerValue(object, layerTagValue, isTagValueValid)
+                && properWithoutLayer(object)) {
+            return this.TUNNEL_INSTRUCTION;
+        } else if (checkBridgeLayerValue(object, layerTagValue, isTagValueValid)
+                && properWithoutLayer(object)) {
             return this.BRIDGE_INSTRUCTION;
         }
         return "";
     }
+
+    private boolean properWithoutLayer(AtlasObject object)
+    {
+        if((HighwayTag.highwayTag(object).isPresent() && HighwayTag.highwayTag(object).get().equals(HighwayTag.STEPS)))
+        {
+            return false;
+        }
+        return true;
+    }
+
 }
