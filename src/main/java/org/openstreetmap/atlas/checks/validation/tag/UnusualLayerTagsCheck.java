@@ -129,25 +129,21 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             return Optional.of(this.createFlag(object, LAYER_LEVEL_IS_ZERO));
         }
 
-        else if (!this.landUseNotOnGround(object, isTagValueValid).isEmpty())
+        else if (this.landUseNotOnGround(object, isTagValueValid))
         {
-            return Optional
-                    .of(this.createFlag(object, this.landUseNotOnGround(object, isTagValueValid)));
+            return Optional.of(this.createFlag(object, LANDUSE_INSTRUCTION));
         }
-        else if (!this.naturalNotOnGround(object, isTagValueValid).isEmpty())
+        else if (this.naturalNotOnGround(object, isTagValueValid))
         {
-            return Optional
-                    .of(this.createFlag(object, this.naturalNotOnGround(object, isTagValueValid)));
+            return Optional.of(this.createFlag(object, NATURAL_INSTRUCTION));
         }
-        else if (!this.highwayNotOnGround(object, isTagValueValid).isEmpty())
+        else if (this.highwayNotOnGround(object, isTagValueValid))
         {
-            return Optional
-                    .of(this.createFlag(object, this.highwayNotOnGround(object, isTagValueValid)));
+            return Optional.of(this.createFlag(object, HIGHWAY_NOT_ON_GROUND_INSTRUCTION));
         }
-        else if (!this.waterNotOnGround(object, isTagValueValid).isEmpty())
+        else if (this.waterNotOnGround(object, isTagValueValid))
         {
-            return Optional
-                    .of(this.createFlag(object, this.waterNotOnGround(object, isTagValueValid)));
+            return Optional.of(this.createFlag(object, WATERWAY_NOT_ON_GROUND_INSTRUCTION));
         }
         else if (!this.checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
         {
@@ -224,16 +220,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * @param object
      * @return instructions for flagging
      */
-    private String highwayNotOnGround(final AtlasObject object, final boolean isTagValueValid)
+    private boolean highwayNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
-        if (isTagValueValid && HighwayTag.highwayTag(object).isPresent()
+        return isTagValueValid && HighwayTag.highwayTag(object).isPresent()
                 && this.properWithoutLayer(object) && (!this.objectIsTunnel(object)
-                        && !this.objectIsBridge(object) && !this.objectIsCovered(object)))
-        {
-            return HIGHWAY_NOT_ON_GROUND_INSTRUCTION;
-        }
-
-        return "";
+                        && !this.objectIsBridge(object) && !this.objectIsCovered(object));
     }
 
     /**
@@ -242,14 +233,11 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * @param object
      * @return instructions for flagging
      */
-    private String landUseNotOnGround(final AtlasObject object, final boolean isTagValueValid)
+    private boolean landUseNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
-        if (isTagValueValid && object.tag(LandUseTag.KEY) != null && (!this.objectIsTunnel(object)
-                && !this.objectIsBridge(object) && !this.objectIsCovered(object)))
-        {
-            return LANDUSE_INSTRUCTION;
-        }
-        return "";
+        return isTagValueValid && object.tag(LandUseTag.KEY) != null
+                && (!this.objectIsTunnel(object) && !this.objectIsBridge(object)
+                        && !this.objectIsCovered(object));
     }
 
     /**
@@ -258,16 +246,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * @param object
      * @return instructions for flagging
      */
-    private String naturalNotOnGround(final AtlasObject object, final boolean isTagValueValid)
+    private boolean naturalNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
         final Optional<NaturalTag> natural = NaturalTag.get(object);
-        if (isTagValueValid && natural.isPresent() && !natural.get().equals(NaturalTag.WATER)
+        return isTagValueValid && natural.isPresent() && !natural.get().equals(NaturalTag.WATER)
                 && (!this.objectIsTunnel(object) && !this.objectIsBridge(object)
-                        && !this.objectIsCovered(object)))
-        {
-            return NATURAL_INSTRUCTION;
-        }
-        return "";
+                        && !this.objectIsCovered(object));
     }
 
     /**
@@ -328,19 +312,15 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * @param object
      * @return instructions for flagging
      */
-    private String waterNotOnGround(final AtlasObject object, final boolean isTagValueValid)
+    private boolean waterNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
         final Optional<NaturalTag> natural = NaturalTag.get(object);
-        if (isTagValueValid
+        return isTagValueValid
                 && (WaterwayTag.get(object).isPresent()
                         || (natural.isPresent() && natural.get().equals(NaturalTag.WATER)))
                 && (!this.objectIsTunnel(object) && !this.objectIsBridge(object)
                         && !this.objectIsCovered(object) && (object.tag(LocationTag.KEY) == null
-                                || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground"))))
-        {
-            return WATERWAY_NOT_ON_GROUND_INSTRUCTION;
-        }
-        return "";
+                                || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground")));
     }
 
 }
