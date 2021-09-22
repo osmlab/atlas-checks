@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1208,7 +1208,6 @@
     }
   },
   "UnusualLayerTagsCheck": {
-    "enabled": true,
     "challenge": {
       "description": "Tunnels (negative), junctions (zero) and bridges (zero or positive) should have meaningful layer tags attached to them. A missing layer tag implies layer value 0. If there is an explicit layer tag, then it must be between -5 and 5.",
       "blurb": "Verify unusual layer tags.",
