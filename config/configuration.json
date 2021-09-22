@@ -253,7 +253,6 @@
     }
   },
   "DuplicateMapFeatureCheck": {
-    "enabled": false,
     "features.tags.should.represent.only.once.in.area": [
       "amenity",
       "leisure",
