@@ -170,9 +170,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private boolean checkBridgeLayerValue(final AtlasObject object,
             final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
-        return this.objectIsBridge(object) && (!isTagValueValid || layerTagValue.get() != 0)
-                && (!isTagValueValid || layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
-                        || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE);
+        return this.objectIsBridge(object) && (!isTagValueValid
+                || (layerTagValue.isPresent() && (layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
+                        || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE)));
     }
 
     /**
@@ -211,9 +211,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private boolean checkTunnelLayerValue(final AtlasObject object,
             final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
-        return this.objectIsTunnel(object)
-                && (!isTagValueValid || layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE
-                        || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE);
+        return this.objectIsTunnel(object) && (!isTagValueValid
+                || (layerTagValue.isPresent() && layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE)
+                || (layerTagValue.isPresent() && layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE));
     }
 
     /**
@@ -260,8 +260,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private String naturalNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
-        if (isTagValueValid && NaturalTag.get(object).isPresent()
-                && !NaturalTag.get(object).get().equals(NaturalTag.WATER)
+        final Optional<NaturalTag> natural = NaturalTag.get(object);
+        if (isTagValueValid && natural.isPresent() && !natural.get().equals(NaturalTag.WATER)
                 && (!this.objectIsTunnel(object) && !this.objectIsBridge(object)
                         && !this.objectIsCovered(object)))
         {
@@ -316,8 +316,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private boolean properWithoutLayer(final AtlasObject object)
     {
-        return !((HighwayTag.highwayTag(object).isPresent()
-                && HighwayTag.highwayTag(object).get().equals(HighwayTag.STEPS))
+        final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
+        return !((highway.isPresent() && highway.get().equals(HighwayTag.STEPS))
                 || (object.tag(ServiceTag.KEY) != null && object.tag(ServiceTag.KEY)
                         .equalsIgnoreCase(ServiceTag.PARKING_AISLE.toString())));
     }
@@ -330,9 +330,10 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private String waterNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
+        final Optional<NaturalTag> natural = NaturalTag.get(object);
         if (isTagValueValid
-                && (WaterwayTag.get(object).isPresent() || (NaturalTag.get(object).isPresent()
-                        && NaturalTag.get(object).get().equals(NaturalTag.WATER)))
+                && (WaterwayTag.get(object).isPresent()
+                        || (natural.isPresent() && natural.get().equals(NaturalTag.WATER)))
                 && (!this.objectIsTunnel(object) && !this.objectIsBridge(object)
                         && !this.objectIsCovered(object) && (object.tag(LocationTag.KEY) == null
                                 || !object.tag(LocationTag.KEY).equalsIgnoreCase("underground"))))
