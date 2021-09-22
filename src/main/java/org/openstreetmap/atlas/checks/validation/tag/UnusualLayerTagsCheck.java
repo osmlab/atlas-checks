@@ -170,13 +170,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private boolean checkBridgeLayerValue(final AtlasObject object,
             final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
-        if (this.objectIsBridge(object) && (!isTagValueValid || layerTagValue.get() != 0)
+        return this.objectIsBridge(object) && (!isTagValueValid || layerTagValue.get() != 0)
                 && (!isTagValueValid || layerTagValue.get() > BRIDGE_LAYER_TAG_MAX_VALUE
-                        || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE))
-        {
-            return true;
-        }
-        return false;
+                        || layerTagValue.get() < BRIDGE_LAYER_TAG_MIN_VALUE);
     }
 
     /**
@@ -215,13 +211,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
     private boolean checkTunnelLayerValue(final AtlasObject object,
             final Optional<Long> layerTagValue, final boolean isTagValueValid)
     {
-        if (this.objectIsTunnel(object)
+        return this.objectIsTunnel(object)
                 && (!isTagValueValid || layerTagValue.get() > TUNNEL_LAYER_TAG_MAX_VALUE
-                        || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE))
-        {
-            return true;
-        }
-        return false;
+                        || layerTagValue.get() < TUNNEL_LAYER_TAG_MIN_VALUE);
     }
 
     /**
@@ -287,12 +279,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private boolean objectIsBridge(final AtlasObject object)
     {
-        if (BridgeTag.isBridge(object) || (object.tag(ManMadeTag.KEY) != null
-                && object.tag(ManMadeTag.KEY).equalsIgnoreCase("bridge")))
-        {
-            return true;
-        }
-        return false;
+        return BridgeTag.isBridge(object) || (object.tag(ManMadeTag.KEY) != null
+                && object.tag(ManMadeTag.KEY).equalsIgnoreCase("bridge"));
     }
 
     /**
@@ -303,12 +291,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private boolean objectIsCovered(final AtlasObject object)
     {
-        if (object.tag(CoveredTag.KEY) != null
-                && !object.tag(CoveredTag.KEY).equalsIgnoreCase("no"))
-        {
-            return true;
-        }
-        return false;
+        return object.tag(CoveredTag.KEY) != null
+                && !object.tag(CoveredTag.KEY).equalsIgnoreCase("no");
     }
 
     /**
@@ -320,12 +304,8 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private boolean objectIsTunnel(final AtlasObject object)
     {
-        if (TunnelTag.isTunnel(object) || (object.tag(ManMadeTag.KEY) != null
-                && object.tag(ManMadeTag.KEY).equalsIgnoreCase("tunnel")))
-        {
-            return true;
-        }
-        return false;
+        return TunnelTag.isTunnel(object) || (object.tag(ManMadeTag.KEY) != null
+                && object.tag(ManMadeTag.KEY).equalsIgnoreCase("tunnel"));
     }
 
     /**
@@ -336,14 +316,10 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      */
     private boolean properWithoutLayer(final AtlasObject object)
     {
-        if ((HighwayTag.highwayTag(object).isPresent()
+        return !((HighwayTag.highwayTag(object).isPresent()
                 && HighwayTag.highwayTag(object).get().equals(HighwayTag.STEPS))
                 || (object.tag(ServiceTag.KEY) != null && object.tag(ServiceTag.KEY)
-                        .equalsIgnoreCase(ServiceTag.PARKING_AISLE.toString())))
-        {
-            return false;
-        }
-        return true;
+                        .equalsIgnoreCase(ServiceTag.PARKING_AISLE.toString())));
     }
 
     /**
