@@ -35,23 +35,23 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class UnusualLayerTagsCheck extends BaseCheck<Long>
 {
-    public static final String LANDUSE_INSTRUCTION = "Landuse feature is not on the ground";
-    public static final String NATURAL_INSTRUCTION = "Natural feature is not on the ground";
-    public static final String HIGHWAY_NOT_ON_GROUND_INSTRUCTION = "Highway not on ground and no tunnel, bridge or covered tags";
-    public static final String WATERWAY_NOT_ON_GROUND_INSTRUCTION = "Waterway not on ground and no tunnel, bridge or covered tags";
-    public static final String LAYER_LEVEL_IS_ZERO = "Layer level should not be 0";
+    private static final String LANDUSE_INSTRUCTION = "Landuse feature is not on the ground";
+    private static final String NATURAL_INSTRUCTION = "Natural feature is not on the ground";
+    private static final String HIGHWAY_NOT_ON_GROUND_INSTRUCTION = "Highway not on ground and no tunnel, bridge or covered tags";
+    private static final String WATERWAY_NOT_ON_GROUND_INSTRUCTION = "Waterway not on ground and no tunnel, bridge or covered tags";
+    private static final String LAYER_LEVEL_IS_ZERO = "Layer level should not be 0";
     @KeyFullyChecked(KeyFullyChecked.Type.TAGGABLE_FILTER)
     static final Predicate<Taggable> ALLOWED_TAGS;
     private static final long BRIDGE_LAYER_TAG_MAX_VALUE = LayerTag.getMaxValue();
     // Constants for bridge checks
     private static final long BRIDGE_LAYER_TAG_MIN_VALUE = 1;
-    public static final String BRIDGE_INSTRUCTION = String.format(
+    private static final String BRIDGE_INSTRUCTION = String.format(
             "Bridges must have a layer tag set to a value in [%d, %d].", BRIDGE_LAYER_TAG_MIN_VALUE,
             BRIDGE_LAYER_TAG_MAX_VALUE);
     private static final long TUNNEL_LAYER_TAG_MAX_VALUE = -1;
     // Constants for tunnel checks
     private static final long TUNNEL_LAYER_TAG_MIN_VALUE = LayerTag.getMinValue();
-    public static final String TUNNEL_INSTRUCTION = String.format(
+    private static final String TUNNEL_INSTRUCTION = String.format(
             "Tunnels must have layer tags set to a value in [%d, %d].", TUNNEL_LAYER_TAG_MIN_VALUE,
             TUNNEL_LAYER_TAG_MAX_VALUE);
     // tunnel=building_passage should be excluded from eligible candidates
@@ -126,7 +126,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
 
         if (object.tag(LayerTag.KEY) != null && object.tag(LayerTag.KEY).equals("0"))
         {
-            return Optional.of(this.createFlag(object, this.LAYER_LEVEL_IS_ZERO));
+            return Optional.of(this.createFlag(object, LAYER_LEVEL_IS_ZERO));
         }
 
         else if (!this.landUseNotOnGround(object, isTagValueValid).isEmpty())
@@ -139,15 +139,15 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
             return Optional
                     .of(this.createFlag(object, this.naturalNotOnGround(object, isTagValueValid)));
         }
-        else if (!this.highwayNotOnGround(object, layerTagValue, isTagValueValid).isEmpty())
+        else if (!this.highwayNotOnGround(object, isTagValueValid).isEmpty())
         {
-            return Optional.of(this.createFlag(object,
-                    this.highwayNotOnGround(object, layerTagValue, isTagValueValid)));
+            return Optional
+                    .of(this.createFlag(object, this.highwayNotOnGround(object, isTagValueValid)));
         }
-        else if (!this.waterNotOnGround(object, layerTagValue, isTagValueValid).isEmpty())
+        else if (!this.waterNotOnGround(object, isTagValueValid).isEmpty())
         {
-            return Optional.of(this.createFlag(object,
-                    this.waterNotOnGround(object, layerTagValue, isTagValueValid)));
+            return Optional
+                    .of(this.createFlag(object, this.waterNotOnGround(object, isTagValueValid)));
         }
         else if (!this.checkLayerValue(object, layerTagValue, isTagValueValid).isEmpty())
         {
@@ -193,12 +193,12 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         if (this.checkTunnelLayerValue(object, layerTagValue, isTagValueValid)
                 && this.properWithoutLayer(object))
         {
-            return this.TUNNEL_INSTRUCTION;
+            return TUNNEL_INSTRUCTION;
         }
         else if (this.checkBridgeLayerValue(object, layerTagValue, isTagValueValid)
                 && this.properWithoutLayer(object))
         {
-            return this.BRIDGE_INSTRUCTION;
+            return BRIDGE_INSTRUCTION;
         }
         return "";
     }
@@ -230,11 +230,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * bridge tag./
      *
      * @param object
-     * @param layerTagValue
      * @return instructions for flagging
      */
-    private String highwayNotOnGround(final AtlasObject object, final Optional<Long> layerTagValue,
-            final boolean isTagValueValid)
+    private String highwayNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
         if (isTagValueValid && HighwayTag.highwayTag(object).isPresent()
                 && this.properWithoutLayer(object) && (!this.objectIsTunnel(object)
@@ -257,7 +255,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
         if (isTagValueValid && object.tag(LandUseTag.KEY) != null && (!this.objectIsTunnel(object)
                 && !this.objectIsBridge(object) && !this.objectIsCovered(object)))
         {
-            return this.LANDUSE_INSTRUCTION;
+            return LANDUSE_INSTRUCTION;
         }
         return "";
     }
@@ -275,7 +273,7 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
                 && (!this.objectIsTunnel(object) && !this.objectIsBridge(object)
                         && !this.objectIsCovered(object)))
         {
-            return this.NATURAL_INSTRUCTION;
+            return NATURAL_INSTRUCTION;
         }
         return "";
     }
@@ -352,11 +350,9 @@ public class UnusualLayerTagsCheck extends BaseCheck<Long>
      * Checks if a water object is not on the ground (Natural tag = "water" or a Waterway tag)
      *
      * @param object
-     * @param layerTagValue
      * @return instructions for flagging
      */
-    private String waterNotOnGround(final AtlasObject object, final Optional<Long> layerTagValue,
-            final boolean isTagValueValid)
+    private String waterNotOnGround(final AtlasObject object, final boolean isTagValueValid)
     {
         if (isTagValueValid
                 && (WaterwayTag.get(object).isPresent() || (NaturalTag.get(object).isPresent()
