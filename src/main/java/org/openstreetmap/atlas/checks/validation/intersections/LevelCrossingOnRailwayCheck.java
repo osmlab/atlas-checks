@@ -143,9 +143,12 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
          *  2) Any object that is tagged with railway=level_crossing.
          *  3) Any object that is tagged as a railway as indicted in railway.filter.
          */
-        return object instanceof Node
-                || Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
-                || this.railwayFilter.test(object);
+        return !this.isFlagged(object.getOsmIdentifier())
+                // don't look at edges that are not main edge
+                && !(object instanceof Edge && !((Edge) object).isMainEdge())
+                && (object instanceof Node
+                        || Validators.isOfType(object, RailwayTag.class, RailwayTag.LEVEL_CROSSING)
+                        || this.railwayFilter.test(object));
     }
 
     /**
@@ -158,6 +161,7 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
+        this.markAsFlagged(object.getOsmIdentifier());
         /*-
          * The following invalid situations are to be flagged:
          *  1) object is node and
