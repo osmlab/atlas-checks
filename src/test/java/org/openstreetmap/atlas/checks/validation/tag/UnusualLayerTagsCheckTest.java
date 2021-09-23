@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -9,7 +8,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * {@link UnusualLayerTagsCheck} unit test
  *
- * @author mkalender, bbreithaupt
+ * @author mkalender, bbreithaupt, v-naydinyan
  */
 public class UnusualLayerTagsCheckTest
 {
@@ -23,523 +22,272 @@ public class UnusualLayerTagsCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void noEdgeAtlas()
+    public void falsePositiveHighwayNotOnGroundWithBridge()
     {
-        this.verifier.actual(this.setup.noEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveHighwayNotOnGroundWithBridge(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testInvalidBridgeLayerTagEdge()
+    public void falsePositiveHighwayNotOnGroundWithCovered()
     {
-        this.verifier.actual(this.setup.invalidLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testInvalidBridgeTunnelTagLayerEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.whitespaceBridgeRoundaboutLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testInvalidJunctionLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.invalidLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testInvalidLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.invalidLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testInvalidTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.invalidLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusFiveTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusFiveLayerTagTunnelEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveHighwayNotOnGroundWithCovered(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMinusFourTunnelLayerTagEdge()
+    public void falsePositiveHighwayNotOnGroundWithHighwaySteps()
     {
-        this.verifier.actual(this.setup.minusFourLayerTagTunnelEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveHighwayNotOnGroundWithHighwaySteps(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMinusInfinityBridgeLayerTagEdge()
+    public void falsePositiveHighwayNotOnGroundWithServiceParkingAisle()
     {
-        this.verifier.actual(this.setup.minusInfinityLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusInfinityLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusInfinityLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusInfinityLayerTagJunctionEdge()
-    {
-        this.verifier.actual(this.setup.minusInfinityLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusInfinityTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusInfinityLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusOneBridgeLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusOneLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusOneLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusOneLayerTagEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveHighwayNotOnGroundWithServiceParkingAisle(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMinusOneLayerTagJunctionEdge()
+    public void falsePositiveHighwayNotOnGroundWithTunnel()
     {
-        this.verifier.actual(this.setup.minusOneLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusOneTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusOneLayerTagTunnelEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveHighwayNotOnGroundWithTunnel(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMinusSixTunnelLayerTagEdge()
+    public void falsePositiveLandUseNotOnGroundWithBridge()
     {
-        this.verifier.actual(this.setup.minusSixLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMinusThreeTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.minusThreeLayerTagTunnelEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveLandUseNotOnGroundWithBridge(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMinusTwoTunnelLayerTagEdge()
+    public void falsePositiveLandUseNotOnGroundWithCovered()
     {
-        this.verifier.actual(this.setup.minusTwoLayerTagTunnelEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveLandUseNotOnGroundWithCovered(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMissingBridgeLayerTagEdge()
+    public void falsePositiveLandUseNotOnGroundWithTunnel()
     {
-        this.verifier.actual(this.setup.missingLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-    }
-
-    @Test
-    public void testMissingBridgeTagJunctionLayerEdgeAtlas()
-    {
-        this.verifier.actual(this.setup.missingBridgeTagJunctionLayerEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testMissingJunctionLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.missingLayerTagJunctionEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveLandUseNotOnGroundWithTunnel(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMissingLayerTagEdge()
+    public void falsePositiveNaturalNotOnGroundWithBridge()
     {
-        this.verifier.actual(this.setup.missingLayerTagEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveNaturalNotOnGroundWithBridge(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testMissingTunnelLayerTagEdge()
+    public void falsePositiveNaturalNotOnGroundWithCovered()
     {
-        this.verifier.actual(this.setup.missingLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testNullBridgeLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.nullLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testNullJunctionLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.nullLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testNullLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.nullLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testNullTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.nullLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusFiveBridgeLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusFiveLayerTagBridgeEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveNaturalNotOnGroundWithCovered(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testPlusFourBridgeLayerTagEdge()
+    public void falsePositiveNaturalNotOnGroundWithTunnel()
     {
-        this.verifier.actual(this.setup.plusFourLayerTagBridgeEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveNaturalNotOnGroundWithTunnel(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testPlusInfinityBridgeLayerTagEdge()
+    public void falsePositiveWaterwayNotOnGroundWithBridge()
     {
-        this.verifier.actual(this.setup.plusInfinityLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusInfinityLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusInfinityLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusInfinityLayerTagJunctionEdge()
-    {
-        this.verifier.actual(this.setup.plusInfinityLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusInfinityTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusInfinityLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusOneBridgeLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusOneLayerTagBridgeEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveWaterwayNotOnGroundWithBridge(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testPlusOneLayerTagEdge()
+    public void falsePositiveWaterwayNotOnGroundWithCovered()
     {
-        this.verifier.actual(this.setup.plusOneLayerTagEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveWaterwayNotOnGroundWithCovered(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testPlusOneLayerTagJunctionEdge()
+    public void falsePositiveWaterwayNotOnGroundWithLocationUnderground()
     {
-        this.verifier.actual(this.setup.plusOneLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusOneTunnelLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusOneLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusSixBridgeLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusSixLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
-    }
-
-    @Test
-    public void testPlusThreeBridgeLayerTagEdge()
-    {
-        this.verifier.actual(this.setup.plusThreeLayerTagBridgeEdgeAtlas(), check);
+        this.verifier.actual(
+                this.setup.getFalsePositiveWaterwayNotOnGroundWithLocationUnderground(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testPlusTwoBridgeLayerTagEdge()
+    public void falsePositiveWaterwayNotOnGroundWithTunnel()
     {
-        this.verifier.actual(this.setup.plusTwoLayerTagBridgeEdgeAtlas(), check);
+        this.verifier.actual(this.setup.getFalsePositiveWaterwayNotOnGroundWithTunnel(),
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
-    public void testValidBuildingPassageTunnelLayerEdgeAtlas()
+    public void truePositiveBadLayerValueBridge()
     {
-        this.verifier.actual(this.setup.validBuildingPassageTunnelLayerEdgeAtlas(), check);
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueBridge(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testValidLayerTagRoundaboutEdgeAtlas()
+    public void truePositiveBadLayerValueBridgeAboveRange()
     {
-        this.verifier.actual(this.setup.validLayerTagRoundaboutEdgeAtlas(), check);
-        this.verifier.verifyEmpty();
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueBridgeAboveRange(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testWhitespaceBridgeLayerTagEdge()
+    public void truePositiveBadLayerValueBridgeBelowRange()
     {
-        this.verifier.actual(this.setup.whitespaceLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueBridgeBelowRange(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testWhitespaceJunctionLayerTagEdge()
+    public void truePositiveBadLayerValueBridgeWithTunnel()
     {
-        this.verifier.actual(this.setup.whitespaceLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.JUNCTION_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueBridgeWithTunnel(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testWhitespaceLayerTagEdge()
+    public void truePositiveBadLayerValueTunnel()
     {
-        this.verifier.actual(this.setup.whitespaceLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueTunnel(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testWhitespaceTunnelLayerTagEdge()
+    public void truePositiveBadLayerValueTunnelAboveRange()
     {
-        this.verifier.actual(this.setup.whitespaceLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueTunnelAboveRange(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testZeroBridgeLayerTagEdge()
+    public void truePositiveBadLayerValueTunnelBelowRange()
     {
-        this.verifier.actual(this.setup.zeroLayerTagBridgeEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.BRIDGE_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueTunnelBelowRange(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testZeroJunctionLayerTagEdge()
+    public void truePositiveBadLayerValueTunnelWithBridge()
     {
-        this.verifier.actual(this.setup.zeroLayerTagJunctionEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveBadLayerValueTunnelWithBridge(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testZeroLayerTagEdge()
+    public void truePositiveHighwayNotOnGround()
     {
-        this.verifier.actual(this.setup.zeroLayerTagEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains(UnusualLayerTagsCheck.INVALID_LAYER_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveHighwayNotOnGround(), this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 
     @Test
-    public void testZeroTunnelLayerTagEdge()
+    public void truePositiveHighwayNotOnGroundWithBridgeNo()
     {
-        this.verifier.actual(this.setup.zeroLayerTagTunnelEdgeAtlas(), check);
-        this.verifier.verifyNotEmpty();
-        this.verifier.verify(flag ->
-        {
-            Assert.assertTrue(
-                    flag.getInstructions().contains(UnusualLayerTagsCheck.TUNNEL_INSTRUCTION));
-        });
+        this.verifier.actual(this.setup.getTruePositiveHighwayNotOnGroundWithBridgeNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveHighwayNotOnGroundWithTunnelNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveHighwayNotOnGroundWithTunnelNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveLandUseNotOnGround()
+    {
+        this.verifier.actual(this.setup.getTruePositiveLandUseNotOnGround(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveLandUseNotOnGroundWithBridgeNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveLandUseNotOnGroundWithBridgeNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveLandUseNotOnGroundWithTunnelNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveLandUseNotOnGroundWithTunnelNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveLayerTagIsZero()
+    {
+        this.verifier.actual(this.setup.getTruePositiveLayerTagIsZero(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveNaturalNotOnGround()
+    {
+        this.verifier.actual(this.setup.getTruePositiveNaturalNotOnGround(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveNaturalNotOnGroundWithBridgeNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveNaturalNotOnGroundWithBridgeNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveNaturalNotOnGroundWithTunnelNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveNaturalNotOnGroundWithTunnelNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveWaterwayNotOnGround()
+    {
+        this.verifier.actual(this.setup.getTruePositiveWaterwayNotOnGround(), this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveWaterwayNotOnGroundWithBridgeNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveWaterwayNotOnGroundWithBridgeNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void truePositiveWaterwayNotOnGroundWithTunnelNo()
+    {
+        this.verifier.actual(this.setup.getTruePositiveWaterwayNotOnGroundWithTunnelNo(),
+                this.check);
+        this.verifier.verifyExpectedSize(1);
     }
 }
