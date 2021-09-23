@@ -361,8 +361,8 @@
       "tags":"coastline"
     }
   },
-    "GenericTagCheck": {
-    "db": {
+  "GenericTagCheck": {
+    "database": {
       "taginfo": "extra/taginfo-db.db",
       "wikidata": "extra/wikidata.db"
     },

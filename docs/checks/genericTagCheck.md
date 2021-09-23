@@ -3,14 +3,14 @@
 This check uses TagInfo and WikiData databases to look for invalid, deprecated, or otherwise invalid tags.
 In addition, there is a fallback check that uses TagInfo data and WikiData items to determine if a tag is valid.
 The fallback check can be enabled or disabled by setting `"fallback"` to `false`. The location of the databases are
-set in a `"db"` section with either `"wikidata"` or `"taginfo"` as the key, and then the path as the value. This
+set in a `"database"` section with either `"wikidata"` or `"taginfo"` as the key, and then the path as the value. This
 _must_ be changed in Microsoft Windows environments (due to differences in file path separators). There is an additional
 key for the `wikidata` database, `"wikidata.tag_removal"` in main GenericTagCheck check configuration section. This
 controls the detection of tags that can be removed. By default, tags that have been marked with "abandoned",
 "deprecated", "imported", "obsolete", or "rejected" are removable.
 
 ## First steps
-You need to get a TagInfo db and a WikiData db. To that end, use the following scripts:
+You need to get a TagInfo database and a WikiData database. To that end, use the following scripts:
 * [scripts/taginfo/downloadTagInfo.py](../../scripts/taginfo/downloadTagInfo.py)
 * [scripts/wikidata/get\_wikidata.py](../../scripts/wikidata/get_wikidata.py)
 
@@ -24,7 +24,7 @@ be performed on changes, if desired.
 Example json:
 ```json
   "GenericTagCheck": {
-    "db": {
+    "database": {
       "taginfo": "extra/taginfo-db.db",
       "wikidata": "extra/wikidata.db"
     },
@@ -43,7 +43,7 @@ Example json:
   }
 ```
 
-### `db.{taginfo,wikidata}`
+### `database.{taginfo,wikidata}`
 This variable controls where the check looks for the TagInfo and WikiData databases. This is currently relative to the
 `atlas` file directory.
 

@@ -35,6 +35,7 @@ import org.openstreetmap.atlas.checks.utility.SQLiteUtils;
 import org.openstreetmap.atlas.checks.utility.feature_change.IFeatureChange;
 import org.openstreetmap.atlas.checks.utility.feature_change.RemoveTagFeatureChange;
 import org.openstreetmap.atlas.checks.utility.feature_change.ReplaceTagFeatureChange;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
@@ -91,6 +92,9 @@ public class GenericTagCheck extends BaseCheck<String>
     private static final String DEFAULT_WIKI_TABLE = "wiki_data";
     private static final String DEFAULT_TAGINFO_TAG_TABLE = "tags";
     private static final String DEFAULT_TAGINFO_KEY_TABLE = "keys";
+    // The following are to ensure that the databases are present and have expected keys
+    // highway=residential should be present all the time
+    private static final boolean DEFAULT_ERROR_IF_DATABASE_IS_MISSING = true;
 
     private static final Logger logger = LoggerFactory.getLogger(GenericTagCheck.class);
 
@@ -174,9 +178,10 @@ public class GenericTagCheck extends BaseCheck<String>
         this.wikiTable = DEFAULT_WIKI_TABLE;
         this.tagInfoTagTable = DEFAULT_TAGINFO_TAG_TABLE;
         this.tagInfoKeyTable = DEFAULT_TAGINFO_KEY_TABLE;
-        this.tagInfoDB = this.configurationValue(configuration, "db.taginfo", DEFAULT_TAGINFO_DB);
-        this.wikiDataDB = this.configurationValue(configuration, "db.wikidata",
-                DEFAULT_WIKIDATA_DB);
+        this.tagInfoDB = this.configurationValue(configuration, "database.taginfo",
+                this.configurationValue(configuration, "db.taginfo", DEFAULT_TAGINFO_DB));
+        this.wikiDataDB = this.configurationValue(configuration, "database.wikidata",
+                this.configurationValue(configuration, "db.wikidata", DEFAULT_WIKIDATA_DB));
 
         // At time of implementation, this.configurationValue(..., ..., Integer) returns
         // a Long.
@@ -201,6 +206,23 @@ public class GenericTagCheck extends BaseCheck<String>
         }
         this.fetchWikiData(fileFetcher);
         this.fetchTagInfo(fileFetcher);
+
+        /*
+         * Prevent this check from running, unless the user has indicated that not all databases are
+         * required Specifically leave these configuration values undocumented -- if people want to
+         * use only one or the other, they should understand all the issues involved. Namely, they
+         * may have many issues where they are told "key is not documented or popular" even if it is
+         * popular (i.e., they ran with wiki data but no tag info). Regardless, wiki data is
+         * *always* required.
+         */
+        final boolean errorIfDatabaseNotFound = this.configurationValue(configuration,
+                "database.require_all", DEFAULT_ERROR_IF_DATABASE_IS_MISSING);
+        if (errorIfDatabaseNotFound && (this.sqliteUtilsTagInfoKeyTable == null
+                || this.sqliteUtilsTagInfoTagTable == null || this.sqliteUtilsWikiData == null))
+        {
+            throw new CoreException(
+                    "GenericTagCheck: All databases are required and must be readable");
+        }
     }
 
     /**
