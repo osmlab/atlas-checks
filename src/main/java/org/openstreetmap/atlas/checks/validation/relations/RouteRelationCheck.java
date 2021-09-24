@@ -2,9 +2,11 @@ package org.openstreetmap.atlas.checks.validation.relations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -286,7 +288,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             // check if a public transport relation is contained in a route master relation
             final Set<Relation> relationsContained = relation.relations();
-            if (!relationsContained.stream().anyMatch(member -> Validators.isOfType(member,
+            if (relationsContained.stream().noneMatch(member -> Validators.isOfType(member,
                     RelationTypeTag.class, RelationTypeTag.ROUTE_MASTER)))
             {
                 instructionsAdd.add(this.getLocalizedInstruction(
@@ -563,9 +565,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
             final Set<PolyLine> disconnectedMembers)
     {
         final List<PolyLine> disconnectedMembersMinimal = new ArrayList<>();
-        PolyLine closestDisconnectedEdge = null;
-        PolyLine closestRouteEdge = null;
         Distance minimumDistance = null;
+        final Map<Distance, Set<PolyLine>> disconnectedDistance = new HashMap<>();
 
         if (!routeCreated.isEmpty() && !disconnectedMembers.isEmpty())
         {
@@ -573,31 +574,41 @@ public class RouteRelationCheck extends BaseCheck<Object>
             {
                 for (final PolyLine lineTwo : routeCreated)
                 {
-                    final Distance tempDistance = this.routeSetDisconnectedClosestHelper(lineOne,
+                    final Distance tempDistance = this.routeSetDisconnectedClosestDistance(lineOne,
                             lineTwo);
+
+                    this.routeSetDisconnectedClosestMap(disconnectedDistance, tempDistance,
+                            Set.<PolyLine> of(lineOne, lineTwo));
 
                     if (minimumDistance == null || tempDistance.isLessThan(minimumDistance))
                     {
                         minimumDistance = tempDistance;
-                        closestDisconnectedEdge = lineOne;
-                        closestRouteEdge = lineTwo;
                     }
                 }
             }
+
+            disconnectedMembersMinimal.addAll(disconnectedDistance.get(minimumDistance));
         }
         else if (!disconnectedMembers.isEmpty())
         {
-            for (final PolyLine lineOne : disconnectedMembers)
-            {
-                // set the two ends of the same element for the disconnectedMembers
-                closestDisconnectedEdge = lineOne;
-                closestRouteEdge = lineOne;
-            }
-        }
+            // means each edge is disconnected from other edges. So we just pick PolyLines with the
+            // longest length
+            final Map<Distance, Set<PolyLine>> lengthMap = new HashMap<>();
+            Distance maxLength = null;
 
-        // add two edges that describes the gap
-        disconnectedMembersMinimal.add(closestDisconnectedEdge);
-        disconnectedMembersMinimal.add(closestRouteEdge);
+            for (final PolyLine polyline : disconnectedMembers)
+            {
+                final Distance length = polyline.length();
+                this.routeSetDisconnectedClosestMap(lengthMap, length, Set.<PolyLine> of(polyline));
+
+                if (maxLength == null || length.isGreaterThan(maxLength))
+                {
+                    maxLength = length;
+                }
+            }
+
+            disconnectedMembersMinimal.addAll(lengthMap.get(maxLength));
+        }
 
         return disconnectedMembersMinimal;
     }
@@ -612,7 +623,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
      *            the second sub routes to check
      * @return a minimal distance between ends of the two sub routes
      */
-    private Distance routeSetDisconnectedClosestHelper(final PolyLine lineOne,
+    private Distance routeSetDisconnectedClosestDistance(final PolyLine lineOne,
             final PolyLine lineTwo)
     {
         final Location lineOneStart = lineOne.first();
@@ -639,6 +650,22 @@ public class RouteRelationCheck extends BaseCheck<Object>
         }
 
         return tempMin;
+    }
+
+    private void routeSetDisconnectedClosestMap(final Map<Distance, Set<PolyLine>> map,
+            final Distance key, final Set<PolyLine> lineSet)
+    {
+        if (map.containsKey(key))
+        {
+            final Set<PolyLine> lineDistance = new HashSet<>();
+            lineDistance.addAll(map.get(key));
+            lineDistance.addAll(lineSet);
+            map.put(key, lineDistance);
+        }
+        else
+        {
+            map.put(key, lineSet);
+        }
     }
 
     /**
