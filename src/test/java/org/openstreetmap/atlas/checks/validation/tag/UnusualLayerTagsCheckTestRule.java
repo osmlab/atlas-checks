@@ -4,8 +4,6 @@ import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
-import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
-import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 
 /**
  * {@link UnusualLayerTagsCheck} test data
@@ -14,569 +12,471 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  */
 public class UnusualLayerTagsCheckTestRule extends CoreTestRule
 {
-    private static final String COMPANY_STORE = "37.3314171,-122.0304871";
-    private static final String APPLE_CAMPUS_2 = "37.33531,-122.009566";
+    private static final String WAY1_NODE1 = "40.9130354, 29.4700719";
+    private static final String WAY1_NODE2 = "40.9123887, 29.4698597";
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=iaminvalid", "highway=service" }) })
-    private Atlas invalidLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=trunk",
+                                    "layer=1", "bridge=yes" }) })
+    private Atlas falsePositiveHighwayNotOnGroundWithBridge;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=iaminvalid", "bridge=yes", "highway=secondary" }) })
-    private Atlas invalidLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=trunk",
+                                    "layer=-1", "covered=yes" }) })
+    private Atlas falsePositiveHighwayNotOnGroundWithCovered;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=iaminvalid", "junction=roundabout", "highway=secondary" }) })
-    private Atlas invalidLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=steps",
+                                    "layer=1" }) })
+    private Atlas falsePositiveHighwayNotOnGroundWithHighwaySteps;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=iaminvalid", "tunnel=yes", "highway=secondary" }) })
-    private Atlas invalidLayerTagTunnelEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=service",
+                                    "layer=1", "service=parking_aisle" }) })
+    private Atlas falsePositiveHighwayNotOnGroundWithServiceParkingAisle;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = {
-                    @Edge(coordinates = { @Loc(value = COMPANY_STORE),
-                            @Loc(value = APPLE_CAMPUS_2) }, tags = { "highway=secondary" }) })
-    private Atlas missingLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=trunk",
+                                    "layer=-1", "tunnel=yes" }) })
+    private Atlas falsePositiveHighwayNotOnGroundWithTunnel;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "bridge=yes", "highway=secondary" }) })
-    private Atlas missingLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "landuse=forest",
+                                    "layer=1", "bridge=yes" }) })
+    private Atlas falsePositiveLandUseNotOnGroundWithBridge;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "junction=roundabout", "highway=secondary" }) })
-    private Atlas missingLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "landuse=forest",
+                                    "layer=-1", "covered=yes" }) })
+    private Atlas falsePositiveLandUseNotOnGroundWithCovered;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "tunnel=yes", "highway=residential" }) })
-    private Atlas missingLayerTagTunnelEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "landuse=forest",
+                                    "layer=-2", "tunnel=yes" }) })
+    private Atlas falsePositiveLandUseNotOnGroundWithTunnel;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) })
-    private Atlas noEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "natural=wood",
+                                    "layer=1", "bridge=yes" }) })
+    private Atlas falsePositiveNaturalNotOnGroundWithBridge;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=null", "highway=primary" }) })
-    private Atlas nullLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "natural=wood",
+                                    "layer=-1", "covered=yes" }) })
+    private Atlas falsePositiveNaturalNotOnGroundWithCovered;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=null", "bridge=yes", "highway=primary" }) })
-    private Atlas nullLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "natural=wood",
+                                    "layer=-1", "tunnel=yes" }) })
+    private Atlas falsePositiveNaturalNotOnGroundWithTunnel;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=null", "junction=roundabout", "highway=secondary" }) })
-    private Atlas nullLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=1", "bridge=yes" }) })
+    private Atlas falsePositiveWaterwayNotOnGroundWithBridge;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=null", "tunnel=yes", "highway=primary" }) })
-    private Atlas nullLayerTagTunnelEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=-1", "covered=yes" }) })
+    private Atlas falsePositiveWaterwayNotOnGroundWithCovered;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer= ", "highway=primary" }) })
-    private Atlas whitespaceLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=-1", "location=underground" }) })
+    private Atlas falsePositiveWaterwayNotOnGroundWithLocationUnderground;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer= ",
-                            "bridge=yes", "highway=service" }) })
-    private Atlas whitespaceLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=-1", "tunnel=yes" }) })
+    private Atlas falsePositiveWaterwayNotOnGroundWithTunnel;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer= ", "junction=roundabout" }) })
-    private Atlas whitespaceLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "bridge=yes" }) })
+    private Atlas truePositiveBadLayerValueBridge;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer= ",
-                            "tunnel=yes", "highway=service" }) })
-    private Atlas whitespaceLayerTagTunnelEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "bridge=yes",
+                                    "layer=10" }) })
+    private Atlas truePositiveBadLayerValueBridgeAboveRange;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=0",
-                            "bridge=yes", "highway=secondary" }) })
-    private Atlas zeroLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "bridge=yes",
+                                    "layer=-1" }) })
+    private Atlas truePositiveBadLayerValueBridgeBelowRange;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=0",
-                            "junction=roundabout", "highway=service" }) })
-    private Atlas zeroLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "tunnel=yes", "layer=-1",
+                                    "bridge=yes" }) })
+    private Atlas truePositiveBadLayerValueBridgeWithTunnel;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=0",
-                            "tunnel=yes", "highway=service" }) })
-    private Atlas zeroLayerTagTunnelEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "tunnel=yes" }) })
+    private Atlas truePositiveBadLayerValueTunnel;
 
-    // More atlases
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-2147483648", "highway=service" }) })
-    private Atlas minusInfinityLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "tunnel=yes",
+                                    "layer=1" }) })
+    private Atlas truePositiveBadLayerValueTunnelAboveRange;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=-1", "highway=secondary" }) })
-    private Atlas minusOneLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "tunnel=yes",
+                                    "layer=-10" }) })
+    private Atlas truePositiveBadLayerValueTunnelBelowRange;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=0", "highway=motorway" }) })
-    private Atlas zeroLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "tunnel=yes", "layer=1",
+                                    "bridge=yes" }) })
+    private Atlas truePositiveBadLayerValueTunnelWithBridge;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE),
-                    @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1", "highway=secondary" }) })
-    private Atlas plusOneLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=trunk",
+                                    "layer=-1" }) })
+    private Atlas truePositiveHighwayNotOnGround;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=2147483647", "highway=service" }) })
-    private Atlas plusInfinityLayerTagEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=trunk",
+                                    "layer=1", "bridge=no" }) })
+    private Atlas truePositiveHighwayNotOnGroundWithBridgeNo;
 
-    // More junction atlases
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-2147483648", "junction=roundabout", "highway=secondary" }) })
-    private Atlas minusInfinityLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "highway=trunk",
+                                    "layer=-1", "tunnel=no" }) })
+    private Atlas truePositiveHighwayNotOnGroundWithTunnelNo;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-1", "junction=roundabout", "highway=secondary" }) })
-    private Atlas minusOneLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "landuse=forest",
+                                    "layer=1" }) })
+    private Atlas truePositiveLandUseNotOnGround;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1",
-                            "junction=roundabout", "highway=secondary" }) })
-    private Atlas plusOneLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "landuse=forest",
+                                    "layer=1", "bridge=no" }) })
+    private Atlas truePositiveLandUseNotOnGroundWithBridgeNo;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=2147483647", "junction=roundabout", "highway=secondary" }) })
-    private Atlas plusInfinityLayerTagJunctionEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "landuse=forest",
+                                    "layer=-1", "tunnel=no" }) })
+    private Atlas truePositiveLandUseNotOnGroundWithTunnelNo;
 
-    // More bridge atlases
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-2147483648", "bridge=yes", "highway=secondary" }) })
-    private Atlas minusInfinityLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "layer=0" }) })
+    private Atlas truePositiveLayerTagIsZero;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-1", "bridge=yes", "highway=service" }) })
-    private Atlas minusOneLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "natural=wood",
+                                    "layer=1" }) })
+    private Atlas truePositiveNaturalNotOnGround;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1",
-                            "bridge=yes", "highway=secondary" }) })
-    private Atlas plusOneLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "natural=wood",
+                                    "layer=1", "bridge=no" }) })
+    private Atlas truePositiveNaturalNotOnGroundWithBridgeNo;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=2",
-                            "bridge=yes", "highway=secondary" }) })
-    private Atlas plusTwoLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "natural=wood",
+                                    "layer=-1", "tunnel=no" }) })
+    private Atlas truePositiveNaturalNotOnGroundWithTunnelNo;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=3",
-                            "bridge=yes", "highway=secondary" }) })
-    private Atlas plusThreeLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=1" }) })
+    private Atlas truePositiveWaterwayNotOnGround;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=4",
-                            "bridge=yes", "highway=secondary" }) })
-    private Atlas plusFourLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=1", "bridge=no" }) })
+    private Atlas truePositiveWaterwayNotOnGroundWithBridgeNo;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=5",
-                            "bridge=yes", "highway=secondary" }) })
-    private Atlas plusFiveLayerTagBridgeEdgeAtlas;
+    @TestAtlas(nodes = {
+            @TestAtlas.Node(id = "100001", coordinates = @TestAtlas.Loc(value = WAY1_NODE1)),
+            @TestAtlas.Node(id = "100002", coordinates = @TestAtlas.Loc(value = WAY1_NODE2)) }, edges = {
+                    @Edge(id = "100003", coordinates = { @TestAtlas.Loc(value = WAY1_NODE1),
+                            @TestAtlas.Loc(value = WAY1_NODE2) }, tags = { "waterway=stream",
+                                    "layer=-1", "tunnel=no" }) })
+    private Atlas truePositiveWaterwayNotOnGroundWithTunnelNo;
 
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=6",
-                            "bridge=yes", "highway=service" }) })
-    private Atlas plusSixLayerTagBridgeEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=2147483647", "bridge=yes", "highway=secondary" }) })
-    private Atlas plusInfinityLayerTagBridgeEdgeAtlas;
-
-    // More tunnel atlases
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-2147483648", "tunnel=yes", "highway=primary" }) })
-    private Atlas minusInfinityLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-6", "tunnel=yes", "highway=secondary" }) })
-    private Atlas minusSixLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-5", "tunnel=yes", "highway=secondary" }) })
-    private Atlas minusFiveLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-4", "tunnel=yes", "highway=secondary" }) })
-    private Atlas minusFourLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-3", "tunnel=yes", "highway=secondary" }) })
-    private Atlas minusThreeLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-2", "tunnel=yes", "highway=secondary" }) })
-    private Atlas minusTwoLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=-1", "tunnel=yes", "highway=secondary" }) })
-    private Atlas minusOneLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=1",
-                            "tunnel=yes", "highway=service" }) })
-    private Atlas plusOneLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "layer=2147483647", "tunnel=yes", "highway=service" }) })
-    private Atlas plusInfinityLayerTagTunnelEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=4",
-                            "junction=roundabout", "highway=service", "bridge=yes" }) })
-    private Atlas validLayerTagRoundaboutEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=4",
-                            "highway=service", "junction=roundabout" }) })
-    private Atlas missingBridgeTagJunctionLayerEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = { "layer=4",
-                            "highway=service", "bridge= ", "junction=roundabout" }) })
-    private Atlas whitespaceBridgeRoundaboutLayerTagEdgeAtlas;
-
-    @TestAtlas(nodes = { @Node(coordinates = @Loc(value = COMPANY_STORE)),
-            @Node(coordinates = @Loc(value = APPLE_CAMPUS_2)) }, edges = { @Edge(coordinates = {
-                    @Loc(value = COMPANY_STORE), @Loc(value = APPLE_CAMPUS_2) }, tags = {
-                            "tunnel=building_passage", "highway=service" }) })
-    private Atlas validBuildingPassageTunnelLayerEdgeAtlas;
-
-    public Atlas invalidLayerTagBridgeEdgeAtlas()
+    public Atlas getFalsePositiveHighwayNotOnGroundWithBridge()
     {
-        return this.invalidLayerTagBridgeEdgeAtlas;
+        return this.falsePositiveHighwayNotOnGroundWithBridge;
     }
 
-    public Atlas invalidLayerTagEdgeAtlas()
+    public Atlas getFalsePositiveHighwayNotOnGroundWithCovered()
     {
-        return this.invalidLayerTagEdgeAtlas;
+        return this.falsePositiveHighwayNotOnGroundWithCovered;
     }
 
-    public Atlas invalidLayerTagJunctionEdgeAtlas()
+    public Atlas getFalsePositiveHighwayNotOnGroundWithHighwaySteps()
     {
-        return this.invalidLayerTagJunctionEdgeAtlas;
+        return this.falsePositiveHighwayNotOnGroundWithHighwaySteps;
     }
 
-    public Atlas invalidLayerTagTunnelEdgeAtlas()
+    public Atlas getFalsePositiveHighwayNotOnGroundWithServiceParkingAisle()
     {
-        return this.invalidLayerTagTunnelEdgeAtlas;
+        return this.falsePositiveHighwayNotOnGroundWithServiceParkingAisle;
     }
 
-    public Atlas minusFiveLayerTagTunnelEdgeAtlas()
+    public Atlas getFalsePositiveHighwayNotOnGroundWithTunnel()
     {
-        return this.minusFiveLayerTagTunnelEdgeAtlas;
+        return this.falsePositiveHighwayNotOnGroundWithTunnel;
     }
 
-    public Atlas minusFourLayerTagTunnelEdgeAtlas()
+    public Atlas getFalsePositiveLandUseNotOnGroundWithBridge()
     {
-        return this.minusFourLayerTagTunnelEdgeAtlas;
+        return this.falsePositiveLandUseNotOnGroundWithBridge;
     }
 
-    public Atlas minusInfinityLayerTagBridgeEdgeAtlas()
+    public Atlas getFalsePositiveLandUseNotOnGroundWithCovered()
     {
-        return this.minusInfinityLayerTagBridgeEdgeAtlas;
+        return this.falsePositiveLandUseNotOnGroundWithCovered;
     }
 
-    public Atlas minusInfinityLayerTagEdgeAtlas()
+    public Atlas getFalsePositiveLandUseNotOnGroundWithTunnel()
     {
-        return this.minusInfinityLayerTagEdgeAtlas;
+        return this.falsePositiveLandUseNotOnGroundWithTunnel;
     }
 
-    public Atlas minusInfinityLayerTagJunctionEdgeAtlas()
+    public Atlas getFalsePositiveNaturalNotOnGroundWithBridge()
     {
-        return this.minusInfinityLayerTagJunctionEdgeAtlas;
+        return this.falsePositiveNaturalNotOnGroundWithBridge;
     }
 
-    public Atlas minusInfinityLayerTagTunnelEdgeAtlas()
+    public Atlas getFalsePositiveNaturalNotOnGroundWithCovered()
     {
-        return this.minusInfinityLayerTagTunnelEdgeAtlas;
+        return this.falsePositiveNaturalNotOnGroundWithCovered;
     }
 
-    public Atlas minusOneLayerTagBridgeEdgeAtlas()
+    public Atlas getFalsePositiveNaturalNotOnGroundWithTunnel()
     {
-        return this.minusOneLayerTagBridgeEdgeAtlas;
+        return this.falsePositiveNaturalNotOnGroundWithTunnel;
     }
 
-    public Atlas minusOneLayerTagEdgeAtlas()
+    public Atlas getFalsePositiveWaterwayNotOnGroundWithBridge()
     {
-        return this.minusOneLayerTagEdgeAtlas;
+        return this.falsePositiveWaterwayNotOnGroundWithBridge;
     }
 
-    public Atlas minusOneLayerTagJunctionEdgeAtlas()
+    public Atlas getFalsePositiveWaterwayNotOnGroundWithCovered()
     {
-        return this.minusOneLayerTagJunctionEdgeAtlas;
+        return this.falsePositiveWaterwayNotOnGroundWithCovered;
     }
 
-    public Atlas minusOneLayerTagTunnelEdgeAtlas()
+    public Atlas getFalsePositiveWaterwayNotOnGroundWithLocationUnderground()
     {
-        return this.minusOneLayerTagTunnelEdgeAtlas;
+        return this.falsePositiveWaterwayNotOnGroundWithLocationUnderground;
     }
 
-    public Atlas minusSixLayerTagTunnelEdgeAtlas()
+    public Atlas getFalsePositiveWaterwayNotOnGroundWithTunnel()
     {
-        return this.minusSixLayerTagTunnelEdgeAtlas;
+        return this.falsePositiveWaterwayNotOnGroundWithTunnel;
     }
 
-    public Atlas minusThreeLayerTagTunnelEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueBridge()
     {
-        return this.minusThreeLayerTagTunnelEdgeAtlas;
+        return this.truePositiveBadLayerValueBridge;
     }
 
-    public Atlas minusTwoLayerTagTunnelEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueBridgeAboveRange()
     {
-        return this.minusTwoLayerTagTunnelEdgeAtlas;
+        return this.truePositiveBadLayerValueBridgeAboveRange;
     }
 
-    public Atlas missingBridgeTagJunctionLayerEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueBridgeBelowRange()
     {
-        return this.missingBridgeTagJunctionLayerEdgeAtlas;
+        return this.truePositiveBadLayerValueBridgeBelowRange;
     }
 
-    public Atlas missingLayerTagBridgeEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueBridgeWithTunnel()
     {
-        return this.missingLayerTagBridgeEdgeAtlas;
+        return this.truePositiveBadLayerValueBridgeWithTunnel;
     }
 
-    public Atlas missingLayerTagEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueTunnel()
     {
-        return this.missingLayerTagEdgeAtlas;
+        return this.truePositiveBadLayerValueTunnel;
     }
 
-    public Atlas missingLayerTagJunctionEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueTunnelAboveRange()
     {
-        return this.missingLayerTagJunctionEdgeAtlas;
+        return this.truePositiveBadLayerValueTunnelAboveRange;
     }
 
-    public Atlas missingLayerTagTunnelEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueTunnelBelowRange()
     {
-        return this.missingLayerTagTunnelEdgeAtlas;
+        return this.truePositiveBadLayerValueTunnelBelowRange;
     }
 
-    public Atlas noEdgeAtlas()
+    public Atlas getTruePositiveBadLayerValueTunnelWithBridge()
     {
-        return this.noEdgeAtlas;
+        return this.truePositiveBadLayerValueTunnelWithBridge;
     }
 
-    public Atlas nullLayerTagBridgeEdgeAtlas()
+    public Atlas getTruePositiveHighwayNotOnGround()
     {
-        return this.nullLayerTagBridgeEdgeAtlas;
+        return this.truePositiveHighwayNotOnGround;
     }
 
-    public Atlas nullLayerTagEdgeAtlas()
+    public Atlas getTruePositiveHighwayNotOnGroundWithBridgeNo()
     {
-        return this.nullLayerTagEdgeAtlas;
+        return this.truePositiveHighwayNotOnGroundWithBridgeNo;
     }
 
-    public Atlas nullLayerTagJunctionEdgeAtlas()
+    public Atlas getTruePositiveHighwayNotOnGroundWithTunnelNo()
     {
-        return this.nullLayerTagJunctionEdgeAtlas;
+        return this.truePositiveHighwayNotOnGroundWithTunnelNo;
     }
 
-    public Atlas nullLayerTagTunnelEdgeAtlas()
+    public Atlas getTruePositiveLandUseNotOnGround()
     {
-        return this.nullLayerTagTunnelEdgeAtlas;
+        return this.truePositiveLandUseNotOnGround;
     }
 
-    public Atlas plusFiveLayerTagBridgeEdgeAtlas()
+    public Atlas getTruePositiveLandUseNotOnGroundWithBridgeNo()
     {
-        return this.plusFiveLayerTagBridgeEdgeAtlas;
+        return this.truePositiveLandUseNotOnGroundWithBridgeNo;
     }
 
-    public Atlas plusFourLayerTagBridgeEdgeAtlas()
+    public Atlas getTruePositiveLandUseNotOnGroundWithTunnelNo()
     {
-        return this.plusFourLayerTagBridgeEdgeAtlas;
+        return this.truePositiveLandUseNotOnGroundWithTunnelNo;
     }
 
-    public Atlas plusInfinityLayerTagBridgeEdgeAtlas()
+    public Atlas getTruePositiveLayerTagIsZero()
     {
-        return this.plusInfinityLayerTagBridgeEdgeAtlas;
+        return this.truePositiveLayerTagIsZero;
     }
 
-    public Atlas plusInfinityLayerTagEdgeAtlas()
+    public Atlas getTruePositiveNaturalNotOnGround()
     {
-        return this.plusInfinityLayerTagEdgeAtlas;
+        return this.truePositiveNaturalNotOnGround;
     }
 
-    public Atlas plusInfinityLayerTagJunctionEdgeAtlas()
+    public Atlas getTruePositiveNaturalNotOnGroundWithBridgeNo()
     {
-        return this.plusInfinityLayerTagJunctionEdgeAtlas;
+        return this.truePositiveNaturalNotOnGroundWithBridgeNo;
     }
 
-    public Atlas plusInfinityLayerTagTunnelEdgeAtlas()
+    public Atlas getTruePositiveNaturalNotOnGroundWithTunnelNo()
     {
-        return this.plusInfinityLayerTagTunnelEdgeAtlas;
+        return this.truePositiveNaturalNotOnGroundWithTunnelNo;
     }
 
-    public Atlas plusOneLayerTagBridgeEdgeAtlas()
+    public Atlas getTruePositiveWaterwayNotOnGround()
     {
-        return this.plusOneLayerTagBridgeEdgeAtlas;
+        return this.truePositiveWaterwayNotOnGround;
     }
 
-    public Atlas plusOneLayerTagEdgeAtlas()
+    public Atlas getTruePositiveWaterwayNotOnGroundWithBridgeNo()
     {
-        return this.plusOneLayerTagEdgeAtlas;
+        return this.truePositiveWaterwayNotOnGroundWithBridgeNo;
     }
 
-    public Atlas plusOneLayerTagJunctionEdgeAtlas()
+    public Atlas getTruePositiveWaterwayNotOnGroundWithTunnelNo()
     {
-        return this.plusOneLayerTagJunctionEdgeAtlas;
-    }
-
-    public Atlas plusOneLayerTagTunnelEdgeAtlas()
-    {
-        return this.plusOneLayerTagTunnelEdgeAtlas;
-    }
-
-    public Atlas plusSixLayerTagBridgeEdgeAtlas()
-    {
-        return this.plusSixLayerTagBridgeEdgeAtlas;
-    }
-
-    public Atlas plusThreeLayerTagBridgeEdgeAtlas()
-    {
-        return this.plusThreeLayerTagBridgeEdgeAtlas;
-    }
-
-    public Atlas plusTwoLayerTagBridgeEdgeAtlas()
-    {
-        return this.plusTwoLayerTagBridgeEdgeAtlas;
-    }
-
-    public Atlas validBuildingPassageTunnelLayerEdgeAtlas()
-    {
-        return this.validBuildingPassageTunnelLayerEdgeAtlas;
-    }
-
-    public Atlas validLayerTagRoundaboutEdgeAtlas()
-    {
-        return this.validLayerTagRoundaboutEdgeAtlas;
-    }
-
-    public Atlas whitespaceBridgeRoundaboutLayerTagEdgeAtlas()
-    {
-        return this.whitespaceBridgeRoundaboutLayerTagEdgeAtlas;
-    }
-
-    public Atlas whitespaceLayerTagBridgeEdgeAtlas()
-    {
-        return this.whitespaceLayerTagBridgeEdgeAtlas;
-    }
-
-    public Atlas whitespaceLayerTagEdgeAtlas()
-    {
-        return this.whitespaceLayerTagEdgeAtlas;
-    }
-
-    public Atlas whitespaceLayerTagJunctionEdgeAtlas()
-    {
-        return this.whitespaceLayerTagJunctionEdgeAtlas;
-    }
-
-    public Atlas whitespaceLayerTagTunnelEdgeAtlas()
-    {
-        return this.whitespaceLayerTagTunnelEdgeAtlas;
-    }
-
-    public Atlas zeroLayerTagBridgeEdgeAtlas()
-    {
-        return this.zeroLayerTagBridgeEdgeAtlas;
-    }
-
-    public Atlas zeroLayerTagEdgeAtlas()
-    {
-        return this.zeroLayerTagEdgeAtlas;
-    }
-
-    public Atlas zeroLayerTagJunctionEdgeAtlas()
-    {
-        return this.zeroLayerTagJunctionEdgeAtlas;
-    }
-
-    public Atlas zeroLayerTagTunnelEdgeAtlas()
-    {
-        return this.zeroLayerTagTunnelEdgeAtlas;
+        return this.truePositiveWaterwayNotOnGroundWithTunnelNo;
     }
 }

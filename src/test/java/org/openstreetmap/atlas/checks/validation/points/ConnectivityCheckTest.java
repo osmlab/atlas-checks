@@ -60,9 +60,9 @@ public class ConnectivityCheckTest
     }
 
     @Test
-    public void invalidDisconnectedEdgeCrossingTest()
+    public void invalidConnectedNodesTestNavigableDeadEnd()
     {
-        this.verifier.actual(this.setup.invalidDisconnectedEdgeCrossingAtlas(),
+        this.verifier.actual(this.setup.invalidConnectedNodesAtlasNavigableDeadEnd(),
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -84,22 +84,6 @@ public class ConnectivityCheckTest
     }
 
     @Test
-    public void invalidDisconnectedNodesCrossingLayerTest()
-    {
-        this.verifier.actual(this.setup.invalidDisconnectedNodesCrossingLayerAtlas(),
-                new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void invalidDisconnectedNodesCrossingTest()
-    {
-        this.verifier.actual(this.setup.invalidDisconnectedNodesCrossingAtlas(),
-                new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
     public void invalidDisconnectedNodesOppositeTest()
     {
         this.verifier.actual(this.setup.invalidDisconnectedNodesOppositeAtlas(),
@@ -112,14 +96,6 @@ public class ConnectivityCheckTest
     {
         this.verifier.actual(this.setup.invalidDisconnectedNodesAtlas(),
                 new ConnectivityCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void specificHighwayValuesFlaggedTest()
-    {
-        this.verifier.actual(this.setup.invalidDisconnectedNodesCrossingAtlas(),
-                new ConnectivityCheck(this.secondaryHighwayConfig));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 

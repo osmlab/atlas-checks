@@ -1,8 +1,6 @@
 {
   "CheckResourceLoader": {
-    "scanUrls": [
-      "org.openstreetmap.atlas.checks.validation"
-    ],
+    "scanUrls": ["org.openstreetmap.atlas.checks.validation"],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
     "enabled.value.default": true
   },
@@ -26,12 +24,10 @@
       "blurb": "Fix buildings with spiky geometry",
       "instruction": "Open your favorite editor and validate that the buildings are mapped correctly",
       "difficulty": "NORMAL",
-      "tags":"building"
+      "tags": "building"
     }
   },
-  "OrphanNodeCheck": {
-
-  },
+  "OrphanNodeCheck": {},
   "AddressPointMatchCheck": {
     "bounds.size": 150.0,
     "challenge": {
@@ -71,14 +67,14 @@
       "difficulty": "EASY"
     }
   },
-  "AreasWithHighwayTagCheck":{
-    "tag.filters":"highway->*&area->yes",
-    "challenge":{
-      "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
-      "blurb":"Highways should not be tagged as Areas.",
-      "instruction":"Remove highway tag from feature with area tag.",
-      "difficulty":"EASY",
-      "tags":"highway,landuse"
+  "AreasWithHighwayTagCheck": {
+    "tag.filters": "highway->*&area->yes",
+    "challenge": {
+      "description": "A Highway should never be tagged as an area, all these tasks involve highways that have been.",
+      "blurb": "Highways should not be tagged as Areas.",
+      "instruction": "Remove highway tag from feature with area tag.",
+      "difficulty": "EASY",
+      "tags": "highway,landuse"
     }
   },
   "BigNodeBadDataCheck": {
@@ -121,7 +117,7 @@
       "instruction": "Open your favorite editor, check the instruction and modify the points/ways that are causing boundaries to intersect.",
       "difficulty": "NORMAL"
     }
-    },
+  },
   "BuildingRoadIntersectionCheck": {
     "car.navigable": true,
     "challenge": {
@@ -131,14 +127,24 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"building,highway"
+      "tags": "building,highway"
     }
   },
   "ConcerningAngleBuildingCheck": {
@@ -315,7 +321,18 @@
     }
   },
   "FixMeReviewCheck": {
-    "fixMe.supported.values": ["verify","position","resurvey","Revisar: este punto fue creado por importación directa","continue", "name", "incomplete", "draw geometry and delete this point", "unfinished", "recheck"],
+    "fixMe.supported.values": [
+      "verify",
+      "position",
+      "resurvey",
+      "Revisar: este punto fue creado por importación directa",
+      "continue",
+      "name",
+      "incomplete",
+      "draw geometry and delete this point",
+      "unfinished",
+      "recheck"
+    ],
     "min.highway.type": "tertiary",
     "challenge": {
       "description": "Tasks contain features with fixme/FIXME (most common fix me tags) that need to be addressed",
@@ -337,14 +354,24 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "GeneralizedCoastlineCheck": {
@@ -358,11 +385,11 @@
       "instruction": "Open your favorite editor and add more nodes to the coastline to increase the resolution of the coastline's geometry.",
       "difficulty": "EASY",
       "defaultPriority": "LOW",
-      "tags":"coastline"
+      "tags": "coastline"
     }
   },
   "GenericTagCheck": {
-    "db": {
+    "database": {
       "taginfo": "extra/taginfo-db.db",
       "wikidata": "extra/wikidata.db"
     },
@@ -370,20 +397,38 @@
       "usage.min": 100,
       "percentage_of_key_for_popular": 10
     },
-    "wikidata.tag_removal": ["abandoned", "deprecated", "imported", "obsolete", "rejected"],
+    "wikidata.tag_removal": [
+      "abandoned",
+      "deprecated",
+      "imported",
+      "obsolete",
+      "rejected"
+    ],
     "challenge": {
       "description": "This challenge contains tasks that identify features with OSM Tags (https://wiki.openstreetmap.org/wiki/Tags) that contain invalid tag keys or missing, conflicting, incorrect or illegal tag values. In many tasks in this challenge the task will identify an illegal or questionable tag key or value and provide a link to the Control Wiki Page (wiki page with identification string starting with Q, following with 3 to 4 digits, e.g. https://wiki.osm.org/Item:Q1189) that is used to define that tag’s characteristics in a computer readable format. That Control Wiki Page should contain a link to the Documentation Wiki Page for that tag that is a human readable page that discusses the proper use of the tag and other useful information.\nFor some tasks in this challenge the task may indicate a tag value that is valid or widely used that is not documented in the wiki. For these cases the mapper should not make any changes to the OSM data, but should instead consider adding documentation to the wiki to validate the tag value officially.\nFor more information on the Atlas Check that is used to create this challenge please go to https://github.com/osmlab/atlas-checks/tree/dev/docs/checks/genericTagCheck.md",
       "blurb": "Features with invalid tags",
       "instruction": "Open your favorite editor and check that the listed tags are correct.",
       "difficulty": "EXPERT",
-      "tags":"tags"
+      "tags": "tags"
     }
   },
   "HighwayAccessCheck": {
     "tags": {
-      "accessTags":["yes", "permissive"],
-      "highwayTags": ["motorway", "trunk", "footway", "bridleway", "steps", "path", "cycleway", "pedestrian", "track",
-        "bus_guideway", "busway", "raceway"]
+      "accessTags": ["yes", "permissive"],
+      "highwayTags": [
+        "motorway",
+        "trunk",
+        "footway",
+        "bridleway",
+        "steps",
+        "path",
+        "cycleway",
+        "pedestrian",
+        "track",
+        "bus_guideway",
+        "busway",
+        "raceway"
+      ]
     },
     "challenge": {
       "difficulty": "EASY",
@@ -399,12 +444,7 @@
     }
   },
   "ImproperAndUnknownRoadNameCheck": {
-    "names.improper": [
-      "street",
-      "express",
-      "avenue",
-      "drive"
-    ],
+    "names.improper": ["street", "express", "avenue", "drive"],
     "challenge": {
       "description": "Tasks contain roads named as a road type, form of way, a road surface material or the string \"unknown\". These are common mistake in iD.",
       "blurb": "Incorrect road names",
@@ -464,20 +504,18 @@
       "tags": "highway"
     }
   },
-  "IntersectingBuildingsCheck":
-  {
+  "IntersectingBuildingsCheck": {
     "intersection.lower.limit": 0.01,
     "challenge": {
       "description": "Buildings that intersect, contain, or overlap each other.",
       "blurb": "Intersecting Buildings",
       "instruction": "Correct intersecting buildings by moving them or dissolving one into another.",
       "difficulty": "NORMAL",
-      "tags":"building"
+      "tags": "building"
     }
   },
-  "IntersectionAtDifferentLayersCheck":
-  {
-    "great.separation.filter":"",
+  "IntersectionAtDifferentLayersCheck": {
+    "great.separation.filter": "",
     "indoor.mapping.filter": "indoor->*|highway->corridor,steps|level->*",
     "challenge": {
       "description": "Tasks containing Nodes that intersect Ways at different levels.",
@@ -486,15 +524,15 @@
       "difficulty": "EASY"
     }
   },
-  "InvalidAccessTagCheck":{
-    "tags.filter":"public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
-    "minimum.highway.type":"residential",
+  "InvalidAccessTagCheck": {
+    "tags.filter": "public_transport->!yes&psv->!yes&bus->!yes&emergency->!yes&motor_vehicle->!no&vehicle->!no&motorcar->!no",
+    "minimum.highway.type": "residential",
     "challenge": {
       "description": "Tasks containing invalid access tags",
       "blurb": "Invalid Access Tags",
       "instruction": "Correct the displayed invalid access=no tag.",
       "difficulty": "NORMAL",
-      "tags":"access,highway"
+      "tags": "access,highway"
     }
   },
   "InvalidGeometryCheck": {
@@ -503,26 +541,26 @@
       "blurb": "Invalid Geometries",
       "instruction": "Correct the geometries of the displayed ways",
       "difficulty": "NORMAL",
-      "tags":"geometry"
+      "tags": "geometry"
     }
   },
   "InvalidLanesTagCheck": {
     "lanes.filter": "lanes->1,1.5,2,3,4,5,6,7,8,9,10",
-    "challenge":{
-      "description":"Tasks contain invalid values for the lanes tag.",
-      "blurb":"Invalid Lanes Tags",
-      "instruction":"Change the lanes tag to have a valid and representative value.",
-      "difficulty":"EASY",
-      "tags":"lanes,highway"
+    "challenge": {
+      "description": "Tasks contain invalid values for the lanes tag.",
+      "blurb": "Invalid Lanes Tags",
+      "instruction": "Change the lanes tag to have a valid and representative value.",
+      "difficulty": "EASY",
+      "tags": "lanes,highway"
     }
   },
   "InvalidMiniRoundaboutCheck": {
-    "valence.minimum":6,
-    "challenge":{
-      "description":"Tasks containing invalid mini-roundabouts.",
-      "blurb":"Invalid Mini-Roundabout Tags",
-      "instruction":"Change the tags to represent the intersection more accurately.",
-      "difficulty":"NORMAL"
+    "valence.minimum": 6,
+    "challenge": {
+      "description": "Tasks containing invalid mini-roundabouts.",
+      "blurb": "Invalid Mini-Roundabout Tags",
+      "instruction": "Change the tags to represent the intersection more accurately.",
+      "difficulty": "NORMAL"
     }
   },
   "InvalidMultiPolygonRelationCheck": {
@@ -537,9 +575,7 @@
     }
   },
   "InvalidSignBoardRelationCheck": {
-    "countries": [
-      "RUS"
-    ],
+    "countries": ["RUS"],
     "challenge": {
       "description": "Tasks containing signboard relations that are not properly formed.",
       "blurb": "Invalid Signboards",
@@ -551,25 +587,29 @@
   "InvalidTagsCheck": {
     "filters.resource.override": false,
     "filters.classes.tags": [
-      ["area","boundary->protected_area&protect_class->!"],
-      ["relation","boundary->protected_area&protect_class->!"],
-      ["edge","highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"],
-      ["node","highway->emergency_access_point&ref->!", "The element is an emergency_access_point with no ref tag."]
+      ["area", "boundary->protected_area&protect_class->!"],
+      ["relation", "boundary->protected_area&protect_class->!"],
+      [
+        "edge",
+        "highway->motorway,trunk,primary,secondary,tertiary,unclassified,residential,service,motorway_link,trunk_link,primary_link,secondary_link,tertiary_link,living_street,track&junction->roundabout&area->*"
+      ],
+      [
+        "node",
+        "highway->emergency_access_point&ref->!",
+        "The element is an emergency_access_point with no ref tag."
+      ]
     ],
     "challenge": {
       "description": "Tasks containing features with tags containing missing, conflicting, incorrect or illegal values",
       "blurb": "Features with invalid tags",
       "instruction": "Open your favorite editor and check that the listed tags are correct.",
       "difficulty": "Medium",
-      "tags":"tags"
+      "tags": "tags"
     }
   },
   "SourceMaxspeedCheck": {
     "countries.denylist": ["UK"],
-    "values": [
-      "sign",
-      "markings"
-    ],
+    "values": ["sign", "markings"],
     "context.values": [
       "urban",
       "rural",
@@ -588,17 +628,13 @@
       "nsl_single",
       "zone"
     ],
-    "country.exceptions": [
-      "BE-VLG",
-      "BE-WAL",
-      "BE-BRU"
-    ],
+    "country.exceptions": ["BE-VLG", "BE-WAL", "BE-BRU"],
     "challenge": {
       "description": "Tasks containing features with tag source:maxspeed with incorrect value format.",
       "blurb": "Features with invalid source:maxspeed tags",
       "instruction": "Open your favorite editor and check that the listed tags are correct.",
       "difficulty": "NORMAL",
-      "tags":"tags"
+      "tags": "tags"
     }
   },
   "InvalidTurnRestrictionCheck": {
@@ -609,7 +645,7 @@
       "blurb": "Invalid Turn Restrictions",
       "instruction": "Correct the displayed invalid turn restriction",
       "difficulty": "HARD",
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "LevelCrossingOnRailwayCheck": {
@@ -741,16 +777,87 @@
       "tags": "highway"
     }
   },
-  "MalformedRoundaboutCheck" : {
+  "MalformedRoundaboutCheck": {
     "angle.threshold.maximum_degree": 60.0,
     "min.nodes": 9.0,
-    "traffic.countries.left":["AIA", "ATG", "AUS", "BGD", "BHS", "BMU", "BRB", "BRN", "BTN", "BWA",
-      "CCK", "COK", "CXR", "CYM", "CYP", "DMA", "FJI", "FLK", "GBR", "GGY", "GRD",
-      "GUY", "HKG", "IDN", "IMN", "IND", "IRL", "JAM", "JEY", "JPN", "KEN", "KIR",
-      "KNA", "LCA", "LKA", "LSO", "MAC", "MDV", "MLT", "MOZ", "MSR", "MUS", "MWI",
-      "MYS", "NAM", "NFK", "NIU", "NPL", "NRU", "NZL", "PAK", "PCN", "PNG", "SGP",
-      "SGS", "SHN", "SLB", "SUR", "SWZ", "SYC", "TCA", "THA", "TKL", "TLS", "TON",
-      "TTO", "TUV", "TZA", "UGA", "VCT", "VGB", "VIR", "WSM", "ZAF", "ZMB", "ZWE"],
+    "traffic.countries.left": [
+      "AIA",
+      "ATG",
+      "AUS",
+      "BGD",
+      "BHS",
+      "BMU",
+      "BRB",
+      "BRN",
+      "BTN",
+      "BWA",
+      "CCK",
+      "COK",
+      "CXR",
+      "CYM",
+      "CYP",
+      "DMA",
+      "FJI",
+      "FLK",
+      "GBR",
+      "GGY",
+      "GRD",
+      "GUY",
+      "HKG",
+      "IDN",
+      "IMN",
+      "IND",
+      "IRL",
+      "JAM",
+      "JEY",
+      "JPN",
+      "KEN",
+      "KIR",
+      "KNA",
+      "LCA",
+      "LKA",
+      "LSO",
+      "MAC",
+      "MDV",
+      "MLT",
+      "MOZ",
+      "MSR",
+      "MUS",
+      "MWI",
+      "MYS",
+      "NAM",
+      "NFK",
+      "NIU",
+      "NPL",
+      "NRU",
+      "NZL",
+      "PAK",
+      "PCN",
+      "PNG",
+      "SGP",
+      "SGS",
+      "SHN",
+      "SLB",
+      "SUR",
+      "SWZ",
+      "SYC",
+      "TCA",
+      "THA",
+      "TKL",
+      "TLS",
+      "TON",
+      "TTO",
+      "TUV",
+      "TZA",
+      "UGA",
+      "VCT",
+      "VGB",
+      "VIR",
+      "WSM",
+      "ZAF",
+      "ZMB",
+      "ZWE"
+    ],
     "challenge": {
       "description": "Tasks contain roundabouts that are malformed.",
       "blurb": "Malformed roundabouts",
@@ -759,20 +866,91 @@
     }
   },
   "MixedCaseNameCheck": {
-    "check_name.countries":["AIA", "ATG", "AUS", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB",
-      "CMR", "CAN", "CYM", "DMA", "FJI", "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM",
-      "KEN", "LSO", "MWI", "MLT", "MUS", "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE",
-      "SGP", "SLB", "ZAF", "SWZ", "TZA", "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT",
-      "ZMB", "ZWE"],
-    "name":{
-      "language.keys":["name:en"],
-      "affixes":["Mc", "Mac", "Mck","Mhic", "Mic"],
+    "check_name.countries": [
+      "AIA",
+      "ATG",
+      "AUS",
+      "BHS",
+      "BRB",
+      "BLZ",
+      "BMU",
+      "BWA",
+      "VGB",
+      "CMR",
+      "CAN",
+      "CYM",
+      "DMA",
+      "FJI",
+      "GMB",
+      "GHA",
+      "GIB",
+      "GRD",
+      "GUY",
+      "IRL",
+      "JAM",
+      "KEN",
+      "LSO",
+      "MWI",
+      "MLT",
+      "MUS",
+      "MSR",
+      "NAM",
+      "NZL",
+      "NGA",
+      "PNG",
+      "SYC",
+      "SLE",
+      "SGP",
+      "SLB",
+      "ZAF",
+      "SWZ",
+      "TZA",
+      "TON",
+      "TTO",
+      "TCA",
+      "UGA",
+      "GBR",
+      "USA",
+      "VUT",
+      "ZMB",
+      "ZWE"
+    ],
+    "name": {
+      "language.keys": ["name:en"],
+      "affixes": ["Mc", "Mac", "Mck", "Mhic", "Mic"],
       "articles": ["a", "an", "the"],
-      "prepositions": ["and", "from", "to", "of", "by", "upon", "on", "off", "at", "as", "into", "like", "near",
-        "onto", "per", "till", "up", "via", "with", "for", "in", "de", "la", "del", "du", "van", "der"],
-      "units":["kv"]
+      "prepositions": [
+        "and",
+        "from",
+        "to",
+        "of",
+        "by",
+        "upon",
+        "on",
+        "off",
+        "at",
+        "as",
+        "into",
+        "like",
+        "near",
+        "onto",
+        "per",
+        "till",
+        "up",
+        "via",
+        "with",
+        "for",
+        "in",
+        "de",
+        "la",
+        "del",
+        "du",
+        "van",
+        "der"
+      ],
+      "units": ["kv"]
     },
-    "regex.split":" -/&@–",
+    "regex.split": " -/&@–",
     "challenge": {
       "description": "Tasks containing objects with mixed case names.",
       "blurb": "Mixed Case Name",
@@ -781,7 +959,7 @@
     }
   },
   "MissingRelationTypeCheck": {
-    "ignore.tags.filter":"disused:type->!&disabled:type->!",
+    "ignore.tags.filter": "disused:type->!&disabled:type->!",
     "challenge": {
       "description": "Tasks contain Relations with missing type tag.",
       "blurb": "Relations with missing type tag.",
@@ -815,15 +993,22 @@
       "difficulty": "MEDIUM"
     }
   },
-  "OverlappingAOIPolygonCheck":{
-    "aoi.tags.filters": ["amenity->FESTIVAL_GROUNDS", "amenity->GRAVE_YARD|landuse->CEMETERY",
+  "OverlappingAOIPolygonCheck": {
+    "aoi.tags.filters": [
+      "amenity->FESTIVAL_GROUNDS",
+      "amenity->GRAVE_YARD|landuse->CEMETERY",
       "boundary->NATIONAL_PARK,PROTECTED_AREA|leisure->NATURE_RESERVE,PARK",
-      "historic->BATTLEFIELD", "landuse->FOREST|natural->WOOD",
+      "historic->BATTLEFIELD",
+      "landuse->FOREST|natural->WOOD",
       "landuse->RECREATION_GROUND|leisure->RECREATION_GROUND",
-      "landuse->VILLAGE_GREEN|leisure->PARK", "leisure->GARDEN",
-      "leisure->GOLF_COURSE|sport->GOLF", "leisure->PARK&name->*", "natural->BEACH",
-      "tourism->ZOO"],
-    "intersect.minimum.limit":0.01,
+      "landuse->VILLAGE_GREEN|leisure->PARK",
+      "leisure->GARDEN",
+      "leisure->GOLF_COURSE|sport->GOLF",
+      "leisure->PARK&name->*",
+      "natural->BEACH",
+      "tourism->ZOO"
+    ],
+    "intersect.minimum.limit": 0.01,
     "challenge": {
       "description": "Tasks containing overlapping AOI ways",
       "blurb": "Overlapping AOI Polygon",
@@ -890,13 +1075,19 @@
     }
   },
   "RoadNameGapCheck": {
-    "valid.highway.tag": ["primary","secondary","tertiary","trunk","motorway"],
+    "valid.highway.tag": [
+      "primary",
+      "secondary",
+      "tertiary",
+      "trunk",
+      "motorway"
+    ],
     "challenge": {
       "description": "identifies Edges with no name Tag that are between two other Edges with the same name Tag, OR the Edge has a name Tag but does not equal the name Tag of the Edges that it is between.",
       "blurb": "Flag the Edge with different name tag or no name tag which is between the same name tag edges",
       "instruction": "Open your favorite editor and edit or add the name tag of the flagged edge(s) so they're consistent with connecting edges with same name tag.",
       "difficulty": "EASY",
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "RoadNameSpellingConsistencyCheck": {
@@ -916,14 +1107,24 @@
       "difficulty": "NORMAL",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "RoundaboutConnectorCheck": {
@@ -950,7 +1151,7 @@
     }
   },
   "RoundaboutMissingTagCheck": {
-    "ignore.tags.filter":"motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!",
+    "ignore.tags.filter": "motor_vehicle->!no&foot->!yes&footway->!&access->!private&construction->!",
     "turning.circle.length.threshold": 4,
     "angle.threshold": {
       "maximum_degree": 40.0,
@@ -962,12 +1163,12 @@
       "instruction": "Open your favorite editor and add junction=roundabout tag.",
       "difficulty": "NORMAL",
       "defaultPriority": "LOW",
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "SelfIntersectingPolylineCheck": {
-    "tags.filter":"highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
-    "minimum.highway.type":"service",
+    "tags.filter": "highway->*&highway->!construction&highway->!footway&highway->!path|building->*",
+    "minimum.highway.type": "service",
     "challenge": {
       "description": "Verify that the same Polyline does not intersect itself at any point.",
       "blurb": "Modify Polylines such that they do not self intersect.",
@@ -975,14 +1176,24 @@
       "difficulty": "NORMAL",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "ShadowDetectionCheck": {
@@ -1002,24 +1213,97 @@
       "difficulty": "NORMAL",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "ShortNameCheck": {
-    "non.latin.countries":["AFG",
-      "ARE", "ARM", "BGD", "BGR", "BHR", "BIH", "BLR", "BRN", "BTN", "CHN", "COM", "CYP",
-      "DJI", "DZA", "EGY", "ERI", "ESH", "ETH", "GEO", "GRC", "HKG", "IND", "IRN", "IRQ",
-      "ISR", "JOR", "JPN", "KAZ", "KGZ", "KHM", "KOR", "KWT", "LAO", "LBN", "LBY", "LKA",
-      "MAC", "MAR", "MDA", "MDV", "MKD", "MMR", "MNE", "MNG", "MRT", "MYS", "NPL", "OMN",
-      "PAK", "PRK", "PSE", "QAT", "RUS", "SAU", "SDN", "SGP", "SOM", "SRB", "SYR", "TCD",
-      "THA", "TJK", "TUN", "TWN", "TZA", "UKR", "YEM"],
+    "non.latin.countries": [
+      "AFG",
+      "ARE",
+      "ARM",
+      "BGD",
+      "BGR",
+      "BHR",
+      "BIH",
+      "BLR",
+      "BRN",
+      "BTN",
+      "CHN",
+      "COM",
+      "CYP",
+      "DJI",
+      "DZA",
+      "EGY",
+      "ERI",
+      "ESH",
+      "ETH",
+      "GEO",
+      "GRC",
+      "HKG",
+      "IND",
+      "IRN",
+      "IRQ",
+      "ISR",
+      "JOR",
+      "JPN",
+      "KAZ",
+      "KGZ",
+      "KHM",
+      "KOR",
+      "KWT",
+      "LAO",
+      "LBN",
+      "LBY",
+      "LKA",
+      "MAC",
+      "MAR",
+      "MDA",
+      "MDV",
+      "MKD",
+      "MMR",
+      "MNE",
+      "MNG",
+      "MRT",
+      "MYS",
+      "NPL",
+      "OMN",
+      "PAK",
+      "PRK",
+      "PSE",
+      "QAT",
+      "RUS",
+      "SAU",
+      "SDN",
+      "SGP",
+      "SOM",
+      "SRB",
+      "SYR",
+      "TCD",
+      "THA",
+      "TJK",
+      "TUN",
+      "TWN",
+      "TZA",
+      "UKR",
+      "YEM"
+    ],
     "length.maximum": 2,
     "non.latin.length.maximum": 1
   },
@@ -1054,37 +1338,65 @@
     }
   },
   "SignPostCheck": {
-    "link":{
+    "link": {
       "length.minimum.meters": 50.0,
       "link.branch.check": true
     },
     "source.filter": "highway->motorway,trunk",
-    "ramp.filter":"highway->motorway_link,trunk_link",
-    "destination_tag.filter":"destination->*|destination:ref->*|destination:street->*|destination:backward->*|destination:forwards->*",
+    "ramp.filter": "highway->motorway_link,trunk_link",
+    "destination_tag.filter": "destination->*|destination:ref->*|destination:street->*|destination:backward->*|destination:forwards->*",
     "challenge": {
       "description": "Tasks contain nodes where sign post tagging could be missing.  In particular it looks for motorway and trunk ways which have a link edge exiting them.  A task is generated if either the connecting node is missing the motorway_junction tag or the exiting segment is missing the destination tag.",
       "blurb": "Missing sign post tags",
       "instruction": "Either add the missing motorway_junction tag to the identified node and / or the destination tag to the exiting link segment.",
       "difficulty": "NORMAL",
       "defaultPriority": "MEDIUM",
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "SimilarTagValueCheck": {
     "filter": {
       "commonSimilars": [
-        ["american", "mexican"], ["cafe", "cake"], ["male", "female"], ["woman", "man"],
-        ["women", "men"], ["male_toilet", "female_toilet"], ["radiology", "cardiology"],
-        ["baseball", "basketball"], ["bowls", "boules"], ["padel", "paddel"], ["formal", "informal"],
-        ["hotel", "hostel"], ["hump", "bump"], ["seed", "feed"]
+        ["american", "mexican"],
+        ["cafe", "cake"],
+        ["male", "female"],
+        ["woman", "man"],
+        ["women", "men"],
+        ["male_toilet", "female_toilet"],
+        ["radiology", "cardiology"],
+        ["baseball", "basketball"],
+        ["bowls", "boules"],
+        ["padel", "paddel"],
+        ["formal", "informal"],
+        ["hotel", "hostel"],
+        ["hump", "bump"],
+        ["seed", "feed"]
       ],
       "tags": [
-        "asset_ref", "collection_times", "except", "is_in", "junction:ref", "maxspeed:conditional",
-        "old_name", "old_ref", "opening_hours", "ref", "restriction_hours", "route_ref", "supervised",
-        "source_ref", "target", "telescope"
+        "asset_ref",
+        "collection_times",
+        "except",
+        "is_in",
+        "junction:ref",
+        "maxspeed:conditional",
+        "old_name",
+        "old_ref",
+        "opening_hours",
+        "ref",
+        "restriction_hours",
+        "route_ref",
+        "supervised",
+        "source_ref",
+        "target",
+        "telescope"
       ],
       "tagsWithSubCategories": [
-        "addr", "alt_name", "destination", "name", "seamark", "turn"
+        "addr",
+        "alt_name",
+        "destination",
+        "name",
+        "seamark",
+        "turn"
       ]
     },
     "similarity.threshold": {
@@ -1118,23 +1430,33 @@
       "difficulty": "EASY",
       "defaultPriority": "LOW",
       "highPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=motorway","highway=motorway_link","highway=trunk","highway=trunk_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=motorway",
+          "highway=motorway_link",
+          "highway=trunk",
+          "highway=trunk_link"
+        ]
       },
       "mediumPriorityRule": {
-        "condition":"OR",
-        "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
+        "condition": "OR",
+        "rules": [
+          "highway=primary",
+          "highway=primary_link",
+          "highway=secondary",
+          "highway=secondary_link"
+        ]
       },
-      "tags":"highway"
+      "tags": "highway"
     }
   },
   "StreetNameCheck": {
-    "check" : {
-      "countries" : ["AUT", "CHE", "DEU", "LIE"],
-      "containsValues" : [["strasse"],["straße"],["strasse"],["straße"]],
-      "notContainsValues" : [["strasser"],[],["strasser"],[]],
-      "tags" : [["ss"],["ß"],["ss"],["ß"]],
-      "correctTags" : [["ß"],["ss"],["ß"],["ss"]]
+    "check": {
+      "countries": ["AUT", "CHE", "DEU", "LIE"],
+      "containsValues": [["strasse"], ["straße"], ["strasse"], ["straße"]],
+      "notContainsValues": [["strasser"], [], ["strasser"], []],
+      "tags": [["ss"], ["ß"], ["ss"], ["ß"]],
+      "correctTags": [["ß"], ["ss"], ["ß"], ["ss"]]
     },
     "challenge": {
       "description": "Checks if the countries specified above contain the values in their tags",
@@ -1142,14 +1464,14 @@
     }
   },
   "StreetNameIntegersOnlyCheck": {
-    "name.keys.filter":["name","name:left","name:right"],
+    "name.keys.filter": ["name", "name:left", "name:right"],
     "character.single.ignore": true,
     "challenge": {
       "description": "Tasks containing name tags with only integers",
       "blurb": "Street Names Integers Only",
       "instruction": "Correct the road with only integers for names.",
       "difficulty": "Medium",
-      "tags":"highway,name"
+      "tags": "highway,name"
     }
   },
   "SnakeRoadCheck": {
@@ -1180,7 +1502,7 @@
       "tags": "highway"
     }
   },
-  "SuddenHighwayTypeChangeCheck":{
+  "SuddenHighwayTypeChangeCheck": {
     "challenge": {
       "description": "Identifies ways that have suspicious highway tag jumps.",
       "blurb": "Sudden Highway Type Change",
@@ -1195,7 +1517,37 @@
     "min.dataset.size.for.stats.computation": 50.0,
     "max.level.tag.value": 100.0,
     "outlier.multiplier": 18.0,
-    "invalid.height.characters": ["~","`","!","@","#","$","%","^","&","*","(", ")","-","_","+","=","[","[","}","]","|","\\",":",";","<",",",">","?","/"],
+    "invalid.height.characters": [
+      "~",
+      "`",
+      "!",
+      "@",
+      "#",
+      "$",
+      "%",
+      "^",
+      "&",
+      "*",
+      "(",
+      ")",
+      "-",
+      "_",
+      "+",
+      "=",
+      "[",
+      "[",
+      "}",
+      "]",
+      "|",
+      "\\",
+      ":",
+      ";",
+      "<",
+      ",",
+      ">",
+      "?",
+      "/"
+    ],
     "challenge": {
       "description": "Identifies invalid or statistically outlying building:levels/height tag values.",
       "blurb": "Validating building:height/height tags",
@@ -1232,9 +1584,7 @@
     }
   },
   "UnwalkableWaysCheck": {
-    "countries": [
-      "SGP"
-    ],
+    "countries": ["SGP"],
     "includeDualCrossingDualCarriageways": false,
     "challenge": {
       "description": "Intersections with dual carriageways can cause foot traffic routing issues.",
@@ -1271,7 +1621,7 @@
     }
   },
   "WaterbodyAndIslandSizeCheck": {
-    "surface":{
+    "surface": {
       "waterbody.minimum.meters": 10.0,
       "waterbody.maximum.kilometers": 370000.0,
       "island.minimum.meters": 10.0,
@@ -1322,16 +1672,16 @@
   },
   "AtGradeSignPostCheck": {
     "connected.highway.types": {
-      "primary": ["trunk","primary","secondary"],
+      "primary": ["trunk", "primary", "secondary"],
       "trunk": ["primary"],
       "secondary": ["primary"]
     },
-    "challenge":{
-      "description":"This tasks contains at-grade intersections that are not part of destination_sign relations.",
-      "blurb":"Add/Fix destination_sign relations to at-grade intersections",
-      "instruction":"Open your favorite editor and check the instruction fr the task and add a destination_sign relation or destination_sign tag to the at-grade intersection.",
-      "difficulty":"NORMAL",
-      "defaultPriority":"MEDIUM"
+    "challenge": {
+      "description": "This tasks contains at-grade intersections that are not part of destination_sign relations.",
+      "blurb": "Add/Fix destination_sign relations to at-grade intersections",
+      "instruction": "Open your favorite editor and check the instruction fr the task and add a destination_sign relation or destination_sign tag to the at-grade intersection.",
+      "difficulty": "NORMAL",
+      "defaultPriority": "MEDIUM"
     }
   },
   "OceanBleedingCheck": {
@@ -1342,9 +1692,7 @@
     },
     "highway": {
       "minimum": "path",
-      "exclude": [
-        "bus_guideway"
-      ]
+      "exclude": ["bus_guideway"]
     },
     "lineItems.offending": "railway->rail,narrow_gauge,preserved,subway,disused,monorail,tram,light_rail,funicular,construction,miniature",
     "challenge": {
@@ -1375,18 +1723,12 @@
   },
   "WaterAreaCheck": {
     "intersect.minimum.limit": 0.01,
-    "water.tags.crossing.ignore": [
-      "waterway->dam"
-    ],
-    "water.tags.filters": [
-      "natural->water&water->*|waterway->riverbank"
-    ],
+    "water.tags.crossing.ignore": ["waterway->dam"],
+    "water.tags.filters": ["natural->water&water->*|waterway->riverbank"],
     "water.tags.filtersrequireswaterway": [
       "natural->water&water->river,stream_pool,canal,lock|waterway->riverbank"
     ],
-    "waterway.tags.filters": [
-      "waterway->*"
-    ],
+    "waterway.tags.filters": ["waterway->*"],
     "challenge": {
       "description": "Overlapping waterway areas",
       "blurb": "Edit overlapping waterway features so they either validly intersect or do not overlap.",
@@ -1416,7 +1758,7 @@
     }
   },
   "TunnelBridgeHeightLimitCheck": {
-    "highway.filter":"highway->motorway_link,trunk_link,primary,primary_link,secondary,secondary_link",
+    "highway.filter": "highway->motorway_link,trunk_link,primary,primary_link,secondary,secondary_link",
     "challenge": {
       "description": "Tunnels, covered roads and roads crossing with bridges should have a 'maxheight' or 'maxheight:physical' tags.",
       "blurb": "Missing maxheight tag",
@@ -1431,7 +1773,7 @@
     "elevation.path": "elevation"
   },
   "InvalidCharacterNameTagCheck": {
-    "tags.filter":"natural->spring,hot_spring&&name->*||natural->water,lake,pond,reservoir,stream,tidalflat,reedbed,lagoon||water:type->lake||water->lake,pond,oxbow,salt_lake,tidalflat,reedbed,water,Perennial,reservoir,canal,river,lock,moat,riverbank,creek,stream,stream_pool,lagoon||water->drain&&name->*||water->dam,Dam&&natural->water||landuse->pond,reservoir,water||seamark:type->dam&&natural->water||waterway->river,riverbank,brook,ditch,stream,creek,canal,derelict_canal||stream->*||waterway->drain&&name->*||waterway->water,lagoon||wetland->tidalflat,reedbed||natural->lake||||water->lake&&&intermittent->dry||||seasonal->dry||||natural->dry_lake&natural->*&&natural->!dock&&&natural->!water_point&&&natural->!floodway&&&natural->!spillway&&&natural->!wastewater&&&natural->!waterhole||waterway->*&&waterway->!lock_gate&&&waterway->!dock&&&waterway->!water_point&&&waterway->!floodway&&&waterway->!spillway&&&waterway->!wastewater&&&waterway->!waterhole&&&waterway->!culvert&&&waterway->!dam&&&waterway->!waterfall&&&waterway->!fish_pass&&&waterway->!dry_dock&&&waterway->!construction&&&waterway->!boat_lift&&&waterway->!weir&&&waterway->!breakwater&&&waterway->!boatyard||water->*&&water->!lock_gate&&&water->!dock&&&water->!water_point&&&water->!floodway&&&water->!spillway&&&water->!wastewater&&&water->!waterhole&&&water->!pool&&&water->!reflecting_pool&&&water->!swimming_pool&&&water->!salt_pool&&&water->!fountain&&&water->!tank&&&water->!fish_pass||tunnel->*&&tunnel->!culvert||waterway->*&&waterway->!drain&&name->!||water->*&&water->!drain&&name->!||wetland->*&&seasonal->yes&&wetland->!tidalflat&&&wetland->!reedbed||water->*&&seasonal->yes&&water->!tidalflat&&&water->!reedbed||natural->*&&seasonal->yes&&natural->!tidalflat&&&natural->!reedbed",
+    "tags.filter": "natural->spring,hot_spring&&name->*||natural->water,lake,pond,reservoir,stream,tidalflat,reedbed,lagoon||water:type->lake||water->lake,pond,oxbow,salt_lake,tidalflat,reedbed,water,Perennial,reservoir,canal,river,lock,moat,riverbank,creek,stream,stream_pool,lagoon||water->drain&&name->*||water->dam,Dam&&natural->water||landuse->pond,reservoir,water||seamark:type->dam&&natural->water||waterway->river,riverbank,brook,ditch,stream,creek,canal,derelict_canal||stream->*||waterway->drain&&name->*||waterway->water,lagoon||wetland->tidalflat,reedbed||natural->lake||||water->lake&&&intermittent->dry||||seasonal->dry||||natural->dry_lake&natural->*&&natural->!dock&&&natural->!water_point&&&natural->!floodway&&&natural->!spillway&&&natural->!wastewater&&&natural->!waterhole||waterway->*&&waterway->!lock_gate&&&waterway->!dock&&&waterway->!water_point&&&waterway->!floodway&&&waterway->!spillway&&&waterway->!wastewater&&&waterway->!waterhole&&&waterway->!culvert&&&waterway->!dam&&&waterway->!waterfall&&&waterway->!fish_pass&&&waterway->!dry_dock&&&waterway->!construction&&&waterway->!boat_lift&&&waterway->!weir&&&waterway->!breakwater&&&waterway->!boatyard||water->*&&water->!lock_gate&&&water->!dock&&&water->!water_point&&&water->!floodway&&&water->!spillway&&&water->!wastewater&&&water->!waterhole&&&water->!pool&&&water->!reflecting_pool&&&water->!swimming_pool&&&water->!salt_pool&&&water->!fountain&&&water->!tank&&&water->!fish_pass||tunnel->*&&tunnel->!culvert||waterway->*&&waterway->!drain&&name->!||water->*&&water->!drain&&name->!||wetland->*&&seasonal->yes&&wetland->!tidalflat&&&wetland->!reedbed||water->*&&seasonal->yes&&water->!tidalflat&&&water->!reedbed||natural->*&&seasonal->yes&&natural->!tidalflat&&&natural->!reedbed",
     "invalid.char.regex": ".*[0-9#$%^&*@~“”\"].*",
     "challenge": {
       "description": "Name and localized name tags for certain features should not contain invalid characters like numbers, special characters, double quotes or smart quotes.",
@@ -1442,8 +1784,17 @@
     }
   },
   "LoneNodeCheck": {
-    "valid.highway.tag": ["crossing", "turning_circle", "traffic_signals", "stop", "give_way",
-      "motorway_junction", "mini_roundabout", "passing_place", "turning_loop"],
+    "valid.highway.tag": [
+      "crossing",
+      "turning_circle",
+      "traffic_signals",
+      "stop",
+      "give_way",
+      "motorway_junction",
+      "mini_roundabout",
+      "passing_place",
+      "turning_loop"
+    ],
     "challenge": {
       "description": "Tasks contain nodes with either inappropriate highway tag value or which are not part of a way with highway or railway tag.",
       "blurb": "Lone nodes with highway tag",

@@ -14,6 +14,7 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasItem;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
@@ -44,9 +45,6 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
     private static final List<String> Features_Tags_Should_Represent_Only_Once = Arrays
             .asList(AmenityTag.KEY, LeisureTag.KEY, BuildingTag.KEY, ShopTag.KEY);
-
-    private static final List<ItemType> NodeItemsTypesToCompare = Arrays.asList(ItemType.NODE,
-            ItemType.POINT);
 
     private static final List<ItemType> WayNodeItemsTypesToCompare = Arrays.asList(ItemType.AREA,
             ItemType.EDGE, ItemType.LINE, ItemType.NODE, ItemType.POINT);
@@ -143,13 +141,13 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
 
         try
         {
-            final Iterable<AtlasEntity> entities = area.getAtlas().entitiesWithin(area.bounds(),
-                    entity -> NodeItemsTypesToCompare.contains(entity.getType()));
+            final Iterable<LocationItem> locationItems = area.getAtlas()
+                    .locationItemsWithin(area.bounds());
 
-            for (final AtlasEntity entity : entities)
+            for (final LocationItem locationItem : locationItems)
             {
                 final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
-                        .verifyDuplicateFeature(area, entity);
+                        .verifyDuplicateFeature(area, locationItem);
 
                 if (duplicateFeature.isPresent())
                 {
@@ -241,19 +239,18 @@ public class DuplicateMapFeatureCheck extends BaseCheck<Object>
         {
             try
             {
-                final Iterable<AtlasEntity> entities = relation.getAtlas().entitiesWithin(
-                        relation.bounds(),
-                        entity -> WayNodeItemsTypesToCompare.contains(entity.getType()));
+                final Iterable<AtlasItem> items = relation.getAtlas()
+                        .itemsWithin(relation.bounds());
 
-                for (final AtlasEntity entity : entities)
+                for (final AtlasItem item : items)
                 {
-                    if (this.isRelationMember(relation, entity))
+                    if (this.isRelationMember(relation, item))
                     {
                         continue;
                     }
 
                     final Optional<Tuple<String, Map<String, String>>> duplicateFeature = this
-                            .verifyDuplicateFeature(relation, entity);
+                            .verifyDuplicateFeature(relation, item);
 
                     if (duplicateFeature.isPresent())
                     {
