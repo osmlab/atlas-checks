@@ -487,7 +487,7 @@ public class RouteRelationCheck extends BaseCheck<Object>
         {
             for (final PolyLine lineTwo : routeTwo)
             {
-                if (lineOne.stream().anyMatch(location -> lineTwo.contains(location)))
+                if (lineOne.stream().anyMatch(lineTwo::contains))
                 {
                     return true;
                 }
@@ -576,14 +576,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
                 {
                     final Distance tempDistance = this.routeSetDisconnectedClosestDistance(lineOne,
                             lineTwo);
-
-                    this.routeSetDisconnectedClosestMap(disconnectedDistance, tempDistance,
-                            Set.<PolyLine> of(lineOne, lineTwo));
-
-                    if (minimumDistance == null || tempDistance.isLessThan(minimumDistance))
-                    {
-                        minimumDistance = tempDistance;
-                    }
+                    minimumDistance = this.routeSetDisconnectedClosestMap(disconnectedDistance,
+                            tempDistance, Set.of(lineOne, lineTwo), true, minimumDistance);
                 }
             }
 
@@ -599,12 +593,8 @@ public class RouteRelationCheck extends BaseCheck<Object>
             for (final PolyLine polyline : disconnectedMembers)
             {
                 final Distance length = polyline.length();
-                this.routeSetDisconnectedClosestMap(lengthMap, length, Set.<PolyLine> of(polyline));
-
-                if (maxLength == null || length.isGreaterThan(maxLength))
-                {
-                    maxLength = length;
-                }
+                maxLength = this.routeSetDisconnectedClosestMap(lengthMap, length, Set.of(polyline),
+                        false, maxLength);
             }
 
             disconnectedMembersMinimal.addAll(lengthMap.get(maxLength));
@@ -614,14 +604,13 @@ public class RouteRelationCheck extends BaseCheck<Object>
     }
 
     /**
-     * This is the helper function to find the closest edges from the route and the rest of the
-     * edges. It is created to reduce complexity.
+     * This is the helper function to find the closest distance between two PolyLines.
      *
      * @param lineOne
      *            the first sub routes to check
      * @param lineTwo
      *            the second sub routes to check
-     * @return a minimal distance between ends of the two sub routes
+     * @return a minimal distance between ends of two PolyLines
      */
     private Distance routeSetDisconnectedClosestDistance(final PolyLine lineOne,
             final PolyLine lineTwo)
@@ -652,19 +641,60 @@ public class RouteRelationCheck extends BaseCheck<Object>
         return tempMin;
     }
 
-    private void routeSetDisconnectedClosestMap(final Map<Distance, Set<PolyLine>> map,
-            final Distance key, final Set<PolyLine> lineSet)
+    /**
+     * This is the helper function to update maps storing pairs of distances and polyline of such
+     * distances.
+     *
+     * @param map
+     *            the map keeping track of pairs of distance and PolyLines with such distance
+     * @param currentValue
+     *            the length of the current Polyline or the current distance between two PolyLines
+     * @param lineSet
+     *            the set of PolyLines with such Distance value
+     * @param findMin
+     *            a boolean to indicate whether we want to find minimal distance
+     * @param lengthOrDistance
+     *            the current minimal distance or maximal length value
+     * @return the current minimal distance between ends of the set of PolyLines or the current
+     *         maximal length among the set of PolyLines examined
+     */
+    private Distance routeSetDisconnectedClosestMap(final Map<Distance, Set<PolyLine>> map,
+            final Distance currentValue, final Set<PolyLine> lineSet, final boolean findMin,
+            final Distance lengthOrDistance)
     {
-        if (map.containsKey(key))
+        if (map.containsKey(currentValue))
         {
             final Set<PolyLine> lineDistance = new HashSet<>();
-            lineDistance.addAll(map.get(key));
+            lineDistance.addAll(map.get(currentValue));
             lineDistance.addAll(lineSet);
-            map.put(key, lineDistance);
+            map.put(currentValue, lineDistance);
         }
         else
         {
-            map.put(key, lineSet);
+            map.put(currentValue, lineSet);
+        }
+
+        if (findMin)
+        {
+            if (lengthOrDistance == null || currentValue.isLessThan(lengthOrDistance))
+            {
+                return currentValue;
+            }
+            else
+            {
+                return lengthOrDistance;
+            }
+        }
+        else
+        {
+            if (lengthOrDistance == null || currentValue.isGreaterThan(lengthOrDistance))
+            {
+                return currentValue;
+            }
+            else
+            {
+                return lengthOrDistance;
+            }
         }
     }
 
