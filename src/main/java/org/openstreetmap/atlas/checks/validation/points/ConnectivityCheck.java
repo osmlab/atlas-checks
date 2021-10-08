@@ -548,7 +548,7 @@ public class ConnectivityCheck extends BaseCheck<Long>
         final boolean validHighwayValue = this.checkedHighwayValues.isEmpty()
                 ? HighwayTag.isCarNavigableHighway(edge)
                 : this.checkedHighwayValues.contains(edge.highwayTag().getTagValue());
-        return validHighwayValue && !this.denylistedHighwaysTaggableFilter.test(edge)
-                && !BarrierTag.isBarrier(edge);
+        return edge.isMainEdge() && validHighwayValue
+                && !this.denylistedHighwaysTaggableFilter.test(edge) && !BarrierTag.isBarrier(edge);
     }
 }
