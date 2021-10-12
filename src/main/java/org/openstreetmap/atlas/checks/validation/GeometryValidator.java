@@ -47,8 +47,7 @@ public final class GeometryValidator
         {
             return NOT_SIMPLE_LINEAR;
         }
-        if (geometry instanceof Polygon
-                && !POLYGON_CONVERTER.convert((Polygon) geometry).isSimple())
+        if (geometry instanceof Polygon && !((Polygon) geometry).isSimple())
         {
             return NOT_SIMPLE_POLYGON;
         }
