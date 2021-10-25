@@ -30,7 +30,7 @@
     }
   },
   "OrphanNodeCheck": {
-
+    "enabled": false
   },
   "AddressPointMatchCheck": {
     "bounds.size": 150.0,
