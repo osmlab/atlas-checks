@@ -29,7 +29,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     private static final String BASIC_INSTRUCTION = "This roundabout has improper highway tag.";
     private static final String ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION = "This way, id:{0,number,#} should have highway tag that matches the highest level of connected routes. Current:{1}. Expect:{2}.";
 
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
+    private static final List<String> FALLBACK_INSTRUCTION = Arrays
             .asList(ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION, BASIC_INSTRUCTION);
 
     public RoundaboutHighwayTagCheck(final Configuration configuration)
@@ -63,7 +63,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Set<String> instructions = new HashSet<>();
+        final Set<String> editingInstructions = new HashSet<>();
         final Set<AtlasObject> flaggedObjects = new HashSet<>();
 
         final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
@@ -101,15 +101,15 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
 
         if (maxHighwayTagFromEdges.isMoreImportantThan(roundaboutHighwayTag))
         {
-            instructions.add(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+            editingInstructions.add(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
                     roundaboutHighwayTag, maxHighwayTagFromEdges));
         }
 
-        if (!instructions.isEmpty())
+        if (!editingInstructions.isEmpty())
         {
             flaggedObjects.addAll(roundaboutEdges);
             final CheckFlag flag = this.createFlag(flaggedObjects, this.getLocalizedInstruction(1));
-            instructions.forEach(flag::addInstruction);
+            editingInstructions.forEach(flag::addInstruction);
             return Optional.of(flag);
         }
         return Optional.empty();
@@ -118,15 +118,9 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     @Override
     protected List<String> getFallbackInstructions()
     {
-        return FALLBACK_INSTRUCTIONS;
+        return FALLBACK_INSTRUCTION;
     }
 
-    /**
-     * Function for {@link SimpleEdgeWalker} that gathers connected edges that are part of a
-     * roundabout.
-     *
-     * @return {@link Function} for {@link SimpleEdgeWalker}
-     */
     private Function<Edge, Stream<Edge>> isRoundaboutEdge()
     {
         return edge -> edge.connectedEdges().stream()
