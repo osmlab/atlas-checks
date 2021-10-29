@@ -8,6 +8,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 
 /**
  * Tests for {@link RoundaboutHighwayTagCheck}
+ * 
  * @author elaineleong
  */
 public class RoundaboutHighwayTagCheckTest
