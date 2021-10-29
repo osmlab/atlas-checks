@@ -47,16 +47,11 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        // We check that the object is an instance of Edge
-        return object instanceof Edge
-                // Make sure that the edges are instances of roundabout
-                && JunctionTag.isRoundabout(object)
-                // And that the Edge has not already been marked as flagged
-                && !this.isFlagged(object.getIdentifier())
-                // Make sure that we are only looking at main edges
-                && ((Edge) object).isMainEdge()
-                // Check for excluded highway types
-                && HighwayTag.isCarNavigableHighway(object);
+        return object instanceof Edge &&
+                JunctionTag.isRoundabout(object) &&
+                HighwayTag.isCarNavigableHighway(object) &&
+                ((Edge) object).isMainEdge() &&
+                !this.isFlagged(object.getIdentifier());
     }
 
     /**
@@ -73,13 +68,11 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
         final Set<String> instructions = new HashSet<>();
         final Set<AtlasObject> flaggedObjects = new HashSet<>();
 
-        // Get all Edges in the roundabout
         final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
                 .collectEdges();
         roundaboutEdges
                 .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
-        // Get all the Nodes in the roundabout
         final Set<Node> roundaboutNodes = roundaboutEdges.stream().map(Edge::start)
                 .collect(Collectors.toSet());
 
@@ -139,7 +132,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     private Function<Edge, Stream<Edge>> isRoundaboutEdge()
     {
         return edge -> edge.connectedEdges().stream()
-                .filter(connected -> JunctionTag.isRoundabout(connected)
-                        && HighwayTag.isCarNavigableHighway(connected));
+                .filter(connected -> HighwayTag.isCarNavigableHighway(connected) &&
+                        JunctionTag.isRoundabout(connected));
     }
 }
