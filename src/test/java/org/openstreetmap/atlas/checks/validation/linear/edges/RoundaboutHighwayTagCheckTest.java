@@ -23,7 +23,7 @@ public class RoundaboutHighwayTagCheckTest
     public void roundaboutWithHighwayTagZeroTest()
     {
         this.verifier.actual(this.setup.roundaboutWithHighwayTagZeroAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+                new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 }
