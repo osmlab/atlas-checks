@@ -43,10 +43,8 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_7)),
                     @Node(coordinates = @Loc(value = TEST_8)) },
             // edges
-            edges = { 
-                    @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
-                        @Loc(value = TEST_2) }, tags = { "junction=roundabout", 
-                                "highway=primary" }),
+            edges = { @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
+                    @Loc(value = TEST_2) }, tags = { "junction=roundabout", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
                                     "highway=primary" }),
@@ -175,8 +173,10 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_11)),
                     @Node(coordinates = @Loc(value = TEST_12)) },
             // edges
-            edges = { @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
-                    @Loc(value = TEST_2) }, tags = { "junction=roundabout", "highway=unclassified" }),
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout",
+                                    "highway=unclassified" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
                                     "highway=primary" }),
