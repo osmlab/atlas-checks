@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * Tests for {@link RoundaboutHighwayTagCheck}
  * 
- * @author elaineleong
+ * @author mselaineleong
  */
 public class RoundaboutHighwayTagCheckTest
 {
@@ -24,6 +24,6 @@ public class RoundaboutHighwayTagCheckTest
     {
         this.verifier.actual(this.setup.roundaboutWithHighwayTagZeroAtlas(),
                 new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 }
