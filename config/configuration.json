@@ -30,7 +30,7 @@
     }
   },
   "OrphanNodeCheck": {
-
+    "enabled": false
   },
   "AddressPointMatchCheck": {
     "bounds.size": 150.0,
@@ -814,6 +814,19 @@
       "blurb": "Open Boundary Check",
       "instruction": "Please close the boundary",
       "difficulty": "MEDIUM"
+    }
+  },
+  "RouteRelationCheck": {
+    "features.public.transport" : ["train", "subway", "bus",
+      "trolleybus", "minibus", "light_rail", "share_taxi",
+      "railway", "rail", "tram",
+      "aircraft", "ferry"
+    ],
+    "challenge": {
+      "description": "Check route relations and route master relations for gaps in tracks, signs too far from track and some others. ",
+      "blurb": "Route and route master relation errors.",
+      "instruction": "Open your favorite editor and validate that the relations are mapped correctly",
+      "difficulty": "Medium"
     }
   },
   "OverlappingAOIPolygonCheck":{

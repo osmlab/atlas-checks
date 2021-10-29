@@ -36,7 +36,8 @@ public class MalformedRoundaboutCheckTest
                                 + ",\"min.nodes\":" + 0.0 + "}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(
                 "1. This roundabout is malformed.\n"
-                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.",
+                        + "2. This roundabout does not form a single, one-way, complete, car navigable route.\n"
+                        + "3. This roundabout has car navigable ways inside it.",
                 flags.get(0).getInstructions()));
     }
 
