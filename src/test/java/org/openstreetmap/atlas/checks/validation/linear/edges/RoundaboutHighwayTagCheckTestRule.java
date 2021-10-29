@@ -10,7 +10,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 /**
  * {@link RoundaboutHighwayTagCheckTest} data generator
  *
- * @author elaineleong
+ * @author mselaineleong
  */
 
 public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
