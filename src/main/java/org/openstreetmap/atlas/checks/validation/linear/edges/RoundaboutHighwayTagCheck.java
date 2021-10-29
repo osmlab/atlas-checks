@@ -47,11 +47,9 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return object instanceof Edge &&
-                JunctionTag.isRoundabout(object) &&
-                HighwayTag.isCarNavigableHighway(object) &&
-                ((Edge) object).isMainEdge() &&
-                !this.isFlagged(object.getIdentifier());
+        return object instanceof Edge && JunctionTag.isRoundabout(object)
+                && HighwayTag.isCarNavigableHighway(object) && ((Edge) object).isMainEdge()
+                && !this.isFlagged(object.getIdentifier());
     }
 
     /**
@@ -132,7 +130,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
     private Function<Edge, Stream<Edge>> isRoundaboutEdge()
     {
         return edge -> edge.connectedEdges().stream()
-                .filter(connected -> HighwayTag.isCarNavigableHighway(connected) &&
-                        JunctionTag.isRoundabout(connected));
+                .filter(connected -> HighwayTag.isCarNavigableHighway(connected)
+                        && JunctionTag.isRoundabout(connected));
     }
 }
