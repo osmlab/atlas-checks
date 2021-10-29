@@ -9,7 +9,7 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 /**
  * Tests for {@link RoundaboutHighwayTagCheck}
  * 
- * @author mselaineleong
+ * @author elaineleong
  */
 public class RoundaboutHighwayTagCheckTest
 {
@@ -18,6 +18,22 @@ public class RoundaboutHighwayTagCheckTest
 
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
+
+    @Test
+    public void roundaboutWithHighwayTagFiveTest()
+    {
+        this.verifier.actual(this.setup.roundaboutWithHighwayTagFiveAtlas(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void roundaboutWithHighwayTagFourTest()
+    {
+        this.verifier.actual(this.setup.roundaboutWithHighwayTagFourAtlas(),
+                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verifyEmpty();
+    }
 
     @Test
     public void roundaboutWithHighwayTagOneTest()
