@@ -20,22 +20,6 @@ public class RoundaboutHighwayTagCheckTest
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
     @Test
-    public void roundaboutWithHighwayTagFiveTest()
-    {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagFiveAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-    }
-
-    @Test
-    public void roundaboutWithHighwayTagFourTest()
-    {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagFourAtlas(),
-                new RoundaboutValenceCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
     public void roundaboutWithHighwayTagOneTest()
     {
         this.verifier.actual(this.setup.roundaboutWithHighwayTagOneAtlas(),
