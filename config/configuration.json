@@ -963,6 +963,14 @@
       "tags": "highway,junction,roundabout"
     }
   },
+  "RoundaboutHighwayTagCheck": {
+    "challenge": {
+      "description": "Verify that the highway tag of the roundabout is sensible.",
+      "blurb": "Modify the highway tag of the roundabout",
+      "instruction": "Open your favorite editor and modify the highway tag of the roundabout.",
+      "difficulty": "NORMAL"
+    }
+  },  
   "RoundaboutValenceCheck": {
     "connections.minimum": 2.0,
     "challenge": {
