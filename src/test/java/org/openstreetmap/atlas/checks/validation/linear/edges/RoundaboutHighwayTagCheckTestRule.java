@@ -68,10 +68,8 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
                                     "highway=primary" }),
                     @Edge(id = "1242", coordinates = { @Loc(value = TEST_8),
-                            @Loc(value = TEST_9) }, tags = {
-                                    "highway=primary" }) })
+                            @Loc(value = TEST_9) }, tags = { "highway=primary" }) })
     private Atlas roundaboutWithHighwayTagZeroAtlas;
-
 
     public Atlas roundaboutWithHighwayTagZeroAtlas()
     {
