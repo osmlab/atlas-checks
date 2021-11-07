@@ -24,6 +24,36 @@
       "regex": ["\\+"],
       "tagNames": ["name"],
       "exceptions": []
+    },
+    {
+      "instruction": "The edge tag: {0} contains encoding problem `, please verify if single quote \u0027 should be used instead of `.",      
+      "regex": ["`"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The edge tag: {0} contains all caps in between words.",      
+      "regex": ["[&A-Z]{3}\\s[A-Z]"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The edge tag: {0} contains all caps in one word.",      
+      "regex": ["[A-Z]{6}"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The edge tag: {0} contains initials stuck to the name, consider adding space after the initial.",      
+      "regex": ["[A-Z]{1}[.][A-Z]{2}"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The edge tag: {0} contains too many spaces.",      
+      "regex": ["\\s{3}"],
+      "tagNames": ["name"],
+      "exceptions": []
     }
   ]
 }
