@@ -154,7 +154,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
                 // Get object and otherBuilding as a Surfaces
                 final Surface objectAsSurface = ((Area) object).asPolygon().surface();
                 final Surface otherBuildingAsSurface = otherBuilding.asPolygon().surface();
-                FeatureChange featureChange;
+                final FeatureChange featureChange;
                 // If object is larger than otherBuilding, the instruction states object contains
                 // otherBuilding
                 if (objectAsSurface.isLargerThan(otherBuildingAsSurface))

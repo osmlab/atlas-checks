@@ -92,7 +92,7 @@ public class IntersectingBuildingsCheckTest
             final CheckFlag firstFlag = flags.get(0);
             Assert.assertEquals(4, firstFlag.getFlaggedObjects().size());
             final Set<FeatureChange> firstSuggestions = firstFlag.getFixSuggestions();
-            Assert.assertTrue(suggestionsContainIds(firstSuggestions,
+            Assert.assertTrue(this.suggestionsContainIds(firstSuggestions,
                     Arrays.asList(1234567L, 2234567L, 3234567L)));
 
             // Second building overlaps with the third and fourth one (it's overlap with first is
@@ -100,21 +100,15 @@ public class IntersectingBuildingsCheckTest
             final CheckFlag secondFlag = flags.get(1);
             Assert.assertEquals(3, secondFlag.getFlaggedObjects().size());
             final Set<FeatureChange> secondSuggestions = secondFlag.getFixSuggestions();
-            Assert.assertTrue(
-                    suggestionsContainIds(secondSuggestions, Arrays.asList(2234567L, 3234567L)));
+            Assert.assertTrue(this.suggestionsContainIds(secondSuggestions,
+                    Arrays.asList(2234567L, 3234567L)));
 
             // Third building's overlap with fourth building will be flagged with the third flag
             final CheckFlag thirdFlag = flags.get(2);
             Assert.assertEquals(2, thirdFlag.getFlaggedObjects().size());
             final Set<FeatureChange> thirdSuggestions = thirdFlag.getFixSuggestions();
-            Assert.assertTrue(suggestionsContainIds(thirdSuggestions, List.of(3234567L)));
+            Assert.assertTrue(this.suggestionsContainIds(thirdSuggestions, List.of(3234567L)));
         });
-    }
-
-    private boolean suggestionsContainIds(Set<FeatureChange> suggestions, List<Long> ids)
-    {
-        return suggestions.stream().map(FeatureChange::getAfterView)
-                .map(AtlasEntity::getOsmIdentifier).allMatch(ids::contains);
     }
 
     @Test
@@ -145,5 +139,12 @@ public class IntersectingBuildingsCheckTest
                 new IntersectingBuildingsCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"IntersectingBuildingsCheck\": {\"intersection.lower.limit\": 0.15}}")));
         this.verifier.verifyEmpty();
+    }
+
+    private boolean suggestionsContainIds(final Set<FeatureChange> suggestions,
+            final List<Long> ids)
+    {
+        return suggestions.stream().map(FeatureChange::getAfterView)
+                .map(AtlasEntity::getOsmIdentifier).allMatch(ids::contains);
     }
 }
