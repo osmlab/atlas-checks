@@ -1,5 +1,9 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,11 +13,6 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 
 /**
  * {@link IntersectingBuildingsCheck} unit test
@@ -58,8 +57,8 @@ public class IntersectingBuildingsCheckTest
         this.verifier.verify(flag ->
         {
             Assert.assertEquals(2, flag.getFlaggedObjects().size());
-            Assert.assertTrue(flag.getInstructions()
-                    .contains("Building (id=1234567) is overlapped by another building (id=2234567)."));
+            Assert.assertTrue(flag.getInstructions().contains(
+                    "Building (id=1234567) is overlapped by another building (id=2234567)."));
 
             final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
             final Area after = (Area) suggestion.getAfterView();
@@ -93,14 +92,16 @@ public class IntersectingBuildingsCheckTest
             final CheckFlag firstFlag = flags.get(0);
             Assert.assertEquals(4, firstFlag.getFlaggedObjects().size());
             final Set<FeatureChange> firstSuggestions = firstFlag.getFixSuggestions();
-            Assert.assertTrue(suggestionsContainIds(firstSuggestions, Arrays.asList(1234567L, 2234567L, 3234567L)));
+            Assert.assertTrue(suggestionsContainIds(firstSuggestions,
+                    Arrays.asList(1234567L, 2234567L, 3234567L)));
 
             // Second building overlaps with the third and fourth one (it's overlap with first is
             // already flagged)
             final CheckFlag secondFlag = flags.get(1);
             Assert.assertEquals(3, secondFlag.getFlaggedObjects().size());
             final Set<FeatureChange> secondSuggestions = secondFlag.getFixSuggestions();
-            Assert.assertTrue(suggestionsContainIds(secondSuggestions, Arrays.asList(2234567L, 3234567L)));
+            Assert.assertTrue(
+                    suggestionsContainIds(secondSuggestions, Arrays.asList(2234567L, 3234567L)));
 
             // Third building's overlap with fourth building will be flagged with the third flag
             final CheckFlag thirdFlag = flags.get(2);
@@ -112,10 +113,8 @@ public class IntersectingBuildingsCheckTest
 
     private boolean suggestionsContainIds(Set<FeatureChange> suggestions, List<Long> ids)
     {
-        return suggestions.stream()
-                    .map(FeatureChange::getAfterView)
-                    .map(AtlasEntity::getOsmIdentifier)
-                    .allMatch(ids::contains);
+        return suggestions.stream().map(FeatureChange::getAfterView)
+                .map(AtlasEntity::getOsmIdentifier).allMatch(ids::contains);
     }
 
     @Test

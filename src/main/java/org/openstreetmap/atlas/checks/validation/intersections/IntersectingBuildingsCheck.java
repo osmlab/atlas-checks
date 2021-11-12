@@ -167,7 +167,8 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
                 // contains object
                 else if (objectAsSurface.isLessThan(otherBuildingAsSurface))
                 {
-                    featureChange = FeatureChange.remove(CompleteEntity.shallowFrom((AtlasEntity) object));
+                    featureChange = FeatureChange
+                            .remove(CompleteEntity.shallowFrom((AtlasEntity) object));
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             otherBuilding.getOsmIdentifier(), object.getOsmIdentifier()));
                 }
