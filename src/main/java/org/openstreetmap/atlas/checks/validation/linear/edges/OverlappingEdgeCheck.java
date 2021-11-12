@@ -80,12 +80,6 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-
-        if (object.getOsmIdentifier() == 344030479) {
-            System.out.println("here: -> " + object.getIdentifier());
-        }
-
-
         final Set<Edge> edges = new OsmWayWalker((Edge) object).collectEdges();
 
         if (!this.isFlagged(object.getIdentifier()))
