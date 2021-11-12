@@ -8,7 +8,10 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.IntersectionUtilities;
 import org.openstreetmap.atlas.geography.Polygon;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteEntity;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -151,10 +154,12 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
                 // Get object and otherBuilding as a Surfaces
                 final Surface objectAsSurface = ((Area) object).asPolygon().surface();
                 final Surface otherBuildingAsSurface = otherBuilding.asPolygon().surface();
+                FeatureChange featureChange;
                 // If object is larger than otherBuilding, the instruction states object contains
                 // otherBuilding
                 if (objectAsSurface.isLargerThan(otherBuildingAsSurface))
                 {
+                    featureChange = FeatureChange.remove(CompleteEntity.shallowFrom(otherBuilding));
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
                 }
@@ -162,15 +167,18 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
                 // contains object
                 else if (objectAsSurface.isLessThan(otherBuildingAsSurface))
                 {
+                    featureChange = FeatureChange.remove(CompleteEntity.shallowFrom((AtlasEntity) object));
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(2,
                             otherBuilding.getOsmIdentifier(), object.getOsmIdentifier()));
                 }
                 // If object and otherBuilding are equal, the instruction states that they overlap
                 else
                 {
+                    featureChange = FeatureChange.remove(CompleteEntity.shallowFrom(otherBuilding));
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(0,
                             object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
                 }
+                flag.addFixSuggestion(featureChange);
                 this.markAsFlagged(uniqueIdentifier);
                 hadIntersection = true;
             }
