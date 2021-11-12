@@ -125,12 +125,15 @@ public class OverlappingEdgeCheckTestRule extends CoreTestRule
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = ONE)),
             @Node(coordinates = @Loc(value = TWO)),
-            @Node(coordinates = @Loc(value = THREE)) }, edges = {
+            @Node(coordinates = @Loc(value = THREE)),
+            @Node(coordinates = @Loc(value = FOUR)),}, edges = {
                     @Edge(id = "521118537000000", coordinates = { @Loc(value = ONE),
                             @Loc(value = TWO), @Loc(value = THREE), @Loc(value = FOUR),
-                            @Loc(value = ONE) }, tags = { "highway=pedestrian" }),
+                            @Loc(value = ONE) }, tags = { "highway=pedestrian", "area=yes"}),
                     @Edge(id = "521118538000000", coordinates = { @Loc(value = TWO),
-                            @Loc(value = THREE) }, tags = { "highway=pedestrian" }) })
+                            @Loc(value = THREE) }, tags = { "highway=pedestrian" }),
+                    @Edge(id = "521118539000000", coordinates = { @Loc(value = FOUR),
+                            @Loc(value = ONE) }, tags = { "highway=footway" })})
     private Atlas pedestrianAreaOverlapPedestrianEdgeAtlas;
 
     @TestAtlas(nodes = { @Node(coordinates = @Loc(value = ONE)),
