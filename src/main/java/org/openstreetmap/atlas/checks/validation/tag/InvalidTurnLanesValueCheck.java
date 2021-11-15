@@ -10,9 +10,9 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
-import org.openstreetmap.atlas.tags.TurnLanesTag;
 import org.openstreetmap.atlas.tags.TurnLanesBackwardTag;
 import org.openstreetmap.atlas.tags.TurnLanesForwardTag;
+import org.openstreetmap.atlas.tags.TurnLanesTag;
 import org.openstreetmap.atlas.tags.TurnTag;
 import org.openstreetmap.atlas.tags.TurnTag.TurnType;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -43,6 +43,23 @@ public class InvalidTurnLanesValueCheck extends BaseCheck<Long>
         super(configuration);
     }
 
+    public final String trimKeywords(final String input)
+    {
+        String result = input;
+        for (final TurnType turnType : TurnTag.TurnType.values())
+        {
+            if (turnType != TurnTag.TurnType.LEFT && turnType != TurnTag.TurnType.RIGHT)
+            {
+                result = result.replaceAll(turnType.name().toLowerCase(), "");
+            }
+        }
+        result = result.replaceAll(TurnTag.TurnType.LEFT.name().toLowerCase(), "");
+        result = result.replaceAll(TurnTag.TurnType.RIGHT.name().toLowerCase(), "");
+        result = result.replaceAll(TurnTag.TURN_LANE_DELIMITER.toLowerCase(), "");
+        result = result.replaceAll(TurnTag.TURN_TYPE_DELIMITER.toLowerCase(), "");
+        return result.trim();
+    }
+
     /**
      * This function will validate if the supplied atlas object is valid for the check.
      *
@@ -53,9 +70,8 @@ public class InvalidTurnLanesValueCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TurnLanesTag.hasTurnLane(object)
-                && HighwayTag.isCarNavigableHighway(object) && object instanceof Edge
-                && ((Edge) object).isMainEdge()
+        return TurnLanesTag.hasTurnLane(object) && HighwayTag.isCarNavigableHighway(object)
+                && object instanceof Edge && ((Edge) object).isMainEdge()
                 && !this.isFlagged(object.getOsmIdentifier());
     }
 
@@ -69,18 +85,24 @@ public class InvalidTurnLanesValueCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        String turnLanesTag = object.getTag(TurnLanesTag.KEY).isPresent()? object.getTag(TurnLanesTag.KEY).get().toLowerCase(): "";
-        String turnLanesForwardTag = object.getTag(TurnLanesForwardTag.KEY).isPresent()? object.getTag(TurnLanesForwardTag.KEY).get().toLowerCase(): "";
-        String turnLanesBackwardTag = object.getTag(TurnLanesBackwardTag.KEY).isPresent()? object.getTag(TurnLanesBackwardTag.KEY).get().toLowerCase(): "";
+        final String turnLanesTag = object.getTag(TurnLanesTag.KEY).isPresent()
+                ? object.getTag(TurnLanesTag.KEY).get().toLowerCase()
+                : "";
+        final String turnLanesForwardTag = object.getTag(TurnLanesForwardTag.KEY).isPresent()
+                ? object.getTag(TurnLanesForwardTag.KEY).get().toLowerCase()
+                : "";
+        final String turnLanesBackwardTag = object.getTag(TurnLanesBackwardTag.KEY).isPresent()
+                ? object.getTag(TurnLanesBackwardTag.KEY).get().toLowerCase()
+                : "";
 
-        if (!trimKeywords(turnLanesTag).isEmpty() || 
-            !trimKeywords(turnLanesForwardTag).isEmpty() || 
-            !trimKeywords(turnLanesBackwardTag).isEmpty())
+        if (!this.trimKeywords(turnLanesTag).isEmpty()
+                || !this.trimKeywords(turnLanesForwardTag).isEmpty()
+                || !this.trimKeywords(turnLanesBackwardTag).isEmpty())
         {
-             this.markAsFlagged(object.getOsmIdentifier());
+            this.markAsFlagged(object.getOsmIdentifier());
 
-             return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
-                     this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+            return Optional.of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                    this.getLocalizedInstruction(0, object.getOsmIdentifier())));
         }
         return Optional.empty();
     }
@@ -91,17 +113,4 @@ public class InvalidTurnLanesValueCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTIONS;
     }
 
-    public String trimKeywords(String s)
-    {
-        for (TurnType turnType : TurnTag.TurnType.values()) {
-            if (turnType != TurnTag.TurnType.LEFT && turnType != TurnTag.TurnType.RIGHT) {
-                s = s.replaceAll(turnType.name().toLowerCase(), "");
-            }
-        }
-        s = s.replaceAll(TurnTag.TurnType.LEFT.name().toLowerCase(), "");
-        s = s.replaceAll(TurnTag.TurnType.RIGHT.name().toLowerCase(), "");
-        s = s.replaceAll(TurnTag.TURN_LANE_DELIMITER.toLowerCase(), "");
-        s = s.replaceAll(TurnTag.TURN_TYPE_DELIMITER.toLowerCase(), "");
-        return s.trim();
-    }
 }

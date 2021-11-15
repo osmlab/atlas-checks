@@ -33,8 +33,8 @@ public class InvalidTurnLanesValueCheckTestRule extends CoreTestRule
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
                     @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "lanes=1.5", "turn:lanes=through|right" }),
+                            @Loc(value = TEST_4), @Loc(value = TEST_5) }, tags = {
+                                    "highway=motorway", "lanes=1.5", "turn:lanes=through|right" }),
                     @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
@@ -51,7 +51,8 @@ public class InvalidTurnLanesValueCheckTestRule extends CoreTestRule
                     @Loc(value = TEST_2), @Loc(value = TEST_3) }, tags = { "highway=motorway" }),
                     @Edge(id = "1001000001", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "lanes=11", "turn:lanes=throug|throug|slight_right" }),
+                            @Loc(value = TEST_5) }, tags = { "highway=motorway", "lanes=11",
+                                    "turn:lanes=throug|throug|slight_right" }),
                     @Edge(id = "1002000001", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "highway=motorway" }) })
