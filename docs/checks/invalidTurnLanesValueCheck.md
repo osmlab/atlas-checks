@@ -82,15 +82,9 @@ if the resulting trimmed string is non-empty, that means `turn:lanes` is malform
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        final String turnLanesTag = object.getTag(TurnLanesTag.KEY).isPresent()
-                ? object.getTag(TurnLanesTag.KEY).get().toLowerCase()
-                : "";
-        final String turnLanesForwardTag = object.getTag(TurnLanesForwardTag.KEY).isPresent()
-                ? object.getTag(TurnLanesForwardTag.KEY).get().toLowerCase()
-                : "";
-        final String turnLanesBackwardTag = object.getTag(TurnLanesBackwardTag.KEY).isPresent()
-                ? object.getTag(TurnLanesBackwardTag.KEY).get().toLowerCase()
-                : "";
+        final String turnLanesTag = object.getTag(TurnLanesTag.KEY).orElse("");
+        final String turnLanesForwardTag = object.getTag(TurnLanesForwardTag.KEY).orElse("");
+        final String turnLanesBackwardTag = object.getTag(TurnLanesBackwardTag.KEY).orElse("");
 
         if (!this.trimKeywords(turnLanesTag).isEmpty()
                 || !this.trimKeywords(turnLanesForwardTag).isEmpty()
@@ -110,7 +104,7 @@ Please note that the keywords "LEFT" and "RIGHT" are trimmed towards the end so 
 ```java
     public final String trimKeywords(final String input)
     {
-        String result = input;
+        String result = input.toLowerCase();
         for (final TurnType turnType : TurnTag.TurnType.values())
         {
             if (turnType != TurnTag.TurnType.LEFT && turnType != TurnTag.TurnType.RIGHT)
