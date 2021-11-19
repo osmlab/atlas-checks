@@ -72,7 +72,8 @@ This way [id:609158689] https://www.openstreetmap.org/way/609158689 contains '/'
 This way [id:895641297] https://www.openstreetmap.org/way/895641297 contains '?'
 This way [id:26830712] https://www.openstreetmap.org/way/26830712 contains ';'
 This way [id:919752321] https://www.openstreetmap.org/way/919752321 contains '+'
-
+This node [id:6357413076] https://www.openstreetmap.org/node/6357413076 contains invalid tag "neme"
+This way [id:264272613] https://www.openstreetmap.org/way/264272613 contains invalid tag "fixeme"
 #### Code Review
 
 In [Atlas](https://github.com/osmlab/atlas), OSM elements are represented as Edges, Points, Lines, Nodes, Areas & Relations; in our case, we’re are looking at
