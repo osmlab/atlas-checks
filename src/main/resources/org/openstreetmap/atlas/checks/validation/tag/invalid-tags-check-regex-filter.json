@@ -350,8 +350,8 @@
       "exceptions": []
     },
     {
-      "instruction": "The tag: {0} contains all caps in between words.",      
-      "regex": ["[&A-Z]{3}\\s[A-Z]"],
+      "instruction": "The tag: {0} contains 2 or more consecutive words with all caps.",      
+      "regex": ["[A-Z]{3}\\s[A-Z]"],
       "tagNames": ["name"],
       "exceptions": []
     },
