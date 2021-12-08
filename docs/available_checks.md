@@ -92,8 +92,9 @@ This document is a list of tables with a description and link to documentation f
 | ImproperAndUnknownRoadNameCheck | This check flags improper road name values. |
 | [InvalidAccessTagCheck](checks/invalidAccessTagCheck.md) | The purpose of this check is to identify invalid access tags. |
 | [InvalidCharacterNameTagCheck](checks/invalidCharacterNameTagCheck.md) | The purpose of this checks is to identify Lines, Areas and Relations with invalid characters in name and localized name tags. |
-| [InvalidLanesTagCheck](docs/checks/invalidLanesTagCheck.md) | The purpose of this check is to identify highways in OSM with an invalid lanes tag value. |
+| [InvalidLanesTagCheck](checks/invalidLanesTagCheck.md) | The purpose of this check is to identify highways in OSM with an invalid lanes tag value. |
 | InvalidTagsCheck | This flags features based on configurable filters. Each filter passed contains the atlas entity classes to check and a taggable filter to test objects against. If a feature is of one of the given classes and passes the associated TaggableFilter, it is flagged. |
+| [InvalidTurnLanesValueCheck](checks/invalidTurnLanesValueCheck.md) | The purpose of this check is to identify highways in OSM with an invalid turn:lanes value. |
 | [LongNameCheck](checks/longNameCheck.md) | This check flags features with names longer than a configurable length. |
 | [MixedCaseNameCheck](checks/mixedCaseNameCheck.md) | The purpose of this check is to identify names that contain invalid mixed cases so that they can be edited to be the standard format. |
 | [RoadNameGapCheck](checks/RoadNameGapCheck.md) | The purpose of this check is to identify edge connected between two edges whose name tag is same. Flag the edge if the edge has a name tag different to name tag of edges connected to it or if there is no name tag itself.
