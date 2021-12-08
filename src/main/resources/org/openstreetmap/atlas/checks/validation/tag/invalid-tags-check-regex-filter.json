@@ -318,6 +318,60 @@
         "with"
       ],
       "exceptions": []
-    }    
+    },
+    {
+      "instruction": "The tag: {0} contains badly written word etang, please verify if accent and capital first letter \u00C9tang should be used instead.",
+      "regex": ["(?i)etang "],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains badly written word ecole, please verify if accent and capital first letter should be \u00C9cole used instead.",
+      "regex": ["(?i)ecole"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains badly written word eglise, please verify if accent and capital first letter \u00C9glise should be used instead.",
+      "regex": ["(?i)eglise"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains cimetiere word not found in dictionary, please verify if accent and capital first letter cimeti\\u00E8re should be used instead.",      
+      "regex": ["(?i)cimetiere"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains encoding problem `, please verify if single quote \u0027 should be used instead of `.",      
+      "regex": ["`"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains 2 or more consecutive words with all caps.",      
+      "regex": ["[A-Z]{3}\\s[A-Z]"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains all caps in one word.",      
+      "regex": ["[A-Z]{6}"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains initials stuck to the name, consider adding space after the initial.",      
+      "regex": ["[A-Z]{1}[.][A-Z]{2}"],
+      "tagNames": ["name"],
+      "exceptions": []
+    },
+    {
+      "instruction": "The tag: {0} contains too many spaces.",      
+      "regex": ["\\s{3}"],
+      "tagNames": ["name"],
+      "exceptions": []
+    }
   ]
 }
