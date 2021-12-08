@@ -60,11 +60,11 @@ public class IntersectingBuildingsTestCaseRule extends CoreTestRule
 
     @TestAtlas(areas = {
             // a building
-            @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_3), @Loc(value = TEST_4),
-                    @Loc(value = TEST_2) }, tags = { "building=yes" }),
+            @Area(id = "1234567000000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_3),
+                    @Loc(value = TEST_4), @Loc(value = TEST_2) }, tags = { "building=yes" }),
             // another building with same footprint
-            @Area(coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_3), @Loc(value = TEST_4),
-                    @Loc(value = TEST_2) }, tags = { "building=yes" }) })
+            @Area(id = "2234567000000", coordinates = { @Loc(value = TEST_1), @Loc(value = TEST_3),
+                    @Loc(value = TEST_4), @Loc(value = TEST_2) }, tags = { "building=yes" }) })
     private Atlas duplicateBuildingsAtlas;
 
     @TestAtlas(areas = {
