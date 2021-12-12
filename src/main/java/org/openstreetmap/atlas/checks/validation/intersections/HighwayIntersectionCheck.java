@@ -93,7 +93,7 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
                         .anyMatch(intersection -> isCross(edge, crossingEdge, intersection)))
                 .collect(Collectors.toSet());
 
-        if (invalidIntersectingEdges.size() > 0)
+        if (!invalidIntersectingEdges.isEmpty())
         {
             return this.createHighwayIntersectionCheckFlag(edge, invalidIntersectingEdges);
         }
@@ -158,9 +158,17 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
      */
     private boolean isWaterwayToCheck(final AtlasObject edge)
     {
-        return Validators.hasValuesFor(edge, WaterwayTag.class)
-                && !(HighwayTag.highwayTag(edge).isPresent()
-                        && (WaterwayTag.get(edge).get().name().equalsIgnoreCase("dam")
-                                || WaterwayTag.get(edge).get().name().equalsIgnoreCase("weir")));
+        boolean validForCheck = false;
+        if (Validators.hasValuesFor(edge, WaterwayTag.class))
+        {
+            final Optional<WaterwayTag> waterwayTagValue = WaterwayTag.get(edge);
+            if (waterwayTagValue.isPresent())
+            {
+                validForCheck = !(HighwayTag.highwayTag(edge).isPresent()
+                        && (waterwayTagValue.get().name().equalsIgnoreCase("dam")
+                                || waterwayTagValue.get().name().equalsIgnoreCase("weir")));
+            }
+        }
+        return validForCheck;
     }
 }
