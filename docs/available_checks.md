@@ -125,4 +125,5 @@ This document is a list of tables with a description and link to documentation f
 | [LineCrossingWaterBodyCheck](checks/lineCrossingWaterBodyCheck.md) | The purpose of this check is to identify line items (edges or lines) and optionally buildings, that cross water bodies invalidly. |
 | [MalformedPolyLineCheck](checks/malformedPolyLineCheck.md) | This check identifies lines that have only one point, or none, and the ones that are too long. |
 | [SelfIntersectingPolylineCheck](checks/selfIntersectingPolylineCheck.md) | The purpose of this check is to identify all edges/lines/areas in Atlas that have self-intersecting polylines, or geometries that intersects itself in some form. |
-| [WaterWayCheck](checks/waterWayChecks.md) | This check finds closed waterways (circular water motion), waterways without a place for water to go (a "sink"), crossing waterways, and waterways that go uphill (requires elevation data). |
+| [WaterWayCheck](checks/waterWayCheck.md) | This check finds closed waterways (circular water motion), waterways without a place for water to go (a "sink"), crossing waterways, and waterways that go uphill (requires elevation data). |
+| [HighwayIntersectionCheck](checks/highwayIntersectionCheck.md) | The purpose of this check is to identify highways intersecting power or waterway objects invalidly. |
