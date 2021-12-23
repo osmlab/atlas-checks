@@ -499,6 +499,7 @@
     }
   },
   "InvalidGeometryCheck": {
+    "tags.filter": "attraction->!roller_coaster&roller_coaster->!",
     "challenge": {
       "description": "Tasks containing Ways with invalid geometries",
       "blurb": "Invalid Geometries",
