@@ -86,6 +86,14 @@ public class InvalidGeometryCheckTest
     }
 
     @Test
+    public void testNotValidLinearRollerCoasterTest()
+    {
+        this.verifier.actual(this.setup.getNotValidLinearRollerCoasterAtlas(),
+                new InvalidGeometryCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testNotValidLinearTest()
     {
         this.verifier.actual(this.setup.getNotValidLinearAtlas(),
@@ -93,13 +101,5 @@ public class InvalidGeometryCheckTest
         this.verifier.verifyNotEmpty();
         this.verifier.verify(flag -> Assert.assertEquals(InvalidGeometryCheckTestRule.TEST_ID_2,
                 flag.getIdentifier()));
-    }
-
-    @Test
-    public void testNotValidLinearRollerCoasterTest()
-    {
-        this.verifier.actual(this.setup.getNotValidLinearRollerCoasterAtlas(),
-                new InvalidGeometryCheck(this.configuration));
-        this.verifier.verifyEmpty();
     }
 }
