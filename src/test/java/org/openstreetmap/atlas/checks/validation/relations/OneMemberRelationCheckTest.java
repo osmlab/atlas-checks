@@ -36,8 +36,7 @@ public class OneMemberRelationCheckTest
 
         this.verifier.verify(flag ->
         {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains("contains only one member"));
+            Assert.assertTrue(flag.getInstructions().contains("contains only one member"));
 
             final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
             final Relation after = (Relation) suggestion.getAfterView();
@@ -61,13 +60,12 @@ public class OneMemberRelationCheckTest
 
         this.verifier.verify(flag ->
         {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains("contains only one member"));
+            Assert.assertTrue(flag.getInstructions().contains("contains only one member"));
 
             final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
             final Relation after = (Relation) suggestion.getAfterView();
             Assert.assertEquals(123, after.osmRelationIdentifier().intValue());
-        });        
+        });
     }
 
     @Test
@@ -78,13 +76,12 @@ public class OneMemberRelationCheckTest
 
         this.verifier.verify(flag ->
         {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains("contains only one member"));
+            Assert.assertTrue(flag.getInstructions().contains("contains only one member"));
 
             final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
             final Relation after = (Relation) suggestion.getAfterView();
             Assert.assertEquals(123, after.osmRelationIdentifier().intValue());
-        });        
+        });
     }
 
     @Test
@@ -96,8 +93,7 @@ public class OneMemberRelationCheckTest
 
         this.verifier.verify(flag ->
         {
-            Assert.assertTrue(flag.getInstructions()
-                    .contains("contains only relation"));
+            Assert.assertTrue(flag.getInstructions().contains("contains only relation"));
 
             final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
             final Relation after = (Relation) suggestion.getAfterView();
