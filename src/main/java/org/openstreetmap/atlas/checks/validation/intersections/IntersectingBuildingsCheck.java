@@ -179,7 +179,7 @@ public class IntersectingBuildingsCheck extends BaseCheck<String>
                     flag.addObject(otherBuilding, this.getLocalizedInstruction(0,
                             object.getOsmIdentifier(), otherBuilding.getOsmIdentifier()));
                 }
-                //flag.addFixSuggestion(featureChange);
+                flag.addFixSuggestion(featureChange);
                 this.markAsFlagged(uniqueIdentifier);
                 hadIntersection = true;
             }
