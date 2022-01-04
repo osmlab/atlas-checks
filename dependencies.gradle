@@ -1,6 +1,6 @@
 project.ext.versions = [
     checkstyle: '8.18',
-    jacoco: '0.8.3',
+    jacoco: '0.8.7',
     atlas: '6.5.7',
     commons:'2.6',
     atlas_generator: '5.3.6',
@@ -9,10 +9,10 @@ project.ext.versions = [
     postgres: '42.2.6',
     spring: '4.2.2.RELEASE',
     mockito: '2.23.0',
-    junit4: '4.13.1',
-    junit: '5.7.0',
-    sqlite: '3.32.3.2',
-    log4j: '2.16.0'
+    junit4: '4.13.2',
+    junit: '5.8.2',
+    sqlite: '3.36.0.3',
+    log4j: '2.17.1'
 ]
 
 project.ext.packages = [
