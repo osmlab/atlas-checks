@@ -565,6 +565,15 @@
       "tags":"tags"
     }
   },
+  "InvalidTurnLanesValueCheck": {
+    "challenge":{
+      "description":"Tasks contain invalid values for the turn:lanes tag.",
+      "blurb":"Invalid Turn Lanes Values",
+      "instruction":"Change the turn:lanes values to have a valid and representative value.",
+      "difficulty":"EASY",
+      "tags":"lanes,highway"
+    }
+  },
   "SourceMaxspeedCheck": {
     "countries.denylist": ["UK"],
     "values": [

@@ -128,6 +128,7 @@ public class OverlappingEdgeCheck extends BaseCheck<Long>
     private boolean edgeIsArea(final Edge edge)
     {
         return (Validators.isOfType(edge, HighwayTag.class, HighwayTag.PEDESTRIAN)
+                || Validators.isOfType(edge, HighwayTag.class, HighwayTag.FOOTWAY)
                 || Validators.isOfType(edge, ManMadeTag.class, ManMadeTag.PIER))
                 && (AREA_YES_TAG.test(edge) || CommonMethods.isClosedWay(edge))
                 || (Validators.isOfType(edge, HighwayTag.class, HighwayTag.SERVICE)

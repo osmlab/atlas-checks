@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.StringUtils;
-import org.openstreetmap.atlas.checks.maproulette.data.cooperative_challenge.TagChangeOperation;
+import org.openstreetmap.atlas.checks.maproulette.data.cooperative_challenge.CooperativeChallengeOperation;
 import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
@@ -73,7 +73,18 @@ public class Task
             for (final FeatureChange featureChange : this.featureChanges)
             {
                 final ChangeDescription whatChanged = featureChange.explain();
-                operationsList.add(new TagChangeOperation(whatChanged).create().getJson());
+                final Class<? extends CooperativeChallengeOperation> classType = CooperativeChallengeOperation
+                        .getAppropriateChangeOperation(whatChanged);
+                try
+                {
+                    operationsList.add(classType.getConstructor(ChangeDescription.class)
+                            .newInstance(whatChanged).create().getJson());
+                }
+                catch (final ReflectiveOperationException reflectiveOperationException)
+                {
+                    throw new CoreException("Class {0} does not have an appropriate constructor",
+                            reflectiveOperationException, classType.getName());
+                }
             }
             // convert each featureChange to a cooperative work object
             return operationsList;
@@ -233,11 +244,29 @@ public class Task
         final JsonObject cooperativeWorkObject = new JsonObject();
         final JsonObject meta = new JsonObject();
         meta.add("version", new JsonPrimitive(2));
-        meta.add("type", new JsonPrimitive(1));
+        final byte type;
+        if (cooperativeWork.size() == 1 && cooperativeWork.get(0).has("format"))
+        {
+            // This is an OSC cooperative work challenge type
+            type = 2;
+        }
+        else
+        {
+            // Default to the tag fix cooperative work challenge type
+            type = 1;
+        }
+        meta.add("type", new JsonPrimitive(type));
         cooperativeWorkObject.add("meta", meta);
-        final JsonArray cooperativeWorkArray = new JsonArray();
-        cooperativeWork.forEach(cooperativeWorkArray::add);
-        cooperativeWorkObject.add("operations", cooperativeWorkArray);
+        if (type == 2)
+        {
+            cooperativeWorkObject.add("file", cooperativeWork.get(0));
+        }
+        else
+        {
+            final var cooperativeWorkArray = new JsonArray();
+            cooperativeWork.forEach(cooperativeWorkArray::add);
+            cooperativeWorkObject.add("operations", cooperativeWorkArray);
+        }
         return cooperativeWorkObject;
     }
 
