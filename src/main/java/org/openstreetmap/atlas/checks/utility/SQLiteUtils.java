@@ -14,11 +14,12 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.generator.tools.filesystem.FileSystemHelper;
 import org.openstreetmap.atlas.streaming.resource.File;
 import org.openstreetmap.atlas.streaming.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sparkproject.guava.cache.CacheBuilder;
 import org.sparkproject.guava.cache.CacheLoader;
 import org.sparkproject.guava.cache.LoadingCache;
@@ -41,7 +42,7 @@ public class SQLiteUtils implements Serializable
     private transient Connection connection;
     /** The db "file" for in memory databases */
     public static final String MEMORY_DB = ":memory:";
-    private static Logger logger = Logger.getLogger(SQLiteUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(SQLiteUtils.class);
     private static final int DEFAULT_CACHE_MAX = 1000;
 
     /**
@@ -171,7 +172,7 @@ public class SQLiteUtils implements Serializable
         }
         catch (final ExecutionException e)
         {
-            logger.error(e);
+            logger.error("Failed to get row for " + statement, e);
             return Collections.emptyMap();
         }
     }

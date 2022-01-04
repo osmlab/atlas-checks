@@ -17,13 +17,14 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 import org.openstreetmap.atlas.checks.base.ExternalDataFetcher;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.Longitude;
 import org.openstreetmap.atlas.streaming.resource.Resource;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Used to determine assumed direction for some features (e.g. waterways). Assumptions are that any
@@ -40,7 +41,7 @@ public final class ElevationUtilities implements Serializable
      */
     private static final String SRTM_EXTENSION = "hgt";
     /** The logger */
-    private static final Logger logger = Logger.getLogger(ElevationUtilities.class);
+    private static final Logger logger = LoggerFactory.getLogger(ElevationUtilities.class);
     /**
      * The assumed extent of a HGT SRTM file (lat/lon) in degrees
      */
