@@ -10,6 +10,8 @@ import java.util.Set;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.checks.utility.CommonMethods;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompleteRelation;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
 import org.openstreetmap.atlas.geography.atlas.items.Relation;
@@ -55,20 +57,29 @@ public class OneMemberRelationCheck extends BaseCheck<Object>
         // If the number of members in the relation is 1
         if (CommonMethods.getOSMRelationMemberSize(relation) == 1)
         {
+            final FeatureChange featureChange;
+            featureChange = FeatureChange.remove(CompleteRelation.from(relation));
+
             if (members.get(0).getEntity().getType().equals(ItemType.RELATION))
             {
-                return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
-                        this.getLocalizedInstruction(2, relation.getOsmIdentifier(),
-                                members.get(0).getEntity().getOsmIdentifier())));
+                return Optional.of(this
+                        .createFlag(this.getRelationMembers((Relation) object),
+                                this.getLocalizedInstruction(2, relation.getOsmIdentifier(),
+                                        members.get(0).getEntity().getOsmIdentifier()))
+                        .addFixSuggestion(featureChange));
             }
             // If the relation is a multi-polygon,
             if (relation.isGeometric())
             {
-                return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
-                        this.getLocalizedInstruction(1, relation.getOsmIdentifier())));
+                return Optional.of(this
+                        .createFlag(this.getRelationMembers((Relation) object),
+                                this.getLocalizedInstruction(1, relation.getOsmIdentifier()))
+                        .addFixSuggestion(featureChange));
             }
-            return Optional.of(this.createFlag(this.getRelationMembers((Relation) object),
-                    this.getLocalizedInstruction(0, relation.getOsmIdentifier())));
+            return Optional.of(this
+                    .createFlag(this.getRelationMembers((Relation) object),
+                            this.getLocalizedInstruction(0, relation.getOsmIdentifier()))
+                    .addFixSuggestion(featureChange));
         }
         return Optional.empty();
     }

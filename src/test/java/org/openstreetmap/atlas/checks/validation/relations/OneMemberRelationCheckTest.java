@@ -5,6 +5,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
 import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedCheckVerifier;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
 
 /**
  * Tests for {@link OneMemberRelationCheck}
@@ -31,6 +33,15 @@ public class OneMemberRelationCheckTest
     {
         this.verifier.actual(this.setup.getOneMemberRelation(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions().contains("contains only one member"));
+
+            final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
+            final Relation after = (Relation) suggestion.getAfterView();
+            Assert.assertEquals(123, after.osmRelationIdentifier().intValue());
+        });
     }
 
     @Test
@@ -46,6 +57,15 @@ public class OneMemberRelationCheckTest
     {
         this.verifier.actual(this.setup.getOneMemberRelationMultipolygonInner(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions().contains("contains only one member"));
+
+            final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
+            final Relation after = (Relation) suggestion.getAfterView();
+            Assert.assertEquals(123, after.osmRelationIdentifier().intValue());
+        });
     }
 
     @Test
@@ -53,6 +73,15 @@ public class OneMemberRelationCheckTest
     {
         this.verifier.actual(this.setup.getOneMemberRelationMultipolygonOuter(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions().contains("contains only one member"));
+
+            final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
+            final Relation after = (Relation) suggestion.getAfterView();
+            Assert.assertEquals(123, after.osmRelationIdentifier().intValue());
+        });
     }
 
     @Test
@@ -61,6 +90,15 @@ public class OneMemberRelationCheckTest
         this.verifier.actual(this.setup.oneMemberRelationRelationAtlas(), check);
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
         this.verifier.verify(flag -> Assert.assertEquals(flag.getFlaggedObjects().size(), 3));
+
+        this.verifier.verify(flag ->
+        {
+            Assert.assertTrue(flag.getInstructions().contains("contains only relation"));
+
+            final FeatureChange suggestion = flag.getFixSuggestions().iterator().next();
+            final Relation after = (Relation) suggestion.getAfterView();
+            Assert.assertEquals(1231, after.osmRelationIdentifier().intValue());
+        });
     }
 
     @Test
