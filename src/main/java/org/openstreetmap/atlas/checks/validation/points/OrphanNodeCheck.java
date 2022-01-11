@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.geography.atlas.change.FeatureChange;
+import org.openstreetmap.atlas.geography.atlas.complete.CompletePoint;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -61,9 +63,11 @@ public class OrphanNodeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-
+        final Point point = (Point) object;
+        final FeatureChange featureChange;
+            featureChange = FeatureChange.remove(CompletePoint.from(point));        
         return Optional.of(this.createFlag(object,
-                this.getLocalizedInstruction(0, object.getOsmIdentifier())));
+                this.getLocalizedInstruction(0, object.getOsmIdentifier())).addFixSuggestion(featureChange));
     }
 
     @Override
