@@ -65,9 +65,10 @@ public class OrphanNodeCheck extends BaseCheck<Long>
     {
         final Point point = (Point) object;
         final FeatureChange featureChange;
-            featureChange = FeatureChange.remove(CompletePoint.from(point));        
-        return Optional.of(this.createFlag(object,
-                this.getLocalizedInstruction(0, object.getOsmIdentifier())).addFixSuggestion(featureChange));
+        featureChange = FeatureChange.remove(CompletePoint.from(point));
+        return Optional.of(
+                this.createFlag(object, this.getLocalizedInstruction(0, object.getOsmIdentifier()))
+                        .addFixSuggestion(featureChange));
     }
 
     @Override
