@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1006,6 +1006,19 @@
         "rules":["highway=primary","highway=primary_link","highway=secondary","highway=secondary_link"]
       },
       "tags":"highway"
+    }
+  },
+  "SeparateSidewalkTagCheck": {
+    "enabled": true,
+    "edge.length": 20.0,
+    "sidewalk.search.distance": 15.0,
+    "maximum.highway.type": "primary",
+    "challenge": {
+      "description": "Tasks contain separately mapped sidewalks that are inconsistent with highway's sidewalk tags.",
+      "blurb": "Modify sidewalks and highway sidewalks tags consistency",
+      "instruction": "Open your favorite editor and edit sidewalk tag",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
     }
   },
   "ShadowDetectionCheck": {
