@@ -91,31 +91,29 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 final Segment closestSidewalkSegment = this
                         .closestSegmentToPoint(sidewalk.asPolyLine(), edgeMidPoint);
 
-                if (!this.isCrossing(edge.asPolyLine(), sidewalk.asPolyLine())
-                        || LayerTag.areOnSameLayer(edge, sidewalk))
+                if (this.isCrossing(edge.asPolyLine(), sidewalk.asPolyLine())
+                        || !LayerTag.areOnSameLayer(edge, sidewalk))
                 {
-                    if ("right".equals(sidewalkTagValue)
-                            || ("separate".equals(sidewalkTagRightValue)
-                                    && (Objects.requireNonNull(sidewalkTagLeftValue).isEmpty()
-                                            || "no".equals(sidewalkTagLeftValue))
-                                    && !this.isRightOf(edge.asPolyLine(),
-                                            closestSidewalkSegment.middle())))
-                    {
-                        return this.generateFlag(edge, sidewalkTagRightValue);
-                    }
+                    continue;
+                }
 
-                    if ("left".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagLeftValue)
-                            && (Objects.requireNonNull(sidewalkTagRightValue).isEmpty()
-                                    || "no".equals(sidewalkTagRightValue))
-                            && this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle())))
-                    {
-                        return this.generateFlag(edge, sidewalkTagLeftValue);
-                    }
+                if (("right".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagRightValue)
+                        && (Objects.requireNonNull(sidewalkTagLeftValue).isEmpty() || "no".equals(sidewalkTagLeftValue))))
+                        && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
+                {
+                    return this.generateFlag(edge, sidewalkTagValue);
+                }
 
-                    if ("both".equals(sidewalkTagValue) && separatedSidewalks.size() < 2)
-                    {
-                        return this.generateFlag(edge, sidewalkTagValue);
-                    }
+                if (("left".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagLeftValue)
+                        && (Objects.requireNonNull(sidewalkTagRightValue).isEmpty() || "no".equals(sidewalkTagRightValue))))
+                        && this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
+                {
+                    return this.generateFlag(edge, sidewalkTagValue);
+                }
+
+                if ("both".equals(sidewalkTagValue) && separatedSidewalks.size() < 2)
+                {
+                    return this.generateFlag(edge, sidewalkTagValue);
                 }
             }
         }
