@@ -98,14 +98,16 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 }
 
                 if (("right".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagRightValue)
-                        && (Objects.requireNonNull(sidewalkTagLeftValue).isEmpty() || "no".equals(sidewalkTagLeftValue))))
+                        && (Objects.requireNonNull(sidewalkTagLeftValue).isEmpty()
+                                || "no".equals(sidewalkTagLeftValue))))
                         && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
                 {
                     return this.generateFlag(edge, sidewalkTagValue);
                 }
 
                 if (("left".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagLeftValue)
-                        && (Objects.requireNonNull(sidewalkTagRightValue).isEmpty() || "no".equals(sidewalkTagRightValue))))
+                        && (Objects.requireNonNull(sidewalkTagRightValue).isEmpty()
+                                || "no".equals(sidewalkTagRightValue))))
                         && this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
                 {
                     return this.generateFlag(edge, sidewalkTagValue);

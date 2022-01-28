@@ -26,51 +26,50 @@ public class SeparateSidewalkTagCheckTest
             "{\"SeparateSidewalkTagCheck\": {\"edge.length\": 20.0,\"sidewalk.search.distance\": 15.0,\"maximum.highway.type\": \"primary\"}}");
 
     @Test
-    public void sidewalkRightSideTruePositive()
+    public void testInvalidHighwayLeftSidewalkRight()
     {
-        this.verifier.actual(this.setup.getSidewalkRightSideTruePositive(),
-                new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void sidewalkLeftSideTruePositive()
-    {
-        this.verifier.actual(this.setup.getSidewalkLeftSideTruePositive(),
-                new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void sidewalkBothSideTruePositive()
-    {
-        this.verifier.actual(this.setup.getSidewalkBothSideTruePositive(),
-                new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.verifyEmpty();
-    }
-
-    @Test
-    public void highwaySidewalkRightSeparateSidewalkLeft()
-    {
-        this.verifier.actual(this.setup.getHighwaySidewalkRightSeparateSidewalkLeft(),
+        this.verifier.actual(this.setup.getInvalidHighwayLeftSidewalkRight(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void highwaySidewalkLeftSeparateSidewalkRight()
+    public void testInvalidHighwayRightSidewalkLeft()
     {
-        this.verifier.actual(this.setup.getHighwaySidewalkLeftSeparateSidewalkRight(),
+        this.verifier.actual(this.setup.getInvalidHighwayRightSidewalkLeft(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
-    public void highwaySidewalkBothOnlyOneSidewalkDetected()
+    public void testInvalidValidSidewalkBothSide()
     {
-        this.verifier.actual(this.setup.getHighwaySidewalkBothOnlyOneSidewalkDetected(),
+        this.verifier.actual(this.setup.getInvalidSidewalkBothSide(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
+    @Test
+    public void testValidSidewalkBothSide()
+    {
+        this.verifier.actual(this.setup.getValidSidewalkBothSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidSidewalkLeftSide()
+    {
+        this.verifier.actual(this.setup.getValidSidewalkLeftSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidSidewalkRightSide()
+    {
+        this.verifier.actual(this.setup.getValidSidewalkRightSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
 }

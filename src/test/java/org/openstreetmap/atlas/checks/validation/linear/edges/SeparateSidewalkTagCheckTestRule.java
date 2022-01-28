@@ -33,7 +33,7 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
-    private Atlas sidewalkRightSideTruePositive;
+    private Atlas validSidewalkRightSide;
 
     @TestAtlas(
             // nodes
@@ -47,7 +47,7 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
                             @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
-    private Atlas sidewalkLeftSideTruePositive;
+    private Atlas validSidewalkLeftSide;
 
     @TestAtlas(
             // nodes
@@ -66,7 +66,7 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000003", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
                             @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
-    private Atlas sidewalkBothSideTruePositive;
+    private Atlas validSidewalkBothSide;
 
     @TestAtlas(
             // nodes
@@ -80,7 +80,7 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
                             @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
-    private Atlas highwaySidewalkRightSeparateSidewalkLeft;
+    private Atlas invalidHighwayRightSidewalkLeftSide;
 
     @TestAtlas(
             // nodes
@@ -94,7 +94,7 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
-    private Atlas highwaySidewalkLeftSeparateSidewalkRight;
+    private Atlas invalidHighwayLeftSidewalkRightSide;
 
     @TestAtlas(
             // nodes
@@ -110,35 +110,35 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }), })
-    private Atlas highwaySidewalkBothOnlyOneSidewalkDetected;
+    private Atlas invalidSidewalkBothSide;
 
-    public Atlas getSidewalkRightSideTruePositive()
+    public Atlas getInvalidHighwayLeftSidewalkRight()
     {
-        return this.sidewalkRightSideTruePositive;
+        return this.invalidHighwayLeftSidewalkRightSide;
     }
 
-    public Atlas getSidewalkLeftSideTruePositive()
+    public Atlas getInvalidHighwayRightSidewalkLeft()
     {
-        return this.sidewalkLeftSideTruePositive;
+        return this.invalidHighwayRightSidewalkLeftSide;
     }
 
-    public Atlas getSidewalkBothSideTruePositive()
+    public Atlas getInvalidSidewalkBothSide()
     {
-        return this.sidewalkBothSideTruePositive;
+        return this.invalidSidewalkBothSide;
     }
 
-    public Atlas getHighwaySidewalkRightSeparateSidewalkLeft()
+    public Atlas getValidSidewalkBothSide()
     {
-        return this.highwaySidewalkRightSeparateSidewalkLeft;
+        return this.validSidewalkBothSide;
     }
 
-    public Atlas getHighwaySidewalkLeftSeparateSidewalkRight()
+    public Atlas getValidSidewalkLeftSide()
     {
-        return this.highwaySidewalkLeftSeparateSidewalkRight;
+        return this.validSidewalkLeftSide;
     }
 
-    public Atlas getHighwaySidewalkBothOnlyOneSidewalkDetected()
+    public Atlas getValidSidewalkRightSide()
     {
-        return this.highwaySidewalkBothOnlyOneSidewalkDetected;
+        return this.validSidewalkRightSide;
     }
 }
