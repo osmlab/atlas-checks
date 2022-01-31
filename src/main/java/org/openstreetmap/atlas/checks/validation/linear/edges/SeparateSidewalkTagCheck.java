@@ -50,6 +50,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     private final Distance searchDistance;
     private final Distance defaultEdgeLength;
     private final HighwayTag maximumHighwayType;
+    private final String sidewalkLeftRightTagValue = "separate";
 
     public SeparateSidewalkTagCheck(final Configuration configuration)
     {
@@ -75,9 +76,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     {
         final Edge edge = (Edge) object;
         final Location edgeMidPoint = edge.start().getLocation().midPoint(edge.end().getLocation());
-        final String sidewalkTagValue = edge.getTag(SidewalkTag.KEY).orElse(null);
-        final String sidewalkTagLeftValue = edge.getTag(SidewalkLeftTag.KEY).orElse(null);
-        final String sidewalkTagRightValue = edge.getTag(SidewalkRightTag.KEY).orElse(null);
+        final String sidewalkTagValue = this.getSeparateSidewalkTagValue(edge);
         final Set<Edge> separatedSidewalks = Iterables.stream(edge.getAtlas()
                 .edgesIntersecting(this.closestSegmentToPoint(edge.asPolyLine(), edgeMidPoint)
                         .middle().boxAround(this.searchDistance)))
@@ -96,13 +95,13 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                     continue;
                 }
 
-                if (("right".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagRightValue)))
+                if ("right".equals(sidewalkTagValue)
                         && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
                 {
                     return this.generateFlag(edge, sidewalkTagValue);
                 }
 
-                if (("left".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagLeftValue)))
+                if ("left".equals(sidewalkTagValue)
                         && this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
                 {
                     return this.generateFlag(edge, sidewalkTagValue);
@@ -153,6 +152,13 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         super.markAsFlagged(edge.getOsmIdentifier());
         return Optional.of(this.createFlag(new OsmWayWalker(edge).collectEdges(),
                 this.getLocalizedInstruction(0, edge.getOsmIdentifier(), sidewalkTagValue)));
+    }
+
+    private String getSeparateSidewalkTagValue(final Edge edge)
+    {
+        return ((edge.getTag(SidewalkTag.KEY).isPresent())) ? edge.getTag(SidewalkTag.KEY).get()
+                : (edge.getTag(SidewalkLeftTag.KEY).isPresent() && this.sidewalkLeftRightTagValue
+                        .equals(edge.getTag(SidewalkLeftTag.KEY).get())) ? "left" : "right";
     }
 
     /**
@@ -265,8 +271,9 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 && edge.asPolyLine().length().asMeters() >= this.defaultEdgeLength.asMeters()
                 && !edge.isClosed()
                 && (edge.getTag(SidewalkTag.KEY).get().matches("left|right|both")
-                        || Objects.equals(edge.getTag(SidewalkLeftTag.KEY).orElse(null), "separate")
+                        || Objects.equals(edge.getTag(SidewalkLeftTag.KEY).orElse(null),
+                                this.sidewalkLeftRightTagValue)
                         || Objects.equals(edge.getTag(SidewalkRightTag.KEY).orElse(null),
-                                "separate"));
+                                this.sidewalkLeftRightTagValue));
     }
 }
