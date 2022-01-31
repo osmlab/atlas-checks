@@ -50,7 +50,6 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     private final Distance searchDistance;
     private final Distance defaultEdgeLength;
     private final HighwayTag maximumHighwayType;
-    private final int primeMeridian = 180;
 
     public SeparateSidewalkTagCheck(final Configuration configuration)
     {
@@ -97,17 +96,13 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                     continue;
                 }
 
-                if (("right".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagRightValue)
-                        && (Objects.requireNonNull(sidewalkTagLeftValue).isEmpty()
-                                || "no".equals(sidewalkTagLeftValue))))
+                if (("right".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagRightValue)))
                         && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
                 {
                     return this.generateFlag(edge, sidewalkTagValue);
                 }
 
-                if (("left".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagLeftValue)
-                        && (Objects.requireNonNull(sidewalkTagRightValue).isEmpty()
-                                || "no".equals(sidewalkTagRightValue))))
+                if (("left".equals(sidewalkTagValue) || ("separate".equals(sidewalkTagLeftValue)))
                         && this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
                 {
                     return this.generateFlag(edge, sidewalkTagValue);
@@ -171,9 +166,10 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
      */
     private boolean isAcceptableHeading(final Heading headingOne, final Heading headingTwo)
     {
+        int primeMeridian = 180;
         return HEADING_DEGREE_RANGE.contains(headingOne.asDegrees() - headingTwo.asDegrees())
                 || HEADING_DEGREE_RANGE.contains(
-                        headingOne.asDegrees() - (this.primeMeridian - headingTwo.asDegrees()));
+                        headingOne.asDegrees() - (primeMeridian - headingTwo.asDegrees()));
     }
 
     /**
@@ -190,8 +186,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     {
         return !lineCrossed.intersections(crossingItem).isEmpty()
                 || lineCrossed.overlapsShapeOf(crossingItem)
-                || !this.isAcceptableHeading(lineCrossed.overallHeading().get(),
-                        crossingItem.overallHeading().get());
+                || !this.isAcceptableHeading(Objects.requireNonNull(lineCrossed.overallHeading().orElse(null)),
+                Objects.requireNonNull(crossingItem.overallHeading().orElse(null)));
     }
 
     /**
@@ -268,7 +264,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 && edge.asPolyLine().length().asMeters() >= this.defaultEdgeLength.asMeters()
                 && !edge.isClosed()
                 && (edge.getTag(SidewalkTag.KEY).get().matches("left|right|both")
-                        || edge.getTag(SidewalkLeftTag.KEY).equals("separate")
-                        || edge.getTag(SidewalkRightTag.KEY).equals("separate"));
+                        || Objects.equals(edge.getTag(SidewalkLeftTag.KEY).orElse(null), "separate")
+                        || Objects.equals(edge.getTag(SidewalkRightTag.KEY).orElse(null), "separate"));
     }
 }
