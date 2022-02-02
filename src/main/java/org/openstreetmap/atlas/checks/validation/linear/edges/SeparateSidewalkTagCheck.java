@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
+import org.openstreetmap.atlas.exception.CoreException;
 import org.openstreetmap.atlas.geography.Heading;
 import org.openstreetmap.atlas.geography.Location;
 import org.openstreetmap.atlas.geography.PolyLine;
@@ -134,7 +135,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         final PolyLine tLine = new PolyLine(location);
         return line.segments().stream()
                 .min(Comparator.comparingDouble(s -> s.shortestDistanceTo(tLine).asMeters()))
-                .orElse(null);
+                .orElseThrow(() -> new CoreException("Unable to get a Segment {}", line));
     }
 
     /**
@@ -174,7 +175,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
 
         // alternative way of mapping sidewalk
         if (edge.getTag(SidewalkLeftTag.KEY).isPresent()
-                && "separate".equals(edge.getTag(SidewalkLeftTag.KEY).get())
+                && sidewalkLeftRightTagValue.equals(edge.getTag(SidewalkLeftTag.KEY).get())
                 && (edge.getTag(SidewalkRightTag.KEY).isPresent()
                         && "no".equals(edge.getTag(SidewalkRightTag.KEY).get())
                         || edge.getTag(SidewalkRightTag.KEY).isEmpty()))
@@ -183,7 +184,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         }
 
         if (edge.getTag(SidewalkRightTag.KEY).isPresent()
-                && "separate".equals(edge.getTag(SidewalkRightTag.KEY).get())
+                && sidewalkLeftRightTagValue.equals(edge.getTag(SidewalkRightTag.KEY).get())
                 && (edge.getTag(SidewalkLeftTag.KEY).isPresent()
                         && "no".equals(edge.getTag(SidewalkLeftTag.KEY).get())
                         || edge.getTag(SidewalkLeftTag.KEY).isEmpty()))
