@@ -281,6 +281,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
      *            Edge to examine
      * @return true if {@link Edge} is passed validation.
      */
+    @SuppressWarnings("squid:S3655")
     private boolean validFootwayFilter(final Edge edge)
     {
         return edge.isMainEdge()
