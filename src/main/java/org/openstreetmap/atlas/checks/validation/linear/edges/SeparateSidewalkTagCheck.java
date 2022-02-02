@@ -163,6 +163,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
      *            edge to get sidewalk tag values.
      * @return separate sidewalk tag value.
      */
+    @SuppressWarnings("squid:S3655")
     private String getSeparateSidewalkTagValue(final Edge edge)
     {
         String sidewalkTagValue = null;
