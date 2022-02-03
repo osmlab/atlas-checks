@@ -51,7 +51,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     private final Distance searchDistance;
     private final Distance defaultEdgeLength;
     private final HighwayTag maximumHighwayType;
-    private static final String sidewalkLeftRightTagValue = "separate";
+
+    private static final String separatelyMappedTagValue = "separate";
 
     public SeparateSidewalkTagCheck(final Configuration configuration)
     {
@@ -97,18 +98,10 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 }
 
                 if ("right".equals(sidewalkTagValue)
-                        && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
-                {
-                    return this.generateFlag(edge, sidewalkTagValue);
-                }
-
-                if ("left".equals(sidewalkTagValue)
-                        && this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
-                {
-                    return this.generateFlag(edge, sidewalkTagValue);
-                }
-
-                if ("both".equals(sidewalkTagValue) && separatedSidewalks.size() < 2)
+                        && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle())
+                        || "left".equals(sidewalkTagValue) && this.isRightOf(edge.asPolyLine(),
+                                closestSidewalkSegment.middle())
+                        || "both".equals(sidewalkTagValue) && separatedSidewalks.size() < 2)
                 {
                     return this.generateFlag(edge, sidewalkTagValue);
                 }
@@ -176,7 +169,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
 
         // alternative way of mapping sidewalk
         if (edge.getTag(SidewalkLeftTag.KEY).isPresent()
-                && sidewalkLeftRightTagValue.equals(edge.getTag(SidewalkLeftTag.KEY).get())
+                && separatelyMappedTagValue.equals(edge.getTag(SidewalkLeftTag.KEY).get())
                 && (edge.getTag(SidewalkRightTag.KEY).isPresent()
                         && "no".equals(edge.getTag(SidewalkRightTag.KEY).get())
                         || edge.getTag(SidewalkRightTag.KEY).isEmpty()))
@@ -185,7 +178,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         }
 
         if (edge.getTag(SidewalkRightTag.KEY).isPresent()
-                && sidewalkLeftRightTagValue.equals(edge.getTag(SidewalkRightTag.KEY).get())
+                && separatelyMappedTagValue.equals(edge.getTag(SidewalkRightTag.KEY).get())
                 && (edge.getTag(SidewalkLeftTag.KEY).isPresent()
                         && "no".equals(edge.getTag(SidewalkLeftTag.KEY).get())
                         || edge.getTag(SidewalkLeftTag.KEY).isEmpty()))
@@ -301,6 +294,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
      *            Edge to examine
      * @return {@code true} if {@link Edge} sidewalk tag meet the criteria.
      */
+    @SuppressWarnings("squid:S3655")
     private boolean validSidewalkFilter(final Edge edge)
     {
         return edge.getTag(SidewalkTag.KEY).isPresent() && !this.isDualCarriageWay(edge)
@@ -308,8 +302,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 && !edge.isClosed()
                 && (edge.getTag(SidewalkTag.KEY).get().matches("left|right|both")
                         || Objects.equals(edge.getTag(SidewalkLeftTag.KEY).orElse(null),
-                                sidewalkLeftRightTagValue)
+                                separatelyMappedTagValue)
                         || Objects.equals(edge.getTag(SidewalkRightTag.KEY).orElse(null),
-                                sidewalkLeftRightTagValue));
+                                separatelyMappedTagValue));
     }
 }
