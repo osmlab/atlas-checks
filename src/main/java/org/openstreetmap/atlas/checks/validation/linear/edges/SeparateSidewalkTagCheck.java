@@ -87,6 +87,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 .edgesIntersecting(this.closestSegmentToPoint(edge.asPolyLine(), edgeMidPoint)
                         .middle().boxAround(this.searchDistance)))
                 .filter(this::validFootwayFilter).collectToSet();
+        int rightSidewalkCount = 0;
+        int leftSidewalkCount = 0;
 
         if (!separatedSidewalks.isEmpty())
         {
@@ -95,23 +97,27 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 final Segment closestSidewalkSegment = this
                         .closestSegmentToPoint(sidewalk.asPolyLine(), edgeMidPoint);
 
-                if (this.isCrossing(edge.asPolyLine(), sidewalk.asPolyLine())
-                        || !LayerTag.areOnSameLayer(edge, sidewalk))
+                if (!this.isCrossing(edge.asPolyLine(), sidewalk.asPolyLine())
+                        && LayerTag.areOnSameLayer(edge, sidewalk))
                 {
-                    continue;
-                }
-
-                if ("right".equals(sidewalkTagValue)
-                        && !this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle())
-                        || "left".equals(sidewalkTagValue) && this.isRightOf(edge.asPolyLine(),
-                                closestSidewalkSegment.middle())
-                        || "both".equals(sidewalkTagValue) && separatedSidewalks.size() < 2)
-                {
-                    return this.generateFlag(edge, sidewalkTagValue);
+                    if (this.isRightOf(edge.asPolyLine(), closestSidewalkSegment.middle()))
+                    {
+                        rightSidewalkCount++;
+                    }
+                    else
+                    {
+                        leftSidewalkCount++;
+                    }
                 }
             }
         }
-        return Optional.empty();
+
+        return ("right".equals(sidewalkTagValue) && rightSidewalkCount < 1
+                || "left".equals(sidewalkTagValue) && leftSidewalkCount < 1
+                || "both".equals(sidewalkTagValue)
+                        && (rightSidewalkCount < 1 || leftSidewalkCount < 1))
+                                ? this.generateFlag(edge, sidewalkTagValue)
+                                : Optional.empty();
     }
 
     @Override

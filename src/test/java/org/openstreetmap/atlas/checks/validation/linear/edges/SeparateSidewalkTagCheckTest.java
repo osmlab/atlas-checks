@@ -42,6 +42,14 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
+    public void testInvalidValidSidewalkBothSameSide()
+    {
+        this.verifier.actual(this.setup.getInvalidSidewalkBothSameSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testInvalidValidSidewalkBothSide()
     {
         this.verifier.actual(this.setup.getInvalidSidewalkBothSide(),
@@ -70,7 +78,15 @@ public class SeparateSidewalkTagCheckTest
     {
         this.verifier.actual(this.setup.getSidewalkCrossing(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testSidewalkDifferentLayer()
+    {
+        this.verifier.actual(this.setup.getSidewalkDifferentLayer(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -78,7 +94,7 @@ public class SeparateSidewalkTagCheckTest
     {
         this.verifier.actual(this.setup.getSidewalkHeadingOutsideDegreeRange(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -86,13 +102,21 @@ public class SeparateSidewalkTagCheckTest
     {
         this.verifier.actual(this.setup.getSidewalkSharingLocation(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.verifyEmpty();
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
     public void testValidSidewalkBothSide()
     {
         this.verifier.actual(this.setup.getValidSidewalkBothSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidSidewalkBothSideAlternativeMapping()
+    {
+        this.verifier.actual(this.setup.getValidSidewalkBothSideAlternativeMapping(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.verifyEmpty();
     }
@@ -106,9 +130,25 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
+    public void testValidSidewalkLeftSideAlternativeMapping()
+    {
+        this.verifier.actual(this.setup.getValidSidewalkLeftSideAlternativeMapping(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testValidSidewalkRightSide()
     {
         this.verifier.actual(this.setup.getValidSidewalkRightSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testValidSidewalkRightSideAlternativeMapping()
+    {
+        this.verifier.actual(this.setup.getValidSidewalkRightSideAlternativeMapping(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.verifyEmpty();
     }
