@@ -35,7 +35,7 @@ import avro.shaded.com.google.common.collect.Ranges;
 
 /**
  * This check flags when sidewalk=* tags are used on a highway that any separately mapped
- * sidewalk(s) are consistent with the highway’s sidewalk tags.
+ * sidewalk(s) are not consistent with the highway’s sidewalk tags.
  *
  * @author Vladimir Lemberg
  */
@@ -44,15 +44,19 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     private static final String INSTRUCTION_FORMAT = "Way {0,number,#} is tagged as sidewalk={1} but separately mapped sidewalks were detected that are not consistent with the way's sidewalk tag. Verify that the sidewalk tag for this way is correct and consistent with separately mapped ways for the entirety of the way.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
+    // default distance (meters) for searching separate sidewalk around the edge
     private static final Double SIDEWALK_SEARCH_DISTANCE_DEFAULT = 15.0;
+    // default edge length (meters)
     private static final Double EDGE_LENGTH_DEFAULT = 20.0;
+    // heading degree range to ensure that separate sidewalk is more or less parallel to the highway
     private static final Range<Double> HEADING_DEGREE_RANGE = Ranges.closed(-20.0, 20.0);
     private static final String MAXIMUM_HIGHWAY_DEFAULT = HighwayTag.PRIMARY.toString();
+    // alternative separate sidewalk mapping tag value:
+    // https://wiki.openstreetmap.org/wiki/Key:sidewalk:left
+    private static final String ALTERNATIVE_SIDEWALK_TAG_VALUE = "separate";
     private final Distance searchDistance;
     private final Distance defaultEdgeLength;
     private final HighwayTag maximumHighwayType;
-
-    private static final String separatelyMappedTagValue = "separate";
 
     public SeparateSidewalkTagCheck(final Configuration configuration)
     {
@@ -117,11 +121,13 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * Find the closest point between line (
+     * Find the closest line {@link Segment} to provided location.
      *
      * @param line
-     *            the ocean feature offending streets/railways offending buildings
-     * @return the flag for this ocean feature if flaggable items were found
+     *            {@link PolyLine} one to check
+     * @param location
+     *            {@link Location} one to check
+     * @return the closest line segment to location.
      */
     private Segment closestSegmentToPoint(final PolyLine line, final Location location)
     {
@@ -169,7 +175,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
 
         // alternative way of mapping sidewalk
         if (edge.getTag(SidewalkLeftTag.KEY).isPresent()
-                && separatelyMappedTagValue.equals(edge.getTag(SidewalkLeftTag.KEY).get())
+                && ALTERNATIVE_SIDEWALK_TAG_VALUE.equals(edge.getTag(SidewalkLeftTag.KEY).get())
                 && (edge.getTag(SidewalkRightTag.KEY).isPresent()
                         && "no".equals(edge.getTag(SidewalkRightTag.KEY).get())
                         || edge.getTag(SidewalkRightTag.KEY).isEmpty()))
@@ -178,7 +184,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         }
 
         if (edge.getTag(SidewalkRightTag.KEY).isPresent()
-                && separatelyMappedTagValue.equals(edge.getTag(SidewalkRightTag.KEY).get())
+                && ALTERNATIVE_SIDEWALK_TAG_VALUE.equals(edge.getTag(SidewalkRightTag.KEY).get())
                 && (edge.getTag(SidewalkLeftTag.KEY).isPresent()
                         && "no".equals(edge.getTag(SidewalkLeftTag.KEY).get())
                         || edge.getTag(SidewalkLeftTag.KEY).isEmpty()))
@@ -190,7 +196,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     }
 
     /**
-     * Verifies that separate sidewalk and highway are within acceptable heading degree range
+     * Verifies that separate sidewalk and highway are within acceptable heading degree range (more
+     * or less parallel).
      *
      * @param headingOne
      *            {@link Heading} one to check
@@ -302,8 +309,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 && !edge.isClosed()
                 && (edge.getTag(SidewalkTag.KEY).get().matches("left|right|both")
                         || Objects.equals(edge.getTag(SidewalkLeftTag.KEY).orElse(null),
-                                separatelyMappedTagValue)
+                                ALTERNATIVE_SIDEWALK_TAG_VALUE)
                         || Objects.equals(edge.getTag(SidewalkRightTag.KEY).orElse(null),
-                                separatelyMappedTagValue));
+                                ALTERNATIVE_SIDEWALK_TAG_VALUE));
     }
 }
