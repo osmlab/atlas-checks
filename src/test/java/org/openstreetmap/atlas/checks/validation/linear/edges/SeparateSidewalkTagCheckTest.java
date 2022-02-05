@@ -25,9 +25,25 @@ public class SeparateSidewalkTagCheckTest
             "{\"SeparateSidewalkTagCheck\": {\"edge.length\": 20.0,\"sidewalk.search.distance\": 15.0,\"maximum.highway.type\": \"primary\"}}");
 
     @Test
+    public void testInvalidClosedWayRightFootwayLeft()
+    {
+        this.verifier.actual(this.setup.getInvalidHighwayClosedWaySidewalkLeftSide(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testInvalidHighwayLeftSidewalkRight()
     {
         this.verifier.actual(this.setup.getInvalidHighwayLeftSidewalkRight(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testInvalidHighwayRightFootwayLeft()
+    {
+        this.verifier.actual(this.setup.getInvalidHighwayRightFootwayLeft(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -41,7 +57,7 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testInvalidValidSidewalkBothSameSide()
+    public void testInvalidSidewalkBothSameSide()
     {
         this.verifier.actual(this.setup.getInvalidSidewalkBothSameSide(),
                 new SeparateSidewalkTagCheck(this.configuration));
@@ -49,7 +65,7 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testInvalidValidSidewalkBothSide()
+    public void testInvalidSidewalkBothSides()
     {
         this.verifier.actual(this.setup.getInvalidSidewalkBothSide(),
                 new SeparateSidewalkTagCheck(this.configuration));
@@ -57,7 +73,7 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testInvalidValidSidewalkDualCarriageWay()
+    public void testInvalidSidewalkDualCarriageWay()
     {
         this.verifier.actual(this.setup.getInvalidSidewalkLHighwayDualCarriageWay(),
                 new SeparateSidewalkTagCheck(this.configuration));
@@ -65,7 +81,7 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testInvalidValidSidewalkEdgeDefaultLength()
+    public void testInvalidSidewalkEdgeDefaultLength()
     {
         this.verifier.actual(this.setup.getInvalidSidewalkLHighwayShotEdge(),
                 new SeparateSidewalkTagCheck(this.configuration));
@@ -113,7 +129,7 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testValidSidewalkBothSide()
+    public void testValidSidewalkBothSides()
     {
         this.verifier.actual(this.setup.getValidSidewalkBothSide(),
                 new SeparateSidewalkTagCheck(this.configuration));
@@ -121,7 +137,7 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testValidSidewalkBothSideAlternativeMapping()
+    public void testValidSidewalkBothSidesAlternativeMapping()
     {
         this.verifier.actual(this.setup.getValidSidewalkBothSideAlternativeMapping(),
                 new SeparateSidewalkTagCheck(this.configuration));

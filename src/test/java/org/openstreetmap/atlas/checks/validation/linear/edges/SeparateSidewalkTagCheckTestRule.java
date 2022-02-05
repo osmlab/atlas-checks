@@ -158,6 +158,35 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
+                            @Loc(value = HIGHWAY_2), @Loc(value = HIGHWAY_1) }, tags = {
+                                    "highway=residential", "sidewalk=right" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
+                            @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
+                                    "footway=sidewalk" }) })
+    private Atlas invalidHighwayClosedWaySidewalkLeftSide;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
+            // edges
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
+                    @Loc(value = HIGHWAY_2) }, tags = { "highway=residential", "sidewalk=right" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
+                            @Loc(value = SIDEWALK_LEFT_2) }, tags = { "foot=yes" }) })
+    private Atlas invalidHighwayRightFootwayLeftSide;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
+            // edges
+            edges = {
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
                             @Loc(value = HIGHWAY_2) }, tags = { "highway=trunk", "oneway=yes",
                                     "sidewalk=right" }),
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
@@ -285,9 +314,19 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                                     "footway=sidewalk" }) })
     private Atlas sidewalkSharingLocation;
 
+    public Atlas getInvalidHighwayClosedWaySidewalkLeftSide()
+    {
+        return this.invalidHighwayClosedWaySidewalkLeftSide;
+    }
+
     public Atlas getInvalidHighwayLeftSidewalkRight()
     {
         return this.invalidHighwayLeftSidewalkRightSide;
+    }
+
+    public Atlas getInvalidHighwayRightFootwayLeft()
+    {
+        return this.invalidHighwayRightFootwayLeftSide;
     }
 
     public Atlas getInvalidHighwayRightSidewalkLeft()
