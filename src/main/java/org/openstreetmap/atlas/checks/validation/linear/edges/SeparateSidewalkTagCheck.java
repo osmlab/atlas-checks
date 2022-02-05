@@ -110,14 +110,14 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                     }
                 }
             }
-        }
+            if (this.isSidewalkTaggingMismatch(sidewalkTagValue, rightSidewalkCount,
+                    leftSidewalkCount))
+            {
+                return this.generateFlag(edge, sidewalkTagValue);
+            }
 
-        return ("right".equals(sidewalkTagValue) && rightSidewalkCount < 1
-                || "left".equals(sidewalkTagValue) && leftSidewalkCount < 1
-                || "both".equals(sidewalkTagValue)
-                        && (rightSidewalkCount < 1 || leftSidewalkCount < 1))
-                                ? this.generateFlag(edge, sidewalkTagValue)
-                                : Optional.empty();
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -276,6 +276,27 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
             return difference != null && difference.asDegrees() > 0;
         }
         return false;
+    }
+
+    private boolean isSidewalkTaggingMismatch(final String sidewalkTagValue,
+            final int rightSidewalkCount, final int leftSidewalkCount)
+    {
+        switch (sidewalkTagValue)
+        {
+            // sidewalk=right but separate sidewalks on left or both sides are detected
+            case "right":
+                return rightSidewalkCount < 1 && leftSidewalkCount > 0
+                        || rightSidewalkCount > 0 && leftSidewalkCount > 0;
+            // sidewalk=left but separate sidewalks on right or both sides are detected
+            case "left":
+                return leftSidewalkCount < 1 && rightSidewalkCount > 0
+                        || leftSidewalkCount > 0 && rightSidewalkCount > 0;
+            // sidewalk=both but separate sidewalk on left or ride side is detected.
+            case "both":
+                return rightSidewalkCount < 1 || leftSidewalkCount < 1;
+            default:
+                throw new CoreException("unknown sidewalk tag value: " + sidewalkTagValue);
+        }
     }
 
     /**

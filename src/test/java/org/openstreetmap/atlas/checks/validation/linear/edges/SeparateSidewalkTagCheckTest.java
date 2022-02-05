@@ -15,7 +15,6 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 public class SeparateSidewalkTagCheckTest
 {
-
     @Rule
     public SeparateSidewalkTagCheckTestRule setup = new SeparateSidewalkTagCheckTestRule();
 
@@ -74,11 +73,19 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
+    public void testNoSidewalk()
+    {
+        this.verifier.actual(this.setup.getNoSidewalk(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testSidewalkCrossing()
     {
         this.verifier.actual(this.setup.getSidewalkCrossing(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -86,7 +93,7 @@ public class SeparateSidewalkTagCheckTest
     {
         this.verifier.actual(this.setup.getSidewalkDifferentLayer(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -94,7 +101,7 @@ public class SeparateSidewalkTagCheckTest
     {
         this.verifier.actual(this.setup.getSidewalkHeadingOutsideDegreeRange(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -102,7 +109,7 @@ public class SeparateSidewalkTagCheckTest
     {
         this.verifier.actual(this.setup.getSidewalkSharingLocation(),
                 new SeparateSidewalkTagCheck(this.configuration));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.verifyEmpty();
     }
 
     @Test
