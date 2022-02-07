@@ -74,7 +74,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     {
         return object instanceof Edge && !this.isFlagged(object.getOsmIdentifier())
                 && ((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
-                && this.validSidewalkFilter((Edge) object) && !((Edge) object).isClosed();
+                && this.validSidewalkFilter((Edge) object);
     }
 
     @Override
@@ -285,12 +285,10 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         {
             // sidewalk=right but separate sidewalks on left or both sides are detected
             case "right":
-                return rightSidewalkCount < 1 && leftSidewalkCount > 0
-                        || rightSidewalkCount > 0 && leftSidewalkCount > 0;
+                return leftSidewalkCount > 0;
             // sidewalk=left but separate sidewalks on right or both sides are detected
             case "left":
-                return leftSidewalkCount < 1 && rightSidewalkCount > 0
-                        || leftSidewalkCount > 0 && rightSidewalkCount > 0;
+                return rightSidewalkCount > 0;
             // sidewalk=both but separate sidewalk on left or ride side is detected.
             case "both":
                 return rightSidewalkCount < 1 || leftSidewalkCount < 1;

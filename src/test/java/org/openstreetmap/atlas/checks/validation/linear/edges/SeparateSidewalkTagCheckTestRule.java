@@ -17,11 +17,12 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
     private static final String HIGHWAY_1 = "37.3485228,-121.9449555";
     private static final String HIGHWAY_2 = "37.3490966,-121.9433543";
     private static final String HIGHWAY_3 = "37.34855, -121.94487";
+    private static final String HIGHWAY_4 = "37.3485, -121.9444";
     private static final String SIDEWALK_RIGHT_1 = "37.34839,-121.94506";
     private static final String SIDEWALK_RIGHT_2 = "37.34874,-121.94408";
     private static final String SIDEWALK_LEFT_1 = "37.34858,-121.94512";
     private static final String SIDEWALK_LEFT_2 = "37.34886,-121.94427";
-    private static final String SIDEWALK_LEFT_3 = "7.34874, -121.94524";
+    private static final String SIDEWALK_LEFT_3 = "37.34874, -121.94524";
 
     @TestAtlas(
             // nodes
@@ -153,13 +154,13 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
             // nodes
             nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
                     @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_4)),
                     @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
                     @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
             // edges
-            edges = {
-                    @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
-                            @Loc(value = HIGHWAY_2), @Loc(value = HIGHWAY_1) }, tags = {
-                                    "highway=residential", "sidewalk=right" }),
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
+                    @Loc(value = HIGHWAY_2), @Loc(value = HIGHWAY_4),
+                    @Loc(value = HIGHWAY_1) }, tags = { "highway=residential", "sidewalk=right" }),
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
                             @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
