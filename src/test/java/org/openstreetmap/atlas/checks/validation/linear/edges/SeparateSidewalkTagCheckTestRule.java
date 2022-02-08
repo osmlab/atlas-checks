@@ -330,9 +330,11 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }),
-                    @Edge(id = "1000000003", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
+                    @Edge(id = "-1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
-                                    "footway=sidewalk" }) })
+                                    "footway=sidewalk" }),
+                    @Edge(id = "1000000003", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
+                            @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "foot=designated" }) })
     private Atlas invalidSidewalkBothSameSide;
 
     @TestAtlas(
