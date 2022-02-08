@@ -215,8 +215,8 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     {
         final int primeMeridian = 180;
         return HEADING_DEGREE_RANGE.contains(headingOne.asDegrees() - headingTwo.asDegrees())
-                || HEADING_DEGREE_RANGE.contains(
-                        headingOne.asDegrees() - (primeMeridian - headingTwo.asDegrees()));
+                || HEADING_DEGREE_RANGE.contains(headingOne.asDegrees()
+                        - (Math.abs(primeMeridian - headingTwo.asDegrees())));
     }
 
     /**

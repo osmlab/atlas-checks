@@ -40,6 +40,13 @@ public class SeparateSidewalkTagCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
+    /*
+     * @Test public void testInvalidHighwayLeftSidewalkRightAlternativeMapping() {
+     * this.verifier.actual(this.setup.getInvalidHighwayLeftSidewalkRightSideAlternativeMapping(),
+     * new SeparateSidewalkTagCheck(this.configuration)); this.verifier.globallyVerify(flags ->
+     * Assert.assertEquals(1, flags.size())); }
+     */
+
     @Test
     public void testInvalidHighwayRightFootwayLeft()
     {
@@ -52,6 +59,21 @@ public class SeparateSidewalkTagCheckTest
     public void testInvalidHighwayRightSidewalkLeft()
     {
         this.verifier.actual(this.setup.getInvalidHighwayRightSidewalkLeft(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    /*
+     * @Test public void testInvalidHighwayRightSidewalkLeftAlternativeMapping() {
+     * this.verifier.actual(this.setup.getInvalidHighwayRightSidewalkLeftAlternativeMapping(), new
+     * SeparateSidewalkTagCheck(this.configuration)); this.verifier.globallyVerify(flags ->
+     * Assert.assertEquals(1, flags.size())); }
+     */
+
+    @Test
+    public void testInvalidHighwayRightSidewalkLeftReverseHeading()
+    {
+        this.verifier.actual(this.setup.getInvalidHighwayRightSidewalkLeftReverseHeading(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
@@ -71,6 +93,13 @@ public class SeparateSidewalkTagCheckTest
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
+
+    /*
+     * @Test public void testInvalidSidewalkBothSidesAlternativeMapping() {
+     * this.verifier.actual(this.setup.getInvalidSidewalkBothSideAlternativeMapping(), new
+     * SeparateSidewalkTagCheck(this.configuration)); this.verifier.globallyVerify(flags ->
+     * Assert.assertEquals(1, flags.size())); }
+     */
 
     @Test
     public void testInvalidSidewalkDualCarriageWay()
