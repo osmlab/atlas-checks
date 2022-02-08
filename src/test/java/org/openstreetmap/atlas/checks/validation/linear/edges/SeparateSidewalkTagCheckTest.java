@@ -87,9 +87,17 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
-    public void testInvalidSidewalkBothSides()
+    public void testInvalidSidewalkBothSidesLeftMissing()
     {
-        this.verifier.actual(this.setup.getInvalidSidewalkBothSide(),
+        this.verifier.actual(this.setup.getInvalidSidewalkBothSideLeftMissing(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testInvalidSidewalkBothSidesRightMissing()
+    {
+        this.verifier.actual(this.setup.getInvalidSidewalkBothSideRightMissing(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }

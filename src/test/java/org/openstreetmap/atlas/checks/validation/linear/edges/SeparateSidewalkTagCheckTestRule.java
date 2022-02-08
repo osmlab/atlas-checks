@@ -282,7 +282,23 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }), })
-    private Atlas invalidSidewalkBothSide;
+    private Atlas invalidSidewalkBothSideLeftMissing;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_1)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_2)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
+            // edges
+            edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
+                    @Loc(value = HIGHWAY_2) }, tags = { "highway=residential", "sidewalk=both" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
+                            @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
+                                    "footway=sidewalk" }), })
+    private Atlas invalidSidewalkBothSideRightMissing;
 
     @TestAtlas(
             // nodes
@@ -418,14 +434,19 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
         return this.invalidSidewalkBothSameSide;
     }
 
-    public Atlas getInvalidSidewalkBothSide()
-    {
-        return this.invalidSidewalkBothSide;
-    }
-
     public Atlas getInvalidSidewalkBothSideAlternativeMapping()
     {
         return this.invalidSidewalkBothSideAlternativeMapping;
+    }
+
+    public Atlas getInvalidSidewalkBothSideLeftMissing()
+    {
+        return this.invalidSidewalkBothSideLeftMissing;
+    }
+
+    public Atlas getInvalidSidewalkBothSideRightMissing()
+    {
+        return this.invalidSidewalkBothSideRightMissing;
     }
 
     public Atlas getInvalidSidewalkLHighwayDualCarriageWay()
