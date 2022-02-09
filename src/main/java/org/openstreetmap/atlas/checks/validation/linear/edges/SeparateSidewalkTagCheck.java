@@ -265,17 +265,15 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
      */
     private boolean isRightOf(final PolyLine line, final Location location)
     {
-        final PolyLine tLine = new PolyLine(location);
+        final PolyLine locationLine = new PolyLine(location);
         final Segment closest = line.segments().stream()
-                .min(Comparator.comparingDouble(s -> s.shortestDistanceTo(tLine).asMeters()))
-                .orElse(null);
-        if (closest != null)
-        {
-            final PolyLine testLine = new PolyLine(closest.first(), closest.last(), location);
-            final Angle difference = testLine.headingDifference().orElse(null);
-            return difference != null && difference.asDegrees() > 0;
-        }
-        return false;
+                .min(Comparator.comparingDouble(s -> s.shortestDistanceTo(locationLine).asMeters()))
+                .orElseThrow(() -> new CoreException("Unable to get a Segment {}", line));
+
+        final PolyLine testLine = new PolyLine(closest.first(), closest.last(), location);
+        final Angle difference = testLine.headingDifference().orElse(null);
+        return difference != null && difference.asDegrees() > 0;
+
     }
 
     private boolean isSidewalkTaggingMismatch(final String sidewalkTagValue,
@@ -293,7 +291,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
             case "both":
                 return rightSidewalkCount < 1 || leftSidewalkCount < 1;
             default:
-                throw new CoreException("unknown sidewalk tag value: " + sidewalkTagValue);
+                throw new CoreException("Unknown sidewalk tag value {}", sidewalkTagValue);
         }
     }
 
