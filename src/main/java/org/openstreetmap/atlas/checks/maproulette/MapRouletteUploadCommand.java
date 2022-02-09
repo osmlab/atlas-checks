@@ -84,6 +84,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
     private static final Switch<Boolean> PURGE_CHALLENGES = new Switch<>("purgeIncompleteTasks",
             "true/false whether challenges should be purged of all incomplete tasks before uploading new tasks.",
             Boolean::parseBoolean, Optionality.OPTIONAL, "false");
+    private static final Switch<Boolean> COUNTRY_DISPLAY_NAMES = new Switch<>("countryDisplayNames",
+            "true/false whether ISO country codes should be converted to display names for challenge titles (defaults to true).",
+            Boolean::parseBoolean, Optionality.OPTIONAL, "true");
 
     private static final String PARAMETER_CHALLENGE = "challenge";
     private static final Logger logger = LoggerFactory.getLogger(MapRouletteUploadCommand.class);
@@ -123,7 +126,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         return super.switches().with(INPUT_DIRECTORY, OUTPUT_PATH, CONFIG_LOCATION, COUNTRIES,
                 CHECKS, CHECKIN_COMMENT_PREFIX, CHECKIN_COMMENT, DISCOVERABLE_CHALLENGES,
                 UNDISCOVERABLE_CHALLENGES, DISCOVERABLE_PROJECT, INCLUDE_FIX_SUGGESTIONS,
-                PURGE_CHALLENGES);
+                PURGE_CHALLENGES, COUNTRY_DISPLAY_NAMES);
     }
 
     @Override
@@ -146,6 +149,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
         final Optional<List<String>> undiscoverableChallenges = (Optional<List<String>>) commandMap
                 .getOption(UNDISCOVERABLE_CHALLENGES);
         this.validateChallengeDiscoverability(discoverableChallenges, undiscoverableChallenges);
+        final boolean useDisplayNames = (boolean) commandMap.get(COUNTRY_DISPLAY_NAMES);
 
         ((File) commandMap.get(INPUT_DIRECTORY)).listFilesRecursively().forEach(logFile ->
         {
@@ -184,8 +188,9 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                                 final Challenge challengeObject = countryToChallengeMap
                                         .computeIfAbsent(countryCode,
                                                 ignore -> this.getChallenge(checkName, instructions,
-                                                        countryCode, checkinCommentPrefix,
-                                                        checkinComment, discoverableChallenges,
+                                                        countryCode, useDisplayNames,
+                                                        checkinCommentPrefix, checkinComment,
+                                                        discoverableChallenges,
                                                         undiscoverableChallenges));
                                 // by default, do NOT purge incomplete tasks from challenges
                                 challengeObject.setPurge((boolean) commandMap
@@ -228,6 +233,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *            the full configuration, which contains challenge parameters for checkName.
      * @param countryCode
      *            the CheckFlag iso3 country code
+     * @param useDisplayNames
+     *            convert iso code to display name or not
      * @param checkinCommentPrefix
      *            the MapRoulette checkinComment prefix
      * @param checkinComment
@@ -236,8 +243,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      */
     private Challenge getChallenge(final String checkName,
             final Configuration fallbackConfiguration, final String countryCode,
-            final String checkinCommentPrefix, final String checkinComment,
-            final Optional<List<String>> discoverableChallenges,
+            final boolean useDisplayNames, final String checkinCommentPrefix,
+            final String checkinComment, final Optional<List<String>> discoverableChallenges,
             final Optional<List<String>> undiscoverableChallenges)
     {
         final Map<String, String> challengeMap = fallbackConfiguration
@@ -246,7 +253,8 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
                 .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
         final Challenge result = gson.fromJson(gson.toJson(challengeMap), Challenge.class);
         // Prepend the challenge name with the full country name if one exists
-        final String challengeName = String.join(" - ", this.getCountryDisplayName(countryCode),
+        final String challengeName = String.join(" - ",
+                useDisplayNames ? this.getCountryDisplayName(countryCode) : countryCode,
                 result.getName().isEmpty() ? checkName : result.getName());
         result.setName(challengeName);
         // Set check-in comment to checkinComment if provided, otherwise, set as #prefix: [ISO -

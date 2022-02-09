@@ -51,6 +51,22 @@ public class MapRouletteUploadCommandTest
     }
 
     @Test
+    public void testCountryDisplayNamesFalse()
+    {
+        final String[] additionalArguments = { "-countryDisplayNames=false" };
+        final TestMapRouletteConnection connection = this.run(additionalArguments);
+        final Set<Project> projects = connection.uploadedProjects();
+        final List<String> challengeNames = projects.stream().flatMap(project -> connection
+                .challengesForProject(project).stream().map(Challenge::getName)).sorted()
+                .collect(Collectors.toList());
+
+        Assert.assertEquals("CAN - SomeOtherCheck", challengeNames.get(0));
+        Assert.assertEquals("MEX,BLZ - AnotherCheck", challengeNames.get(1));
+        Assert.assertEquals("URY - SomeCheck", challengeNames.get(2));
+        Assert.assertEquals("USA - SomeCheck", challengeNames.get(3));
+    }
+
+    @Test
     public void testCountryFilter()
     {
         final String[] additionalArguments = { "-countries=CAN" };
