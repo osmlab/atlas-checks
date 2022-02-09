@@ -268,12 +268,14 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
         final PolyLine locationLine = new PolyLine(location);
         final Segment closest = line.segments().stream()
                 .min(Comparator.comparingDouble(s -> s.shortestDistanceTo(locationLine).asMeters()))
-                .orElseThrow(() -> new CoreException("Unable to get a Segment {}", line));
-
-        final PolyLine testLine = new PolyLine(closest.first(), closest.last(), location);
-        final Angle difference = testLine.headingDifference().orElse(null);
-        return difference != null && difference.asDegrees() > 0;
-
+                .orElse(null);
+        if (closest != null)
+        {
+            final PolyLine testLine = new PolyLine(closest.first(), closest.last(), location);
+            final Angle difference = testLine.headingDifference().orElse(null);
+            return difference != null && difference.asDegrees() > 0;
+        }
+        return false;
     }
 
     private boolean isSidewalkTaggingMismatch(final String sidewalkTagValue,
