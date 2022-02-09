@@ -31,11 +31,10 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_2)) },
             // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
-                    @Loc(value = HIGHWAY_2) }, tags = { "highway=residential",
-                            "sidewalk=right" }),
+                    @Loc(value = HIGHWAY_2) }, tags = { "highway=residential", "sidewalk=right" }),
                     @Edge(id = "-1000000001", coordinates = { @Loc(value = HIGHWAY_1),
                             @Loc(value = HIGHWAY_2) }, tags = { "highway=residential",
-                            "sidewalk=right" }) })
+                                    "sidewalk=right" }) })
     private Atlas noSidewalk;
 
     @TestAtlas(
