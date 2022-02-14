@@ -198,6 +198,14 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
             sidewalkTagValue = "right";
         }
 
+        if (edge.getTag(SidewalkLeftTag.KEY).isPresent()
+                && ALTERNATIVE_SIDEWALK_TAG_VALUE.equals(edge.getTag(SidewalkLeftTag.KEY).get())
+                && edge.getTag(SidewalkRightTag.KEY).isPresent()
+                && ALTERNATIVE_SIDEWALK_TAG_VALUE.equals(edge.getTag(SidewalkRightTag.KEY).get()))
+        {
+            sidewalkTagValue = "both";
+        }
+
         return sidewalkTagValue;
     }
 
@@ -329,13 +337,14 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     @SuppressWarnings("squid:S3655")
     private boolean validSidewalkFilter(final Edge edge)
     {
-        return edge.getTag(SidewalkTag.KEY).isPresent() && !this.isDualCarriageWay(edge)
+        return (edge.getTag(SidewalkTag.KEY).isPresent()
+                && edge.getTag(SidewalkTag.KEY).get().matches("left|right|both")
+                || edge.getTag(SidewalkLeftTag.KEY).isPresent() && ALTERNATIVE_SIDEWALK_TAG_VALUE
+                        .equals(edge.getTag(SidewalkLeftTag.KEY).get())
+                || edge.getTag(SidewalkRightTag.KEY).isPresent() && ALTERNATIVE_SIDEWALK_TAG_VALUE
+                        .equals(edge.getTag(SidewalkRightTag.KEY).get()))
+                && !this.isDualCarriageWay(edge)
                 && edge.asPolyLine().length().asMeters() >= this.defaultEdgeLength.asMeters()
-                && !edge.isClosed()
-                && (edge.getTag(SidewalkTag.KEY).get().matches("left|right|both")
-                        || Objects.equals(edge.getTag(SidewalkLeftTag.KEY).orElse(null),
-                                ALTERNATIVE_SIDEWALK_TAG_VALUE)
-                        || Objects.equals(edge.getTag(SidewalkRightTag.KEY).orElse(null),
-                                ALTERNATIVE_SIDEWALK_TAG_VALUE));
+                && !edge.isClosed();
     }
 }

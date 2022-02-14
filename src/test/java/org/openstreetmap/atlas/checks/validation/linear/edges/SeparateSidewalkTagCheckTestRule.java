@@ -307,9 +307,7 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
             nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
                     @Node(coordinates = @Loc(value = HIGHWAY_2)),
                     @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_1)),
-                    @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_2)),
-                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
-                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
+                    @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_2)) },
             // edges
             edges = {
                     @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
