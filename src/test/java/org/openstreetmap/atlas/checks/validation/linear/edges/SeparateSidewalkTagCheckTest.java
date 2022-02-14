@@ -49,6 +49,14 @@ public class SeparateSidewalkTagCheckTest
     }
 
     @Test
+    public void testInvalidHighwayLeftSidewalkRightAlternativeMapping2()
+    {
+        this.verifier.actual(this.setup.getInvalidHighwayLeftSidewalkRightSideAlternativeMapping2(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
     public void testInvalidHighwayRightFootwayLeft()
     {
         this.verifier.actual(this.setup.getInvalidHighwayRightFootwayLeft(),
@@ -68,6 +76,14 @@ public class SeparateSidewalkTagCheckTest
     public void testInvalidHighwayRightSidewalkLeftAlternativeMapping()
     {
         this.verifier.actual(this.setup.getInvalidHighwayRightSidewalkLeftAlternativeMapping(),
+                new SeparateSidewalkTagCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testInvalidHighwayRightSidewalkLeftAlternativeMapping2()
+    {
+        this.verifier.actual(this.setup.getInvalidHighwayRightSidewalkLeftAlternativeMapping2(),
                 new SeparateSidewalkTagCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }

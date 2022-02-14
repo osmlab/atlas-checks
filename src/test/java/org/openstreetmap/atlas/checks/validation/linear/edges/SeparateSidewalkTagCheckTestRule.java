@@ -174,6 +174,22 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
                     @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
             // edges
+            edges = {
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
+                            @Loc(value = HIGHWAY_2) }, tags = { "highway=residential",
+                                    "sidewalk:right=separate" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_1),
+                            @Loc(value = SIDEWALK_LEFT_2) }, tags = { "highway=footway",
+                                    "footway=sidewalk" }) })
+    private Atlas invalidHighwayRightSidewalkLeftAlternativeMapping2;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_1)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_LEFT_2)) },
+            // edges
             edges = { @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
                     @Loc(value = HIGHWAY_2) }, tags = { "highway=residential", "sidewalk=right" }),
                     @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_LEFT_2),
@@ -269,6 +285,22 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
                             @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
                                     "footway=sidewalk" }) })
     private Atlas invalidHighwayLeftSidewalkRightSideAlternativeMapping;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = HIGHWAY_1)),
+                    @Node(coordinates = @Loc(value = HIGHWAY_2)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_1)),
+                    @Node(coordinates = @Loc(value = SIDEWALK_RIGHT_2)) },
+            // edges
+            edges = {
+                    @Edge(id = "1000000001", coordinates = { @Loc(value = HIGHWAY_1),
+                            @Loc(value = HIGHWAY_2) }, tags = { "highway=residential",
+                                    "sidewalk:left=separate" }),
+                    @Edge(id = "1000000002", coordinates = { @Loc(value = SIDEWALK_RIGHT_1),
+                            @Loc(value = SIDEWALK_RIGHT_2) }, tags = { "highway=footway",
+                                    "footway=sidewalk" }) })
+    private Atlas invalidHighwayLeftSidewalkRightSideAlternativeMapping2;
 
     @TestAtlas(
             // nodes
@@ -411,6 +443,11 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
         return this.invalidHighwayLeftSidewalkRightSideAlternativeMapping;
     }
 
+    public Atlas getInvalidHighwayLeftSidewalkRightSideAlternativeMapping2()
+    {
+        return this.invalidHighwayLeftSidewalkRightSideAlternativeMapping2;
+    }
+
     public Atlas getInvalidHighwayRightFootwayLeft()
     {
         return this.invalidHighwayRightFootwayLeftSide;
@@ -424,6 +461,11 @@ public class SeparateSidewalkTagCheckTestRule extends CoreTestRule
     public Atlas getInvalidHighwayRightSidewalkLeftAlternativeMapping()
     {
         return this.invalidHighwayRightSidewalkLeftAlternativeMapping;
+    }
+
+    public Atlas getInvalidHighwayRightSidewalkLeftAlternativeMapping2()
+    {
+        return this.invalidHighwayRightSidewalkLeftAlternativeMapping2;
     }
 
     public Atlas getInvalidHighwayRightSidewalkLeftReverseHeading()

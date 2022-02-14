@@ -1,7 +1,7 @@
 project.ext.versions = [
     checkstyle: '8.18',
     jacoco: '0.8.7',
-    atlas: '6.6.1',
+    atlas: '6.6.2',
     commons:'2.6',
     atlas_generator: '5.3.6',
     atlas_checkstyle: '5.6.9',

@@ -171,12 +171,10 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
     @SuppressWarnings("squid:S3655")
     private String getSeparateSidewalkTagValue(final Edge edge)
     {
-        String sidewalkTagValue = null;
-
         // preferred way of mapping sidewalks
         if (edge.getTag(SidewalkTag.KEY).isPresent())
         {
-            sidewalkTagValue = edge.getTag(SidewalkTag.KEY).get();
+            return edge.getTag(SidewalkTag.KEY).get();
         }
 
         // alternative way of mapping sidewalk
@@ -186,7 +184,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                         && "no".equals(edge.getTag(SidewalkRightTag.KEY).get())
                         || edge.getTag(SidewalkRightTag.KEY).isEmpty()))
         {
-            sidewalkTagValue = "left";
+            return "left";
         }
 
         if (edge.getTag(SidewalkRightTag.KEY).isPresent()
@@ -195,7 +193,7 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                         && "no".equals(edge.getTag(SidewalkLeftTag.KEY).get())
                         || edge.getTag(SidewalkLeftTag.KEY).isEmpty()))
         {
-            sidewalkTagValue = "right";
+            return "right";
         }
 
         if (edge.getTag(SidewalkLeftTag.KEY).isPresent()
@@ -203,10 +201,9 @@ public class SeparateSidewalkTagCheck extends BaseCheck<Long>
                 && edge.getTag(SidewalkRightTag.KEY).isPresent()
                 && ALTERNATIVE_SIDEWALK_TAG_VALUE.equals(edge.getTag(SidewalkRightTag.KEY).get()))
         {
-            sidewalkTagValue = "both";
+            return "both";
         }
-
-        return sidewalkTagValue;
+        return null;
     }
 
     /**
