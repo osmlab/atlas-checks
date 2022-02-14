@@ -241,6 +241,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
      *            the MapRoulette checkinComment
      * @return the check's challenge parameters, stored as a Challenge object.
      */
+    @SuppressWarnings("squid:S107")
     private Challenge getChallenge(final String checkName,
             final Configuration fallbackConfiguration, final String countryCode,
             final boolean useDisplayNames, final String checkinCommentPrefix,
