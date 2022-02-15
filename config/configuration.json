@@ -1008,6 +1008,18 @@
       "tags":"highway"
     }
   },
+  "SeparateSidewalkTagCheck": {
+    "edge.length": 20.0,
+    "sidewalk.search.distance": 15.0,
+    "maximum.highway.type": "primary",
+    "challenge": {
+      "description": "Tasks contain separately mapped sidewalks that are inconsistent with highway's sidewalk tags.",
+      "blurb": "Modify sidewalks and highway sidewalks tags consistency",
+      "instruction": "Open your favorite editor and edit sidewalk tag",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
+  },
   "ShadowDetectionCheck": {
     "challenge": {
       "description": "Verify the height and level tags to make sure the building does not float in 3D",
