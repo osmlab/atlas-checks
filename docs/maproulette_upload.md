@@ -24,6 +24,8 @@ Each Challenge is added to the project provided in the MapRoulette connection ur
 * **undiscoverableChallenges** (optional) - Check names listed here are made into undiscoverable challenges. If you define this, leave discoverableChallenges undefined. Supply a comma-delimited list for cherry-picking undiscoverable challenges (in which case all other checks are converted to discoverable challenges), or an empty string to make all challenges undiscoverable, or do not define. If undefined, checks in discoverableChallenges are made discoverable, but if discoverableChallenges is null, all challenges are made undiscoverable. 
 * **discoverableChallenges** (optional) - Check names listed here are made into discoverable challenges. If you define this, leave undiscoverableChallenges undefined. Supply a comma-delimited list for cherry-picking discoverable challenges (in which case all other checks are converted to undiscoverable challenges), or an empty string to make all challenges discoverable, or do not define. If undefined, see undiscoverableChallenges.
 * **discoverableProject** (optional) - Whether the project is discoverable (enabled) in MapRoulette.
+* **purgeIncompleteTasks** (optional) - Whether challenges should be purged of all incomplete tasks before uploading new tasks (true/false, default: false).
+* **countryDisplayNames** (optional) - Whether ISO country codes should be converted to display names for challenge titles (true/false, default: true).
 ## Example
 
 The following command will upload EdgeCrossingEdge & SinkIsland checks to the `checks_example_project` Project on maproulette.org. 
