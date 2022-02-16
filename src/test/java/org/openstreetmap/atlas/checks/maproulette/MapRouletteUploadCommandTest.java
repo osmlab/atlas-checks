@@ -202,7 +202,8 @@ public class MapRouletteUploadCommandTest
         final TestMapRouletteConnection connection = new TestMapRouletteConnection();
 
         // Run the command
-        command.onRun(map, configuration -> new MapRouletteClient(configuration, connection));
+        command.onRun(map,
+                (configuration, proxy) -> new MapRouletteClient(configuration, connection));
 
         return connection;
     }

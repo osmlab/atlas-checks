@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
@@ -48,8 +49,9 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     private static final long serialVersionUID = -8227257938510897604L;
     private final MapRouletteConfiguration configuration;
     private final URIBuilder uriBuilder;
+    private final HttpHost proxy;
 
-    MapRouletteConnection(final MapRouletteConfiguration configuration)
+    MapRouletteConnection(final MapRouletteConfiguration configuration, final HttpHost proxy)
     {
         if (configuration == null || !this.isAbleToConnectToMapRoulette(configuration))
         {
@@ -59,6 +61,12 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         this.configuration = configuration;
         this.uriBuilder = new URIBuilder().setScheme(this.configuration.getScheme())
                 .setHost(this.configuration.getServer()).setPort(this.configuration.getPort());
+        this.proxy = proxy;
+    }
+
+    MapRouletteConnection(final MapRouletteConfiguration configuration)
+    {
+        this(configuration, null);
     }
 
     /**
@@ -204,6 +212,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     public HttpResource setAuth(final HttpResource resource)
     {
         resource.setHeader(KEY_API_KEY, this.configuration.getApiKey());
+        resource.setProxy(this.proxy);
         return resource;
     }
 
