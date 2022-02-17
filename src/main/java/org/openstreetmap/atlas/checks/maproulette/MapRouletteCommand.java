@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.apache.http.HttpHost;
-import org.openstreetmap.atlas.checks.constants.CommonConstants;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
 import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
@@ -39,7 +38,8 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
             "Full path to file where project id, challenge id are stored after creation in MapRoulette.",
             StringConverter.IDENTITY);
     private static final Switch<String> PROXY = new Switch<>("proxy",
-            "hostname:port for an http proxy", StringConverter.IDENTITY, Optionality.OPTIONAL);
+            "scheme://hostname:port for an http proxy", StringConverter.IDENTITY,
+            Optionality.OPTIONAL);
 
     private MapRouletteClient mapRouletteClient;
 
@@ -101,8 +101,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
         if (proxyOptional.isPresent())
         {
             logger.info("Using Proxy: {}", proxyOptional.get());
-            final String[] proxyArray = proxyOptional.get().split(CommonConstants.COLON);
-            proxy = new HttpHost(proxyArray[0], Integer.parseInt(proxyArray[1]), "https");
+            proxy = HttpHost.create(proxyOptional.get());
         }
 
         if (mapRoulette != null)
