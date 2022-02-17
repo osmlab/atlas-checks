@@ -53,6 +53,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
 
     MapRouletteConnection(final MapRouletteConfiguration configuration, final HttpHost proxy)
     {
+        this.proxy = proxy;
         if (configuration == null || !this.isAbleToConnectToMapRoulette(configuration))
         {
             throw new IllegalArgumentException(
@@ -61,7 +62,6 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         this.configuration = configuration;
         this.uriBuilder = new URIBuilder().setScheme(this.configuration.getScheme())
                 .setHost(this.configuration.getServer()).setPort(this.configuration.getPort());
-        this.proxy = proxy;
     }
 
     MapRouletteConnection(final MapRouletteConfiguration configuration)
