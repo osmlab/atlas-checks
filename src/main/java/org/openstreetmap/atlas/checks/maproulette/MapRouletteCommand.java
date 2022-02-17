@@ -102,7 +102,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
         {
             logger.info("Using Proxy: {}", proxyOptional.get());
             final String[] proxyArray = proxyOptional.get().split(CommonConstants.COLON);
-            proxy = new HttpHost(proxyArray[0], Integer.parseInt(proxyArray[1]));
+            proxy = new HttpHost(proxyArray[0], Integer.parseInt(proxyArray[1]), "https");
         }
 
         if (mapRoulette != null)
