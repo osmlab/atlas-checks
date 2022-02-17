@@ -270,6 +270,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                             configuration.getScheme(), configuration.getServer(),
                             configuration.getPort());
                     final GetResource homepage = new GetResource(serverConnection);
+                    homepage.setProxy(this.proxy);
                     final int statusCode = homepage.getStatusCode();
                     if (statusCode != HttpStatus.SC_OK)
                     {
