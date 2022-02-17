@@ -100,6 +100,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
         final Optional<String> proxyOptional = (Optional<String>) commandMap.getOption(PROXY);
         if (proxyOptional.isPresent())
         {
+            logger.info("Using Proxy: {}", proxyOptional.get());
             final String[] proxyArray = proxyOptional.get().split(CommonConstants.COLON);
             proxy = new HttpHost(proxyArray[0], Integer.parseInt(proxyArray[1]));
         }
