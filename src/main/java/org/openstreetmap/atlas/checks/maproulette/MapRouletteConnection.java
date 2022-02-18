@@ -213,7 +213,6 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     {
         resource.setHeader(KEY_API_KEY, this.configuration.getApiKey());
         resource.setProxy(this.proxy);
-        logger.info("Connecting with proxy: {}", this.proxy);
         return resource;
     }
 
