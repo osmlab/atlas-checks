@@ -1,7 +1,8 @@
 {
   "SomeCheck": {
     "challenge": {
-      "name": "Address Point Match"
+      "name": "Address Point Match",
+      "override.URY.name": "Address Point Match / Coincidencia de punto de dirección"
     }
   },
   "SomeOtherCheck": {
