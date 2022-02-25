@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.maproulette.data;
 
+import static org.openstreetmap.atlas.checks.constants.CommonConstants.EMPTY_STRING;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,31 +28,6 @@ import com.google.gson.JsonPrimitive;
  */
 public class Task
 {
-    /**
-     * A class holding a point and some description for that point
-     */
-    private class PointInformation
-    {
-        private final Location location;
-        private final Optional<String> description;
-
-        PointInformation(final Location location, final Optional<String> description)
-        {
-            this.location = location;
-            this.description = description;
-        }
-
-        public Optional<String> getDescription()
-        {
-            return this.description;
-        }
-
-        public Location getLocation()
-        {
-            return this.location;
-        }
-    }
-
     /**
      * Given some feature changes, convert them one by one to JSON cooperative challenge operations.
      * This is in {@link Task} since cooperativeWork objects are part of the Task geojson, and so
@@ -91,6 +68,31 @@ public class Task
         }
     }
 
+    /**
+     * A class holding a point and some description for that point
+     */
+    private class PointInformation
+    {
+        private final Location location;
+        private final Optional<String> description;
+
+        PointInformation(final Location location, final Optional<String> description)
+        {
+            this.location = location;
+            this.description = description;
+        }
+
+        public Optional<String> getDescription()
+        {
+            return this.description;
+        }
+
+        public Location getLocation()
+        {
+            return this.location;
+        }
+    }
+
     protected static final String FEATURE = "Feature";
     protected static final String POINT = "Point";
     protected static final String TASK_FEATURES = "features";
@@ -107,6 +109,7 @@ public class Task
     private static final String FRAMEWORK_GENERATOR = "flag:generator";
     private static final String FRAMEWORK = "Atlas Checks";
     private static final String COOPERATIVE_WORK = "cooperativeWork";
+    private static final String ERROR_TAGS = "errorTags";
     private String challengeName;
     private Optional<JsonArray> geoJson = Optional.empty();
     private String instruction;
@@ -156,6 +159,7 @@ public class Task
         task.add(TASK_NAME, new JsonPrimitive(this.getTaskIdentifier()));
         task.add(TASK_PARENT_ID, new JsonPrimitive(parentIdentifier));
         task.add(TASK_GEOMETRIES, result);
+        task.add(ERROR_TAGS, new JsonPrimitive(EMPTY_STRING));
         return task;
     }
 
