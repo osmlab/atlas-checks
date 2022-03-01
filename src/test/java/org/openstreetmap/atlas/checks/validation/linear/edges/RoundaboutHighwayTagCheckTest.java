@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.checks.configuration.ConfigurationResolver;
@@ -8,8 +7,9 @@ import org.openstreetmap.atlas.checks.validation.verifier.ConsumerBasedExpectedC
 
 /**
  * Tests for {@link RoundaboutHighwayTagCheck}
- * 
+ *
  * @author mselaineleong
+ * @author brianjor
  */
 public class RoundaboutHighwayTagCheckTest
 {
@@ -19,43 +19,47 @@ public class RoundaboutHighwayTagCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    private final RoundaboutHighwayTagCheck emptyCheck = new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration());
+
     @Test
-    public void roundaboutWithHighwayTagFiveTest()
+    public void roundaboutCorrectTagConnectedToSplitStreetTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagFiveAtlas(),
-                new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.actual(this.setup.roundaboutCorrectTagConnectedToSplitStreetAtlas(), this.emptyCheck);
+        this.verifier.verifyEmpty();
     }
 
     @Test
-    public void roundaboutWithHighwayTagOneTest()
+    public void roundaboutCorrectTagIgnoreLinksTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagOneAtlas(),
-                new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.actual(this.setup.roundaboutCorrectTagIgnoreLinksAtlas(), this.emptyCheck);
+        this.verifier.verifyEmpty();
     }
 
     @Test
-    public void roundaboutWithHighwayTagThreeTest()
+    public void roundaboutCorrectTagNoHigherThroughRoadsTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagThreeAtlas(),
-                new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.actual(this.setup.roundaboutCorrectTagNoHigherThroughRoadsAtlas(), this.emptyCheck);
+        this.verifier.verifyEmpty();
     }
 
     @Test
-    public void roundaboutWithHighwayTagTwoTest()
+    public void roundaboutCorrectTagAgainstManyTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagTwoAtlas(),
-                new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+        this.verifier.actual(this.setup.roundaboutCorrectTagAgainstManyAtlas(), this.emptyCheck);
+        this.verifier.verifyEmpty();
     }
 
     @Test
-    public void roundaboutWithHighwayTagZeroTest()
+    public void roundaboutPrimaryLinkShouldBePrimaryTest()
     {
-        this.verifier.actual(this.setup.roundaboutWithHighwayTagZeroAtlas(),
-                new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration()));
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+        this.verifier.actual(this.setup.roundaboutPrimaryLinkShouldBePrimaryAtlas(), this.emptyCheck);
+        this.verifier.verifyExpectedSize(1);
+    }
+
+    @Test
+    public void roundaboutCorrectTagPrimaryTest()
+    {
+        this.verifier.actual(this.setup.roundaboutCorrectTagPrimaryAtlas(), this.emptyCheck);
+        this.verifier.verifyEmpty();
     }
 }

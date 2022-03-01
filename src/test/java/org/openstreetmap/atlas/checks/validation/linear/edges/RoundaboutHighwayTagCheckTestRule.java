@@ -11,6 +11,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
  * {@link RoundaboutHighwayTagCheckTest} data generator
  *
  * @author mselaineleong
+ * @author brianjor
  */
 
 public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
@@ -31,9 +32,7 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
     private static final String TEST_11 = "48.1037751388732,-122.799041234059";
     private static final String TEST_12 = "48.103226392465,-122.799600798906";
 
-    // Roundabout has correct highway tag
     @TestAtlas(
-            // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
@@ -46,30 +45,29 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_10)),
                     @Node(coordinates = @Loc(value = TEST_11)),
                     @Node(coordinates = @Loc(value = TEST_12)) },
-            // edges
             edges = { @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "junction=roundabout", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_9) }, tags = { "highway=primary" }),
                     @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
@@ -78,11 +76,9 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_11) }, tags = { "highway=primary" }),
                     @Edge(id = "1245", coordinates = { @Loc(value = TEST_8),
                             @Loc(value = TEST_12) }, tags = { "highway=primary" }) })
-    private Atlas roundaboutWithHighwayTagZeroAtlas;
+    private Atlas roundaboutCorrectTagPrimaryAtlas;
 
-    // Roundabout has correct highway tag
     @TestAtlas(
-            // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
@@ -95,43 +91,40 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_10)),
                     @Node(coordinates = @Loc(value = TEST_11)),
                     @Node(coordinates = @Loc(value = TEST_12)) },
-            // edges
             edges = { @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
                     @Loc(value = TEST_2) }, tags = { "junction=roundabout", "highway=primary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "junction=roundabout",
-                                    "highway=primary" }),
+                            "highway=primary" }),
                     @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary" }),
                     @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_9) }, tags = { "highway=secondary" }),
                     @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_10) }, tags = { "highway=tertiary" }),
+                            @Loc(value = TEST_10) }, tags = { "highway=secondary" }),
                     @Edge(id = "1244", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_11) }, tags = { "highway=primary" }),
+                            @Loc(value = TEST_11) }, tags = { "highway=tertiary" }),
                     @Edge(id = "1245", coordinates = { @Loc(value = TEST_8),
-                            @Loc(value = TEST_12) }, tags = { "highway=primary_link" }) })
-    private Atlas roundaboutWithHighwayTagOneAtlas;
+                            @Loc(value = TEST_12) }, tags = { "highway=tertiary" }) })
+    private Atlas roundaboutCorrectTagAgainstManyAtlas;
 
-    // Roundabout has incorrect highway tag
     @TestAtlas(
-            // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
@@ -144,45 +137,42 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_10)),
                     @Node(coordinates = @Loc(value = TEST_11)),
                     @Node(coordinates = @Loc(value = TEST_12)) },
-            // edges
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_2) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
-                                    "highway=primary_link" }),
+                            "highway=primary_link" }),
                     @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_9) }, tags = { "highway=secondary" }),
                     @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_10) }, tags = { "highway=tertiary" }),
+                            @Loc(value = TEST_10) }, tags = { "highway=secondary" }),
                     @Edge(id = "1244", coordinates = { @Loc(value = TEST_6),
                             @Loc(value = TEST_11) }, tags = { "highway=primary" }),
                     @Edge(id = "1245", coordinates = { @Loc(value = TEST_8),
-                            @Loc(value = TEST_12) }, tags = { "highway=primary_link" }) })
-    private Atlas roundaboutWithHighwayTagTwoAtlas;
+                            @Loc(value = TEST_12) }, tags = { "highway=primary" }) })
+    private Atlas roundaboutPrimaryLinkShouldBePrimaryAtlas;
 
-    // Roundabout has incorrect highway tag
     @TestAtlas(
-            // nodes
             nodes = { @Node(coordinates = @Loc(value = TEST_1)),
                     @Node(coordinates = @Loc(value = TEST_2)),
                     @Node(coordinates = @Loc(value = TEST_3)),
@@ -195,114 +185,161 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                     @Node(coordinates = @Loc(value = TEST_10)),
                     @Node(coordinates = @Loc(value = TEST_11)),
                     @Node(coordinates = @Loc(value = TEST_12)) },
-            // edges
-            edges = { @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
-                    @Loc(value = TEST_2) }, tags = { "junction=roundabout", "residential" }),
-                    @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_3) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
-                            @Loc(value = TEST_6) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_7) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
-                            @Loc(value = TEST_8) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
-                            @Loc(value = TEST_1) }, tags = { "junction=roundabout",
-                                    "residential" }),
-                    @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_9) }, tags = { "unclassified" }),
-                    @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_10) }, tags = { "unclassified" }),
-                    @Edge(id = "1244", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_11) }, tags = { "unclassified" }),
-                    @Edge(id = "1245", coordinates = { @Loc(value = TEST_8),
-                            @Loc(value = TEST_12) }, tags = { "residential" }) })
-    private Atlas roundaboutWithHighwayTagThreeAtlas;
-
-    // Roundabout has incorrect highway tag
-    @TestAtlas(
-            // nodes
-            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
-                    @Node(coordinates = @Loc(value = TEST_2)),
-                    @Node(coordinates = @Loc(value = TEST_3)),
-                    @Node(coordinates = @Loc(value = TEST_4)),
-                    @Node(coordinates = @Loc(value = TEST_5)),
-                    @Node(coordinates = @Loc(value = TEST_6)),
-                    @Node(coordinates = @Loc(value = TEST_7)),
-                    @Node(coordinates = @Loc(value = TEST_8)),
-                    @Node(coordinates = @Loc(value = TEST_9)),
-                    @Node(coordinates = @Loc(value = TEST_10)),
-                    @Node(coordinates = @Loc(value = TEST_11)),
-                    @Node(coordinates = @Loc(value = TEST_12)) },
-            // edges
             edges = {
                     @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
                             @Loc(value = TEST_2) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_4) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
                             @Loc(value = TEST_5) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
                             @Loc(value = TEST_6) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
                             @Loc(value = TEST_7) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
                             @Loc(value = TEST_8) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
                             @Loc(value = TEST_1) }, tags = { "junction=roundabout",
-                                    "highway=residential" }),
+                            "highway=secondary" }),
                     @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_9) }, tags = { "highway=residential" }),
+                            @Loc(value = TEST_9) }, tags = { "highway=secondary" }),
                     @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_10) }, tags = { "highway=residential" }),
+                            @Loc(value = TEST_10) }, tags = { "highway=secondary" }),
                     @Edge(id = "1244", coordinates = { @Loc(value = TEST_6),
-                            @Loc(value = TEST_11) }, tags = { "highway=residential" }),
+                            @Loc(value = TEST_11) }, tags = { "highway=primary" }) })
+    private Atlas roundaboutCorrectTagNoHigherThroughRoadsAtlas;
+
+    @TestAtlas(
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)),
+                    @Node(coordinates = @Loc(value = TEST_8)),
+                    @Node(coordinates = @Loc(value = TEST_9)),
+                    @Node(coordinates = @Loc(value = TEST_10)),
+                    @Node(coordinates = @Loc(value = TEST_11)),
+                    @Node(coordinates = @Loc(value = TEST_12)) },
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_5) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
+                            @Loc(value = TEST_8) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
+                            @Loc(value = TEST_1) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_9) }, tags = { "highway=secondary" }),
+                    @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_10) }, tags = { "highway=secondary" }),
+                    @Edge(id = "1244", coordinates = { @Loc(value = TEST_6),
+                            @Loc(value = TEST_11) }, tags = { "highway=primary_link" }),
                     @Edge(id = "1245", coordinates = { @Loc(value = TEST_8),
                             @Loc(value = TEST_12) }, tags = { "highway=primary_link" }) })
-    private Atlas roundaboutWithHighwayTagFiveAtlas;
+    private Atlas roundaboutCorrectTagIgnoreLinksAtlas;
 
-    public Atlas roundaboutWithHighwayTagFiveAtlas()
+
+    @TestAtlas(
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)),
+                    @Node(coordinates = @Loc(value = TEST_5)),
+                    @Node(coordinates = @Loc(value = TEST_6)),
+                    @Node(coordinates = @Loc(value = TEST_7)),
+                    @Node(coordinates = @Loc(value = TEST_8)),
+                    @Node(coordinates = @Loc(value = TEST_9)),
+                    @Node(coordinates = @Loc(value = TEST_10)),
+                    @Node(coordinates = @Loc(value = TEST_11)) },
+            edges = {
+                    @Edge(id = "1234", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1235", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1236", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1237", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_5) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1238", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_6) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1239", coordinates = { @Loc(value = TEST_6),
+                            @Loc(value = TEST_7) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1240", coordinates = { @Loc(value = TEST_7),
+                            @Loc(value = TEST_8) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1241", coordinates = { @Loc(value = TEST_8),
+                            @Loc(value = TEST_1) }, tags = { "junction=roundabout",
+                            "highway=secondary" }),
+                    @Edge(id = "1242", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_9) }, tags = { "highway=primary", "name=split road", "oneway=yes" }),
+                    @Edge(id = "1243", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_9) }, tags = { "highway=primary", "name=split road", "oneway=yes" }),
+                    @Edge(id = "1245", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_10) }, tags = { "highway=secondary" }),
+                    @Edge(id = "1246", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_11) }, tags = { "highway=secondary" }) })
+    private Atlas roundaboutCorrectTagConnectedToSplitStreetAtlas;
+
+    public Atlas roundaboutCorrectTagConnectedToSplitStreetAtlas()
     {
-        return this.roundaboutWithHighwayTagFiveAtlas;
+        return this.roundaboutCorrectTagConnectedToSplitStreetAtlas;
     }
 
-    public Atlas roundaboutWithHighwayTagOneAtlas()
+    public Atlas roundaboutCorrectTagIgnoreLinksAtlas()
     {
-        return this.roundaboutWithHighwayTagOneAtlas;
+        return this.roundaboutCorrectTagIgnoreLinksAtlas;
     }
 
-    public Atlas roundaboutWithHighwayTagThreeAtlas()
-    {
-        return this.roundaboutWithHighwayTagThreeAtlas;
+    public Atlas roundaboutCorrectTagNoHigherThroughRoadsAtlas() {
+        return this.roundaboutCorrectTagNoHigherThroughRoadsAtlas;
     }
 
-    public Atlas roundaboutWithHighwayTagTwoAtlas()
+    public Atlas roundaboutCorrectTagAgainstManyAtlas()
     {
-        return this.roundaboutWithHighwayTagTwoAtlas;
+        return this.roundaboutCorrectTagAgainstManyAtlas;
     }
 
-    public Atlas roundaboutWithHighwayTagZeroAtlas()
+    public Atlas roundaboutPrimaryLinkShouldBePrimaryAtlas()
     {
-        return this.roundaboutWithHighwayTagZeroAtlas;
+        return this.roundaboutPrimaryLinkShouldBePrimaryAtlas;
     }
 
+    public Atlas roundaboutCorrectTagPrimaryAtlas()
+    {
+        return this.roundaboutCorrectTagPrimaryAtlas;
+    }
 }

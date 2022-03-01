@@ -1,36 +1,34 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
-import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
+import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
+import org.openstreetmap.atlas.tags.ServiceTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author elaineleong
+ * @author brianjor
  */
 public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 1L;
-    private static final String BASIC_INSTRUCTION = "This roundabout has improper highway tag.";
-    private static final String ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION = "This way, id:{0,number,#} should have highway tag that matches the highest level of connected routes. Current:{1}. Expect:{2}.";
-
-    private static final List<String> FALLBACK_INSTRUCTION = Arrays
-            .asList(ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION, BASIC_INSTRUCTION);
+    private static final String ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION = "The way, id:{0,number,#}, should have the highway tag that matches the highest classification of road that passes through. Current: {1}. Expected: {2}.";
+    private static final List<String> FALLBACK_INSTRUCTION = List.of(ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION);
 
     public RoundaboutHighwayTagCheck(final Configuration configuration)
     {
@@ -56,60 +54,24 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
      * This is the actual function that will check to see whether the object needs to be flagged.
      *
      * @param object
-     *            the atlas object supplied by the Atlas-Checks framework for evaluation
+     *          the atlas object supplied by the Atlas-Checks framework for evaluation
      * @return an optional {@link CheckFlag} object that
      */
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Set<String> editingInstructions = new HashSet<>();
-        final Set<AtlasObject> flaggedObjects = new HashSet<>();
 
-        final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.isRoundaboutEdge())
-                .collectEdges();
-        roundaboutEdges
-                .forEach(roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
+        final HighwayTag currentHighwayTag = edge.highwayTag();
+        final Set<Edge> roundaboutEdges = new ComplexRoundabout(edge).getRoundaboutEdgeSet();
+        roundaboutEdges.stream().map(AtlasObject::getIdentifier).forEach(this::markAsFlagged);
 
-        final Set<Node> roundaboutNodes = roundaboutEdges.stream().map(Edge::start)
-                .collect(Collectors.toSet());
+        final HighwayTag highestHighwayTag = this.getConnectEdgesMaxHighwayTagClassification(roundaboutEdges);
 
-        final Set<Edge> connectedHighwayEdges = new HashSet<>();
-        final HighwayTag roundaboutHighwayTag = edge.highwayTag();
-
-        // Get all external highway edges connected to the roundabout nodes
-        for (final Node node : roundaboutNodes)
+        if (highestHighwayTag.isMoreImportantThan(currentHighwayTag))
         {
-            connectedHighwayEdges.addAll(node.connectedEdges().stream()
-                    .filter(currentEdge -> HighwayTag.isCarNavigableHighway(currentEdge)
-                            && currentEdge.isMainEdge() && !JunctionTag.isRoundabout(currentEdge)
-                            && !roundaboutEdges.contains(currentEdge))
-                    .collect(Collectors.toSet()));
-        }
-
-        // Find the max level of Classified HighwayTag among the external highway edges
-        HighwayTag maxHighwayTagFromEdges = HighwayTag.NO;
-        for (final Edge connectedHighwayEdge : connectedHighwayEdges)
-        {
-            if (connectedHighwayEdge.highwayTag().isMoreImportantThan(maxHighwayTagFromEdges)
-                    && !connectedHighwayEdge.highwayTag()
-                            .isOfEqualClassification(HighwayTag.UNCLASSIFIED))
-            {
-                maxHighwayTagFromEdges = connectedHighwayEdge.highwayTag();
-            }
-        }
-
-        if (maxHighwayTagFromEdges.isMoreImportantThan(roundaboutHighwayTag))
-        {
-            editingInstructions.add(this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                    roundaboutHighwayTag, maxHighwayTagFromEdges));
-        }
-
-        if (!editingInstructions.isEmpty())
-        {
-            flaggedObjects.addAll(roundaboutEdges);
-            final CheckFlag flag = this.createFlag(flaggedObjects, this.getLocalizedInstruction(1));
-            editingInstructions.forEach(flag::addInstruction);
+            final CheckFlag flag = this.createFlag(roundaboutEdges, this.getLocalizedInstruction(0, object.getOsmIdentifier(),
+                    currentHighwayTag, highestHighwayTag));
             return Optional.of(flag);
         }
         return Optional.empty();
@@ -121,10 +83,83 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
         return FALLBACK_INSTRUCTION;
     }
 
-    private Function<Edge, Stream<Edge>> isRoundaboutEdge()
+    /**
+     * Get edges that are external to the roundabout.
+     * @param roundaboutNodes
+     *          {@link Node}s that comprise the roundabout
+     * @return {@link Edge}s that are connected to but outside the roundabout
+     */
+    private Set<Edge> externalEdges(Set<Node> roundaboutNodes)
     {
-        return edge -> edge.connectedEdges().stream()
-                .filter(connected -> HighwayTag.isCarNavigableHighway(connected)
-                        && JunctionTag.isRoundabout(connected));
+        return roundaboutNodes.stream()
+                .flatMap(node -> node.connectedEdges().stream()
+                        .filter(Edge::isMainEdge)
+                        // TODO: Configurable tag combos
+                        .filter(Predicate.not(JunctionTag::isRoundabout))
+                        .filter(Predicate.not(currEdge -> currEdge.highwayTag().isLink()))
+                        .filter(Predicate.not(this::isDriveway))
+                ).collect(Collectors.toSet());
+    }
+
+    /**
+     * Finds the highest highway tag classification of all edges connected to the roundabout.
+     * @param roundaboutEdges
+     *          set of {@link Edge} that comprise the roundabout
+     * @return the {@link HighwayTag} with the highest classification
+     */
+    private HighwayTag getConnectEdgesMaxHighwayTagClassification(final Set<Edge> roundaboutEdges)
+    {
+        final Set<Node> roundaboutNodes = roundaboutEdges.stream().map(Edge::start)
+                .collect(Collectors.toSet());
+
+        final Set<Edge> connectedHighwayEdges = this.externalEdges(roundaboutNodes);
+
+        final List<HighwayTag> validHighwayTags = this.highwayTagsOnMultipleEdges(connectedHighwayEdges);
+        return this.maxHighwayTag(validHighwayTags);
+    }
+
+    /**
+     * Get highway tags that appear on multiple edges.
+     * @param connectedHighwayEdges
+     *          list of {@link Edge} to check.
+     * @return list of {@link HighwayTag} that are on multiple edges
+     */
+    private List<HighwayTag> highwayTagsOnMultipleEdges(final Set<Edge> connectedHighwayEdges)
+    {
+        final Map<HighwayTag, Integer> highwayTagCount = new HashMap<>();
+        connectedHighwayEdges.stream()
+                .map(Edge::highwayTag)
+                .forEach(tag -> highwayTagCount.put(tag, highwayTagCount.getOrDefault(tag, 0) + 1));
+
+        return highwayTagCount.entrySet()
+                .stream()
+                .filter(entrySet -> (entrySet.getValue() / 2) > 1)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if edge is a driveway.
+     * @param edge {@link Edge}
+     * @return true if edge is driveway, false otherwise.
+     */
+    private boolean isDriveway(final Edge edge)
+    {
+        return edge.getTag(ServiceTag.KEY)
+                .map(e -> e.equalsIgnoreCase(ServiceTag.DRIVEWAY.name()))
+                .orElse(false);
+    }
+
+    /**
+     * Finds the highest classification of highway tag from a list of highway tags.
+     * @param highwayTags
+     *          List of {@link HighwayTag}s to compare
+     * @return
+     *          {@link HighwayTag} of highest classification
+     */
+    private HighwayTag maxHighwayTag(final List<HighwayTag> highwayTags)
+    {
+        return highwayTags.stream()
+                .reduce(HighwayTag.NO, (prev, cur) -> cur.isMoreImportantThan(prev) ? cur : prev);
     }
 }
