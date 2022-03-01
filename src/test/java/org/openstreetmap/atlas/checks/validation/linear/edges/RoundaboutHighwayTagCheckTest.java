@@ -19,12 +19,14 @@ public class RoundaboutHighwayTagCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private final RoundaboutHighwayTagCheck emptyCheck = new RoundaboutHighwayTagCheck(ConfigurationResolver.emptyConfiguration());
+    private final RoundaboutHighwayTagCheck emptyCheck = new RoundaboutHighwayTagCheck(
+            ConfigurationResolver.emptyConfiguration());
 
     @Test
     public void roundaboutCorrectTagConnectedToSplitStreetTest()
     {
-        this.verifier.actual(this.setup.roundaboutCorrectTagConnectedToSplitStreetAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutCorrectTagConnectedToSplitStreetAtlas(),
+                this.emptyCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -38,7 +40,8 @@ public class RoundaboutHighwayTagCheckTest
     @Test
     public void roundaboutCorrectTagNoHigherThroughRoadsTest()
     {
-        this.verifier.actual(this.setup.roundaboutCorrectTagNoHigherThroughRoadsAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutCorrectTagNoHigherThroughRoadsAtlas(),
+                this.emptyCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -52,7 +55,8 @@ public class RoundaboutHighwayTagCheckTest
     @Test
     public void roundaboutPrimaryLinkShouldBePrimaryTest()
     {
-        this.verifier.actual(this.setup.roundaboutPrimaryLinkShouldBePrimaryAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutPrimaryLinkShouldBePrimaryAtlas(),
+                this.emptyCheck);
         this.verifier.verifyExpectedSize(1);
     }
 
