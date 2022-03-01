@@ -120,7 +120,8 @@ public class MapRouletteUploadCommandTest
         Assert.assertEquals("Canada - Spiky Buildings", challengeNames.get(0));
         Assert.assertEquals("Mexico, Belize - Intersecting Lines", challengeNames.get(1));
         Assert.assertEquals("United States - Address Point Match", challengeNames.get(2));
-        Assert.assertEquals("Uruguay - Address Point Match", challengeNames.get(3));
+        Assert.assertEquals("Uruguay - Address Point Match / Coincidencia de punto de dirección",
+                challengeNames.get(3));
     }
 
     @Test

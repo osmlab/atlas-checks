@@ -249,6 +249,7 @@ public class MapRouletteUploadCommand extends MapRouletteCommand
             final Optional<List<String>> undiscoverableChallenges)
     {
         final Map<String, String> challengeMap = fallbackConfiguration
+                .configurationForKeyword(countryCode)
                 .get(this.getChallengeParameter(checkName), Collections.emptyMap()).value();
         final Gson gson = new GsonBuilder().disableHtmlEscaping()
                 .registerTypeAdapter(Challenge.class, new ChallengeDeserializer()).create();
