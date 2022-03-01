@@ -38,6 +38,7 @@ public class Challenge implements Serializable
     public static final String KEY_TAGS = "tags";
     public static final String DEFAULT_CHECKIN_COMMENT = "#maproulette";
     public static final String DISCOVERABLE = "enabled";
+    public static final String IS_ARCHIVED = "isArchived";
 
     private static final long serialVersionUID = -8034692909431083341L;
     private static final Gson CHALLENGE_GSON = new GsonBuilder().disableHtmlEscaping()
@@ -64,6 +65,7 @@ public class Challenge implements Serializable
     private String checkName;
     private boolean purge;
     private boolean changesetUrl = false;
+    private boolean isArchived = false;
 
     public Challenge(final Challenge challenge)
     {
@@ -194,6 +196,11 @@ public class Challenge implements Serializable
         return this.tags;
     }
 
+    public boolean isArchived()
+    {
+        return this.isArchived;
+    }
+
     public boolean isEnabled()
     {
         return this.enabled;
@@ -261,6 +268,7 @@ public class Challenge implements Serializable
         challengeJson.add(KEY_ACTIVE, new JsonPrimitive(true));
         challengeJson.add(KEY_UPDATE_TASKS, new JsonPrimitive(this.updateTasks));
         challengeJson.add(DISCOVERABLE, new JsonPrimitive(this.enabled));
+        challengeJson.add(IS_ARCHIVED, new JsonPrimitive(this.isArchived));
 
         // Do not override the name if it's already set
         if (this.name.isEmpty())

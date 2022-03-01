@@ -92,6 +92,7 @@ public class ChallengeSerializationTest
         Assert.assertNotNull(deserializedChallenge.getHighPriorityRule());
         Assert.assertNotNull(deserializedChallenge.getMediumPriorityRule());
         Assert.assertNull(deserializedChallenge.getLowPriorityRule());
+        Assert.assertFalse(deserializedChallenge.isArchived());
     }
 
     /**
