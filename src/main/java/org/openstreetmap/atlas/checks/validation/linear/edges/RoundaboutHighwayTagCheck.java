@@ -96,7 +96,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
      *            {@link Node}s that comprise the roundabout
      * @return {@link Edge}s that are connected to but outside the roundabout
      */
-    private Set<Edge> externalEdges(Set<Node> roundaboutNodes)
+    private Set<Edge> externalEdges(final Set<Node> roundaboutNodes)
     {
         return roundaboutNodes.stream().flatMap(node -> node.connectedEdges().stream()
                 .filter(Edge::isMainEdge).filter(Predicate.not(this.tagFilterIgnore)))

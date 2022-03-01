@@ -278,6 +278,11 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
                             @Loc(value = TEST_11) }, tags = { "highway=secondary" }) })
     private Atlas roundaboutCorrectTagConnectedToSplitStreetAtlas;
 
+    public Atlas roundaboutCorrectTagAgainstManyAtlas()
+    {
+        return this.roundaboutCorrectTagAgainstManyAtlas;
+    }
+
     public Atlas roundaboutCorrectTagConnectedToSplitStreetAtlas()
     {
         return this.roundaboutCorrectTagConnectedToSplitStreetAtlas;
@@ -293,18 +298,13 @@ public class RoundaboutHighwayTagCheckTestRule extends CoreTestRule
         return this.roundaboutCorrectTagNoHigherThroughRoadsAtlas;
     }
 
-    public Atlas roundaboutCorrectTagAgainstManyAtlas()
+    public Atlas roundaboutCorrectTagPrimaryAtlas()
     {
-        return this.roundaboutCorrectTagAgainstManyAtlas;
+        return this.roundaboutCorrectTagPrimaryAtlas;
     }
 
     public Atlas roundaboutPrimaryLinkShouldBePrimaryAtlas()
     {
         return this.roundaboutPrimaryLinkShouldBePrimaryAtlas;
-    }
-
-    public Atlas roundaboutCorrectTagPrimaryAtlas()
-    {
-        return this.roundaboutCorrectTagPrimaryAtlas;
     }
 }

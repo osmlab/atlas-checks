@@ -23,6 +23,13 @@ public class RoundaboutHighwayTagCheckTest
             ConfigurationResolver.emptyConfiguration());
 
     @Test
+    public void roundaboutCorrectTagAgainstManyTest()
+    {
+        this.verifier.actual(this.setup.roundaboutCorrectTagAgainstManyAtlas(), this.emptyCheck);
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void roundaboutCorrectTagConnectedToSplitStreetTest()
     {
         this.verifier.actual(this.setup.roundaboutCorrectTagConnectedToSplitStreetAtlas(),
@@ -46,9 +53,9 @@ public class RoundaboutHighwayTagCheckTest
     }
 
     @Test
-    public void roundaboutCorrectTagAgainstManyTest()
+    public void roundaboutCorrectTagPrimaryTest()
     {
-        this.verifier.actual(this.setup.roundaboutCorrectTagAgainstManyAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutCorrectTagPrimaryAtlas(), this.emptyCheck);
         this.verifier.verifyEmpty();
     }
 
@@ -58,12 +65,5 @@ public class RoundaboutHighwayTagCheckTest
         this.verifier.actual(this.setup.roundaboutPrimaryLinkShouldBePrimaryAtlas(),
                 this.emptyCheck);
         this.verifier.verifyExpectedSize(1);
-    }
-
-    @Test
-    public void roundaboutCorrectTagPrimaryTest()
-    {
-        this.verifier.actual(this.setup.roundaboutCorrectTagPrimaryAtlas(), this.emptyCheck);
-        this.verifier.verifyEmpty();
     }
 }
