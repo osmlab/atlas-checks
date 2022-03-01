@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openstreetmap.atlas.geography.Location;
@@ -55,6 +56,14 @@ public class TaskTest
         task.setPoints(points);
         task.setInstruction("Test instruction");
         return task;
+    }
+
+    @Test
+    public void generateTaskTest()
+    {
+        final var task = createTaskSkeleton(this.rule.getAtlas().point(1000000).getLocation());
+        final var taskJson = task.generateTask(1);
+        Assert.assertEquals("", taskJson.get("errorTags").getAsString());
     }
 
     /**
