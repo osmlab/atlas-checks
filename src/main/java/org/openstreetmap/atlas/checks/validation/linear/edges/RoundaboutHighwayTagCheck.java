@@ -9,6 +9,7 @@ import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexR
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.ServiceTag;
+import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 import java.util.HashMap;
@@ -27,12 +28,16 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
 {
 
     private static final long serialVersionUID = 1L;
+    private static final String TAG_FILTER_IGNORE_DEFAULT = "junction->roundabout|highway->*_link|service->driveway";
     private static final String ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION = "The way, id:{0,number,#}, should have the highway tag that matches the highest classification of road that passes through. Current: {1}. Expected: {2}.";
     private static final List<String> FALLBACK_INSTRUCTION = List.of(ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION);
+    private final TaggableFilter tagFilterIgnore;
 
     public RoundaboutHighwayTagCheck(final Configuration configuration)
     {
         super(configuration);
+        this.tagFilterIgnore = this.configurationValue(configuration, "ignore.tags.filter",
+                TAG_FILTER_IGNORE_DEFAULT, TaggableFilter::forDefinition);
     }
 
     /**
@@ -94,10 +99,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
         return roundaboutNodes.stream()
                 .flatMap(node -> node.connectedEdges().stream()
                         .filter(Edge::isMainEdge)
-                        // TODO: Configurable tag combos
-                        .filter(Predicate.not(JunctionTag::isRoundabout))
-                        .filter(Predicate.not(currEdge -> currEdge.highwayTag().isLink()))
-                        .filter(Predicate.not(this::isDriveway))
+                        .filter(Predicate.not(this.tagFilterIgnore))
                 ).collect(Collectors.toSet());
     }
 
@@ -136,18 +138,6 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
                 .filter(entrySet -> (entrySet.getValue() / 2) > 1)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Checks if edge is a driveway.
-     * @param edge {@link Edge}
-     * @return true if edge is driveway, false otherwise.
-     */
-    private boolean isDriveway(final Edge edge)
-    {
-        return edge.getTag(ServiceTag.KEY)
-                .map(e -> e.equalsIgnoreCase(ServiceTag.DRIVEWAY.name()))
-                .orElse(false);
     }
 
     /**

@@ -964,6 +964,7 @@
     }
   },
   "RoundaboutHighwayTagCheck": {
+    "ignore.tags.filter": "junction->roundabout|highway->*_link|service->driveway",
     "challenge": {
       "description": "Verify that the highway tag of the roundabout is sensible.",
       "blurb": "Modify the highway tag of the roundabout",
