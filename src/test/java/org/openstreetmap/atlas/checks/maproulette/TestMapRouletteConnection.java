@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.HttpHost;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
 import org.openstreetmap.atlas.checks.maproulette.data.Task;
@@ -17,6 +18,7 @@ import com.google.gson.JsonArray;
  * A stub MapRouletteConnection that doesn't actually connect to anything.
  *
  * @author nachtm
+ * @author bbreithaupt
  */
 public class TestMapRouletteConnection implements TaskLoader
 {
@@ -24,6 +26,7 @@ public class TestMapRouletteConnection implements TaskLoader
     private final Map<Project, Set<Challenge>> projectToChallenges;
     private final Map<Long, Set<Task>> challengeToTasks;
     private Map<String, Long> projectNameToId;
+    private HttpHost proxy = null;
 
     public TestMapRouletteConnection()
     {
@@ -68,6 +71,11 @@ public class TestMapRouletteConnection implements TaskLoader
         return "";
     }
 
+    public HttpHost getProxy()
+    {
+        return this.proxy;
+    }
+
     @Override
     public long purgeIncompleteTasks(final long challengeID) throws URISyntaxException
     {
@@ -84,6 +92,11 @@ public class TestMapRouletteConnection implements TaskLoader
     public void setProjectNameToId(final Map<String, Long> projectIdMap)
     {
         this.projectNameToId = projectIdMap;
+    }
+
+    public void setProxy(final HttpHost proxy)
+    {
+        this.proxy = proxy;
     }
 
     public Set<Task> tasksForChallenge(final Challenge challenge)

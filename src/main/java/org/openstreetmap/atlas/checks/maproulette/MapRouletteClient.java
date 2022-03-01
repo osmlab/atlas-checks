@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.Project;
 import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
@@ -81,6 +82,11 @@ public class MapRouletteClient implements Serializable
     public MapRouletteClient(final MapRouletteConfiguration configuration)
     {
         this(configuration, new MapRouletteConnection(configuration));
+    }
+
+    public MapRouletteClient(final MapRouletteConfiguration configuration, final HttpHost proxy)
+    {
+        this(configuration, new MapRouletteConnection(configuration, proxy));
     }
 
     MapRouletteClient(final MapRouletteConfiguration configuration, final TaskLoader taskLoader)

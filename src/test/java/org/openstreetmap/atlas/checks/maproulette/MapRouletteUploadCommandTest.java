@@ -156,6 +156,14 @@ public class MapRouletteUploadCommandTest
                 Arrays.asList("SomeOtherCheck", "AnotherCheck"));
     }
 
+    @Test
+    public void testproxy()
+    {
+        final String[] additionalArguments = { "-proxy=http://127.0.0.1:80" };
+        final TestMapRouletteConnection connection = this.run(additionalArguments);
+        Assert.assertEquals("http://127.0.0.1:80", connection.getProxy().toString());
+    }
+
     @Before
     public void writeFiles()
     {
@@ -196,13 +204,17 @@ public class MapRouletteUploadCommandTest
         // Set up some arguments
         final MapRouletteCommand command = new MapRouletteUploadCommand();
         final String[] arguments = { String.format("-logfiles=%s", FOLDER.getPathString()),
-                MAPROULETTE_CONFIG };
+                MAPROULETTE_CONFIG, };
         final CommandMap map = command
                 .getCommandMap((String[]) ArrayUtils.addAll(arguments, additionalArguments));
         final TestMapRouletteConnection connection = new TestMapRouletteConnection();
 
         // Run the command
-        command.onRun(map, configuration -> new MapRouletteClient(configuration, connection));
+        command.onRun(map, (configuration, proxy) ->
+        {
+            connection.setProxy(proxy);
+            return new MapRouletteClient(configuration, connection);
+        });
 
         return connection;
     }

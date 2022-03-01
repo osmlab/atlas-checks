@@ -3,8 +3,9 @@ package org.openstreetmap.atlas.checks.maproulette;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
+import org.apache.http.HttpHost;
 import org.openstreetmap.atlas.checks.maproulette.data.Challenge;
 import org.openstreetmap.atlas.checks.maproulette.data.ChallengeDifficulty;
 import org.openstreetmap.atlas.checks.maproulette.data.ProjectConfiguration;
@@ -36,6 +37,9 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     protected static final Switch<String> OUTPUT_PATH = new Switch<>("outputPath",
             "Full path to file where project id, challenge id are stored after creation in MapRoulette.",
             StringConverter.IDENTITY);
+    private static final Switch<String> PROXY = new Switch<>("proxy",
+            "scheme://hostname:port for an http proxy", StringConverter.IDENTITY,
+            Optionality.OPTIONAL);
 
     private MapRouletteClient mapRouletteClient;
 
@@ -89,14 +93,22 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     }
 
     protected int onRun(final CommandMap commandMap,
-            final Function<MapRouletteConfiguration, MapRouletteClient> clientConstructor)
+            final BiFunction<MapRouletteConfiguration, HttpHost, MapRouletteClient> clientConstructor)
     {
         final MapRouletteConfiguration mapRoulette = this.fromCommandMap(commandMap);
+        HttpHost proxy = null;
+        final Optional<String> proxyOptional = (Optional<String>) commandMap.getOption(PROXY);
+        if (proxyOptional.isPresent())
+        {
+            logger.info("Using Proxy: {}", proxyOptional.get());
+            proxy = HttpHost.create(proxyOptional.get());
+        }
+
         if (mapRoulette != null)
         {
             try
             {
-                this.mapRouletteClient = clientConstructor.apply(mapRoulette);
+                this.mapRouletteClient = clientConstructor.apply(mapRoulette, proxy);
             }
             catch (final IllegalArgumentException e)
             {
@@ -111,7 +123,7 @@ public abstract class MapRouletteCommand extends AtlasLoadingCommand
     @Override
     protected SwitchList switches()
     {
-        return super.switches().with(MAP_ROULETTE);
+        return super.switches().with(MAP_ROULETTE, PROXY);
     }
 
     protected void uploadTasks()
