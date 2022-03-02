@@ -5,15 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Node;
-import org.openstreetmap.atlas.geography.atlas.items.complex.roundabout.ComplexRoundabout;
+import org.openstreetmap.atlas.geography.atlas.walker.SimpleEdgeWalker;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.JunctionTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
@@ -68,7 +70,8 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
         final Edge edge = (Edge) object;
 
         final HighwayTag currentHighwayTag = edge.highwayTag();
-        final Set<Edge> roundaboutEdges = new ComplexRoundabout(edge).getRoundaboutEdgeSet();
+        final Set<Edge> roundaboutEdges = new SimpleEdgeWalker(edge, this.gatherRoundaboutEdges())
+                .collectEdges();
         roundaboutEdges.stream().map(AtlasObject::getIdentifier).forEach(this::markAsFlagged);
 
         final HighwayTag highestHighwayTag = this
@@ -101,6 +104,16 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
         return roundaboutNodes.stream().flatMap(node -> node.connectedEdges().stream()
                 .filter(Edge::isMainEdge).filter(Predicate.not(this.tagFilterIgnore)))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Gets all edges connected to the edge that are roundabout edges.
+     * 
+     * @return all connected roundabout edges.
+     */
+    private Function<Edge, Stream<Edge>> gatherRoundaboutEdges()
+    {
+        return edge -> edge.connectedEdges().stream().filter(JunctionTag::isRoundabout);
     }
 
     /**

@@ -19,13 +19,15 @@ public class RoundaboutHighwayTagCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
-    private final RoundaboutHighwayTagCheck emptyCheck = new RoundaboutHighwayTagCheck(
-            ConfigurationResolver.emptyConfiguration());
+    private final RoundaboutHighwayTagCheck check = new RoundaboutHighwayTagCheck(
+            ConfigurationResolver.inlineConfiguration("{" + "\"RoundaboutHighwayTagCheck\": {"
+                    + "\"ignore.tags.filter\": \"junction->roundabout|highway->*_link|service->driveway\""
+                    + "}" + "}"));
 
     @Test
     public void roundaboutCorrectTagAgainstManyTest()
     {
-        this.verifier.actual(this.setup.roundaboutCorrectTagAgainstManyAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutCorrectTagAgainstManyAtlas(), this.check);
         this.verifier.verifyEmpty();
     }
 
@@ -33,14 +35,14 @@ public class RoundaboutHighwayTagCheckTest
     public void roundaboutCorrectTagConnectedToSplitStreetTest()
     {
         this.verifier.actual(this.setup.roundaboutCorrectTagConnectedToSplitStreetAtlas(),
-                this.emptyCheck);
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
     public void roundaboutCorrectTagIgnoreLinksTest()
     {
-        this.verifier.actual(this.setup.roundaboutCorrectTagIgnoreLinksAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutCorrectTagIgnoreLinksAtlas(), this.check);
         this.verifier.verifyEmpty();
     }
 
@@ -48,22 +50,21 @@ public class RoundaboutHighwayTagCheckTest
     public void roundaboutCorrectTagNoHigherThroughRoadsTest()
     {
         this.verifier.actual(this.setup.roundaboutCorrectTagNoHigherThroughRoadsAtlas(),
-                this.emptyCheck);
+                this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
     public void roundaboutCorrectTagPrimaryTest()
     {
-        this.verifier.actual(this.setup.roundaboutCorrectTagPrimaryAtlas(), this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutCorrectTagPrimaryAtlas(), this.check);
         this.verifier.verifyEmpty();
     }
 
     @Test
     public void roundaboutPrimaryLinkShouldBePrimaryTest()
     {
-        this.verifier.actual(this.setup.roundaboutPrimaryLinkShouldBePrimaryAtlas(),
-                this.emptyCheck);
+        this.verifier.actual(this.setup.roundaboutPrimaryLinkShouldBePrimaryAtlas(), this.check);
         this.verifier.verifyExpectedSize(1);
     }
 }
