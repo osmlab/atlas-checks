@@ -27,8 +27,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
 {
-
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5324388633864552231L;
     private static final String TAG_FILTER_IGNORE_DEFAULT = "junction->roundabout|highway->*_link|service->driveway";
     private static final String ROUNDABOUT_HIGHWAY_LEVEL_INSTRUCTION = "The way, id:{0,number,#}, should have the highway tag that matches the highest classification of road that passes through. Current: {1}. Expected: {2}.";
     private static final List<String> FALLBACK_INSTRUCTION = List
