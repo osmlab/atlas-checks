@@ -1,6 +1,6 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -144,7 +144,7 @@ public class RoundaboutHighwayTagCheck extends BaseCheck<Long>
      */
     private List<HighwayTag> highwayTagsOnMultipleEdges(final Set<Edge> connectedHighwayEdges)
     {
-        final Map<HighwayTag, Integer> highwayTagCount = new HashMap<>();
+        final Map<HighwayTag, Integer> highwayTagCount = new EnumMap<>(HighwayTag.class);
         connectedHighwayEdges.stream().map(Edge::highwayTag)
                 .forEach(tag -> highwayTagCount.put(tag, highwayTagCount.getOrDefault(tag, 0) + 1));
 
