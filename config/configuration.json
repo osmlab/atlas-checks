@@ -391,6 +391,12 @@
       "description": "Checks if the object access is overly permissive"
     }
   },
+  "HighwayIntersectionCheck": {
+    "challenge": {
+      "description": "This challenge contains roads that intersect with waterways.",
+      "instruction": "Please disconnect the roads that are connected to waterways."
+    }
+  },
   "HighwayMissingNameAndRefTagCheck": {
     "min.nonContiguous.angle": 30.0,
     "min.highway.type": "tertiary",
