@@ -1,27 +1,27 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TagPredicates;
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.Location;
-import org.openstreetmap.atlas.geography.PolyLine;
-import org.openstreetmap.atlas.geography.Rectangle;
-import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
+import org.openstreetmap.atlas.geography.atlas.items.Node;
+import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.FordTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LeisureTag;
 import org.openstreetmap.atlas.tags.WaterwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
-import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 
 /**
@@ -31,36 +31,13 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  * waterways are not checked, those type of ways can cross other highways.
  *
  * @author pako.todea
+ * @author brianjor
  */
 public class HighwayIntersectionCheck extends BaseCheck<Long>
 {
-
-    private static final long serialVersionUID = 1L;
-    private static final String INSTRUCTION_FORMAT = "The water/powerline with id {0,number,#} has invalid crossings "
-            + "with {1}. A navigable way can not cross a power line or a water.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
-            INVALID_EDGE_FORMAT);
-
-    /**
-     * Checks whether the given {@link Edge}s cross each other.
-     *
-     * @param edge
-     *            {@link Edge} being crossed
-     * @param crossingEdge
-     *            Crossing {@link Edge}
-     * @param intersection
-     *            Intersection {@link Location}
-     * @return {@code true} if given {@link Edge}s cross each other
-     */
-    private static boolean isCross(final Edge edge, final Edge crossingEdge,
-            final Location intersection)
-    {
-        final PolyLine edgeAsPolyLine = edge.asPolyLine();
-        final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-        return edgeAsPolyLine.contains(intersection)
-                && crossingEdgeAsPolyLine.contains(intersection);
-    }
+    private static final long serialVersionUID = -2100623356724302728L;
+    private static final String INSTRUCTION_FORMAT = "The way with id {0,number,#} has invalid intersections with {1}. A navigable way should not share nodes with non-navigable features. Either the way is inproperly tagged or is a combination of what should be two separate ways (highway and the other non-navigable feature).";
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(INSTRUCTION_FORMAT);
 
     public HighwayIntersectionCheck(final Configuration configuration)
     {
@@ -70,35 +47,66 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return TypePredicates.IS_EDGE.test(object)
-                && (TagPredicates.IS_POWER_LINE.test(object) || this.isWaterwayToCheck(object));
+        return !this.isFlagged(object)
+                && TypePredicates.IS_EDGE.test(object)
+                && ((Edge) object).isMainEdge()
+                && HighwayTag.isCarNavigableHighway(object);
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        final Atlas atlas = edge.getAtlas();
-        final Rectangle edgeBounds = edge.bounds();
+        final OsmWayWalker wayWalker = new OsmWayWalker(edge);
+        final Set<Edge> wayEdges = wayWalker.collectEdges();
+        final Stream<Edge> edgesConnectedToWay = wayEdges.stream()
+                .map(Edge::connectedEdges)
+                .flatMap(Set::stream)
+                .filter(connectedEdge -> !hasSameOSMId(connectedEdge, edge));
 
-        final Set<Edge> invalidIntersectingEdges = Iterables
-                .asList(atlas.edgesIntersecting(edgeBounds, HighwayTag::isWayOnlyTag)).stream()
-                .filter(crossingEdge -> TagPredicates.IS_POWER_LINE.test(edge)
-                        || !FordTag.isYes(crossingEdge))
-                .filter(crossingEdge -> TagPredicates.IS_POWER_LINE.test(edge)
-                        || !Validators.isOfType(crossingEdge, LeisureTag.class, LeisureTag.SLIPWAY))
-                .filter(crossingEdge -> crossingEdge.getIdentifier() != edge.getIdentifier())
-                .filter(crossingEdge -> !crossingEdge.isReversedEdge(edge))
-                .filter(crossingEdge -> this.getIntersection(edge, crossingEdge).stream()
-                        .anyMatch(intersection -> isCross(edge, crossingEdge, intersection)))
+        final Set<Edge> invalidconnectingEdges = edgesConnectedToWay
+                .filter(connectEdge -> TagPredicates.IS_POWER_LINE.test(edge) || this.isWaterwayToCheck(edge))
+                .filter(Predicate.not(FordTag::isYes))
+                .filter(Predicate.not(this::isSlipway))
                 .collect(Collectors.toSet());
 
-        if (!invalidIntersectingEdges.isEmpty())
+        if (!invalidconnectingEdges.isEmpty())
         {
-            return this.createHighwayIntersectionCheckFlag(edge, invalidIntersectingEdges);
+            return this.createFlag(edge, wayEdges, invalidconnectingEdges);
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Checks if two AtlasObjects have the same OSM Identifier.
+     * @param first the first AtlasObject to check 
+     * @param second the second AtlasObject to check
+     * @return true if both have the same OSM Identifier, false otherwise.
+     */
+    private boolean hasSameOSMId(final AtlasObject first, AtlasObject second)
+    {
+        return first.getOsmIdentifier() == second.getOsmIdentifier();
+    }
+
+    /**
+     * Check if the AtlasObject is flagged, uses OSM Identifier.
+     * @param object the AtlasObject to check if flagged
+     * @return true if flagged, false otherwise.
+     */
+    private boolean isFlagged(final AtlasObject object)
+    {
+        return this.isFlagged(object.getOsmIdentifier());
+    }
+
+    /**
+     * Check if edge contains "leisure=slipway" tag.
+     * @param edge the edge to check the tags for
+     * @return true if edge has tag "leisure=slipway", false otherwise.
+     */
+    private boolean isSlipway(final Edge edge)
+    {
+        return Validators.isOfType(edge, LeisureTag.class, LeisureTag.SLIPWAY);
     }
 
     @Override
@@ -116,21 +124,21 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
      *            collected edges for a given atlas object.
      * @return newly created highway intersection check flag including crossing edges locations.
      */
-    private Optional<CheckFlag> createHighwayIntersectionCheckFlag(final Edge edge,
-            final Set<Edge> crossingEdges)
+    private Optional<CheckFlag> createFlag(final Edge edge, final Set<Edge> wayEdges, final Set<Edge> crossingEdges)
     {
-        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(edge));
-        this.markAsFlagged(edge.getIdentifier());
-        final Set<Location> points = crossingEdges.stream()
-                .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
-                .flatMap(crossEdge -> this.getIntersection(edge, crossEdge).stream())
-                .collect(Collectors.toSet());
-        newFlag.addInstruction(
-                this.getLocalizedInstruction(0, edge.getOsmIdentifier(), crossingEdges.stream()
-                        .map(AtlasObject::getOsmIdentifier).collect(Collectors.toSet())));
-        newFlag.addPoints(points);
-        newFlag.addObject(edge);
-        return Optional.of(newFlag);
+        final List<Location> points = wayEdges.stream().map(wayEdge -> crossingEdges.stream()
+                .map(crossEdge -> this.getIntersections(wayEdge, crossEdge))
+                .flatMap(Set::stream)
+                .map(Node::getLocation)
+                .collect(Collectors.toList()))
+        .flatMap(List::stream)
+        .distinct()
+        .collect(Collectors.toList());
+
+        this.markAsFlagged(edge.getOsmIdentifier());
+        final Set<Long> crossingIds = crossingEdges.stream().map(AtlasObject::getOsmIdentifier).collect(Collectors.toSet());
+        String instruction = this.getLocalizedInstruction(0, edge.getOsmIdentifier(), crossingIds);
+        return Optional.of(createFlag(wayEdges, instruction, points));
     }
 
     /**
@@ -142,11 +150,11 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
      *            the second edge
      * @return set of intersection locations.
      */
-    private Set<Location> getIntersection(final Edge firstEdge, final Edge secondEdge)
+    private Set<Node> getIntersections(final Edge firstEdge, final Edge secondEdge)
     {
-        final PolyLine firstEdgeAsPolyLine = firstEdge.asPolyLine();
-        final PolyLine secondEdgeAsPolyLine = secondEdge.asPolyLine();
-        return firstEdgeAsPolyLine.intersections(secondEdgeAsPolyLine);
+        Set<Node> locations = firstEdge.connectedNodes();
+        locations.retainAll(secondEdge.connectedNodes());
+        return locations;
     }
 
     /**
