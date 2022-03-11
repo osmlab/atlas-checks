@@ -393,8 +393,8 @@
   },
   "HighwayIntersectionCheck": {
     "challenge": {
-      "description": "This challenge contains roads that intersect with waterways.",
-      "instruction": "Please disconnect the roads that are connected to waterways."
+      "description": "This challenge contains navigable ways that share nodes with non-navigable ways.",
+      "instruction": "Please fix the ways tags or modify the nodes that cause the issue."
     }
   },
   "HighwayMissingNameAndRefTagCheck": {
