@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,6 +19,7 @@ import org.openstreetmap.atlas.geography.atlas.walker.OsmWayWalker;
 import org.openstreetmap.atlas.tags.FordTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.LeisureTag;
+import org.openstreetmap.atlas.tags.Taggable;
 import org.openstreetmap.atlas.tags.WaterwayTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -48,25 +48,43 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        return !this.isFlagged(object) && TypePredicates.IS_EDGE.test(object)
-                && ((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object);
+        return !this.isFlagged(object)
+                && TypePredicates.IS_EDGE.test(object)
+                && ((Edge) object).isMainEdge()
+                && HighwayTag.isCarNavigableHighway(object);
     }
 
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
+        System.out.println("Testing edge: " + edge);
         final OsmWayWalker wayWalker = new OsmWayWalker(edge);
         final Set<Edge> wayEdges = wayWalker.collectEdges();
         final Stream<Edge> edgesConnectedToWay = wayEdges.stream().map(Edge::connectedEdges)
                 .flatMap(Set::stream)
                 .filter(connectedEdge -> !this.hasSameOSMId(connectedEdge, edge));
+        
+        System.out.println("Connected edges");
+        wayEdges.stream().map(Edge::connectedEdges)
+                .flatMap(Set::stream)
+                .filter(connectedEdge -> !this.hasSameOSMId(connectedEdge, edge))
+                .forEach(System.out::println);;
 
         final Set<Edge> invalidconnectingEdges = edgesConnectedToWay
-                .filter(connectEdge -> TagPredicates.IS_POWER_LINE.test(edge)
-                        || this.isWaterwayToCheck(edge))
-                .filter(Predicate.not(FordTag::isYes)).filter(Predicate.not(this::isSlipway))
+                .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
+                        || !FordTag.isYes(edge))
+                .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
+                        || this.isWaterwayToCheck(connectedEdge))
+                .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
+                        || !this.isSlipway(edge))
+                // .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
+                //         || this.isWaterwayToCheck(connectedEdge))
+                // .filter(connectedEdge -> !(FordTag.isYes(edge) && this.isWaterWay(connectedEdge)))
+                // .filter(connectedEdge -> !(this.isSlipway(edge) && this.isWaterWay(connectedEdge)))
                 .collect(Collectors.toSet());
+        System.out.println("Invalid connected edges");
+        invalidconnectingEdges.forEach(System.out::println);
 
         if (!invalidconnectingEdges.isEmpty())
         {
@@ -151,35 +169,43 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
     }
 
     /**
-     * Check if edge contains "leisure=slipway" tag.
+     * Check if AtlasObject contains "leisure=slipway" tag.
      * 
-     * @param edge
-     *            the edge to check the tags for
-     * @return true if edge has tag "leisure=slipway", false otherwise.
+     * @param object
+     *            the object to check the tags for
+     * @return true if object has tag "leisure=slipway", false otherwise.
      */
-    private boolean isSlipway(final Edge edge)
+    private boolean isSlipway(final AtlasObject object)
     {
-        return Validators.isOfType(edge, LeisureTag.class, LeisureTag.SLIPWAY);
+        return Validators.isOfType(object, LeisureTag.class, LeisureTag.SLIPWAY);
+    }
+
+    private boolean isWaterWay(final Taggable taggable)
+    {
+        return Validators.hasValuesFor(taggable, WaterwayTag.class);
     }
 
     /**
      * Checks whether the given {@link AtlasObject} is a waterway to check.
      *
-     * @param edge
+     * @param object
      *            the {@link AtlasObject} to check
      * @return true if the given {@link AtlasObject} should be ckecked
      */
-    private boolean isWaterwayToCheck(final AtlasObject edge)
+    private boolean isWaterwayToCheck(final AtlasObject object)
     {
         boolean validForCheck = false;
-        if (Validators.hasValuesFor(edge, WaterwayTag.class))
+        if (this.isWaterWay(object))
         {
-            final Optional<WaterwayTag> waterwayTagValue = WaterwayTag.get(edge);
+            System.out.println("is waterway");
+            final Optional<WaterwayTag> waterwayTagValue = WaterwayTag.get(object);
             if (waterwayTagValue.isPresent())
             {
-                validForCheck = !(HighwayTag.highwayTag(edge).isPresent()
-                        && (waterwayTagValue.get().name().equalsIgnoreCase("dam")
-                                || waterwayTagValue.get().name().equalsIgnoreCase("weir")));
+                final String waterwayTag = waterwayTagValue.get().name();
+                validForCheck = !(HighwayTag.highwayTag(object).isPresent()
+                        && (WaterwayTag.DAM.toString().equalsIgnoreCase(waterwayTag)
+                                || WaterwayTag.WEIR.toString().equalsIgnoreCase(waterwayTag)));
+                System.out.println("is valid for check? " + validForCheck);
             }
         }
         return validForCheck;
