@@ -27,9 +27,11 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_3),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_3),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=stream" }) })
     private Atlas noCrossingHighwayWaterEdges;
 
@@ -42,9 +44,11 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=stream" }) })
     private Atlas invalidCrossingHighwayWaterEdges;
 
@@ -57,11 +61,14 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_4),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_4),
                             @TestAtlas.Loc(value = LOCATION_5) }, tags = { "highway=primary" }),
-                    @TestAtlas.Edge(id = "1236000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1236000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=stream" }) })
     private Atlas invalidMultipleCrossingHighwayWaterEdges;
 
@@ -74,9 +81,11 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_3),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_3),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "power=line" }) })
     private Atlas noCrossingHighwayPowerLineEdges;
 
@@ -89,9 +98,11 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "power=line" }) })
     private Atlas invalidCrossingHighwayPowerLineEdges;
 
@@ -104,9 +115,11 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=dam",
                                     "highway=service" }) })
     private Atlas validCrossingHighwayWaterwayDamEdges;
@@ -120,9 +133,11 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=weir",
                                     "highway=service" }) })
     private Atlas validCrossingHighwayWaterwayWeirEdges;
@@ -136,10 +151,12 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway",
                                     "ford=yes" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=stream" }) })
     private Atlas validCrossingWaterwayFordYesEdges;
 
@@ -152,10 +169,12 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway",
                                     "ford=yes" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "power=line" }) })
     private Atlas invalidCrossingPowerLineFordYesEdges;
 
@@ -168,10 +187,12 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway",
                                     "leisure=slipway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=stream" }) })
     private Atlas validCrossingWaterwayLeisureSlipwayEdges;
 
@@ -184,10 +205,12 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway",
                                     "leisure=slipway" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "power=line" }) })
     private Atlas invalidCrossingPowerLineLeisureSlipwayEdges;
 
@@ -200,10 +223,12 @@ public class HighwayIntersectionTestCaseRule extends CoreTestRule
                     @TestAtlas.Node(coordinates = @TestAtlas.Loc(value = LOCATION_5)) },
             // edges
             edges = {
-                    @TestAtlas.Edge(id = "1234000000", coordinates = { @TestAtlas.Loc(value = LOCATION_1),
+                    @TestAtlas.Edge(id = "1234000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_1),
                             @TestAtlas.Loc(value = LOCATION_2) }, tags = { "highway=motorway",
                                     "leisure=dance" }),
-                    @TestAtlas.Edge(id = "1235000000", coordinates = { @TestAtlas.Loc(value = LOCATION_2),
+                    @TestAtlas.Edge(id = "1235000000", coordinates = {
+                            @TestAtlas.Loc(value = LOCATION_2),
                             @TestAtlas.Loc(value = LOCATION_4) }, tags = { "waterway=stream" }) })
     private Atlas invalidCrossingWaterwayLeisureEdges;
 
