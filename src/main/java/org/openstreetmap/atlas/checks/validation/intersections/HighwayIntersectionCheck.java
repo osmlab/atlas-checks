@@ -70,7 +70,6 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
                 .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
                         || !this.isSlipway(edge))
                 .collect(Collectors.toSet());
-        invalidconnectingEdges.forEach(System.out::println);
 
         if (!invalidconnectingEdges.isEmpty())
         {
