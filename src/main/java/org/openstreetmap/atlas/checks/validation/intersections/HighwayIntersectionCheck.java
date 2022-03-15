@@ -64,11 +64,8 @@ public class HighwayIntersectionCheck extends BaseCheck<Long>
 
         final Set<Edge> invalidconnectingEdges = edgesConnectedToWay
                 .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
-                        || !FordTag.isYes(edge))
-                .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
-                        || this.isWaterwayToCheck(connectedEdge))
-                .filter(connectedEdge -> TagPredicates.IS_POWER_LINE.test(connectedEdge)
-                        || !this.isSlipway(edge))
+                        || (!FordTag.isYes(edge) && this.isWaterwayToCheck(connectedEdge)
+                                && !this.isSlipway(edge)))
                 .collect(Collectors.toSet());
 
         if (!invalidconnectingEdges.isEmpty())
