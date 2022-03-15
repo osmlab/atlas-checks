@@ -36,7 +36,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 public class HighwayIntersectionCheck extends BaseCheck<Long>
 {
     private static final long serialVersionUID = -2100623356724302728L;
-    private static final String INSTRUCTION_FORMAT = "The way with id {0,number,#} has invalid intersections with {1}. A navigable way should not share nodes with non-navigable features. Either the way is inproperly tagged or is a combination of what should be two separate ways (highway and the other non-navigable feature).";
+    private static final String INSTRUCTION_FORMAT = "The way with id {0,number,#} has invalid intersections with {1}. A highway way should not share nodes with non-highway features. Either the way is inproperly tagged or is a combination of what should be two separate ways (highway and the other non-highway feature).";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
 
