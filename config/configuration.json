@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -49,6 +49,16 @@
       "blurb": "Nodes with mismatched addr:street names",
       "instruction": "Open your favorite editor and edit the node street names",
       "difficulty": "HARD"
+    }
+  },
+  "AbbreviatedAddressStreetCheck": {
+    "enabled": true,
+    "tag.filters":"addr:street->*",
+    "challenge": {
+      "description": "Tasks contain Ways, Nodes, Relations address street names with abbreviated road types",
+      "blurb": "Ways, Nodes, Relations with abbreviated road type in addr:street names",
+      "instruction": "Follow the fix suggestion or open your favorite editor and edit the street names",
+      "difficulty": "EASY"
     }
   },
   "ApproximateWayCheck": {
