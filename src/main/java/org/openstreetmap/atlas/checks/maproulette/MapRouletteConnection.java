@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -48,7 +49,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     private static final int MAXIMUM_BATCH_SIZE = 5000;
     private static final long serialVersionUID = -8227257938510897604L;
     private final MapRouletteConfiguration configuration;
-    private final URIBuilder uriBuilder;
+    private final Supplier<URIBuilder> uriBuilder;
     private final HttpHost proxy;
 
     MapRouletteConnection(final MapRouletteConfiguration configuration, final HttpHost proxy)
@@ -60,7 +61,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                     "configuration can't be null and must be able to connect to MapRouletteServers to create a connection.");
         }
         this.configuration = configuration;
-        this.uriBuilder = new URIBuilder().setScheme(this.configuration.getScheme())
+        this.uriBuilder = () -> new URIBuilder().setScheme(this.configuration.getScheme())
                 .setHost(this.configuration.getServer()).setPort(this.configuration.getPort());
     }
 
@@ -93,14 +94,14 @@ public class MapRouletteConnection implements TaskLoader, Serializable
             throws UnsupportedEncodingException, URISyntaxException
     {
         HttpResource createUpdate = null;
-        final GetResource challengeGet = new GetResource(this.uriBuilder.build().resolve(getURI));
+        final GetResource challengeGet = new GetResource(this.uriBuilder.get().build().resolve(getURI));
         this.setAuth(challengeGet);
         try
         {
             final int statusCode = challengeGet.getStatusCode();
             if (statusCode == HttpStatus.SC_NOT_FOUND || statusCode == HttpStatus.SC_NO_CONTENT)
             {
-                final URIBuilder baseUrl = this.uriBuilder.setPath(postURI);
+                final URIBuilder baseUrl = this.uriBuilder.get().setPath(postURI);
                 // generate the Challenge through the API
                 createUpdate = new PostResource(baseUrl.build().toString());
                 ((PostResource) createUpdate).setStringBody(data.toString(),
@@ -113,7 +114,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
                 final long responseId = new Gson()
                         .fromJson(challengeGet.getRequestBodyAsString(), JsonObject.class)
                         .get(KEY_ID).getAsLong();
-                final URIBuilder baseUrl = this.uriBuilder
+                final URIBuilder baseUrl = this.uriBuilder.get()
                         .setPath(String.format(putURI, responseId));
                 createUpdate = new PutResource(baseUrl.build().toString());
                 data.add(KEY_ID, new JsonPrimitive(responseId));
@@ -194,8 +195,8 @@ public class MapRouletteConnection implements TaskLoader, Serializable
             throws UnsupportedEncodingException, URISyntaxException
     {
         try (HttpResource purge = new DeleteResource(
-                this.uriBuilder.setPath(String.format("/api/v2/challenge/%s/tasks", challengeID))
-                        .addParameter("statusFilters", "0,3").build().toString());)
+                this.uriBuilder.get().setPath(String.format("/api/v2/challenge/%s/tasks", challengeID))
+                        .addParameter("statusFilters", "0,3").build().toString()))
         {
             logger.info("challenge {}: purging incomplete tasks...", challengeID);
             this.setAuth(purge);
@@ -314,7 +315,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
         final JsonArray taskArray = new JsonArray();
         tasks.forEach(element -> taskArray.add(element.generateTask(parentChallengeId)));
         final HttpResource taskCreateUpdate;
-        final URIBuilder builder = this.uriBuilder.setPath("/api/v2/tasks");
+        final URIBuilder builder = this.uriBuilder.get().setPath("/api/v2/tasks");
         if (post)
         {
             taskCreateUpdate = new PostResource(builder.build().toString());
