@@ -94,7 +94,8 @@ public class MapRouletteConnection implements TaskLoader, Serializable
             throws UnsupportedEncodingException, URISyntaxException
     {
         HttpResource createUpdate = null;
-        final GetResource challengeGet = new GetResource(this.uriBuilder.get().build().resolve(getURI));
+        final GetResource challengeGet = new GetResource(
+                this.uriBuilder.get().build().resolve(getURI));
         this.setAuth(challengeGet);
         try
         {
@@ -194,9 +195,9 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     public long purgeIncompleteTasks(final long challengeID)
             throws UnsupportedEncodingException, URISyntaxException
     {
-        try (HttpResource purge = new DeleteResource(
-                this.uriBuilder.get().setPath(String.format("/api/v2/challenge/%s/tasks", challengeID))
-                        .addParameter("statusFilters", "0,3").build().toString()))
+        try (HttpResource purge = new DeleteResource(this.uriBuilder.get()
+                .setPath(String.format("/api/v2/challenge/%s/tasks", challengeID))
+                .addParameter("statusFilters", "0,3").build().toString()))
         {
             logger.info("challenge {}: purging incomplete tasks...", challengeID);
             this.setAuth(purge);
