@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -499,6 +499,7 @@
     }
   },
   "InvalidGeometryCheck": {
+    "tags.filter": "attraction->!roller_coaster&roller_coaster->!",
     "challenge": {
       "description": "Tasks containing Ways with invalid geometries",
       "blurb": "Invalid Geometries",

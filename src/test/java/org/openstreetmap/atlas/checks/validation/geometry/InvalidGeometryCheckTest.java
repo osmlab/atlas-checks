@@ -20,7 +20,8 @@ public class InvalidGeometryCheckTest
     public InvalidGeometryCheckTestRule setup = new InvalidGeometryCheckTestRule();
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
-    private final Configuration configuration = ConfigurationResolver.emptyConfiguration();
+    private final Configuration configuration = ConfigurationResolver.inlineConfiguration(
+            "{\"InvalidGeometryCheck\":{\"tags.filter\":\"attraction->!roller_coaster&roller_coaster->!\"}}");
 
     @Test
     public void borderSlicedPolygonTest()
@@ -80,6 +81,14 @@ public class InvalidGeometryCheckTest
     public void testFinePolygonTest()
     {
         this.verifier.actual(this.setup.getFinePolygonAtlas(),
+                new InvalidGeometryCheck(this.configuration));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testNotValidLinearRollerCoasterTest()
+    {
+        this.verifier.actual(this.setup.getNotValidLinearRollerCoasterAtlas(),
                 new InvalidGeometryCheck(this.configuration));
         this.verifier.verifyEmpty();
     }
