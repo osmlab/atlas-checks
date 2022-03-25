@@ -21,6 +21,8 @@ import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.tags.AddressStreetTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Vladimir Lemberg
@@ -31,7 +33,10 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     private static final String INSTRUCTION_FORMAT = "OSM entity {0,number,#} has address {1} with abbreviated road type \"{2}\". According to conventions, it should be changed to \"{3}\".";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(INSTRUCTION_FORMAT);
-    private static Map<String, List<String>> roadTypeAbbreviationsMap;
+    private static final String DEFAULT_ABBREVIATION_RESOURCE = "StreetName.txt";
+    private static final Logger logger = LoggerFactory
+            .getLogger(AbbreviatedAddressStreetCheck.class);
+    private Map<String, List<String>> roadTypeAbbreviationsMap;
 
     /**
      * Default constructor
@@ -42,7 +47,7 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     public AbbreviatedAddressStreetCheck(final Configuration configuration)
     {
         super(configuration);
-        roadTypeAbbreviationsMap = this.parseAddressConventionConfig();
+        this.roadTypeAbbreviationsMap = this.parseAddressConventionConfig();
     }
 
     @Override
@@ -66,17 +71,17 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
             final String roadType = roadTypeWithIndex.getLeft();
             final Integer roadTypeIndex = roadTypeWithIndex.getRight();
 
-            for (final Map.Entry<String, List<String>> listEntry : roadTypeAbbreviationsMap
+            for (final Map.Entry<String, List<String>> listEntry : this.roadTypeAbbreviationsMap
                     .entrySet())
             {
                 for (final String abbreviation : listEntry.getValue())
                 {
-                    if (abbreviation.matches(roadType + "\\.?$"))
+                    if (roadType.matches(abbreviation + "\\.?$"))
                     {
                         return Optional.of(this
                                 .createFlag(object,
                                         this.getLocalizedInstruction(0, object.getOsmIdentifier(),
-                                                addressStreet, abbreviation, listEntry.getKey()))
+                                                addressStreet, roadType, listEntry.getKey()))
                                 .addFixSuggestion(FeatureChange.add(
                                         (AtlasEntity) ((CompleteEntity) CompleteEntity
                                                 .from((AtlasEntity) object))
@@ -124,7 +129,7 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
      */
     private boolean isAddressStreetContainDirectional(final String streetAddressToken)
     {
-        return streetAddressToken.matches("(N|S|E|W|NE|SE|SW|NW)");
+        return streetAddressToken.matches("^(N|S|E|W|NE|SE|SW|NW)\\.?$");
     }
 
     /**
@@ -139,8 +144,9 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
         final BufferedReader reader;
         try
         {
-            reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
-                    AbbreviatedAddressStreetCheck.class.getResourceAsStream("StreetName.txt"))));
+            reader = new BufferedReader(
+                    new InputStreamReader(Objects.requireNonNull(AbbreviatedAddressStreetCheck.class
+                            .getResourceAsStream(DEFAULT_ABBREVIATION_RESOURCE))));
             String line = reader.readLine();
             while (line != null)
             {
@@ -164,7 +170,8 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
         }
         catch (final IOException exception)
         {
-            exception.printStackTrace();
+            logger.error(String.format("Could not read %s", DEFAULT_ABBREVIATION_RESOURCE),
+                    exception);
         }
         return roadTypeAbbreviationsMap;
     }

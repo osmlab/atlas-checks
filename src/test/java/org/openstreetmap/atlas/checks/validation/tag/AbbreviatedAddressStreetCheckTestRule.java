@@ -47,6 +47,24 @@ public class AbbreviatedAddressStreetCheckTestRule extends CoreTestRule
     @TestAtlas(nodes = {
             // nodes
             @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
+                    "addr:street=Rochester St. W." }) })
+    private Atlas atlasFalsePositiveCase1;
+
+    @TestAtlas(nodes = {
+            // nodes
+            @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
+                    "addr:street=Lower Honoapiilani Rd." }) })
+    private Atlas atlasFalsePositiveCase2;
+
+    @TestAtlas(nodes = {
+            // nodes
+            @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
+                    "addr:street=N. Harbor Village W. Dr." }) })
+    private Atlas atlasFalsePositiveCase3;
+
+    @TestAtlas(nodes = {
+            // nodes
+            @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
                     "addr:street=Test St" }) })
     private Atlas atlasInvalidRoadTypePoint;
 
@@ -70,6 +88,21 @@ public class AbbreviatedAddressStreetCheckTestRule extends CoreTestRule
             @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
                     "addr:street=Test St NW" }) })
     private Atlas atlasInvalidRoadTypeSuffix;
+
+    public Atlas getFalsePositiveCase1()
+    {
+        return this.atlasFalsePositiveCase1;
+    }
+
+    public Atlas getFalsePositiveCase2()
+    {
+        return this.atlasFalsePositiveCase2;
+    }
+
+    public Atlas getFalsePositiveCase3()
+    {
+        return this.atlasFalsePositiveCase3;
+    }
 
     public Atlas getInvalidRoadTypeNumericStreet()
     {

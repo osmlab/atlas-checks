@@ -1,5 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.tag;
 
+import java.text.MessageFormat;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +24,60 @@ public class AbbreviatedAddressStreetCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    private static final String INSTRUCTION_FORMAT = "1. OSM entity {0,number,#} has address {1} with abbreviated road type \"{2}\". According to conventions, it should be changed to \"{3}\".";
+
+    @Test
+    public void testFalsePositiveCase1()
+    {
+        this.verifier.actual(this.setup.getFalsePositiveCase1(),
+                new AbbreviatedAddressStreetCheck(ConfigurationResolver.emptyConfiguration()));
+
+        this.verifier.verify(flag ->
+        {
+            Assert.assertEquals(MessageFormat.format(INSTRUCTION_FORMAT, 1000, "Rochester St. W.",
+                    "St.", "Street"), flag.getInstructions());
+            Assert.assertFalse(flag.getFixSuggestions().isEmpty());
+            final FeatureChange fixSuggestion = flag.getFixSuggestions().iterator().next();
+            Assert.assertEquals(1, fixSuggestion.getTags().size());
+            Assert.assertEquals("Rochester Street W.",
+                    fixSuggestion.getTags().get(AddressStreetTag.KEY));
+        });
+    }
+
+    @Test
+    public void testFalsePositiveCase2()
+    {
+        this.verifier.actual(this.setup.getFalsePositiveCase2(),
+                new AbbreviatedAddressStreetCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertEquals(MessageFormat.format(INSTRUCTION_FORMAT, 1000,
+                    "Lower Honoapiilani Rd.", "Rd.", "Road"), flag.getInstructions());
+            Assert.assertFalse(flag.getFixSuggestions().isEmpty());
+            final FeatureChange fixSuggestion = flag.getFixSuggestions().iterator().next();
+            Assert.assertEquals(1, fixSuggestion.getTags().size());
+            Assert.assertEquals("Lower Honoapiilani Road",
+                    fixSuggestion.getTags().get(AddressStreetTag.KEY));
+        });
+    }
+
+    @Test
+    public void testFalsePositiveCase3()
+    {
+        this.verifier.actual(this.setup.getFalsePositiveCase3(),
+                new AbbreviatedAddressStreetCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertEquals(MessageFormat.format(INSTRUCTION_FORMAT, 1000,
+                    "N. Harbor Village W. Dr.", "Dr.", "Drive"), flag.getInstructions());
+            Assert.assertFalse(flag.getFixSuggestions().isEmpty());
+            final FeatureChange fixSuggestion = flag.getFixSuggestions().iterator().next();
+            Assert.assertEquals(1, fixSuggestion.getTags().size());
+            Assert.assertEquals("N. Harbor Village W. Drive",
+                    fixSuggestion.getTags().get(AddressStreetTag.KEY));
+        });
+    }
+
     @Test
     public void testInvalidRoadTypeNumericStreet()
     {
@@ -29,6 +85,9 @@ public class AbbreviatedAddressStreetCheckTest
                 new AbbreviatedAddressStreetCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verify(flag ->
         {
+            Assert.assertEquals(
+                    MessageFormat.format(INSTRUCTION_FORMAT, 1000, "1St St", "St", "Street"),
+                    flag.getInstructions());
             Assert.assertFalse(flag.getFixSuggestions().isEmpty());
             final FeatureChange fixSuggestion = flag.getFixSuggestions().iterator().next();
             Assert.assertEquals(1, fixSuggestion.getTags().size());
