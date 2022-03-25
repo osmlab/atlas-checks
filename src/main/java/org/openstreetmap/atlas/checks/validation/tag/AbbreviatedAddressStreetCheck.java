@@ -36,7 +36,7 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     private static final String DEFAULT_ABBREVIATION_RESOURCE = "StreetName.txt";
     private static final Logger logger = LoggerFactory
             .getLogger(AbbreviatedAddressStreetCheck.class);
-    private Map<String, List<String>> roadTypeAbbreviationsMap;
+    private final Map<String, List<String>> roadTypeAbbreviationsMap = new HashMap<>();
 
     /**
      * Default constructor
@@ -47,7 +47,7 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     public AbbreviatedAddressStreetCheck(final Configuration configuration)
     {
         super(configuration);
-        this.roadTypeAbbreviationsMap = this.parseAddressConventionConfig();
+        this.parseAddressConventionConfig();
     }
 
     @Override
@@ -135,12 +135,9 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     /**
      * Parse Create K,V {@link Map} key -> full street abbreviation, value -> abbreviation
      * variations
-     *
-     * @return {@link Map} of Street Address abbreviations.
      */
-    private Map<String, List<String>> parseAddressConventionConfig()
+    private void parseAddressConventionConfig()
     {
-        final Map<String, List<String>> roadTypeAbbreviationsMap = new HashMap<>();
         final BufferedReader reader;
         try
         {
@@ -162,7 +159,7 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
                     final String[] abbreviationsVariations = roadTypeAbbreviations.split("\\|");
                     final List<String> temp = new ArrayList<>(
                             Arrays.asList(abbreviationsVariations));
-                    roadTypeAbbreviationsMap.put(roadType, temp);
+                    this.roadTypeAbbreviationsMap.put(roadType, temp);
                 }
                 line = reader.readLine();
             }
@@ -173,7 +170,6 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
             logger.error(String.format("Could not read %s", DEFAULT_ABBREVIATION_RESOURCE),
                     exception);
         }
-        return roadTypeAbbreviationsMap;
     }
 
     private String updateStreetAddress(final String[] streetAddress, final Integer roadTypeIndex,

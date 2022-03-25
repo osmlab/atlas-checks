@@ -53,6 +53,11 @@
   },
   "AbbreviatedAddressStreetCheck": {
     "enabled": true,
+    "countries": ["AIA", "ATG", "AUS", "BHS", "BRB", "BLZ", "BMU", "BWA", "VGB",
+      "CMR", "CAN", "CYM", "DMA", "FJI", "GMB", "GHA", "GIB", "GRD", "GUY", "IRL", "JAM",
+      "KEN", "LSO", "MWI", "MLT", "MUS", "MSR", "NAM", "NZL", "NGA", "PNG", "SYC", "SLE",
+      "SGP", "SLB", "ZAF", "SWZ", "TZA", "TON", "TTO", "TCA", "UGA", "GBR", "USA", "VUT",
+      "ZMB", "ZWE"],
     "tag.filters":"addr:street->*",
     "challenge": {
       "description": "Tasks contain Ways, Nodes, Relations address street names with abbreviated road types",
