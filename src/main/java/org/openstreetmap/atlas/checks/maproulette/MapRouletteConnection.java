@@ -49,7 +49,7 @@ public class MapRouletteConnection implements TaskLoader, Serializable
     private static final int MAXIMUM_BATCH_SIZE = 5000;
     private static final long serialVersionUID = -8227257938510897604L;
     private final MapRouletteConfiguration configuration;
-    private final Supplier<URIBuilder> uriBuilder;
+    private final transient Supplier<URIBuilder> uriBuilder;
     private final HttpHost proxy;
 
     MapRouletteConnection(final MapRouletteConfiguration configuration, final HttpHost proxy)
