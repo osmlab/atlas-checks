@@ -85,6 +85,13 @@ public class InvalidGeometryCheckTestRule extends CoreTestRule
     private Atlas notValidLinearAtlas;
 
     @TestAtlas(
+            // lines
+            lines = { @Line(id = TEST_ID_2, coordinates = { @Loc(value = LOCATION_8),
+                    @Loc(value = LOCATION_8) }, tags = { "attraction=roller_coaster",
+                            "roller_coaster=anything" }) })
+    private Atlas notValidLinearRollerCoasterAtlas;
+
+    @TestAtlas(
             // areas
             areas = { @Area(id = TEST_ID_5, coordinates = { @Loc(value = LOCATION_1),
                     @Loc(value = LOCATION_4), @Loc(value = LOCATION_2), @Loc(value = LOCATION_3),
@@ -129,6 +136,11 @@ public class InvalidGeometryCheckTestRule extends CoreTestRule
     public Atlas getNotValidLinearAtlas()
     {
         return this.notValidLinearAtlas;
+    }
+
+    public Atlas getNotValidLinearRollerCoasterAtlas()
+    {
+        return this.notValidLinearRollerCoasterAtlas;
     }
 
 }
