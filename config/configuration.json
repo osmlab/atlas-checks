@@ -391,6 +391,12 @@
       "description": "Checks if the object access is overly permissive"
     }
   },
+  "HighwayIntersectionCheck": {
+    "challenge": {
+      "description": "This challenge contains navigable ways that share nodes with non-navigable ways.",
+      "instruction": "Please fix the ways tags or modify the nodes that cause the issue."
+    }
+  },
   "HighwayMissingNameAndRefTagCheck": {
     "min.nonContiguous.angle": 30.0,
     "min.highway.type": "tertiary",
