@@ -35,7 +35,11 @@ public class AbbreviatedAddressStreetCheckTestRule extends CoreTestRule
                     @Edge(id = "1000000007", coordinates = { @Loc(value = TEST_2),
                             @TestAtlas.Loc(value = TEST_3) }, tags = { "addr:street=Test Avenue" }),
                     @Edge(id = "1000000008", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_5) }, tags = { "addr:street=Test Way NW" }), })
+                            @Loc(value = TEST_5) }, tags = { "addr:street=Test Way NW" }),
+                    @Edge(id = "1000000009", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_3) }, tags = { "addr:street=Test Via" }),
+                    @Edge(id = "1000000010", coordinates = { @Loc(value = TEST_5),
+                            @Loc(value = TEST_1) }, tags = { "addr:street=Test Centre" }) })
     private Atlas atlasValidRoadType;
 
     @TestAtlas(nodes = {
@@ -61,6 +65,12 @@ public class AbbreviatedAddressStreetCheckTestRule extends CoreTestRule
             @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
                     "addr:street=N. Harbor Village W. Dr." }) })
     private Atlas atlasFalsePositiveCase3;
+
+    @TestAtlas(nodes = {
+            // nodes
+            @Node(id = "1000000001", coordinates = @Loc(value = TEST_1), tags = {
+                    "addr:street=Fox Run Pkwy." }) })
+    private Atlas atlasFalsePositiveCase4;
 
     @TestAtlas(nodes = {
             // nodes
@@ -102,6 +112,11 @@ public class AbbreviatedAddressStreetCheckTestRule extends CoreTestRule
     public Atlas getFalsePositiveCase3()
     {
         return this.atlasFalsePositiveCase3;
+    }
+
+    public Atlas getFalsePositiveCase4()
+    {
+        return this.atlasFalsePositiveCase4;
     }
 
     public Atlas getInvalidRoadTypeNumericStreet()

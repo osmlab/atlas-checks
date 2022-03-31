@@ -78,6 +78,7 @@ This document is a list of tables with a description and link to documentation f
 ## Tags
 | Check Name | Check Description |
 | :--------- | :---------------- |
+| [AbbreviatedAddressStreetCheck](checks/abbreviatedAddressStreetCheck.md) | The purpose of this check is to flag Street Address with abbreviated Road Type. |
 | AbbreviatedNameCheck |  The purpose of this check is to flag names that have abbreviations in them. |
 | [BridgeDetailedInfoCheck](checks/bridgeDetailedInfoCheck.md) | The purpose of this check is to identify prominent bridges with unspecified type or structure. |
 | [ConflictingAreaTagCombination](checks/conflictingAreaTagCombination.md) | The purpose of this check is to identify Areas with invalid tag combinations. |

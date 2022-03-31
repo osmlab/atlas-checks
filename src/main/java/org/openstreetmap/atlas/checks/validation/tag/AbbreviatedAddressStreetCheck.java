@@ -25,6 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Flags {@link AtlasEntity} objects (Edges, Points, Lines, Nodes, Areas, Relations) that have
+ * abbreviated road type in `addr:street` tag.
+ *
  * @author Vladimir Lemberg
  */
 
@@ -107,11 +110,11 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     }
 
     /**
-     * create a {@link Pair} of assuming Road Type (pair.left) with its index (pair.right)
+     * create a {@link Pair} of Road Type (pair.left) with Index (pair.right)
      *
      * @param splitStreetName
-     *            {@link String[]}
-     * @return
+     *            {@link String[]} tokenized address street.
+     * @return pair road type with positional index.
      */
     private Pair<String, Integer> getRoadTypeWithPositionalIndex(final String[] splitStreetName)
     {
@@ -125,7 +128,7 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
      *
      * @param streetAddressToken
      *            {@link String}
-     * @return boolean
+     * @return {@code true} if address token is directional.
      */
     private boolean isAddressStreetContainDirectional(final String streetAddressToken)
     {
@@ -133,8 +136,8 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
     }
 
     /**
-     * Parse Create K,V {@link Map} key -> full street abbreviation, value -> abbreviation
-     * variations
+     * Parse resource file. Create K,V {@link Map} key -> full street abbreviation, value ->
+     * abbreviation variations
      */
     private void parseAddressConventionConfig()
     {
@@ -172,6 +175,13 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
         }
     }
 
+    /**
+     * Checks if the given street address token {@link String} is directional
+     *
+     * @param streetAddress,
+     *            roadTypeIndex
+     * @return updated street address {@link String}.
+     */
     private String updateStreetAddress(final String[] streetAddress, final Integer roadTypeIndex,
             final String correctRoadType)
     {

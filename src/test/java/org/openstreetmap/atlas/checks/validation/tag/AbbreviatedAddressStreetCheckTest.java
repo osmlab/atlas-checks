@@ -79,6 +79,23 @@ public class AbbreviatedAddressStreetCheckTest
     }
 
     @Test
+    public void testFalsePositiveCase4()
+    {
+        this.verifier.actual(this.setup.getFalsePositiveCase4(),
+                new AbbreviatedAddressStreetCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.verify(flag ->
+        {
+            Assert.assertEquals(MessageFormat.format(INSTRUCTION_FORMAT, 1000, "Fox Run Pkwy.",
+                    "Pkwy.", "Parkway"), flag.getInstructions());
+            Assert.assertFalse(flag.getFixSuggestions().isEmpty());
+            final FeatureChange fixSuggestion = flag.getFixSuggestions().iterator().next();
+            Assert.assertEquals(1, fixSuggestion.getTags().size());
+            Assert.assertEquals("Fox Run Parkway",
+                    fixSuggestion.getTags().get(AddressStreetTag.KEY));
+        });
+    }
+
+    @Test
     public void testInvalidRoadTypeNumericStreet()
     {
         this.verifier.actual(this.setup.getInvalidRoadTypeNumericStreet(),
