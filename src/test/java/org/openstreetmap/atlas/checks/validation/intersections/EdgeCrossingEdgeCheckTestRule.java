@@ -281,6 +281,24 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
                                     @Loc(TEST5) }, tags = { "highway=secondary" }) })
     private Atlas invalidDisconnectedEdgeCrossingAtlas;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = LOCATION_1)),
+                    @Node(coordinates = @Loc(value = LOCATION_2)),
+                    @Node(coordinates = @Loc(value = LOCATION_4)),
+                    @Node(coordinates = @Loc(value = TEST4)),
+                    @Node(coordinates = @Loc(value = TEST5)),
+                    @Node(coordinates = @Loc(value = TEST6)) },
+            // edges
+            edges = {
+                    @Edge(id = "123456789000000", coordinates = { @Loc(value = LOCATION_1),
+                            @Loc(value = TEST6) }, tags = { "highway=motorway" }),
+                    @Edge(id = "223456789000000", coordinates = { @Loc(value = LOCATION_2),
+                            @Loc(value = LOCATION_4) }, tags = { "highway=motorway" }),
+                    @Edge(id = "323456789000000", coordinates = { @Loc(value = TEST4),
+                            @Loc(value = TEST5) }, tags = { "highway=motorway" }) })
+    private Atlas invalidMultiClusterAtlas;
+
     public Atlas invalidCrossingItemsAtlas()
     {
         return this.invalidCrossingItemsAtlas;
@@ -329,6 +347,11 @@ public class EdgeCrossingEdgeCheckTestRule extends CoreTestRule
     public Atlas invalidDisconnectedNodesCrossingAtlas()
     {
         return this.invalidDisconnectedNodesCrossingAtlas;
+    }
+
+    public Atlas invalidMultiClusterAtlas()
+    {
+        return this.invalidMultiClusterAtlas;
     }
 
     public Atlas noCrossingItemsAtlas()

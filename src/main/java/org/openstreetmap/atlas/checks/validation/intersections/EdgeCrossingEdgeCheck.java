@@ -1,9 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -26,6 +29,8 @@ import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
  * Flags edges that are crossing other edges invalidly. If two edges are crossing each other, then
@@ -61,15 +66,18 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
     private static final String MAXIMUM_HIGHWAY_DEFAULT = HighwayTag.MOTORWAY.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
+    private static final Double CLUSTER_DISTANCE_DEFAULT = 500.0;
     private static final long serialVersionUID = 2146863485833228593L;
+    private static final String DEFAULT_INDOOR_MAPPING = "indoor->*|highway->corridor,steps|level->*";
     private final boolean carNavigable;
     private final boolean pedestrianNavigable;
     private final boolean crossingCarNavigable;
     private final boolean crossingPedestrianNavigable;
     private final HighwayTag minimumHighwayType;
     private final HighwayTag maximumHighwayType;
-    private static final String DEFAULT_INDOOR_MAPPING = "indoor->*|highway->corridor,steps|level->*";
     private final TaggableFilter indoorMapping;
+    private final Distance clusterDistance;
+    private final Map<Long, Tuple<Set<Location>, Set<Edge>>> clusteredIntersections = new HashMap<>();
 
     /**
      * Checks whether given {@link PolyLine}s can cross each other.
@@ -115,6 +123,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 "crossing.pedestrian.navigable", CROSSING_PEDESTRIAN_NAVIGABLE_DEFAULT);
         this.indoorMapping = TaggableFilter.forDefinition(
                 this.configurationValue(configuration, "indoor.mapping", DEFAULT_INDOOR_MAPPING));
+        this.clusterDistance = this.configurationValue(configuration, "cluster.distance",
+                CLUSTER_DISTANCE_DEFAULT, Distance::meters);
     }
 
     @Override
@@ -127,15 +137,29 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // Use EdgeWalker to gather all connected invalid crossings. The use of the walker prevents
-        // edges from being flagged more than once.
-        final Set<Edge> collectedEdges = new EdgeCrossingEdgeWalker((Edge) object,
-                this.getInvalidCrossingEdges()).collectEdges();
-        if (collectedEdges.size() > 1)
+        if (!this.clusteredIntersections.containsKey(object.getIdentifier()))
         {
-            return this.createEdgeCrossCheckFlag(collectedEdges);
+            // Use EdgeWalker to gather all connected invalid crossings. The use of the walker
+            // prevents
+            // edges from being flagged more than once.
+            final Set<Edge> collectedEdges = new EdgeCrossingEdgeWalker((Edge) object,
+                    this.getInvalidCrossingEdges()).collectEdges();
+            if (collectedEdges.size() > 1)
+            {
+                this.clusterIntersections(this.getIntersectionPairs(collectedEdges));
+            }
+            else
+            {
+                return Optional.empty();
+            }
         }
-        return Optional.empty();
+
+        // Get the cluster of intersections and edges to flag and remove the entries from the map
+        final Tuple<Set<Location>, Set<Edge>> cluster = this.clusteredIntersections
+                .get(object.getIdentifier());
+        cluster.getSecond()
+                .forEach(edge -> this.clusteredIntersections.remove(edge.getIdentifier()));
+        return this.createEdgeCrossCheckFlag(cluster);
     }
 
     @Override
@@ -145,32 +169,64 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
+     * Group intersection pairs using a BFS search for points whith in {@link #clusterDistance}, and
+     * add them to the {@link #clusteredIntersections} map.
+     *
+     * @param intersectionPairs
+     *            {@link List} of {@link Tuple}s containing an intersection {@link Location} and
+     *            {@link Edge}
+     */
+    private void clusterIntersections(final List<Tuple<Location, Edge>> intersectionPairs)
+    {
+        // Go until all the intersections have been removed from the list
+        while (!intersectionPairs.isEmpty())
+        {
+            // Create a queue and add the first intersection
+            final ArrayDeque<Tuple<Location, Edge>> queue = new ArrayDeque<>();
+            queue.add(intersectionPairs.get(0));
+            final Set<Location> locations = new HashSet<>();
+            final Set<Edge> edges = new HashSet<>();
+
+            // BFS search for nearby intersections
+            while (!queue.isEmpty())
+            {
+                final Tuple<Location, Edge> intersectionPair = queue.pop();
+                locations.add(intersectionPair.getFirst());
+                edges.add(intersectionPair.getSecond());
+                // Remove intersections from the original list
+                intersectionPairs.remove(intersectionPair);
+
+                queue.addAll(intersectionPairs.stream()
+                        .filter(pair -> !queue.contains(pair)
+                                && intersectionPair.getFirst().distanceTo(pair.getFirst())
+                                        .isLessThanOrEqualTo(this.clusterDistance))
+                        .collect(Collectors.toList()));
+            }
+
+            // Add cluster to the map
+            edges.forEach(edge -> this.clusteredIntersections.put(edge.getIdentifier(),
+                    Tuple.createTuple(locations, edges)));
+        }
+    }
+
+    /**
      * Function creates edge cross check flag.
      *
-     * @param collectedEdges
-     *            collected edges for a given atlas object.
+     * @param cluster
+     *            clustered {@link Set}s of {@link Location}s and {@link Edge}s to flag
      * @return newly created edge cross check flag including crossing edges locations.
      */
-    private Optional<CheckFlag> createEdgeCrossCheckFlag(final Set<Edge> collectedEdges)
+    private Optional<CheckFlag> createEdgeCrossCheckFlag(
+            final Tuple<Set<Location>, Set<Edge>> cluster)
     {
         // Mark edges as flagged
-        collectedEdges.forEach(edge -> this.markAsFlagged(edge.getIdentifier()));
-        // Get intersection locations
-        final List<Edge> collectedEdgesList = new ArrayList<>(collectedEdges);
-        final Set<Location> points = new HashSet<>();
-        for (int index1 = 0; index1 < collectedEdgesList.size() - 1; index1++)
-        {
-            for (int index2 = index1 + 1; index2 < collectedEdgesList.size(); index2++)
-            {
-                points.addAll(this.getIntersection(collectedEdgesList.get(index1),
-                        collectedEdgesList.get(index2)));
-            }
-        }
+        cluster.getSecond().forEach(edge -> this.markAsFlagged(edge.getIdentifier()));
         // Create flag
-        return Optional.of(this.createFlag(collectedEdges,
-                this.getLocalizedInstruction(0, collectedEdges.stream()
-                        .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList())),
-                new ArrayList<>(points)));
+        return Optional.of(this.createFlag(cluster.getSecond(),
+                this.getLocalizedInstruction(0,
+                        cluster.getSecond().stream().map(AtlasObject::getOsmIdentifier)
+                                .collect(Collectors.toSet())),
+                new ArrayList<>(cluster.getFirst())));
     }
 
     /**
@@ -192,6 +248,25 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 .filter(intersection -> !canCross(edge1AsPolyLine, edge1LayerTag, edge2AsPolyLine,
                         edge2LayerTag, intersection))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Find the intersections between a set of edges. Intersection pairs are comprised of the
+     * {@link Location} and one {@link Edge}. This means each real intersections will have two
+     * intersections pairs, one for each edge involved.
+     *
+     * @param edges
+     *            {@link Set} of {@link Edge}s
+     * @return {@link List} of intersections as {@link Tuple}s with the intersection
+     *         {@link Location} and {@link Edge}
+     */
+    private List<Tuple<Location, Edge>> getIntersectionPairs(final Set<Edge> edges)
+    {
+        final List<Tuple<Location, Edge>> intersections = new ArrayList<>();
+        edges.forEach(edge -> edges.stream().filter(otherEdge -> !otherEdge.equals(edge))
+                .forEach(otherEdge -> this.getIntersection(edge, otherEdge).forEach(
+                        location -> intersections.add(Tuple.createTuple(location, edge)))));
+        return intersections;
     }
 
     /**

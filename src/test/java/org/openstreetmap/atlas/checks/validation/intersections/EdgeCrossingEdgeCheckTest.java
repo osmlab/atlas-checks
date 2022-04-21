@@ -164,6 +164,15 @@ public class EdgeCrossingEdgeCheckTest
     }
 
     @Test
+    public void testInvalidMultiClusterAtlas()
+    {
+        this.verifier.actual(this.setup.invalidMultiClusterAtlas(),
+                new EdgeCrossingEdgeCheck(this.configuration));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
     public void testNoCrossingItemsAtlas()
     {
         this.verifier.actual(this.setup.noCrossingItemsAtlas(),
