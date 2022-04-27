@@ -1,8 +1,12 @@
 package org.openstreetmap.atlas.checks.validation.intersections;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -25,8 +29,8 @@ import org.openstreetmap.atlas.tags.LayerTag;
 import org.openstreetmap.atlas.tags.filters.TaggableFilter;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-
-import scala.Tuple2;
+import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.openstreetmap.atlas.utilities.tuples.Tuple;
 
 /**
  * Flags edges that are crossing other edges invalidly. If two edges are crossing each other, then
@@ -49,13 +53,12 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         }
     }
 
-    private static final String INSTRUCTION_FORMAT = "The road with id {0,number,#} has invalid crossings with {1}."
+    private static final String INSTRUCTION_FORMAT = "The roads with ids {0} invalidly cross each other."
             + " If two roads are crossing each other, then they should have nodes at intersection"
             + " locations unless they are explicitly marked as crossing. Otherwise, crossing roads"
             + " should have different layer tags.";
-    private static final String INVALID_EDGE_FORMAT = "Edge {0,number,#} is crossing invalidly with {1}.";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(INSTRUCTION_FORMAT,
-            INVALID_EDGE_FORMAT);
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
+            .singletonList(INSTRUCTION_FORMAT);
     private static final boolean CAR_NAVIGABLE_DEFAULT = true;
     private static final boolean PEDESTRIAN_NAVIGABLE_DEFAULT = false;
     private static final boolean CROSSING_CAR_NAVIGABLE_DEFAULT = true;
@@ -63,15 +66,18 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private static final String MINIMUM_HIGHWAY_DEFAULT = HighwayTag.NO.toString();
     private static final String MAXIMUM_HIGHWAY_DEFAULT = HighwayTag.MOTORWAY.toString();
     private static final Long OSM_LAYER_DEFAULT = 0L;
+    private static final Double CLUSTER_DISTANCE_DEFAULT = 500.0;
     private static final long serialVersionUID = 2146863485833228593L;
+    private static final String DEFAULT_INDOOR_MAPPING = "indoor->*|highway->corridor,steps|level->*";
     private final boolean carNavigable;
     private final boolean pedestrianNavigable;
     private final boolean crossingCarNavigable;
     private final boolean crossingPedestrianNavigable;
     private final HighwayTag minimumHighwayType;
     private final HighwayTag maximumHighwayType;
-    private static final String DEFAULT_INDOOR_MAPPING = "indoor->*|highway->corridor,steps|level->*";
     private final TaggableFilter indoorMapping;
+    private final Distance clusterDistance;
+    private final Map<Long, Tuple<Set<Location>, Set<Edge>>> clusteredIntersections = new HashMap<>();
 
     /**
      * Checks whether given {@link PolyLine}s can cross each other.
@@ -117,6 +123,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                 "crossing.pedestrian.navigable", CROSSING_PEDESTRIAN_NAVIGABLE_DEFAULT);
         this.indoorMapping = TaggableFilter.forDefinition(
                 this.configurationValue(configuration, "indoor.mapping", DEFAULT_INDOOR_MAPPING));
+        this.clusterDistance = this.configurationValue(configuration, "cluster.distance",
+                CLUSTER_DISTANCE_DEFAULT, Distance::meters);
     }
 
     @Override
@@ -129,46 +137,29 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // Use EdgeWalker to gather all connected invalid crossings. The use of the walker prevents
-        // edges from being flagged more than once.
-        final Set<Edge> collectedEdges = new EdgeCrossingEdgeWalker((Edge) object,
-                this.getInvalidCrossingEdges()).collectEdges();
-        if (collectedEdges.size() > 1)
+        if (!this.clusteredIntersections.containsKey(object.getIdentifier()))
         {
-            final List<Tuple2<Edge, Set<Edge>>> edgeCrossPairs = collectedEdges
-                    .stream().filter(
-                            edge -> edge.getOsmIdentifier() != object.getOsmIdentifier())
-                    .map(edge -> new Tuple2<>(edge,
-                            new EdgeCrossingEdgeWalker(edge, this.getInvalidCrossingEdges())
-                                    .collectEdges()))
-                    .collect(Collectors.toList());
-            edgeCrossPairs.add(new Tuple2<>((Edge) object, collectedEdges));
-            final Optional<Tuple2<Edge, Set<Edge>>> maxPair = edgeCrossPairs.stream()
-                    .max(Comparator.comparingInt(entry -> entry._2().size()));
-            if (maxPair.isPresent())
+            // Use EdgeWalker to gather all connected invalid crossings. The use of the walker
+            // prevents
+            // edges from being flagged more than once.
+            final Set<Edge> collectedEdges = new EdgeCrossingEdgeWalker((Edge) object,
+                    this.getInvalidCrossingEdges()).collectEdges();
+            if (collectedEdges.size() > 1)
             {
-                final int maxSize = (maxPair.get()._2()).size();
-
-                // max edges object is not the one passed to this flag.
-                final List<Tuple2<Edge, Set<Edge>>> maxEdgePairs = edgeCrossPairs.stream()
-                        .filter(crossPair -> (crossPair._2()).size() == maxSize)
-                        .collect(Collectors.toList());
-                final Optional<Tuple2<Edge, Set<Edge>>> minIdentifierPair = maxEdgePairs.stream()
-                        .reduce((edge1, edge2) ->
-                        // reduce to get the minimum osm identifier edge pair.
-                        edge1._1().getOsmIdentifier() <= edge2._1().getOsmIdentifier() ? edge1
-                                : edge2);
-                if (minIdentifierPair.isPresent())
-                {
-                    final Tuple2<Edge, Set<Edge>> minPair = minIdentifierPair.get();
-                    if (!this.isFlagged(minPair._1().getIdentifier()))
-                    {
-                        return this.createEdgeCrossCheckFlag(minPair._1(), minPair._2());
-                    }
-                }
+                this.clusterIntersections(this.getIntersectionPairs(collectedEdges));
+            }
+            else
+            {
+                return Optional.empty();
             }
         }
-        return Optional.empty();
+
+        // Get the cluster of intersections and edges to flag and remove the entries from the map
+        final Tuple<Set<Location>, Set<Edge>> cluster = this.clusteredIntersections
+                .get(object.getIdentifier());
+        cluster.getSecond()
+                .forEach(edge -> this.clusteredIntersections.remove(edge.getIdentifier()));
+        return this.createEdgeCrossCheckFlag(cluster);
     }
 
     @Override
@@ -178,33 +169,68 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Function creates edge cross check flag.
+     * Group intersection pairs using a BFS search for points whith in {@link #clusterDistance}, and
+     * add them to the {@link #clusteredIntersections} map.
      *
-     * @param edge
-     *            Atlas object.
-     * @param collectedEdges
-     *            collected edges for a given atlas object.
-     * @return newly created edge cross check glag including crossing edges locations.
+     * @param intersectionPairs
+     *            {@link List} of {@link Tuple}s containing an intersection {@link Location} and
+     *            {@link Edge}
      */
-    private Optional<CheckFlag> createEdgeCrossCheckFlag(final Edge edge,
-            final Set<Edge> collectedEdges)
+    private void clusterIntersections(final List<Tuple<Location, Edge>> intersectionPairs)
     {
-        final CheckFlag newFlag = new CheckFlag(this.getTaskIdentifier(edge));
-        this.markAsFlagged(edge.getIdentifier());
-        final Set<Location> points = collectedEdges.stream()
-                .filter(crossEdge -> crossEdge.getIdentifier() != edge.getIdentifier())
-                .flatMap(crossEdge -> this.getIntersection(edge, crossEdge).stream())
-                .collect(Collectors.toSet());
-        newFlag.addInstruction(
-                this.getLocalizedInstruction(0, edge.getOsmIdentifier(), collectedEdges.stream()
-                        .map(AtlasObject::getOsmIdentifier).collect(Collectors.toList())));
-        newFlag.addPoints(points);
-        newFlag.addObject(edge);
-        return Optional.of(newFlag);
+        // Go until all the intersections have been removed from the list
+        while (!intersectionPairs.isEmpty())
+        {
+            // Create a queue and add the first intersection
+            final ArrayDeque<Tuple<Location, Edge>> queue = new ArrayDeque<>();
+            queue.add(intersectionPairs.get(0));
+            final Set<Location> locations = new HashSet<>();
+            final Set<Edge> edges = new HashSet<>();
+
+            // BFS search for nearby intersections
+            while (!queue.isEmpty())
+            {
+                final Tuple<Location, Edge> intersectionPair = queue.pop();
+                locations.add(intersectionPair.getFirst());
+                edges.add(intersectionPair.getSecond());
+                // Remove intersections from the original list
+                intersectionPairs.remove(intersectionPair);
+
+                queue.addAll(intersectionPairs.stream()
+                        .filter(pair -> !queue.contains(pair)
+                                && intersectionPair.getFirst().distanceTo(pair.getFirst())
+                                        .isLessThanOrEqualTo(this.clusterDistance))
+                        .collect(Collectors.toList()));
+            }
+
+            // Add cluster to the map
+            edges.forEach(edge -> this.clusteredIntersections.put(edge.getIdentifier(),
+                    Tuple.createTuple(locations, edges)));
+        }
     }
 
     /**
-     * This function returns set of intersections locations for given params.
+     * Function creates edge cross check flag.
+     *
+     * @param cluster
+     *            clustered {@link Set}s of {@link Location}s and {@link Edge}s to flag
+     * @return newly created edge cross check flag including crossing edges locations.
+     */
+    private Optional<CheckFlag> createEdgeCrossCheckFlag(
+            final Tuple<Set<Location>, Set<Edge>> cluster)
+    {
+        // Mark edges as flagged
+        cluster.getSecond().forEach(edge -> this.markAsFlagged(edge.getIdentifier()));
+        // Create flag
+        return Optional.of(this.createFlag(cluster.getSecond(),
+                this.getLocalizedInstruction(0,
+                        cluster.getSecond().stream().map(AtlasObject::getOsmIdentifier)
+                                .collect(Collectors.toSet())),
+                new ArrayList<>(cluster.getFirst())));
+    }
+
+    /**
+     * This function returns set of invalid intersections locations for given params.
      *
      * @param edge1
      *            Atlas object
@@ -216,7 +242,31 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     {
         final PolyLine edge1AsPolyLine = edge1.asPolyLine();
         final PolyLine edge2AsPolyLine = edge2.asPolyLine();
-        return edge1AsPolyLine.intersections(edge2AsPolyLine);
+        final Long edge1LayerTag = LayerTag.getTaggedOrImpliedValue(edge1, OSM_LAYER_DEFAULT);
+        final Long edge2LayerTag = LayerTag.getTaggedOrImpliedValue(edge2, OSM_LAYER_DEFAULT);
+        return edge1AsPolyLine.intersections(edge2AsPolyLine).stream()
+                .filter(intersection -> !canCross(edge1AsPolyLine, edge1LayerTag, edge2AsPolyLine,
+                        edge2LayerTag, intersection))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Find the intersections between a set of edges. Intersection pairs are comprised of the
+     * {@link Location} and one {@link Edge}. This means each real intersections will have two
+     * intersections pairs, one for each edge involved.
+     *
+     * @param edges
+     *            {@link Set} of {@link Edge}s
+     * @return {@link List} of intersections as {@link Tuple}s with the intersection
+     *         {@link Location} and {@link Edge}
+     */
+    private List<Tuple<Location, Edge>> getIntersectionPairs(final Set<Edge> edges)
+    {
+        final List<Tuple<Location, Edge>> intersections = new ArrayList<>();
+        edges.forEach(edge -> edges.stream().filter(otherEdge -> !otherEdge.equals(edge))
+                .forEach(otherEdge -> this.getIntersection(edge, otherEdge).forEach(
+                        location -> intersections.add(Tuple.createTuple(location, edge)))));
+        return intersections;
     }
 
     /**
@@ -229,10 +279,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
         return edge ->
         {
             // Prepare the edge being tested for checks
-            final PolyLine edgeAsPolyLine = edge.asPolyLine();
             final Rectangle edgeBounds = edge.bounds();
-            // If layer tag is present use its value, else use the OSM default
-            final Long edgeLayer = LayerTag.getTaggedOrImpliedValue(edge, OSM_LAYER_DEFAULT);
 
             // Retrieve crossing edges
             final Atlas atlas = edge.getAtlas();
@@ -245,22 +292,7 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                     .filter(crossingEdge -> crossingEdge.getOsmIdentifier() != edge
                             .getOsmIdentifier())
                     // Go through crossing items and collect invalid crossings
-                    // NOTE: Due to way sectioning same OSM way could be marked multiple times here.
-                    // However,
-                    // MapRoulette will display way-sectioned edges in case there is an invalid
-                    // crossing.
-                    // Therefore, if an OSM way crosses another OSM way multiple times in separate
-                    // edges,
-                    // then each edge will be marked explicitly.
-                    .filter(crossingEdge ->
-                    {
-                        final PolyLine crossingEdgeAsPolyLine = crossingEdge.asPolyLine();
-                        final Long crossingEdgeLayer = LayerTag
-                                .getTaggedOrImpliedValue(crossingEdge, OSM_LAYER_DEFAULT);
-                        return edgeAsPolyLine.intersections(crossingEdgeAsPolyLine).stream()
-                                .anyMatch(intersection -> !canCross(edgeAsPolyLine, edgeLayer,
-                                        crossingEdgeAsPolyLine, crossingEdgeLayer, intersection));
-                    });
+                    .filter(crossingEdge -> !this.getIntersection(edge, crossingEdge).isEmpty());
         };
     }
 
@@ -299,8 +331,8 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
     private boolean isValidCrossingEdge(final AtlasObject object, final boolean carNavigable,
             final boolean pedestrianNavigable)
     {
-        if (((Edge) object).isMainEdge() && object.getTag(AreaTag.KEY).isEmpty()
-                && !this.indoorMapping.test(object))
+        if (((Edge) object).isMainEdge() && !this.isFlagged(object.getIdentifier())
+                && object.getTag(AreaTag.KEY).isEmpty() && !this.indoorMapping.test(object))
         {
             final Optional<HighwayTag> highway = HighwayTag.highwayTag(object);
             if (highway.isPresent())
@@ -310,7 +342,6 @@ public class EdgeCrossingEdgeCheck extends BaseCheck<Long>
                         && !HighwayTag.CROSSING.equals(highwayTag)
                         && highwayTag.isMoreImportantThanOrEqualTo(this.minimumHighwayType)
                         && highwayTag.isLessImportantThanOrEqualTo(this.maximumHighwayType);
-
             }
         }
         return false;

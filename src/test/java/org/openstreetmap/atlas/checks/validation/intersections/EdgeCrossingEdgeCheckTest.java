@@ -27,7 +27,7 @@ public class EdgeCrossingEdgeCheckTest
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class EdgeCrossingEdgeCheckTest
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class EdgeCrossingEdgeCheckTest
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class EdgeCrossingEdgeCheckTest
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
 
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class EdgeCrossingEdgeCheckTest
                         "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":true,\"pedestrian.navigable\":true,\"crossing.car.navigable\":true,\"crossing.pedestrian.navigable\":false,"
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
 
-        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
     }
 
     @Test
@@ -113,7 +113,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
                         "{\"EdgeCrossingEdgeCheck\":{\"minimum.highway.type\":\"track\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class EdgeCrossingEdgeCheckTest
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.verifyNotEmpty();
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(7, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class EdgeCrossingEdgeCheckTest
                         "{\"EdgeCrossingEdgeCheck\":{\"car.navigable\":false,\"pedestrian.navigable\":true,\"crossing.car.navigable\":false,\"crossing.pedestrian.navigable\":true,"
                                 + "\"indoor.mapping\": \"indoor->*|highway->corridor,steps|level->*\"}}")));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
-        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
@@ -161,6 +161,16 @@ public class EdgeCrossingEdgeCheckTest
         this.verifier.actual(this.setup.invalidDisconnectedNodesCrossingAtlas(),
                 new EdgeCrossingEdgeCheck(this.configuration));
         this.verifier.globallyVerify(flags -> Assert.assertEquals(1, flags.size()));
+    }
+
+    @Test
+    public void testInvalidMultiClusterAtlas()
+    {
+        this.verifier.actual(this.setup.invalidMultiClusterAtlas(),
+                new EdgeCrossingEdgeCheck(ConfigurationResolver.inlineConfiguration(
+                        "{\"EdgeCrossingEdgeCheck\":{\"cluster.distance\": 500.0}}")));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(2, flags.size()));
+        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
     }
 
     @Test
