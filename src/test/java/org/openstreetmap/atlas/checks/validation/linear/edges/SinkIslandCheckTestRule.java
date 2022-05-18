@@ -234,6 +234,33 @@ public class SinkIslandCheckTestRule extends CoreTestRule
                             "highway=primary", "oneway=yes", "vehicle=permissive" }), })
     private Atlas permittedSelectAccessAtlas;
 
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)) },
+            // edges
+            edges = {
+                    @Edge(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=primary", "oneway=yes" }),
+                    @Edge(id = "-1000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_1) }, tags = { "highway=primary", "oneway=yes" }),
+                    @Edge(id = "2000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "route=ferry", "motor_vehicle=yes" }),
+                    @Edge(id = "-2000000", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_2) }, tags = { "route=ferry", "motor_vehicle=yes" }),
+                    @Edge(id = "3000000", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "highway=primary", "oneway=yes" }),
+                    @Edge(id = "-3000000", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_3) }, tags = { "highway=primary", "oneway=yes" }) })
+    private Atlas ferryAtlas;
+
+    public Atlas ferryAtlas()
+    {
+        return this.ferryAtlas;
+    }
+
     public Atlas getEdgeConnectedToPedestrianNetwork()
     {
         return this.pedestrianNetwork;

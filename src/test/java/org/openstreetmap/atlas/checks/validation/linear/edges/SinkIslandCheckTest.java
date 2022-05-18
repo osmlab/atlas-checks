@@ -57,6 +57,23 @@ public class SinkIslandCheckTest
     }
 
     @Test
+    public void testFerryInvalid()
+    {
+        this.verifier.actual(this.setup.ferryAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 6}")));
+        this.verifier.verifyExpectedSize(1);
+        this.verifier.verify(flag -> Assert.assertEquals(6, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testFerryValid()
+    {
+        this.verifier.actual(this.setup.ferryAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 5}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testHighwayImportanceConfiguration()
     {
         this.verifier.actual(this.setup.getServiceSinkIsland(),
@@ -71,7 +88,7 @@ public class SinkIslandCheckTest
         this.verifier.actual(this.setup.getInvalidEdges(),
                 new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
     }
 
     @Test

@@ -47,8 +47,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private static final AmenityTag[] AMENITY_VALUES_TO_EXCLUDE = { AmenityTag.PARKING,
             AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING, AmenityTag.PARKING_ENTRANCE };
     private static final String DEFAULT_MINIMUM_HIGHWAY_TYPE = "SERVICE";
-    private static final List<String> FALLBACK_INSTRUCTIONS = Collections
-            .singletonList("Road is impossible to get out of.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
+            "This network does not allow vehicles to navigate out of it. Check for missing connections, and over restrictive access tags.");
     private static final float LOAD_FACTOR = 0.8f;
     private static final Predicate<AtlasObject> NAVIGABLE_HIGHWAYS = object -> Validators.isOfType(
             object, MotorVehicleTag.class, MotorVehicleTag.YES, MotorVehicleTag.DESIGNATED,
@@ -97,8 +97,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
-                && ((Edge) object).highwayTag()
-                        .isMoreImportantThanOrEqualTo(this.minimumHighwayType)
+                && (HighwayTag.tag(object).isEmpty() || ((Edge) object).highwayTag()
+                        .isMoreImportantThanOrEqualTo(this.minimumHighwayType))
                 && !(SERVICE_ROAD.test(object)
                         && (this.isWithinAreasWithExcludedAmenityTags((Edge) object)
                                 || this.intersectsAirportOrBuilding((Edge) object)));
@@ -344,11 +344,11 @@ public class SinkIslandCheck extends BaseCheck<Long>
     private boolean validEdge(final AtlasObject object)
     {
         return object instanceof Edge
-                // Only allow car navigable highways (access = yes and
+                // Only allow car navigable highways or ferries (access = yes and
                 // motor_vehicle/motorcar/vehicle = yes)
-                // and ignore ferries
-                && HighwayTag.isCarNavigableHighway(object) && this.isAccessible((Edge) object)
-                && this.isNavigable((Edge) object) && !RouteTag.isFerry(object)
+                && (HighwayTag.isCarNavigableHighway(object)
+                        || RouteTag.isFerry(object) && NAVIGABLE_HIGHWAYS.test(object))
+                && this.isAccessible((Edge) object) && this.isNavigable((Edge) object)
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
     }
