@@ -97,8 +97,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
     public boolean validCheckForObject(final AtlasObject object)
     {
         return this.validEdge(object) && !this.isFlagged(object.getIdentifier())
-                && (HighwayTag.tag(object).isEmpty() || ((Edge) object).highwayTag()
-                        .isMoreImportantThanOrEqualTo(this.minimumHighwayType))
+                && ((Edge) object).highwayTag()
+                        .isMoreImportantThanOrEqualTo(this.minimumHighwayType)
+                && !RouteTag.isFerry(object)
                 && !(SERVICE_ROAD.test(object)
                         && (this.isWithinAreasWithExcludedAmenityTags((Edge) object)
                                 || this.intersectsAirportOrBuilding((Edge) object)));
@@ -231,7 +232,10 @@ public class SinkIslandCheck extends BaseCheck<Long>
                 || !this.serviceInPedestrianNetworkFilter && IS_AT_LEAST_SERVICE_ROAD.test(edge)
                         && this.isConnectedToPedestrianNavigableHighway(edge)
                 // Ignore service edges that end in a building or are within an airport polygon
-                || SERVICE_ROAD.test(edge) && this.intersectsAirportOrBuilding(edge);
+                || SERVICE_ROAD.test(edge) && this.intersectsAirportOrBuilding(edge)
+                // Consider car ferries a valid terminus
+                || edge.outEdges().stream().anyMatch(outEdge -> RouteTag.isFerry(outEdge)
+                        && NAVIGABLE_HIGHWAYS.test(outEdge) && this.isNavigable(outEdge));
     }
 
     /**
@@ -299,8 +303,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
     /**
      * Checks if the edge is car navigable in terms of {@link MotorVehicleTag}, {@link MotorcarTag}
-     * and {@link VehicleTag}. Edge is navigable if 1) MotorVehicleTag, MotorcarTag and VehicleTag
-     * is absent or 2) If present, its value equals YES.
+     * and {@link VehicleTag}. Edge is navigable if each tag is either absent or has the value yes,
+     * designated, or, permissive.
      *
      * @param edge
      *            any Edge
@@ -308,10 +312,15 @@ public class SinkIslandCheck extends BaseCheck<Long>
      */
     private boolean isNavigable(final Edge edge)
     {
-        return !Validators.hasValuesFor(edge, MotorVehicleTag.class)
-                && !Validators.hasValuesFor(edge, MotorcarTag.class)
-                && !Validators.hasValuesFor(edge, VehicleTag.class)
-                || NAVIGABLE_HIGHWAYS.test(edge);
+        return (!Validators.hasValuesFor(edge, MotorVehicleTag.class)
+                || Validators.isOfType(edge, MotorVehicleTag.class, MotorVehicleTag.YES,
+                        MotorVehicleTag.DESIGNATED, MotorVehicleTag.PERMISSIVE))
+                && (!Validators.hasValuesFor(edge, MotorcarTag.class)
+                        || Validators.isOfType(edge, MotorcarTag.class, MotorcarTag.YES,
+                                MotorcarTag.DESIGNATED, MotorcarTag.PERMISSIVE))
+                && (!Validators.hasValuesFor(edge, VehicleTag.class)
+                        || Validators.isOfType(edge, VehicleTag.class, VehicleTag.YES,
+                                VehicleTag.DESIGNATED, VehicleTag.PERMISSIVE));
     }
 
     /**
@@ -346,9 +355,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
         return object instanceof Edge
                 // Only allow car navigable highways or ferries (access = yes and
                 // motor_vehicle/motorcar/vehicle = yes)
-                && (HighwayTag.isCarNavigableHighway(object)
-                        || RouteTag.isFerry(object) && NAVIGABLE_HIGHWAYS.test(object))
-                && this.isAccessible((Edge) object) && this.isNavigable((Edge) object)
+                && HighwayTag.isCarNavigableHighway(object) && this.isAccessible((Edge) object)
+                && this.isNavigable((Edge) object)
                 // Ignore any highways tagged as areas
                 && !TagPredicates.IS_AREA.test(object);
     }
