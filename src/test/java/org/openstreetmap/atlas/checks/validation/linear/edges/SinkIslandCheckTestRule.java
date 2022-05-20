@@ -243,18 +243,60 @@ public class SinkIslandCheckTestRule extends CoreTestRule
             // edges
             edges = {
                     @Edge(id = "1000000", coordinates = { @Loc(value = TEST_1),
-                            @Loc(value = TEST_2) }, tags = { "highway=primary", "oneway=yes" }),
+                            @Loc(value = TEST_2) }, tags = { "highway=primary" }),
                     @Edge(id = "-1000000", coordinates = { @Loc(value = TEST_2),
-                            @Loc(value = TEST_1) }, tags = { "highway=primary", "oneway=yes" }),
+                            @Loc(value = TEST_1) }, tags = { "highway=primary" }),
                     @Edge(id = "2000000", coordinates = { @Loc(value = TEST_2),
                             @Loc(value = TEST_3) }, tags = { "route=ferry", "motor_vehicle=yes" }),
                     @Edge(id = "-2000000", coordinates = { @Loc(value = TEST_3),
                             @Loc(value = TEST_2) }, tags = { "route=ferry", "motor_vehicle=yes" }),
                     @Edge(id = "3000000", coordinates = { @Loc(value = TEST_3),
-                            @Loc(value = TEST_4) }, tags = { "highway=primary", "oneway=yes" }),
+                            @Loc(value = TEST_4) }, tags = { "highway=primary" }),
                     @Edge(id = "-3000000", coordinates = { @Loc(value = TEST_4),
-                            @Loc(value = TEST_3) }, tags = { "highway=primary", "oneway=yes" }) })
+                            @Loc(value = TEST_3) }, tags = { "highway=primary" }) })
     private Atlas ferryAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)) },
+            // edges
+            edges = {
+                    @Edge(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=primary" }),
+                    @Edge(id = "-1000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_1) }, tags = { "highway=primary" }),
+                    @Edge(id = "2000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "route=ferry" }),
+                    @Edge(id = "-2000000", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_2) }, tags = { "route=ferry" }),
+                    @Edge(id = "3000000", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_4) }, tags = { "highway=primary" }),
+                    @Edge(id = "-3000000", coordinates = { @Loc(value = TEST_4),
+                            @Loc(value = TEST_3) }, tags = { "highway=primary" }) })
+    private Atlas pedestrianFerryAtlas;
+
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(coordinates = @Loc(value = TEST_1)),
+                    @Node(coordinates = @Loc(value = TEST_2)),
+                    @Node(coordinates = @Loc(value = TEST_3)),
+                    @Node(coordinates = @Loc(value = TEST_4)) },
+            // edges
+            edges = {
+                    @Edge(id = "1000000", coordinates = { @Loc(value = TEST_1),
+                            @Loc(value = TEST_2) }, tags = { "highway=primary" }),
+                    @Edge(id = "-1000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_1) }, tags = { "highway=primary" }),
+                    @Edge(id = "2000000", coordinates = { @Loc(value = TEST_2),
+                            @Loc(value = TEST_3) }, tags = { "highway=primary", "vehicle=no",
+                                    "motorcar=yes" }),
+                    @Edge(id = "-2000000", coordinates = { @Loc(value = TEST_3),
+                            @Loc(value = TEST_2) }, tags = { "highway=primary", "vehicle=no",
+                                    "motorcar=yes" }) })
+    private Atlas motorcarOverrideVehicleAtlas;
 
     public Atlas ferryAtlas()
     {
@@ -339,6 +381,16 @@ public class SinkIslandCheckTestRule extends CoreTestRule
     public Atlas getTwoEdgesWithAmenityAtlas()
     {
         return this.twoEdgesWithAmenityAtlas;
+    }
+
+    public Atlas motorcarOverrideVehicleAtlas()
+    {
+        return this.motorcarOverrideVehicleAtlas;
+    }
+
+    public Atlas pedestrianFerryAtlas()
+    {
+        return this.pedestrianFerryAtlas;
     }
 
     public Atlas permittedSelectAccessAtlas()
