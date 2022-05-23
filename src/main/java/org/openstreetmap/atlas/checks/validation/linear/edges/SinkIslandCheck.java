@@ -259,7 +259,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
      *            {@link Edge}
      * @return {@link String} car accessibility value
      */
-    @SuppressWarnings({ "squid:S3740", "squid:S3655" })
+    @SuppressWarnings({ "squid:S3740" })
     private String getCarAccess(final Edge edge, final String defaultValue)
     {
         final List<Class> carAccessTagsPrecedence = Arrays.asList(MotorcarTag.class,
@@ -268,7 +268,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
         {
             if (Validators.hasValuesFor(edge, tagClass))
             {
-                return Validators.from(tagClass, edge).get().toString();
+                return edge.tag(Validators.findTagNameIn(tagClass)).toUpperCase();
             }
         }
         return defaultValue;
