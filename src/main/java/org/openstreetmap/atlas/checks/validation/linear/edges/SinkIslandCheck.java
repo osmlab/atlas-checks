@@ -257,6 +257,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
      *
      * @param edge
      *            {@link Edge}
+     * @param defaultValue
+     *            {@link String} to return as the default value if no others are found
      * @return {@link String} car accessibility value
      */
     @SuppressWarnings({ "squid:S3740" })
@@ -314,6 +316,9 @@ public class SinkIslandCheck extends BaseCheck<Long>
      *
      * @param edge
      *            any Edge
+     * @param defaultValue
+     *            {@link String} to use for default navigability if the edge has no car
+     *            accessibility tags
      * @return true if the edge is navigable
      */
     private boolean isCarNavigable(final Edge edge, final String defaultValue)
