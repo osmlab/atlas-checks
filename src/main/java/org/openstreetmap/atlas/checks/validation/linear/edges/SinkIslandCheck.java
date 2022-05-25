@@ -49,7 +49,7 @@ public class SinkIslandCheck extends BaseCheck<Long>
             AmenityTag.PARKING_SPACE, AmenityTag.MOTORCYCLE_PARKING, AmenityTag.PARKING_ENTRANCE };
     private static final String DEFAULT_MINIMUM_HIGHWAY_TYPE = "SERVICE";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
-            "This network does not allow vehicles to navigate out of it. Check for missing connections, and over restrictive access tags.");
+            "This network does not allow cars to navigate out of it. Check for missing connections, and tags restricting car access.");
     private static final float LOAD_FACTOR = 0.8f;
     private static final Predicate<AtlasObject> SERVICE_ROAD = object -> Validators.isOfType(object,
             HighwayTag.class, HighwayTag.SERVICE);
