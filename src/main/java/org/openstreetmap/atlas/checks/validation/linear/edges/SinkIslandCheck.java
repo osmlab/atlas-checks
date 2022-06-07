@@ -252,8 +252,8 @@ public class SinkIslandCheck extends BaseCheck<Long>
 
     /**
      * Finds the car accessibility value for an {@link Edge} by returning the first value found,
-     * using a descending list of tags to check. If no values are found fort the list of tags the
-     * value is assumed to be YES.
+     * using a descending list of tags to check. If no values are found for the list of tags the
+     * default is used.
      *
      * @param edge
      *            {@link Edge}
