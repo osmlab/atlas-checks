@@ -18,6 +18,8 @@ import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This check will look for any edges outside of airport boundaries that do not contain any incoming
@@ -47,6 +49,8 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
 
     private static final RelationOrAreaToMultiPolygonConverter RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
     // class variable to store the maximum distance for the floating road
+
+    private static final Logger logger = LoggerFactory.getLogger(FloatingEdgeCheck.class);
     private final Distance maximumDistance;
     // class variable to store the minimum distance for the floating road
     private final Distance minimumDistance;
@@ -83,7 +87,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
             }
             catch (final MultiplePolyLineToPolygonsConverter.OpenPolygonException exception)
             {
-                exception.printStackTrace();
+                logger.error("There is an open location", exception);
             }
         }
         return false;
@@ -131,11 +135,6 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
-        if (((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
-                && this.isMinimumHighwayType(object) && !intersectsAirport((Edge) object))
-        {
-            System.out.println("print edge " + object.getIdentifier());
-        }
         // Consider navigable main edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object)
