@@ -1,9 +1,7 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -11,6 +9,9 @@ import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.ItemType;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
+import org.openstreetmap.atlas.geography.atlas.items.complex.RelationOrAreaToMultiPolygonConverter;
+import org.openstreetmap.atlas.geography.converters.MultiplePolyLineToPolygonsConverter;
 import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
@@ -38,11 +39,13 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // prior to runtime with a custom value.
     public static final double DISTANCE_MINIMUM_METERS_DEFAULT = 100;
     // create a simple instruction stating the Edge with the supplied OSM Identifier is floating.
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
-            .asList("Way {0,number,#} is floating. It has no incoming or outgoing ways.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = List
+            .of("Way {0,number,#} is floating. It has no incoming or outgoing ways.");
     private static final long serialVersionUID = -6867668561001117411L;
     // The default value for the minimum highway type
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
+
+    private static final RelationOrAreaToMultiPolygonConverter RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER = new RelationOrAreaToMultiPolygonConverter();
     // class variable to store the maximum distance for the floating road
     private final Distance maximumDistance;
     // class variable to store the minimum distance for the floating road
@@ -56,16 +59,34 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
      *
      * @param edge
      *            the Edge being checked
-     * @return true if the edge intersects with an airport; false otherwise
+     * @return true if the edge intersects with an airport area or relation; false otherwise
      */
     private static boolean intersectsAirport(final Edge edge)
     {
-        return StreamSupport
-                .stream(edge.getAtlas()
-                        .areasIntersecting(edge.bounds(),
-                                area -> Validators.hasValuesFor(area, AerowayTag.class))
-                        .spliterator(), false)
-                .anyMatch(area -> area.asPolygon().overlaps(edge.asPolyLine()));
+        if (edge.getAtlas()
+                .areasIntersecting(edge.bounds(),
+                        area -> (Validators.hasValuesFor(area, AerowayTag.class))
+                                && (area.asPolygon().overlaps(edge.asPolyLine())))
+                .iterator().hasNext())
+        {
+            return true;
+        }
+        for (final Relation relation : edge.getAtlas().relationsWithEntitiesIntersecting(
+                edge.bounds().expand(Distance.kilometers(1)), Relation::isMultiPolygon))
+        {
+            try
+            {
+                if (edge.within(RELATION_OR_AREA_TO_MULTI_POLYGON_CONVERTER.convert(relation)))
+                {
+                    return true;
+                }
+            }
+            catch (final MultiplePolyLineToPolygonsConverter.OpenPolygonException exception)
+            {
+                exception.printStackTrace();
+            }
+        }
+        return false;
     }
 
     /**
@@ -110,6 +131,11 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     @Override
     public boolean validCheckForObject(final AtlasObject object)
     {
+        if (((Edge) object).isMainEdge() && HighwayTag.isCarNavigableHighway(object)
+                && this.isMinimumHighwayType(object) && !intersectsAirport((Edge) object))
+        {
+            System.out.println("print edge " + object.getIdentifier());
+        }
         // Consider navigable main edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object)
@@ -128,7 +154,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Edge edge = (Edge) object;
-        // Check the length of the edge and make sure that it is larger then the minimum distance
+        // Check the length of the edge and make sure that it is larger than the minimum distance
         // and shorter than the maximum distance. We also want to make sure it doesn't have any
         // connected edges and has not been cut on the border and contains a synthetic boundary tag.
         if (edge.length().isGreaterThanOrEqualTo(this.minimumDistance)
@@ -169,8 +195,8 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         final Iterable<Edge> connectedEdges = edge.connectedEdges();
         for (final Edge connectedEdge : connectedEdges)
         {
-            // if edge is not null (ie. valid) and not the reverse edge then immediately return
-            // false, and it can safely assumed that this particular edge is not a floating edge
+            // if edge is not null (i.e. valid) and not the reverse edge then immediately return
+            // false, and it can safely assume that this particular edge is not a floating edge
             if (connectedEdge != null && !edge.isReversedEdge(connectedEdge))
             {
                 return false;
