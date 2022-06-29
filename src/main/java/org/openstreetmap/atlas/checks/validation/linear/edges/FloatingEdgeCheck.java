@@ -155,7 +155,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         // Consider navigable main edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object)
-                && !this.intersectsAirport((Edge) object);
+                && !intersectsAirport((Edge) object);
     }
 
     /**
