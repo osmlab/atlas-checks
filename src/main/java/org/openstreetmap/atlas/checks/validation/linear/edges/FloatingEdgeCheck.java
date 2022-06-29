@@ -1,7 +1,10 @@
 package org.openstreetmap.atlas.checks.validation.linear.edges;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.openstreetmap.atlas.checks.atlas.predicates.TypePredicates;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
@@ -16,6 +19,7 @@ import org.openstreetmap.atlas.tags.AerowayTag;
 import org.openstreetmap.atlas.tags.HighwayTag;
 import org.openstreetmap.atlas.tags.SyntheticBoundaryNodeTag;
 import org.openstreetmap.atlas.tags.annotations.validation.Validators;
+import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 import org.slf4j.Logger;
@@ -32,6 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FloatingEdgeCheck extends BaseCheck<Long>
 {
+    public static final double DISTANCE_DEFAULT = 1;
     // The default value for the maximum length in kilometers for something to be considered a
     // floating road, anything larger will be ignored. This can be updated through configuration and
     // set prior to runtime with a custom value.
@@ -43,6 +48,9 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
     // create a simple instruction stating the Edge with the supplied OSM Identifier is floating.
     private static final List<String> FALLBACK_INSTRUCTIONS = List
             .of("Way {0,number,#} is floating. It has no incoming or outgoing ways.");
+
+    private static final Map<String, List<Relation>> aerodromeRelationMap = new HashMap<>();
+
     private static final long serialVersionUID = -6867668561001117411L;
     // The default value for the minimum highway type
     private static final String HIGHWAY_MINIMUM_DEFAULT = HighwayTag.SERVICE.toString();
@@ -75,8 +83,17 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         {
             return true;
         }
-        for (final Relation relation : edge.getAtlas().relationsWithEntitiesIntersecting(
-                edge.bounds().expand(Distance.kilometers(1)), Relation::isMultiPolygon))
+        if (!aerodromeRelationMap.containsKey(edge.getAtlas().getName()))
+        {
+            aerodromeRelationMap.put(edge.getAtlas().getName(),
+                    Iterables.asList(edge.getAtlas()
+                            .relations(relation -> relation.isMultiPolygon() && Validators
+                                    .isOfType(relation, AerowayTag.class, AerowayTag.AERODROME))));
+        }
+        for (final Relation relation : aerodromeRelationMap.get(edge.getAtlas().getName()).stream()
+                .filter(relation -> relation
+                        .intersects(edge.bounds().expand(Distance.kilometers(DISTANCE_DEFAULT))))
+                .collect(Collectors.toList()))
         {
             try
             {
@@ -138,7 +155,7 @@ public class FloatingEdgeCheck extends BaseCheck<Long>
         // Consider navigable main edges
         return TypePredicates.IS_EDGE.test(object) && ((Edge) object).isMainEdge()
                 && HighwayTag.isCarNavigableHighway(object) && this.isMinimumHighwayType(object)
-                && !intersectsAirport((Edge) object);
+                && !this.intersectsAirport((Edge) object);
     }
 
     /**
