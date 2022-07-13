@@ -19,6 +19,9 @@ public class LoneBuildingNodeCheckTest
     @Rule
     public ConsumerBasedExpectedCheckVerifier verifier = new ConsumerBasedExpectedCheckVerifier();
 
+    /**
+     * Test 1: Building Node enclosed in building
+     */
     @Test
     public void enclosedBuildingNode()
     {
@@ -27,6 +30,9 @@ public class LoneBuildingNodeCheckTest
         this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
     }
 
+    /**
+     * Test 2: Building Node is not geometrically enclosed in building
+     */
     @Test
     public void loneBuildingNode()
     {

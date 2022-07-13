@@ -9,7 +9,6 @@ import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
-import org.openstreetmap.atlas.geography.atlas.items.Edge;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
@@ -75,13 +74,12 @@ public class LoneBuildingNodeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Helper function for filtering {@link Edge}s. This is detecting that {@link Edge} is
-     * separately mapped sidewalk https://wiki.openstreetmap.org/wiki/Sidewalks or designated
-     * pedestrian road https://wiki.openstreetmap.org/wiki/Key:foot.
+     * Helper function for filtering {@link Area}s. This is detecting that {@link Area} has building
+     * tag
      *
      * @param area
-     *            Edge to examine
-     * @return true if {@link Edge} is passed validation.
+     *            Area to examine
+     * @return true if {@link Area} is passed validation.
      */
     private boolean validBuildingFilter(final Area area)
     {
