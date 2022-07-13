@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": true
+    "enabled.value.default": false
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1514,6 +1514,28 @@
       "description": "Tasks contain nodes with either inappropriate highway tag value or which are not part of a way with highway or railway tag.",
       "blurb": "Lone nodes with highway tag",
       "instruction": "Open your favorite editor and edit the node street names",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
+  },
+  "EnclosedBuildingNodeCheck": {
+    "enabled": true,
+    "building.search.distance": 10.0,
+    "challenge": {
+      "description": "Tasks contain Nodes with building tag that are fully enclosed in Areas with building tag.",
+      "blurb": "Nodes with building tag",
+      "instruction": "Open your favorite editor and remove building tag from the Node or merge Node with the Area",
+      "difficulty": "EASY",
+      "defaultPriority": "LOW"
+    }
+  },
+  "LoneBuildingNodeCheck": {
+    "enabled": true,
+    "building.search.distance": 10.0,
+    "challenge": {
+      "description": "Tasks contain Nodes with building tag that don't belong to any Areas with building tag.",
+      "blurb": "Nodes with building tag",
+      "instruction": "Open your favorite editor and draw a building foot print Area, then delete the Node.",
       "difficulty": "EASY",
       "defaultPriority": "LOW"
     }
