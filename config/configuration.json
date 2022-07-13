@@ -1533,7 +1533,7 @@
     "enabled": true,
     "building.search.distance": 10.0,
     "challenge": {
-      "description": "Tasks contain Nodes with building tag that don't belong to any Areas with building tag.",
+      "description": "Tasks contain Nodes with building tag that are not enclose within an Area with building tag.",
       "blurb": "Nodes with building tag",
       "instruction": "Open your favorite editor and draw a building foot print Area, then delete the Node.",
       "difficulty": "EASY",

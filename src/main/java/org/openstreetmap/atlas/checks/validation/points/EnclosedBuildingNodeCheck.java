@@ -23,7 +23,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class EnclosedBuildingNodeCheck extends BaseCheck<Long>
 {
-    private static final String ENCLOSED_INSTRUCTION = "Node {0,number,#} has been tagged as a building, but it does not appear to be a building. Please either merge the tags associated with this node to the building that surrounds this node and delete this node or replace the building=< * > tag and replace it with the correct tag that better describes what the node represents.";
+    private static final String ENCLOSED_INSTRUCTION = "Node {0,number,#} has been tagged as a building, but it does not appear to be a building. Please either merge the tags associated with this node to the building that surrounds this node and delete this node or remove the building=< * > tag and replace it with the correct tag that better describes what the node represents.";
     private static final String ENCLOSED_ADDRESS_INSTRUCTION = "Node {0,number,#} has been tagged as a building but it appears to be an address. Please remove the building=< * > tag.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Arrays
             .asList(ENCLOSED_ADDRESS_INSTRUCTION, ENCLOSED_INSTRUCTION);

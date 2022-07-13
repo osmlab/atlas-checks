@@ -22,7 +22,7 @@ import org.openstreetmap.atlas.utilities.scalars.Distance;
  */
 public class LoneBuildingNodeCheck extends BaseCheck<Long>
 {
-    private static final String LONE_INSTRUCTION = "Node {0,number,#} has been tagged as a building indicating that it represents a building, but It is better to represent buildings with polygons or multipolygons. Please see if there is enough satellite imagery information to replace this node with a new polygon. if there is enough detail to draw this building as a polygon then add the polygon that represents the building and remove the building tag from this node or transfer the tags from this node to the new polygon, and then delete this node. See https://wiki.openstreetmap.org/wiki/Mapping_addresses_as_separate_nodes_or_by_adding_to_building_polygons.";
+    private static final String LONE_INSTRUCTION = "Node {0,number,#} has been tagged as a building indicating that it represents a building, but it is better to represent buildings with polygons or multipolygons. Please see if there is enough satellite imagery information to replace this node with a new polygon. If there is enough detail to draw this building as a polygon then add the polygon that represents the building and remove the building tag from this node or transfer the tags from this node to the new polygon, and then delete this node. See https://wiki.openstreetmap.org/wiki/Mapping_addresses_as_separate_nodes_or_by_adding_to_building_polygons.";
     private static final List<String> FALLBACK_INSTRUCTIONS = Collections
             .singletonList(LONE_INSTRUCTION);
     private static final Double BUILDING_SEARCH_DISTANCE_DEFAULT = 10.0;
