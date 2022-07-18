@@ -4,9 +4,12 @@ import org.openstreetmap.atlas.geography.atlas.Atlas;
 import org.openstreetmap.atlas.utilities.testing.CoreTestRule;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Area;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Edge;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Loc;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 import org.openstreetmap.atlas.utilities.testing.TestAtlas.Point;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation;
+import org.openstreetmap.atlas.utilities.testing.TestAtlas.Relation.Member;
 
 /**
  * {@link LoneBuildingNodeCheckTest} data generator
@@ -43,11 +46,47 @@ public class LoneBuildingNodeCheckTestRule extends CoreTestRule
             areas = { @Area(id = "600000", coordinates = { @Loc(value = BUILDING_1),
                     @Loc(value = BUILDING_2), @Loc(value = BUILDING_3), @Loc(value = BUILDING_4),
                     @Loc(value = BUILDING_1) }, tags = { "building=yes" }) })
-    private Atlas enclosedBuildingNodeAtlas;
+    private Atlas enclosedBuildingAreaNodeAtlas;
 
-    public Atlas enclosedBuildingNodeAtlas()
+    @TestAtlas(
+            // nodes
+            nodes = { @Node(id = "1000000", coordinates = @Loc(value = BUILDING_1)),
+                    @Node(id = "2000000", coordinates = @Loc(value = BUILDING_2)),
+                    @Node(id = "3000000", coordinates = @Loc(value = BUILDING_3)),
+                    @Node(id = "4000000", coordinates = @Loc(value = BUILDING_4)) },
+
+            // points
+            points = { @Point(id = "5000000", coordinates = @Loc(value = BUILDING_NODE), tags = {
+                    "building=yes", "addr:housenumber=123" }) },
+
+            // edges
+            edges = {
+                    @Edge(id = "12000000", coordinates = { @Loc(value = BUILDING_1),
+                            @Loc(value = BUILDING_2) }),
+                    @Edge(id = "23000000", coordinates = { @Loc(value = BUILDING_2),
+                            @Loc(value = BUILDING_3) }),
+                    @Edge(id = "34000000", coordinates = { @Loc(value = BUILDING_3),
+                            @Loc(value = BUILDING_4) }),
+                    @Edge(id = "41000000", coordinates = { @Loc(value = BUILDING_4),
+                            @Loc(value = BUILDING_1) }) },
+
+            // relations
+            relations = { @Relation(id = "1234000000", members = {
+                    @Member(id = "12000000", type = "edge", role = "outer"),
+                    @Member(id = "23000000", type = "edge", role = "outer"),
+                    @Member(id = "34000000", type = "edge", role = "outer"),
+                    @Member(id = "41000000", type = "edge", role = "outer") }, tags = {
+                            "type=multipolygon", "building=yes" }) })
+    private Atlas enclosedBuildingRelationNodeAtlas;
+
+    public Atlas enclosedBuildingAreaNodeAtlas()
     {
-        return this.enclosedBuildingNodeAtlas;
+        return this.enclosedBuildingAreaNodeAtlas;
+    }
+
+    public Atlas enclosedBuildingRelationNodeAtlas()
+    {
+        return this.enclosedBuildingRelationNodeAtlas;
     }
 
     public Atlas loneBuildingNodeAtlas()

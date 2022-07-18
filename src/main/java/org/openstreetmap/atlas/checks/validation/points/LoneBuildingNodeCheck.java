@@ -8,8 +8,10 @@ import java.util.Set;
 import org.openstreetmap.atlas.checks.base.BaseCheck;
 import org.openstreetmap.atlas.checks.flag.CheckFlag;
 import org.openstreetmap.atlas.geography.atlas.items.Area;
+import org.openstreetmap.atlas.geography.atlas.items.AtlasEntity;
 import org.openstreetmap.atlas.geography.atlas.items.AtlasObject;
 import org.openstreetmap.atlas.geography.atlas.items.Point;
+import org.openstreetmap.atlas.geography.atlas.items.Relation;
 import org.openstreetmap.atlas.tags.BuildingTag;
 import org.openstreetmap.atlas.utilities.collections.Iterables;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
@@ -45,23 +47,28 @@ public class LoneBuildingNodeCheck extends BaseCheck<Long>
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
         final Point point = (Point) object;
-        final Set<Area> buildingsAround = Iterables
+        final Set<AtlasEntity> buildingsAround = Iterables
                 .stream(point.getAtlas()
-                        .areasIntersecting(point.getLocation().boxAround(this.searchDistance)))
+                        .entitiesIntersecting(point.getLocation().boxAround(this.searchDistance)))
                 .filter(this::validBuildingFilter).collectToSet();
+
         boolean enclosed = false;
 
         if (!buildingsAround.isEmpty())
         {
-            for (final Area building : buildingsAround)
+            for (final AtlasEntity building : buildingsAround)
             {
-                if (building.asPolygon().fullyGeometricallyEncloses(point.getLocation()))
+                if (building instanceof Area || building instanceof Relation)
                 {
-                    enclosed = true;
-                    break;
+                    if (building.bounds().fullyGeometricallyEncloses(point.getLocation()))
+                    {
+                        enclosed = true;
+                        break;
+                    }
                 }
             }
         }
+
         return enclosed ? Optional.empty()
                 : Optional.of(this.createFlag(point,
                         this.getLocalizedInstruction(0, point.getOsmIdentifier())));
@@ -74,15 +81,15 @@ public class LoneBuildingNodeCheck extends BaseCheck<Long>
     }
 
     /**
-     * Helper function for filtering {@link Area}s. This is detecting that {@link Area} has building
-     * tag
+     * Helper function for filtering {@link AtlasObject}s. This is detecting that
+     * {@link AtlasObject} has building tag
      *
-     * @param area
-     *            Area to examine
-     * @return true if {@link Area} is passed validation.
+     * @param object
+     *            AtlasObject to examine
+     * @return true if {@link AtlasObject} is passed validation.
      */
-    private boolean validBuildingFilter(final Area area)
+    private boolean validBuildingFilter(final AtlasObject object)
     {
-        return area.getTag(BuildingTag.KEY).isPresent();
+        return object.getTag(BuildingTag.KEY).isPresent();
     }
 }

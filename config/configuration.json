@@ -1519,7 +1519,8 @@
     }
   },
   "EnclosedBuildingNodeCheck": {
-    "enabled": true,
+    "enabled": false,
+    "tags.filter":"building->!no&building->!window&building->!roof",
     "building.search.distance": 10.0,
     "challenge": {
       "description": "Tasks contain Nodes with building tag that are fully enclosed in Areas with building tag.",
@@ -1531,6 +1532,7 @@
   },
   "LoneBuildingNodeCheck": {
     "enabled": true,
+    "tags.filter":"building->!no&building->!window&building->!roof",
     "building.search.distance": 10.0,
     "challenge": {
       "description": "Tasks contain Nodes with building tag that are not enclose within an Area with building tag.",
