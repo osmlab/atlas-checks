@@ -70,6 +70,14 @@ public class FloatingEdgeCheckTest
     }
 
     @Test
+    public void testHighwayEdgesWithinRelation()
+    {
+        this.verifier.actual(this.setup.highwayEdgeWithinRelation(),
+                new FloatingEdgeCheck(ConfigurationResolver.emptyConfiguration()));
+        this.verifier.globallyVerify(flags -> Assert.assertEquals(0, flags.size()));
+    }
+
+    @Test
     public void testInlineConfigFloatingEdge()
     {
         this.verifier.actual(this.setup.floatingEdgeAtlas(), this.minimumHighwayCheck);
