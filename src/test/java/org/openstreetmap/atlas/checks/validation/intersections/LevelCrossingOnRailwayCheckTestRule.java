@@ -133,7 +133,11 @@ public class LevelCrossingOnRailwayCheckTestRule extends CoreTestRule
                     @Node(id = "523456789000000", coordinates = @Loc(value = INT1), tags = {
                             "railway=level_crossing" }),
                     @Node(id = "623456789000000", coordinates = @Loc(value = H2_NODE_1), tags = {}),
-                    @Node(id = "723456789000000", coordinates = @Loc(value = H2_NODE_2), tags = {}) },
+                    @Node(id = "723456789000000", coordinates = @Loc(value = H2_NODE_2), tags = {}),
+                    @Node(id = "823456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "railway=tram_level_crossing" }),
+                    @Node(id = "923456789000000", coordinates = @Loc(value = INT1), tags = {
+                            "disused:railway=level_crossing" }) },
             // edges
             edges = {
                     // 1.1-1.4: intersecting edge with no layer
