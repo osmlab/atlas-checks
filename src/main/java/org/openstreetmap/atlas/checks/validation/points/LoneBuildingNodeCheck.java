@@ -18,7 +18,7 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
- * This check is to detect Point with building=yes tag.
+ * This check is to detect a Node with building=< * > tag that doesn't enclose in Building Footprint and suggest drawing a building footprint (enclosed way or relation) then delete this Node.
  *
  * @author Vladimir Lemberg
  */

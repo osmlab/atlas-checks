@@ -4,7 +4,7 @@
       "org.openstreetmap.atlas.checks.validation"
     ],
     "type": "org.openstreetmap.atlas.checks.base.BaseCheck",
-    "enabled.value.default": false
+    "enabled.value.default": true
   },
   "PoolSizeCheck": {
     "surface": {
@@ -1519,7 +1519,6 @@
     }
   },
   "EnclosedBuildingNodeCheck": {
-    "enabled": false,
     "tags.filter":"building->!no&building->!window&building->!roof",
     "building.search.distance": 10.0,
     "challenge": {
@@ -1531,7 +1530,6 @@
     }
   },
   "LoneBuildingNodeCheck": {
-    "enabled": true,
     "tags.filter":"building->!no&building->!window&building->!roof",
     "building.search.distance": 10.0,
     "challenge": {
