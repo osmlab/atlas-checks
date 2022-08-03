@@ -17,7 +17,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
 import org.openstreetmap.atlas.utilities.scalars.Distance;
 
 /**
- * This check is to detect a Node with building=< * > tag that is fully geometrically enclosed in building footprint and suggest merging it with a building polygon or removing the building tag.
+ * This check is to detect a Node with building=< * > tag that is fully geometrically enclosed in
+ * building footprint and suggest merging it with a building polygon or removing the building tag.
  *
  * @author Vladimir Lemberg
  */
