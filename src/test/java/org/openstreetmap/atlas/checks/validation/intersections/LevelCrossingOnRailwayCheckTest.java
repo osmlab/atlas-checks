@@ -157,7 +157,7 @@ public class LevelCrossingOnRailwayCheckTest
                 new LevelCrossingOnRailwayCheck(ConfigurationResolver.inlineConfiguration(
                         "{  \"LevelCrossingOnRailwayCheck\": {" + "    \"enabled\": true,"
                                 + "    \"railway.filter\": \"railway->light_rail\"" + " }}")));
-        this.verifier.verifyExpectedSize(1);
+        this.verifier.verifyExpectedSize(3);
         this.verifier.verify(flag -> verifyObjectsAndSuggestions(flag, 1, 0));
     }
 
