@@ -57,6 +57,14 @@ public class SinkIslandCheckTest
     }
 
     @Test
+    public void testFerryValid()
+    {
+        this.verifier.actual(this.setup.ferryAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 6}")));
+        this.verifier.verifyEmpty();
+    }
+
+    @Test
     public void testHighwayImportanceConfiguration()
     {
         this.verifier.actual(this.setup.getServiceSinkIsland(),
@@ -71,7 +79,15 @@ public class SinkIslandCheckTest
         this.verifier.actual(this.setup.getInvalidEdges(),
                 new SinkIslandCheck(ConfigurationResolver.emptyConfiguration()));
         this.verifier.verifyExpectedSize(1);
-        this.verifier.verify(flag -> Assert.assertEquals(3, flag.getFlaggedObjects().size()));
+        this.verifier.verify(flag -> Assert.assertEquals(4, flag.getFlaggedObjects().size()));
+    }
+
+    @Test
+    public void testMotorcarOverrideVehicleAtlas()
+    {
+        this.verifier.actual(this.setup.motorcarOverrideVehicleAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
+        this.verifier.verifyEmpty();
     }
 
     @Test
@@ -88,6 +104,15 @@ public class SinkIslandCheckTest
         this.verifier.actual(this.setup.getParkingGarageEntranceOrExit(), new SinkIslandCheck(
                 ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 3}")));
         this.verifier.verifyEmpty();
+    }
+
+    @Test
+    public void testPedestrianFerry()
+    {
+        this.verifier.actual(this.setup.pedestrianFerryAtlas(), new SinkIslandCheck(
+                ConfigurationResolver.inlineConfiguration("{\"SinkIslandCheck.tree.size\": 6}")));
+        this.verifier.verifyExpectedSize(2);
+        this.verifier.verify(flag -> Assert.assertEquals(2, flag.getFlaggedObjects().size()));
     }
 
     @Test
