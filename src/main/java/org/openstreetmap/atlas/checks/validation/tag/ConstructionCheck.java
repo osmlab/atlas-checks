@@ -33,8 +33,6 @@ import org.openstreetmap.atlas.tags.OpenDateTag;
 import org.openstreetmap.atlas.tags.OpeningDateTag;
 import org.openstreetmap.atlas.tags.TemporaryDateOnTag;
 import org.openstreetmap.atlas.utilities.configuration.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The purpose of this check is to identify construction tags where the construction hasn't been
@@ -83,7 +81,6 @@ public class ConstructionCheck extends BaseCheck<Long>
 
     private final int oldConstructionDays;
     private final int oldCheckDateMonths;
-    private static final Logger logger = LoggerFactory.getLogger(ConstructionCheck.class);
 
     /**
      * The default constructor that must be supplied. The Atlas Checks framework will generate the
@@ -138,23 +135,10 @@ public class ConstructionCheck extends BaseCheck<Long>
     {
         // Get the date the atlas was generated, or use today's date as a fallback
         final Optional<String> atlasDateString = object.getAtlas().metaData().getDataVersion();
-        // Default date
-        LocalDate comparisonDate = TODAYS_DATE;
-        // Reassign date if date available in Atlas meta data.
-        if (atlasDateString.isPresent() && !atlasDateString.get().equals("unknown"))
-        {
-            try
-            {
-                comparisonDate = LocalDate.parse(atlasDateString.get().split("-")[0],
-                        ATLAS_DATE_FORMATTER);
-            }
-            catch (final DateTimeParseException exception)
-            {
-                logger.error(
-                        "Failed to parse date {} from pbf metadata. {}. Using the today's {} date instead",
-                        atlasDateString.get(), exception.getMessage(), TODAYS_DATE);
-            }
-        }
+        final LocalDate comparisonDate = atlasDateString.isPresent()
+                && !atlasDateString.get().equals("unknown")
+                        ? LocalDate.parse(atlasDateString.get().split("-")[0], ATLAS_DATE_FORMATTER)
+                        : TODAYS_DATE;
 
         this.markAsFlagged(object.getOsmIdentifier());
 
