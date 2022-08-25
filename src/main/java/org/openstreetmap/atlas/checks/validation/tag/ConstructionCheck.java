@@ -211,7 +211,7 @@ public class ConstructionCheck extends BaseCheck<Long>
             }
             catch (final DateTimeParseException exception)
             {
-                logger.error(
+                logger.warn(
                         "Could not parse date {} from Atlas meta data. {}. Assign today's date {} instead.",
                         atlasDateString.get(), exception.getMessage(), TODAYS_DATE);
             }
