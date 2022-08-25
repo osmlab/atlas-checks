@@ -136,25 +136,7 @@ public class ConstructionCheck extends BaseCheck<Long>
     @Override
     protected Optional<CheckFlag> flag(final AtlasObject object)
     {
-        // Get the date the atlas was generated, or use today's date as a fallback
-        final Optional<String> atlasDateString = object.getAtlas().metaData().getDataVersion();
-        // default date
-        LocalDate comparisonDate = TODAYS_DATE;
-        // try to re-assign date from the Atlas metadata if available
-        if (atlasDateString.isPresent() && !atlasDateString.get().equals("unknown"))
-        {
-            try
-            {
-                comparisonDate = LocalDate.parse(atlasDateString.get().split("-")[0],
-                        ATLAS_DATE_FORMATTER);
-            }
-            catch (final DateTimeParseException exception)
-            {
-                logger.error(
-                        "Could not parse date {} from Atlas meta data. {}. Assign today's date {} instead.",
-                        atlasDateString.get(), exception.getMessage(), TODAYS_DATE);
-            }
-        }
+        final LocalDate comparisonDate = this.getComparisonDate(object);
 
         this.markAsFlagged(object.getOsmIdentifier());
 
@@ -209,6 +191,32 @@ public class ConstructionCheck extends BaseCheck<Long>
     protected List<String> getFallbackInstructions()
     {
         return FALLBACK_INSTRUCTIONS;
+    }
+
+    /**
+     * Get the date the atlas was generated, or use today's date as a fallback
+     *
+     * @param object
+     *            AtlasObject to examine
+     * @return LocalDate.
+     */
+    private LocalDate getComparisonDate(final AtlasObject object)
+    {
+        final Optional<String> atlasDateString = object.getAtlas().metaData().getDataVersion();
+        if (atlasDateString.isPresent() && !atlasDateString.get().equals("unknown"))
+        {
+            try
+            {
+                return LocalDate.parse(atlasDateString.get().split("-")[0], ATLAS_DATE_FORMATTER);
+            }
+            catch (final DateTimeParseException exception)
+            {
+                logger.error(
+                        "Could not parse date {} from Atlas meta data. {}. Assign today's date {} instead.",
+                        atlasDateString.get(), exception.getMessage(), TODAYS_DATE);
+            }
+        }
+        return TODAYS_DATE;
     }
 
     /**
