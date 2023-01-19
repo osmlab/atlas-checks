@@ -10,7 +10,7 @@ about the basemap data.
 ### Prerequisites
 There are a couple of requirements for building and running a new Atlas Check. The following are required:
 - [Java 11](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) 
-    - Click on the link to go and install the latest Java 8 JDK. Follow the instructions for Linux, Mac or Windows operating systems.
+    - Click on the link to go and install the latest Java 11 JDK. Follow the instructions for Linux, Mac or Windows operating systems.
 - [Gradle](https://gradle.org/install) 
     - Click on the link to go and install the latest version of Gradle. Follow the instructions for Linux, Mac or Windows operating systems
 - [Git Command Line Tools](https://git-scm.com/downloads)
