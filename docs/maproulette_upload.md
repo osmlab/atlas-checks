@@ -26,6 +26,7 @@ Each Challenge is added to the project provided in the MapRoulette connection ur
 * **discoverableProject** (optional) - Whether the project is discoverable (enabled) in MapRoulette.
 * **purgeIncompleteTasks** (optional) - Whether challenges should be purged of all incomplete tasks before uploading new tasks (true/false, default: false).
 * **countryDisplayNames** (optional) - Whether ISO country codes should be converted to display names for challenge titles (true/false, default: true).
+* **includeFixSuggestions** (optional) - Whether to upload [fix suggestions](fix_suggestions.md#maproulette-integration) as cooperative challenges (true/false, default: true).
 ## Example
 
 The following command will upload EdgeCrossingEdge & SinkIsland checks to the `checks_example_project` Project on maproulette.org. 

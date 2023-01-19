@@ -144,6 +144,6 @@ any checks to explicitly be turned on, which we will do in the next step.
 The properties for the new check make sure it is enabled, and sets our values for the maximum and minimum surface areas
 for the pool.
 
-#### Run your correction
+#### Run your check
 
-Now that you have built your correction, the next step is simply to run it. And this is all explained [here](../standalone.md).
+Now that you have built your check, the next step is simply to run it. And this is all explained [here](../standalone.md).

@@ -83,7 +83,7 @@ Application parameters:
 
 #### Dependency hell is real!
 
-To get the job running against a different version of Spark could be very challenging. Right now it's only been tested against Spark version 1.6.0-cdh5.7.0
+To get the job running against a different version of Spark could be very challenging.
 
 If you see an exception while running in your environment, like `ClassNotFoundException`,  `ClassCastException`, thrown from a standard library, such as Guava, Slf4j, 
 then you are hitting the dependency conflict problem.   To solve it, try to figure out the name of the conflicted library, then update dependency configuration in `build.gradle` file to force a working version. 
