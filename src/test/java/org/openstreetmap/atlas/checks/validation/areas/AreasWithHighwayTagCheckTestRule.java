@@ -14,7 +14,7 @@ import org.openstreetmap.atlas.utilities.testing.TestAtlas.Node;
 public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
 {
 
-    public static final String INVALID_AREA_ID = "127005";
+    public static final String INVALID_AREA_ID = "127005000000";
     private static final String AREA_LOCATION_ONE = "37.320524859664474, -122.03601479530336";
     private static final String AREA_LOCATION_TWO = "37.320524859664474, -122.03530669212341";
     private static final String AREA_LOCATION_THREE = "37.32097706357857, -122.03530669212341";
@@ -38,10 +38,10 @@ public class AreasWithHighwayTagCheckTestRule extends CoreTestRule
 
     // Flag area with area=yes tag and highway tag not in validHighwayTags
     // Same as validHighwayPedestrianTagAtlas, this should not appear in the wild.
-    @TestAtlas(areas = {
-            @Area(coordinates = { @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
-                    @Loc(value = AREA_LOCATION_THREE), @Loc(value = AREA_LOCATION_FOUR),
-                    @Loc(value = AREA_LOCATION_ONE) }, tags = { "highway=primary", "area=yes" }) })
+    @TestAtlas(areas = { @Area(id = INVALID_AREA_ID, coordinates = {
+            @Loc(value = AREA_LOCATION_ONE), @Loc(value = AREA_LOCATION_TWO),
+            @Loc(value = AREA_LOCATION_THREE), @Loc(value = AREA_LOCATION_FOUR),
+            @Loc(value = AREA_LOCATION_ONE) }, tags = { "highway=primary", "area=yes" }) })
     private Atlas invalidAreaHighwayPrimaryTagAtlas;
 
     // Area with invalid highway=footway tag

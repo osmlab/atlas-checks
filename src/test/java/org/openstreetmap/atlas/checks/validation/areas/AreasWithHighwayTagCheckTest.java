@@ -79,10 +79,11 @@ public class AreasWithHighwayTagCheckTest
     @Test
     public void invalidHighwayPedestrianNoAreaTag()
     {
-        this.verifier.actual(this.setup.invalidHighwayPedestrianNoAreaTagAtlas(), this.check);
-        this.verifier.verify(flag -> Assert.assertEquals(flag.getInstructions(),
-                String.format("Area with OSM ID %s is missing area tag.",
-                        AreasWithHighwayTagCheckTestRule.INVALID_AREA_ID)));
+        this.verifier.actual(this.setup.invalidAreaHighwayPrimaryTagAtlas(), this.check);
+        this.verifier.verify(flag -> Assert.assertEquals(flag.getInstructions(), String.format(
+                "1. The way ID %s has an area=yes tag and a highway value of PRIMARY.\nPlease review this feature for accuracy and make updates when necessary.",
+                AreasWithHighwayTagCheckTestRule.INVALID_AREA_ID.substring(0,
+                        AreasWithHighwayTagCheckTestRule.INVALID_AREA_ID.length() - 6))));
     }
 
     @Test

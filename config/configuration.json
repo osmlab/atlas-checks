@@ -88,9 +88,9 @@
   "AreasWithHighwayTagCheck":{
     "tag.filters":"highway->*&area->yes",
     "challenge":{
-      "description":"A Highway should never be tagged as an area, all these tasks involve highways that have been.",
-      "blurb":"Highways should not be tagged as Areas.",
-      "instruction":"Remove highway tag from feature with area tag.",
+      "description":"Review highways with area tags for accuracy and connectivity.",
+      "blurb":"Review highways with area tags for accuracy and connectivity.",
+      "instruction":"Review highways with area tags for accuracy and connectivity.",
       "difficulty":"EASY",
       "tags":"highway,landuse"
     }
