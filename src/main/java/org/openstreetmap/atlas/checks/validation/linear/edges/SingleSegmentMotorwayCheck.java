@@ -84,7 +84,7 @@ public class SingleSegmentMotorwayCheck extends BaseCheck<Long>
             return fixSuggestion.map(suggestion -> flag.addFixSuggestion(FeatureChange.add(
                     (AtlasEntity) ((CompleteEntity) CompleteEntity
                             .shallowFrom((AtlasEntity) object)).withTags(object.getTags())
-                                    .withReplacedTag(HighwayTag.KEY, HighwayTag.KEY, suggestion),
+                            .withReplacedTag(HighwayTag.KEY, HighwayTag.KEY, suggestion),
                     object.getAtlas()))).or(() -> Optional.of(flag));
         }
         return Optional.empty();

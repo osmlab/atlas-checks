@@ -189,7 +189,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Create first source log file
         final FileProcessor<CheckFlagEvent> sourceProcessor = new CheckFlagFileProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePathString())
-                        .withCompression(compression);
+                .withCompression(compression);
         sourceProcessor.process(this.setup.getConstantCheckFlagEvent());
         sourceProcessor.process(this.setup.getSubtractionCheckFlagEvent());
         sourceProcessor.process(new ShutdownEvent());
@@ -197,14 +197,14 @@ public class AtlasChecksLogDiffSubCommandTest
         // Create second source log file
         final FileProcessor<CheckFlagEvent> sourceProcessor2 = new CheckFlagFileProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePathString())
-                        .withCompression(compression);
+                .withCompression(compression);
         sourceProcessor2.process(this.setup.getPreChangeCheckFlagEvent());
         sourceProcessor2.process(new ShutdownEvent());
 
         // Create first target log file
         final FileProcessor<CheckFlagEvent> targetProcessor = new CheckFlagFileProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePathString())
-                        .withCompression(compression);
+                .withCompression(compression);
         targetProcessor.process(this.setup.getConstantCheckFlagEvent());
         targetProcessor.process(this.setup.getAdditionCheckFlagEvent());
         targetProcessor.process(new ShutdownEvent());
@@ -212,7 +212,7 @@ public class AtlasChecksLogDiffSubCommandTest
         // Create second target log file
         final FileProcessor<CheckFlagEvent> targetProcessor2 = new CheckFlagFileProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePathString())
-                        .withCompression(compression);
+                .withCompression(compression);
         targetProcessor2.process(this.setup.getPostChangeCheckFlagEvent());
         targetProcessor2.process(new ShutdownEvent());
     }

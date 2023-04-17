@@ -187,7 +187,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
 
         final CheckFlagGeoJsonProcessor sourceProcessor = new CheckFlagGeoJsonProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), sourceDirectory.getAbsolutePathString())
-                        .withBatchSizeOverride(2).withCompression(compression);
+                .withBatchSizeOverride(2).withCompression(compression);
         sourceProcessor.process(this.setup.getConstantCheckFlagEvent());
         sourceProcessor.process(this.setup.getSubtractionCheckFlagEvent());
         sourceProcessor.process(this.setup.getPreChangeCheckFlagEvent());
@@ -195,7 +195,7 @@ public class AtlasChecksGeoJSONDiffSubCommandTest
 
         final CheckFlagGeoJsonProcessor targetProcessor = new CheckFlagGeoJsonProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), targetDirectory.getAbsolutePathString())
-                        .withBatchSizeOverride(2).withCompression(compression);
+                .withBatchSizeOverride(2).withCompression(compression);
         targetProcessor.process(this.setup.getConstantCheckFlagEvent());
         targetProcessor.process(this.setup.getAdditionCheckFlagEvent());
         targetProcessor.process(this.setup.getPostChangeCheckFlagEvent());

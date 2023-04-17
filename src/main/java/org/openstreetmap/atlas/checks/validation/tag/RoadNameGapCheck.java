@@ -129,15 +129,13 @@ public class RoadNameGapCheck extends BaseCheck<Long>
         final String nameSuggestion = matchingInAndOutEdgeNames.iterator().next();
         if (edge.getName().isEmpty())
         {
-            return Optional
-                    .of(this.createFlag(object,
-                            this.getLocalizedInstruction(0, edge.getOsmIdentifier()))
-                            .addFixSuggestion(
-                                    FeatureChange.add(
-                                            (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                                    .from((AtlasEntity) object)).withAddedTag(
-                                                            NameTag.KEY, nameSuggestion),
-                                            object.getAtlas())));
+            return Optional.of(this
+                    .createFlag(object, this.getLocalizedInstruction(0, edge.getOsmIdentifier()))
+                    .addFixSuggestion(FeatureChange.add(
+                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                    .from((AtlasEntity) object))
+                                    .withAddedTag(NameTag.KEY, nameSuggestion),
+                            object.getAtlas())));
         }
         final Optional<String> edgeName = edge.getName();
 

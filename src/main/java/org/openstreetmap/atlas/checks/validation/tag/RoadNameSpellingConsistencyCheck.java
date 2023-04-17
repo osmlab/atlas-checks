@@ -77,10 +77,9 @@ public class RoadNameSpellingConsistencyCheck extends BaseCheck<Long>
         // that are slightly different than edge
         final Set<Edge> inconsistentEdgeSet = new RoadNameSpellingConsistencyCheckWalker(edge,
                 this.maximumSearchDistance).collectEdges().stream()
-                        .filter(incomingEdge -> !this.isFlagged(incomingEdge.getIdentifier()))
-                        .filter(RoadNameSpellingConsistencyCheckWalker
-                                .isEdgeWithInconsistentSpelling(edge))
-                        .collect(Collectors.toSet());
+                .filter(incomingEdge -> !this.isFlagged(incomingEdge.getIdentifier()))
+                .filter(RoadNameSpellingConsistencyCheckWalker.isEdgeWithInconsistentSpelling(edge))
+                .collect(Collectors.toSet());
 
         // If the Walker found any inconsistent NameTag spellings
         if (!inconsistentEdgeSet.isEmpty())

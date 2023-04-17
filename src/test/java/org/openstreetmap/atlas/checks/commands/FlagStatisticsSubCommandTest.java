@@ -68,19 +68,19 @@ public class FlagStatisticsSubCommandTest
         final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
         final String actualTextInput = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/runSummary.csv")).lines()
-                        .collect(Collectors.joining());
+                .collect(Collectors.joining());
         Assert.assertEquals(expectedTextInput, actualTextInput);
 
         final String expectedTextTotals = "Check,Input(sum)Check1,14Check2,2Check3,2";
         final String actualTextTotals = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/checkSummary.csv")).lines()
-                        .collect(Collectors.joining());
+                .collect(Collectors.joining());
         Assert.assertEquals(expectedTextTotals, actualTextTotals);
 
         final String expectedTextCounts = "Country,Check,InputABC,Check1,6ABC,Check2,2ABC,Check3,XYZ,Check1,8XYZ,Check2,XYZ,Check3,2";
         final String actualTextCounts = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/checkByCountry.csv"))
-                        .lines().collect(Collectors.joining());
+                .lines().collect(Collectors.joining());
         Assert.assertEquals(expectedTextCounts, actualTextCounts);
 
         outputFolder.deleteRecursively();
@@ -101,24 +101,24 @@ public class FlagStatisticsSubCommandTest
         final String expectedTextInput = "Check,ABC,XYZ,TotalCheck1,6,8,14Check2,2,,2Check3,,2,2Total,8,10,18";
         final String actualTextInput = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/runSummary.csv")).lines()
-                        .collect(Collectors.joining());
+                .collect(Collectors.joining());
         Assert.assertEquals(expectedTextInput, actualTextInput);
 
         final String expectedTextDifference = "Check,ABC,XYZ,TotalCheck1,0,4,4Check2,-2,,-2Check3,,0,0Total,-2,4,2";
         final String actualTextDifference = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/runSummaryDifference.csv"))
-                        .lines().collect(Collectors.joining());
+                .lines().collect(Collectors.joining());
 
         final String expectedTextTotals = "Check,Reference(sum),Input(sum),Difference(sum)Check1,10,14,4Check2,4,2,-2Check3,2,2,0";
         final String actualTextTotals = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/checkSummary.csv")).lines()
-                        .collect(Collectors.joining());
+                .collect(Collectors.joining());
         Assert.assertEquals(expectedTextTotals, actualTextTotals);
 
         final String expectedTextCounts = "Country,Check,Reference,Input,DifferenceABC,Check1,6,6,0ABC,Check2,4,2,-2ABC,Check3,,,XYZ,Check1,4,8,4XYZ,Check2,,,XYZ,Check3,2,2,0";
         final String actualTextCounts = new BufferedReader(
                 new FileReader(outputFolder.getAbsolutePathString() + "/checkByCountry.csv"))
-                        .lines().collect(Collectors.joining());
+                .lines().collect(Collectors.joining());
         Assert.assertEquals(expectedTextCounts, actualTextCounts);
 
         Assert.assertEquals(expectedTextDifference, actualTextDifference);
@@ -140,7 +140,7 @@ public class FlagStatisticsSubCommandTest
         {
             final FileProcessor<CheckFlagEvent> fileProcessor = new CheckFlagFileProcessor(
                     new SparkFileHelper(FILE_SYSTEM_CONFIG), countryFolderPath)
-                            .withCompression(compression);
+                    .withCompression(compression);
             checkFlagCounts.forEach((check, flagCount) ->
             {
                 for (int count = 0; count < flagCount; count++)

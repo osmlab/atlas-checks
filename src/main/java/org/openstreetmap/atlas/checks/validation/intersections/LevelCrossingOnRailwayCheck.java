@@ -230,17 +230,14 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                                 .addFixSuggestion(FeatureChange.add(
                                         (AtlasEntity) ((CompleteEntity) CompleteEntity
                                                 .from((AtlasEntity) object))
-                                                        .withTags(object.getTags())
-                                                        .withReplacedTag(RailwayTag.KEY,
-                                                                RailwayTag.KEY,
-                                                                RailwayTag.CROSSING.name()
-                                                                        .toLowerCase().intern())
-                                                        .withAddedTag(BicycleTag.KEY,
-                                                                BicycleTag.YES.toString()
-                                                                        .toLowerCase())
-                                                        .withAddedTag(FootTag.KEY,
-                                                                FootTag.NO.toString()
-                                                                        .toLowerCase()),
+                                                .withTags(object.getTags())
+                                                .withReplacedTag(RailwayTag.KEY, RailwayTag.KEY,
+                                                        RailwayTag.CROSSING.name().toLowerCase()
+                                                                .intern())
+                                                .withAddedTag(BicycleTag.KEY,
+                                                        BicycleTag.YES.toString().toLowerCase())
+                                                .withAddedTag(FootTag.KEY,
+                                                        FootTag.NO.toString().toLowerCase()),
                                         object.getAtlas())));
                     case NODE_PED_ONLY_HIGHWAY:
                         return Optional.of(this
@@ -249,14 +246,15 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                                                 NODE_INVALID_LC_TAG_PED_ONLY_HIGHWAY_INDEX,
                                                 object.getOsmIdentifier(), this.railwayTagKey,
                                                 this.railwayTagValue))
-                                .addFixSuggestion(FeatureChange.add(
-                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                                .from((AtlasEntity) object))
+                                .addFixSuggestion(
+                                        FeatureChange.add(
+                                                (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                        .from((AtlasEntity) object))
                                                         .withTags(object.getTags()).withReplacedTag(
                                                                 RailwayTag.KEY, RailwayTag.KEY,
                                                                 RailwayTag.CROSSING.name()
                                                                         .toLowerCase().intern()),
-                                        object.getAtlas())));
+                                                object.getAtlas())));
                     case NODE_NO_RAILWAY:
                         instructIndex = NODE_INVALID_LC_TAG_NO_RAILWAY_INDEX;
                         break;
@@ -283,13 +281,14 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                             .createFlag(object,
                                     this.getLocalizedInstruction(NODE_CROSSING_MISSING_LC_TAG_INDEX,
                                             object.getOsmIdentifier(), this.railwayTagKey))
-                            .addFixSuggestion(FeatureChange.add(
-                                    (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                            .from((AtlasEntity) object)).withTags(object.getTags())
-                                                    .withReplacedTag(RailwayTag.KEY,
-                                                            this.railwayTagKey,
+                            .addFixSuggestion(
+                                    FeatureChange.add(
+                                            (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                    .from((AtlasEntity) object))
+                                                    .withTags(object.getTags()).withReplacedTag(
+                                                            RailwayTag.KEY, this.railwayTagKey,
                                                             this.railwayTagValue),
-                                    object.getAtlas())));
+                                            object.getAtlas())));
                 }
                 return Optional.of(this
                         .createFlag(object,
@@ -297,8 +296,8 @@ public class LevelCrossingOnRailwayCheck extends BaseCheck<Long>
                                         object.getOsmIdentifier(), this.railwayTagKey))
                         .addFixSuggestion(FeatureChange.add(
                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                        .from((AtlasEntity) object)).withAddedTag(
-                                                this.railwayTagKey, this.railwayTagValue),
+                                        .from((AtlasEntity) object))
+                                        .withAddedTag(this.railwayTagKey, this.railwayTagValue),
                                 object.getAtlas())));
 
             }
