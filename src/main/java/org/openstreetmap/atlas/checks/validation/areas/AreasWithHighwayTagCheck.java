@@ -1,6 +1,5 @@
 package org.openstreetmap.atlas.checks.validation.areas;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -30,9 +29,8 @@ import org.openstreetmap.atlas.utilities.configuration.Configuration;
  */
 public class AreasWithHighwayTagCheck extends BaseCheck<Long>
 {
-    private static final List<String> FALLBACK_INSTRUCTIONS = Arrays.asList(
-            "The way with OSM ID {0,number,#} has a highway value of {1}, which should not have an area=yes tag. Consider changing this to highway={2}.",
-            "The way with OSM ID {0,number,#} has a highway value of {1}, which should not have an area=yes tag.");
+    private static final List<String> FALLBACK_INSTRUCTIONS = Collections.singletonList(
+            "The way ID {0,number,#} has an area=yes tag and a highway value of {1}.\nPlease review this feature for accuracy and make updates when necessary.");
     private static final long serialVersionUID = 3638306611072651348L;
     private static final EnumSet<HighwayTag> VALID_HIGHWAY_TAGS = EnumSet.of(HighwayTag.SERVICES,
             HighwayTag.SERVICE, HighwayTag.REST_AREA, HighwayTag.PEDESTRIAN, HighwayTag.PLATFORM);
@@ -98,7 +96,7 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                     final Set<AtlasObject> objectsToFlag = this.getObjectsToFlag(object);
                     return this
                             .createFlag(objectsToFlag,
-                                    this.getLocalizedInstruction(1, object.getOsmIdentifier(), tag,
+                                    this.getLocalizedInstruction(0, object.getOsmIdentifier(), tag,
                                             tag.getTagValue()))
                             .addFixSuggestions(objectsToFlag.stream()
                                     .map(toFlag -> FeatureChange.add(
