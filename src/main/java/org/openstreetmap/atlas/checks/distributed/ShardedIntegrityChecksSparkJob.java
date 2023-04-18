@@ -366,8 +366,8 @@ public class ShardedIntegrityChecksSparkJob extends IntegrityChecksCommandArgume
                 final DynamicAtlasPolicy policy = new DynamicAtlasPolicy(fetcher,
                         sharding.getValue(), Collections.singleton(task.getShard()),
                         task.getShard().bounds().expand(shardDistanceExpansion))
-                                .withDeferredLoading(true).withAggressivelyExploreRelations(true)
-                                .withExtendIndefinitely(false);
+                        .withDeferredLoading(true).withAggressivelyExploreRelations(true)
+                        .withExtendIndefinitely(false);
                 atlas = new DynamicAtlas(policy);
                 ((DynamicAtlas) atlas).preemptiveLoad();
             }

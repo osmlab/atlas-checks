@@ -140,16 +140,18 @@ public class MalformedRoundaboutCheck extends BaseCheck<Long>
                 roundaboutEdgeSet.forEach(
                         roundaboutEdge -> this.markAsFlagged(roundaboutEdge.getIdentifier()));
 
-                return Optional.of(this
-                        .createFlag(new OsmWayWalker((Edge) object).collectEdges(),
+                return Optional
+                        .of(this.createFlag(new OsmWayWalker((Edge) object).collectEdges(),
                                 this.getLocalizedInstruction(1, object.getOsmIdentifier()))
-                        .addFixSuggestion(
-                                FeatureChange.add(
-                                        (AtlasEntity) ((CompleteEntity) CompleteEntity
-                                                .from((AtlasEntity) object)).withGeometry(
-                                                        CommonMethods.buildOriginalOsmWayGeometry(
-                                                                (Edge) object).reversed()),
-                                        object.getAtlas())));
+                                .addFixSuggestion(
+                                        FeatureChange.add(
+                                                (AtlasEntity) ((CompleteEntity) CompleteEntity
+                                                        .from((AtlasEntity) object))
+                                                        .withGeometry(CommonMethods
+                                                                .buildOriginalOsmWayGeometry(
+                                                                        (Edge) object)
+                                                                .reversed()),
+                                                object.getAtlas())));
             }
             else
             {

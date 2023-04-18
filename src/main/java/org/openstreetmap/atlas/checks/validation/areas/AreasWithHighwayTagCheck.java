@@ -84,11 +84,10 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                                         .map(toFlag -> FeatureChange.add(
                                                 (AtlasEntity) ((CompleteEntity) CompleteEntity
                                                         .shallowFrom((AtlasEntity) toFlag))
-                                                                .withTags(toFlag.getTags())
-                                                                .withReplacedTag(HighwayTag.KEY,
-                                                                        HighwayTag.KEY,
-                                                                        HighwayTag.PEDESTRIAN
-                                                                                .getTagValue()),
+                                                        .withTags(toFlag.getTags()).withReplacedTag(
+                                                                HighwayTag.KEY, HighwayTag.KEY,
+                                                                HighwayTag.PEDESTRIAN
+                                                                        .getTagValue()),
                                                 object.getAtlas()))
                                         .collect(Collectors.toSet()));
                     }
@@ -102,8 +101,8 @@ public class AreasWithHighwayTagCheck extends BaseCheck<Long>
                                     .map(toFlag -> FeatureChange.add(
                                             (AtlasEntity) ((CompleteEntity) CompleteEntity
                                                     .shallowFrom((AtlasEntity) toFlag))
-                                                            .withTags(toFlag.getTags())
-                                                            .withRemovedTag(AreaTag.KEY),
+                                                    .withTags(toFlag.getTags())
+                                                    .withRemovedTag(AreaTag.KEY),
                                             object.getAtlas()))
                                     .collect(Collectors.toSet()));
                 });

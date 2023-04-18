@@ -52,7 +52,7 @@ public class ShardedIntegrityChecksSparkJobTest
         {
             Assert.assertEquals(2, new BufferedReader(
                     new InputStreamReader(new FileInputStream(file.getAbsolutePathString())))
-                            .lines().count());
+                    .lines().count());
         }
     }
 

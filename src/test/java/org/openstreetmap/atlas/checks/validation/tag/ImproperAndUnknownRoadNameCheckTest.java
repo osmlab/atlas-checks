@@ -34,7 +34,7 @@ public class ImproperAndUnknownRoadNameCheckTest
         for (final CheckFlag flag : new ImproperAndUnknownRoadNameCheck(
                 ConfigurationResolver.inlineConfiguration(
                         "{\"ImproperAndUnknownRoadNameCheck\": {\"names.improper\":[\"ConfigTest\"]}}"))
-                                .flags(this.setup.configAtlas()))
+                .flags(this.setup.configAtlas()))
         {
             flagCount++;
         }
@@ -59,7 +59,7 @@ public class ImproperAndUnknownRoadNameCheckTest
         int flagCount = 0;
         for (final CheckFlag flag : new ImproperAndUnknownRoadNameCheck(
                 ConfigurationResolver.emptyConfiguration())
-                        .flags(this.setup.inValidEdgeIdentifier()))
+                .flags(this.setup.inValidEdgeIdentifier()))
         {
             flagCount++;
         }

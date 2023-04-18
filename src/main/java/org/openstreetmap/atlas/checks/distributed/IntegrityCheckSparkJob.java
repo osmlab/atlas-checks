@@ -292,7 +292,7 @@ public class IntegrityCheckSparkJob extends IntegrityChecksCommandArguments
                 EventService.get(country)
                         .register(new CheckFlagTippecanoeProcessor(fileHelper,
                                 tippecanoeOutput.getTemporaryPath())
-                                        .withCompression(compressOutput));
+                                .withCompression(compressOutput));
             }
             else
             {

@@ -88,13 +88,10 @@ public class AbbreviatedAddressStreetCheck extends BaseCheck<String>
                                 .addFixSuggestion(FeatureChange.add(
                                         (AtlasEntity) ((CompleteEntity) CompleteEntity
                                                 .from((AtlasEntity) object))
-                                                        .withTags(object.getTags())
-                                                        .withReplacedTag(AddressStreetTag.KEY,
-                                                                AddressStreetTag.KEY,
-                                                                this.updateStreetAddress(
-                                                                        splitStreetName,
-                                                                        roadTypeIndex,
-                                                                        listEntry.getKey())),
+                                                .withTags(object.getTags()).withReplacedTag(
+                                                        AddressStreetTag.KEY, AddressStreetTag.KEY,
+                                                        this.updateStreetAddress(splitStreetName,
+                                                                roadTypeIndex, listEntry.getKey())),
                                         object.getAtlas())));
                     }
                 }

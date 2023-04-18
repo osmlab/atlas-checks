@@ -69,7 +69,7 @@ public class CheckFlagGeoJsonProcessorTest
         final File tempDirectory = Files.createTempDir();
         final CheckFlagGeoJsonProcessor processor = new CheckFlagGeoJsonProcessor(
                 new SparkFileHelper(FILE_SYSTEM_CONFIG), tempDirectory.getAbsolutePath())
-                        .withBatchSizeOverride(25);
+                .withBatchSizeOverride(25);
         for (int index = 0; index < eventCount; index++)
         {
             processor.process(this.setup.getCheckFlagEvent());
